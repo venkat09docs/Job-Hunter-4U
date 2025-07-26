@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Crown, Star } from "lucide-react";
+import { Check, Zap, Crown, Star, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 declare global {
   interface Window {
@@ -12,6 +13,7 @@ declare global {
 
 const Pricing = () => {
   const { toast } = useToast();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const plans = [
     {
@@ -77,52 +79,111 @@ const Pricing = () => {
     });
   };
 
+  const storeSubscription = (plan: typeof plans[0], paymentDetails: any) => {
+    const subscription = {
+      plan: plan.name,
+      price: plan.price,
+      duration: plan.duration,
+      paymentId: paymentDetails.razorpay_payment_id,
+      activatedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+      features: plan.features
+    };
+    
+    localStorage.setItem('jobhunter_subscription', JSON.stringify(subscription));
+    localStorage.setItem('jobhunter_user_plan', plan.name);
+  };
+
   const handlePayment = async (plan: typeof plans[0]) => {
-    const res = await loadRazorpay();
-    if (!res) {
+    setLoadingPlan(plan.name);
+    
+    try {
+      const res = await loadRazorpay();
+      if (!res) {
+        toast({
+          title: "Error",
+          description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_1234567890", // Replace with your actual key
+        amount: plan.price * 100,
+        currency: "INR",
+        name: "JobHunter Pro",
+        description: `${plan.name} Plan - Unlock your career potential`,
+        image: "/favicon.ico",
+        handler: function (response: any) {
+          try {
+            storeSubscription(plan, response);
+            
+            toast({
+              title: "🎉 Payment Successful!",
+              description: `Welcome to ${plan.name} plan! Your subscription is now active.`,
+            });
+            
+            // Optional: Redirect to dashboard or reload page
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+            
+          } catch (error) {
+            console.error('Error storing subscription:', error);
+            toast({
+              title: "Payment Received",
+              description: "Payment successful, but there was an issue activating your plan. Please contact support.",
+              variant: "destructive"
+            });
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setLoadingPlan(null);
+            toast({
+              title: "Payment Cancelled",
+              description: "You can complete your payment anytime to activate your plan.",
+            });
+          }
+        },
+        theme: {
+          color: "#6366f1"
+        },
+        prefill: {
+          name: "",
+          email: "", 
+          contact: ""
+        },
+        notes: {
+          plan: plan.name,
+          duration: plan.duration
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response: any) {
+        setLoadingPlan(null);
+        toast({
+          title: "Payment Failed",
+          description: `${response.error.description}. Please try again or contact support.`,
+          variant: "destructive"
+        });
+        console.error('Payment failed:', response.error);
+      });
+      
+      paymentObject.open();
+      
+    } catch (error) {
+      console.error('Payment initialization error:', error);
       toast({
         title: "Error",
-        description: "Razorpay SDK failed to load. Please try again.",
+        description: "Failed to initialize payment. Please try again.",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setLoadingPlan(null);
     }
-
-    const options = {
-      key: "rzp_test_1234567890", // Replace with your Razorpay key
-      amount: plan.price * 100, // Razorpay expects amount in paise
-      currency: "INR",
-      name: "JobHunter Pro",
-      description: `${plan.name} Plan Subscription`,
-      image: "/favicon.ico",
-      handler: function (response: any) {
-        toast({
-          title: "Payment Successful!",
-          description: `Welcome to ${plan.name} plan! Payment ID: ${response.razorpay_payment_id}`,
-        });
-        console.log("Payment successful:", response);
-      },
-      prefill: {
-        name: "",
-        email: "",
-        contact: ""
-      },
-      notes: {
-        plan: plan.name,
-        duration: plan.duration
-      },
-      theme: {
-        color: "#6366f1"
-      },
-      modal: {
-        ondismiss: function() {
-          console.log('Payment modal closed');
-        }
-      }
-    };
-
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
   };
 
   return (
@@ -190,10 +251,20 @@ const Pricing = () => {
                   size="lg" 
                   className="w-full"
                   onClick={() => handlePayment(plan)}
+                  disabled={loadingPlan === plan.name}
                 >
-                  {plan.popular && <Zap className="w-4 h-4 mr-2" />}
-                  {plan.name === "Premium" && <Crown className="w-4 h-4 mr-2" />}
-                  Get Started
+                  {loadingPlan === plan.name ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {plan.popular && <Zap className="w-4 h-4 mr-2" />}
+                      {plan.name === "Premium" && <Crown className="w-4 h-4 mr-2" />}
+                      Get Started
+                    </>
+                  )}
                 </Button>
               </div>
             </Card>
