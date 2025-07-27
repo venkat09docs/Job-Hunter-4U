@@ -477,18 +477,7 @@ const Portfolio = () => {
     if (!element) return;
 
     try {
-      const canvas = await html2canvas(element, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0
-      });
-      
+      // Create PDF with proper page management
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -496,26 +485,86 @@ const Portfolio = () => {
         compress: true
       });
 
-      const imgWidth = 210; // A4 width in mm
+      const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
+      const margin = 10; // margin in mm
+      const contentWidth = pageWidth - (margin * 2);
+      
+      // Calculate scale to fit content properly
+      const elementWidth = element.scrollWidth;
+      const scale = Math.min(1.5, (contentWidth * 3.779527559) / elementWidth); // 3.779527559 px per mm
+      
+      const canvas = await html2canvas(element, {
+        scale: scale,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc) => {
+          // Add page break styles to prevent content cut-off
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            .section-break { page-break-inside: avoid; break-inside: avoid; }
+            .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
+            p { orphans: 3; widows: 3; }
+          `;
+          clonedDoc.head.appendChild(style);
+          
+          // Add classes to sections to avoid breaks
+          const sections = clonedDoc.querySelectorAll('.mb-4, .mb-6, .space-y-2 > div');
+          sections.forEach(section => {
+            section.classList.add('section-break');
+          });
+        }
+      });
+      
+      const imgWidth = contentWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
       
-      // Convert to JPEG with compression
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      const maxPageContentHeight = pageHeight - (margin * 2);
+      let yPosition = 0;
+      let pageNumber = 1;
       
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add additional pages if content is longer than one page
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      // Add content with proper page management
+      while (yPosition < imgHeight) {
+        if (pageNumber > 1) {
+          pdf.addPage();
+        }
+        
+        // Calculate source coordinates
+        const sourceY = (yPosition / imgHeight) * canvas.height;
+        const sourceHeight = Math.min(
+          (maxPageContentHeight / imgHeight) * canvas.height,
+          canvas.height - sourceY
+        );
+        
+        // Create a new canvas for this page portion
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sourceHeight;
+        const pageCtx = pageCanvas.getContext('2d');
+        
+        if (pageCtx) {
+          pageCtx.drawImage(
+            canvas,
+            0, sourceY, canvas.width, sourceHeight,
+            0, 0, canvas.width, sourceHeight
+          );
+          
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
+          const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
+          
+          pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
+        }
+        
+        yPosition += maxPageContentHeight;
+        pageNumber++;
       }
       
       pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
