@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, Brain, Target, Lightbulb, Coins, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +46,14 @@ const TalentScreener = () => {
   const [parsing, setParsing] = useState(false);
   const [results, setResults] = useState<ParsedResults | null>(null);
   const [showPricing, setShowPricing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    jobOpenings: "",
+    linkedinUrl: "",
+    jobDescription: ""
+  });
 
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
@@ -75,6 +86,16 @@ const TalentScreener = () => {
   const uploadResumeAndParse = async () => {
     if (!selectedFile || !user) return;
 
+    // Validate required fields
+    if (!formData.name || !formData.email || !formData.linkedinUrl || !formData.jobDescription) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!hasEnoughTokens) {
       setShowPricing(true);
       return;
@@ -101,28 +122,43 @@ const TalentScreener = () => {
 
       setUploading(false);
 
-      // Call parse-resume edge function
-      const { data, error } = await supabase.functions.invoke('parse-resume', {
-        body: {
-          resumeUrl: publicUrl,
-          userId: user.id
-        }
+      // Call n8n webhook with the required payload
+      const webhookPayload = {
+        Name: formData.name,
+        Email: formData.email,
+        Phone: formData.phone,
+        "Job Openings": formData.jobOpenings,
+        "LinkedIn Profile URL": formData.linkedinUrl,
+        Resume: publicUrl,
+        "Job Description": formData.jobDescription
+      };
+
+      const webhookResponse = await fetch('https://rnstech.app.n8n.cloud/webhook-test/talent-screener', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload)
       });
 
-      if (error) throw error;
+      if (!webhookResponse.ok) {
+        throw new Error('Failed to process with talent screener');
+      }
+
+      const webhookData = await webhookResponse.json();
 
       // Deduct tokens
       await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
       await refreshProfile();
 
-      // Generate mock job fit score and AI tips for demonstration
+      // Use response from webhook or generate mock results
       const mockResults: ParsedResults = {
-        summary: data.data.parsed_summary || "Resume parsed successfully",
-        skills: data.data.skills || [],
-        experience: data.data.experience || [],
-        education: data.data.education || [],
-        jobFitScore: Math.floor(Math.random() * 30) + 70, // Random score 70-100
-        aiTips: [
+        summary: webhookData.summary || "Resume analyzed successfully with talent screener",
+        skills: webhookData.skills || ["Analysis pending", "Please check webhook response"],
+        experience: webhookData.experience || [],
+        education: webhookData.education || [],
+        jobFitScore: webhookData.jobFitScore || Math.floor(Math.random() * 30) + 70,
+        aiTips: webhookData.aiTips || [
           "Consider adding more quantifiable achievements to your experience",
           "Your technical skills align well with current market demands",
           "Consider obtaining certifications in your field to strengthen your profile",
@@ -170,19 +206,83 @@ const TalentScreener = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Upload Section */}
-            <Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Form Fields */}
+            <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Resume Upload
+                  Talent Screening Form
                 </CardTitle>
                 <CardDescription>
-                  Upload your resume for AI analysis. Requires {REQUIRED_TOKENS} tokens.
+                  Fill in the details and upload resume for AI analysis. Requires {REQUIRED_TOKENS} tokens.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="jobOpenings">Job Openings</Label>
+                    <Input
+                      id="jobOpenings"
+                      value={formData.jobOpenings}
+                      onChange={(e) => setFormData(prev => ({ ...prev, jobOpenings: e.target.value }))}
+                      placeholder="Enter job openings"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="linkedinUrl">LinkedIn Profile URL *</Label>
+                  <Input
+                    id="linkedinUrl"
+                    value={formData.linkedinUrl}
+                    onChange={(e) => setFormData(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                    placeholder="https://linkedin.com/in/username"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="jobDescription">Job Description *</Label>
+                  <Textarea
+                    id="jobDescription"
+                    value={formData.jobDescription}
+                    onChange={(e) => setFormData(prev => ({ ...prev, jobDescription: e.target.value }))}
+                    placeholder="Enter the job description for talent screening..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+
                 <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                   <input
                     type="file"
@@ -197,7 +297,7 @@ const TalentScreener = () => {
                   >
                     <FileText className="h-8 w-8 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Click to upload PDF resume
+                      Click to upload PDF resume *
                     </span>
                   </label>
                 </div>
@@ -239,7 +339,7 @@ const TalentScreener = () => {
 
                 <Button
                   onClick={uploadResumeAndParse}
-                  disabled={!selectedFile || !hasEnoughTokens || parsing}
+                  disabled={!selectedFile || !hasEnoughTokens || parsing || !formData.name || !formData.email || !formData.linkedinUrl || !formData.jobDescription}
                   className="w-full"
                 >
                   {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
