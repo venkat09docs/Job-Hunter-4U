@@ -258,7 +258,7 @@ const Portfolio = () => {
     full_name: string;
     email: string;
     phone: string;
-    linkedin_profile: string;
+    location: string;
   }>) => {
     if (!portfolio || !user) return;
 
@@ -344,12 +344,17 @@ const Portfolio = () => {
   // Handle form field changes with local state
   const handleFormChange = (field: string, value: string) => {
     setLocalFormData(prev => ({ ...prev, [field]: value }));
-    debouncedUpdate({ [field]: value });
+    
+    // Map linkedin_profile to location for database storage
+    const dbField = field === 'linkedin_profile' ? 'location' : field;
+    debouncedUpdate({ [dbField]: value });
   };
 
   // Handle blur events for immediate save
   const handleFieldBlur = (field: string, value: string) => {
-    updatePortfolio({ [field]: value });
+    // Map linkedin_profile to location for database storage
+    const dbField = field === 'linkedin_profile' ? 'location' : field;
+    updatePortfolio({ [dbField]: value });
   };
   const addExperience = () => {
     if (!portfolio) return;
@@ -473,21 +478,29 @@ const Portfolio = () => {
 
     try {
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1.5, // Reduced from 2 to optimize size
         useCORS: true,
-        allowTaint: true
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: element.scrollWidth,
+        height: element.scrollHeight
       });
       
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
+        compress: true // Enable compression
       });
 
-      const imgWidth = 210;
+      const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+      // Compress image quality to reduce file size
+      const imgData = canvas.toDataURL('image/jpeg', 0.8); // 80% quality JPEG instead of PNG
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
       
       toast({
