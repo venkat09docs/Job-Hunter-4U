@@ -86,7 +86,7 @@ const Settings = () => {
 
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ profile_image_url: avatarUrl })
+        .update({ profile_image_url: avatarUrl } as any)
         .eq('user_id', user.id);
 
       if (updateError) throw updateError;
@@ -115,7 +115,7 @@ const Settings = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ profile_image_url: null })
+        .update({ profile_image_url: null } as any)
         .eq('user_id', user.id);
 
       if (error) throw error;

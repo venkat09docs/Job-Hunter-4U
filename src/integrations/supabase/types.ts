@@ -100,6 +100,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          profile_image_url: string | null
           tokens_remaining: number | null
           total_ai_queries: number | null
           total_job_searches: number | null
@@ -112,6 +113,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          profile_image_url?: string | null
           tokens_remaining?: number | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
@@ -124,6 +126,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          profile_image_url?: string | null
           tokens_remaining?: number | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
