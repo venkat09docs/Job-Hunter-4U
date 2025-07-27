@@ -10,11 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { toast } from 'sonner';
-import { Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins } from 'lucide-react';
+import { Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface JobEntry {
   id: string;
@@ -240,223 +239,219 @@ const JobTracker = () => {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-          </div>
+      <div className="min-h-screen flex w-full bg-gradient-hero">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
-      </SidebarProvider>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Job Hunter Pro
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {profile?.tokens_remaining || 0} tokens
-                  </span>
-                </div>
-                <UserProfileDropdown />
-              </div>
+    <div className="min-h-screen flex flex-col w-full bg-gradient-hero">
+      {/* Top Menu Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Go to Dashboard
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Job Hunter Pro
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Coins className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">
+                {profile?.tokens_remaining || 0} tokens
+              </span>
             </div>
-          </header>
+            <UserProfileDropdown />
+          </div>
+        </div>
+      </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
-            <div className="max-w-7xl mx-auto space-y-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">Job Tracker</h1>
-                  <p className="text-muted-foreground">Track your job applications and interview progress</p>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" onClick={() => setShowArchived(!showArchived)} size="sm">
-                    {showArchived ? 'Show Active' : 'Show Archived'}
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+        <div className="max-w-full mx-auto space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Job Tracker</h1>
+              <p className="text-muted-foreground">Track your job applications and interview progress</p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" onClick={() => setShowArchived(!showArchived)} size="sm">
+                {showArchived ? 'Show Active' : 'Show Archived'}
+              </Button>
+              
+              <Button onClick={exportToCSV} variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Job
                   </Button>
-                  
-                  <Button onClick={exportToCSV} variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export CSV
-                  </Button>
-                  
-                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Job
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Add New Job</DialogTitle>
-                      </DialogHeader>
-                      <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-
-              {/* Filters */}
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
-                      <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="Search Applications..." 
-                          value={searchTerm} 
-                          onChange={(e) => setSearchTerm(e.target.value)} 
-                          className="pl-8" 
-                        />
-                      </div>
-                    </div>
-                    
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-full sm:w-[200px]">
-                        <Filter className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        {statusOptions.map(status => (
-                          <SelectItem key={status} value={status}>
-                            {statusLabels[status as keyof typeof statusLabels]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Integrated Kanban Board with Pipeline */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
-                {getVisibleStatusOptions().map(status => {
-                  const statusJobs = filteredJobs.filter(job => job.status === status);
-                  const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
-                  
-                  return (
-                    <div key={status} className="flex flex-col h-full">
-                      {/* Pipeline Header */}
-                      <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-2 md:p-3 mb-2 md:mb-3`}>
-                        <div className="text-center">
-                          <div className="text-lg md:text-xl lg:text-2xl font-bold">{count}</div>
-                          <div className="text-xs md:text-sm font-medium leading-tight">
-                            {statusLabels[status as keyof typeof statusLabels]}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Board Column */}
-                      <div className="flex-1 space-y-2 md:space-y-3 min-h-[200px] md:min-h-[250px] lg:min-h-[300px] p-2 md:p-3 lg:p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
-                        {statusJobs.map(job => (
-                          <Card key={job.id} className="p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
-                            <div className="space-y-1 md:space-y-2">
-                              <div className="font-medium text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-                              <div className="text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(job.application_date).toLocaleDateString()}
-                              </div>
-                              {job.location && (
-                                <div className="text-xs text-muted-foreground truncate">📍 {job.location}</div>
-                              )}
-                              {job.salary_range && (
-                                <div className="text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
-                              )}
-                              <div className="flex flex-col gap-2 pt-1 md:pt-2">
-                                <Select 
-                                  value={job.status} 
-                                  onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
-                                >
-                                  <SelectTrigger className="h-6 md:h-7 lg:h-8 text-xs w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {statusOptions.map(statusOption => (
-                                      <SelectItem key={statusOption} value={statusOption}>
-                                        {statusLabels[statusOption as keyof typeof statusLabels]}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <div className="flex items-center gap-1 justify-center">
-                                  <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-6 w-6 md:h-7 md:w-7 p-0">
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-6 w-6 md:h-7 md:w-7 p-0">
-                                    <Archive className="h-3 w-3" />
-                                  </Button>
-                                  {showArchived && (
-                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-6 w-6 md:h-7 md:w-7 p-0">
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
-                        {statusJobs.length === 0 && (
-                          <div className="text-center text-muted-foreground text-xs md:text-sm py-4 md:py-6 lg:py-8">
-                            No applications
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {filteredJobs.length === 0 && (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">
-                      {showArchived ? 'No archived jobs found.' : 'No jobs found. Start by adding your first job application!'}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Edit Dialog */}
-              <Dialog open={!!editingJob} onOpenChange={() => setEditingJob(null)}>
+                </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Edit Job</DialogTitle>
+                    <DialogTitle>Add New Job</DialogTitle>
                   </DialogHeader>
-                  {editingJob && (
-                    <JobTrackerForm 
-                      initialData={editingJob} 
-                      onSubmit={handleEditJob} 
-                      onCancel={() => setEditingJob(null)} 
-                    />
-                  )}
+                  <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
                 </DialogContent>
               </Dialog>
             </div>
-          </main>
+          </div>
+
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search Applications..." 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)} 
+                      className="pl-8" 
+                    />
+                  </div>
+                </div>
+                
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    {statusOptions.map(status => (
+                      <SelectItem key={status} value={status}>
+                        {statusLabels[status as keyof typeof statusLabels]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Integrated Kanban Board with Pipeline */}
+          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+            {getVisibleStatusOptions().map(status => {
+              const statusJobs = filteredJobs.filter(job => job.status === status);
+              const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
+              
+              return (
+                <div key={status} className="flex flex-col">
+                  {/* Pipeline Header */}
+                  <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-1 sm:p-2 md:p-3 mb-1 sm:mb-2`}>
+                    <div className="text-center">
+                      <div className="text-sm sm:text-lg md:text-xl font-bold">{count}</div>
+                      <div className="text-[10px] sm:text-xs md:text-sm font-medium leading-tight break-words">
+                        {statusLabels[status as keyof typeof statusLabels]}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Board Column */}
+                  <div className="flex-1 space-y-1 sm:space-y-2 min-h-[150px] sm:min-h-[200px] md:min-h-[250px] p-1 sm:p-2 md:p-3 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+                    {statusJobs.map(job => (
+                      <Card key={job.id} className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
+                        <div className="space-y-1">
+                          <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
+                          <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
+                          <div className="text-[9px] sm:text-xs text-muted-foreground">
+                            {new Date(job.application_date).toLocaleDateString()}
+                          </div>
+                          {job.location && (
+                            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
+                          )}
+                          {job.salary_range && (
+                            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
+                          )}
+                          <div className="flex flex-col gap-1 pt-1">
+                            <Select 
+                              value={job.status} 
+                              onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
+                            >
+                              <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {statusOptions.map(statusOption => (
+                                  <SelectItem key={statusOption} value={statusOption}>
+                                    {statusLabels[statusOption as keyof typeof statusLabels]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex items-center gap-1 justify-center">
+                              <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
+                                <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
+                                <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                              {showArchived && (
+                                <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
+                                  <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                    {statusJobs.length === 0 && (
+                      <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
+                        No applications
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filteredJobs.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  {showArchived ? 'No archived jobs found.' : 'No jobs found. Start by adding your first job application!'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Edit Dialog */}
+          <Dialog open={!!editingJob} onOpenChange={() => setEditingJob(null)}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Job</DialogTitle>
+              </DialogHeader>
+              {editingJob && (
+                <JobTrackerForm 
+                  initialData={editingJob} 
+                  onSubmit={handleEditJob} 
+                  onCancel={() => setEditingJob(null)} 
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 
