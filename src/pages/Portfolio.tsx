@@ -59,6 +59,12 @@ const Portfolio = () => {
     location: '',
     parsed_summary: ''
   });
+  
+  // Local state for experience and education items
+  const [localExperience, setLocalExperience] = useState<ExperienceItem[]>([]);
+  const [localEducation, setLocalEducation] = useState<EducationItem[]>([]);
+  const [changedExperience, setChangedExperience] = useState<Set<number>>(new Set());
+  const [changedEducation, setChangedEducation] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -100,6 +106,10 @@ const Portfolio = () => {
           location: (data as any).location || '',
           parsed_summary: data.parsed_summary || ''
         });
+        
+        // Update local experience and education
+        setLocalExperience(transformedData.experience);
+        setLocalEducation(transformedData.education);
       } else {
         // Create initial portfolio if none exists
         await createInitialPortfolio();
@@ -158,6 +168,10 @@ const Portfolio = () => {
         location: (data as any).location || '',
         parsed_summary: data.parsed_summary || ''
       });
+      
+      // Update local experience and education
+      setLocalExperience([]);
+      setLocalEducation([]);
     } catch (error: any) {
       console.error('Error creating initial portfolio:', error);
     }
@@ -280,6 +294,10 @@ const Portfolio = () => {
         location: (data as any).location || '',
         parsed_summary: data.parsed_summary || ''
       });
+      
+      // Update local experience and education
+      setLocalExperience(transformedData.experience);
+      setLocalEducation(transformedData.education);
       toast({
         title: 'Success',
         description: 'Portfolio updated successfully!',
@@ -342,23 +360,53 @@ const Portfolio = () => {
       duration: '',
       description: ''
     };
-    const updatedExperience = [...portfolio.experience, newExp];
+    const updatedExperience = [...localExperience, newExp];
+    setLocalExperience(updatedExperience);
     updatePortfolio({ experience: updatedExperience });
   };
 
-  const updateExperience = (index: number, field: keyof ExperienceItem, value: string) => {
+  const updateLocalExperience = (index: number, field: keyof ExperienceItem, value: string) => {
+    const updatedExperience = [...localExperience];
+    updatedExperience[index] = { ...updatedExperience[index], [field]: value };
+    setLocalExperience(updatedExperience);
+    
+    // Mark this item as changed
+    setChangedExperience(prev => new Set(prev).add(index));
+  };
+
+  const saveExperience = (index: number) => {
     if (!portfolio) return;
     
     const updatedExperience = [...portfolio.experience];
-    updatedExperience[index] = { ...updatedExperience[index], [field]: value };
+    updatedExperience[index] = localExperience[index];
     updatePortfolio({ experience: updatedExperience });
+    
+    // Remove from changed set
+    setChangedExperience(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
   };
 
   const removeExperience = (index: number) => {
     if (!portfolio) return;
     
     const updatedExperience = portfolio.experience.filter((_, i) => i !== index);
+    const updatedLocalExperience = localExperience.filter((_, i) => i !== index);
+    
+    setLocalExperience(updatedLocalExperience);
     updatePortfolio({ experience: updatedExperience });
+    
+    // Update changed set indices
+    setChangedExperience(prev => {
+      const newSet = new Set<number>();
+      prev.forEach(i => {
+        if (i < index) newSet.add(i);
+        else if (i > index) newSet.add(i - 1);
+      });
+      return newSet;
+    });
   };
 
   const addEducation = () => {
@@ -370,23 +418,53 @@ const Portfolio = () => {
       year: '',
       description: ''
     };
-    const updatedEducation = [...portfolio.education, newEdu];
+    const updatedEducation = [...localEducation, newEdu];
+    setLocalEducation(updatedEducation);
     updatePortfolio({ education: updatedEducation });
   };
 
-  const updateEducation = (index: number, field: keyof EducationItem, value: string) => {
+  const updateLocalEducation = (index: number, field: keyof EducationItem, value: string) => {
+    const updatedEducation = [...localEducation];
+    updatedEducation[index] = { ...updatedEducation[index], [field]: value };
+    setLocalEducation(updatedEducation);
+    
+    // Mark this item as changed
+    setChangedEducation(prev => new Set(prev).add(index));
+  };
+
+  const saveEducation = (index: number) => {
     if (!portfolio) return;
     
     const updatedEducation = [...portfolio.education];
-    updatedEducation[index] = { ...updatedEducation[index], [field]: value };
+    updatedEducation[index] = localEducation[index];
     updatePortfolio({ education: updatedEducation });
+    
+    // Remove from changed set
+    setChangedEducation(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
   };
 
   const removeEducation = (index: number) => {
     if (!portfolio) return;
     
     const updatedEducation = portfolio.education.filter((_, i) => i !== index);
+    const updatedLocalEducation = localEducation.filter((_, i) => i !== index);
+    
+    setLocalEducation(updatedLocalEducation);
     updatePortfolio({ education: updatedEducation });
+    
+    // Update changed set indices
+    setChangedEducation(prev => {
+      const newSet = new Set<number>();
+      prev.forEach(i => {
+        if (i < index) newSet.add(i);
+        else if (i > index) newSet.add(i - 1);
+      });
+      return newSet;
+    });
   };
 
   const downloadPDF = async () => {
@@ -616,7 +694,7 @@ const Portfolio = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {portfolio?.experience.map((exp, index) => (
+              {localExperience.map((exp, index) => (
                 <div key={index} className="p-4 border rounded space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="grid grid-cols-2 gap-3 flex-1">
@@ -624,7 +702,7 @@ const Portfolio = () => {
                         <Label>Job Title</Label>
                         <Input
                           value={exp.title}
-                          onChange={(e) => updateExperience(index, 'title', e.target.value)}
+                          onChange={(e) => updateLocalExperience(index, 'title', e.target.value)}
                           placeholder="Software Engineer"
                         />
                       </div>
@@ -632,7 +710,7 @@ const Portfolio = () => {
                         <Label>Company</Label>
                         <Input
                           value={exp.company}
-                          onChange={(e) => updateExperience(index, 'company', e.target.value)}
+                          onChange={(e) => updateLocalExperience(index, 'company', e.target.value)}
                           placeholder="Company Name"
                         />
                       </div>
@@ -651,7 +729,7 @@ const Portfolio = () => {
                     <Label>Duration</Label>
                     <Input
                       value={exp.duration}
-                      onChange={(e) => updateExperience(index, 'duration', e.target.value)}
+                      onChange={(e) => updateLocalExperience(index, 'duration', e.target.value)}
                       placeholder="Jan 2020 - Present"
                     />
                   </div>
@@ -660,11 +738,22 @@ const Portfolio = () => {
                     <Label>Description</Label>
                     <Textarea
                       value={exp.description}
-                      onChange={(e) => updateExperience(index, 'description', e.target.value)}
+                      onChange={(e) => updateLocalExperience(index, 'description', e.target.value)}
                       placeholder="Describe your role and achievements..."
                       rows={3}
                     />
                   </div>
+                  
+                  {changedExperience.has(index) && (
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => saveExperience(index)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </CardContent>
@@ -682,7 +771,7 @@ const Portfolio = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {portfolio?.education.map((edu, index) => (
+              {localEducation.map((edu, index) => (
                 <div key={index} className="p-4 border rounded space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="grid grid-cols-2 gap-3 flex-1">
@@ -690,7 +779,7 @@ const Portfolio = () => {
                         <Label>Degree</Label>
                         <Input
                           value={edu.degree}
-                          onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                          onChange={(e) => updateLocalEducation(index, 'degree', e.target.value)}
                           placeholder="Bachelor of Science"
                         />
                       </div>
@@ -698,7 +787,7 @@ const Portfolio = () => {
                         <Label>Institution</Label>
                         <Input
                           value={edu.institution}
-                          onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                          onChange={(e) => updateLocalEducation(index, 'institution', e.target.value)}
                           placeholder="University Name"
                         />
                       </div>
@@ -717,7 +806,7 @@ const Portfolio = () => {
                     <Label>Year</Label>
                     <Input
                       value={edu.year}
-                      onChange={(e) => updateEducation(index, 'year', e.target.value)}
+                      onChange={(e) => updateLocalEducation(index, 'year', e.target.value)}
                       placeholder="2020"
                     />
                   </div>
@@ -726,11 +815,22 @@ const Portfolio = () => {
                     <Label>Description (Optional)</Label>
                     <Textarea
                       value={edu.description || ''}
-                      onChange={(e) => updateEducation(index, 'description', e.target.value)}
+                      onChange={(e) => updateLocalEducation(index, 'description', e.target.value)}
                       placeholder="Additional details..."
                       rows={2}
                     />
                   </div>
+                  
+                  {changedEducation.has(index) && (
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => saveEducation(index)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </CardContent>
@@ -796,13 +896,13 @@ const Portfolio = () => {
                   )}
 
                   {/* Experience */}
-                  {portfolio?.experience && portfolio.experience.length > 0 && (
+                  {localExperience && localExperience.length > 0 && (
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                         PROFESSIONAL EXPERIENCE
                       </h2>
                       <div className="space-y-4">
-                        {portfolio.experience.map((exp, index) => (
+                        {localExperience.map((exp, index) => (
                           <div key={index}>
                             <div className="flex justify-between items-start mb-1">
                               <h3 className="font-semibold text-gray-900">{exp.title}</h3>
@@ -819,13 +919,13 @@ const Portfolio = () => {
                   )}
 
                   {/* Education */}
-                  {portfolio?.education && portfolio.education.length > 0 && (
+                  {localEducation && localEducation.length > 0 && (
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                         EDUCATION
                       </h2>
                       <div className="space-y-3">
-                        {portfolio.education.map((edu, index) => (
+                        {localEducation.map((edu, index) => (
                           <div key={index}>
                             <div className="flex justify-between items-start mb-1">
                               <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
