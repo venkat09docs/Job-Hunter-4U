@@ -50,6 +50,60 @@ export type Database = {
         }
         Relationships: []
       }
+      public_profiles: {
+        Row: {
+          bio: string | null
+          blog_url: string | null
+          created_at: string
+          custom_links: Json | null
+          full_name: string
+          github_url: string | null
+          id: string
+          is_public: boolean | null
+          linkedin_url: string | null
+          profile_image_url: string | null
+          resume_url: string | null
+          slug: string
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          bio?: string | null
+          blog_url?: string | null
+          created_at?: string
+          custom_links?: Json | null
+          full_name: string
+          github_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          linkedin_url?: string | null
+          profile_image_url?: string | null
+          resume_url?: string | null
+          slug: string
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          bio?: string | null
+          blog_url?: string | null
+          created_at?: string
+          custom_links?: Json | null
+          full_name?: string
+          github_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          linkedin_url?: string | null
+          profile_image_url?: string | null
+          resume_url?: string | null
+          slug?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       user_analytics: {
         Row: {
           ai_queries: number | null
