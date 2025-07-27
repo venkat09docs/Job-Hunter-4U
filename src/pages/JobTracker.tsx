@@ -39,7 +39,6 @@ const JobTracker = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [groupBy, setGroupBy] = useState('none');
   const [showArchived, setShowArchived] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
@@ -193,25 +192,15 @@ const JobTracker = () => {
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-  const groupedJobs = () => {
-    if (groupBy === 'status') {
-      const grouped = filteredJobs.reduce((acc, job) => {
-        if (!acc[job.status]) acc[job.status] = [];
-        acc[job.status].push(job);
-        return acc;
-      }, {} as Record<string, JobEntry[]>);
-      return grouped;
-    } else if (groupBy === 'company') {
-      const grouped = filteredJobs.reduce((acc, job) => {
-        if (!acc[job.company_name]) acc[job.company_name] = [];
-        acc[job.company_name].push(job);
-        return acc;
-      }, {} as Record<string, JobEntry[]>);
-      return grouped;
+  // Get visible status columns - only show columns that have matching jobs or when no search/filter is active
+  const getVisibleStatusOptions = () => {
+    if (searchTerm || statusFilter !== 'all') {
+      return statusOptions.filter(status => {
+        const statusJobs = filteredJobs.filter(job => job.status === status);
+        return statusJobs.length > 0;
+      });
     }
-    return {
-      'All Jobs': filteredJobs
-    };
+    return statusOptions;
   };
   if (loading) {
     return (
@@ -320,29 +309,18 @@ const JobTracker = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    
-                    <Select value={groupBy} onValueChange={setGroupBy}>
-                      <SelectTrigger className="w-full sm:w-[200px]">
-                        <SelectValue placeholder="Group by" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Grouping</SelectItem>
-                        <SelectItem value="status">Group by Status</SelectItem>
-                        <SelectItem value="company">Group by Company</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Integrated Kanban Board with Pipeline */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
-                {statusOptions.map(status => {
+              <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4">
+                {getVisibleStatusOptions().map(status => {
                   const statusJobs = filteredJobs.filter(job => job.status === status);
                   const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
                   
                   return (
-                    <div key={status} className="flex flex-col h-full">
+                    <div key={status} className="flex flex-col h-full min-w-[280px] md:min-w-[320px]">
                       {/* Pipeline Header */}
                       <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-3 mb-3`}>
                         <div className="text-center">
