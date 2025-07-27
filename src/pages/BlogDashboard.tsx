@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 
 interface Blog {
   id: string;
@@ -187,16 +188,7 @@ export default function BlogDashboard() {
           <div className="flex-1">
           <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
             <SidebarTrigger />
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {profile?.username || profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User')}
-                </span>
-              </div>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
+              <UserProfileDropdown />
           </header>
             <div className="flex items-center justify-center h-96">
               <div className="text-center">Loading...</div>
@@ -214,16 +206,7 @@ export default function BlogDashboard() {
         <div className="flex-1">
             <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
               <SidebarTrigger />
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {profile?.username || profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User')}
-                  </span>
-                </div>
-                <Button variant="outline" onClick={handleSignOut}>
-                  Sign Out
-                </Button>
-              </div>
+              <UserProfileDropdown />
             </header>
 
           <div className="p-6">

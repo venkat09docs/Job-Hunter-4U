@@ -283,9 +283,66 @@ const EditProfile = () => {
                         name="profile_image_url"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Profile Picture URL</FormLabel>
+                            <FormLabel>Profile Picture</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter image URL" {...field} />
+                              <div className="space-y-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file && user) {
+                                      try {
+                                        const fileExt = file.name.split('.').pop();
+                                        const fileName = `${user.id}/profile.${fileExt}`;
+                                        
+                                        const { error: uploadError } = await supabase.storage
+                                          .from('avatars')
+                                          .upload(fileName, file, {
+                                            upsert: true
+                                          });
+
+                                        if (uploadError) throw uploadError;
+
+                                        const { data } = supabase.storage
+                                          .from('avatars')
+                                          .getPublicUrl(fileName);
+
+                                        field.onChange(data.publicUrl);
+                                        
+                                        toast({
+                                          title: 'Image uploaded',
+                                          description: 'Profile picture uploaded successfully.',
+                                        });
+                                      } catch (error: any) {
+                                        console.error('Error uploading image:', error);
+                                        toast({
+                                          title: 'Upload failed',
+                                          description: 'Failed to upload profile picture.',
+                                          variant: 'destructive',
+                                        });
+                                      }
+                                    }
+                                  }}
+                                />
+                                {field.value && (
+                                  <div className="flex items-center gap-2">
+                                    <img 
+                                      src={field.value} 
+                                      alt="Profile preview" 
+                                      className="w-16 h-16 rounded-full object-cover"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => field.onChange('')}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>

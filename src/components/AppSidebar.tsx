@@ -29,7 +29,6 @@ const mainItems = [
   { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

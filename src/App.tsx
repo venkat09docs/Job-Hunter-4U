@@ -12,6 +12,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Portfolio from "./pages/Portfolio";
 import BlogDashboard from "./pages/BlogDashboard";
 import PublicBlogs from "./pages/PublicBlogs";
+import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <BlogDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               } 
             />

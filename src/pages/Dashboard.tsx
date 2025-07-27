@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
-import { LogOut, User, Briefcase, Target, TrendingUp, Coins, CreditCard, Eye, Search, Bot } from 'lucide-react';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { User, Briefcase, Target, TrendingUp, Coins, CreditCard, Eye, Search, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
@@ -79,18 +80,7 @@ const Dashboard = () => {
                   Job Hunter Pro
                 </h1>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">
-                    {profile?.username || profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User')}
-                  </span>
-                </div>
-                <Button onClick={handleSignOut} variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div>
+              <UserProfileDropdown />
             </div>
           </header>
 
