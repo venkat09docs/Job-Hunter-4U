@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Coins, ExternalLink, Zap } from 'lucide-react';
+import { Coins, ExternalLink, Zap, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const DigitalCareerHub = () => {
@@ -100,16 +101,20 @@ const DigitalCareerHub = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Menu */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">Digital Career Hub</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" asChild>
-              <a href="/dashboard">Dashboard</a>
+          <Link to="/dashboard">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Go to Dashboard
             </Button>
+          </Link>
+          
+          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Digital Career Hub
+          </h1>
+          
+          <div className="flex items-center gap-4">
             <Badge variant="secondary" className="flex items-center gap-1">
               <Coins className="w-4 h-4" />
               {profile?.tokens_remaining || 0} Credits
