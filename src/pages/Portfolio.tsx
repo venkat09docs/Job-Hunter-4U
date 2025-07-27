@@ -72,6 +72,9 @@ const Portfolio = () => {
           education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
         };
         setPortfolio(transformedData);
+      } else {
+        // Create initial portfolio if none exists
+        await createInitialPortfolio();
       }
     } catch (error: any) {
       console.error('Error fetching portfolio:', error);
@@ -82,6 +85,36 @@ const Portfolio = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createInitialPortfolio = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('portfolios')
+        .insert({
+          user_id: user.id,
+          skills: [],
+          experience: [],
+          education: []
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const transformedData: Portfolio = {
+        ...data,
+        skills: [],
+        experience: [],
+        education: []
+      };
+      
+      setPortfolio(transformedData);
+    } catch (error: any) {
+      console.error('Error creating initial portfolio:', error);
     }
   };
 
