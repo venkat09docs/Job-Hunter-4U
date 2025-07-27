@@ -115,8 +115,8 @@ const AIAssistantChat = () => {
 
       setMessages(prev => [...prev, aiMessageObj]);
 
-      // Log conversation to Supabase
-      await logChatToSupabase(userMessage, aiResponse);
+      // Log conversation to Supabase (commented out until table is available)
+      // await logChatToSupabase(userMessage, aiResponse);
 
       // Deduct tokens and increment analytics
       await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);

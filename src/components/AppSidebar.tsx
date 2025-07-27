@@ -7,7 +7,9 @@ import {
   ExternalLink,
   Home,
   PenTool,
-  Target
+  Target,
+  Search,
+  Linkedin
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,6 +29,8 @@ import { useAuth } from "@/hooks/useAuth";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },

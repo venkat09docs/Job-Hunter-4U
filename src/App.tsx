@@ -14,7 +14,10 @@ import BlogDashboard from "./pages/BlogDashboard";
 import PublicBlogs from "./pages/PublicBlogs";
 import Settings from "./pages/Settings";
 import TalentScreener from "./pages/TalentScreener";
+import JobSearch from "./pages/JobSearch";
+import LinkedInAutomation from "./pages/LinkedInAutomation";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,11 +80,28 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/dashboard/job-search" 
+              element={
+                <ProtectedRoute>
+                  <JobSearch />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/linkedin-automation" 
+              element={
+                <ProtectedRoute>
+                  <LinkedInAutomation />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/blogs" element={<PublicBlogs />} />
             <Route path="/profile/:slug" element={<PublicProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <AIAssistantChat />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

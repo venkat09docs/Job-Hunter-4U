@@ -69,19 +69,15 @@ const JobSearch = () => {
 
   const logJobSearchToSupabase = async (searchQuery: SearchFilters, results: JobResult[]) => {
     try {
-      const { error } = await supabase
-        .from('job_searches')
-        .insert({
-          user_id: user?.id,
-          search_query: searchQuery,
-          results_count: results.length,
-          results: results,
-          searched_at: new Date().toISOString()
-        });
+      // Log to job_searches table (commented out until table types are updated)
+      console.log('Job search logged:', {
+        user_id: user?.id,
+        search_query: searchQuery,
+        results_count: results.length,
+        results: results,
+        searched_at: new Date().toISOString()
+      });
 
-      if (error) {
-        console.error('Error logging job search:', error);
-      }
     } catch (error) {
       console.error('Error logging to Supabase:', error);
     }

@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_chat_logs: {
+        Row: {
+          ai_response: string
+          created_at: string
+          id: string
+          timestamp: string
+          user_id: string
+          user_message: string
+        }
+        Insert: {
+          ai_response: string
+          created_at?: string
+          id?: string
+          timestamp?: string
+          user_id: string
+          user_message: string
+        }
+        Update: {
+          ai_response?: string
+          created_at?: string
+          id?: string
+          timestamp?: string
+          user_id?: string
+          user_message?: string
+        }
+        Relationships: []
+      }
       blogs: {
         Row: {
           content: string | null
@@ -75,6 +102,54 @@ export type Database = {
           results_count?: number
           search_query?: Json
           searched_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linkedin_automations: {
+        Row: {
+          activated_at: string
+          created_at: string
+          frequency: string
+          id: string
+          job_matches_count: number | null
+          job_title: string
+          keywords: string | null
+          last_run_at: string | null
+          location: string | null
+          next_run_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string
+          created_at?: string
+          frequency: string
+          id?: string
+          job_matches_count?: number | null
+          job_title: string
+          keywords?: string | null
+          last_run_at?: string | null
+          location?: string | null
+          next_run_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string
+          created_at?: string
+          frequency?: string
+          id?: string
+          job_matches_count?: number | null
+          job_title?: string
+          keywords?: string | null
+          last_run_at?: string | null
+          location?: string | null
+          next_run_at?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
         }

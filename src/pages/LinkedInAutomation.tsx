@@ -141,12 +141,12 @@ const LinkedInAutomation = () => {
         status: 'running'
       });
 
-      // Log automation to Supabase
-      await logAutomationToSupabase(settings, 'activated');
+      // Log automation to Supabase (commented out until table is available)
+      // await logAutomationToSupabase(settings, 'activated');
 
       // Deduct tokens and increment analytics
       await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
-      await incrementAnalytics('linkedin_automation');
+      await incrementAnalytics('ai_query'); // Using existing analytics type
       await refreshProfile();
 
       toast({
@@ -173,7 +173,7 @@ const LinkedInAutomation = () => {
       status: 'paused'
     }));
 
-    await logAutomationToSupabase(settings, 'paused');
+    // await logAutomationToSupabase(settings, 'paused');
 
     toast({
       title: "Bot Paused",
