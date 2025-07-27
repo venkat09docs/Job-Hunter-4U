@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { toast } from 'sonner';
 import { Download, Plus, Search, Filter, Edit, Archive, Trash2 } from 'lucide-react';
-
 interface JobEntry {
   id: string;
   company_name: string;
@@ -29,9 +28,10 @@ interface JobEntry {
   created_at: string;
   updated_at: string;
 }
-
 const JobTracker = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,11 +40,7 @@ const JobTracker = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
-
-  const statusOptions = [
-    'wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted'
-  ];
-
+  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted'];
   const statusColors = {
     wishlist: 'bg-gray-500',
     applying: 'bg-blue-500',
@@ -53,7 +49,6 @@ const JobTracker = () => {
     negotiating: 'bg-purple-500',
     accepted: 'bg-green-500'
   };
-
   const statusLabels = {
     wishlist: 'Wishlist',
     applying: 'Applying',
@@ -62,30 +57,26 @@ const JobTracker = () => {
     negotiating: 'Negotiating',
     accepted: 'Accepted'
   };
-
   const getStatusCounts = () => {
     return statusOptions.reduce((counts, status) => {
       counts[status] = jobs.filter(job => job.status === status && !job.is_archived).length;
       return counts;
     }, {} as Record<string, number>);
   };
-
   useEffect(() => {
     if (user) {
       fetchJobs();
     }
   }, [user, showArchived]);
-
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('job_tracker')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('is_archived', showArchived)
-        .order('application_date', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('job_tracker').select('*').eq('user_id', user?.id).eq('is_archived', showArchived).order('application_date', {
+        ascending: false
+      });
       if (error) throw error;
       setJobs(data || []);
     } catch (error: any) {
@@ -94,35 +85,30 @@ const JobTracker = () => {
       setLoading(false);
     }
   };
-
   const handleAddJob = async (jobData: Partial<JobEntry>) => {
     try {
       if (!jobData.company_name || !jobData.job_title || !user?.id) {
         toast.error('Company name and job title are required');
         return;
       }
-
-      const { data, error } = await supabase
-        .from('job_tracker')
-        .insert({
-          company_name: jobData.company_name,
-          job_title: jobData.job_title,
-          status: jobData.status || 'applied',
-          application_date: jobData.application_date || new Date().toISOString().split('T')[0],
-          notes: jobData.notes || null,
-          job_url: jobData.job_url || null,
-          salary_range: jobData.salary_range || null,
-          location: jobData.location || null,
-          contact_person: jobData.contact_person || null,
-          contact_email: jobData.contact_email || null,
-          next_follow_up: jobData.next_follow_up || null,
-          user_id: user.id
-        })
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('job_tracker').insert({
+        company_name: jobData.company_name,
+        job_title: jobData.job_title,
+        status: jobData.status || 'applied',
+        application_date: jobData.application_date || new Date().toISOString().split('T')[0],
+        notes: jobData.notes || null,
+        job_url: jobData.job_url || null,
+        salary_range: jobData.salary_range || null,
+        location: jobData.location || null,
+        contact_person: jobData.contact_person || null,
+        contact_email: jobData.contact_email || null,
+        next_follow_up: jobData.next_follow_up || null,
+        user_id: user.id
+      }).select().single();
       if (error) throw error;
-      
       setJobs(prev => [data, ...prev]);
       setIsAddDialogOpen(false);
       toast.success('Job added successfully!');
@@ -130,20 +116,14 @@ const JobTracker = () => {
       toast.error('Failed to add job: ' + error.message);
     }
   };
-
   const handleEditJob = async (jobData: Partial<JobEntry>) => {
     if (!editingJob) return;
-
     try {
-      const { data, error } = await supabase
-        .from('job_tracker')
-        .update(jobData)
-        .eq('id', editingJob.id)
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from('job_tracker').update(jobData).eq('id', editingJob.id).select().single();
       if (error) throw error;
-      
       setJobs(prev => prev.map(job => job.id === editingJob.id ? data : job));
       setEditingJob(null);
       toast.success('Job updated successfully!');
@@ -151,54 +131,37 @@ const JobTracker = () => {
       toast.error('Failed to update job: ' + error.message);
     }
   };
-
   const handleArchiveJob = async (jobId: string, archive: boolean) => {
     try {
-      const { error } = await supabase
-        .from('job_tracker')
-        .update({ is_archived: archive })
-        .eq('id', jobId);
-
+      const {
+        error
+      } = await supabase.from('job_tracker').update({
+        is_archived: archive
+      }).eq('id', jobId);
       if (error) throw error;
-      
       setJobs(prev => prev.filter(job => job.id !== jobId));
       toast.success(archive ? 'Job archived successfully!' : 'Job unarchived successfully!');
     } catch (error: any) {
       toast.error('Failed to archive job: ' + error.message);
     }
   };
-
   const handleDeleteJob = async (jobId: string) => {
     try {
-      const { error } = await supabase
-        .from('job_tracker')
-        .delete()
-        .eq('id', jobId);
-
+      const {
+        error
+      } = await supabase.from('job_tracker').delete().eq('id', jobId);
       if (error) throw error;
-      
       setJobs(prev => prev.filter(job => job.id !== jobId));
       toast.success('Job deleted permanently!');
     } catch (error: any) {
       toast.error('Failed to delete job: ' + error.message);
     }
   };
-
   const exportToCSV = () => {
-    const csvContent = [
-      ['Company', 'Job Title', 'Status', 'Application Date', 'Location', 'Salary Range', 'Notes'].join(','),
-      ...filteredJobs.map(job => [
-        job.company_name,
-        job.job_title,
-        job.status,
-        job.application_date,
-        job.location || '',
-        job.salary_range || '',
-        job.notes?.replace(/,/g, ';') || ''
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = [['Company', 'Job Title', 'Status', 'Application Date', 'Location', 'Salary Range', 'Notes'].join(','), ...filteredJobs.map(job => [job.company_name, job.job_title, job.status, job.application_date, job.location || '', job.salary_range || '', job.notes?.replace(/,/g, ';') || ''].join(','))].join('\n');
+    const blob = new Blob([csvContent], {
+      type: 'text/csv'
+    });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -206,18 +169,11 @@ const JobTracker = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
-
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = 
-      job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) || job.location?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-    
     return matchesSearch && matchesStatus;
   });
-
   const groupedJobs = () => {
     if (groupBy === 'status') {
       const grouped = filteredJobs.reduce((acc, job) => {
@@ -234,19 +190,16 @@ const JobTracker = () => {
       }, {} as Record<string, JobEntry[]>);
       return grouped;
     }
-    return { 'All Jobs': filteredJobs };
+    return {
+      'All Jobs': filteredJobs
+    };
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
+  return <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Job Tracker</h1>
@@ -254,14 +207,11 @@ const JobTracker = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowArchived(!showArchived)}
-          >
+          <Button variant="outline" onClick={() => setShowArchived(!showArchived)}>
             {showArchived ? 'Show Active' : 'Show Archived'}
           </Button>
           
-          <Button onClick={exportToCSV} variant="outline">
+          <Button onClick={exportToCSV} variant="outline" className="text-center font-medium">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
@@ -277,10 +227,7 @@ const JobTracker = () => {
               <DialogHeader>
                 <DialogTitle>Add New Job</DialogTitle>
               </DialogHeader>
-              <JobTrackerForm
-                onSubmit={handleAddJob}
-                onCancel={() => setIsAddDialogOpen(false)}
-              />
+              <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
@@ -293,12 +240,7 @@ const JobTracker = () => {
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search Applications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
+                <Input placeholder="Search Applications..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8" />
               </div>
             </div>
             
@@ -309,11 +251,9 @@ const JobTracker = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {statusOptions.map(status => (
-                  <SelectItem key={status} value={status}>
+                {statusOptions.map(status => <SelectItem key={status} value={status}>
                     {statusLabels[status as keyof typeof statusLabels]}
-                  </SelectItem>
-                ))}
+                  </SelectItem>)}
               </SelectContent>
             </Select>
             
@@ -332,30 +272,26 @@ const JobTracker = () => {
       </Card>
 
       {/* Status Pipeline */}
-      {!showArchived && (
-        <Card>
+      {!showArchived && <Card>
           <CardHeader>
             <CardTitle>Application Pipeline</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {statusOptions.map((status) => {
-                const count = getStatusCounts()[status] || 0;
-                return (
-                  <div key={status} className="text-center">
+              {statusOptions.map(status => {
+            const count = getStatusCounts()[status] || 0;
+            return <div key={status} className="text-center">
                     <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-lg p-3 mb-2`}>
                       <div className="text-2xl font-bold">{count}</div>
                     </div>
                     <div className="text-sm font-medium text-foreground">
                       {statusLabels[status as keyof typeof statusLabels]}
                     </div>
-                  </div>
-                );
-              })}
+                  </div>;
+          })}
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Jobs Table */}
       <Card>
@@ -373,8 +309,7 @@ const JobTracker = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredJobs.map((job) => (
-                <TableRow key={job.id}>
+              {filteredJobs.map(job => <TableRow key={job.id}>
                   <TableCell className="font-medium">{job.company_name}</TableCell>
                   <TableCell>{job.job_title}</TableCell>
                   <TableCell>
@@ -387,47 +322,30 @@ const JobTracker = () => {
                   <TableCell>{job.salary_range || '-'}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingJob(job)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleArchiveJob(job.id, !job.is_archived)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)}>
                         <Archive className="h-4 w-4" />
                       </Button>
-                      {showArchived && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteJob(job.id)}
-                        >
+                      {showArchived && <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
                           <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>)}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      {filteredJobs.length === 0 && (
-        <Card>
+      {filteredJobs.length === 0 && <Card>
           <CardContent className="p-8 text-center">
             <p className="text-muted-foreground">
               {showArchived ? 'No archived jobs found.' : 'No jobs found. Start by adding your first job application!'}
             </p>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Edit Dialog */}
       <Dialog open={!!editingJob} onOpenChange={() => setEditingJob(null)}>
@@ -435,17 +353,9 @@ const JobTracker = () => {
           <DialogHeader>
             <DialogTitle>Edit Job</DialogTitle>
           </DialogHeader>
-          {editingJob && (
-            <JobTrackerForm
-              initialData={editingJob}
-              onSubmit={handleEditJob}
-              onCancel={() => setEditingJob(null)}
-            />
-          )}
+          {editingJob && <JobTrackerForm initialData={editingJob} onSubmit={handleEditJob} onCancel={() => setEditingJob(null)} />}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default JobTracker;
