@@ -2,23 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAITools } from '@/hooks/useAITools';
 import { useProfile } from '@/hooks/useProfile';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { ToolChatSidebar } from '@/components/ToolChatSidebar';
-import { ToolChatInterface } from '@/components/ToolChatInterface';
+import { ToolNotesSidebar } from '@/components/ToolNotesSidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Coins, ExternalLink, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ChatMessage {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: string;
-}
 
 const DigitalCareerHub = () => {
   const { tools, loading, useTool } = useAITools();
@@ -26,8 +17,6 @@ const DigitalCareerHub = () => {
   const { toast } = useToast();
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [isToolDialogOpen, setIsToolDialogOpen] = useState(false);
-  const [currentChatMessages, setCurrentChatMessages] = useState<ChatMessage[]>([]);
-  const [activeTab, setActiveTab] = useState('tool');
 
   const handleToolAccess = async (tool: any) => {
     try {
@@ -45,8 +34,6 @@ const DigitalCareerHub = () => {
       
       // Open the tool in a modal
       setSelectedTool(tool);
-      setCurrentChatMessages([]);
-      setActiveTab('tool');
       setIsToolDialogOpen(true);
     } catch (error) {
       // Error handling is done in the hook
@@ -91,23 +78,6 @@ const DigitalCareerHub = () => {
     );
   };
 
-  const handleLoadChat = (messages: ChatMessage[]) => {
-    setCurrentChatMessages(messages);
-    setActiveTab('chat');
-  };
-
-  const handleSendMessage = async (message: string) => {
-    // This is where you would integrate with your AI service
-    // For now, we'll just simulate a response
-    const aiResponse: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'assistant',
-      content: `You asked: "${message}". This would be processed by the AI tool.`,
-      timestamp: new Date().toISOString()
-    };
-    
-    setCurrentChatMessages(prev => [...prev, aiResponse]);
-  };
 
   if (loading) {
     return (
@@ -133,8 +103,13 @@ const DigitalCareerHub = () => {
       {/* Top Menu */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Digital Career Hub</h1>
           <div className="flex items-center gap-4">
+            <h1 className="text-xl font-semibold">Digital Career Hub</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" asChild>
+              <a href="/dashboard">Dashboard</a>
+            </Button>
             <Badge variant="secondary" className="flex items-center gap-1">
               <Coins className="w-4 h-4" />
               {profile?.tokens_remaining || 0} Credits
@@ -253,37 +228,14 @@ const DigitalCareerHub = () => {
           </DialogHeader>
           
           <div className="flex-1 min-h-0 flex">
-            {/* Chat Sidebar */}
+            {/* Notes Sidebar */}
             {selectedTool && (
-              <ToolChatSidebar
-                toolId={selectedTool.id}
-                currentMessages={currentChatMessages}
-                onLoadChat={handleLoadChat}
-              />
+              <ToolNotesSidebar toolId={selectedTool.id} />
             )}
             
             {/* Main Content Area */}
-            <div className="flex-1 min-h-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-                <TabsList className="mx-4 mt-4 mb-0">
-                  <TabsTrigger value="tool">AI Tool</TabsTrigger>
-                  <TabsTrigger value="chat">Chat</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="tool" className="flex-1 m-0 relative">
-                  {selectedTool && renderEmbedCode(selectedTool.embed_code)}
-                </TabsContent>
-                
-                <TabsContent value="chat" className="flex-1 m-4 mt-0">
-                  <div className="h-full border rounded-lg">
-                    <ToolChatInterface
-                      messages={currentChatMessages}
-                      onMessagesChange={setCurrentChatMessages}
-                      onSendMessage={handleSendMessage}
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
+            <div className="flex-1 min-h-0 relative">
+              {selectedTool && renderEmbedCode(selectedTool.embed_code)}
             </div>
           </div>
         </DialogContent>
