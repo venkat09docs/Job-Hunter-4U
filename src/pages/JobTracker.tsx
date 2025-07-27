@@ -314,18 +314,10 @@ const JobTracker = () => {
         {statusOptions.map(status => {
           const statusJobs = filteredJobs.filter(job => job.status === status);
           return (
-            <Card key={status} className="flex flex-col h-fit">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center justify-between">
-                  <span>{statusLabels[status as keyof typeof statusLabels]}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {statusJobs.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 min-h-[200px]">
+            <div key={status} className="space-y-3">
+              <div className="space-y-3 min-h-[300px] p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
                 {statusJobs.map(job => (
-                  <Card key={job.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer">
+                  <Card key={job.id} className="p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
                     <div className="space-y-2">
                       <div className="font-medium text-sm">{job.company_name}</div>
                       <div className="text-sm text-muted-foreground">{job.job_title}</div>
@@ -371,8 +363,13 @@ const JobTracker = () => {
                     </div>
                   </Card>
                 ))}
-              </CardContent>
-            </Card>
+                {statusJobs.length === 0 && (
+                  <div className="text-center text-muted-foreground text-sm py-8">
+                    No applications
+                  </div>
+                )}
+              </div>
+            </div>
           );
         })}
       </div>
