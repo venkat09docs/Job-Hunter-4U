@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,15 @@ const Portfolio = () => {
   const [parsing, setParsing] = useState(false);
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [newSkill, setNewSkill] = useState('');
+  
+  // Local form state for better UX
+  const [localFormData, setLocalFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    location: '',
+    parsed_summary: ''
+  });
 
   useEffect(() => {
     if (user) {
@@ -82,6 +91,15 @@ const Portfolio = () => {
           education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
         };
         setPortfolio(transformedData);
+        
+        // Update local form data
+        setLocalFormData({
+          full_name: (data as any).full_name || '',
+          email: (data as any).email || '',
+          phone: (data as any).phone || '',
+          location: (data as any).location || '',
+          parsed_summary: data.parsed_summary || ''
+        });
       } else {
         // Create initial portfolio if none exists
         await createInitialPortfolio();
@@ -131,6 +149,15 @@ const Portfolio = () => {
       };
       
       setPortfolio(transformedData);
+      
+      // Update local form data
+      setLocalFormData({
+        full_name: (data as any).full_name || '',
+        email: (data as any).email || '',
+        phone: (data as any).phone || '',
+        location: (data as any).location || '',
+        parsed_summary: data.parsed_summary || ''
+      });
     } catch (error: any) {
       console.error('Error creating initial portfolio:', error);
     }
@@ -244,6 +271,15 @@ const Portfolio = () => {
       };
       
       setPortfolio(transformedData);
+      
+      // Update local form data
+      setLocalFormData({
+        full_name: (data as any).full_name || '',
+        email: (data as any).email || '',
+        phone: (data as any).phone || '',
+        location: (data as any).location || '',
+        parsed_summary: data.parsed_summary || ''
+      });
       toast({
         title: 'Success',
         description: 'Portfolio updated successfully!',
@@ -272,7 +308,31 @@ const Portfolio = () => {
     const updatedSkills = portfolio.skills.filter((_, i) => i !== index);
     updatePortfolio({ skills: updatedSkills });
   };
+  
+  // Debounced update function
+  const debouncedUpdate = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (updates: any) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          updatePortfolio(updates);
+        }, 1000); // 1 second delay
+      };
+    })(),
+    []
+  );
 
+  // Handle form field changes with local state
+  const handleFormChange = (field: string, value: string) => {
+    setLocalFormData(prev => ({ ...prev, [field]: value }));
+    debouncedUpdate({ [field]: value });
+  };
+
+  // Handle blur events for immediate save
+  const handleFieldBlur = (field: string, value: string) => {
+    updatePortfolio({ [field]: value });
+  };
   const addExperience = () => {
     if (!portfolio) return;
     
@@ -458,16 +518,18 @@ const Portfolio = () => {
                 <div>
                   <Label>Full Name</Label>
                   <Input
-                    value={portfolio?.full_name || ''}
-                    onChange={(e) => updatePortfolio({ full_name: e.target.value })}
+                    value={localFormData.full_name}
+                    onChange={(e) => handleFormChange('full_name', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('full_name', e.target.value)}
                     placeholder="John Doe"
                   />
                 </div>
                 <div>
                   <Label>Email</Label>
                   <Input
-                    value={portfolio?.email || ''}
-                    onChange={(e) => updatePortfolio({ email: e.target.value })}
+                    value={localFormData.email}
+                    onChange={(e) => handleFormChange('email', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('email', e.target.value)}
                     placeholder="john@example.com"
                     type="email"
                   />
@@ -477,16 +539,18 @@ const Portfolio = () => {
                 <div>
                   <Label>Phone</Label>
                   <Input
-                    value={portfolio?.phone || ''}
-                    onChange={(e) => updatePortfolio({ phone: e.target.value })}
+                    value={localFormData.phone}
+                    onChange={(e) => handleFormChange('phone', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('phone', e.target.value)}
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
                 <div>
                   <Label>Location</Label>
                   <Input
-                    value={portfolio?.location || ''}
-                    onChange={(e) => updatePortfolio({ location: e.target.value })}
+                    value={localFormData.location}
+                    onChange={(e) => handleFormChange('location', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('location', e.target.value)}
                     placeholder="New York, NY"
                   />
                 </div>
@@ -495,8 +559,9 @@ const Portfolio = () => {
                 <div>
                   <Label>Professional Summary</Label>
                   <Textarea
-                    value={portfolio?.parsed_summary || ''}
-                    onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
+                    value={localFormData.parsed_summary}
+                    onChange={(e) => handleFormChange('parsed_summary', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('parsed_summary', e.target.value)}
                     placeholder="Brief professional summary highlighting your key skills and experience..."
                     rows={3}
                   />
@@ -684,37 +749,37 @@ const Portfolio = () => {
                   {/* Header */}
                   <div className="text-center border-b-2 border-gray-800 pb-4">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {portfolio?.full_name || 'Your Name'}
+                      {localFormData.full_name || portfolio?.full_name || 'Your Name'}
                     </h1>
                     <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
-                      {portfolio?.email && (
+                      {(localFormData.email || portfolio?.email) && (
                         <div className="flex items-center gap-1">
                           <Mail className="w-4 h-4" />
-                          {portfolio.email}
+                          {localFormData.email || portfolio?.email}
                         </div>
                       )}
-                      {portfolio?.phone && (
+                      {(localFormData.phone || portfolio?.phone) && (
                         <div className="flex items-center gap-1">
                           <Phone className="w-4 h-4" />
-                          {portfolio.phone}
+                          {localFormData.phone || portfolio?.phone}
                         </div>
                       )}
-                      {portfolio?.location && (
+                      {(localFormData.location || portfolio?.location) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {portfolio.location}
+                          {localFormData.location || portfolio?.location}
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Professional Summary */}
-                  {portfolio?.parsed_summary && (
+                  {(localFormData.parsed_summary || portfolio?.parsed_summary) && (
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
                         PROFESSIONAL SUMMARY
                       </h2>
-                      <p className="text-gray-800 leading-relaxed">{portfolio.parsed_summary}</p>
+                      <p className="text-gray-800 leading-relaxed">{localFormData.parsed_summary || portfolio?.parsed_summary}</p>
                     </div>
                   )}
 
