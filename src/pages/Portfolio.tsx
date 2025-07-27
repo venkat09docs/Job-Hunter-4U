@@ -599,9 +599,15 @@ const Portfolio = () => {
               )}
 
               {portfolio?.parsed_summary && (
-                <div className="p-3 bg-primary/5 rounded border">
-                  <h4 className="font-medium text-sm mb-2">AI Summary</h4>
-                  <p className="text-sm text-muted-foreground">{portfolio.parsed_summary}</p>
+                <div className="p-3 bg-primary/5 rounded border space-y-2">
+                  <h4 className="font-medium text-sm mb-2">Professional Summary</h4>
+                  <Textarea
+                    value={portfolio.parsed_summary}
+                    onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
+                    placeholder="Professional summary..."
+                    rows={4}
+                    className="text-sm"
+                  />
                 </div>
               )}
             </CardContent>
