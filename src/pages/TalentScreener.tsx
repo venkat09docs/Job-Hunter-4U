@@ -56,10 +56,10 @@ const TalentScreener = () => {
 
   // Auto-populate name and email from profile
   useEffect(() => {
-    if (profile?.username && !formData.name) {
+    if (profile?.username) {
       setFormData(prev => ({ ...prev, name: profile.username }));
     }
-    if (user?.email && !formData.email) {
+    if (user?.email) {
       setFormData(prev => ({ ...prev, email: user.email }));
     }
   }, [profile?.username, user?.email]);
