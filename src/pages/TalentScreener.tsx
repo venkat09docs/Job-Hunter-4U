@@ -58,11 +58,14 @@ const TalentScreener = () => {
   useEffect(() => {
     if (profile?.username) {
       setFormData(prev => ({ ...prev, name: profile.username }));
+    } else if (profile?.full_name) {
+      // Fallback to full_name if username is not available
+      setFormData(prev => ({ ...prev, name: profile.full_name }));
     }
     if (user?.email) {
       setFormData(prev => ({ ...prev, email: user.email }));
     }
-  }, [profile?.username, user?.email]);
+  }, [profile?.username, profile?.full_name, user?.email]);
 
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
