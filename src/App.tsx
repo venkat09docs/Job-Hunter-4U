@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import PublicProfile from "./pages/PublicProfile";
+import Portfolio from "./pages/Portfolio";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/portfolio" 
+              element={
+                <ProtectedRoute>
+                  <Portfolio />
                 </ProtectedRoute>
               } 
             />

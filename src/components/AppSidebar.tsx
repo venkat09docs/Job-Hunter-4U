@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
+  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];

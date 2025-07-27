@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      portfolios: {
+        Row: {
+          created_at: string
+          education: Json | null
+          experience: Json | null
+          id: string
+          parsed_summary: string | null
+          resume_url: string | null
+          skills: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          education?: Json | null
+          experience?: Json | null
+          id?: string
+          parsed_summary?: string | null
+          resume_url?: string | null
+          skills?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          education?: Json | null
+          experience?: Json | null
+          id?: string
+          parsed_summary?: string | null
+          resume_url?: string | null
+          skills?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
