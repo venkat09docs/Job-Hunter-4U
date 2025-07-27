@@ -77,23 +77,49 @@ const TalentScreener = () => {
   // Function to extract text from PDF using PDF.js
   const extractTextFromPDF = async (file: File): Promise<string> => {
     try {
+      console.log('Starting PDF text extraction for file:', file.name, 'Size:', file.size);
+      
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
+      
+      const pdf = await pdfjsLib.getDocument({ 
+        data: arrayBuffer
+      }).promise;
+      
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
       
       let fullText = '';
       
       // Extract text from each page
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        console.log(`Processing page ${pageNum}/${pdf.numPages}`);
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
         const pageText = textContent.items.map((item: any) => item.str).join(' ');
         fullText += pageText + ' ';
+        console.log(`Page ${pageNum} text length:`, pageText.length);
       }
       
+      console.log('Total extracted text length:', fullText.trim().length);
       return fullText.trim();
     } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      throw new Error('Failed to extract text from PDF. Please ensure the PDF is readable.');
+      console.error('Detailed PDF extraction error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', (error as Error)?.message);
+      console.error('Error stack:', (error as Error)?.stack);
+      
+      // Try to provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid PDF')) {
+          throw new Error('The uploaded file appears to be corrupted or is not a valid PDF format.');
+        } else if (error.message.includes('Password')) {
+          throw new Error('This PDF is password protected. Please upload an unprotected PDF.');
+        } else if (error.message.includes('network')) {
+          throw new Error('Network issue while processing PDF. Please try again.');
+        }
+      }
+      
+      throw new Error(`Failed to extract text from PDF: ${(error as Error)?.message || 'Unknown error'}. Please ensure the PDF contains readable text and is not password protected.`);
     }
   };
 
