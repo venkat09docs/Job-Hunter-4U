@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +55,16 @@ const TalentScreener = () => {
     jobDescription: ""
   });
 
+  // Auto-populate name and email from profile
+  useEffect(() => {
+    if (profile?.full_name && !formData.name) {
+      setFormData(prev => ({ ...prev, name: profile.full_name }));
+    }
+    if (user?.email && !formData.email) {
+      setFormData(prev => ({ ...prev, email: user.email }));
+    }
+  }, [profile?.full_name, user?.email]);
+
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
 
@@ -90,7 +100,7 @@ const TalentScreener = () => {
     if (!formData.name || !formData.email || !formData.linkedinUrl || !formData.jobDescription) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in all required fields",
+        description: "Please fill in Name, Email, LinkedIn URL, and Job Description",
         variant: "destructive",
       });
       return;
@@ -122,11 +132,10 @@ const TalentScreener = () => {
 
       setUploading(false);
 
-      // Call n8n webhook with the required payload
+      // Call n8n webhook with the required payload (without phone)
       const webhookPayload = {
         Name: formData.name,
         Email: formData.email,
-        Phone: formData.phone,
         "Job Openings": formData.jobOpenings,
         "LinkedIn Profile URL": formData.linkedinUrl,
         Resume: publicUrl,
@@ -242,7 +251,7 @@ const TalentScreener = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">Phone (Optional)</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
