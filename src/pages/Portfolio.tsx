@@ -56,7 +56,7 @@ const Portfolio = () => {
     full_name: '',
     email: '',
     phone: '',
-    location: '',
+    linkedin_profile: '',
     parsed_summary: ''
   });
   
@@ -103,7 +103,7 @@ const Portfolio = () => {
           full_name: (data as any).full_name || '',
           email: (data as any).email || '',
           phone: (data as any).phone || '',
-          location: (data as any).location || '',
+          linkedin_profile: (data as any).location || '', // Keep existing data in linkedin field for now
           parsed_summary: data.parsed_summary || ''
         });
         
@@ -137,7 +137,7 @@ const Portfolio = () => {
           full_name: user?.email?.split('@')[0] || '',
           email: user?.email || '',
           phone: '',
-          location: '',
+          location: '', // This will be used for linkedin_profile temporarily
           skills: [],
           experience: [],
           education: []
@@ -165,7 +165,7 @@ const Portfolio = () => {
         full_name: (data as any).full_name || '',
         email: (data as any).email || '',
         phone: (data as any).phone || '',
-        location: (data as any).location || '',
+        linkedin_profile: '',
         parsed_summary: data.parsed_summary || ''
       });
       
@@ -258,7 +258,7 @@ const Portfolio = () => {
     full_name: string;
     email: string;
     phone: string;
-    location: string;
+    linkedin_profile: string;
   }>) => {
     if (!portfolio || !user) return;
 
@@ -291,7 +291,7 @@ const Portfolio = () => {
         full_name: (data as any).full_name || '',
         email: (data as any).email || '',
         phone: (data as any).phone || '',
-        location: (data as any).location || '',
+        linkedin_profile: (data as any).location || '',
         parsed_summary: data.parsed_summary || ''
       });
       
@@ -522,12 +522,6 @@ const Portfolio = () => {
         <div className="lg:w-1/2 space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">My Portfolio</h1>
-            {portfolio && (
-              <Button onClick={downloadPDF} variant="outline">
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
-              </Button>
-            )}
           </div>
 
           {/* Resume Upload */}
@@ -624,12 +618,12 @@ const Portfolio = () => {
                   />
                 </div>
                 <div>
-                  <Label>Location</Label>
+                  <Label>LinkedIn Profile</Label>
                   <Input
-                    value={localFormData.location}
-                    onChange={(e) => handleFormChange('location', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('location', e.target.value)}
-                    placeholder="New York, NY"
+                    value={localFormData.linkedin_profile}
+                    onChange={(e) => handleFormChange('linkedin_profile', e.target.value)}
+                    onBlur={(e) => handleFieldBlur('linkedin_profile', e.target.value)}
+                    placeholder="https://linkedin.com/in/yourprofile"
                   />
                 </div>
               </div>
@@ -842,7 +836,15 @@ const Portfolio = () => {
           <div className="sticky top-8">
             <Card>
               <CardHeader>
-                <CardTitle>ATS Resume Preview</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  Resume Preview
+                  {portfolio && (
+                    <Button onClick={downloadPDF} variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download PDF
+                    </Button>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div id="resume-preview" className="bg-white text-black p-8 space-y-6 min-h-[800px]">
@@ -864,10 +866,10 @@ const Portfolio = () => {
                           {localFormData.phone || portfolio?.phone}
                         </div>
                       )}
-                      {(localFormData.location || portfolio?.location) && (
+                      {(localFormData.linkedin_profile || portfolio?.location) && (
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {localFormData.location || portfolio?.location}
+                          {localFormData.linkedin_profile || portfolio?.location}
                         </div>
                       )}
                     </div>
