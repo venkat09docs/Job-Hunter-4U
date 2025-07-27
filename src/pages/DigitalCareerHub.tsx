@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAITools } from '@/hooks/useAITools';
 import { useProfile } from '@/hooks/useProfile';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { ToolChatSidebar } from '@/components/ToolChatSidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -220,8 +221,20 @@ const DigitalCareerHub = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 min-h-0 relative">
-            {selectedTool && renderEmbedCode(selectedTool.embed_code)}
+          <div className="flex-1 min-h-0 flex">
+            {/* Chat Sidebar */}
+            {selectedTool && (
+              <ToolChatSidebar
+                toolId={selectedTool.id}
+                currentMessages={[]}
+                onLoadChat={() => {}}
+              />
+            )}
+            
+            {/* Tool Content */}
+            <div className="flex-1 min-h-0 relative">
+              {selectedTool && renderEmbedCode(selectedTool.embed_code)}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
