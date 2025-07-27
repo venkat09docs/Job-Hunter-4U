@@ -487,115 +487,187 @@ const Portfolio = () => {
       });
 
       const pageWidth = 210;
-      const margin = 15;
+      const pageHeight = 297;
+      const margin = 20;
       const contentWidth = pageWidth - (2 * margin);
       let yPosition = margin;
 
-      // Helper function to add text with proper wrapping
-      const addText = (text: string, fontSize: number, fontStyle: 'normal' | 'bold' = 'normal', color: string = '#000000') => {
-        pdf.setFontSize(fontSize);
-        pdf.setFont('helvetica', fontStyle);
-        pdf.setTextColor(color);
-        
-        const lines = pdf.splitTextToSize(text, contentWidth);
-        const lineHeight = fontSize * 0.4;
-        
-        // Check if we need a new page
-        if (yPosition + (lines.length * lineHeight) > 280) {
+      // Helper function to check if we need a new page
+      const checkNewPage = (requiredSpace: number) => {
+        if (yPosition + requiredSpace > pageHeight - margin) {
           pdf.addPage();
           yPosition = margin;
+          return true;
         }
+        return false;
+      };
+
+      // Helper function to add text with proper ATS formatting
+      const addText = (text: string, fontSize: number, fontStyle: 'normal' | 'bold' = 'normal', align: 'left' | 'center' = 'left') => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', fontStyle);
+        pdf.setTextColor(0, 0, 0); // Always black for ATS
+        
+        const lines = pdf.splitTextToSize(text, contentWidth);
+        const lineHeight = fontSize * 0.35; // Tighter line spacing for ATS
+        
+        checkNewPage(lines.length * lineHeight);
         
         lines.forEach((line: string) => {
-          pdf.text(line, margin, yPosition);
+          if (align === 'center') {
+            const textWidth = pdf.getTextWidth(line);
+            const xPosition = (pageWidth - textWidth) / 2;
+            pdf.text(line, xPosition, yPosition);
+          } else {
+            pdf.text(line, margin, yPosition);
+          }
           yPosition += lineHeight;
         });
         
         return yPosition;
       };
 
-      // Add some spacing
-      const addSpacing = (amount: number) => {
-        yPosition += amount;
-        if (yPosition > 280) {
-          pdf.addPage();
-          yPosition = margin;
-        }
+      // Add section separator
+      const addSectionSeparator = () => {
+        yPosition += 4;
       };
 
-      // Header - Name and Contact Info
-      addText(portfolio.full_name || 'Your Name', 20, 'bold', '#2563eb');
-      addSpacing(3);
+      // Add bullet point
+      const addBulletPoint = (text: string, fontSize: number = 10) => {
+        const bulletX = margin + 5;
+        const textX = margin + 10;
+        
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        
+        const lines = pdf.splitTextToSize(text, contentWidth - 10);
+        const lineHeight = fontSize * 0.35;
+        
+        checkNewPage(lines.length * lineHeight);
+        
+        // Add bullet
+        pdf.text('•', bulletX, yPosition);
+        
+        // Add text
+        lines.forEach((line: string, index: number) => {
+          pdf.text(line, textX, yPosition);
+          yPosition += lineHeight;
+        });
+      };
 
-      if (portfolio.email) {
-        addText(`Email: ${portfolio.email}`, 11);
-      }
-      if (portfolio.phone) {
-        addText(`Phone: ${portfolio.phone}`, 11);
-      }
-      if (localFormData.linkedin_profile) {
-        addText(`LinkedIn: ${localFormData.linkedin_profile}`, 11);
+      // HEADER SECTION - Name and Contact (ATS Standard)
+      addText(portfolio.full_name || 'Your Name', 16, 'bold', 'center');
+      yPosition += 2;
+
+      // Contact information in a single line for ATS
+      const contactInfo = [];
+      if (portfolio.email) contactInfo.push(portfolio.email);
+      if (portfolio.phone) contactInfo.push(portfolio.phone);
+      if (localFormData.linkedin_profile) contactInfo.push(localFormData.linkedin_profile);
+      
+      if (contactInfo.length > 0) {
+        addText(contactInfo.join(' | '), 10, 'normal', 'center');
       }
       
-      addSpacing(8);
+      addSectionSeparator();
 
-      // Professional Summary
+      // PROFESSIONAL SUMMARY (if available)
       if (portfolio.parsed_summary) {
-        addText('PROFESSIONAL SUMMARY', 14, 'bold', '#1f2937');
-        addSpacing(3);
-        addText(portfolio.parsed_summary, 11);
-        addSpacing(8);
+        addText('PROFESSIONAL SUMMARY', 12, 'bold');
+        yPosition += 2;
+        addText(portfolio.parsed_summary, 10);
+        addSectionSeparator();
       }
 
-      // Skills
+      // CORE COMPETENCIES / SKILLS (ATS prefers this format)
       if (portfolio.skills && portfolio.skills.length > 0) {
-        addText('SKILLS', 14, 'bold', '#1f2937');
-        addSpacing(3);
-        const skillsText = portfolio.skills.join(' • ');
-        addText(skillsText, 11);
-        addSpacing(8);
+        addText('CORE COMPETENCIES', 12, 'bold');
+        yPosition += 2;
+        
+        // Group skills in lines of 3-4 for better ATS reading
+        const skillsPerLine = 3;
+        for (let i = 0; i < portfolio.skills.length; i += skillsPerLine) {
+          const skillGroup = portfolio.skills.slice(i, i + skillsPerLine);
+          addText(skillGroup.join(' • '), 10);
+        }
+        addSectionSeparator();
       }
 
-      // Experience
+      // PROFESSIONAL EXPERIENCE (ATS Standard Format)
       if (portfolio.experience && portfolio.experience.length > 0) {
-        addText('PROFESSIONAL EXPERIENCE', 14, 'bold', '#1f2937');
-        addSpacing(3);
+        addText('PROFESSIONAL EXPERIENCE', 12, 'bold');
+        yPosition += 2;
 
         portfolio.experience.forEach((exp, index) => {
           if (exp.title || exp.company) {
-            addText(`${exp.title}${exp.company ? ` at ${exp.company}` : ''}`, 12, 'bold');
-            if (exp.duration) {
-              addText(exp.duration, 10, 'normal', '#6b7280');
+            // Job Title (Bold)
+            if (exp.title) {
+              addText(exp.title, 11, 'bold');
             }
+            
+            // Company and Duration (same line, ATS format)
+            const companyDuration = [];
+            if (exp.company) companyDuration.push(exp.company);
+            if (exp.duration) companyDuration.push(exp.duration);
+            
+            if (companyDuration.length > 0) {
+              addText(companyDuration.join(' | '), 10);
+            }
+            
+            yPosition += 1;
+            
+            // Job Description as bullet points (ATS prefers this)
             if (exp.description) {
-              addSpacing(2);
-              addText(exp.description, 11);
+              const descriptions = exp.description.split(/[•\n]/).filter(desc => desc.trim());
+              if (descriptions.length > 1) {
+                descriptions.forEach(desc => {
+                  if (desc.trim()) {
+                    addBulletPoint(desc.trim(), 10);
+                  }
+                });
+              } else {
+                addBulletPoint(exp.description, 10);
+              }
             }
+            
             if (index < portfolio.experience.length - 1) {
-              addSpacing(6);
+              yPosition += 3;
             }
           }
         });
-        addSpacing(8);
+        addSectionSeparator();
       }
 
-      // Education
+      // EDUCATION (ATS Standard Format)
       if (portfolio.education && portfolio.education.length > 0) {
-        addText('EDUCATION', 14, 'bold', '#1f2937');
-        addSpacing(3);
+        addText('EDUCATION', 12, 'bold');
+        yPosition += 2;
 
         portfolio.education.forEach((edu, index) => {
           if (edu.degree || edu.institution) {
-            addText(`${edu.degree}${edu.institution ? ` - ${edu.institution}` : ''}`, 12, 'bold');
-            if (edu.year) {
-              addText(edu.year, 10, 'normal', '#6b7280');
+            // Degree (Bold)
+            if (edu.degree) {
+              addText(edu.degree, 11, 'bold');
             }
+            
+            // Institution and Year
+            const institutionYear = [];
+            if (edu.institution) institutionYear.push(edu.institution);
+            if (edu.year) institutionYear.push(edu.year);
+            
+            if (institutionYear.length > 0) {
+              addText(institutionYear.join(' | '), 10);
+            }
+            
+            // Education Description
             if (edu.description) {
-              addSpacing(2);
-              addText(edu.description, 11);
+              yPosition += 1;
+              addText(edu.description, 10);
             }
+            
             if (index < portfolio.education.length - 1) {
-              addSpacing(6);
+              yPosition += 3;
             }
           }
         });
@@ -606,7 +678,7 @@ const Portfolio = () => {
       
       toast({
         title: 'Success',
-        description: 'Resume downloaded successfully! Text is now selectable and copyable.',
+        description: 'ATS-friendly resume downloaded successfully!',
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
