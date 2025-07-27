@@ -485,11 +485,27 @@ const Portfolio = () => {
       const clonedElement = element.cloneNode(true) as HTMLElement;
       clonedElement.style.width = '210mm';
       clonedElement.style.maxWidth = '210mm';
-      clonedElement.style.padding = '10mm';
-      clonedElement.style.fontSize = '10pt';
-      clonedElement.style.lineHeight = '1.4';
+      clonedElement.style.padding = '12mm';
       clonedElement.style.backgroundColor = '#ffffff';
       clonedElement.style.color = '#000000';
+      
+      // Apply ATS-friendly font sizes
+      const nameEl = clonedElement.querySelector('h1');
+      if (nameEl) nameEl.style.fontSize = '18pt';
+      
+      const headings = clonedElement.querySelectorAll('h2');
+      headings.forEach(h => h.style.fontSize = '14pt');
+      
+      const subheadings = clonedElement.querySelectorAll('h3');
+      subheadings.forEach(h => h.style.fontSize = '12pt');
+      
+      const bodyText = clonedElement.querySelectorAll('p, span, div:not(h1):not(h2):not(h3)');
+      bodyText.forEach(el => {
+        if (el.tagName !== 'H1' && el.tagName !== 'H2' && el.tagName !== 'H3') {
+          (el as HTMLElement).style.fontSize = '11pt';
+          (el as HTMLElement).style.lineHeight = '1.5';
+        }
+      });
       
       // Add CSS for better page breaks
       const style = document.createElement('style');
@@ -745,18 +761,6 @@ const Portfolio = () => {
                         </div>
                       )}
 
-                      {portfolio?.parsed_summary && (
-                        <div className="p-3 bg-primary/5 rounded border space-y-2">
-                          <h4 className="font-medium text-sm mb-2">Professional Summary</h4>
-                          <Textarea
-                            value={portfolio.parsed_summary}
-                            onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
-                            placeholder="Professional summary..."
-                            rows={4}
-                            className="text-sm"
-                          />
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
 
@@ -824,6 +828,27 @@ const Portfolio = () => {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Professional Summary Section */}
+                  {portfolio?.parsed_summary && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Edit3 className="w-5 h-5" />
+                          Professional Summary
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Textarea
+                          value={portfolio.parsed_summary}
+                          onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
+                          placeholder="Brief professional summary highlighting your key skills and experience..."
+                          rows={4}
+                          className="text-sm"
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Skills Section */}
                   <Card>
