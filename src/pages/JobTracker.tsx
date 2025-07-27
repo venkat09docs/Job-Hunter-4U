@@ -350,30 +350,30 @@ const JobTracker = () => {
               </Card>
 
               {/* Integrated Kanban Board with Pipeline */}
-              <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3 lg:gap-4">
                 {getVisibleStatusOptions().map(status => {
                   const statusJobs = filteredJobs.filter(job => job.status === status);
                   const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
                   
                   return (
-                    <div key={status} className="flex flex-col h-full min-w-[280px] md:min-w-[320px]">
+                    <div key={status} className="flex flex-col h-full">
                       {/* Pipeline Header */}
-                      <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-3 mb-3`}>
+                      <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-2 md:p-3 mb-2 md:mb-3`}>
                         <div className="text-center">
-                          <div className="text-xl md:text-2xl font-bold">{count}</div>
-                          <div className="text-xs md:text-sm font-medium truncate">
+                          <div className="text-lg md:text-xl lg:text-2xl font-bold">{count}</div>
+                          <div className="text-xs md:text-sm font-medium leading-tight">
                             {statusLabels[status as keyof typeof statusLabels]}
                           </div>
                         </div>
                       </div>
                       
                       {/* Board Column */}
-                      <div className="flex-1 space-y-3 min-h-[250px] md:min-h-[300px] p-3 md:p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+                      <div className="flex-1 space-y-2 md:space-y-3 min-h-[200px] md:min-h-[250px] lg:min-h-[300px] p-2 md:p-3 lg:p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
                         {statusJobs.map(job => (
                           <Card key={job.id} className="p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
-                            <div className="space-y-2">
+                            <div className="space-y-1 md:space-y-2">
                               <div className="font-medium text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-                              <div className="text-xs md:text-sm text-muted-foreground line-clamp-2">{job.job_title}</div>
+                              <div className="text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
                               <div className="text-xs text-muted-foreground">
                                 {new Date(job.application_date).toLocaleDateString()}
                               </div>
@@ -383,12 +383,12 @@ const JobTracker = () => {
                               {job.salary_range && (
                                 <div className="text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
                               )}
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
+                              <div className="flex flex-col gap-2 pt-1 md:pt-2">
                                 <Select 
                                   value={job.status} 
                                   onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
                                 >
-                                  <SelectTrigger className="h-7 md:h-8 text-xs w-full sm:w-auto">
+                                  <SelectTrigger className="h-6 md:h-7 lg:h-8 text-xs w-full">
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
@@ -399,15 +399,15 @@ const JobTracker = () => {
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <div className="flex items-center gap-1 justify-end">
-                                  <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-7 w-7 p-0">
+                                <div className="flex items-center gap-1 justify-center">
+                                  <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-6 w-6 md:h-7 md:w-7 p-0">
                                     <Edit className="h-3 w-3" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-7 w-7 p-0">
+                                  <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-6 w-6 md:h-7 md:w-7 p-0">
                                     <Archive className="h-3 w-3" />
                                   </Button>
                                   {showArchived && (
-                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-7 w-7 p-0">
+                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-6 w-6 md:h-7 md:w-7 p-0">
                                       <Trash2 className="h-3 w-3" />
                                     </Button>
                                   )}
@@ -417,7 +417,7 @@ const JobTracker = () => {
                           </Card>
                         ))}
                         {statusJobs.length === 0 && (
-                          <div className="text-center text-muted-foreground text-xs md:text-sm py-6 md:py-8">
+                          <div className="text-center text-muted-foreground text-xs md:text-sm py-4 md:py-6 lg:py-8">
                             No applications
                           </div>
                         )}
