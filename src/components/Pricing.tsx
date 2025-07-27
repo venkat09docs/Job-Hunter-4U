@@ -187,7 +187,7 @@ const Pricing = () => {
   };
 
   return (
-    <section className="py-20">
+    <section id="pricing" className="py-20">
       <div className="container px-4">
         {/* Header */}
         <div className="text-center space-y-4 mb-16">

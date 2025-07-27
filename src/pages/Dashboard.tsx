@@ -1,13 +1,18 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User, Briefcase, Target, TrendingUp } from 'lucide-react';
+import { LogOut, User, Briefcase, Target, TrendingUp, Coins, CreditCard, Eye, Search, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import ActivityChart from '@/components/ActivityChart';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const { profile, analytics, loading, incrementAnalytics } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
@@ -25,6 +30,38 @@ const Dashboard = () => {
     }
   };
 
+  const handleBuyTokens = () => {
+    navigate('/');
+    // Scroll to pricing section
+    setTimeout(() => {
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  const handleDemoAction = async (actionType: 'resume_open' | 'job_search' | 'ai_query') => {
+    await incrementAnalytics(actionType);
+    toast({
+      title: 'Activity recorded',
+      description: `${actionType.replace('_', ' ')} has been logged!`,
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
@@ -37,7 +74,7 @@ const Dashboard = () => {
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="text-sm text-muted-foreground">
-                {user?.email}
+                {profile?.full_name || user?.email}
               </span>
             </div>
             <Button onClick={handleSignOut} variant="outline" size="sm">
@@ -50,11 +87,47 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome back!</h2>
+          <h2 className="text-3xl font-bold mb-2">
+            Welcome back, {profile?.full_name || 'Job Hunter'}!
+          </h2>
           <p className="text-muted-foreground">
-            Here's your job hunting dashboard. Track your progress and manage your applications.
+            Here's your personalized dashboard. Track your progress and manage your job search.
           </p>
+        </div>
+
+        {/* Tokens Section */}
+        <div className="mb-8">
+          <Card className="shadow-elegant border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">Remaining Tokens</CardTitle>
+                </div>
+                <Badge variant="secondary" className="text-lg px-3 py-1">
+                  {profile?.tokens_remaining || 0}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Use tokens for premium features like AI resume optimization and job matching
+                </p>
+                <Button 
+                  onClick={handleBuyTokens}
+                  variant="premium" 
+                  size="sm"
+                  className="gap-2"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Buy More Tokens
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Stats Cards */}
@@ -62,47 +135,73 @@ const Dashboard = () => {
           <Card className="shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Applications
+                Total Resume Opens
               </CardTitle>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">
-                +2 from last week
+              <div className="text-2xl font-bold">{profile?.total_resume_opens || 0}</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Times your resume was viewed
               </p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => handleDemoAction('resume_open')}
+              >
+                Demo: Track Resume View
+              </Button>
             </CardContent>
           </Card>
 
           <Card className="shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Interviews Scheduled
+                Job Searches
               </CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
+              <Search className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-muted-foreground">
-                Next one tomorrow
+              <div className="text-2xl font-bold">{profile?.total_job_searches || 0}</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Searches performed
               </p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => handleDemoAction('job_search')}
+              >
+                Demo: Track Job Search
+              </Button>
             </CardContent>
           </Card>
 
           <Card className="shadow-elegant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Response Rate
+                AI Queries
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <Bot className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">24%</div>
-              <p className="text-xs text-muted-foreground">
-                +5% from last month
+              <div className="text-2xl font-bold">{profile?.total_ai_queries || 0}</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                AI assistance requests
               </p>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => handleDemoAction('ai_query')}
+              >
+                Demo: Track AI Query
+              </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Activity Chart */}
+        <div className="mb-8">
+          <ActivityChart analytics={analytics} />
         </div>
 
         {/* Recent Applications */}
