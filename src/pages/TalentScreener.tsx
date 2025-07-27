@@ -16,6 +16,8 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
+// @ts-ignore - pdf-parse doesn't have proper TypeScript definitions
+import * as pdfParse from 'pdf-parse';
 
 interface ParsedResults {
   summary: string;
@@ -70,6 +72,18 @@ const TalentScreener = () => {
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
 
+  // Function to extract text from PDF
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const data = await pdfParse(arrayBuffer);
+      return data.text;
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error('Failed to extract text from PDF. Please ensure the PDF is readable.');
+    }
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -117,7 +131,15 @@ const TalentScreener = () => {
     setParsing(true);
 
     try {
-      // Upload file to Supabase Storage
+      // Extract text from PDF first
+      console.log('Extracting text from PDF...');
+      const resumeText = await extractTextFromPDF(selectedFile);
+      
+      if (!resumeText || resumeText.trim().length === 0) {
+        throw new Error('No text could be extracted from the PDF. Please ensure the PDF contains readable text.');
+      }
+
+      // Upload file to Supabase Storage (keeping for backup/reference)
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}/resume-${Date.now()}.${fileExt}`;
 
@@ -127,20 +149,21 @@ const TalentScreener = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL for reference
       const { data: { publicUrl } } = supabase.storage
         .from('resumes')
         .getPublicUrl(fileName);
 
       setUploading(false);
 
-      // Call n8n webhook with the required payload (without phone)
+      // Call n8n webhook with text-based resume content
       const webhookPayload = {
         Name: formData.name,
         Email: formData.email,
         "Job Openings": formData.jobOpenings,
         "LinkedIn Profile URL": formData.linkedinUrl,
-        Resume: publicUrl,
+        Resume: resumeText, // Send extracted text instead of URL
+        "Resume URL": publicUrl, // Keep URL as backup reference
         "Job Description": formData.jobDescription
       };
 
