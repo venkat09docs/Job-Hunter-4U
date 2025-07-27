@@ -287,55 +287,46 @@ const JobTracker = () => {
         </CardContent>
       </Card>
 
-      {/* Status Pipeline */}
-      {!showArchived && <Card>
-          <CardHeader>
-            <CardTitle>Application Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {statusOptions.map(status => {
-            const count = getStatusCounts()[status] || 0;
-            return <div key={status} className="text-center">
-                    <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-lg p-3 mb-2`}>
-                      <div className="text-2xl font-bold">{count}</div>
-                    </div>
-                    <div className="text-sm font-medium text-foreground">
-                      {statusLabels[status as keyof typeof statusLabels]}
-                    </div>
-                  </div>;
-          })}
-            </div>
-          </CardContent>
-        </Card>}
-
-      {/* Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* Integrated Kanban Board with Pipeline */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
         {statusOptions.map(status => {
           const statusJobs = filteredJobs.filter(job => job.status === status);
+          const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
+          
           return (
-            <div key={status} className="space-y-3">
-              <div className="space-y-3 min-h-[300px] p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+            <div key={status} className="flex flex-col h-full">
+              {/* Pipeline Header */}
+              <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-3 mb-3`}>
+                <div className="text-center">
+                  <div className="text-xl md:text-2xl font-bold">{count}</div>
+                  <div className="text-xs md:text-sm font-medium truncate">
+                    {statusLabels[status as keyof typeof statusLabels]}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Board Column */}
+              <div className="flex-1 space-y-3 min-h-[250px] md:min-h-[300px] p-3 md:p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
                 {statusJobs.map(job => (
-                  <Card key={job.id} className="p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
+                  <Card key={job.id} className="p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
                     <div className="space-y-2">
-                      <div className="font-medium text-sm">{job.company_name}</div>
-                      <div className="text-sm text-muted-foreground">{job.job_title}</div>
+                      <div className="font-medium text-xs md:text-sm line-clamp-2">{job.company_name}</div>
+                      <div className="text-xs md:text-sm text-muted-foreground line-clamp-2">{job.job_title}</div>
                       <div className="text-xs text-muted-foreground">
                         {new Date(job.application_date).toLocaleDateString()}
                       </div>
                       {job.location && (
-                        <div className="text-xs text-muted-foreground">📍 {job.location}</div>
+                        <div className="text-xs text-muted-foreground truncate">📍 {job.location}</div>
                       )}
                       {job.salary_range && (
-                        <div className="text-xs text-muted-foreground">💰 {job.salary_range}</div>
+                        <div className="text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
                       )}
-                      <div className="flex items-center justify-between pt-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
                         <Select 
                           value={job.status} 
                           onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
                         >
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-7 md:h-8 text-xs w-full sm:w-auto">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -346,15 +337,15 @@ const JobTracker = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)}>
+                        <div className="flex items-center gap-1 justify-end">
+                          <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-7 w-7 p-0">
                             <Edit className="h-3 w-3" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-7 w-7 p-0">
                             <Archive className="h-3 w-3" />
                           </Button>
                           {showArchived && (
-                            <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-7 w-7 p-0">
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           )}
@@ -364,7 +355,7 @@ const JobTracker = () => {
                   </Card>
                 ))}
                 {statusJobs.length === 0 && (
-                  <div className="text-center text-muted-foreground text-sm py-8">
+                  <div className="text-center text-muted-foreground text-xs md:text-sm py-6 md:py-8">
                     No applications
                   </div>
                 )}
