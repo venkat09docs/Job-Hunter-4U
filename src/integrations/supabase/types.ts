@@ -48,6 +48,7 @@ export type Database = {
           credit_points: number
           embed_code: string
           id: string
+          image_url: string | null
           is_active: boolean
           tool_description: string | null
           tool_name: string
@@ -59,6 +60,7 @@ export type Database = {
           credit_points?: number
           embed_code: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           tool_description?: string | null
           tool_name: string
@@ -70,6 +72,7 @@ export type Database = {
           credit_points?: number
           embed_code?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean
           tool_description?: string | null
           tool_name?: string
