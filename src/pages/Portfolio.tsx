@@ -481,15 +481,56 @@ const Portfolio = () => {
     if (!element) return;
 
     try {
-      const canvas = await html2canvas(element, {
+      // Clone the element to avoid affecting the original
+      const clonedElement = element.cloneNode(true) as HTMLElement;
+      clonedElement.style.width = '210mm';
+      clonedElement.style.maxWidth = '210mm';
+      clonedElement.style.padding = '10mm';
+      clonedElement.style.fontSize = '10pt';
+      clonedElement.style.lineHeight = '1.4';
+      clonedElement.style.backgroundColor = '#ffffff';
+      clonedElement.style.color = '#000000';
+      
+      // Add CSS for better page breaks
+      const style = document.createElement('style');
+      style.textContent = `
+        @media print {
+          .resume-section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .resume-item {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 8px;
+          }
+          h1, h2, h3 {
+            break-after: avoid;
+            page-break-after: avoid;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Temporarily add to document for rendering
+      clonedElement.style.position = 'absolute';
+      clonedElement.style.left = '-9999px';
+      clonedElement.style.top = '0';
+      document.body.appendChild(clonedElement);
+
+      const canvas = await html2canvas(clonedElement, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: element.scrollWidth,
-        height: element.scrollHeight
+        width: clonedElement.scrollWidth,
+        height: clonedElement.scrollHeight
       });
+      
+      // Clean up
+      document.body.removeChild(clonedElement);
+      document.head.removeChild(style);
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -497,24 +538,53 @@ const Portfolio = () => {
         format: 'a4'
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 10;
+      const contentWidth = pageWidth - (2 * margin);
+      const contentHeight = pageHeight - (2 * margin);
       
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add additional pages for overflow content
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Calculate how many pages we need
+      const pagesNeeded = Math.ceil(imgHeight / contentHeight);
+      
+      for (let i = 0; i < pagesNeeded; i++) {
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        // Calculate the portion of the image for this page
+        const sourceY = (i * contentHeight * canvas.width) / imgWidth;
+        const sourceHeight = Math.min(
+          (contentHeight * canvas.width) / imgWidth,
+          canvas.height - sourceY
+        );
+        
+        if (sourceHeight > 0) {
+          // Create canvas for this page
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sourceHeight;
+          const ctx = pageCanvas.getContext('2d');
+          
+          if (ctx) {
+            // Draw the portion of the original canvas
+            ctx.drawImage(
+              canvas,
+              0, sourceY,
+              canvas.width, sourceHeight,
+              0, 0,
+              canvas.width, sourceHeight
+            );
+            
+            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+            const actualHeight = (sourceHeight * imgWidth) / canvas.width;
+            
+            pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, actualHeight);
+          }
+        }
       }
       
       pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
@@ -962,7 +1032,7 @@ const Portfolio = () => {
                       <CardContent>
                         <div id="resume-preview" className="bg-white text-black p-6 space-y-4 min-h-[800px]">
                           {/* Header */}
-                          <div className="text-center border-b-2 border-gray-800 pb-3">
+                          <div className="text-center border-b-2 border-gray-800 pb-3 resume-section">
                             <h1 className="text-xl font-bold text-gray-900 mb-1">
                               {localFormData.full_name || portfolio?.full_name || 'Your Name'}
                             </h1>
@@ -985,9 +1055,9 @@ const Portfolio = () => {
                             </div>
                           </div>
 
-                          {/* Professional Summary */}
+                          {/* Professional Summary - Moved after Personal Information */}
                           {(localFormData.parsed_summary || portfolio?.parsed_summary) && (
-                            <div>
+                            <div className="resume-section">
                               <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                                 PROFESSIONAL SUMMARY
                               </h2>
@@ -997,7 +1067,7 @@ const Portfolio = () => {
 
                           {/* Skills */}
                           {portfolio?.skills && portfolio.skills.length > 0 && (
-                            <div>
+                            <div className="resume-section">
                               <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                                 TECHNICAL SKILLS
                               </h2>
@@ -1009,13 +1079,13 @@ const Portfolio = () => {
 
                           {/* Experience */}
                           {localExperience && localExperience.length > 0 && (
-                            <div>
+                            <div className="resume-section">
                               <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                                 PROFESSIONAL EXPERIENCE
                               </h2>
                               <div className="space-y-3">
                                 {localExperience.map((exp, index) => (
-                                  <div key={index}>
+                                  <div key={index} className="resume-item">
                                     <div className="flex justify-between items-start mb-1">
                                       <h3 className="text-xs font-semibold text-gray-900">{exp.title}</h3>
                                       <span className="text-xs text-gray-700">{exp.duration}</span>
@@ -1032,13 +1102,13 @@ const Portfolio = () => {
 
                           {/* Education */}
                           {localEducation && localEducation.length > 0 && (
-                            <div>
+                            <div className="resume-section">
                               <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                                 EDUCATION
                               </h2>
                               <div className="space-y-2">
                                 {localEducation.map((edu, index) => (
-                                  <div key={index}>
+                                  <div key={index} className="resume-item">
                                     <div className="flex justify-between items-start mb-1">
                                       <h3 className="text-xs font-semibold text-gray-900">{edu.degree}</h3>
                                       <span className="text-xs text-gray-700">{edu.year}</span>
