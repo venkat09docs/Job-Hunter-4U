@@ -45,7 +45,6 @@ const TalentScreener = () => {
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [results, setResults] = useState<ParsedResults | null>(null);
-  const [webhookResponse, setWebhookResponse] = useState<any>(null);
   const [showPricing, setShowPricing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -60,9 +59,13 @@ const TalentScreener = () => {
     if (profile?.username) {
       setFormData(prev => ({ ...prev, name: profile.username }));
     } else if (profile?.full_name) {
-      // Fallback to full_name if username is not available
       setFormData(prev => ({ ...prev, name: profile.full_name }));
+    } else if (user?.email) {
+      // Only use email as last resort for name field
+      const emailUsername = user.email.split('@')[0];
+      setFormData(prev => ({ ...prev, name: emailUsername }));
     }
+    
     if (user?.email) {
       setFormData(prev => ({ ...prev, email: user.email }));
     }
@@ -160,9 +163,6 @@ const TalentScreener = () => {
 
       const webhookData = await webhookResponse.json();
 
-      // Store webhook response for display
-      setWebhookResponse(webhookData);
-
       // Deduct tokens
       await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
       await refreshProfile();
@@ -222,7 +222,7 @@ const TalentScreener = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form Fields */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -402,35 +402,6 @@ const TalentScreener = () => {
               </CardContent>
             </Card>
 
-            {/* Webhook Response */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5" />
-                  Webhook Response
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {webhookResponse ? (
-                  <div className="space-y-3">
-                    <div className="bg-muted p-3 rounded-lg">
-                      <pre className="text-xs whitespace-pre-wrap overflow-auto max-h-60">
-                        {JSON.stringify(webhookResponse, null, 2)}
-                      </pre>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Raw response from talent screener webhook
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    <Brain className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No response data yet</p>
-                    <p className="text-xs">Upload and analyze a resume to see webhook response</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
 
           {/* Results Section */}
