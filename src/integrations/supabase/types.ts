@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      job_searches: {
+        Row: {
+          created_at: string
+          id: string
+          results: Json | null
+          results_count: number
+          search_query: Json
+          searched_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          results?: Json | null
+          results_count?: number
+          search_query: Json
+          searched_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          results?: Json | null
+          results_count?: number
+          search_query?: Json
+          searched_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           created_at: string
