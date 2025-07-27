@@ -16,8 +16,10 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
-// @ts-ignore - pdf-parse doesn't have proper TypeScript definitions
-import * as pdfParse from 'pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set up PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface ParsedResults {
   summary: string;
@@ -72,12 +74,23 @@ const TalentScreener = () => {
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
 
-  // Function to extract text from PDF
+  // Function to extract text from PDF using PDF.js
   const extractTextFromPDF = async (file: File): Promise<string> => {
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const data = await pdfParse(arrayBuffer);
-      return data.text;
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      let fullText = '';
+      
+      // Extract text from each page
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(' ');
+        fullText += pageText + ' ';
+      }
+      
+      return fullText.trim();
     } catch (error) {
       console.error('Error extracting text from PDF:', error);
       throw new Error('Failed to extract text from PDF. Please ensure the PDF is readable.');

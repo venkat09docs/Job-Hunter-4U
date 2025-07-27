@@ -51,7 +51,7 @@
     "jspdf": "^3.0.1",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.3.93",
     "razorpay": "^2.9.6",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
