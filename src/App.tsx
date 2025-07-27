@@ -13,6 +13,7 @@ import Portfolio from "./pages/Portfolio";
 import BlogDashboard from "./pages/BlogDashboard";
 import PublicBlogs from "./pages/PublicBlogs";
 import Settings from "./pages/Settings";
+import TalentScreener from "./pages/TalentScreener";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -65,6 +66,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/talent-screener" 
+              element={
+                <ProtectedRoute>
+                  <TalentScreener />
                 </ProtectedRoute>
               } 
             />

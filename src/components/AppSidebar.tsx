@@ -6,7 +6,8 @@ import {
   Settings, 
   ExternalLink,
   Home,
-  PenTool
+  PenTool,
+  Target
 } from "lucide-react";
 import {
   Sidebar,
@@ -26,6 +27,7 @@ import { useAuth } from "@/hooks/useAuth";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
+  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
