@@ -22,6 +22,7 @@ interface ToolForm {
   embed_code: string;
   credit_points: number;
   is_active: boolean;
+  image_url?: string;
 }
 
 const ManageCareerHub = () => {
@@ -37,7 +38,8 @@ const ManageCareerHub = () => {
     tool_description: '',
     embed_code: '',
     credit_points: 1,
-    is_active: true
+    is_active: true,
+    image_url: ''
   });
   const [isExtractingInfo, setIsExtractingInfo] = useState(false);
 
@@ -132,7 +134,8 @@ const ManageCareerHub = () => {
       tool_description: '',
       embed_code: '',
       credit_points: 1,
-      is_active: true
+      is_active: true,
+      image_url: ''
     });
     setEditingTool(null);
   };
@@ -144,7 +147,8 @@ const ManageCareerHub = () => {
       tool_description: tool.tool_description || '',
       embed_code: tool.embed_code,
       credit_points: tool.credit_points,
-      is_active: tool.is_active
+      is_active: tool.is_active,
+      image_url: tool.image_url || ''
     });
     setIsDialogOpen(true);
   };
@@ -216,6 +220,16 @@ const ManageCareerHub = () => {
                   </Button>
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="image_url">Tool Image URL (Optional)</Label>
+                  <Input
+                    id="image_url"
+                    value={formData.image_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                    placeholder="Enter image URL for the tool"
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="tool_name">Tool Name</Label>

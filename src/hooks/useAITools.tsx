@@ -13,6 +13,7 @@ interface AITool {
   created_at: string;
   updated_at: string;
   created_by: string;
+  image_url?: string | null;
 }
 
 interface ToolUsage {

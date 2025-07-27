@@ -47,8 +47,8 @@ const DigitalCareerHub = () => {
     if (cleanCode.includes('<iframe')) {
       return (
         <div 
-          className="w-full h-[600px] border rounded-lg overflow-hidden"
-          dangerouslySetInnerHTML={{ __html: cleanCode }}
+          className="w-full h-full absolute inset-0"
+          dangerouslySetInnerHTML={{ __html: cleanCode.replace(/style="[^"]*"/g, 'style="width: 100%; height: 100%; border: none;"') }}
         />
       );
     }
@@ -58,7 +58,7 @@ const DigitalCareerHub = () => {
       return (
         <iframe
           src={cleanCode}
-          className="w-full h-[600px] border rounded-lg"
+          className="w-full h-full absolute inset-0 border-none"
           title="AI Tool"
           frameBorder="0"
           allowFullScreen
@@ -68,7 +68,7 @@ const DigitalCareerHub = () => {
     
     // Fallback: display as text
     return (
-      <div className="w-full h-[600px] border rounded-lg p-4 bg-muted">
+      <div className="w-full h-full absolute inset-0 p-4 bg-muted overflow-auto">
         <p className="text-center text-muted-foreground">
           Unable to display tool. Please contact support.
         </p>
@@ -134,6 +134,18 @@ const DigitalCareerHub = () => {
             {tools.map((tool) => (
               <Card key={tool.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
+                  {tool.image_url && (
+                    <div className="mb-4">
+                      <img 
+                        src={tool.image_url} 
+                        alt={tool.tool_name}
+                        className="w-full h-40 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
@@ -194,8 +206,8 @@ const DigitalCareerHub = () => {
 
       {/* Tool Modal */}
       <Dialog open={isToolDialogOpen} onOpenChange={setIsToolDialogOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 flex flex-col">
-          <DialogHeader className="px-6 py-4 border-b shrink-0">
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-full h-full p-0 flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b shrink-0 bg-background z-10">
             <DialogTitle className="flex items-center justify-between">
               {selectedTool?.tool_name}
               <Button
@@ -208,7 +220,7 @@ const DigitalCareerHub = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 min-h-0 relative">
             {selectedTool && renderEmbedCode(selectedTool.embed_code)}
           </div>
         </DialogContent>
