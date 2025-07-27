@@ -477,77 +477,9 @@ const Portfolio = () => {
   };
 
   const downloadPDF = async () => {
-    const element = document.getElementById('resume-preview');
-    if (!element) return;
+    if (!portfolio) return;
 
     try {
-      // Clone the element to avoid affecting the original
-      const clonedElement = element.cloneNode(true) as HTMLElement;
-      clonedElement.style.width = '210mm';
-      clonedElement.style.maxWidth = '210mm';
-      clonedElement.style.padding = '12mm';
-      clonedElement.style.backgroundColor = '#ffffff';
-      clonedElement.style.color = '#000000';
-      
-      // Apply ATS-friendly font sizes
-      const nameEl = clonedElement.querySelector('h1');
-      if (nameEl) nameEl.style.fontSize = '18pt';
-      
-      const headings = clonedElement.querySelectorAll('h2');
-      headings.forEach(h => h.style.fontSize = '14pt');
-      
-      const subheadings = clonedElement.querySelectorAll('h3');
-      subheadings.forEach(h => h.style.fontSize = '12pt');
-      
-      const bodyText = clonedElement.querySelectorAll('p, span, div:not(h1):not(h2):not(h3)');
-      bodyText.forEach(el => {
-        if (el.tagName !== 'H1' && el.tagName !== 'H2' && el.tagName !== 'H3') {
-          (el as HTMLElement).style.fontSize = '11pt';
-          (el as HTMLElement).style.lineHeight = '1.5';
-        }
-      });
-      
-      // Add CSS for better page breaks
-      const style = document.createElement('style');
-      style.textContent = `
-        @media print {
-          .resume-section {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          .resume-item {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            margin-bottom: 8px;
-          }
-          h1, h2, h3 {
-            break-after: avoid;
-            page-break-after: avoid;
-          }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Temporarily add to document for rendering
-      clonedElement.style.position = 'absolute';
-      clonedElement.style.left = '-9999px';
-      clonedElement.style.top = '0';
-      document.body.appendChild(clonedElement);
-
-      const canvas = await html2canvas(clonedElement, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: clonedElement.scrollWidth,
-        height: clonedElement.scrollHeight
-      });
-      
-      // Clean up
-      document.body.removeChild(clonedElement);
-      document.head.removeChild(style);
-      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -555,59 +487,126 @@ const Portfolio = () => {
       });
 
       const pageWidth = 210;
-      const pageHeight = 297;
-      const margin = 10;
+      const margin = 15;
       const contentWidth = pageWidth - (2 * margin);
-      const contentHeight = pageHeight - (2 * margin);
-      
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Calculate how many pages we need
-      const pagesNeeded = Math.ceil(imgHeight / contentHeight);
-      
-      for (let i = 0; i < pagesNeeded; i++) {
-        if (i > 0) {
+      let yPosition = margin;
+
+      // Helper function to add text with proper wrapping
+      const addText = (text: string, fontSize: number, fontStyle: 'normal' | 'bold' = 'normal', color: string = '#000000') => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', fontStyle);
+        pdf.setTextColor(color);
+        
+        const lines = pdf.splitTextToSize(text, contentWidth);
+        const lineHeight = fontSize * 0.4;
+        
+        // Check if we need a new page
+        if (yPosition + (lines.length * lineHeight) > 280) {
           pdf.addPage();
+          yPosition = margin;
         }
         
-        // Calculate the portion of the image for this page
-        const sourceY = (i * contentHeight * canvas.width) / imgWidth;
-        const sourceHeight = Math.min(
-          (contentHeight * canvas.width) / imgWidth,
-          canvas.height - sourceY
-        );
+        lines.forEach((line: string) => {
+          pdf.text(line, margin, yPosition);
+          yPosition += lineHeight;
+        });
         
-        if (sourceHeight > 0) {
-          // Create canvas for this page
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = sourceHeight;
-          const ctx = pageCanvas.getContext('2d');
-          
-          if (ctx) {
-            // Draw the portion of the original canvas
-            ctx.drawImage(
-              canvas,
-              0, sourceY,
-              canvas.width, sourceHeight,
-              0, 0,
-              canvas.width, sourceHeight
-            );
-            
-            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-            const actualHeight = (sourceHeight * imgWidth) / canvas.width;
-            
-            pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, actualHeight);
-          }
+        return yPosition;
+      };
+
+      // Add some spacing
+      const addSpacing = (amount: number) => {
+        yPosition += amount;
+        if (yPosition > 280) {
+          pdf.addPage();
+          yPosition = margin;
         }
+      };
+
+      // Header - Name and Contact Info
+      addText(portfolio.full_name || 'Your Name', 20, 'bold', '#2563eb');
+      addSpacing(3);
+
+      if (portfolio.email) {
+        addText(`Email: ${portfolio.email}`, 11);
+      }
+      if (portfolio.phone) {
+        addText(`Phone: ${portfolio.phone}`, 11);
+      }
+      if (localFormData.linkedin_profile) {
+        addText(`LinkedIn: ${localFormData.linkedin_profile}`, 11);
       }
       
-      pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
+      addSpacing(8);
+
+      // Professional Summary
+      if (portfolio.parsed_summary) {
+        addText('PROFESSIONAL SUMMARY', 14, 'bold', '#1f2937');
+        addSpacing(3);
+        addText(portfolio.parsed_summary, 11);
+        addSpacing(8);
+      }
+
+      // Skills
+      if (portfolio.skills && portfolio.skills.length > 0) {
+        addText('SKILLS', 14, 'bold', '#1f2937');
+        addSpacing(3);
+        const skillsText = portfolio.skills.join(' • ');
+        addText(skillsText, 11);
+        addSpacing(8);
+      }
+
+      // Experience
+      if (portfolio.experience && portfolio.experience.length > 0) {
+        addText('PROFESSIONAL EXPERIENCE', 14, 'bold', '#1f2937');
+        addSpacing(3);
+
+        portfolio.experience.forEach((exp, index) => {
+          if (exp.title || exp.company) {
+            addText(`${exp.title}${exp.company ? ` at ${exp.company}` : ''}`, 12, 'bold');
+            if (exp.duration) {
+              addText(exp.duration, 10, 'normal', '#6b7280');
+            }
+            if (exp.description) {
+              addSpacing(2);
+              addText(exp.description, 11);
+            }
+            if (index < portfolio.experience.length - 1) {
+              addSpacing(6);
+            }
+          }
+        });
+        addSpacing(8);
+      }
+
+      // Education
+      if (portfolio.education && portfolio.education.length > 0) {
+        addText('EDUCATION', 14, 'bold', '#1f2937');
+        addSpacing(3);
+
+        portfolio.education.forEach((edu, index) => {
+          if (edu.degree || edu.institution) {
+            addText(`${edu.degree}${edu.institution ? ` - ${edu.institution}` : ''}`, 12, 'bold');
+            if (edu.year) {
+              addText(edu.year, 10, 'normal', '#6b7280');
+            }
+            if (edu.description) {
+              addSpacing(2);
+              addText(edu.description, 11);
+            }
+            if (index < portfolio.education.length - 1) {
+              addSpacing(6);
+            }
+          }
+        });
+      }
+
+      // Save the PDF
+      pdf.save(`${portfolio.full_name || 'resume'}-resume.pdf`);
       
       toast({
         title: 'Success',
-        description: 'Resume downloaded successfully!',
+        description: 'Resume downloaded successfully! Text is now selectable and copyable.',
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
