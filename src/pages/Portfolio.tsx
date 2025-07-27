@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Plus, Trash2, FileText, Download } from 'lucide-react';
+import { Upload, Plus, Trash2, FileText, Download, User, Mail, Phone, MapPin, Edit3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ExperienceItem {
   title: string;
@@ -29,6 +31,10 @@ interface Portfolio {
   user_id: string;
   resume_url: string | null;
   parsed_summary: string | null;
+  full_name: string;
+  email: string;
+  phone: string;
+  location: string;
   skills: string[];
   experience: ExperienceItem[];
   education: EducationItem[];
@@ -67,6 +73,10 @@ const Portfolio = () => {
         // Transform the data to match our interface
         const transformedData: Portfolio = {
           ...data,
+          full_name: data.full_name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          location: data.location || '',
           skills: Array.isArray(data.skills) ? (data.skills as string[]) : [],
           experience: Array.isArray(data.experience) ? (data.experience as unknown as ExperienceItem[]) : [],
           education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
@@ -96,6 +106,10 @@ const Portfolio = () => {
         .from('portfolios')
         .insert({
           user_id: user.id,
+          full_name: user?.email?.split('@')[0] || '',
+          email: user?.email || '',
+          phone: '',
+          location: '',
           skills: [],
           experience: [],
           education: []
@@ -107,6 +121,10 @@ const Portfolio = () => {
 
       const transformedData: Portfolio = {
         ...data,
+        full_name: data.full_name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        location: data.location || '',
         skills: [],
         experience: [],
         education: []
@@ -196,6 +214,10 @@ const Portfolio = () => {
     education: EducationItem[];
     parsed_summary: string;
     resume_url: string;
+    full_name: string;
+    email: string;
+    phone: string;
+    location: string;
   }>) => {
     if (!portfolio || !user) return;
 
@@ -212,6 +234,10 @@ const Portfolio = () => {
       // Transform the returned data
       const transformedData: Portfolio = {
         ...data,
+        full_name: data.full_name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        location: data.location || '',
         skills: Array.isArray(data.skills) ? (data.skills as string[]) : [],
         experience: Array.isArray(data.experience) ? (data.experience as unknown as ExperienceItem[]) : [],
         education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
@@ -303,6 +329,43 @@ const Portfolio = () => {
     updatePortfolio({ education: updatedEducation });
   };
 
+  const downloadPDF = async () => {
+    const element = document.getElementById('resume-preview');
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
+      
+      toast({
+        title: 'Success',
+        description: 'Resume downloaded successfully!',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to generate PDF.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -321,6 +384,12 @@ const Portfolio = () => {
         <div className="lg:w-1/2 space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">My Portfolio</h1>
+            {portfolio && (
+              <Button onClick={downloadPDF} variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </Button>
+            )}
           </div>
 
           {/* Resume Upload */}
@@ -371,6 +440,66 @@ const Portfolio = () => {
                 <div className="p-3 bg-primary/5 rounded border">
                   <h4 className="font-medium text-sm mb-2">AI Summary</h4>
                   <p className="text-sm text-muted-foreground">{portfolio.parsed_summary}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Personal Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Personal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Full Name</Label>
+                  <Input
+                    value={portfolio?.full_name || ''}
+                    onChange={(e) => updatePortfolio({ full_name: e.target.value })}
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    value={portfolio?.email || ''}
+                    onChange={(e) => updatePortfolio({ email: e.target.value })}
+                    placeholder="john@example.com"
+                    type="email"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Phone</Label>
+                  <Input
+                    value={portfolio?.phone || ''}
+                    onChange={(e) => updatePortfolio({ phone: e.target.value })}
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <Label>Location</Label>
+                  <Input
+                    value={portfolio?.location || ''}
+                    onChange={(e) => updatePortfolio({ location: e.target.value })}
+                    placeholder="New York, NY"
+                  />
+                </div>
+              </div>
+              {!portfolio?.parsed_summary && (
+                <div>
+                  <Label>Professional Summary</Label>
+                  <Textarea
+                    value={portfolio?.parsed_summary || ''}
+                    onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
+                    placeholder="Brief professional summary highlighting your key skills and experience..."
+                    rows={3}
+                  />
                 </div>
               )}
             </CardContent>
@@ -548,71 +677,113 @@ const Portfolio = () => {
           <div className="sticky top-8">
             <Card>
               <CardHeader>
-                <CardTitle>Resume Preview</CardTitle>
+                <CardTitle>ATS Resume Preview</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Header */}
-                <div className="text-center border-b pb-4">
-                  <h2 className="text-2xl font-bold">{user?.email || 'Your Name'}</h2>
+              <CardContent>
+                <div id="resume-preview" className="bg-white text-black p-8 space-y-6 min-h-[800px]">
+                  {/* Header */}
+                  <div className="text-center border-b-2 border-gray-800 pb-4">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                      {portfolio?.full_name || 'Your Name'}
+                    </h1>
+                    <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
+                      {portfolio?.email && (
+                        <div className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          {portfolio.email}
+                        </div>
+                      )}
+                      {portfolio?.phone && (
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          {portfolio.phone}
+                        </div>
+                      )}
+                      {portfolio?.location && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-4 h-4" />
+                          {portfolio.location}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Professional Summary */}
                   {portfolio?.parsed_summary && (
-                    <p className="text-muted-foreground mt-2">{portfolio.parsed_summary}</p>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                        PROFESSIONAL SUMMARY
+                      </h2>
+                      <p className="text-gray-800 leading-relaxed">{portfolio.parsed_summary}</p>
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {portfolio?.skills && portfolio.skills.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                        TECHNICAL SKILLS
+                      </h2>
+                      <div className="text-gray-800">
+                        {portfolio.skills.join(' • ')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  {portfolio?.experience && portfolio.experience.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                        PROFESSIONAL EXPERIENCE
+                      </h2>
+                      <div className="space-y-4">
+                        {portfolio.experience.map((exp, index) => (
+                          <div key={index}>
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="font-semibold text-gray-900">{exp.title}</h3>
+                              <span className="text-gray-700 text-sm">{exp.duration}</span>
+                            </div>
+                            <p className="text-gray-700 font-medium mb-2">{exp.company}</p>
+                            {exp.description && (
+                              <p className="text-gray-800 leading-relaxed">{exp.description}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {portfolio?.education && portfolio.education.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                        EDUCATION
+                      </h2>
+                      <div className="space-y-3">
+                        {portfolio.education.map((edu, index) => (
+                          <div key={index}>
+                            <div className="flex justify-between items-start mb-1">
+                              <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
+                              <span className="text-gray-700 text-sm">{edu.year}</span>
+                            </div>
+                            <p className="text-gray-700 font-medium">{edu.institution}</p>
+                            {edu.description && (
+                              <p className="text-gray-800 mt-1">{edu.description}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(!portfolio || (!portfolio.full_name && !portfolio.skills?.length && !portfolio.experience?.length)) && (
+                    <div className="text-center py-12 text-gray-500">
+                      <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg mb-2">Start building your resume</p>
+                      <p className="text-sm">Fill in your personal information, skills, experience, and education</p>
+                    </div>
                   )}
                 </div>
-
-                {/* Skills */}
-                {portfolio?.skills && portfolio.skills.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold mb-3">Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {portfolio.skills.map((skill, index) => (
-                        <Badge key={index} variant="outline">{skill}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Experience */}
-                {portfolio?.experience && portfolio.experience.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold mb-3">Experience</h3>
-                    <div className="space-y-4">
-                      {portfolio.experience.map((exp, index) => (
-                        <div key={index} className="border-l-2 border-primary pl-4">
-                          <h4 className="font-medium">{exp.title}</h4>
-                          <p className="text-sm text-muted-foreground">{exp.company} • {exp.duration}</p>
-                          {exp.description && (
-                            <p className="text-sm mt-2">{exp.description}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Education */}
-                {portfolio?.education && portfolio.education.length > 0 && (
-                  <div>
-                    <h3 className="font-semibold mb-3">Education</h3>
-                    <div className="space-y-3">
-                      {portfolio.education.map((edu, index) => (
-                        <div key={index}>
-                          <h4 className="font-medium">{edu.degree}</h4>
-                          <p className="text-sm text-muted-foreground">{edu.institution} • {edu.year}</p>
-                          {edu.description && (
-                            <p className="text-sm mt-1">{edu.description}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {!portfolio && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Upload your resume to get started</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
