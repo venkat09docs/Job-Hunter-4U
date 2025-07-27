@@ -32,21 +32,19 @@ interface JobTrackerFormProps {
 }
 
 const statusOptions = [
+  { value: 'wishlist', label: 'Wishlist' },
+  { value: 'applying', label: 'Applying' },
   { value: 'applied', label: 'Applied' },
-  { value: 'phone_screening', label: 'Phone Screening' },
-  { value: 'technical_interview', label: 'Technical Interview' },
-  { value: 'final_interview', label: 'Final Interview' },
-  { value: 'offer_received', label: 'Offer Received' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'withdrawn', label: 'Withdrawn' },
-  { value: 'hired', label: 'Hired' }
+  { value: 'interviewing', label: 'Interviewing' },
+  { value: 'negotiating', label: 'Negotiating' },
+  { value: 'accepted', label: 'Accepted' }
 ];
 
 export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFormProps) => {
   const [formData, setFormData] = useState({
     company_name: initialData?.company_name || '',
     job_title: initialData?.job_title || '',
-    status: initialData?.status || 'applied',
+    status: initialData?.status || 'wishlist',
     application_date: initialData?.application_date || new Date().toISOString().split('T')[0],
     notes: initialData?.notes || '',
     job_url: initialData?.job_url || '',

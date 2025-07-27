@@ -7,10 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
-import { JobTrackerCard } from '@/components/JobTrackerCard';
 import { toast } from 'sonner';
-import { Download, Plus, Search, Filter } from 'lucide-react';
+import { Download, Plus, Search, Filter, Edit, Archive, Trash2 } from 'lucide-react';
 
 interface JobEntry {
   id: string;
@@ -42,19 +42,32 @@ const JobTracker = () => {
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
 
   const statusOptions = [
-    'applied', 'phone_screening', 'technical_interview', 'final_interview',
-    'offer_received', 'rejected', 'withdrawn', 'hired'
+    'wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted'
   ];
 
   const statusColors = {
-    applied: 'bg-blue-500',
-    phone_screening: 'bg-yellow-500',
-    technical_interview: 'bg-orange-500',
-    final_interview: 'bg-purple-500',
-    offer_received: 'bg-green-500',
-    rejected: 'bg-red-500',
-    withdrawn: 'bg-gray-500',
-    hired: 'bg-emerald-500'
+    wishlist: 'bg-gray-500',
+    applying: 'bg-blue-500',
+    applied: 'bg-yellow-500',
+    interviewing: 'bg-orange-500',
+    negotiating: 'bg-purple-500',
+    accepted: 'bg-green-500'
+  };
+
+  const statusLabels = {
+    wishlist: 'Wishlist',
+    applying: 'Applying',
+    applied: 'Applied',
+    interviewing: 'Interviewing',
+    negotiating: 'Negotiating',
+    accepted: 'Accepted'
+  };
+
+  const getStatusCounts = () => {
+    return statusOptions.reduce((counts, status) => {
+      counts[status] = jobs.filter(job => job.status === status && !job.is_archived).length;
+      return counts;
+    }, {} as Record<string, number>);
   };
 
   useEffect(() => {
@@ -298,7 +311,7 @@ const JobTracker = () => {
                 <SelectItem value="all">All Statuses</SelectItem>
                 {statusOptions.map(status => (
                   <SelectItem key={status} value={status}>
-                    {status.replace('_', ' ').toUpperCase()}
+                    {statusLabels[status as keyof typeof statusLabels]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -318,35 +331,93 @@ const JobTracker = () => {
         </CardContent>
       </Card>
 
-      {/* Jobs List */}
-      <div className="space-y-6">
-        {Object.entries(groupedJobs()).map(([groupName, groupJobs]) => (
-          <div key={groupName}>
-            {groupBy !== 'none' && (
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-xl font-semibold text-foreground">
-                  {groupName.replace('_', ' ').toUpperCase()}
-                </h2>
-                <Badge variant="secondary">{groupJobs.length}</Badge>
-              </div>
-            )}
-            
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {groupJobs.map((job) => (
-                <JobTrackerCard
-                  key={job.id}
-                  job={job}
-                  onEdit={setEditingJob}
-                  onArchive={handleArchiveJob}
-                  onDelete={handleDeleteJob}
-                  statusColor={statusColors[job.status as keyof typeof statusColors]}
-                  showArchived={showArchived}
-                />
-              ))}
+      {/* Status Pipeline */}
+      {!showArchived && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Application Pipeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {statusOptions.map((status) => {
+                const count = getStatusCounts()[status] || 0;
+                return (
+                  <div key={status} className="text-center">
+                    <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-lg p-3 mb-2`}>
+                      <div className="text-2xl font-bold">{count}</div>
+                    </div>
+                    <div className="text-sm font-medium text-foreground">
+                      {statusLabels[status as keyof typeof statusLabels]}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        ))}
-      </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Jobs Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Company</TableHead>
+                <TableHead>Job Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Application Date</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Salary Range</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredJobs.map((job) => (
+                <TableRow key={job.id}>
+                  <TableCell className="font-medium">{job.company_name}</TableCell>
+                  <TableCell>{job.job_title}</TableCell>
+                  <TableCell>
+                    <Badge className={`${statusColors[job.status as keyof typeof statusColors]} text-white`}>
+                      {statusLabels[job.status as keyof typeof statusLabels]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{new Date(job.application_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{job.location || '-'}</TableCell>
+                  <TableCell>{job.salary_range || '-'}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingJob(job)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleArchiveJob(job.id, !job.is_archived)}
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                      {showArchived && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteJob(job.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {filteredJobs.length === 0 && (
         <Card>
