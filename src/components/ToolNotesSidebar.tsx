@@ -123,7 +123,7 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
   };
 
   return (
-    <div className="w-80 border-r bg-card flex flex-col h-full">
+    <div className="w-full lg:w-80 border-r bg-card flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">

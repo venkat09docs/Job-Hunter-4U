@@ -8,16 +8,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Coins, ExternalLink, Zap, ArrowLeft } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Coins, ExternalLink, Zap, ArrowLeft, FileText, Monitor } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const DigitalCareerHub = () => {
   const { tools, loading, useTool } = useAITools();
   const { profile, refreshProfile } = useProfile();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [isToolDialogOpen, setIsToolDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('tool');
 
   const handleToolAccess = async (tool: any) => {
     try {
@@ -232,17 +236,50 @@ const DigitalCareerHub = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 min-h-0 flex">
-            {/* Notes Sidebar */}
-            {selectedTool && (
-              <ToolNotesSidebar toolId={selectedTool.id} />
-            )}
-            
-            {/* Main Content Area */}
-            <div className="flex-1 min-h-0 relative">
-              {selectedTool && renderEmbedCode(selectedTool.embed_code)}
+          {isMobile ? (
+            /* Mobile Layout - Tabs */
+            <div className="flex-1 min-h-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-2 mx-4 mt-2">
+                  <TabsTrigger value="tool" className="flex items-center gap-2">
+                    <Monitor className="w-4 h-4" />
+                    Tool
+                  </TabsTrigger>
+                  <TabsTrigger value="notes" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Notes
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="tool" className="flex-1 min-h-0 m-0 p-2">
+                  <div className="h-full relative rounded-lg overflow-hidden border">
+                    {selectedTool && renderEmbedCode(selectedTool.embed_code)}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="notes" className="flex-1 min-h-0 m-0 p-2">
+                  <div className="h-full border rounded-lg overflow-hidden">
+                    {selectedTool && (
+                      <ToolNotesSidebar toolId={selectedTool.id} />
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
-          </div>
+          ) : (
+            /* Desktop Layout - Side by side */
+            <div className="flex-1 min-h-0 flex">
+              {/* Notes Sidebar */}
+              {selectedTool && (
+                <ToolNotesSidebar toolId={selectedTool.id} />
+              )}
+              
+              {/* Main Content Area */}
+              <div className="flex-1 min-h-0 relative">
+                {selectedTool && renderEmbedCode(selectedTool.embed_code)}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
