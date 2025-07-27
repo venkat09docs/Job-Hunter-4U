@@ -112,7 +112,11 @@ const PublicProfile = () => {
         {/* Profile Header */}
         <div className="text-center space-y-6 mb-8">
           <Avatar className="w-32 h-32 mx-auto border-4 border-white/20 shadow-xl">
-            <AvatarImage src={profile.profile_image_url || undefined} alt={profile.full_name} />
+            <AvatarImage 
+              src={profile.profile_image_url || undefined} 
+              alt={profile.full_name}
+              className="object-cover"
+            />
             <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
               {profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
             </AvatarFallback>

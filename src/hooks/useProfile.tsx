@@ -7,6 +7,7 @@ interface Profile {
   id: string;
   user_id: string;
   full_name: string | null;
+  username?: string;
   tokens_remaining: number;
   total_resume_opens: number;
   total_job_searches: number;

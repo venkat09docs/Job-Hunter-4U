@@ -23,6 +23,7 @@ const customLinkSchema = z.object({
 const profileSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
+  profile_image_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   video_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   github_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   linkedin_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
@@ -51,6 +52,7 @@ const EditProfile = () => {
     defaultValues: {
       full_name: '',
       bio: '',
+      profile_image_url: '',
       video_url: '',
       github_url: '',
       linkedin_url: '',
@@ -83,6 +85,7 @@ const EditProfile = () => {
         form.reset({
           full_name: data.full_name || '',
           bio: data.bio || '',
+          profile_image_url: data.profile_image_url || '',
           video_url: data.video_url || '',
           github_url: data.github_url || '',
           linkedin_url: data.linkedin_url || '',
@@ -117,6 +120,7 @@ const EditProfile = () => {
         user_id: user?.id,
         full_name: data.full_name,
         bio: data.bio || null,
+        profile_image_url: data.profile_image_url || null,
         video_url: data.video_url || null,
         github_url: data.github_url || null,
         linkedin_url: data.linkedin_url || null,
@@ -268,6 +272,20 @@ const EditProfile = () => {
                             <FormLabel>Full Name</FormLabel>
                             <FormControl>
                               <Input placeholder="Your full name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="profile_image_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Profile Picture URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter image URL" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

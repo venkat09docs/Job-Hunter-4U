@@ -102,12 +102,12 @@ export function AppSidebar() {
                       className="hover:bg-muted/50"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">View Public Bio Tree</span>
+                      <span className="ml-3">Bio Link</span>
                     </a>
                   ) : (
                     <span className="text-muted-foreground cursor-not-allowed">
                       <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">No Public Bio Tree Yet</span>
+                      <span className="ml-3">No Bio Link Yet</span>
                     </span>
                   )}
                 </SidebarMenuButton>
@@ -121,7 +121,7 @@ export function AppSidebar() {
                     className="hover:bg-muted/50"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    <span className="ml-3">View Public Blogs</span>
+                    <span className="ml-3">Blogs</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
