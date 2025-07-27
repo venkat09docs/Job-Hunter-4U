@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tools: {
+        Row: {
+          created_at: string
+          created_by: string
+          credit_points: number
+          embed_code: string
+          id: string
+          is_active: boolean
+          tool_description: string | null
+          tool_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          credit_points?: number
+          embed_code: string
+          id?: string
+          is_active?: boolean
+          tool_description?: string | null
+          tool_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          credit_points?: number
+          embed_code?: string
+          id?: string
+          is_active?: boolean
+          tool_description?: string | null
+          tool_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blogs: {
         Row: {
           content: string | null
@@ -299,6 +335,38 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_usage: {
+        Row: {
+          credits_used: number
+          id: string
+          tool_id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          credits_used: number
+          id?: string
+          tool_id: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          credits_used?: number
+          id?: string
+          tool_id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_usage_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_analytics: {
         Row: {
           ai_queries: number | null
@@ -332,18 +400,49 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
       increment_user_analytics: {
         Args: { action_type: string }
         Returns: undefined
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -470,6 +569,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

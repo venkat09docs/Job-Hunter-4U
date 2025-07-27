@@ -9,7 +9,9 @@ import {
   PenTool,
   Target,
   Search,
-  Linkedin
+  Linkedin,
+  Wrench,
+  Zap
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,16 +27,22 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Job Search", url: "/dashboard/job-search", icon: Search },
   { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
+  { title: "Digital Career Hub", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
+];
+
+const adminItems = [
+  { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
 ];
 
 export function AppSidebar() {
@@ -42,6 +50,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const [userSlug, setUserSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -92,6 +101,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} end className={getNavCls}>
+                        <item.icon className="h-4 w-4" />
+                        <span className="ml-3">{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel>Public URLs</SidebarGroupLabel>
