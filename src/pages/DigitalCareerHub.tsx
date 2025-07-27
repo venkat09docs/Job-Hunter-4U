@@ -194,8 +194,8 @@ const DigitalCareerHub = () => {
 
       {/* Tool Modal */}
       <Dialog open={isToolDialogOpen} onOpenChange={setIsToolDialogOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-6">
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="flex items-center justify-between">
               {selectedTool?.tool_name}
               <Button
@@ -208,7 +208,7 @@ const DigitalCareerHub = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-auto p-6">
             {selectedTool && renderEmbedCode(selectedTool.embed_code)}
           </div>
         </DialogContent>
