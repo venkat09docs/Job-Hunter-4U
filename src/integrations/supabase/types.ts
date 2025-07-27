@@ -14,13 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          tokens_remaining: number | null
+          total_ai_queries: number | null
+          total_job_searches: number | null
+          total_resume_opens: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          tokens_remaining?: number | null
+          total_ai_queries?: number | null
+          total_job_searches?: number | null
+          total_resume_opens?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          tokens_remaining?: number | null
+          total_ai_queries?: number | null
+          total_job_searches?: number | null
+          total_resume_opens?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_analytics: {
+        Row: {
+          ai_queries: number | null
+          created_at: string
+          date: string
+          id: string
+          job_searches: number | null
+          resume_opens: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_queries?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          job_searches?: number | null
+          resume_opens?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_queries?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          job_searches?: number | null
+          resume_opens?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_user_analytics: {
+        Args: { action_type: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
