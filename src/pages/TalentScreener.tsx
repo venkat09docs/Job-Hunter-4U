@@ -49,7 +49,6 @@ const TalentScreener = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     jobOpenings: "",
     linkedinUrl: "",
     jobDescription: ""
@@ -57,13 +56,13 @@ const TalentScreener = () => {
 
   // Auto-populate name and email from profile
   useEffect(() => {
-    if (profile?.full_name && !formData.name) {
-      setFormData(prev => ({ ...prev, name: profile.full_name }));
+    if (profile?.username && !formData.name) {
+      setFormData(prev => ({ ...prev, name: profile.username }));
     }
     if (user?.email && !formData.email) {
       setFormData(prev => ({ ...prev, email: user.email }));
     }
-  }, [profile?.full_name, user?.email]);
+  }, [profile?.username, user?.email]);
 
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
@@ -230,12 +229,13 @@ const TalentScreener = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">Username *</Label>
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Enter full name"
+                      placeholder="Username from profile"
+                      disabled
+                      className="bg-muted"
                     />
                   </div>
                   
@@ -245,18 +245,9 @@ const TalentScreener = () => {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone (Optional)</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="Enter phone number"
+                      placeholder="Email from profile"
+                      disabled
+                      className="bg-muted"
                     />
                   </div>
                   
