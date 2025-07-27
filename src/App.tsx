@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import EditProfile from "./pages/EditProfile";
 import PublicProfile from "./pages/PublicProfile";
 import Portfolio from "./pages/Portfolio";
+import BlogDashboard from "./pages/BlogDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +47,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EditProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/blog" 
+              element={
+                <ProtectedRoute>
+                  <BlogDashboard />
                 </ProtectedRoute>
               } 
             />
