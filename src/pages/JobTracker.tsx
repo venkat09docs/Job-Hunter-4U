@@ -157,6 +157,22 @@ const JobTracker = () => {
       toast.error('Failed to delete job: ' + error.message);
     }
   };
+
+  const handleStatusChange = async (jobId: string, newStatus: string) => {
+    try {
+      const {
+        data,
+        error
+      } = await supabase.from('job_tracker').update({
+        status: newStatus
+      }).eq('id', jobId).select().single();
+      if (error) throw error;
+      setJobs(prev => prev.map(job => job.id === jobId ? data : job));
+      toast.success('Status updated successfully!');
+    } catch (error: any) {
+      toast.error('Failed to update status: ' + error.message);
+    }
+  };
   const exportToCSV = () => {
     const csvContent = [['Company', 'Job Title', 'Status', 'Application Date', 'Location', 'Salary Range', 'Notes'].join(','), ...filteredJobs.map(job => [job.company_name, job.job_title, job.status, job.application_date, job.location || '', job.salary_range || '', job.notes?.replace(/,/g, ';') || ''].join(','))].join('\n');
     const blob = new Blob([csvContent], {
@@ -293,51 +309,73 @@ const JobTracker = () => {
           </CardContent>
         </Card>}
 
-      {/* Jobs Table */}
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company</TableHead>
-                <TableHead>Job Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Application Date</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Salary Range</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredJobs.map(job => <TableRow key={job.id}>
-                  <TableCell className="font-medium">{job.company_name}</TableCell>
-                  <TableCell>{job.job_title}</TableCell>
-                  <TableCell>
-                    <Badge className={`${statusColors[job.status as keyof typeof statusColors]} text-white`}>
-                      {statusLabels[job.status as keyof typeof statusLabels]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(job.application_date).toLocaleDateString()}</TableCell>
-                  <TableCell>{job.location || '-'}</TableCell>
-                  <TableCell>{job.salary_range || '-'}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)}>
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                      {showArchived && <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>}
+      {/* Kanban Board */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {statusOptions.map(status => {
+          const statusJobs = filteredJobs.filter(job => job.status === status);
+          return (
+            <Card key={status} className="flex flex-col h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center justify-between">
+                  <span>{statusLabels[status as keyof typeof statusLabels]}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {statusJobs.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 min-h-[200px]">
+                {statusJobs.map(job => (
+                  <Card key={job.id} className="p-3 hover:shadow-md transition-shadow cursor-pointer">
+                    <div className="space-y-2">
+                      <div className="font-medium text-sm">{job.company_name}</div>
+                      <div className="text-sm text-muted-foreground">{job.job_title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(job.application_date).toLocaleDateString()}
+                      </div>
+                      {job.location && (
+                        <div className="text-xs text-muted-foreground">📍 {job.location}</div>
+                      )}
+                      {job.salary_range && (
+                        <div className="text-xs text-muted-foreground">💰 {job.salary_range}</div>
+                      )}
+                      <div className="flex items-center justify-between pt-2">
+                        <Select 
+                          value={job.status} 
+                          onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {statusOptions.map(statusOption => (
+                              <SelectItem key={statusOption} value={statusOption}>
+                                {statusLabels[statusOption as keyof typeof statusLabels]}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)}>
+                            <Archive className="h-3 w-3" />
+                          </Button>
+                          {showArchived && (
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </TableCell>
-                </TableRow>)}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       {filteredJobs.length === 0 && <Card>
           <CardContent className="p-8 text-center">
