@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Plus, Trash2, FileText, Download, User, Mail, Phone, MapPin, Edit3 } from 'lucide-react';
+import { Upload, Plus, Trash2, FileText, Download, User, Edit3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -478,29 +478,46 @@ const Portfolio = () => {
 
     try {
       const canvas = await html2canvas(element, {
-        scale: 1.5, // Reduced from 2 to optimize size
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         width: element.scrollWidth,
-        height: element.scrollHeight
+        height: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
       });
       
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
-        compress: true // Enable compression
+        compress: true
       });
 
       const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      // Compress image quality to reduce file size
-      const imgData = canvas.toDataURL('image/jpeg', 0.8); // 80% quality JPEG instead of PNG
+      // Convert to JPEG with compression
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
       
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if content is longer than one page
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
       pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
       
       toast({
@@ -868,22 +885,19 @@ const Portfolio = () => {
                     </h1>
                     <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
                       {(localFormData.email || portfolio?.email) && (
-                        <div className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
+                        <span>
                           {localFormData.email || portfolio?.email}
-                        </div>
+                        </span>
                       )}
                       {(localFormData.phone || portfolio?.phone) && (
-                        <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
+                        <span>
                           {localFormData.phone || portfolio?.phone}
-                        </div>
+                        </span>
                       )}
                       {(localFormData.linkedin_profile || portfolio?.location) && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
+                        <span>
                           {localFormData.linkedin_profile || portfolio?.location}
-                        </div>
+                        </span>
                       )}
                     </div>
                   </div>
