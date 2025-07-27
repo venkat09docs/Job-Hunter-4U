@@ -115,6 +115,27 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Community</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a 
+                    href="/blogs"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:bg-muted/50"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span className="ml-3">View Public Blogs</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

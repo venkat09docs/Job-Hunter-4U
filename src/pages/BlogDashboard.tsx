@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -27,6 +28,7 @@ interface Blog {
 
 export default function BlogDashboard() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -183,12 +185,19 @@ export default function BlogDashboard() {
         <div className="flex min-h-screen w-full">
           <AppSidebar />
           <div className="flex-1">
-            <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
-              <SidebarTrigger />
+          <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
+            <SidebarTrigger />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                </span>
+              </div>
               <Button variant="outline" onClick={handleSignOut}>
                 Sign Out
               </Button>
-            </header>
+            </div>
+          </header>
             <div className="flex items-center justify-center h-96">
               <div className="text-center">Loading...</div>
             </div>
@@ -203,12 +212,19 @@ export default function BlogDashboard() {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex-1">
-          <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
-            <SidebarTrigger />
-            <Button variant="outline" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          </header>
+            <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
+              <SidebarTrigger />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                  </span>
+                </div>
+                <Button variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </div>
+            </header>
 
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
