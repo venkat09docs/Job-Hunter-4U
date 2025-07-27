@@ -57,8 +57,12 @@ const Hero = () => {
                 Start Your Journey
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button variant="outline" size="lg">
-                View Success Stories
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => navigate('/blogs')}
+              >
+                View Community Blogs
               </Button>
             </div>
           </div>

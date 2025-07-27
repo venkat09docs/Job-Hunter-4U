@@ -11,6 +11,7 @@ import EditProfile from "./pages/EditProfile";
 import PublicProfile from "./pages/PublicProfile";
 import Portfolio from "./pages/Portfolio";
 import BlogDashboard from "./pages/BlogDashboard";
+import PublicBlogs from "./pages/PublicBlogs";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,7 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route path="/blogs" element={<PublicBlogs />} />
             <Route path="/profile/:slug" element={<PublicProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
