@@ -16,10 +16,6 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface ParsedResults {
   summary: string;
@@ -74,54 +70,6 @@ const TalentScreener = () => {
   const REQUIRED_TOKENS = 3;
   const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
 
-  // Function to extract text from PDF using PDF.js
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    try {
-      console.log('Starting PDF text extraction for file:', file.name, 'Size:', file.size);
-      
-      const arrayBuffer = await file.arrayBuffer();
-      console.log('ArrayBuffer created, size:', arrayBuffer.byteLength);
-      
-      const pdf = await pdfjsLib.getDocument({ 
-        data: arrayBuffer
-      }).promise;
-      
-      console.log('PDF loaded successfully, pages:', pdf.numPages);
-      
-      let fullText = '';
-      
-      // Extract text from each page
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        console.log(`Processing page ${pageNum}/${pdf.numPages}`);
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map((item: any) => item.str).join(' ');
-        fullText += pageText + ' ';
-        console.log(`Page ${pageNum} text length:`, pageText.length);
-      }
-      
-      console.log('Total extracted text length:', fullText.trim().length);
-      return fullText.trim();
-    } catch (error) {
-      console.error('Detailed PDF extraction error:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', (error as Error)?.message);
-      console.error('Error stack:', (error as Error)?.stack);
-      
-      // Try to provide more specific error messages
-      if (error instanceof Error) {
-        if (error.message.includes('Invalid PDF')) {
-          throw new Error('The uploaded file appears to be corrupted or is not a valid PDF format.');
-        } else if (error.message.includes('Password')) {
-          throw new Error('This PDF is password protected. Please upload an unprotected PDF.');
-        } else if (error.message.includes('network')) {
-          throw new Error('Network issue while processing PDF. Please try again.');
-        }
-      }
-      
-      throw new Error(`Failed to extract text from PDF: ${(error as Error)?.message || 'Unknown error'}. Please ensure the PDF contains readable text and is not password protected.`);
-    }
-  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -170,15 +118,7 @@ const TalentScreener = () => {
     setParsing(true);
 
     try {
-      // Extract text from PDF first
-      console.log('Extracting text from PDF...');
-      const resumeText = await extractTextFromPDF(selectedFile);
-      
-      if (!resumeText || resumeText.trim().length === 0) {
-        throw new Error('No text could be extracted from the PDF. Please ensure the PDF contains readable text.');
-      }
-
-      // Upload file to Supabase Storage (keeping for backup/reference)
+      // Upload file to Supabase Storage
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}/resume-${Date.now()}.${fileExt}`;
 
@@ -188,21 +128,20 @@ const TalentScreener = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL for reference
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('resumes')
         .getPublicUrl(fileName);
 
       setUploading(false);
 
-      // Call n8n webhook with text-based resume content
+      // Call n8n webhook with PDF URL directly
       const webhookPayload = {
         Name: formData.name,
         Email: formData.email,
         "Job Openings": formData.jobOpenings,
         "LinkedIn Profile URL": formData.linkedinUrl,
-        Resume: resumeText, // Send extracted text instead of URL
-        "Resume URL": publicUrl, // Keep URL as backup reference
+        Resume: publicUrl, // Send PDF URL directly
         "Job Description": formData.jobDescription
       };
 
