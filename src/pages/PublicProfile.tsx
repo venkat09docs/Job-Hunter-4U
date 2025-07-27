@@ -118,38 +118,38 @@ const PublicProfile = () => {
             </AvatarFallback>
           </Avatar>
           
-          <div className="space-y-2">
+          <div className="space-y-4">
             <h1 className="text-3xl font-bold text-foreground">{profile.full_name}</h1>
             {profile.bio && (
               <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
                 {profile.bio}
               </p>
             )}
+            
+            {/* Video Section - moved after bio */}
+            {profile.video_url && (
+              <div className="space-y-3">
+                {!showVideo ? (
+                  <Button 
+                    onClick={() => setShowVideo(true)}
+                    className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white border-0 h-14 text-lg font-semibold shadow-lg"
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Watch Introduction Video
+                  </Button>
+                ) : (
+                  <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                    <iframe 
+                      src={profile.video_url}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Video Section */}
-          {profile.video_url && (
-            <div className="space-y-3">
-              {!showVideo ? (
-                <Button 
-                  onClick={() => setShowVideo(true)}
-                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white border-0 h-14 text-lg font-semibold shadow-lg"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Watch Introduction Video
-                </Button>
-              ) : (
-                <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
-                  <iframe 
-                    src={profile.video_url}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Links Section */}
