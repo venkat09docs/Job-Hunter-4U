@@ -8,6 +8,7 @@ interface Profile {
   user_id: string;
   full_name: string | null;
   username?: string;
+  profile_image_url?: string | null;
   tokens_remaining: number;
   total_resume_opens: number;
   total_job_searches: number;

@@ -89,7 +89,7 @@ const Dashboard = () => {
             {/* Welcome Section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
-                Welcome back, {profile?.username || profile?.full_name || (user?.email ? user.email.split('@')[0] : 'Job Hunter')}!
+                Welcome back, {profile?.username || profile?.full_name || 'Job Hunter'}!
               </h2>
               <p className="text-muted-foreground">
                 Here's your personalized dashboard. Track your progress and manage your job search.

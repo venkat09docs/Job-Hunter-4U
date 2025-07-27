@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Key } from 'lucide-react';
+import { ArrowLeft, Key, User, Upload, X } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -22,9 +24,12 @@ type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
 
 const Settings = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(passwordResetSchema),
@@ -55,6 +60,80 @@ const Settings = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar-${user.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const avatarUrl = data.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_image_url: avatarUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      setImagePreview(avatarUrl);
+      toast({
+        title: 'Profile picture updated',
+        description: 'Your profile picture has been successfully updated.',
+      });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to upload profile picture.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = async () => {
+    if (!user) return;
+
+    setUploadingImage(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ profile_image_url: null })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setImagePreview(null);
+      toast({
+        title: 'Profile picture removed',
+        description: 'Your profile picture has been removed.',
+      });
+    } catch (error: any) {
+      console.error('Error removing image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to remove profile picture.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -91,6 +170,69 @@ const Settings = () => {
                   Manage your account settings and preferences.
                 </p>
               </div>
+
+              {/* Profile Picture */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Profile Picture
+                  </CardTitle>
+                  <CardDescription>
+                    Upload and manage your profile picture
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={imagePreview || profile?.profile_image_url || ""} />
+                      <AvatarFallback className="text-lg">
+                        {profile?.username?.substring(0, 2).toUpperCase() || 
+                         user?.email?.substring(0, 2).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <label htmlFor="avatar-upload">
+                          <Button 
+                            type="button" 
+                            disabled={uploadingImage} 
+                            className="gap-2"
+                            asChild
+                          >
+                            <span>
+                              <Upload className="h-4 w-4" />
+                              {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                            </span>
+                          </Button>
+                        </label>
+                        {(imagePreview || profile?.profile_image_url) && (
+                          <Button 
+                            variant="outline" 
+                            onClick={removeImage} 
+                            disabled={uploadingImage}
+                            className="gap-2"
+                          >
+                            <X className="h-4 w-4" />
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        JPG, PNG or GIF. Max file size 5MB.
+                      </p>
+                    </div>
+                  </div>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                </CardContent>
+              </Card>
 
               {/* Password Reset */}
               <Card>

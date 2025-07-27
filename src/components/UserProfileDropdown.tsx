@@ -38,7 +38,7 @@ export function UserProfileDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-auto px-2 gap-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="" />
+            <AvatarImage src={profile?.profile_image_url || ""} />
             <AvatarFallback className="text-xs">
               {getInitials()}
             </AvatarFallback>
@@ -52,7 +52,7 @@ export function UserProfileDropdown() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <div className="flex items-center justify-start gap-2 p-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="" />
+            <AvatarImage src={profile?.profile_image_url || ""} />
             <AvatarFallback className="text-xs">
               {getInitials()}
             </AvatarFallback>
