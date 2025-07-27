@@ -7,10 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Plus, Trash2, FileText, Download, User, Edit3 } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
+import { Upload, Plus, Trash2, FileText, Download, User, Edit3, LogOut } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useNavigate } from 'react-router-dom';
 
 interface ExperienceItem {
   title: string;
@@ -43,8 +46,9 @@ interface Portfolio {
 }
 
 const Portfolio = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
@@ -477,94 +481,40 @@ const Portfolio = () => {
     if (!element) return;
 
     try {
-      // Create PDF with proper page management
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true
-      });
-
-      const pageWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const margin = 10; // margin in mm
-      const contentWidth = pageWidth - (margin * 2);
-      
-      // Calculate scale to fit content properly
-      const elementWidth = element.scrollWidth;
-      const scale = Math.min(1.5, (contentWidth * 3.779527559) / elementWidth); // 3.779527559 px per mm
-      
       const canvas = await html2canvas(element, {
-        scale: scale,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc) => {
-          // Add page break styles to prevent content cut-off
-          const style = clonedDoc.createElement('style');
-          style.textContent = `
-            .section-break { page-break-inside: avoid; break-inside: avoid; }
-            .avoid-break { page-break-inside: avoid; break-inside: avoid; }
-            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
-            p { orphans: 3; widows: 3; }
-          `;
-          clonedDoc.head.appendChild(style);
-          
-          // Add classes to sections to avoid breaks
-          const sections = clonedDoc.querySelectorAll('.mb-4, .mb-6, .space-y-2 > div');
-          sections.forEach(section => {
-            section.classList.add('section-break');
-          });
-        }
+        height: element.scrollHeight
       });
       
-      const imgWidth = contentWidth;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
       
-      const maxPageContentHeight = pageHeight - (margin * 2);
-      let yPosition = 0;
-      let pageNumber = 1;
-      
-      // Add content with proper page management
-      while (yPosition < imgHeight) {
-        if (pageNumber > 1) {
-          pdf.addPage();
-        }
-        
-        // Calculate source coordinates
-        const sourceY = (yPosition / imgHeight) * canvas.height;
-        const sourceHeight = Math.min(
-          (maxPageContentHeight / imgHeight) * canvas.height,
-          canvas.height - sourceY
-        );
-        
-        // Create a new canvas for this page portion
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sourceHeight;
-        const pageCtx = pageCanvas.getContext('2d');
-        
-        if (pageCtx) {
-          pageCtx.drawImage(
-            canvas,
-            0, sourceY, canvas.width, sourceHeight,
-            0, 0, canvas.width, sourceHeight
-          );
-          
-          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.85);
-          const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
-          
-          pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
-        }
-        
-        yPosition += maxPageContentHeight;
-        pageNumber++;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages for overflow content
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
       }
       
       pdf.save(`${portfolio?.full_name || 'resume'}-resume.pdf`);
@@ -583,462 +533,544 @@ const Portfolio = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been logged out of your account.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error signing out',
+        description: 'There was a problem signing you out.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4"></div>
-          <div className="h-64 bg-muted rounded"></div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-hero">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <header className="border-b bg-background/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 py-4">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Job Hunter Pro
+                  </h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="text-sm text-muted-foreground">
+                      {user?.email}
+                    </span>
+                  </div>
+                  <Button onClick={handleSignOut} variant="outline" size="sm">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            </header>
+            <main className="flex-1 p-8 overflow-auto">
+              <div className="container mx-auto max-w-6xl">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-8 bg-muted rounded w-1/4"></div>
+                  <div className="h-64 bg-muted rounded"></div>
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Column - Editor */}
-        <div className="lg:w-1/2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">My Portfolio</h1>
-          </div>
-
-          {/* Resume Upload */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Resume Upload
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileUpload}
-                  disabled={uploading || parsing}
-                  className="hidden"
-                  id="resume-upload"
-                />
-                <label
-                  htmlFor="resume-upload"
-                  className="cursor-pointer flex flex-col items-center gap-2"
-                >
-                  <FileText className="w-8 h-8 text-muted-foreground" />
-                  <span className="text-sm">
-                    {uploading ? 'Uploading...' : parsing ? 'Parsing with AI...' : 'Click to upload PDF resume'}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-hero">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Job Hunter Pro
+                </h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm text-muted-foreground">
+                    {user?.email}
                   </span>
-                </label>
-              </div>
-              
-              {portfolio?.resume_url && (
-                <div className="flex items-center gap-2 p-3 bg-muted rounded">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-sm flex-1">Resume uploaded</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.open(portfolio.resume_url!, '_blank')}
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    View
-                  </Button>
                 </div>
-              )}
-
-              {portfolio?.parsed_summary && (
-                <div className="p-3 bg-primary/5 rounded border space-y-2">
-                  <h4 className="font-medium text-sm mb-2">Professional Summary</h4>
-                  <Textarea
-                    value={portfolio.parsed_summary}
-                    onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
-                    placeholder="Professional summary..."
-                    rows={4}
-                    className="text-sm"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Personal Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Personal Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Full Name</Label>
-                  <Input
-                    value={localFormData.full_name}
-                    onChange={(e) => handleFormChange('full_name', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('full_name', e.target.value)}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    value={localFormData.email}
-                    onChange={(e) => handleFormChange('email', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('email', e.target.value)}
-                    placeholder="john@example.com"
-                    type="email"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Phone</Label>
-                  <Input
-                    value={localFormData.phone}
-                    onChange={(e) => handleFormChange('phone', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('phone', e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
-                <div>
-                  <Label>LinkedIn Profile</Label>
-                  <Input
-                    value={localFormData.linkedin_profile}
-                    onChange={(e) => handleFormChange('linkedin_profile', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('linkedin_profile', e.target.value)}
-                    placeholder="https://linkedin.com/in/yourprofile"
-                  />
-                </div>
-              </div>
-              {!portfolio?.parsed_summary && (
-                <div>
-                  <Label>Professional Summary</Label>
-                  <Textarea
-                    value={localFormData.parsed_summary}
-                    onChange={(e) => handleFormChange('parsed_summary', e.target.value)}
-                    onBlur={(e) => handleFieldBlur('parsed_summary', e.target.value)}
-                    placeholder="Brief professional summary highlighting your key skills and experience..."
-                    rows={3}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Skills Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Skills</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add a skill"
-                  value={newSkill}
-                  onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addSkill()}
-                />
-                <Button onClick={addSkill} size="sm">
-                  <Plus className="w-4 h-4" />
+                <Button onClick={handleSignOut} variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
                 </Button>
               </div>
-              
-              <div className="flex flex-wrap gap-2">
-                {portfolio?.skills.map((skill, index) => (
-                  <Badge key={index} variant="secondary" className="gap-1">
-                    {skill}
-                    <button
-                      onClick={() => removeSkill(index)}
-                      className="ml-1 hover:text-destructive"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </header>
 
-          {/* Experience Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Experience
-                <Button onClick={addExperience} size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {localExperience.map((exp, index) => (
-                <div key={index} className="p-4 border rounded space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="grid grid-cols-2 gap-3 flex-1">
-                      <div>
-                        <Label>Job Title</Label>
-                        <Input
-                          value={exp.title}
-                          onChange={(e) => updateLocalExperience(index, 'title', e.target.value)}
-                          placeholder="Software Engineer"
-                        />
-                      </div>
-                      <div>
-                        <Label>Company</Label>
-                        <Input
-                          value={exp.company}
-                          onChange={(e) => updateLocalExperience(index, 'company', e.target.value)}
-                          placeholder="Company Name"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeExperience(index)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+          {/* Main Content */}
+          <main className="flex-1 p-8 overflow-auto">
+            <div className="container mx-auto max-w-6xl">
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Left Column - Editor */}
+                <div className="lg:w-1/2 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold">My Portfolio</h1>
                   </div>
-                  
-                  <div>
-                    <Label>Duration</Label>
-                    <Input
-                      value={exp.duration}
-                      onChange={(e) => updateLocalExperience(index, 'duration', e.target.value)}
-                      placeholder="Jan 2020 - Present"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Description</Label>
-                    <Textarea
-                      value={exp.description}
-                      onChange={(e) => updateLocalExperience(index, 'description', e.target.value)}
-                      placeholder="Describe your role and achievements..."
-                      rows={3}
-                    />
-                  </div>
-                  
-                  {changedExperience.has(index) && (
-                    <div className="flex justify-end">
-                      <Button 
-                        onClick={() => saveExperience(index)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
 
-          {/* Education Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Education
-                <Button onClick={addEducation} size="sm">
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {localEducation.map((edu, index) => (
-                <div key={index} className="p-4 border rounded space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="grid grid-cols-2 gap-3 flex-1">
-                      <div>
-                        <Label>Degree</Label>
-                        <Input
-                          value={edu.degree}
-                          onChange={(e) => updateLocalEducation(index, 'degree', e.target.value)}
-                          placeholder="Bachelor of Science"
+                  {/* Resume Upload */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Upload className="w-5 h-5" />
+                        Resume Upload
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileUpload}
+                          disabled={uploading || parsing}
+                          className="hidden"
+                          id="resume-upload"
                         />
+                        <label
+                          htmlFor="resume-upload"
+                          className="cursor-pointer flex flex-col items-center gap-2"
+                        >
+                          <FileText className="w-8 h-8 text-muted-foreground" />
+                          <span className="text-sm">
+                            {uploading ? 'Uploading...' : parsing ? 'Parsing with AI...' : 'Click to upload PDF resume'}
+                          </span>
+                        </label>
                       </div>
-                      <div>
-                        <Label>Institution</Label>
-                        <Input
-                          value={edu.institution}
-                          onChange={(e) => updateLocalEducation(index, 'institution', e.target.value)}
-                          placeholder="University Name"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeEducation(index)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  
-                  <div>
-                    <Label>Year</Label>
-                    <Input
-                      value={edu.year}
-                      onChange={(e) => updateLocalEducation(index, 'year', e.target.value)}
-                      placeholder="2020"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Description (Optional)</Label>
-                    <Textarea
-                      value={edu.description || ''}
-                      onChange={(e) => updateLocalEducation(index, 'description', e.target.value)}
-                      placeholder="Additional details..."
-                      rows={2}
-                    />
-                  </div>
-                  
-                  {changedEducation.has(index) && (
-                    <div className="flex justify-end">
-                      <Button 
-                        onClick={() => saveEducation(index)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column - Live Preview */}
-        <div className="lg:w-1/2">
-          <div className="sticky top-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  Resume Preview
-                  {portfolio && (
-                    <Button onClick={downloadPDF} variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download PDF
-                    </Button>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div id="resume-preview" className="bg-white text-black p-6 space-y-4 min-h-[800px]">
-                  {/* Header */}
-                  <div className="text-center border-b-2 border-gray-800 pb-3">
-                    <h1 className="text-xl font-bold text-gray-900 mb-1">
-                      {localFormData.full_name || portfolio?.full_name || 'Your Name'}
-                    </h1>
-                    <div className="flex flex-wrap justify-center gap-3 text-xs text-gray-700">
-                      {(localFormData.email || portfolio?.email) && (
-                        <span>
-                          {localFormData.email || portfolio?.email}
-                        </span>
+                      
+                      {portfolio?.resume_url && (
+                        <div className="flex items-center gap-2 p-3 bg-muted rounded">
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm flex-1">Resume uploaded</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(portfolio.resume_url!, '_blank')}
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                        </div>
                       )}
-                      {(localFormData.phone || portfolio?.phone) && (
-                        <span>
-                          {localFormData.phone || portfolio?.phone}
-                        </span>
-                      )}
-                      {(localFormData.linkedin_profile || portfolio?.location) && (
-                        <span>
-                          {localFormData.linkedin_profile || portfolio?.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Professional Summary */}
-                  {(localFormData.parsed_summary || portfolio?.parsed_summary) && (
-                    <div>
-                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
-                        PROFESSIONAL SUMMARY
-                      </h2>
-                      <p className="text-xs text-gray-800 leading-relaxed">{localFormData.parsed_summary || portfolio?.parsed_summary}</p>
-                    </div>
-                  )}
+                      {portfolio?.parsed_summary && (
+                        <div className="p-3 bg-primary/5 rounded border space-y-2">
+                          <h4 className="font-medium text-sm mb-2">Professional Summary</h4>
+                          <Textarea
+                            value={portfolio.parsed_summary}
+                            onChange={(e) => updatePortfolio({ parsed_summary: e.target.value })}
+                            placeholder="Professional summary..."
+                            rows={4}
+                            className="text-sm"
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                  {/* Skills */}
-                  {portfolio?.skills && portfolio.skills.length > 0 && (
-                    <div>
-                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
-                        TECHNICAL SKILLS
-                      </h2>
-                      <div className="text-xs text-gray-800">
-                        {portfolio.skills.join(' • ')}
+                  {/* ... keep existing code (Personal Information, Skills, Experience, Education sections) */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Personal Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Full Name</Label>
+                          <Input
+                            value={localFormData.full_name}
+                            onChange={(e) => handleFormChange('full_name', e.target.value)}
+                            onBlur={(e) => handleFieldBlur('full_name', e.target.value)}
+                            placeholder="John Doe"
+                          />
+                        </div>
+                        <div>
+                          <Label>Email</Label>
+                          <Input
+                            value={localFormData.email}
+                            onChange={(e) => handleFormChange('email', e.target.value)}
+                            onBlur={(e) => handleFieldBlur('email', e.target.value)}
+                            placeholder="john@example.com"
+                            type="email"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Phone</Label>
+                          <Input
+                            value={localFormData.phone}
+                            onChange={(e) => handleFormChange('phone', e.target.value)}
+                            onBlur={(e) => handleFieldBlur('phone', e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                          />
+                        </div>
+                        <div>
+                          <Label>LinkedIn Profile</Label>
+                          <Input
+                            value={localFormData.linkedin_profile}
+                            onChange={(e) => handleFormChange('linkedin_profile', e.target.value)}
+                            onBlur={(e) => handleFieldBlur('linkedin_profile', e.target.value)}
+                            placeholder="https://linkedin.com/in/yourprofile"
+                          />
+                        </div>
+                      </div>
+                      {!portfolio?.parsed_summary && (
+                        <div>
+                          <Label>Professional Summary</Label>
+                          <Textarea
+                            value={localFormData.parsed_summary}
+                            onChange={(e) => handleFormChange('parsed_summary', e.target.value)}
+                            onBlur={(e) => handleFieldBlur('parsed_summary', e.target.value)}
+                            placeholder="Brief professional summary highlighting your key skills and experience..."
+                            rows={3}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                  {/* Experience */}
-                  {localExperience && localExperience.length > 0 && (
-                    <div>
-                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
-                        PROFESSIONAL EXPERIENCE
-                      </h2>
-                      <div className="space-y-3">
-                        {localExperience.map((exp, index) => (
-                          <div key={index}>
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="text-xs font-semibold text-gray-900">{exp.title}</h3>
-                              <span className="text-xs text-gray-700">{exp.duration}</span>
-                            </div>
-                            <p className="text-xs text-gray-700 font-medium mb-1">{exp.company}</p>
-                            {exp.description && (
-                              <p className="text-xs text-gray-800 leading-relaxed">{exp.description}</p>
-                            )}
-                          </div>
+                  {/* Skills Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Skills</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add a skill"
+                          value={newSkill}
+                          onChange={(e) => setNewSkill(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                        />
+                        <Button onClick={addSkill} size="sm">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        {portfolio?.skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary" className="gap-1">
+                            {skill}
+                            <button
+                              onClick={() => removeSkill(index)}
+                              className="ml-1 hover:text-destructive"
+                            >
+                              ×
+                            </button>
+                          </Badge>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    </CardContent>
+                  </Card>
 
-                  {/* Education */}
-                  {localEducation && localEducation.length > 0 && (
-                    <div>
-                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
-                        EDUCATION
-                      </h2>
-                      <div className="space-y-2">
-                        {localEducation.map((edu, index) => (
-                          <div key={index}>
-                            <div className="flex justify-between items-start mb-1">
-                              <h3 className="text-xs font-semibold text-gray-900">{edu.degree}</h3>
-                              <span className="text-xs text-gray-700">{edu.year}</span>
+                  {/* Experience Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        Experience
+                        <Button onClick={addExperience} size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {localExperience.map((exp, index) => (
+                        <div key={index} className="p-4 border rounded space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div className="grid grid-cols-2 gap-3 flex-1">
+                              <div>
+                                <Label>Job Title</Label>
+                                <Input
+                                  value={exp.title}
+                                  onChange={(e) => updateLocalExperience(index, 'title', e.target.value)}
+                                  placeholder="Software Engineer"
+                                />
+                              </div>
+                              <div>
+                                <Label>Company</Label>
+                                <Input
+                                  value={exp.company}
+                                  onChange={(e) => updateLocalExperience(index, 'company', e.target.value)}
+                                  placeholder="Company Name"
+                                />
+                              </div>
                             </div>
-                            <p className="text-xs text-gray-700 font-medium">{edu.institution}</p>
-                            {edu.description && (
-                              <p className="text-xs text-gray-800 mt-1">{edu.description}</p>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeExperience(index)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                          
+                          <div>
+                            <Label>Duration</Label>
+                            <Input
+                              value={exp.duration}
+                              onChange={(e) => updateLocalExperience(index, 'duration', e.target.value)}
+                              placeholder="Jan 2020 - Present"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Description</Label>
+                            <Textarea
+                              value={exp.description}
+                              onChange={(e) => updateLocalExperience(index, 'description', e.target.value)}
+                              placeholder="Describe your role and achievements..."
+                              rows={3}
+                            />
+                          </div>
+                          
+                          {changedExperience.has(index) && (
+                            <div className="flex justify-end">
+                              <Button 
+                                onClick={() => saveExperience(index)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
 
-                  {(!portfolio || (!portfolio.full_name && !portfolio.skills?.length && !portfolio.experience?.length)) && (
-                    <div className="text-center py-12 text-gray-500">
-                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm mb-2">Start building your resume</p>
-                      <p className="text-xs">Fill in your personal information, skills, experience, and education</p>
-                    </div>
-                  )}
+                  {/* Education Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        Education
+                        <Button onClick={addEducation} size="sm">
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add
+                        </Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {localEducation.map((edu, index) => (
+                        <div key={index} className="p-4 border rounded space-y-3">
+                          <div className="flex justify-between items-start">
+                            <div className="grid grid-cols-2 gap-3 flex-1">
+                              <div>
+                                <Label>Degree</Label>
+                                <Input
+                                  value={edu.degree}
+                                  onChange={(e) => updateLocalEducation(index, 'degree', e.target.value)}
+                                  placeholder="Bachelor of Science"
+                                />
+                              </div>
+                              <div>
+                                <Label>Institution</Label>
+                                <Input
+                                  value={edu.institution}
+                                  onChange={(e) => updateLocalEducation(index, 'institution', e.target.value)}
+                                  placeholder="University Name"
+                                />
+                              </div>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeEducation(index)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          
+                          <div>
+                            <Label>Year</Label>
+                            <Input
+                              value={edu.year}
+                              onChange={(e) => updateLocalEducation(index, 'year', e.target.value)}
+                              placeholder="2020"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Description (Optional)</Label>
+                            <Textarea
+                              value={edu.description || ''}
+                              onChange={(e) => updateLocalEducation(index, 'description', e.target.value)}
+                              placeholder="Additional details..."
+                              rows={2}
+                            />
+                          </div>
+                          
+                          {changedEducation.has(index) && (
+                            <div className="flex justify-end">
+                              <Button 
+                                onClick={() => saveEducation(index)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                {/* Right Column - Live Preview */}
+                <div className="lg:w-1/2">
+                  <div className="sticky top-8">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          Resume Preview
+                          {portfolio && (
+                            <Button onClick={downloadPDF} variant="outline" size="sm">
+                              <Download className="w-4 h-4 mr-2" />
+                              Download PDF
+                            </Button>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div id="resume-preview" className="bg-white text-black p-6 space-y-4 min-h-[800px]">
+                          {/* Header */}
+                          <div className="text-center border-b-2 border-gray-800 pb-3">
+                            <h1 className="text-xl font-bold text-gray-900 mb-1">
+                              {localFormData.full_name || portfolio?.full_name || 'Your Name'}
+                            </h1>
+                            <div className="flex flex-wrap justify-center gap-3 text-xs text-gray-700">
+                              {(localFormData.email || portfolio?.email) && (
+                                <span>
+                                  {localFormData.email || portfolio?.email}
+                                </span>
+                              )}
+                              {(localFormData.phone || portfolio?.phone) && (
+                                <span>
+                                  {localFormData.phone || portfolio?.phone}
+                                </span>
+                              )}
+                              {(localFormData.linkedin_profile || portfolio?.location) && (
+                                <span>
+                                  {localFormData.linkedin_profile || portfolio?.location}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Professional Summary */}
+                          {(localFormData.parsed_summary || portfolio?.parsed_summary) && (
+                            <div>
+                              <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
+                                PROFESSIONAL SUMMARY
+                              </h2>
+                              <p className="text-xs text-gray-800 leading-relaxed">{localFormData.parsed_summary || portfolio?.parsed_summary}</p>
+                            </div>
+                          )}
+
+                          {/* Skills */}
+                          {portfolio?.skills && portfolio.skills.length > 0 && (
+                            <div>
+                              <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
+                                TECHNICAL SKILLS
+                              </h2>
+                              <div className="text-xs text-gray-800">
+                                {portfolio.skills.join(' • ')}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Experience */}
+                          {localExperience && localExperience.length > 0 && (
+                            <div>
+                              <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
+                                PROFESSIONAL EXPERIENCE
+                              </h2>
+                              <div className="space-y-3">
+                                {localExperience.map((exp, index) => (
+                                  <div key={index}>
+                                    <div className="flex justify-between items-start mb-1">
+                                      <h3 className="text-xs font-semibold text-gray-900">{exp.title}</h3>
+                                      <span className="text-xs text-gray-700">{exp.duration}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-700 font-medium mb-1">{exp.company}</p>
+                                    {exp.description && (
+                                      <p className="text-xs text-gray-800 leading-relaxed">{exp.description}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Education */}
+                          {localEducation && localEducation.length > 0 && (
+                            <div>
+                              <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
+                                EDUCATION
+                              </h2>
+                              <div className="space-y-2">
+                                {localEducation.map((edu, index) => (
+                                  <div key={index}>
+                                    <div className="flex justify-between items-start mb-1">
+                                      <h3 className="text-xs font-semibold text-gray-900">{edu.degree}</h3>
+                                      <span className="text-xs text-gray-700">{edu.year}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-700 font-medium">{edu.institution}</p>
+                                    {edu.description && (
+                                      <p className="text-xs text-gray-800 mt-1">{edu.description}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(!portfolio || (!portfolio.full_name && !portfolio.skills?.length && !portfolio.experience?.length)) && (
+                            <div className="text-center py-12 text-gray-500">
+                              <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                              <p className="text-sm mb-2">Start building your resume</p>
+                              <p className="text-xs">Fill in your personal information, skills, experience, and education</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
