@@ -190,7 +190,7 @@ export default function BlogDashboard() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                  {profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User')}
                 </span>
               </div>
               <Button variant="outline" onClick={handleSignOut}>
@@ -217,7 +217,7 @@ export default function BlogDashboard() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
-                    {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                    {profile?.full_name || (user?.email ? user.email.split('@')[0] : 'User')}
                   </span>
                 </div>
                 <Button variant="outline" onClick={handleSignOut}>
