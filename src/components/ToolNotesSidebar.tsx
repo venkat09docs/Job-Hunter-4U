@@ -6,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Save, Trash2, FileText, Edit2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Save, Trash2, FileText, Edit2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ToolNotesSidebarProps {
@@ -69,6 +70,9 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
       }
       
       setIsEditing(false);
+      setSelectedNote(null);
+      setNoteTitle('');
+      setNoteContent('');
       toast({
         title: 'Success',
         description: 'Note saved successfully'
@@ -154,50 +158,79 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
               </div>
             ) : (
               toolChats.map((note) => (
-                <Card 
-                  key={note.id} 
-                  className={`cursor-pointer transition-colors hover:bg-accent ${
-                    selectedNote?.id === note.id ? 'ring-2 ring-primary' : ''
-                  }`}
-                  onClick={() => handleSelectNote(note)}
-                >
-                  <CardHeader className="p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm font-medium truncate">
-                          {note.title}
-                        </CardTitle>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(note.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Note</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this note? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteNote(note.id)}>
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                 <Card 
+                   key={note.id} 
+                   className={`cursor-pointer transition-colors hover:bg-accent group ${
+                     selectedNote?.id === note.id ? 'ring-2 ring-primary' : ''
+                   }`}
+                   onClick={() => handleSelectNote(note)}
+                 >
+                   <CardHeader className="p-3">
+                     <div className="flex items-start justify-between">
+                       <div className="flex-1 min-w-0">
+                         <CardTitle className="text-sm font-medium truncate">
+                           {note.title}
+                         </CardTitle>
+                         <p className="text-xs text-muted-foreground mt-1">
+                           {new Date(note.created_at).toLocaleDateString()}
+                         </p>
+                       </div>
+                       <div className="flex gap-1">
+                         <Dialog>
+                           <DialogTrigger asChild>
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                               onClick={(e) => e.stopPropagation()}
+                             >
+                               <Eye className="w-3 h-3" />
+                             </Button>
+                           </DialogTrigger>
+                           <DialogContent className="max-w-md">
+                             <DialogHeader>
+                               <DialogTitle>{note.title}</DialogTitle>
+                             </DialogHeader>
+                             <div className="mt-4">
+                               <p className="text-sm text-muted-foreground mb-2">
+                                 Created: {new Date(note.created_at).toLocaleDateString()}
+                               </p>
+                               <div className="bg-muted p-3 rounded-md">
+                                 <p className="text-sm whitespace-pre-wrap">
+                                   {note.messages[0]?.content || 'No content'}
+                                 </p>
+                               </div>
+                             </div>
+                           </DialogContent>
+                         </Dialog>
+                         <AlertDialog>
+                           <AlertDialogTrigger asChild>
+                             <Button
+                               variant="ghost"
+                               size="sm"
+                               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                               onClick={(e) => e.stopPropagation()}
+                             >
+                               <Trash2 className="w-3 h-3" />
+                             </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                             <AlertDialogHeader>
+                               <AlertDialogTitle>Delete Note</AlertDialogTitle>
+                               <AlertDialogDescription>
+                                 Are you sure you want to delete this note? This action cannot be undone.
+                               </AlertDialogDescription>
+                             </AlertDialogHeader>
+                             <AlertDialogFooter>
+                               <AlertDialogCancel>Cancel</AlertDialogCancel>
+                               <AlertDialogAction onClick={() => handleDeleteNote(note.id)}>
+                                 Delete
+                               </AlertDialogAction>
+                             </AlertDialogFooter>
+                           </AlertDialogContent>
+                         </AlertDialog>
+                       </div>
+                     </div>
                   </CardHeader>
                 </Card>
               ))
