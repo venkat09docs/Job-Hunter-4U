@@ -18,9 +18,13 @@ export type Database = {
         Row: {
           created_at: string
           education: Json | null
+          email: string | null
           experience: Json | null
+          full_name: string | null
           id: string
+          location: string | null
           parsed_summary: string | null
+          phone: string | null
           resume_url: string | null
           skills: Json | null
           updated_at: string
@@ -29,9 +33,13 @@ export type Database = {
         Insert: {
           created_at?: string
           education?: Json | null
+          email?: string | null
           experience?: Json | null
+          full_name?: string | null
           id?: string
+          location?: string | null
           parsed_summary?: string | null
+          phone?: string | null
           resume_url?: string | null
           skills?: Json | null
           updated_at?: string
@@ -40,9 +48,13 @@ export type Database = {
         Update: {
           created_at?: string
           education?: Json | null
+          email?: string | null
           experience?: Json | null
+          full_name?: string | null
           id?: string
+          location?: string | null
           parsed_summary?: string | null
+          phone?: string | null
           resume_url?: string | null
           skills?: Json | null
           updated_at?: string

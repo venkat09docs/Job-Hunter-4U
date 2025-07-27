@@ -73,10 +73,10 @@ const Portfolio = () => {
         // Transform the data to match our interface
         const transformedData: Portfolio = {
           ...data,
-          full_name: data.full_name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          location: data.location || '',
+          full_name: (data as any).full_name || '',
+          email: (data as any).email || '',
+          phone: (data as any).phone || '',
+          location: (data as any).location || '',
           skills: Array.isArray(data.skills) ? (data.skills as string[]) : [],
           experience: Array.isArray(data.experience) ? (data.experience as unknown as ExperienceItem[]) : [],
           education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
@@ -121,10 +121,10 @@ const Portfolio = () => {
 
       const transformedData: Portfolio = {
         ...data,
-        full_name: data.full_name || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        location: data.location || '',
+        full_name: (data as any).full_name || '',
+        email: (data as any).email || '',
+        phone: (data as any).phone || '',
+        location: (data as any).location || '',
         skills: [],
         experience: [],
         education: []
@@ -234,10 +234,10 @@ const Portfolio = () => {
       // Transform the returned data
       const transformedData: Portfolio = {
         ...data,
-        full_name: data.full_name || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        location: data.location || '',
+        full_name: (data as any).full_name || '',
+        email: (data as any).email || '',
+        phone: (data as any).phone || '',
+        location: (data as any).location || '',
         skills: Array.isArray(data.skills) ? (data.skills as string[]) : [],
         experience: Array.isArray(data.experience) ? (data.experience as unknown as ExperienceItem[]) : [],
         education: Array.isArray(data.education) ? (data.education as unknown as EducationItem[]) : []
