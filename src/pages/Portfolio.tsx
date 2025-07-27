@@ -877,13 +877,13 @@ const Portfolio = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div id="resume-preview" className="bg-white text-black p-8 space-y-6 min-h-[800px]">
+                <div id="resume-preview" className="bg-white text-black p-6 space-y-4 min-h-[800px]">
                   {/* Header */}
-                  <div className="text-center border-b-2 border-gray-800 pb-4">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  <div className="text-center border-b-2 border-gray-800 pb-3">
+                    <h1 className="text-xl font-bold text-gray-900 mb-1">
                       {localFormData.full_name || portfolio?.full_name || 'Your Name'}
                     </h1>
-                    <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-700">
+                    <div className="flex flex-wrap justify-center gap-3 text-xs text-gray-700">
                       {(localFormData.email || portfolio?.email) && (
                         <span>
                           {localFormData.email || portfolio?.email}
@@ -905,20 +905,20 @@ const Portfolio = () => {
                   {/* Professional Summary */}
                   {(localFormData.parsed_summary || portfolio?.parsed_summary) && (
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                         PROFESSIONAL SUMMARY
                       </h2>
-                      <p className="text-gray-800 leading-relaxed">{localFormData.parsed_summary || portfolio?.parsed_summary}</p>
+                      <p className="text-xs text-gray-800 leading-relaxed">{localFormData.parsed_summary || portfolio?.parsed_summary}</p>
                     </div>
                   )}
 
                   {/* Skills */}
                   {portfolio?.skills && portfolio.skills.length > 0 && (
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                         TECHNICAL SKILLS
                       </h2>
-                      <div className="text-gray-800">
+                      <div className="text-xs text-gray-800">
                         {portfolio.skills.join(' • ')}
                       </div>
                     </div>
@@ -927,19 +927,19 @@ const Portfolio = () => {
                   {/* Experience */}
                   {localExperience && localExperience.length > 0 && (
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                         PROFESSIONAL EXPERIENCE
                       </h2>
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {localExperience.map((exp, index) => (
                           <div key={index}>
                             <div className="flex justify-between items-start mb-1">
-                              <h3 className="font-semibold text-gray-900">{exp.title}</h3>
-                              <span className="text-gray-700 text-sm">{exp.duration}</span>
+                              <h3 className="text-xs font-semibold text-gray-900">{exp.title}</h3>
+                              <span className="text-xs text-gray-700">{exp.duration}</span>
                             </div>
-                            <p className="text-gray-700 font-medium mb-2">{exp.company}</p>
+                            <p className="text-xs text-gray-700 font-medium mb-1">{exp.company}</p>
                             {exp.description && (
-                              <p className="text-gray-800 leading-relaxed">{exp.description}</p>
+                              <p className="text-xs text-gray-800 leading-relaxed">{exp.description}</p>
                             )}
                           </div>
                         ))}
@@ -950,19 +950,19 @@ const Portfolio = () => {
                   {/* Education */}
                   {localEducation && localEducation.length > 0 && (
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">
+                      <h2 className="text-sm font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">
                         EDUCATION
                       </h2>
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {localEducation.map((edu, index) => (
                           <div key={index}>
                             <div className="flex justify-between items-start mb-1">
-                              <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
-                              <span className="text-gray-700 text-sm">{edu.year}</span>
+                              <h3 className="text-xs font-semibold text-gray-900">{edu.degree}</h3>
+                              <span className="text-xs text-gray-700">{edu.year}</span>
                             </div>
-                            <p className="text-gray-700 font-medium">{edu.institution}</p>
+                            <p className="text-xs text-gray-700 font-medium">{edu.institution}</p>
                             {edu.description && (
-                              <p className="text-gray-800 mt-1">{edu.description}</p>
+                              <p className="text-xs text-gray-800 mt-1">{edu.description}</p>
                             )}
                           </div>
                         ))}
@@ -972,9 +972,9 @@ const Portfolio = () => {
 
                   {(!portfolio || (!portfolio.full_name && !portfolio.skills?.length && !portfolio.experience?.length)) && (
                     <div className="text-center py-12 text-gray-500">
-                      <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg mb-2">Start building your resume</p>
-                      <p className="text-sm">Fill in your personal information, skills, experience, and education</p>
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm mb-2">Start building your resume</p>
+                      <p className="text-xs">Fill in your personal information, skills, experience, and education</p>
                     </div>
                   )}
                 </div>
