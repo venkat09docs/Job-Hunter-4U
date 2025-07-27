@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit3, Trash2, Eye, EyeOff, Calendar, PenTool } from "lucide-react";
+import { Plus, Edit3, Trash2, Eye, EyeOff, Calendar, PenTool, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -188,7 +188,15 @@ export default function BlogDashboard() {
           <div className="flex-1">
           <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
             <SidebarTrigger />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Coins className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">
+                  {profile?.tokens_remaining || 0} tokens
+                </span>
+              </div>
               <UserProfileDropdown />
+            </div>
           </header>
             <div className="flex items-center justify-center h-96">
               <div className="text-center">Loading...</div>
@@ -206,7 +214,15 @@ export default function BlogDashboard() {
         <div className="flex-1">
             <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
               <SidebarTrigger />
-              <UserProfileDropdown />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {profile?.tokens_remaining || 0} tokens
+                  </span>
+                </div>
+                <UserProfileDropdown />
+              </div>
             </header>
 
           <div className="p-6">

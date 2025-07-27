@@ -80,7 +80,16 @@ const Dashboard = () => {
                   Job Hunter Pro
                 </h1>
               </div>
-              <UserProfileDropdown />
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {profile?.tokens_remaining || 0} tokens
+                  </span>
+                </div>
+                <UserProfileDropdown />
+              </div>
             </div>
           </header>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { AppSidebar } from '@/components/AppSidebar';
-import { Upload, Plus, Trash2, FileText, Download, User, Edit3, LogOut } from 'lucide-react';
+import { Upload, Plus, Trash2, FileText, Download, User, Edit3, LogOut, Coins } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -46,7 +48,8 @@ interface Portfolio {
 }
 
 const Portfolio = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -690,21 +693,6 @@ const Portfolio = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: 'Signed out successfully',
-        description: 'You have been logged out of your account.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error signing out',
-        description: 'There was a problem signing you out.',
-        variant: 'destructive'
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -722,15 +710,12 @@ const Portfolio = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="text-sm text-muted-foreground">
-                      {user?.email}
+                    <Coins className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {profile?.tokens_remaining || 0} tokens
                     </span>
                   </div>
-                  <Button onClick={handleSignOut} variant="outline" size="sm">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
+                  <UserProfileDropdown />
                 </div>
               </div>
             </header>
@@ -765,15 +750,12 @@ const Portfolio = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">
-                    {user?.email}
+                  <Coins className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">
+                    {profile?.tokens_remaining || 0} tokens
                   </span>
                 </div>
-                <Button onClick={handleSignOut} variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <UserProfileDropdown />
               </div>
             </div>
           </header>

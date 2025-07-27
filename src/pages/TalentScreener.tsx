@@ -12,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, FileText, Brain, Target, Lightbulb, Coins, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
 
@@ -205,24 +206,34 @@ const TalentScreener = () => {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex items-center justify-between">
+        {/* Header */}
+        <header className="flex h-16 shrink-0 items-center justify-between border-b px-4">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
             <div>
-              <h1 className="text-3xl font-bold">Talent Screener</h1>
-              <p className="text-muted-foreground">
-                Upload your resume for AI-powered analysis and job fit evaluation
-              </p>
+              <h1 className="text-xl font-semibold">Talent Screener</h1>
             </div>
-            
+          </div>
+          
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-primary" />
-              <span className="font-medium">
+              <Coins className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">
                 {profile?.tokens_remaining || 0} tokens
               </span>
             </div>
+            <UserProfileDropdown />
+          </div>
+        </header>
+
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="space-y-2">
+            <p className="text-muted-foreground">
+              Upload your resume for AI-powered analysis and job fit evaluation
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Form Fields */}
             <Card className="lg:col-span-2">
               <CardHeader>
@@ -361,46 +372,6 @@ const TalentScreener = () => {
               </CardContent>
             </Card>
 
-            {/* Token Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Coins className="h-5 w-5" />
-                  Token Balance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">
-                    {profile?.tokens_remaining || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    tokens remaining
-                  </div>
-                </div>
-                
-                <Progress 
-                  value={((profile?.tokens_remaining || 0) / 100) * 100} 
-                  className="w-full"
-                />
-
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <div>• Resume analysis: {REQUIRED_TOKENS} tokens</div>
-                  <div>• Job search: 1 token</div>
-                  <div>• AI query: 1 token</div>
-                </div>
-
-                {!hasEnoughTokens && (
-                  <Button 
-                    variant="premium" 
-                    className="w-full"
-                    onClick={() => setShowPricing(true)}
-                  >
-                    Purchase More Tokens
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
 
           </div>
 
