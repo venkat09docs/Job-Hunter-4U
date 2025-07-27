@@ -11,7 +11,8 @@ import {
   Search,
   Linkedin,
   Wrench,
-  Zap
+  Zap,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +34,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
   { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   { title: "Digital Career Hub", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },

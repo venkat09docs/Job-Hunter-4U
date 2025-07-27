@@ -146,6 +146,63 @@ export type Database = {
         }
         Relationships: []
       }
+      job_tracker: {
+        Row: {
+          application_date: string
+          company_name: string
+          contact_email: string | null
+          contact_person: string | null
+          created_at: string
+          id: string
+          is_archived: boolean
+          job_title: string
+          job_url: string | null
+          location: string | null
+          next_follow_up: string | null
+          notes: string | null
+          salary_range: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_date?: string
+          company_name: string
+          contact_email?: string | null
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          is_archived?: boolean
+          job_title: string
+          job_url?: string | null
+          location?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          salary_range?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_date?: string
+          company_name?: string
+          contact_email?: string | null
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          is_archived?: boolean
+          job_title?: string
+          job_url?: string | null
+          location?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          salary_range?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linkedin_automations: {
         Row: {
           activated_at: string

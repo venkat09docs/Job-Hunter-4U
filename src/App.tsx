@@ -15,6 +15,7 @@ import PublicBlogs from "./pages/PublicBlogs";
 import Settings from "./pages/Settings";
 import TalentScreener from "./pages/TalentScreener";
 import JobSearch from "./pages/JobSearch";
+import JobTracker from "./pages/JobTracker";
 import LinkedInAutomation from "./pages/LinkedInAutomation";
 import ManageCareerHub from "./pages/ManageCareerHub";
 import DigitalCareerHub from "./pages/DigitalCareerHub";
@@ -87,6 +88,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <JobSearch />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/job-tracker" 
+              element={
+                <ProtectedRoute>
+                  <JobTracker />
                 </ProtectedRoute>
               } 
             />
