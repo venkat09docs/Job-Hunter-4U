@@ -25,7 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-  { title: "Edit Profile", url: "/dashboard/profile", icon: User },
+  { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
@@ -86,7 +86,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Public Profile</SidebarGroupLabel>
+          <SidebarGroupLabel>Public Bio Tree</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -99,12 +99,12 @@ export function AppSidebar() {
                       className="hover:bg-muted/50"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">View Public Profile</span>
+                      <span className="ml-3">View Public Bio Tree</span>
                     </a>
                   ) : (
                     <span className="text-muted-foreground cursor-not-allowed">
                       <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">No Public Profile Yet</span>
+                      <span className="ml-3">No Public Bio Tree Yet</span>
                     </span>
                   )}
                 </SidebarMenuButton>
