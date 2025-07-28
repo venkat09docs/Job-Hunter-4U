@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Crown, Star, Loader2, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 declare global {
   interface Window {
@@ -13,13 +16,15 @@ declare global {
 
 const PricingDialog = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { refreshProfile, refreshAnalytics } = useProfile();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const plans = [
     {
       name: "One Week Plan",
       price: 299,
-      duration: "week",
+      duration: "1 week",
       description: "Quick access to all career tools",
       features: [
         "AI-powered job matching",
@@ -36,7 +41,7 @@ const PricingDialog = () => {
     {
       name: "One Month Plan",
       price: 999,
-      duration: "month", 
+      duration: "1 month",
       description: "Perfect for focused job searching",
       features: [
         "AI-powered job matching",
@@ -84,25 +89,20 @@ const PricingDialog = () => {
     });
   };
 
-  const storeSubscription = (plan: typeof plans[0], paymentDetails: any) => {
-    const subscription = {
-      plan: plan.name,
-      price: plan.price,
-      duration: plan.duration,
-      paymentId: paymentDetails.razorpay_payment_id,
-      activatedAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-      features: plan.features
-    };
-    
-    localStorage.setItem('jobhunter_subscription', JSON.stringify(subscription));
-    localStorage.setItem('jobhunter_user_plan', plan.name);
-  };
-
   const handlePayment = async (plan: typeof plans[0]) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to purchase a subscription plan.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoadingPlan(plan.name);
     
     try {
+      // Load Razorpay SDK
       const res = await loadRazorpay();
       if (!res) {
         toast({
@@ -110,34 +110,79 @@ const PricingDialog = () => {
           description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
           variant: "destructive"
         });
+        setLoadingPlan(null);
         return;
       }
 
+      // Create order using our edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+        body: {
+          amount: plan.price,
+          plan_name: plan.name,
+          plan_duration: plan.duration,
+        }
+      });
+
+      if (orderError || !orderData) {
+        console.error('Order creation error:', orderError);
+        toast({
+          title: "Error",
+          description: "Failed to create payment order. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
+      }
+
+      // Configure Razorpay options
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_1234567890",
-        amount: plan.price * 100,
-        currency: "INR",
+        key: orderData.key,
+        order_id: orderData.order_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
         name: "JobHunter Pro",
-        description: `${plan.name} Plan - Unlock your career potential`,
+        description: `${plan.name} - Unlock your career potential`,
         image: "/favicon.ico",
-        handler: function (response: any) {
+        handler: async function (response: any) {
           try {
-            storeSubscription(plan, response);
+            // Verify payment using our edge function
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            });
+
+            if (verifyError || !verifyData?.success) {
+              console.error('Payment verification error:', verifyError);
+              toast({
+                title: "Payment Verification Failed",
+                description: "Payment received but verification failed. Please contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            // Success! Refresh profile data
+            await refreshProfile();
+            await refreshAnalytics();
             
             toast({
               title: "🎉 Payment Successful!",
-              description: `Welcome to ${plan.name} plan! Your subscription is now active.`,
+              description: `Welcome to ${plan.name}! Your subscription is now active.`,
             });
             
+            // Optional: Close dialog or refresh page
             setTimeout(() => {
               window.location.reload();
             }, 2000);
             
           } catch (error) {
-            console.error('Error storing subscription:', error);
+            console.error('Error processing payment:', error);
             toast({
-              title: "Payment Received",
-              description: "Payment successful, but there was an issue activating your plan. Please contact support.",
+              title: "Payment Processing Error",
+              description: "Payment may have been successful but activation failed. Please contact support.",
               variant: "destructive"
             });
           }
@@ -155,8 +200,8 @@ const PricingDialog = () => {
           color: "#6366f1"
         },
         prefill: {
-          name: "",
-          email: "", 
+          name: user.user_metadata?.full_name || "",
+          email: user.email || "", 
           contact: ""
         },
         notes: {
@@ -185,7 +230,6 @@ const PricingDialog = () => {
         description: "Failed to initialize payment. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setLoadingPlan(null);
     }
   };
