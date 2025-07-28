@@ -96,14 +96,22 @@ serve(async (req) => {
     console.log('=== RAZORPAY DEBUG END ===');
     
     // Create Razorpay order
+    // Generate receipt with proper length limit (max 40 characters for Razorpay)
+    const timestamp = Date.now().toString();
+    const userIdShort = user.id.slice(0, 8); // Take first 8 chars of UUID
+    const receipt = `rcpt_${userIdShort}_${timestamp}`.slice(0, 40);
+    
+    console.log('Generated receipt:', receipt, '(length:', receipt.length, ')');
+    
     const orderData = {
       amount: amount * 100, // Convert to paisa
       currency: 'INR',
-      receipt: `receipt_${user.id}_${Date.now()}`,
+      receipt: receipt,
       notes: {
         plan_name: plan_name,
         plan_duration: plan_duration,
-        user_id: user.id
+        user_id: user.id,
+        full_user_id: user.id // Store full user ID in notes for reference
       }
     };
 
