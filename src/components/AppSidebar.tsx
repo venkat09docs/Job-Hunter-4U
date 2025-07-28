@@ -35,7 +35,7 @@ const mainItems = [
   { title: "Job Search", url: "/dashboard/job-search", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
-  { title: "Digital Career Hub", url: "/dashboard/digital-career-hub", icon: Zap },
+  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
@@ -86,7 +86,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Digital Career Hub</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
