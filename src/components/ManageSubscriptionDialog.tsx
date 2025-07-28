@@ -125,7 +125,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
-          amount: plan.price * 100,
+          amount: plan.price,
           plan_name: plan.name,
           plan_duration: plan.duration
         }
