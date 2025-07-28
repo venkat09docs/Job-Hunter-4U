@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -25,12 +25,42 @@ export const SubscriptionUpgrade = ({
 
   const hasValidSubscription = hasActiveSubscription();
 
+  // Handle scroll restoration when dialog closes
+  useEffect(() => {
+    const handleDialogClose = () => {
+      if (!isOpen) {
+        // Force scroll restoration
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.documentElement.style.overflow = '';
+        
+        // Ensure the main content can scroll
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+          mainElement.style.overflow = '';
+        }
+      }
+    };
+
+    handleDialogClose();
+  }, [isOpen]);
+
   if (hasValidSubscription) {
     return children ? <>{children}</> : null;
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      // Additional cleanup when closing
+      if (!open) {
+        setTimeout(() => {
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+          document.documentElement.style.overflow = '';
+        }, 100);
+      }
+    }}>
       <DialogTrigger asChild>
         {children ? (
           children
@@ -41,7 +71,13 @@ export const SubscriptionUpgrade = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent 
+        className="max-w-5xl max-h-[90vh] overflow-y-auto p-6"
+        onCloseAutoFocus={(e) => {
+          // Prevent focus issues that might affect scroll
+          e.preventDefault();
+        }}
+      >
         <DialogHeader className="pb-4">
           <DialogTitle className="text-2xl font-bold text-center">Upgrade Your Subscription</DialogTitle>
         </DialogHeader>
