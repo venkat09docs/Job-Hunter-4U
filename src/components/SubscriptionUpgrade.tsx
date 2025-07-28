@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, Crown } from 'lucide-react';
+import { Calendar, Crown, Settings } from 'lucide-react';
 import PricingDialog from '@/components/PricingDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface SubscriptionUpgradeProps {
   children?: React.ReactNode;
@@ -21,9 +23,38 @@ export const SubscriptionUpgrade = ({
   className = ""
 }: SubscriptionUpgradeProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { hasActiveSubscription, getRemainingDays } = useProfile();
+  const { toast } = useToast();
 
   const hasValidSubscription = hasActiveSubscription();
+
+  const handleManageSubscription = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        toast({
+          title: "Subscription Management",
+          description: data.message || "Subscription management feature coming soon",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error accessing customer portal:', error);
+      toast({
+        title: "Error",
+        description: "Unable to access subscription management at this time",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle scroll restoration when dialog closes
   useEffect(() => {
@@ -46,6 +77,21 @@ export const SubscriptionUpgrade = ({
   }, [isOpen]);
 
   if (hasValidSubscription) {
+    if (children && typeof children === 'object' && 'props' in children) {
+      // Clone the button and add the manage subscription functionality
+      return (
+        <div onClick={handleManageSubscription}>
+          {loading ? (
+            <Button variant={variant} size={size} className={className} disabled>
+              <Settings className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </Button>
+          ) : (
+            children
+          )}
+        </div>
+      );
+    }
     return children ? <>{children}</> : null;
   }
 
