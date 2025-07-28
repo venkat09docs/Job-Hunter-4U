@@ -10,13 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Tag, Folder } from 'lucide-react';
+import { Trash2, Edit, Plus, Tag, Folder, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface ToolForm {
   tool_name: string;
@@ -51,6 +52,7 @@ const ManageCareerHub = () => {
     deleteCategory
   } = useAITools();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -247,7 +249,17 @@ const ManageCareerHub = () => {
       {/* Top Menu */}
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Manage Career Hub</h1>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go to Dashboard
+          </Button>
+          
+          <h1 className="text-xl font-semibold flex-1 text-center">Manage Career Hub</h1>
+          
           <div className="flex items-center gap-4">
             <Badge variant="secondary">
               {profile?.tokens_remaining || 0} Credits
