@@ -212,8 +212,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
-        <DialogHeader className="pb-4">
+      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-2xl font-bold text-center">Manage Your Subscription</DialogTitle>
           {currentPlan && (
             <div className="text-center mt-2">
@@ -224,7 +224,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
           )}
         </DialogHeader>
 
-        <div className="flex gap-6 mt-8 overflow-x-auto pb-4">{/* Single row layout */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 px-2">{/* Back to grid layout for better responsiveness */}
           {plans.map((plan) => {
             const isCurrentPlan = plan.name === profile?.subscription_plan;
             const Icon = plan.icon;
@@ -232,7 +233,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
             return (
               <Card 
                 key={plan.name} 
-                className={`relative p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 transform hover:scale-105 min-w-[320px] flex-shrink-0 ${
+                className={`relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 transform hover:scale-105 ${
                   isCurrentPlan ? 'ring-2 ring-success ring-offset-2 scale-105 bg-success/5' : ''
                 } ${plan.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''}`}
               >
@@ -254,26 +255,26 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                   </div>
                 )}
 
-                <div className="text-center mb-8">
-                  <div className="flex justify-center mb-4">
-                    <div className={`p-4 rounded-full ${
+                <div className="text-center mb-6">
+                  <div className="flex justify-center mb-3">
+                    <div className={`p-3 rounded-full ${
                       isCurrentPlan 
                         ? 'bg-gradient-to-r from-success/20 to-success-glow/20' 
                         : plan.popular 
                           ? 'bg-gradient-to-r from-primary/20 to-primary-glow/20'
                           : 'bg-gradient-to-r from-muted/20 to-muted/30'
                     }`}>
-                      <Icon className={`h-10 w-10 ${
+                      <Icon className={`h-8 w-8 ${
                         isCurrentPlan ? 'text-success' : plan.popular ? 'text-primary' : 'text-muted-foreground'
                       }`} />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold mb-3">{plan.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-6">{plan.description}</p>
-                  <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
+                  <div className="mb-4">
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-lg text-muted-foreground">₹</span>
-                      <span className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                      <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                         {plan.price}
                       </span>
                       <span className="text-muted-foreground">/{plan.duration}</span>
@@ -286,7 +287,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-8">
+                <div className="space-y-2 mb-6">
                   {plan.features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <div className="mt-0.5">
@@ -297,35 +298,35 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                   ))}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <Button
                     variant={isCurrentPlan ? "secondary" : plan.variant}
-                    className="w-full h-12 text-base font-semibold"
+                    className="w-full h-10 text-sm font-semibold"
                     disabled={isCurrentPlan || loadingPlan === plan.name}
                     onClick={() => handleUpgrade(plan)}
                   >
                     {loadingPlan === plan.name ? (
                       <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Processing Payment...
                       </>
                     ) : isCurrentPlan ? (
                       <>
-                        <Check className="h-5 w-5 mr-2" />
+                        <Check className="h-4 w-4 mr-2" />
                         Current Plan
                       </>
                     ) : (
                       <>
-                        <Crown className="h-5 w-5 mr-2" />
+                        <Crown className="h-4 w-4 mr-2" />
                         Upgrade to {plan.name}
                       </>
                     )}
                   </Button>
 
                   {!isCurrentPlan && remainingDays > 0 && (
-                    <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="bg-muted/50 rounded-lg p-2">
                       <p className="text-xs text-center text-muted-foreground">
-                        <span className="font-medium text-primary">{remainingDays} remaining days</span> from your current plan will be added to this upgrade
+                        <span className="font-medium text-primary">{remainingDays} remaining days</span> will be added
                       </p>
                     </div>
                   )}
@@ -333,9 +334,10 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
               </Card>
             );
           })}
+          </div>
         </div>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
+        <div className="flex-shrink-0 mt-6 pt-4 border-t text-center text-sm text-muted-foreground">
           <p>Secure payments powered by Razorpay • Cancel anytime • Instant access</p>
         </div>
       </DialogContent>
