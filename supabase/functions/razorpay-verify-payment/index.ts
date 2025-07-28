@@ -78,7 +78,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Request body:', requestBody);
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = requestBody;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, upgrade_end_date } = requestBody;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       console.log('Missing fields:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
@@ -167,9 +167,15 @@ serve(async (req) => {
       throw new Error('Failed to update payment status');
     }
 
-    // Calculate subscription dates
+    // Calculate subscription dates - use upgrade_end_date if provided (for upgrades with remaining days)
     const startDate = new Date();
-    const endDate = calculateSubscriptionEndDate(paymentData.plan_duration);
+    const endDate = upgrade_end_date ? new Date(upgrade_end_date) : calculateSubscriptionEndDate(paymentData.plan_duration);
+
+    console.log('Subscription dates:', { 
+      startDate: startDate.toISOString(), 
+      endDate: endDate.toISOString(),
+      isUpgrade: !!upgrade_end_date 
+    });
 
     // Update user profile with subscription details
     const { error: profileError } = await supabaseService
