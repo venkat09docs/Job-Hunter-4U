@@ -212,7 +212,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-hidden flex flex-col cursor-default">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-2xl font-bold text-center">Manage Your Subscription</DialogTitle>
           {currentPlan && (
