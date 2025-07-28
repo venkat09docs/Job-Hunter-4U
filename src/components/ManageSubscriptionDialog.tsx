@@ -225,7 +225,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 px-2">{/* Back to grid layout for better responsiveness */}
+          <div className="flex gap-4 mt-6 px-2 justify-center flex-wrap lg:flex-nowrap">{/* Side by side responsive layout */}
           {plans.map((plan) => {
             const isCurrentPlan = plan.name === profile?.subscription_plan;
             const Icon = plan.icon;
@@ -233,7 +233,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
             return (
               <Card 
                 key={plan.name} 
-                className={`relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 transform hover:scale-105 ${
+                className={`relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 transform hover:scale-105 flex-1 min-w-[280px] max-w-[350px] ${
                   isCurrentPlan ? 'ring-2 ring-success ring-offset-2 scale-105 bg-success/5' : ''
                 } ${plan.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''}`}
               >
