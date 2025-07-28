@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, X, Bot, User, Coins, Loader2 } from "lucide-react";
+import { MessageCircle, Send, X, Bot, User, Calendar, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,7 +20,7 @@ interface ChatMessage {
 
 const AIAssistantChat = () => {
   const { user } = useAuth();
-  const { profile, updateTokens, refreshProfile, incrementAnalytics } = useProfile();
+  const { profile, hasActiveSubscription, getRemainingDays, refreshProfile, incrementAnalytics } = useProfile();
   const { toast } = useToast();
   
   const [isOpen, setIsOpen] = useState(false);
@@ -30,8 +30,7 @@ const AIAssistantChat = () => {
   const [showPricing, setShowPricing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const REQUIRED_TOKENS = 1;
-  const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
+  const hasValidSubscription = hasActiveSubscription();
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -74,7 +73,12 @@ const AIAssistantChat = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || !user) return;
 
-    if (!hasEnoughTokens) {
+    if (!hasValidSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "You need an active subscription to use the AI assistant. Please upgrade your plan.",
+        variant: "destructive"
+      });
       setShowPricing(true);
       return;
     }
@@ -118,8 +122,7 @@ const AIAssistantChat = () => {
       // Log conversation to Supabase (commented out until table is available)
       // await logChatToSupabase(userMessage, aiResponse);
 
-      // Deduct tokens and increment analytics
-      await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
+      // Increment analytics
       await incrementAnalytics('ai_query');
       await refreshProfile();
 
@@ -178,8 +181,8 @@ const AIAssistantChat = () => {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-xs">
-              <Coins className="h-3 w-3" />
-              <span>{profile?.tokens_remaining || 0}</span>
+              <Calendar className="h-3 w-3" />
+              <span>{getRemainingDays()} days left</span>
             </div>
             <Button
               variant="ghost"
@@ -240,23 +243,23 @@ const AIAssistantChat = () => {
           <div className="p-4 border-t">
             <div className="flex gap-2">
               <Input
-                placeholder={hasEnoughTokens ? "Ask me anything..." : "Insufficient tokens"}
+                placeholder={hasValidSubscription ? "Ask me anything..." : "Subscription required"}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                disabled={isLoading || !hasEnoughTokens}
+                disabled={isLoading || !hasValidSubscription}
                 className="flex-1"
               />
               <Button
                 onClick={sendMessage}
-                disabled={!inputMessage.trim() || isLoading || !hasEnoughTokens}
+                disabled={!inputMessage.trim() || isLoading || !hasValidSubscription}
                 size="icon"
               >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
             
-            {!hasEnoughTokens && (
+            {!hasValidSubscription && (
               <div className="mt-2 text-center">
                 <Button
                   variant="link"
@@ -264,13 +267,13 @@ const AIAssistantChat = () => {
                   onClick={() => setShowPricing(true)}
                   className="text-xs"
                 >
-                  Buy tokens to continue chatting
+                  Upgrade subscription to continue chatting
                 </Button>
               </div>
             )}
             
             <div className="text-xs text-muted-foreground text-center mt-1">
-              {REQUIRED_TOKENS} token per message
+              Requires active subscription
             </div>
           </div>
         </CardContent>
@@ -280,7 +283,7 @@ const AIAssistantChat = () => {
       <Dialog open={showPricing} onOpenChange={setShowPricing}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Purchase Tokens</DialogTitle>
+            <DialogTitle>Upgrade Your Plan</DialogTitle>
           </DialogHeader>
           <Pricing />
         </DialogContent>

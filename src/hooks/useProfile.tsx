@@ -9,7 +9,10 @@ interface Profile {
   full_name: string | null;
   username?: string;
   profile_image_url?: string | null;
-  tokens_remaining: number;
+  subscription_plan: string | null;
+  subscription_start_date: string | null;
+  subscription_end_date: string | null;
+  subscription_active: boolean | null;
   total_resume_opens: number;
   total_job_searches: number;
   total_ai_queries: number;
@@ -98,24 +101,48 @@ export const useProfile = () => {
     }
   };
 
-  const updateTokens = async (newTokenCount: number) => {
+  const updateSubscription = async (plan: string, startDate: string, endDate: string) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ tokens_remaining: newTokenCount })
+        .update({ 
+          subscription_plan: plan,
+          subscription_start_date: startDate,
+          subscription_end_date: endDate,
+          subscription_active: true
+        })
         .eq('user_id', user?.id);
 
       if (error) throw error;
       
-      setProfile(prev => prev ? { ...prev, tokens_remaining: newTokenCount } : null);
+      setProfile(prev => prev ? { 
+        ...prev, 
+        subscription_plan: plan,
+        subscription_start_date: startDate,
+        subscription_end_date: endDate,
+        subscription_active: true
+      } : null);
     } catch (error: any) {
-      console.error('Error updating tokens:', error);
+      console.error('Error updating subscription:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update tokens',
+        description: 'Failed to update subscription',
         variant: 'destructive'
       });
     }
+  };
+
+  const getRemainingDays = () => {
+    if (!profile?.subscription_end_date) return 0;
+    const endDate = new Date(profile.subscription_end_date);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const hasActiveSubscription = () => {
+    return profile?.subscription_active && getRemainingDays() > 0;
   };
 
   return {
@@ -123,7 +150,9 @@ export const useProfile = () => {
     analytics,
     loading,
     incrementAnalytics,
-    updateTokens,
+    updateSubscription,
+    getRemainingDays,
+    hasActiveSubscription,
     refreshProfile: fetchProfile,
     refreshAnalytics: fetchAnalytics
   };

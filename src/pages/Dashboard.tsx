@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { User, Briefcase, Target, TrendingUp, Coins, CreditCard, Eye, Search, Bot } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot } from 'lucide-react';
+import { SubscriptionStatus, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
@@ -144,12 +145,7 @@ const Dashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {profile?.tokens_remaining || 0} tokens
-                  </span>
-                </div>
+                <SubscriptionStatus />
                 <UserProfileDropdown />
               </div>
             </div>
@@ -167,24 +163,21 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Tokens Section */}
+            {/* Subscription Section */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Coins className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-lg">Remaining Tokens</CardTitle>
+                      <Calendar className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-lg">Subscription Status</CardTitle>
                     </div>
-                    <Badge variant="secondary" className="text-lg px-3 py-1">
-                      {profile?.tokens_remaining || 0}
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                      Use tokens for premium features like AI resume optimization and job matching
+                      Access all premium features with your active subscription
                     </p>
                     <Button 
                       onClick={handleBuyTokens}
@@ -193,7 +186,7 @@ const Dashboard = () => {
                       className="gap-2"
                     >
                       <CreditCard className="h-4 w-4" />
-                      Buy More Tokens
+                      View Plans
                     </Button>
                   </div>
                 </CardContent>

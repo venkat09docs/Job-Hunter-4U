@@ -349,7 +349,10 @@ export type Database = {
           full_name: string | null
           id: string
           profile_image_url: string | null
-          tokens_remaining: number | null
+          subscription_active: boolean | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
           total_ai_queries: number | null
           total_job_searches: number | null
           total_resume_opens: number | null
@@ -362,7 +365,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           profile_image_url?: string | null
-          tokens_remaining?: number | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
           total_resume_opens?: number | null
@@ -375,7 +381,10 @@ export type Database = {
           full_name?: string | null
           id?: string
           profile_image_url?: string | null
-          tokens_remaining?: number | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           total_ai_queries?: number | null
           total_job_searches?: number | null
           total_resume_opens?: number | null
@@ -571,6 +580,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_subscription_days_remaining: {
+        Args: { user_id_param: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _user_id: string
