@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Bot, Play, Pause, Calendar, Target, Coins, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Bot, Play, Pause, Calendar, Target, Clock, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -33,7 +33,7 @@ interface AutomationStatus {
 
 const LinkedInAutomation = () => {
   const { user } = useAuth();
-  const { profile, updateTokens, refreshProfile, incrementAnalytics } = useProfile();
+  const { profile, hasActiveSubscription, refreshProfile, incrementAnalytics } = useProfile();
   const { toast } = useToast();
   
   const [settings, setSettings] = useState<AutomationSettings>({
@@ -54,8 +54,7 @@ const LinkedInAutomation = () => {
   const [isActivating, setIsActivating] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
 
-  const REQUIRED_TOKENS = 5;
-  const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
+  const hasValidSubscription = hasActiveSubscription();
 
   const frequencies = [
     { value: "daily", label: "Daily" },
@@ -110,7 +109,12 @@ const LinkedInAutomation = () => {
       return;
     }
 
-    if (!hasEnoughTokens) {
+    if (!hasValidSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "You need an active subscription to use LinkedIn automation. Please upgrade your plan.",
+        variant: "destructive",
+      });
       setShowPricing(true);
       return;
     }
@@ -144,14 +148,13 @@ const LinkedInAutomation = () => {
       // Log automation to Supabase (commented out until table is available)
       // await logAutomationToSupabase(settings, 'activated');
 
-      // Deduct tokens and increment analytics
-      await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
+      // Increment analytics only
       await incrementAnalytics('ai_query'); // Using existing analytics type
       await refreshProfile();
 
       toast({
         title: "LinkedIn Bot Activated!",
-        description: `Automation is now running. ${REQUIRED_TOKENS} tokens used.`,
+        description: "Automation is now running with your active subscription.",
       });
 
     } catch (error: any) {
@@ -181,7 +184,7 @@ const LinkedInAutomation = () => {
     });
   };
 
-  const isActivateDisabled = !settings.jobTitle.trim() || !settings.frequency || !hasEnoughTokens || isActivating;
+  const isActivateDisabled = !settings.jobTitle.trim() || !settings.frequency || !hasValidSubscription || isActivating;
 
   return (
     <SidebarProvider>
@@ -197,9 +200,9 @@ const LinkedInAutomation = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-primary" />
+              <Calendar className="h-5 w-5 text-primary" />
               <span className="font-medium">
-                {profile?.tokens_remaining || 0} tokens
+                Subscription Active
               </span>
             </div>
           </div>
@@ -212,7 +215,7 @@ const LinkedInAutomation = () => {
                 Automation Settings
               </CardTitle>
               <CardDescription>
-                Configure your LinkedIn job search automation. Requires {REQUIRED_TOKENS} tokens to activate.
+                Configure your LinkedIn job search automation. Requires active subscription.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -266,20 +269,20 @@ const LinkedInAutomation = () => {
 
               <div className="flex items-center justify-between pt-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">Activation cost:</span>
-                  <Badge variant={hasEnoughTokens ? "default" : "destructive"}>
-                    {REQUIRED_TOKENS} tokens
+                  <span className="text-sm">Access:</span>
+                  <Badge variant={hasValidSubscription ? "default" : "destructive"}>
+                    {hasValidSubscription ? "Active Subscription" : "Subscription Required"}
                   </Badge>
                 </div>
                 
                 <div className="flex gap-2">
-                  {!hasEnoughTokens && (
+                  {!hasValidSubscription && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowPricing(true)}
                     >
-                      Buy Tokens
+                      Upgrade Plan
                     </Button>
                   )}
                   
@@ -299,7 +302,7 @@ const LinkedInAutomation = () => {
                       className="min-w-32"
                     >
                       {isActivating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isActivating ? "Activating..." : `Activate Bot (${REQUIRED_TOKENS} tokens)`}
+                      {isActivating ? "Activating..." : "Activate Bot"}
                     </Button>
                   )}
                 </div>
@@ -376,7 +379,7 @@ const LinkedInAutomation = () => {
         <Dialog open={showPricing} onOpenChange={setShowPricing}>
           <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Purchase Tokens</DialogTitle>
+              <DialogTitle>Upgrade Your Plan</DialogTitle>
             </DialogHeader>
             <Pricing />
           </DialogContent>

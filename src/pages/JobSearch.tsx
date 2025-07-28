@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Briefcase, ExternalLink, Coins, Loader2, Building2 } from "lucide-react";
+import { Search, MapPin, Briefcase, ExternalLink, Calendar, Loader2, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -36,7 +36,7 @@ interface SearchFilters {
 
 const JobSearch = () => {
   const { user } = useAuth();
-  const { profile, updateTokens, refreshProfile, incrementAnalytics } = useProfile();
+  const { profile, hasActiveSubscription, refreshProfile, incrementAnalytics } = useProfile();
   const { toast } = useToast();
   
   const [filters, setFilters] = useState<SearchFilters>({
@@ -50,8 +50,7 @@ const JobSearch = () => {
   const [showPricing, setShowPricing] = useState(false);
   const [lastSearchTime, setLastSearchTime] = useState<Date | null>(null);
 
-  const REQUIRED_TOKENS = 2;
-  const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
+  const hasValidSubscription = hasActiveSubscription();
 
   const experienceLevels = [
     { value: "entry", label: "Entry Level (0-2 years)" },
@@ -93,7 +92,12 @@ const JobSearch = () => {
       return;
     }
 
-    if (!hasEnoughTokens) {
+    if (!hasValidSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "You need an active subscription to search jobs. Please upgrade your plan.",
+        variant: "destructive",
+      });
       setShowPricing(true);
       return;
     }
@@ -156,14 +160,13 @@ const JobSearch = () => {
       // Log search to Supabase
       await logJobSearchToSupabase(filters, mockResults);
 
-      // Deduct tokens and increment analytics
-      await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
+      // Increment analytics
       await incrementAnalytics('job_search');
       await refreshProfile();
 
       toast({
         title: "Job search completed!",
-        description: `Found ${mockResults.length} jobs. ${REQUIRED_TOKENS} tokens used.`,
+        description: `Found ${mockResults.length} jobs using your active subscription.`,
       });
 
     } catch (error: any) {
@@ -178,7 +181,7 @@ const JobSearch = () => {
     }
   };
 
-  const isSearchDisabled = !filters.jobTitle.trim() || !hasEnoughTokens || searching;
+  const isSearchDisabled = !filters.jobTitle.trim() || !hasValidSubscription || searching;
 
   return (
     <SidebarProvider>
@@ -194,9 +197,9 @@ const JobSearch = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              <Coins className="h-5 w-5 text-primary" />
+              <Calendar className="h-5 w-5 text-primary" />
               <span className="font-medium">
-                {profile?.tokens_remaining || 0} tokens
+                Subscription Active
               </span>
             </div>
           </div>
@@ -209,7 +212,7 @@ const JobSearch = () => {
                 Search Filters
               </CardTitle>
               <CardDescription>
-                Define your search criteria. Requires {REQUIRED_TOKENS} tokens per search.
+                Define your search criteria. Requires active subscription.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -253,20 +256,20 @@ const JobSearch = () => {
 
               <div className="flex items-center justify-between pt-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">Cost per search:</span>
-                  <Badge variant={hasEnoughTokens ? "default" : "destructive"}>
-                    {REQUIRED_TOKENS} tokens
+                  <span className="text-sm">Access:</span>
+                  <Badge variant={hasValidSubscription ? "default" : "destructive"}>
+                    {hasValidSubscription ? "Active Subscription" : "Subscription Required"}
                   </Badge>
                 </div>
                 
                 <div className="flex gap-2">
-                  {!hasEnoughTokens && (
+                  {!hasValidSubscription && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowPricing(true)}
                     >
-                      Buy Tokens
+                      Upgrade Plan
                     </Button>
                   )}
                   
@@ -276,7 +279,7 @@ const JobSearch = () => {
                     className="min-w-32"
                   >
                     {searching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {searching ? "Searching..." : `Find Jobs (${REQUIRED_TOKENS} tokens)`}
+                    {searching ? "Searching..." : "Find Jobs"}
                   </Button>
                 </div>
               </div>

@@ -268,30 +268,35 @@ export const useAITools = () => {
 
       if (usageError) throw usageError;
 
-      // Deduct credits from user profile
+      // Check if user has active subscription instead of tokens
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('tokens_remaining')
+        .select('subscription_active, subscription_end_date')
         .eq('user_id', user?.id)
         .single();
 
       if (profileError) throw profileError;
 
-      const newTokenCount = Math.max(0, (profile.tokens_remaining || 0) - creditPoints);
-      
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ tokens_remaining: newTokenCount })
-        .eq('user_id', user?.id);
+      // Check if subscription is active and not expired
+      const hasActiveSubscription = profile.subscription_active && 
+        profile.subscription_end_date && 
+        new Date(profile.subscription_end_date) > new Date();
 
-      if (updateError) throw updateError;
+      if (!hasActiveSubscription) {
+        toast({
+          title: 'Subscription Required',
+          description: 'You need an active subscription to use this tool. Please upgrade your plan.',
+          variant: 'destructive'
+        });
+        return { success: false, remainingCredits: 0 };
+      }
 
       toast({
         title: 'Tool Accessed',
-        description: `${creditPoints} credits deducted. Remaining: ${newTokenCount}`,
+        description: 'Tool accessed successfully with your active subscription.',
       });
 
-      return { success: true, remainingCredits: newTokenCount };
+      return { success: true, remainingCredits: 1 };
     } catch (error: any) {
       console.error('Error using tool:', error);
       toast({
