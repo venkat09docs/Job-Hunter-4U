@@ -10,12 +10,26 @@ import { User, Briefcase, Target, TrendingUp, Coins, CreditCard, Eye, Search, Bo
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
+import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+
+interface JobEntry {
+  id: string;
+  company_name: string;
+  job_title: string;
+  status: string;
+  application_date: string;
+  created_at: string;
+}
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
 
   const handleSignOut = async () => {
     try {
@@ -50,6 +64,54 @@ const Dashboard = () => {
       title: 'Activity recorded',
       description: `${actionType.replace('_', ' ')} has been logged!`,
     });
+  };
+
+  // Fetch recent job applications
+  useEffect(() => {
+    const fetchRecentJobs = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('id, company_name, job_title, status, application_date, created_at')
+          .eq('user_id', user.id)
+          .eq('is_archived', false)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        setRecentJobs(data || []);
+      } catch (error) {
+        console.error('Error fetching recent jobs:', error);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+
+    fetchRecentJobs();
+  }, [user]);
+
+  const handleJobClick = (jobId: string) => {
+    navigate('/dashboard/job-tracker');
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'interviewing':
+      case 'interview':
+        return 'default';
+      case 'applied':
+      case 'applying':
+        return 'secondary';
+      case 'rejected':
+        return 'destructive';
+      case 'accepted':
+      case 'negotiating':
+        return 'default';
+      default:
+        return 'outline';
+    }
   };
 
   if (loading) {
@@ -221,33 +283,56 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { company: 'TechCorp', position: 'Senior Frontend Developer', status: 'Interview', date: '2 days ago' },
-                    { company: 'StartupXYZ', position: 'Full Stack Engineer', status: 'Applied', date: '5 days ago' },
-                    { company: 'BigTech Inc', position: 'React Developer', status: 'Rejected', date: '1 week ago' },
-                    { company: 'Innovation Labs', position: 'UI/UX Developer', status: 'Applied', date: '1 week ago' },
-                  ].map((app, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{app.position}</h4>
-                        <p className="text-sm text-muted-foreground">{app.company}</p>
+                {jobsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
+                        <div className="space-y-2">
+                          <div className="h-4 bg-muted rounded w-48"></div>
+                          <div className="h-3 bg-muted rounded w-32"></div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="h-6 bg-muted rounded w-16"></div>
+                          <div className="h-3 bg-muted rounded w-20"></div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Badge 
-                          variant={
-                            app.status === 'Interview' ? 'default' : 
-                            app.status === 'Applied' ? 'secondary' : 
-                            'destructive'
-                          }
-                        >
-                          {app.status}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{app.date}</span>
+                    ))}
+                  </div>
+                ) : recentJobs.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentJobs.map((job) => (
+                      <div 
+                        key={job.id} 
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => handleJobClick(job.id)}
+                      >
+                        <div>
+                          <h4 className="font-medium">{job.job_title}</h4>
+                          <p className="text-sm text-muted-foreground">{job.company_name}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Badge variant={getStatusBadgeVariant(job.status)}>
+                            {job.status}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No job applications yet.</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => navigate('/dashboard/job-tracker')}
+                    >
+                      Start tracking your applications
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </main>
