@@ -3,7 +3,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar, Crown } from 'lucide-react';
-import Pricing from '@/components/Pricing';
+import PricingDialog from '@/components/PricingDialog';
 
 interface SubscriptionUpgradeProps {
   children?: React.ReactNode;
@@ -41,16 +41,16 @@ export const SubscriptionUpgrade = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Upgrade Your Subscription</DialogTitle>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-2xl font-bold text-center">Upgrade Your Subscription</DialogTitle>
         </DialogHeader>
-        <div className="mb-4">
-          <p className="text-muted-foreground">
+        <div className="mb-6">
+          <p className="text-muted-foreground text-center">
             You need an active subscription to access {featureName}. Choose a plan that works for you:
           </p>
         </div>
-        <Pricing />
+        <PricingDialog />
       </DialogContent>
     </Dialog>
   );
