@@ -47,8 +47,14 @@ serve(async (req) => {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
     }
 
-    // Determine environment (default to test for safety)
-    const isLiveMode = Deno.env.get('RAZORPAY_MODE') === 'live';
+    // Get environment mode - defaulting to test for safety
+    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const isLiveMode = razorpayMode === 'live';
+    
+    console.log('=== RAZORPAY DEBUG START ===');
+    console.log('RAZORPAY_MODE from env:', Deno.env.get('RAZORPAY_MODE'));
+    console.log('Computed mode:', razorpayMode);
+    console.log('Is live mode:', isLiveMode);
     
     // Get environment-specific Razorpay credentials
     const razorpayKeyId = isLiveMode 
@@ -58,11 +64,10 @@ serve(async (req) => {
       ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
       : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
-    console.log('=== RAZORPAY CREDENTIALS DEBUG ===');
-    console.log('Mode:', isLiveMode ? 'LIVE' : 'TEST');
-    console.log('Key ID exists:', !!razorpayKeyId);
-    console.log('Key ID:', razorpayKeyId);
+    console.log('Key ID from env:', razorpayKeyId);
+    console.log('Using Key ID:', razorpayKeyId);
     console.log('Secret exists:', !!razorpayKeySecret);
+    console.log('Secret starts/ends with quotes:', razorpayKeySecret?.startsWith('"') || razorpayKeySecret?.endsWith('"'));
     console.log('Secret length:', razorpayKeySecret?.length);
     
     if (!razorpayKeyId || !razorpayKeySecret) {
@@ -74,7 +79,21 @@ serve(async (req) => {
     // Clean the secret (remove any quotes or whitespace)
     const cleanSecret = razorpayKeySecret.trim().replace(/^["']|["']$/g, '');
     console.log('Clean secret length:', cleanSecret.length);
-    console.log('=== END CREDENTIALS DEBUG ===');
+    console.log('Secret after trim:', cleanSecret.length, 'chars');
+    
+    // Validate key ID format matches environment
+    const expectedPrefix = isLiveMode ? 'rzp_live_' : 'rzp_test_';
+    if (!razorpayKeyId.startsWith(expectedPrefix)) {
+      console.log('WARNING: Key ID mismatch!');
+      console.log('Got:', razorpayKeyId);
+      console.log('Expected:', expectedPrefix + 'XXXXXXXXXXXXXXX');
+    }
+    
+    // Create authentication string and log preview for debugging
+    const authString = btoa(`${razorpayKeyId}:${cleanSecret}`);
+    console.log('Auth string length:', authString.length);
+    console.log('Credentials preview:', authString.substring(0, 30) + '...');
+    console.log('=== RAZORPAY DEBUG END ===');
     
     // Create Razorpay order
     const orderData = {
