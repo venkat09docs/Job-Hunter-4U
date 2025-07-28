@@ -47,25 +47,31 @@ serve(async (req) => {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
     }
 
-    // Get Razorpay credentials
-    const razorpayKeyId = "rzp_test_MHGnYRilhJ8fI0"; // Your Razorpay Key ID
+    // Get Razorpay credentials - Let's also try getting key from env
+    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID') || "rzp_test_MHGnYRilhJ8fI0"; // Your Razorpay Key ID
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     
     console.log('Razorpay Key ID:', razorpayKeyId);
     console.log('Razorpay Secret exists:', !!razorpayKeySecret);
     console.log('Razorpay Secret length:', razorpayKeySecret?.length || 0);
-    console.log('Razorpay Secret first 4 chars:', razorpayKeySecret?.substring(0, 4));
-    console.log('Razorpay Secret last 4 chars:', razorpayKeySecret?.substring(razorpayKeySecret.length - 4));
     
     if (!razorpayKeySecret) {
       throw new Error('Razorpay secret key not configured');
     }
 
-    // Test basic auth encoding
-    const credentials = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
-    console.log('Basic Auth header length:', credentials.length);
-    console.log('Basic Auth header first 20 chars:', credentials.substring(0, 20));
-
+    // Check for whitespace or encoding issues
+    const trimmedSecret = razorpayKeySecret.trim();
+    console.log('Secret after trim length:', trimmedSecret.length);
+    console.log('Original secret === trimmed:', razorpayKeySecret === trimmedSecret);
+    
+    // Test different encoding approaches
+    const credentials = btoa(`${razorpayKeyId}:${trimmedSecret}`);
+    console.log('Using trimmed secret - Auth header:', credentials.substring(0, 20));
+    
+    // Verify key ID format
+    console.log('Key ID starts with rzp_:', razorpayKeyId.startsWith('rzp_'));
+    console.log('Key ID contains test/live:', razorpayKeyId.includes('test') ? 'test' : razorpayKeyId.includes('live') ? 'live' : 'unknown');
+    
     // Create Razorpay order
     const orderData = {
       amount: amount * 100, // Convert to paisa
@@ -81,7 +87,7 @@ serve(async (req) => {
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`,
+        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${trimmedSecret}`)}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(orderData),
