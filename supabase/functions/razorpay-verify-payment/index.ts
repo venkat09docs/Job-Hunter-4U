@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createHmac } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,31 +13,23 @@ interface VerifyRequest {
   razorpay_signature: string;
 }
 
-// Function to verify Razorpay signature
-async function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): Promise<boolean> {
-  const text = `${orderId}|${paymentId}`;
-  const expectedSignature = await generateSignature(text, secret);
-  return expectedSignature === signature;
-}
-
-async function generateSignature(text: string, secret: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const textData = encoder.encode(text);
-  
-  const key = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  
-  const signature = await crypto.subtle.sign('HMAC', key, textData);
-  const signatureArray = new Uint8Array(signature);
-  return Array.from(signatureArray)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+// Function to verify Razorpay signature using Deno crypto
+function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): boolean {
+  try {
+    const text = `${orderId}|${paymentId}`;
+    const hmac = createHmac("sha256", secret);
+    hmac.update(text);
+    const generatedSignature = hmac.toString();
+    
+    console.log('Generated signature:', generatedSignature);
+    console.log('Received signature:', signature);
+    console.log('Text for signature:', text);
+    
+    return generatedSignature === signature;
+  } catch (error) {
+    console.error('Signature verification error:', error);
+    return false;
+  }
 }
 
 // Helper function to calculate subscription end date
@@ -133,7 +126,7 @@ serve(async (req) => {
     console.log('Using', isLiveMode ? 'live' : 'test', 'mode for verification');
 
     // Verify the signature
-    const isValidSignature = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
+    const isValidSignature = verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
     
     if (!isValidSignature) {
       throw new Error('Invalid payment signature');
