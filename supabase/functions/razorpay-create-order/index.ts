@@ -47,45 +47,21 @@ serve(async (req) => {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
     }
 
-    // Get Razorpay credentials - Try multiple key configurations
-    let razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID') || "rzp_test_MHGnYRilhJ8fI0";
+    // Get Razorpay credentials
+    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID');
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     
-    console.log('=== RAZORPAY DEBUG START ===');
-    console.log('Key ID from env:', Deno.env.get('RAZORPAY_KEY_ID'));
-    console.log('Using Key ID:', razorpayKeyId);
+    console.log('Key ID exists:', !!razorpayKeyId);
     console.log('Secret exists:', !!razorpayKeySecret);
-    console.log('Secret length:', razorpayKeySecret?.length || 0);
     
-    if (!razorpayKeySecret) {
-      throw new Error('Razorpay secret key not configured');
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      throw new Error('Razorpay credentials not configured');
     }
 
-    // Test with known working test credentials format
-    const testKeyId = "rzp_test_MHGnYRilhJ8fI0";
-    if (razorpayKeyId !== testKeyId) {
-      console.log('WARNING: Key ID mismatch!');
-      console.log('Expected:', testKeyId);
-      console.log('Got:', razorpayKeyId);
-      // Use the hardcoded test key for now
-      razorpayKeyId = testKeyId;
-    }
-
-    // Validate secret format (should be exactly 24 characters for test keys)
-    const trimmedSecret = razorpayKeySecret.trim();
-    console.log('Secret after trim:', trimmedSecret.length, 'chars');
-    console.log('Secret starts/ends with quotes:', trimmedSecret.startsWith('"') || trimmedSecret.endsWith('"'));
-    
-    // Remove quotes if present
-    const cleanSecret = trimmedSecret.replace(/^["']|["']$/g, '');
+    // Clean the secret (remove any quotes or whitespace)
+    const cleanSecret = razorpayKeySecret.trim().replace(/^["']|["']$/g, '');
+    console.log('Using Key ID:', razorpayKeyId);
     console.log('Clean secret length:', cleanSecret.length);
-    
-    // Test basic auth string formation
-    const authString = `${razorpayKeyId}:${cleanSecret}`;
-    const credentials = btoa(authString);
-    console.log('Auth string length:', authString.length);
-    console.log('Credentials preview:', credentials.substring(0, 30) + '...');
-    console.log('=== RAZORPAY DEBUG END ===');
     
     // Create Razorpay order
     const orderData = {
