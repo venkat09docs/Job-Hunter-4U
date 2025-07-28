@@ -54,10 +54,17 @@ serve(async (req) => {
     console.log('Razorpay Key ID:', razorpayKeyId);
     console.log('Razorpay Secret exists:', !!razorpayKeySecret);
     console.log('Razorpay Secret length:', razorpayKeySecret?.length || 0);
+    console.log('Razorpay Secret first 4 chars:', razorpayKeySecret?.substring(0, 4));
+    console.log('Razorpay Secret last 4 chars:', razorpayKeySecret?.substring(razorpayKeySecret.length - 4));
     
     if (!razorpayKeySecret) {
       throw new Error('Razorpay secret key not configured');
     }
+
+    // Test basic auth encoding
+    const credentials = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
+    console.log('Basic Auth header length:', credentials.length);
+    console.log('Basic Auth header first 20 chars:', credentials.substring(0, 20));
 
     // Create Razorpay order
     const orderData = {
