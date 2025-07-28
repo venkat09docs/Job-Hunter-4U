@@ -51,17 +51,21 @@ serve(async (req) => {
     const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID');
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     
+    console.log('=== RAZORPAY CREDENTIALS DEBUG ===');
     console.log('Key ID exists:', !!razorpayKeyId);
+    console.log('Key ID value:', razorpayKeyId);
     console.log('Secret exists:', !!razorpayKeySecret);
+    console.log('Secret length:', razorpayKeySecret?.length);
     
     if (!razorpayKeyId || !razorpayKeySecret) {
+      console.error('Missing credentials - KeyID:', !!razorpayKeyId, 'Secret:', !!razorpayKeySecret);
       throw new Error('Razorpay credentials not configured');
     }
 
     // Clean the secret (remove any quotes or whitespace)
     const cleanSecret = razorpayKeySecret.trim().replace(/^["']|["']$/g, '');
-    console.log('Using Key ID:', razorpayKeyId);
     console.log('Clean secret length:', cleanSecret.length);
+    console.log('=== END CREDENTIALS DEBUG ===');
     
     // Create Razorpay order
     const orderData = {
