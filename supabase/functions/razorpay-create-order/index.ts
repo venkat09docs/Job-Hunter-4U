@@ -47,30 +47,45 @@ serve(async (req) => {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
     }
 
-    // Get Razorpay credentials - Let's also try getting key from env
-    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID') || "rzp_test_MHGnYRilhJ8fI0"; // Your Razorpay Key ID
+    // Get Razorpay credentials - Try multiple key configurations
+    let razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID') || "rzp_test_MHGnYRilhJ8fI0";
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     
-    console.log('Razorpay Key ID:', razorpayKeyId);
-    console.log('Razorpay Secret exists:', !!razorpayKeySecret);
-    console.log('Razorpay Secret length:', razorpayKeySecret?.length || 0);
+    console.log('=== RAZORPAY DEBUG START ===');
+    console.log('Key ID from env:', Deno.env.get('RAZORPAY_KEY_ID'));
+    console.log('Using Key ID:', razorpayKeyId);
+    console.log('Secret exists:', !!razorpayKeySecret);
+    console.log('Secret length:', razorpayKeySecret?.length || 0);
     
     if (!razorpayKeySecret) {
       throw new Error('Razorpay secret key not configured');
     }
 
-    // Check for whitespace or encoding issues
+    // Test with known working test credentials format
+    const testKeyId = "rzp_test_MHGnYRilhJ8fI0";
+    if (razorpayKeyId !== testKeyId) {
+      console.log('WARNING: Key ID mismatch!');
+      console.log('Expected:', testKeyId);
+      console.log('Got:', razorpayKeyId);
+      // Use the hardcoded test key for now
+      razorpayKeyId = testKeyId;
+    }
+
+    // Validate secret format (should be exactly 24 characters for test keys)
     const trimmedSecret = razorpayKeySecret.trim();
-    console.log('Secret after trim length:', trimmedSecret.length);
-    console.log('Original secret === trimmed:', razorpayKeySecret === trimmedSecret);
+    console.log('Secret after trim:', trimmedSecret.length, 'chars');
+    console.log('Secret starts/ends with quotes:', trimmedSecret.startsWith('"') || trimmedSecret.endsWith('"'));
     
-    // Test different encoding approaches
-    const credentials = btoa(`${razorpayKeyId}:${trimmedSecret}`);
-    console.log('Using trimmed secret - Auth header:', credentials.substring(0, 20));
+    // Remove quotes if present
+    const cleanSecret = trimmedSecret.replace(/^["']|["']$/g, '');
+    console.log('Clean secret length:', cleanSecret.length);
     
-    // Verify key ID format
-    console.log('Key ID starts with rzp_:', razorpayKeyId.startsWith('rzp_'));
-    console.log('Key ID contains test/live:', razorpayKeyId.includes('test') ? 'test' : razorpayKeyId.includes('live') ? 'live' : 'unknown');
+    // Test basic auth string formation
+    const authString = `${razorpayKeyId}:${cleanSecret}`;
+    const credentials = btoa(authString);
+    console.log('Auth string length:', authString.length);
+    console.log('Credentials preview:', credentials.substring(0, 30) + '...');
+    console.log('=== RAZORPAY DEBUG END ===');
     
     // Create Razorpay order
     const orderData = {
@@ -87,7 +102,7 @@ serve(async (req) => {
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${trimmedSecret}`)}`,
+        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${cleanSecret}`)}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(orderData),
