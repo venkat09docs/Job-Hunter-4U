@@ -76,12 +76,23 @@ serve(async (req) => {
     
     // Parse request body
     const requestBody = await req.json();
-    console.log('Request body:', requestBody);
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, upgrade_end_date } = requestBody;
 
+    console.log('Extracted fields:', { 
+      razorpay_order_id, 
+      razorpay_payment_id, 
+      razorpay_signature,
+      upgrade_end_date 
+    });
+
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      console.log('Missing fields:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
+      console.log('Missing fields validation failed:', { 
+        razorpay_order_id: !!razorpay_order_id, 
+        razorpay_payment_id: !!razorpay_payment_id, 
+        razorpay_signature: !!razorpay_signature 
+      });
       throw new Error('Missing required payment verification fields');
     }
 

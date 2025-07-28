@@ -144,13 +144,23 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
           try {
             console.log('Full Razorpay response:', response);
             console.log('Order data:', orderData);
+            
+            // Validate all required fields are present
+            if (!response.razorpay_payment_id || !response.razorpay_signature) {
+              throw new Error('Missing required payment fields from Razorpay response');
+            }
+            
+            const verificationData = {
+              razorpay_order_id: orderData.id, // Use the order ID from our order creation
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              upgrade_end_date: calculateUpgradedEndDate(plan.days)
+            };
+            
+            console.log('Sending verification data:', verificationData);
+            
             const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
-              body: {
-                razorpay_order_id: response.razorpay_order_id || orderData.id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                upgrade_end_date: calculateUpgradedEndDate(plan.days)
-              }
+              body: verificationData
             });
 
             if (verifyError) throw verifyError;
