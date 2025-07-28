@@ -41,8 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_categories: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_tools: {
         Row: {
+          category_id: string | null
           created_at: string
           created_by: string
           credit_points: number
@@ -55,6 +89,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           created_by: string
           credit_points?: number
@@ -67,6 +102,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           created_by?: string
           credit_points?: number
@@ -78,7 +114,15 @@ export type Database = {
           tool_name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ai_tools_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tool_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blogs: {
         Row: {

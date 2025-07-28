@@ -14,6 +14,18 @@ interface AITool {
   updated_at: string;
   created_by: string;
   image_url?: string | null;
+  category_id?: string | null;
+}
+
+interface AIToolCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
 }
 
 interface ToolUsage {
@@ -28,10 +40,13 @@ export const useAITools = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [tools, setTools] = useState<AITool[]>([]);
+  const [categories, setCategories] = useState<AIToolCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   useEffect(() => {
     fetchTools();
+    fetchCategories();
   }, []);
 
   const fetchTools = async () => {
@@ -53,6 +68,28 @@ export const useAITools = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_tool_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load categories',
+        variant: 'destructive'
+      });
+    } finally {
+      setCategoriesLoading(false);
     }
   };
 
@@ -137,6 +174,87 @@ export const useAITools = () => {
     }
   };
 
+  const createCategory = async (categoryData: Omit<AIToolCategory, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('ai_tool_categories')
+        .insert([{
+          ...categoryData,
+          created_by: user?.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      await fetchCategories();
+      toast({
+        title: 'Success',
+        description: 'Category created successfully'
+      });
+      
+      return data;
+    } catch (error: any) {
+      console.error('Error creating category:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create category',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const updateCategory = async (id: string, updates: Partial<AIToolCategory>) => {
+    try {
+      const { error } = await supabase
+        .from('ai_tool_categories')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      await fetchCategories();
+      toast({
+        title: 'Success',
+        description: 'Category updated successfully'
+      });
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update category',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_tool_categories')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      await fetchCategories();
+      toast({
+        title: 'Success',
+        description: 'Category deleted successfully'
+      });
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete category',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
   const useTool = async (toolId: string, creditPoints: number) => {
     try {
       // Record tool usage
@@ -187,11 +305,17 @@ export const useAITools = () => {
 
   return {
     tools,
+    categories,
     loading,
+    categoriesLoading,
     createTool,
     updateTool,
     deleteTool,
+    createCategory,
+    updateCategory,
+    deleteCategory,
     useTool,
-    refreshTools: fetchTools
+    refreshTools: fetchTools,
+    refreshCategories: fetchCategories
   };
 };
