@@ -151,7 +151,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
             }
             
             const verificationData = {
-              razorpay_order_id: orderData.id, // Use the order ID from our order creation
+              razorpay_order_id: response.razorpay_order_id, // Use the order ID from Razorpay response
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               upgrade_end_date: calculateUpgradedEndDate(plan.days)
