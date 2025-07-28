@@ -17,52 +17,55 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: "Basic",
-      price: 999,
-      duration: "month",
-      description: "Perfect for job seekers starting their journey",
+      name: "One Week Plan",
+      price: 299,
+      duration: "week",
+      description: "Quick access to all career tools",
       features: [
-        "Basic job matching",
-        "5 applications per month",
-        "Email support",
-        "Resume review",
-        "Basic career tips"
+        "AI-powered job matching",
+        "Resume builder & optimization",
+        "LinkedIn automation tools", 
+        "Job tracker & analytics",
+        "AI career assistant",
+        "Portfolio builder",
+        "Interview preparation",
+        "All premium features included"
       ],
       popular: false,
       variant: "outline" as const
     },
     {
-      name: "Professional",
-      price: 2499,
+      name: "One Month Plan",
+      price: 999,
       duration: "month", 
-      description: "Most popular choice for serious job hunters",
+      description: "Perfect for focused job searching",
       features: [
-        "Advanced AI job matching",
-        "Unlimited applications",
-        "Priority support",
-        "Professional resume writing",
-        "1-on-1 career coaching session",
-        "Salary negotiation guide",
-        "Industry insights",
-        "Network building tools"
+        "AI-powered job matching",
+        "Resume builder & optimization",
+        "LinkedIn automation tools", 
+        "Job tracker & analytics",
+        "AI career assistant",
+        "Portfolio builder",
+        "Interview preparation",
+        "All premium features included"
       ],
       popular: true,
       variant: "hero" as const
     },
     {
-      name: "Premium",
-      price: 4999,
-      duration: "month",
-      description: "Complete career transformation package",
+      name: "3 Months Plan",
+      price: 1999,
+      duration: "3 months",
+      description: "Best value for comprehensive career growth",
       features: [
-        "Everything in Professional",
-        "Weekly 1-on-1 coaching",
-        "Personal brand development",
-        "LinkedIn optimization",
+        "AI-powered job matching",
+        "Resume builder & optimization",
+        "LinkedIn automation tools", 
+        "Job tracker & analytics",
+        "AI career assistant",
+        "Portfolio builder",
         "Interview preparation",
-        "Direct employer connections",
-        "Guaranteed interviews",
-        "60-day money back guarantee"
+        "All premium features included"
       ],
       popular: false,
       variant: "premium" as const
