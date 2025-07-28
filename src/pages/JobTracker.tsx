@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
 import { Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -265,12 +266,7 @@ const JobTracker = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">
-                {profile?.tokens_remaining || 0} tokens
-              </span>
-            </div>
+            <SubscriptionStatus />
             <UserProfileDropdown />
           </div>
         </div>

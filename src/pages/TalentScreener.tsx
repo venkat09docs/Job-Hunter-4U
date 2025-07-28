@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,7 @@ interface ParsedResults {
 
 const TalentScreener = () => {
   const { user } = useAuth();
-  const { profile, updateTokens, refreshProfile } = useProfile();
+  const { profile, refreshProfile, hasActiveSubscription } = useProfile();
   const { toast } = useToast();
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -72,8 +73,7 @@ const TalentScreener = () => {
     }
   }, [profile?.username, profile?.full_name, user?.email]);
 
-  const REQUIRED_TOKENS = 3;
-  const hasEnoughTokens = (profile?.tokens_remaining || 0) >= REQUIRED_TOKENS;
+  const hasValidSubscription = hasActiveSubscription();
 
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,8 +114,12 @@ const TalentScreener = () => {
       return;
     }
 
-    if (!hasEnoughTokens) {
-      setShowPricing(true);
+    if (!hasValidSubscription) {
+      toast({
+        title: "Subscription Required",
+        description: "You need an active subscription to use the talent screener.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -164,8 +168,7 @@ const TalentScreener = () => {
 
       const webhookData = await webhookResponse.json();
 
-      // Deduct tokens
-      await updateTokens((profile?.tokens_remaining || 0) - REQUIRED_TOKENS);
+      // Refresh profile (no token deduction needed with subscription)
       await refreshProfile();
 
       // Use response from webhook or generate mock results
@@ -187,7 +190,7 @@ const TalentScreener = () => {
 
       toast({
         title: "Resume analyzed successfully!",
-        description: `${REQUIRED_TOKENS} tokens used. Analysis complete.`,
+        description: "Analysis complete with your active subscription.",
       });
 
     } catch (error: any) {
@@ -216,12 +219,7 @@ const TalentScreener = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">
-                {profile?.tokens_remaining || 0} tokens
-              </span>
-            </div>
+            <SubscriptionStatus />
             <UserProfileDropdown />
           </div>
         </header>
@@ -242,7 +240,7 @@ const TalentScreener = () => {
                   Talent Screening Form
                 </CardTitle>
                 <CardDescription>
-                  Fill in the details and upload resume for AI analysis. Requires {REQUIRED_TOKENS} tokens.
+                  Fill in the details and upload resume for AI analysis. Requires active subscription.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -339,26 +337,24 @@ const TalentScreener = () => {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm">Required tokens:</span>
-                    <Badge variant={hasEnoughTokens ? "default" : "destructive"}>
-                      {REQUIRED_TOKENS}
+                    <span className="text-sm">Subscription Status:</span>
+                    <Badge variant={hasValidSubscription ? "default" : "destructive"}>
+                      {hasValidSubscription ? "Active" : "Required"}
                     </Badge>
                   </div>
                   
-                  {!hasEnoughTokens && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPricing(true)}
-                    >
-                      Buy Tokens
-                    </Button>
+                  {!hasValidSubscription && (
+                    <SubscriptionUpgrade featureName="talent screener">
+                      <Button variant="outline" size="sm">
+                        Upgrade Plan
+                      </Button>
+                    </SubscriptionUpgrade>
                   )}
                 </div>
 
                 <Button
                   onClick={uploadResumeAndParse}
-                  disabled={!selectedFile || !hasEnoughTokens || parsing || !formData.name || !formData.email || !formData.linkedinUrl || !formData.jobDescription}
+                  disabled={!selectedFile || !hasValidSubscription || parsing || !formData.name || !formData.email || !formData.linkedinUrl || !formData.jobDescription}
                   className="w-full"
                 >
                   {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -367,7 +363,7 @@ const TalentScreener = () => {
                     ? "Uploading..."
                     : parsing
                     ? "Analyzing..."
-                    : `Analyze Resume (${REQUIRED_TOKENS} tokens)`}
+                    : "Analyze Resume"}
                 </Button>
               </CardContent>
             </Card>
@@ -496,15 +492,6 @@ const TalentScreener = () => {
           )}
         </div>
 
-        {/* Pricing Modal */}
-        <Dialog open={showPricing} onOpenChange={setShowPricing}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Purchase Tokens</DialogTitle>
-            </DialogHeader>
-            <Pricing />
-          </DialogContent>
-        </Dialog>
       </SidebarInset>
     </SidebarProvider>
   );

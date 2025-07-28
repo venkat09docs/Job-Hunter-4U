@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAITools } from '@/hooks/useAITools';
 import { useProfile } from '@/hooks/useProfile';
+import { SubscriptionUpgrade, SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { ToolNotesSidebar } from '@/components/ToolNotesSidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,7 @@ const getCategoryIcon = (categoryName: string) => {
 
 const DigitalCareerHub = () => {
   const { tools, categories, loading, categoriesLoading, useTool } = useAITools();
-  const { profile, refreshProfile } = useProfile();
+  const { profile, refreshProfile, hasActiveSubscription } = useProfile();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [selectedTool, setSelectedTool] = useState<any>(null);
@@ -50,10 +51,10 @@ const DigitalCareerHub = () => {
 
   const handleToolAccess = async (tool: any) => {
     try {
-      if ((profile?.tokens_remaining || 0) < tool.credit_points) {
+      if (!hasActiveSubscription()) {
         toast({
-          title: 'Insufficient Credits',
-          description: `You need ${tool.credit_points} credits to access this tool. Current balance: ${profile?.tokens_remaining || 0}`,
+          title: 'Subscription Required',
+          description: 'You need an active subscription to access AI tools.',
           variant: 'destructive'
         });
         return;
@@ -144,10 +145,7 @@ const DigitalCareerHub = () => {
           </h1>
           
           <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Coins className="w-4 h-4" />
-              {profile?.tokens_remaining || 0} Credits
-            </Badge>
+            <SubscriptionStatus />
             <UserProfileDropdown />
           </div>
         </div>
@@ -247,44 +245,41 @@ const DigitalCareerHub = () => {
                             )}
                           </CardHeader>
                           
-                          <CardContent>
-                            <div className="space-y-3">
-                              <div className="text-sm text-muted-foreground">
-                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                              </div>
-                              
-                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button className="w-full hover-scale">
-                                      <ExternalLink className="w-4 h-4 mr-2" />
-                                      Access Tool
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This will deduct {tool.credit_points} credits from your account. 
-                                        You currently have {profile?.tokens_remaining || 0} credits.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                        Use {tool.credit_points} Credits
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              ) : (
-                                <Button variant="outline" className="w-full" disabled>
-                                  Insufficient Credits
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
+                           <CardContent>
+                             <div className="space-y-3">
+                               {hasActiveSubscription() ? (
+                                 <AlertDialog>
+                                   <AlertDialogTrigger asChild>
+                                     <Button className="w-full hover-scale">
+                                       <ExternalLink className="w-4 h-4 mr-2" />
+                                       Access Tool
+                                     </Button>
+                                   </AlertDialogTrigger>
+                                   <AlertDialogContent>
+                                     <AlertDialogHeader>
+                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                       <AlertDialogDescription>
+                                         This tool is available with your active subscription.
+                                       </AlertDialogDescription>
+                                     </AlertDialogHeader>
+                                     <AlertDialogFooter>
+                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                         Access Tool
+                                       </AlertDialogAction>
+                                     </AlertDialogFooter>
+                                   </AlertDialogContent>
+                                 </AlertDialog>
+                               ) : (
+                                 <SubscriptionUpgrade featureName="AI tools">
+                                   <Button className="w-full" variant="outline">
+                                     <ExternalLink className="w-4 h-4 mr-2" />
+                                     Upgrade to Access
+                                   </Button>
+                                 </SubscriptionUpgrade>
+                               )}
+                             </div>
+                           </CardContent>
                         </Card>
                       );
                     })}
@@ -323,44 +318,41 @@ const DigitalCareerHub = () => {
                             </div>
                           </CardHeader>
                           
-                          <CardContent>
-                            <div className="space-y-3">
-                              <div className="text-sm text-muted-foreground">
-                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                              </div>
-                              
-                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button className="w-full hover-scale">
-                                      <ExternalLink className="w-4 h-4 mr-2" />
-                                      Access Tool
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This will deduct {tool.credit_points} credits from your account. 
-                                        You currently have {profile?.tokens_remaining || 0} credits.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                        Use {tool.credit_points} Credits
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              ) : (
-                                <Button variant="outline" className="w-full" disabled>
-                                  Insufficient Credits
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
+                           <CardContent>
+                             <div className="space-y-3">
+                               {hasActiveSubscription() ? (
+                                 <AlertDialog>
+                                   <AlertDialogTrigger asChild>
+                                     <Button className="w-full hover-scale">
+                                       <ExternalLink className="w-4 h-4 mr-2" />
+                                       Access Tool
+                                     </Button>
+                                   </AlertDialogTrigger>
+                                   <AlertDialogContent>
+                                     <AlertDialogHeader>
+                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                       <AlertDialogDescription>
+                                         This tool is available with your active subscription.
+                                       </AlertDialogDescription>
+                                     </AlertDialogHeader>
+                                     <AlertDialogFooter>
+                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                         Access Tool
+                                       </AlertDialogAction>
+                                     </AlertDialogFooter>
+                                   </AlertDialogContent>
+                                 </AlertDialog>
+                               ) : (
+                                 <SubscriptionUpgrade featureName="AI tools">
+                                   <Button className="w-full" variant="outline">
+                                     <ExternalLink className="w-4 h-4 mr-2" />
+                                     Upgrade to Access
+                                   </Button>
+                                 </SubscriptionUpgrade>
+                               )}
+                             </div>
+                           </CardContent>
                         </Card>
                       )) || <div className="text-center text-muted-foreground py-8 animate-fade-in">No tools in this category yet.</div>}
                     </div>
@@ -388,42 +380,39 @@ const DigitalCareerHub = () => {
                           </CardHeader>
                           
                           <CardContent>
-                            <div className="space-y-3">
-                              <div className="text-sm text-muted-foreground">
-                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                              </div>
-                              
-                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button className="w-full hover-scale">
-                                      <ExternalLink className="w-4 h-4 mr-2" />
-                                      Access Tool
-                                    </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        This will deduct {tool.credit_points} credits from your account. 
-                                        You currently have {profile?.tokens_remaining || 0} credits.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                        Use {tool.credit_points} Credits
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                              ) : (
-                                <Button variant="outline" className="w-full" disabled>
-                                  Insufficient Credits
-                                </Button>
-                              )}
-                            </div>
+                             <div className="space-y-3">
+                               {hasActiveSubscription() ? (
+                                 <AlertDialog>
+                                   <AlertDialogTrigger asChild>
+                                     <Button className="w-full hover-scale">
+                                       <ExternalLink className="w-4 h-4 mr-2" />
+                                       Access Tool
+                                     </Button>
+                                   </AlertDialogTrigger>
+                                   <AlertDialogContent>
+                                     <AlertDialogHeader>
+                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                       <AlertDialogDescription>
+                                         This tool is available with your active subscription.
+                                       </AlertDialogDescription>
+                                     </AlertDialogHeader>
+                                     <AlertDialogFooter>
+                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                         Access Tool
+                                       </AlertDialogAction>
+                                     </AlertDialogFooter>
+                                   </AlertDialogContent>
+                                 </AlertDialog>
+                               ) : (
+                                 <SubscriptionUpgrade featureName="AI tools">
+                                   <Button className="w-full" variant="outline">
+                                     <ExternalLink className="w-4 h-4 mr-2" />
+                                     Upgrade to Access
+                                   </Button>
+                                 </SubscriptionUpgrade>
+                               )}
+                             </div>
                           </CardContent>
                         </Card>
                       ))}

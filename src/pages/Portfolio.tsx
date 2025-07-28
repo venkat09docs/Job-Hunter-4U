@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { AppSidebar } from '@/components/AppSidebar';
+import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { Upload, Plus, Trash2, FileText, Download, User, Edit3, LogOut, Coins } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
@@ -709,12 +710,7 @@ const Portfolio = () => {
                   </h1>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">
-                      {profile?.tokens_remaining || 0} tokens
-                    </span>
-                  </div>
+                  <SubscriptionStatus />
                   <UserProfileDropdown />
                 </div>
               </div>
@@ -749,12 +745,7 @@ const Portfolio = () => {
                 </h1>
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {profile?.tokens_remaining || 0} tokens
-                  </span>
-                </div>
+                <SubscriptionStatus />
                 <UserProfileDropdown />
               </div>
             </div>

@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 
 interface ToolForm {
   tool_name: string;
@@ -261,9 +262,7 @@ const ManageCareerHub = () => {
           <h1 className="text-xl font-semibold flex-1 text-center">Manage Career Hub</h1>
           
           <div className="flex items-center gap-4">
-            <Badge variant="secondary">
-              {profile?.tokens_remaining || 0} Credits
-            </Badge>
+            <SubscriptionStatus />
             <UserProfileDropdown />
           </div>
         </div>

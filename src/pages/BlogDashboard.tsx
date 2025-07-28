@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -189,12 +190,7 @@ export default function BlogDashboard() {
           <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
             <SidebarTrigger />
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Coins className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">
-                  {profile?.tokens_remaining || 0} tokens
-                </span>
-              </div>
+              <SubscriptionStatus />
               <UserProfileDropdown />
             </div>
           </header>
@@ -215,12 +211,7 @@ export default function BlogDashboard() {
             <header className="h-14 border-b flex items-center justify-between px-6 bg-background">
               <SidebarTrigger />
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">
-                    {profile?.tokens_remaining || 0} tokens
-                  </span>
-                </div>
+                <SubscriptionStatus />
                 <UserProfileDropdown />
               </div>
             </header>
