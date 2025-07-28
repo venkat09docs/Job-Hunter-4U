@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,14 +8,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail } from 'lucide-react';
+import ManageSubscriptionDialog from '@/components/ManageSubscriptionDialog';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check if user came from pricing page
+    const selectedPlan = sessionStorage.getItem('selectedPlan');
+    if (selectedPlan) {
+      // We'll show the plan dialog after successful login
+    }
+  }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +106,15 @@ const Auth = () => {
           title: 'Welcome back!',
           description: 'You have successfully signed in.',
         });
-        navigate('/dashboard');
+        
+        // Check if user came from pricing page
+        const selectedPlan = sessionStorage.getItem('selectedPlan');
+        if (selectedPlan) {
+          sessionStorage.removeItem('selectedPlan');
+          setShowPlanDialog(true);
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       toast({
@@ -293,6 +311,16 @@ const Auth = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <ManageSubscriptionDialog 
+        open={showPlanDialog} 
+        onOpenChange={(open) => {
+          setShowPlanDialog(open);
+          if (!open) {
+            navigate('/dashboard');
+          }
+        }} 
+      />
     </div>
   );
 };

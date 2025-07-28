@@ -89,11 +89,10 @@ const Pricing = () => {
 
   const handlePayment = async (plan: typeof plans[0]) => {
     if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to purchase a subscription plan.",
-        variant: "destructive"
-      });
+      // Store the selected plan in sessionStorage to show after login
+      sessionStorage.setItem('selectedPlan', JSON.stringify(plan));
+      // Navigate to auth page instead of showing error
+      window.location.href = '/auth';
       return;
     }
 

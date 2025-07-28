@@ -224,7 +224,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
           )}
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
           {plans.map((plan) => {
             const isCurrentPlan = plan.name === profile?.subscription_plan;
             const Icon = plan.icon;
@@ -232,13 +232,13 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
             return (
               <Card 
                 key={plan.name} 
-                className={`relative p-6 transition-all duration-200 hover:shadow-lg ${
-                  isCurrentPlan ? 'ring-2 ring-primary bg-primary/5' : ''
-                } ${plan.popular ? 'border-primary' : ''}`}
+                className={`relative p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 transform hover:scale-105 ${
+                  isCurrentPlan ? 'ring-2 ring-success ring-offset-2 scale-105 bg-success/5' : ''
+                } ${plan.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''}`}
               >
-                {plan.popular && (
+                {plan.popular && !isCurrentPlan && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground">
+                    <Badge className="bg-gradient-primary text-primary-foreground shadow-lg">
                       <Sparkles className="h-3 w-3 mr-1" />
                       Most Popular
                     </Badge>
@@ -246,59 +246,90 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                 )}
 
                 {isCurrentPlan && (
-                  <div className="absolute -top-3 right-4">
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Your Current Plan
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-success to-success-glow text-white shadow-lg">
+                      <Check className="h-3 w-3 mr-1" />
+                      Active Plan
                     </Badge>
                   </div>
                 )}
 
-                <div className="text-center mb-6">
-                  <div className="flex justify-center mb-3">
-                    <div className="p-3 rounded-full bg-gradient-to-r from-primary/10 to-primary/20">
-                      <Icon className="h-8 w-8 text-primary" />
+                <div className="text-center mb-8">
+                  <div className="flex justify-center mb-4">
+                    <div className={`p-4 rounded-full ${
+                      isCurrentPlan 
+                        ? 'bg-gradient-to-r from-success/20 to-success-glow/20' 
+                        : plan.popular 
+                          ? 'bg-gradient-to-r from-primary/20 to-primary-glow/20'
+                          : 'bg-gradient-to-r from-muted/20 to-muted/30'
+                    }`}>
+                      <Icon className={`h-10 w-10 ${
+                        isCurrentPlan ? 'text-success' : plan.popular ? 'text-primary' : 'text-muted-foreground'
+                      }`} />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                  <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold">₹{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.duration}</span>
+                  <h3 className="text-2xl font-bold mb-3">{plan.name}</h3>
+                  <p className="text-muted-foreground text-sm mb-6">{plan.description}</p>
+                  <div className="mb-6">
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-lg text-muted-foreground">₹</span>
+                      <span className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                        {plan.price}
+                      </span>
+                      <span className="text-muted-foreground">/{plan.duration}</span>
+                    </div>
+                    {plan.days && !isCurrentPlan && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {plan.days} days of premium access
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <ul className="space-y-2 mb-6">
+                <div className="space-y-3 mb-8">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="mt-0.5">
+                        <Check className="h-4 w-4 text-success flex-shrink-0" />
+                      </div>
+                      <span className="text-sm leading-relaxed">{feature}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
 
-                <Button
-                  variant={isCurrentPlan ? "secondary" : plan.variant}
-                  className="w-full"
-                  disabled={isCurrentPlan || loadingPlan === plan.name}
-                  onClick={() => handleUpgrade(plan)}
-                >
-                  {loadingPlan === plan.name ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : isCurrentPlan ? (
-                    "Current Plan"
-                  ) : (
-                    `Upgrade to ${plan.name}`
+                <div className="space-y-3">
+                  <Button
+                    variant={isCurrentPlan ? "secondary" : plan.variant}
+                    className="w-full h-12 text-base font-semibold"
+                    disabled={isCurrentPlan || loadingPlan === plan.name}
+                    onClick={() => handleUpgrade(plan)}
+                  >
+                    {loadingPlan === plan.name ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Processing Payment...
+                      </>
+                    ) : isCurrentPlan ? (
+                      <>
+                        <Check className="h-5 w-5 mr-2" />
+                        Current Plan
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="h-5 w-5 mr-2" />
+                        Upgrade to {plan.name}
+                      </>
+                    )}
+                  </Button>
+
+                  {!isCurrentPlan && remainingDays > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <p className="text-xs text-center text-muted-foreground">
+                        <span className="font-medium text-primary">{remainingDays} remaining days</span> from your current plan will be added to this upgrade
+                      </p>
+                    </div>
                   )}
-                </Button>
-
-                {!isCurrentPlan && remainingDays > 0 && (
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    Your {remainingDays} remaining days will be added to this plan
-                  </p>
-                )}
+                </div>
               </Card>
             );
           })}
