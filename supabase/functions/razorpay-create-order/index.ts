@@ -47,32 +47,33 @@ serve(async (req) => {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
     }
 
-    // Get Razorpay credentials
-    const razorpayKeyId = Deno.env.get('RAZORPAY_KEY_ID');
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
+    // Determine environment (default to test for safety)
+    const isLiveMode = Deno.env.get('RAZORPAY_MODE') === 'live';
+    
+    // Get environment-specific Razorpay credentials
+    const razorpayKeyId = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
+      : Deno.env.get('RAZORPAY_TEST_KEY_ID');
+    const razorpayKeySecret = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
+      : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
     console.log('=== RAZORPAY CREDENTIALS DEBUG ===');
+    console.log('Mode:', isLiveMode ? 'LIVE' : 'TEST');
+    console.log('Key ID exists:', !!razorpayKeyId);
     console.log('Key ID:', razorpayKeyId);
     console.log('Secret exists:', !!razorpayKeySecret);
     console.log('Secret length:', razorpayKeySecret?.length);
     
     if (!razorpayKeyId || !razorpayKeySecret) {
-      console.error('Missing credentials - KeyID:', !!razorpayKeyId, 'Secret:', !!razorpayKeySecret);
-      throw new Error('Razorpay credentials not configured');
-    }
-
-    // Validate environment consistency
-    const isLiveKeyId = razorpayKeyId.startsWith('rzp_live_');
-    const isTestKeyId = razorpayKeyId.startsWith('rzp_test_');
-    
-    if (!isLiveKeyId && !isTestKeyId) {
-      throw new Error('Invalid Razorpay Key ID format');
+      const missingCreds = isLiveMode ? 'RAZORPAY_LIVE_KEY_ID/RAZORPAY_LIVE_KEY_SECRET' : 'RAZORPAY_TEST_KEY_ID/RAZORPAY_TEST_KEY_SECRET';
+      console.error(`Missing ${isLiveMode ? 'live' : 'test'} credentials:`, missingCreds);
+      throw new Error(`Razorpay ${isLiveMode ? 'live' : 'test'} credentials not configured`);
     }
 
     // Clean the secret (remove any quotes or whitespace)
     const cleanSecret = razorpayKeySecret.trim().replace(/^["']|["']$/g, '');
     console.log('Clean secret length:', cleanSecret.length);
-    console.log('Using environment:', isLiveKeyId ? 'LIVE' : 'TEST');
     console.log('=== END CREDENTIALS DEBUG ===');
     
     // Create Razorpay order
