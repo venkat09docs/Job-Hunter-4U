@@ -134,7 +134,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       if (orderError) throw orderError;
 
       const options = {
-        key: 'rzp_test_nwmEp8mRxXVFql',
+        key: orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'Career Hub',
