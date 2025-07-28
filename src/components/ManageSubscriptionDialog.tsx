@@ -170,6 +170,9 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
               description: `You've successfully upgraded to ${plan.name}. Your remaining days have been added to the new plan.`,
             });
 
+            // Reset loading state
+            setLoadingPlan(null);
+            
             // Refresh profile data and close dialog
             await refreshProfile();
             onOpenChange(false);
@@ -181,6 +184,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
           } catch (error: any) {
             console.error('Payment verification failed:', error);
+            setLoadingPlan(null);
             toast({
               title: "Payment Verification Failed",
               description: error.message || "Please contact support if payment was deducted",
