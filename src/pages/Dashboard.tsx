@@ -7,7 +7,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot } from 'lucide-react';
-import { SubscriptionStatus, useSubscription } from '@/components/SubscriptionUpgrade';
+import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
@@ -26,7 +26,7 @@ interface JobEntry {
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
-  const { profile, analytics, loading, incrementAnalytics } = useProfile();
+  const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -48,16 +48,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleBuyTokens = () => {
-    navigate('/');
-    // Scroll to pricing section
-    setTimeout(() => {
-      const pricingSection = document.getElementById('pricing');
-      if (pricingSection) {
-        pricingSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
 
   const handleDemoAction = async (actionType: 'resume_open' | 'job_search' | 'ai_query') => {
     await incrementAnalytics(actionType);
@@ -179,15 +169,16 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">
                       Access all premium features with your active subscription
                     </p>
-                    <Button 
-                      onClick={handleBuyTokens}
-                      variant="premium" 
-                      size="sm"
-                      className="gap-2"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      View Plans
-                    </Button>
+                    <SubscriptionUpgrade featureName="premium features">
+                      <Button 
+                        variant="premium" 
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        {hasActiveSubscription() ? 'Manage Plan' : 'View Plans'}
+                      </Button>
+                    </SubscriptionUpgrade>
                   </div>
                 </CardContent>
               </Card>
