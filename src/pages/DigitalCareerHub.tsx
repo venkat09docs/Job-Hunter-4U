@@ -14,6 +14,16 @@ import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+const getCategoryIcon = (categoryName: string) => {
+  const name = categoryName.toLowerCase();
+  if (name.includes('resume') || name.includes('cv')) return '📄';
+  if (name.includes('interview')) return '🎤';
+  if (name.includes('job') || name.includes('search')) return '🔍';
+  if (name.includes('skill') || name.includes('learning')) return '🎯';
+  if (name.includes('career') || name.includes('planning')) return '🚀';
+  return '⚡';
+};
+
 const DigitalCareerHub = () => {
   const { tools, categories, loading, categoriesLoading, useTool } = useAITools();
   const { profile, refreshProfile } = useProfile();
@@ -151,7 +161,7 @@ const DigitalCareerHub = () => {
           </p>
         </div>
 
-{tools.length === 0 ? (
+        {tools.length === 0 ? (
           <Card className="text-center py-8">
             <CardContent>
               <h3 className="text-lg font-semibold mb-2">No AI Tools Available</h3>
@@ -161,241 +171,268 @@ const DigitalCareerHub = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="all" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-auto overflow-x-auto">
-              <TabsTrigger value="all">All Tools</TabsTrigger>
-              {categories.map((category) => (
-                <TabsTrigger key={category.id} value={category.id}>
-                  {category.name}
-                </TabsTrigger>
-              ))}
-              {organizedTools['uncategorized'] && (
-                <TabsTrigger value="uncategorized">Uncategorized</TabsTrigger>
-              )}
-            </TabsList>
-
-            <TabsContent value="all" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tools.map((tool) => {
-                  const category = categories.find(cat => cat.id === tool.category_id);
-                  return (
-                    <Card key={tool.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        {tool.image_url && (
-                          <div className="mb-4">
-                            <img 
-                              src={tool.image_url} 
-                              alt={tool.tool_name}
-                              className="w-full h-40 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
-                            <CardDescription className="mt-1">
-                              {tool.tool_description || 'AI-powered career tool'}
-                            </CardDescription>
-                          </div>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Zap className="w-3 h-3" />
-                            {tool.credit_points}
-                          </Badge>
-                        </div>
-                        {category && (
-                          <Badge variant="secondary" className="w-fit mt-2">
-                            {category.name}
-                          </Badge>
-                        )}
-                      </CardHeader>
-                      
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="text-sm text-muted-foreground">
-                            <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                            <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                          </div>
-                          
-                          {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button className="w-full">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Access Tool
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will deduct {tool.credit_points} credits from your account. 
-                                    You currently have {profile?.tokens_remaining || 0} credits.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                    Use {tool.credit_points} Credits
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          ) : (
-                            <Button variant="outline" className="w-full" disabled>
-                              Insufficient Credits
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </TabsContent>
-
-            {categories.map((category) => (
-              <TabsContent key={category.id} value={category.id} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {organizedTools[category.id]?.map((tool) => (
-                    <Card key={tool.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        {tool.image_url && (
-                          <div className="mb-4">
-                            <img 
-                              src={tool.image_url} 
-                              alt={tool.tool_name}
-                              className="w-full h-40 object-cover rounded-lg"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
-                            <CardDescription className="mt-1">
-                              {tool.tool_description || 'AI-powered career tool'}
-                            </CardDescription>
-                          </div>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Zap className="w-3 h-3" />
-                            {tool.credit_points}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="text-sm text-muted-foreground">
-                            <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                            <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                          </div>
-                          
-                          {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button className="w-full">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Access Tool
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will deduct {tool.credit_points} credits from your account. 
-                                    You currently have {profile?.tokens_remaining || 0} credits.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                    Use {tool.credit_points} Credits
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          ) : (
-                            <Button variant="outline" className="w-full" disabled>
-                              Insufficient Credits
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )) || <p className="text-center text-muted-foreground py-8">No tools in this category yet.</p>}
+          <div className="space-y-6">
+            {/* Category Navigation */}
+            <div className="relative">
+              <h3 className="text-lg font-semibold mb-4">Browse by Category</h3>
+              <Tabs defaultValue="all" className="w-full">
+                <div className="relative overflow-x-auto scrollbar-hide">
+                  <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground min-w-full w-max">
+                    <TabsTrigger 
+                      value="all" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
+                    >
+                      🔥 All Tools ({tools.length})
+                    </TabsTrigger>
+                    {categories.map((category, index) => {
+                      const categoryTools = organizedTools[category.id] || [];
+                      const categoryIcon = getCategoryIcon(category.name);
+                      return (
+                        <TabsTrigger 
+                          key={category.id} 
+                          value={category.id}
+                          className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          {categoryIcon} {category.name} ({categoryTools.length})
+                        </TabsTrigger>
+                      );
+                    })}
+                    {organizedTools['uncategorized'] && (
+                      <TabsTrigger 
+                        value="uncategorized"
+                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
+                      >
+                        📂 Other ({organizedTools['uncategorized'].length})
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
                 </div>
-              </TabsContent>
-            ))}
 
-            {organizedTools['uncategorized'] && (
-              <TabsContent value="uncategorized" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {organizedTools['uncategorized'].map((tool) => (
-                    <Card key={tool.id} className="hover:shadow-lg transition-shadow">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
-                            <CardDescription className="mt-1">
-                              {tool.tool_description || 'AI-powered career tool'}
-                            </CardDescription>
-                          </div>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <Zap className="w-3 h-3" />
-                            {tool.credit_points}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="text-sm text-muted-foreground">
-                            <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
-                            <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
-                          </div>
+                <TabsContent value="all" className="space-y-4 animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tools.map((tool, index) => {
+                      const category = categories.find(cat => cat.id === tool.category_id);
+                      return (
+                        <Card key={tool.id} className="hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                          <CardHeader>
+                            {tool.image_url && (
+                              <div className="mb-4">
+                                <img 
+                                  src={tool.image_url} 
+                                  alt={tool.tool_name}
+                                  className="w-full h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
+                                <CardDescription className="mt-1">
+                                  {tool.tool_description || 'AI-powered career tool'}
+                                </CardDescription>
+                              </div>
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Zap className="w-3 h-3" />
+                                {tool.credit_points}
+                              </Badge>
+                            </div>
+                            {category && (
+                              <Badge variant="secondary" className="w-fit mt-2">
+                                {getCategoryIcon(category.name)} {category.name}
+                              </Badge>
+                            )}
+                          </CardHeader>
                           
-                          {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button className="w-full">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  Access Tool
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="text-sm text-muted-foreground">
+                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
+                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
+                              </div>
+                              
+                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button className="w-full hover-scale">
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Access Tool
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will deduct {tool.credit_points} credits from your account. 
+                                        You currently have {profile?.tokens_remaining || 0} credits.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                        Use {tool.credit_points} Credits
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              ) : (
+                                <Button variant="outline" className="w-full" disabled>
+                                  Insufficient Credits
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This will deduct {tool.credit_points} credits from your account. 
-                                    You currently have {profile?.tokens_remaining || 0} credits.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                    Use {tool.credit_points} Credits
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          ) : (
-                            <Button variant="outline" className="w-full" disabled>
-                              Insufficient Credits
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            )}
-          </Tabs>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                {categories.map((category) => (
+                  <TabsContent key={category.id} value={category.id} className="space-y-4 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {organizedTools[category.id]?.map((tool, index) => (
+                        <Card key={tool.id} className="hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                          <CardHeader>
+                            {tool.image_url && (
+                              <div className="mb-4">
+                                <img 
+                                  src={tool.image_url} 
+                                  alt={tool.tool_name}
+                                  className="w-full h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
+                                <CardDescription className="mt-1">
+                                  {tool.tool_description || 'AI-powered career tool'}
+                                </CardDescription>
+                              </div>
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Zap className="w-3 h-3" />
+                                {tool.credit_points}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="text-sm text-muted-foreground">
+                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
+                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
+                              </div>
+                              
+                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button className="w-full hover-scale">
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Access Tool
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will deduct {tool.credit_points} credits from your account. 
+                                        You currently have {profile?.tokens_remaining || 0} credits.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                        Use {tool.credit_points} Credits
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              ) : (
+                                <Button variant="outline" className="w-full" disabled>
+                                  Insufficient Credits
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )) || <div className="text-center text-muted-foreground py-8 animate-fade-in">No tools in this category yet.</div>}
+                    </div>
+                  </TabsContent>
+                ))}
+
+                {organizedTools['uncategorized'] && (
+                  <TabsContent value="uncategorized" className="space-y-4 animate-fade-in">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {organizedTools['uncategorized'].map((tool, index) => (
+                        <Card key={tool.id} className="hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
+                                <CardDescription className="mt-1">
+                                  {tool.tool_description || 'AI-powered career tool'}
+                                </CardDescription>
+                              </div>
+                              <Badge variant="outline" className="flex items-center gap-1">
+                                <Zap className="w-3 h-3" />
+                                {tool.credit_points}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="text-sm text-muted-foreground">
+                                <p>Credits Required: <span className="font-semibold">{tool.credit_points}</span></p>
+                                <p>Your Balance: <span className="font-semibold">{profile?.tokens_remaining || 0}</span></p>
+                              </div>
+                              
+                              {(profile?.tokens_remaining || 0) >= tool.credit_points ? (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button className="w-full hover-scale">
+                                      <ExternalLink className="w-4 h-4 mr-2" />
+                                      Access Tool
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will deduct {tool.credit_points} credits from your account. 
+                                        You currently have {profile?.tokens_remaining || 0} credits.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleToolAccess(tool)}>
+                                        Use {tool.credit_points} Credits
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              ) : (
+                                <Button variant="outline" className="w-full" disabled>
+                                  Insufficient Credits
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
+          </div>
         )}
       </div>
 
