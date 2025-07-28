@@ -73,26 +73,28 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')!;
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
+    // Check if this is a webhook call from Razorpay or a frontend verification
+    const authHeader = req.headers.get('Authorization');
+    const isWebhook = !authHeader; // Webhooks from Razorpay don't have auth headers
+    
+    let userId: string | null = null;
+    
+    if (!isWebhook) {
+      // Frontend verification - authenticate user
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+      );
 
-    // Create a Supabase client with the Auth context of the user that sent the request
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Get the user
-    const token = authHeader.replace('Bearer ', '');
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-
-    if (!user?.email) {
-      throw new Error('User not authenticated');
+      const token = authHeader.replace('Bearer ', '');
+      const { data } = await supabaseClient.auth.getUser(token);
+      
+      if (!data.user?.id) {
+        throw new Error('User not authenticated');
+      }
+      
+      userId = data.user.id;
     }
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature }: VerifyRequest = await req.json();
@@ -122,12 +124,17 @@ serve(async (req) => {
     );
 
     // Get the payment record to fetch plan details
-    const { data: paymentData, error: fetchError } = await supabaseService
+    let paymentQuery = supabaseService
       .from('payments')
       .select('*')
-      .eq('razorpay_order_id', razorpay_order_id)
-      .eq('user_id', user.id)
-      .single();
+      .eq('razorpay_order_id', razorpay_order_id);
+    
+    // For frontend calls, filter by user_id for security
+    if (!isWebhook && userId) {
+      paymentQuery = paymentQuery.eq('user_id', userId);
+    }
+
+    const { data: paymentData, error: fetchError } = await paymentQuery.single();
 
     if (fetchError || !paymentData) {
       console.error('Payment fetch error:', fetchError);
@@ -164,14 +171,14 @@ serve(async (req) => {
         subscription_active: true,
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', user.id);
+      .eq('user_id', paymentData.user_id);
 
     if (profileError) {
       console.error('Profile update error:', profileError);
       throw new Error('Failed to update subscription');
     }
 
-    console.log('Payment verified and subscription updated for user:', user.id);
+    console.log('Payment verified and subscription updated for user:', paymentData.user_id);
 
     return new Response(
       JSON.stringify({
