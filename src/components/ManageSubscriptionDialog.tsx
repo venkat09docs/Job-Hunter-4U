@@ -142,10 +142,11 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         order_id: orderData.id,
         handler: async (response: any) => {
           try {
-            console.log('Razorpay response:', response);
+            console.log('Full Razorpay response:', response);
+            console.log('Order data:', orderData);
             const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
               body: {
-                razorpay_order_id: orderData.id,
+                razorpay_order_id: response.razorpay_order_id || orderData.id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 upgrade_end_date: calculateUpgradedEndDate(plan.days)
