@@ -51,6 +51,10 @@ serve(async (req) => {
     const razorpayKeyId = "rzp_test_MHGnYRilhJ8fI0"; // Your Razorpay Key ID
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
     
+    console.log('Razorpay Key ID:', razorpayKeyId);
+    console.log('Razorpay Secret exists:', !!razorpayKeySecret);
+    console.log('Razorpay Secret length:', razorpayKeySecret?.length || 0);
+    
     if (!razorpayKeySecret) {
       throw new Error('Razorpay secret key not configured');
     }
