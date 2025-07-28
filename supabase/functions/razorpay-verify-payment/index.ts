@@ -13,31 +13,30 @@ interface VerifyRequest {
 }
 
 // Function to verify Razorpay signature
-function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): boolean {
+async function verifySignature(orderId: string, paymentId: string, signature: string, secret: string): Promise<boolean> {
   const text = `${orderId}|${paymentId}`;
-  const expectedSignature = generateSignature(text, secret);
+  const expectedSignature = await generateSignature(text, secret);
   return expectedSignature === signature;
 }
 
-function generateSignature(text: string, secret: string): string {
+async function generateSignature(text: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secret);
   const textData = encoder.encode(text);
   
-  return crypto.subtle.importKey(
+  const key = await crypto.subtle.importKey(
     'raw',
     keyData,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
-  ).then(key => 
-    crypto.subtle.sign('HMAC', key, textData)
-  ).then(signature => {
-    const signatureArray = new Uint8Array(signature);
-    return Array.from(signatureArray)
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  });
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', key, textData);
+  const signatureArray = new Uint8Array(signature);
+  return Array.from(signatureArray)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 // Helper function to calculate subscription end date
@@ -73,41 +72,54 @@ serve(async (req) => {
   }
 
   try {
-    // Check if this is a webhook call from Razorpay or a frontend verification
-    const authHeader = req.headers.get('Authorization');
-    const isWebhook = !authHeader; // Webhooks from Razorpay don't have auth headers
+    console.log('=== PAYMENT VERIFICATION START ===');
     
-    let userId: string | null = null;
+    // Parse request body
+    const requestBody = await req.json();
+    console.log('Request body:', requestBody);
     
-    if (!isWebhook) {
-      // Frontend verification - authenticate user
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        { global: { headers: { Authorization: authHeader } } }
-      );
-
-      const token = authHeader.replace('Bearer ', '');
-      const { data } = await supabaseClient.auth.getUser(token);
-      
-      if (!data.user?.id) {
-        throw new Error('User not authenticated');
-      }
-      
-      userId = data.user.id;
-    }
-
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature }: VerifyRequest = await req.json();
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = requestBody;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      console.log('Missing fields:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
       throw new Error('Missing required payment verification fields');
     }
 
-    // Get Razorpay secret key
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET');
-    if (!razorpayKeySecret) {
-      throw new Error('Razorpay secret key not configured');
+    // Authenticate user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header provided');
     }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    
+    if (userError || !userData.user?.id) {
+      console.error('Authentication error:', userError);
+      throw new Error('User not authenticated');
+    }
+    
+    const userId = userData.user.id;
+    console.log('Authenticated user:', userId);
+
+    // Determine which secret key to use based on mode
+    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const isLiveMode = razorpayMode === 'live';
+    
+    const razorpayKeySecret = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
+      : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
+    
+    if (!razorpayKeySecret) {
+      throw new Error(`Razorpay ${isLiveMode ? 'live' : 'test'} secret key not configured`);
+    }
+    
+    console.log('Using', isLiveMode ? 'live' : 'test', 'mode for verification');
 
     // Verify the signature
     const isValidSignature = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
@@ -124,22 +136,20 @@ serve(async (req) => {
     );
 
     // Get the payment record to fetch plan details
-    let paymentQuery = supabaseService
+    const { data: paymentData, error: fetchError } = await supabaseService
       .from('payments')
       .select('*')
-      .eq('razorpay_order_id', razorpay_order_id);
-    
-    // For frontend calls, filter by user_id for security
-    if (!isWebhook && userId) {
-      paymentQuery = paymentQuery.eq('user_id', userId);
-    }
-
-    const { data: paymentData, error: fetchError } = await paymentQuery.single();
+      .eq('razorpay_order_id', razorpay_order_id)
+      .eq('user_id', userId)
+      .single();
 
     if (fetchError || !paymentData) {
       console.error('Payment fetch error:', fetchError);
+      console.log('Order ID:', razorpay_order_id, 'User ID:', userId);
       throw new Error('Payment record not found');
     }
+    
+    console.log('Found payment record:', paymentData.id);
 
     // Update payment status with verification details
     const { error: updateError } = await supabaseService
@@ -179,6 +189,7 @@ serve(async (req) => {
     }
 
     console.log('Payment verified and subscription updated for user:', paymentData.user_id);
+    console.log('=== PAYMENT VERIFICATION END ===');
 
     return new Response(
       JSON.stringify({

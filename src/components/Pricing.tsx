@@ -165,9 +165,13 @@ const Pricing = () => {
               description: `Welcome to ${plan.name}! Your subscription is now active.`,
             });
             
+            // Remove body class when successful
+            document.body.classList.remove('razorpay-open');
+            
+            // Refresh the page to show updated subscription status
             setTimeout(() => {
               window.location.reload();
-            }, 2000);
+            }, 1500);
             
           } catch (error) {
             toast({
@@ -180,6 +184,7 @@ const Pricing = () => {
         modal: {
           ondismiss: function() {
             setLoadingPlan(null);
+            document.body.classList.remove('razorpay-open');
           },
           escape: true,
           backdropclose: false

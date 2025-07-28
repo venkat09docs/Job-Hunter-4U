@@ -173,10 +173,13 @@ const PricingDialog = () => {
               description: `Welcome to ${plan.name}! Your subscription is now active.`,
             });
             
-            // Optional: Close dialog or refresh page
+            // Remove body class when successful
+            document.body.classList.remove('razorpay-open');
+            
+            // Refresh the page to show updated subscription status
             setTimeout(() => {
               window.location.reload();
-            }, 2000);
+            }, 1500);
             
           } catch (error) {
             console.error('Error processing payment:', error);
@@ -190,6 +193,7 @@ const PricingDialog = () => {
         modal: {
           ondismiss: function() {
             setLoadingPlan(null);
+            document.body.classList.remove('razorpay-open');
             toast({
               title: "Payment Cancelled",
               description: "You can complete your payment anytime to activate your plan.",
