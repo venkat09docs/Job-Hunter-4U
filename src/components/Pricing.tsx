@@ -209,55 +209,23 @@ const Pricing = () => {
         });
       });
       
-      // Blur any currently focused element and disable page interactions
+      // Blur any currently focused element
       if (document.activeElement && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
       
-      // Add class to body to indicate Razorpay is opening
-      document.body.classList.add('razorpay-open');
-      
-      // Open payment modal
+      // Open payment modal first
       paymentObject.open();
       
-      // Enhanced focus management
-      const manageFocus = () => {
-        // Ensure window has focus first
+      // Add class to body after modal opens to avoid affecting Razorpay
+      setTimeout(() => {
+        document.body.classList.add('razorpay-open');
+      }, 100);
+      
+      // Simple focus management - just ensure window focus
+      setTimeout(() => {
         window.focus();
-        
-        // Try to find and focus on Razorpay elements
-        const razorpaySelectors = [
-          '.razorpay-container',
-          '.razorpay-overlay', 
-          '[data-razorpay]',
-          'iframe[name*="razorpay"]',
-          '.razorpay-checkout-frame'
-        ];
-        
-        for (const selector of razorpaySelectors) {
-          const element = document.querySelector(selector) as HTMLElement;
-          if (element && element.offsetParent !== null) { // Check if visible
-            element.focus();
-            element.click(); // Try clicking to ensure interaction
-            console.log('Focused on:', selector);
-            return true;
-          }
-        }
-        return false;
-      };
-      
-      // Try focusing multiple times with increasing delays
-      const focusIntervals = [200, 500, 800, 1200];
-      focusIntervals.forEach(delay => {
-        setTimeout(manageFocus, delay);
-      });
-      
-      // Remove body class when modal closes
-      const originalOnDismiss = options.modal.ondismiss;
-      paymentObject.on('payment.cancel', () => {
-        document.body.classList.remove('razorpay-open');
-        if (originalOnDismiss) originalOnDismiss();
-      });
+      }, 300);
       
     } catch (error) {
       toast({
