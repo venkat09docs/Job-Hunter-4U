@@ -281,7 +281,7 @@ const PricingDialog = () => {
                 <div className="text-center">
                   <div className="flex items-baseline justify-center gap-1">
                     <span className="text-sm text-muted-foreground">₹</span>
-                    <span className="text-3xl font-bold">{plan.price.toLocaleString()}</span>
+                    <span className="text-3xl font-bold">{plan.price.toFixed(2)}</span>
                     <span className="text-sm text-muted-foreground">/{plan.duration}</span>
                   </div>
                 </div>
