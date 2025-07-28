@@ -180,9 +180,14 @@ const Pricing = () => {
         modal: {
           ondismiss: function() {
             setLoadingPlan(null);
-          }
+          },
+          escape: true,
+          backdropclose: false
         },
-        theme: { color: "#6366f1" },
+        theme: { 
+          color: "#6366f1",
+          backdrop_color: "rgba(0, 0, 0, 0.8)"
+        },
         prefill: {
           name: user.user_metadata?.full_name || "",
           email: user.email || "", 
@@ -204,42 +209,54 @@ const Pricing = () => {
         });
       });
       
-      // Blur any currently focused element
+      // Blur any currently focused element and disable page interactions
       if (document.activeElement && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
       
+      // Add class to body to indicate Razorpay is opening
+      document.body.classList.add('razorpay-open');
+      
       // Open payment modal
       paymentObject.open();
       
-      // Multiple attempts to ensure focus with different timings
-      const focusAttempts = [100, 300, 500, 1000];
-      focusAttempts.forEach(delay => {
-        setTimeout(() => {
-          // Ensure window has focus
-          window.focus();
-          
-          // Try multiple selectors for Razorpay modal
-          const selectors = [
-            '.razorpay-container',
-            '.razorpay-overlay',
-            '[data-razorpay]',
-            'iframe[name="razorpay_checkout_iframe"]'
-          ];
-          
-          for (const selector of selectors) {
-            const modal = document.querySelector(selector) as HTMLElement;
-            if (modal) {
-              modal.focus();
-              // Try to focus on interactive elements
-              const interactiveElements = modal.querySelectorAll('input, button, select, textarea');
-              if (interactiveElements.length > 0) {
-                (interactiveElements[0] as HTMLElement).focus();
-              }
-              break;
-            }
+      // Enhanced focus management
+      const manageFocus = () => {
+        // Ensure window has focus first
+        window.focus();
+        
+        // Try to find and focus on Razorpay elements
+        const razorpaySelectors = [
+          '.razorpay-container',
+          '.razorpay-overlay', 
+          '[data-razorpay]',
+          'iframe[name*="razorpay"]',
+          '.razorpay-checkout-frame'
+        ];
+        
+        for (const selector of razorpaySelectors) {
+          const element = document.querySelector(selector) as HTMLElement;
+          if (element && element.offsetParent !== null) { // Check if visible
+            element.focus();
+            element.click(); // Try clicking to ensure interaction
+            console.log('Focused on:', selector);
+            return true;
           }
-        }, delay);
+        }
+        return false;
+      };
+      
+      // Try focusing multiple times with increasing delays
+      const focusIntervals = [200, 500, 800, 1200];
+      focusIntervals.forEach(delay => {
+        setTimeout(manageFocus, delay);
+      });
+      
+      // Remove body class when modal closes
+      const originalOnDismiss = options.modal.ondismiss;
+      paymentObject.on('payment.cancel', () => {
+        document.body.classList.remove('razorpay-open');
+        if (originalOnDismiss) originalOnDismiss();
       });
       
     } catch (error) {

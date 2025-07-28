@@ -1,0 +1,27 @@
+/* Razorpay Modal Styles - Ensure highest z-index */
+.razorpay-container,
+.razorpay-overlay,
+[data-razorpay] {
+  z-index: 999999 !important;
+  position: fixed !important;
+}
+
+.razorpay-container {
+  pointer-events: auto !important;
+}
+
+/* Ensure backdrop is clickable */
+.razorpay-backdrop {
+  z-index: 999998 !important;
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Hide other elements when Razorpay is open */
+.razorpay-open {
+  overflow: hidden;
+}
+
+.razorpay-open .main-content {
+  filter: blur(2px);
+  pointer-events: none;
+}
