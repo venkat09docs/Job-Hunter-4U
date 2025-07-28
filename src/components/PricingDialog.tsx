@@ -221,7 +221,21 @@ const PricingDialog = () => {
         console.error('Payment failed:', response.error);
       });
       
+      // Open payment modal and ensure it gets focus
       paymentObject.open();
+      
+      // Force focus on the payment modal after a slight delay
+      setTimeout(() => {
+        const razorpayModal = document.querySelector('.razorpay-container') as HTMLElement;
+        if (razorpayModal) {
+          razorpayModal.focus();
+          // Also try to focus on the first input field
+          const firstInput = razorpayModal.querySelector('input, button') as HTMLElement;
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }
+      }, 500);
       
     } catch (error) {
       console.error('Payment initialization error:', error);
