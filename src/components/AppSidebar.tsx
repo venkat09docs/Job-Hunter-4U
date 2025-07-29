@@ -35,15 +35,15 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import PricingDialog from "./PricingDialog";
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home, key: "dashboard" },
-  { title: "Job Search", url: "/dashboard/job-search", icon: Search, key: "job-search" },
-  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, key: "job-tracker" },
-  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin, key: "linkedin-automation" },
-  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, key: "digital-career-hub" },
-  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target, key: "talent-screener" },
-  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User, key: "portfolio" },
-  { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool, key: "blog" },
-  { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User, key: "profile" },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
+  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
+  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
+  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
+  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
+  { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
+  { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
 ];
 
 const adminItems = [
@@ -97,7 +97,9 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => {
-                const canAccess = canAccessFeature(item.key);
+                // Generate feature key from URL (remove /dashboard prefix)
+                const featureKey = item.url.replace('/dashboard/', '').replace('/dashboard', 'dashboard');
+                const canAccess = canAccessFeature(featureKey);
                 const isPremium = !canAccess;
                 
                 return (
