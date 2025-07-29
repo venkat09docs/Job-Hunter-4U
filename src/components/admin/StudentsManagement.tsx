@@ -52,6 +52,7 @@ interface Batch {
 interface StudentFormData {
   email: string;
   full_name: string;
+  username: string;
   batch_id: string;
   password: string;
 }
@@ -68,6 +69,7 @@ export const StudentsManagement = () => {
   const [formData, setFormData] = useState<StudentFormData>({
     email: '',
     full_name: '',
+    username: '',
     batch_id: '',
     password: '',
   });
@@ -238,6 +240,7 @@ export const StudentsManagement = () => {
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
+            username: formData.username,
             batch_id: formData.batch_id,
             institute_id: instituteId,
           },
@@ -259,6 +262,7 @@ export const StudentsManagement = () => {
       setFormData({
         email: '',
         full_name: '',
+        username: '',
         batch_id: '',
         password: '',
       });
@@ -277,6 +281,7 @@ export const StudentsManagement = () => {
     setFormData({
       email: student.email || '',
       full_name: student.full_name || '',
+      username: '', // Don't populate username for editing for now
       batch_id: student.batch_id || '',
       password: '', // Don't populate password for editing
     });
@@ -366,6 +371,7 @@ export const StudentsManagement = () => {
               setFormData({
                 email: '',
                 full_name: '',
+                username: '',
                 batch_id: '',
                 password: '',
               });
@@ -401,6 +407,18 @@ export const StudentsManagement = () => {
                   value={formData.full_name}
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                   placeholder="Enter student full name"
+                  required
+                  disabled={false}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="username">Username *</Label>
+                <Input
+                  id="username"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="Enter student username"
                   required
                   disabled={false}
                 />
