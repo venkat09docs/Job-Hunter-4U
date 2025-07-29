@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, batch_id, institute_id } = await req.json()
+    const { email, password, full_name, username, batch_id, institute_id } = await req.json()
 
     // Create admin client
     const supabaseAdmin = createClient(
@@ -73,6 +73,7 @@ serve(async (req) => {
       password,
       user_metadata: {
         full_name,
+        username,
       },
       email_confirm: true, // Auto-confirm email
     })
@@ -94,11 +95,12 @@ serve(async (req) => {
 
     if (assignmentError) throw assignmentError
 
-    // Update the profile with email and full_name (since we need it for management)
+    // Update the profile with email, full_name and username (since we need it for management)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         full_name,
+        username,
         email,
       })
       .eq('user_id', authData.user.id)

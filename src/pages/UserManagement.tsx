@@ -70,10 +70,23 @@ export default function UserManagement() {
   const [newRole, setNewRole] = useState<string>('');
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [selectedInstitute, setSelectedInstitute] = useState<string>('');
+  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [editFormData, setEditFormData] = useState({
     full_name: '',
     username: '',
     email: '',
+  });
+  const [addUserFormData, setAddUserFormData] = useState({
+    full_name: '',
+    username: '',
+    email: '',
+    password: '',
+  });
+  const [planFormData, setPlanFormData] = useState({
+    subscription_plan: '',
+    subscription_start_date: '',
+    subscription_end_date: '',
   });
 
   useEffect(() => {
@@ -386,6 +399,115 @@ export default function UserManagement() {
     }
   };
 
+  const openPlanDialog = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setPlanFormData({
+      subscription_plan: '',
+      subscription_start_date: '',
+      subscription_end_date: '',
+    });
+    setShowPlanDialog(true);
+  };
+
+  const handleAddUser = async () => {
+    if (!addUserFormData.email || !addUserFormData.password || !addUserFormData.full_name) {
+      toast({
+        title: 'Error',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: addUserFormData.email,
+        password: addUserFormData.password,
+        user_metadata: {
+          full_name: addUserFormData.full_name,
+          username: addUserFormData.username,
+        },
+        email_confirm: true,
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Update profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            full_name: addUserFormData.full_name,
+            username: addUserFormData.username,
+            email: addUserFormData.email,
+          })
+          .eq('user_id', authData.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: 'User created successfully',
+      });
+
+      setShowAddUserDialog(false);
+      setAddUserFormData({
+        full_name: '',
+        username: '',
+        email: '',
+        password: '',
+      });
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create user',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleAssignPlan = async () => {
+    if (!selectedUser || !planFormData.subscription_plan) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_plan: planFormData.subscription_plan,
+          subscription_start_date: planFormData.subscription_start_date || null,
+          subscription_end_date: planFormData.subscription_end_date || null,
+          subscription_active: !!planFormData.subscription_end_date,
+        })
+        .eq('user_id', selectedUser.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Plan assigned successfully',
+      });
+
+      setShowPlanDialog(false);
+      setSelectedUser(null);
+      setPlanFormData({
+        subscription_plan: '',
+        subscription_start_date: '',
+        subscription_end_date: '',
+      });
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to assign plan',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -432,6 +554,12 @@ export default function UserManagement() {
                 <CardTitle className="flex items-center justify-between">
                   <span>Users ({filteredUsers.length})</span>
                   <div className="flex items-center space-x-2">
+                    {isAdmin && (
+                      <Button onClick={() => setShowAddUserDialog(true)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Add User
+                      </Button>
+                    )}
                     <div className="relative">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -511,6 +639,15 @@ export default function UserManagement() {
                               >
                                 <UserCheck className="h-4 w-4" />
                               </Button>
+                              {isAdmin && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openPlanDialog(user)}
+                                >
+                                  💎
+                                </Button>
+                              )}
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -633,6 +770,119 @@ export default function UserManagement() {
                 <Button onClick={handleEditUser}>
                   <User className="h-4 w-4 mr-2" />
                   Update Profile
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showAddUserDialog} onOpenChange={setShowAddUserDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New User</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="add_full_name">Full Name *</Label>
+                  <Input
+                    id="add_full_name"
+                    value={addUserFormData.full_name}
+                    onChange={(e) => setAddUserFormData({ ...addUserFormData, full_name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="add_username">Username</Label>
+                  <Input
+                    id="add_username"
+                    value={addUserFormData.username}
+                    onChange={(e) => setAddUserFormData({ ...addUserFormData, username: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="add_email">Email *</Label>
+                  <Input
+                    id="add_email"
+                    type="email"
+                    value={addUserFormData.email}
+                    onChange={(e) => setAddUserFormData({ ...addUserFormData, email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="add_password">Password *</Label>
+                  <Input
+                    id="add_password"
+                    type="password"
+                    value={addUserFormData.password}
+                    onChange={(e) => setAddUserFormData({ ...addUserFormData, password: e.target.value })}
+                    placeholder="Enter password"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowAddUserDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddUser}>
+                  <User className="h-4 w-4 mr-2" />
+                  Create User
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Assign Plan</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>User</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUser?.full_name || 'No name'} ({selectedUser?.email || 'No email'})
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="plan">Subscription Plan</Label>
+                  <Select value={planFormData.subscription_plan} onValueChange={(value) => setPlanFormData({ ...planFormData, subscription_plan: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Basic</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="pro">Pro</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="start_date">Start Date</Label>
+                  <Input
+                    id="start_date"
+                    type="date"
+                    value={planFormData.subscription_start_date}
+                    onChange={(e) => setPlanFormData({ ...planFormData, subscription_start_date: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end_date">End Date</Label>
+                  <Input
+                    id="end_date"
+                    type="date"
+                    value={planFormData.subscription_end_date}
+                    onChange={(e) => setPlanFormData({ ...planFormData, subscription_end_date: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAssignPlan}>
+                  💎 Assign Plan
                 </Button>
               </div>
             </DialogContent>
