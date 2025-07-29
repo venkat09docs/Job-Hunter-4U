@@ -340,9 +340,9 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
               </p>
             )}
           </DialogHeader>
-          <div className="flex-1 min-h-0 py-4">
-            <ScrollArea className="h-full pr-4">
-              <div className="bg-muted/50 p-6 rounded-md border">
+          <div className="flex-1 overflow-hidden py-4">
+            <ScrollArea className="h-full max-h-[60vh]">
+              <div className="bg-muted/50 p-6 rounded-md border mr-4">
                 <p className="text-base whitespace-pre-wrap leading-relaxed">
                   {viewingNote?.messages[0]?.content || 'No content'}
                 </p>
@@ -363,20 +363,20 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
               </p>
             )}
           </DialogHeader>
-          <div className="flex-1 min-h-0 py-4 space-y-4">
+          <div className="flex-1 overflow-hidden py-4 space-y-4">
             <Input
               placeholder="Note title..."
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
-              className="text-base"
+              className="text-base flex-shrink-0"
             />
-            <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
+            <div className="flex-1 overflow-hidden">
               <Textarea
                 placeholder="Write your notes here..."
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 className="w-full h-full resize-none text-base leading-relaxed p-4"
-                style={{ minHeight: '400px' }}
+                style={{ height: 'calc(60vh - 120px)', minHeight: '300px' }}
               />
             </div>
           </div>
