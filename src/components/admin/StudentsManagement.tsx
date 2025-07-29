@@ -301,6 +301,24 @@ export const StudentsManagement = () => {
         .update({ is_active: false })
         .eq('user_id', student.user_id);
 
+      // Delete user roles
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', student.user_id);
+
+      // Delete profile
+      await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', student.user_id);
+
+      // Delete from auth.users using admin API
+      const { error: authError } = await supabase.auth.admin.deleteUser(student.user_id);
+      if (authError) {
+        console.error('Auth deletion error:', authError);
+      }
+
       toast({
         title: 'Success',
         description: 'Student removed successfully',

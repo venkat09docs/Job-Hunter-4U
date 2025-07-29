@@ -377,12 +377,17 @@ export default function UserManagement() {
         .eq('user_id', user.user_id);
 
       // Delete profile (this should cascade delete other related records)
-      const { error } = await supabase
+      await supabase
         .from('profiles')
         .delete()
         .eq('user_id', user.user_id);
 
-      if (error) throw error;
+      // Delete from auth.users using admin API
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.user_id);
+      if (authError) {
+        console.error('Auth deletion error:', authError);
+        // Continue even if auth deletion fails, as the profile is already deleted
+      }
 
       toast({
         title: 'Success',
@@ -474,13 +479,33 @@ export default function UserManagement() {
     if (!selectedUser || !planFormData.subscription_plan) return;
 
     try {
+      // Calculate end date based on plan if start date is provided
+      let endDate = planFormData.subscription_end_date;
+      if (planFormData.subscription_start_date && !endDate) {
+        const startDate = new Date(planFormData.subscription_start_date);
+        const endCalculatedDate = new Date(startDate);
+        
+        switch (planFormData.subscription_plan) {
+          case 'One Week Plan':
+            endCalculatedDate.setDate(startDate.getDate() + 7);
+            break;
+          case 'One Month Plan':
+            endCalculatedDate.setMonth(startDate.getMonth() + 1);
+            break;
+          case 'Three Month Plan':
+            endCalculatedDate.setMonth(startDate.getMonth() + 3);
+            break;
+        }
+        endDate = endCalculatedDate.toISOString().split('T')[0];
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
           subscription_plan: planFormData.subscription_plan,
           subscription_start_date: planFormData.subscription_start_date || null,
-          subscription_end_date: planFormData.subscription_end_date || null,
-          subscription_active: !!planFormData.subscription_end_date,
+          subscription_end_date: endDate || null,
+          subscription_active: !!endDate,
         })
         .eq('user_id', selectedUser.user_id);
 
@@ -850,12 +875,11 @@ export default function UserManagement() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a plan" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="pro">Pro</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
+                     <SelectContent>
+                       <SelectItem value="One Week Plan">One Week Plan</SelectItem>
+                       <SelectItem value="One Month Plan">One Month Plan</SelectItem>
+                       <SelectItem value="Three Month Plan">Three Month Plan</SelectItem>
+                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
