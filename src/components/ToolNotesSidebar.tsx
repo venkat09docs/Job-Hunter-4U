@@ -23,7 +23,9 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<any>(null);
+  const [viewingNote, setViewingNote] = useState<any>(null);
 
   useEffect(() => {
     if (selectedNote) {
@@ -117,18 +119,14 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
   };
 
   const handleSelectNote = (note: any) => {
-    if (isEditing) {
-      // If currently editing, ask for confirmation
-      if (confirm('You have unsaved changes. Do you want to discard them?')) {
-        setSelectedNote(note);
-        setIsEditing(false);
-        setIsCreating(false);
-      }
-    } else {
-      setSelectedNote(note);
-      setIsCreating(false);
-      setIsEditing(false); // Open in view mode by default
-    }
+    setViewingNote(note);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleViewNote = (note: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setViewingNote(note);
+    setIsViewDialogOpen(true);
   };
 
   const handleEditNote = (note: any, e: React.MouseEvent) => {
@@ -244,36 +242,7 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                           >
                             <Edit2 className="w-3 h-3" />
                           </Button>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                            </DialogTrigger>
-                             <DialogContent className="max-w-2xl w-full h-[80vh] flex flex-col">
-                               <DialogHeader className="flex-shrink-0 pb-4 border-b">
-                                 <DialogTitle className="text-lg font-semibold">{note.title}</DialogTitle>
-                                 <p className="text-sm text-muted-foreground">
-                                   Created: {new Date(note.created_at).toLocaleDateString()}
-                                 </p>
-                               </DialogHeader>
-                               <div className="flex-1 min-h-0 py-4">
-                                 <ScrollArea className="h-full pr-4">
-                                   <div className="bg-muted/50 p-4 rounded-md border">
-                                     <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                                       {note.messages[0]?.content || 'No content'}
-                                     </p>
-                                   </div>
-                                 </ScrollArea>
-                               </div>
-                             </DialogContent>
-                         </Dialog>
-                         <AlertDialog>
+                          <AlertDialog>
                            <AlertDialogTrigger asChild>
                              <Button
                                variant="ghost"
@@ -307,40 +276,6 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
             )}
           </div>
         </ScrollArea>
-
-        {/* Note Viewer */}
-        {selectedNote && (
-          <div className="border-t bg-background p-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">View Note</h4>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedNote(null);
-                    setNoteTitle('');
-                    setNoteContent('');
-                  }}
-                >
-                  Close
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-sm font-medium">{selectedNote.title}</div>
-                <div className="bg-muted/50 p-3 rounded-md border max-h-[200px] overflow-y-auto">
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {selectedNote.messages[0]?.content || 'No content'}
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Created: {new Date(selectedNote.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Note Creator */}
         {isCreating && (
@@ -392,11 +327,36 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
         )}
       </div>
 
+      {/* View Note Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
+            <DialogTitle className="text-xl font-semibold">
+              {viewingNote?.title}
+            </DialogTitle>
+            {viewingNote && (
+              <p className="text-sm text-muted-foreground">
+                Created: {new Date(viewingNote.created_at).toLocaleDateString()}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="flex-1 min-h-0 py-4">
+            <ScrollArea className="h-full pr-4">
+              <div className="bg-muted/50 p-6 rounded-md border">
+                <p className="text-base whitespace-pre-wrap leading-relaxed">
+                  {viewingNote?.messages[0]?.content || 'No content'}
+                </p>
+              </div>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Note Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl w-full h-[80vh] flex flex-col">
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] flex flex-col">
           <DialogHeader className="flex-shrink-0 pb-4 border-b">
-            <DialogTitle className="text-lg font-semibold">Edit Note</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Edit Note</DialogTitle>
             {editingNote && (
               <p className="text-sm text-muted-foreground">
                 Created: {new Date(editingNote.created_at).toLocaleDateString()}
@@ -408,23 +368,24 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
               placeholder="Note title..."
               value={noteTitle}
               onChange={(e) => setNoteTitle(e.target.value)}
-              className="text-sm"
+              className="text-base"
             />
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0" style={{ minHeight: '400px' }}>
               <Textarea
                 placeholder="Write your notes here..."
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                className="h-full resize-none"
+                className="w-full h-full resize-none text-base leading-relaxed p-4"
+                style={{ minHeight: '400px' }}
               />
             </div>
           </div>
-          <div className="flex-shrink-0 flex gap-2 pt-4 border-t">
-            <Button onClick={handleSaveEditNote} className="flex-1">
+          <div className="flex-shrink-0 flex gap-3 pt-4 border-t">
+            <Button onClick={handleSaveEditNote} className="flex-1 h-11">
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
-            <Button variant="outline" onClick={handleCloseEditDialog}>
+            <Button variant="outline" onClick={handleCloseEditDialog} className="h-11 px-6">
               Close
             </Button>
           </div>
