@@ -437,7 +437,10 @@ const DigitalCareerHub = () => {
                   className="absolute top-4 left-2 z-10 bg-background/80 backdrop-blur-sm"
                 >
                   {isNotesCollapsed ? (
-                    <SidebarOpen className="w-4 h-4" />
+                    <>
+                      <SidebarOpen className="w-4 h-4 mr-2" />
+                      Show Notes
+                    </>
                   ) : (
                     <SidebarClose className="w-4 h-4" />
                   )}

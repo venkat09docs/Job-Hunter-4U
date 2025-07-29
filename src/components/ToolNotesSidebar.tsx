@@ -187,15 +187,15 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                                <Eye className="w-3 h-3" />
                              </Button>
                            </DialogTrigger>
-                            <DialogContent className="max-w-md max-h-[70vh]">
-                              <DialogHeader>
+                            <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
+                              <DialogHeader className="flex-shrink-0">
                                 <DialogTitle>{note.title}</DialogTitle>
                               </DialogHeader>
-                              <div className="mt-4">
-                                <p className="text-sm text-muted-foreground mb-2">
+                              <div className="flex-1 min-h-0 flex flex-col">
+                                <p className="text-sm text-muted-foreground mb-3 flex-shrink-0">
                                   Created: {new Date(note.created_at).toLocaleDateString()}
                                 </p>
-                                <ScrollArea className="max-h-[50vh]">
+                                <ScrollArea className="flex-1 min-h-0">
                                   <div className="bg-muted p-3 rounded-md">
                                     <p className="text-sm whitespace-pre-wrap">
                                       {note.messages[0]?.content || 'No content'}
