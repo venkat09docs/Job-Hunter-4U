@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, UserCheck, Trash2, User, Download, Filter } from 'lucide-react';
+import { Search, Edit, UserCheck, Trash2, User, Download, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import * as Papa from 'papaparse';
 import {
   Dialog,
@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { ArrowLeft } from 'lucide-react';
@@ -115,6 +116,21 @@ export default function UserManagement() {
   const [filterBatch, setFilterBatch] = useState<string>('all');
   const [batches, setBatches] = useState<Batch[]>([]);
   const [usersWithAssignments, setUsersWithAssignments] = useState<UserWithAssignments[]>([]);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [paginatedUsers, setPaginatedUsers] = useState<UserWithRole[]>([]);
+  
+  // Bulk operations states
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkRoleDialog, setShowBulkRoleDialog] = useState(false);
+  const [showBulkPlanDialog, setShowBulkPlanDialog] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkRole, setBulkRole] = useState<string>('');
+  const [bulkInstitute, setBulkInstitute] = useState<string>('');
+  const [bulkPlan, setBulkPlan] = useState<string>('');
+  const [bulkOperationLoading, setBulkOperationLoading] = useState(false);
 
   useEffect(() => {
     if (isAdmin || isInstituteAdmin) {
@@ -181,7 +197,7 @@ export default function UserManagement() {
     fetchUsersWithAssignments();
   }, [users]);
 
-  // Apply all filters
+  // Apply all filters and pagination
   useEffect(() => {
     let filtered = usersWithAssignments;
 
@@ -219,7 +235,208 @@ export default function UserManagement() {
     }
 
     setFilteredUsers(filtered);
+    
+    // Reset to first page when filters change
+    setCurrentPage(1);
+    setSelectedUsers(new Set());
   }, [searchQuery, usersWithAssignments, filterType, filterInstitute, filterBatch]);
+
+  // Handle pagination
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setPaginatedUsers(filteredUsers.slice(startIndex, endIndex));
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  // Calculate pagination info
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage + 1;
+  const endIndex = Math.min(startIndex + itemsPerPage - 1, filteredUsers.length);
+
+  // Selection handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(new Set(paginatedUsers.map(user => user.user_id)));
+    } else {
+      setSelectedUsers(new Set());
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    const newSelected = new Set(selectedUsers);
+    if (checked) {
+      newSelected.add(userId);
+    } else {
+      newSelected.delete(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const isAllSelected = paginatedUsers.length > 0 && paginatedUsers.every(user => selectedUsers.has(user.user_id));
+  const isIndeterminate = selectedUsers.size > 0 && !isAllSelected;
+
+  // Bulk operations functions
+  const handleBulkRoleChange = async () => {
+    if (selectedUsers.size === 0 || !bulkRole) return;
+
+    setBulkOperationLoading(true);
+    try {
+      const selectedUsersList = Array.from(selectedUsers);
+      
+      for (const userId of selectedUsersList) {
+        // Delete existing role and institute assignments
+        await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+
+        const currentUser = filteredUsers.find(u => u.user_id === userId);
+        if (currentUser?.current_role === 'institute_admin') {
+          await supabase
+            .from('institute_admin_assignments')
+            .delete()
+            .eq('user_id', userId);
+        }
+
+        // Insert new role
+        await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: bulkRole as 'admin' | 'institute_admin' | 'user'
+          });
+
+        // If assigning institute_admin role, also create institute assignment
+        if (bulkRole === 'institute_admin' && bulkInstitute) {
+          await supabase
+            .from('institute_admin_assignments')
+            .insert({
+              user_id: userId,
+              institute_id: bulkInstitute,
+              assigned_by: user?.id || userId
+            });
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: `Role updated for ${selectedUsers.size} users`,
+      });
+
+      setShowBulkRoleDialog(false);
+      setBulkRole('');
+      setBulkInstitute('');
+      setSelectedUsers(new Set());
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update roles',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkOperationLoading(false);
+    }
+  };
+
+  const handleBulkPlanAssign = async () => {
+    if (selectedUsers.size === 0 || !bulkPlan) return;
+
+    setBulkOperationLoading(true);
+    try {
+      const selectedPlan = availablePlans.find(plan => plan.name === bulkPlan);
+      if (!selectedPlan) throw new Error('Selected plan not found');
+
+      const selectedUsersList = Array.from(selectedUsers);
+      const now = new Date();
+
+      for (const userId of selectedUsersList) {
+        // Get current user profile to check existing subscription
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('subscription_end_date, subscription_active')
+          .eq('user_id', userId)
+          .single();
+
+        let newEndDate: Date;
+
+        if (currentProfile?.subscription_active && currentProfile?.subscription_end_date) {
+          const existingEndDate = new Date(currentProfile.subscription_end_date);
+          if (existingEndDate > now) {
+            newEndDate = new Date(existingEndDate);
+            newEndDate.setDate(existingEndDate.getDate() + selectedPlan.duration_days);
+          } else {
+            newEndDate = new Date(now);
+            newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+          }
+        } else {
+          newEndDate = new Date(now);
+          newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+        }
+
+        // Update the user's subscription
+        await supabase
+          .from('profiles')
+          .update({
+            subscription_plan: bulkPlan,
+            subscription_start_date: now.toISOString(),
+            subscription_end_date: newEndDate.toISOString(),
+            subscription_active: true,
+          })
+          .eq('user_id', userId);
+      }
+
+      toast({
+        title: 'Success',
+        description: `Plan assigned to ${selectedUsers.size} users`,
+      });
+
+      setShowBulkPlanDialog(false);
+      setBulkPlan('');
+      setSelectedUsers(new Set());
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to assign plans',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkOperationLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedUsers.size === 0) return;
+
+    setBulkOperationLoading(true);
+    try {
+      const selectedUsersList = Array.from(selectedUsers);
+      
+      for (const userId of selectedUsersList) {
+        await supabase.functions.invoke('delete-user', {
+          body: { user_id: userId }
+        });
+      }
+
+      toast({
+        title: 'Success',
+        description: `${selectedUsers.size} users deleted successfully`,
+      });
+
+      setShowBulkDeleteDialog(false);
+      setSelectedUsers(new Set());
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete users',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkOperationLoading(false);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -894,6 +1111,114 @@ export default function UserManagement() {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* Bulk Actions */}
+                {selectedUsers.size > 0 && (
+                  <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {selectedUsers.size} user{selectedUsers.size > 1 ? 's' : ''} selected
+                      </span>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowBulkRoleDialog(true)}
+                        >
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Assign Role
+                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setShowBulkPlanDialog(true)}
+                          >
+                            💎 Assign Plan
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => setShowBulkDeleteDialog(true)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Users
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pagination Controls Top */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Label>Show:</Label>
+                      <Select value={itemsPerPage.toString()} onValueChange={(value) => {
+                        setItemsPerPage(parseInt(value));
+                        setCurrentPage(1);
+                      }}>
+                        <SelectTrigger className="w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="20">20</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span className="text-sm text-muted-foreground">per page</span>
+                    </div>
+                    
+                    {filteredUsers.length > 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        Showing {startIndex} to {endIndex} of {filteredUsers.length} users
+                      </span>
+                    )}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 {loadingUsers ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -903,23 +1228,36 @@ export default function UserManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                         <TableHead>Name</TableHead>
-                         <TableHead>Username</TableHead>
-                         <TableHead>Email</TableHead>
-                         <TableHead>Role</TableHead>
-                         <TableHead>Subscription</TableHead>
-                         <TableHead>Joined</TableHead>
-                         <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={isAllSelected}
+                            onCheckedChange={handleSelectAll}
+                            aria-label="Select all users"
+                          />
+                        </TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Subscription</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <TableRow key={user.user_id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedUsers.has(user.user_id)}
+                              onCheckedChange={(checked) => handleSelectUser(user.user_id, checked as boolean)}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {user.full_name || 'No name set'}
                           </TableCell>
-                           <TableCell>{user.username || 'No username'}</TableCell>
-                           <TableCell>{user.email || 'No email'}</TableCell>
+                          <TableCell>{user.username || 'No username'}</TableCell>
+                          <TableCell>{user.email || 'No email'}</TableCell>
                           <TableCell>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                               user.current_role === 'admin'
@@ -982,6 +1320,49 @@ export default function UserManagement() {
                       ))}
                     </TableBody>
                   </Table>
+                )}
+                
+                {/* Bottom Pagination */}
+                {totalPages > 1 && !loadingUsers && (
+                  <div className="flex items-center justify-center mt-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronsLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground px-4">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronsRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 )}
                 
                 {filteredUsers.length === 0 && !loadingUsers && (
@@ -1187,6 +1568,143 @@ export default function UserManagement() {
                 </Button>
                 <Button onClick={handleAssignPlan}>
                   💎 Assign Plan
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Bulk Role Assignment Dialog */}
+          <Dialog open={showBulkRoleDialog} onOpenChange={setShowBulkRoleDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Bulk Role Assignment</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Selected Users</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUsers.size} user{selectedUsers.size > 1 ? 's' : ''} selected
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bulk-role">New Role</Label>
+                  <Select value={bulkRole} onValueChange={setBulkRole}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
+                      {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {bulkRole === 'institute_admin' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="bulk-institute">Select Institute</Label>
+                    <Select value={bulkInstitute} onValueChange={setBulkInstitute}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an institute" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {institutes.map((institute) => (
+                          <SelectItem key={institute.id} value={institute.id}>
+                            {institute.name} ({institute.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowBulkRoleDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleBulkRoleChange} disabled={bulkOperationLoading}>
+                  {bulkOperationLoading ? 'Updating...' : 'Update Roles'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Bulk Plan Assignment Dialog */}
+          <Dialog open={showBulkPlanDialog} onOpenChange={setShowBulkPlanDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Bulk Plan Assignment</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Selected Users</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedUsers.size} user{selectedUsers.size > 1 ? 's' : ''} selected
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bulk-plan">Subscription Plan</Label>
+                  <Select value={bulkPlan} onValueChange={setBulkPlan}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a plan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availablePlans.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.name}>
+                          {plan.name} - {plan.duration_days} days ({plan.description})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowBulkPlanDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleBulkPlanAssign} disabled={bulkOperationLoading}>
+                  {bulkOperationLoading ? 'Assigning...' : 'Assign Plans'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Bulk Delete Confirmation Dialog */}
+          <Dialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Confirm Bulk Delete</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Warning</Label>
+                  <p className="text-sm text-muted-foreground">
+                    You are about to permanently delete {selectedUsers.size} user{selectedUsers.size > 1 ? 's' : ''}. 
+                    This action cannot be undone and will remove all user data.
+                  </p>
+                </div>
+                <div className="p-4 bg-destructive/10 rounded-lg">
+                  <p className="text-sm font-medium text-destructive">
+                    This will permanently delete:
+                  </p>
+                  <ul className="text-sm text-destructive mt-2 space-y-1">
+                    <li>• User accounts and authentication</li>
+                    <li>• All user data and profiles</li>
+                    <li>• User roles and assignments</li>
+                    <li>• Associated subscriptions</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowBulkDeleteDialog(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleBulkDelete} 
+                  disabled={bulkOperationLoading}
+                >
+                  {bulkOperationLoading ? 'Deleting...' : `Delete ${selectedUsers.size} Users`}
                 </Button>
               </div>
             </DialogContent>
