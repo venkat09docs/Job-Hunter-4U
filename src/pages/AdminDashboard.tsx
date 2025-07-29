@@ -8,6 +8,7 @@ import { Building, Users, GraduationCap, Settings } from 'lucide-react';
 import { InstituteManagement } from '@/components/admin/InstituteManagement';
 import { BatchManagement } from '@/components/admin/BatchManagement';
 import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManagement';
+import { StudentsManagement } from '@/components/admin/StudentsManagement';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
@@ -77,20 +78,20 @@ export default function AdminDashboard() {
       <SidebarInset>
         <div className="container mx-auto p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">
-              {isAdmin ? 'Super Admin Dashboard' : 'Institute Admin Dashboard'}
-            </h1>
+            {isAdmin && (
+              <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
+            )}
             {isInstituteAdmin && instituteName && (
-              <div className="mb-2">
-                <span className="text-lg font-semibold text-primary">
+              <div className="mb-4">
+                <h1 className="text-4xl font-bold text-primary mb-2">
                   {instituteName}
-                </span>
+                </h1>
               </div>
             )}
             <p className="text-muted-foreground">
               {isAdmin 
                 ? 'Manage your organization\'s institutes, batches, and user assignments'
-                : 'Manage your institute\'s batches and user assignments'
+                : 'Manage your institute\'s batches and students'
               }
             </p>
           </div>
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
               </TabsTrigger>
               <TabsTrigger value="assignments" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
-                <span>User Assignments</span>
+                <span>{isInstituteAdmin ? 'Students Management' : 'User Assignments'}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -124,7 +125,7 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="assignments">
-              <UserAssignmentManagement />
+              {isInstituteAdmin ? <StudentsManagement /> : <UserAssignmentManagement />}
             </TabsContent>
           </Tabs>
         </div>
