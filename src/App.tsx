@@ -19,6 +19,7 @@ import JobSearch from "./pages/JobSearch";
 import JobTracker from "./pages/JobTracker";
 import LinkedInAutomation from "./pages/LinkedInAutomation";
 import ManageCareerHub from "./pages/ManageCareerHub";
+import ManageSubscriptions from "./pages/ManageSubscriptions";
 import DigitalCareerHub from "./pages/DigitalCareerHub";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -113,6 +114,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ManageCareerHub />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/manage-subscriptions" 
+              element={
+                <ProtectedRoute>
+                  <ManageSubscriptions />
                 </ProtectedRoute>
               } 
             />

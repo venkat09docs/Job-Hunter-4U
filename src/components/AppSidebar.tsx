@@ -12,7 +12,8 @@ import {
   Linkedin,
   Wrench,
   Zap,
-  FileText
+  FileText,
+  Lock
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,21 +30,25 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
+import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
+import PricingDialog from "./PricingDialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
-  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
-  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
-  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
-  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
-  { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
-  { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
+  { title: "Dashboard", url: "/dashboard", icon: Home, key: "dashboard" },
+  { title: "Job Search", url: "/dashboard/job-search", icon: Search, key: "job-search" },
+  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, key: "job-tracker" },
+  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin, key: "linkedin-automation" },
+  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, key: "digital-career-hub" },
+  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target, key: "talent-screener" },
+  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User, key: "portfolio" },
+  { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool, key: "blog" },
+  { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User, key: "profile" },
 ];
 
 const adminItems = [
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
+  { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -52,7 +57,9 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const { user } = useAuth();
   const { isAdmin } = useRole();
+  const { canAccessFeature } = usePremiumFeatures();
   const [userSlug, setUserSlug] = useState<string | null>(null);
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -89,16 +96,43 @@ export function AppSidebar() {
           <SidebarGroupLabel>Digital Career Hub</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      <span className="ml-3">{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainItems.map((item) => {
+                const canAccess = canAccessFeature(item.key);
+                const isPremium = !canAccess;
+                
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    {isPremium ? (
+                      <SidebarMenuButton asChild>
+                        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+                          <DialogTrigger asChild>
+                            <button
+                              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 rounded-md relative"
+                              onClick={() => setPricingDialogOpen(true)}
+                            >
+                              <div className="flex items-center">
+                                <item.icon className="h-4 w-4 text-muted-foreground" />
+                                <span className="ml-3 text-muted-foreground">{item.title}</span>
+                              </div>
+                              <Lock className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[600px]">
+                            <PricingDialog />
+                          </DialogContent>
+                        </Dialog>
+                      </SidebarMenuButton>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} end className={getNavCls}>
+                          <item.icon className="h-4 w-4" />
+                          <span className="ml-3">{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
