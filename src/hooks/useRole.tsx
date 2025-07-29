@@ -26,7 +26,7 @@ export const useRole = () => {
         .from('user_roles')
         .select('role')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setRole(data?.role || 'user');
