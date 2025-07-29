@@ -282,37 +282,45 @@ const JobTracker = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={hasActiveSubscription() ? () => setShowArchived(!showArchived) : undefined} 
+                size="sm"
+                disabled={!hasActiveSubscription()}
+              >
+                {showArchived ? 'Show Active' : 'Show Archived'}
+              </Button>
+              
+              <Button 
+                onClick={hasActiveSubscription() ? exportToCSV : undefined} 
+                variant="outline" 
+                size="sm"
+                disabled={!hasActiveSubscription()}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              
               {hasActiveSubscription() ? (
-                <>
-                  <Button variant="outline" onClick={() => setShowArchived(!showArchived)} size="sm">
-                    {showArchived ? 'Show Active' : 'Show Archived'}
-                  </Button>
-                  
-                  <Button onClick={exportToCSV} variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export CSV
-                  </Button>
-                  
-                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Job
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Add New Job</DialogTitle>
-                      </DialogHeader>
-                      <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
-                </>
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Job
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Add New Job</DialogTitle>
+                    </DialogHeader>
+                    <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
+                  </DialogContent>
+                </Dialog>
               ) : (
                 <SubscriptionUpgrade featureName="job tracker">
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" disabled>
                     <Plus className="h-4 w-4 mr-2" />
-                    Upgrade to Add Jobs
+                    Add Job
                   </Button>
                 </SubscriptionUpgrade>
               )}
@@ -354,8 +362,7 @@ const JobTracker = () => {
           </Card>
 
           {/* Integrated Kanban Board with Pipeline */}
-          {hasActiveSubscription() ? (
-            <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
             {getVisibleStatusOptions().map(status => {
               const statusJobs = filteredJobs.filter(job => job.status === status);
               const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
@@ -388,35 +395,54 @@ const JobTracker = () => {
                           {job.salary_range && (
                             <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
                           )}
-                          <div className="flex flex-col gap-1 pt-1">
-                            <Select 
-                              value={job.status} 
-                              onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
-                            >
-                              <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {statusOptions.map(statusOption => (
-                                  <SelectItem key={statusOption} value={statusOption}>
-                                    {statusLabels[statusOption as keyof typeof statusLabels]}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <div className="flex items-center gap-1 justify-center">
-                              <Button variant="ghost" size="sm" onClick={() => setEditingJob(job)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
-                                <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleArchiveJob(job.id, !job.is_archived)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
-                                <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
-                              </Button>
-                              {showArchived && (
-                                <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)} className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0">
-                                  <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
-                                </Button>
-                              )}
-                            </div>
+                           <div className="flex flex-col gap-1 pt-1">
+                             <Select 
+                               value={job.status} 
+                               onValueChange={hasActiveSubscription() ? (newStatus) => handleStatusChange(job.id, newStatus) : undefined}
+                               disabled={!hasActiveSubscription()}
+                             >
+                               <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                 <SelectValue />
+                               </SelectTrigger>
+                               <SelectContent>
+                                 {statusOptions.map(statusOption => (
+                                   <SelectItem key={statusOption} value={statusOption}>
+                                     {statusLabels[statusOption as keyof typeof statusLabels]}
+                                   </SelectItem>
+                                 ))}
+                               </SelectContent>
+                             </Select>
+                             <div className="flex items-center gap-1 justify-center">
+                               <Button 
+                                 variant="ghost" 
+                                 size="sm" 
+                                 onClick={hasActiveSubscription() ? () => setEditingJob(job) : undefined} 
+                                 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                 disabled={!hasActiveSubscription()}
+                               >
+                                 <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
+                               </Button>
+                               <Button 
+                                 variant="ghost" 
+                                 size="sm" 
+                                 onClick={hasActiveSubscription() ? () => handleArchiveJob(job.id, !job.is_archived) : undefined} 
+                                 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                 disabled={!hasActiveSubscription()}
+                               >
+                                 <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
+                               </Button>
+                               {showArchived && (
+                                 <Button 
+                                   variant="ghost" 
+                                   size="sm" 
+                                   onClick={hasActiveSubscription() ? () => handleDeleteJob(job.id) : undefined} 
+                                   className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                   disabled={!hasActiveSubscription()}
+                                 >
+                                   <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
+                                 </Button>
+                               )}
+                             </div>
                           </div>
                         </div>
                       </Card>
@@ -431,26 +457,25 @@ const JobTracker = () => {
                 );
               })}
             </div>
-          ) : (
-            <Card className="p-8">
-              <CardContent className="text-center space-y-4">
-                <h3 className="text-xl font-semibold">Premium Feature</h3>
-                <p className="text-muted-foreground">Job tracking is a premium feature. Upgrade your subscription to track your job applications.</p>
-                <SubscriptionUpgrade featureName="job tracker">
-                  <Button>
-                    Upgrade to Premium
-                  </Button>
-                </SubscriptionUpgrade>
-              </CardContent>
-            </Card>
-          )}
 
           {filteredJobs.length === 0 && (
             <Card>
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-8 text-center space-y-4">
                 <p className="text-muted-foreground">
                   {showArchived ? 'No archived jobs found.' : 'No jobs found. Start by adding your first job application!'}
                 </p>
+                {!hasActiveSubscription() && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Upgrade to premium to start tracking your job applications.
+                    </p>
+                    <SubscriptionUpgrade featureName="job tracker">
+                      <Button variant="outline">
+                        Upgrade to Premium
+                      </Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
