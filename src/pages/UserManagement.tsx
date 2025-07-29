@@ -88,13 +88,30 @@ export default function UserManagement() {
     subscription_start_date: '',
     subscription_end_date: '',
   });
+  const [availablePlans, setAvailablePlans] = useState<Array<{id: string, name: string, duration_days: number, description: string}>>([]);
 
   useEffect(() => {
     if (isAdmin || isInstituteAdmin) {
       fetchUsers();
       fetchInstitutes();
+      fetchAvailablePlans();
     }
   }, [isAdmin, isInstituteAdmin]);
+
+  const fetchAvailablePlans = async () => {
+    try {
+      const { data: plans, error } = await supabase
+        .from('subscription_plans')
+        .select('id, name, duration_days, description')
+        .eq('is_active', true)
+        .order('duration_days', { ascending: true });
+
+      if (error) throw error;
+      setAvailablePlans(plans || []);
+    } catch (error: any) {
+      console.error('Error fetching plans:', error);
+    }
+  };
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -115,7 +132,18 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        // Admin can see all users
+        // Admin can see all users - Only fetch users that exist in auth.users
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+        if (authError) throw authError;
+
+        const activeUserIds = authUsers.users.map(user => user.id);
+        
+        if (activeUserIds.length === 0) {
+          setUsers([]);
+          setFilteredUsers([]);
+          return;
+        }
+
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -126,6 +154,7 @@ export default function UserManagement() {
             subscription_active,
             created_at
           `)
+          .in('user_id', activeUserIds)
           .order('created_at', { ascending: false });
 
         if (profilesError) throw profilesError;
@@ -482,21 +511,13 @@ export default function UserManagement() {
       // Calculate end date based on plan if start date is provided
       let endDate = planFormData.subscription_end_date;
       if (planFormData.subscription_start_date && !endDate) {
-        const startDate = new Date(planFormData.subscription_start_date);
-        const endCalculatedDate = new Date(startDate);
-        
-        switch (planFormData.subscription_plan) {
-          case 'One Week Plan':
-            endCalculatedDate.setDate(startDate.getDate() + 7);
-            break;
-          case 'One Month Plan':
-            endCalculatedDate.setMonth(startDate.getMonth() + 1);
-            break;
-          case 'Three Month Plan':
-            endCalculatedDate.setMonth(startDate.getMonth() + 3);
-            break;
+        const selectedPlan = availablePlans.find(plan => plan.name === planFormData.subscription_plan);
+        if (selectedPlan) {
+          const startDate = new Date(planFormData.subscription_start_date);
+          const endCalculatedDate = new Date(startDate);
+          endCalculatedDate.setDate(startDate.getDate() + selectedPlan.duration_days);
+          endDate = endCalculatedDate.toISOString().split('T')[0];
         }
-        endDate = endCalculatedDate.toISOString().split('T')[0];
       }
 
       const { error } = await supabase
@@ -876,9 +897,11 @@ export default function UserManagement() {
                       <SelectValue placeholder="Select a plan" />
                     </SelectTrigger>
                      <SelectContent>
-                       <SelectItem value="One Week Plan">One Week Plan</SelectItem>
-                       <SelectItem value="One Month Plan">One Month Plan</SelectItem>
-                       <SelectItem value="Three Month Plan">Three Month Plan</SelectItem>
+                       {availablePlans.map((plan) => (
+                         <SelectItem key={plan.id} value={plan.name}>
+                           {plan.name} ({plan.description})
+                         </SelectItem>
+                       ))}
                      </SelectContent>
                   </Select>
                 </div>
