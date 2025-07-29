@@ -102,7 +102,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     const totalDays = newPlanDays + remainingDays;
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + totalDays);
-    return endDate.toISOString();
+    return endDate;
   };
 
   const handleUpgrade = async (plan: typeof plans[0]) => {
@@ -116,106 +116,164 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     }
 
     setLoadingPlan(plan.name);
-
+    
     try {
-      const scriptLoaded = await loadRazorpay();
-      if (!scriptLoaded) {
-        throw new Error('Razorpay SDK failed to load');
+      // Load Razorpay SDK
+      const res = await loadRazorpay();
+      if (!res) {
+        toast({
+          title: "Error",
+          description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
       }
 
+      // Create order using our edge function
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
           amount: plan.price,
           plan_name: plan.name,
-          plan_duration: plan.duration
+          plan_duration: plan.duration,
         }
       });
 
-      if (orderError) throw orderError;
+      if (orderError || !orderData) {
+        console.error('Order creation error:', orderError);
+        toast({
+          title: "Error",
+          description: "Failed to create payment order. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
+      }
 
+      // Calculate upgraded end date
+      const upgradedEndDate = calculateUpgradedEndDate(plan.days);
+
+      // Configure Razorpay options
       const options = {
         key: orderData.key,
+        order_id: orderData.order_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'Career Hub',
-        description: `Upgrade to ${plan.name}`,
-        order_id: orderData.id,
-        handler: async (response: any) => {
+        name: "JobHunter Pro",
+        description: `${plan.name} - Upgrade your subscription`,
+        image: "/favicon.ico",
+        handler: async function (response: any) {
           try {
-            console.log('Full Razorpay response:', response);
-            console.log('Order data:', orderData);
-            
-            // Validate all required fields are present
-            if (!response.razorpay_payment_id || !response.razorpay_signature) {
-              throw new Error('Missing required payment fields from Razorpay response');
-            }
-            
-            const verificationData = {
-              razorpay_order_id: response.razorpay_order_id, // Use the order ID from Razorpay response
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              upgrade_end_date: calculateUpgradedEndDate(plan.days)
-            };
-            
-            console.log('Sending verification data:', verificationData);
-            
+            // Verify payment using our edge function
             const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
-              body: verificationData
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                upgrade_end_date: upgradedEndDate.toISOString()
+              }
             });
 
-            if (verifyError) throw verifyError;
+            if (verifyError || !verifyData?.success) {
+              console.error('Payment verification error:', verifyError);
+              toast({
+                title: "Payment Verification Failed",
+                description: "Payment received but verification failed. Please contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
 
-            toast({
-              title: "Upgrade Successful!",
-              description: `You've successfully upgraded to ${plan.name}. Your remaining days have been added to the new plan.`,
-            });
-
-            // Reset loading state
-            setLoadingPlan(null);
-            
-            // Refresh profile data and close dialog
+            // Success! Refresh profile data
             await refreshProfile();
-            onOpenChange(false);
             
-            // Refresh the page to ensure UI is updated
+            toast({
+              title: "🎉 Upgrade Successful!",
+              description: `Welcome to ${plan.name}! Your subscription has been upgraded.`,
+            });
+            
+            // Remove body class when successful
+            document.body.classList.remove('razorpay-open');
+            
+            // Close dialog and reload
+            onOpenChange(false);
             setTimeout(() => {
               window.location.reload();
-            }, 1000);
-
-          } catch (error: any) {
-            console.error('Payment verification failed:', error);
-            setLoadingPlan(null);
+            }, 1500);
+            
+          } catch (error) {
+            console.error('Error processing upgrade:', error);
             toast({
-              title: "Payment Verification Failed",
-              description: error.message || "Please contact support if payment was deducted",
+              title: "Upgrade Processing Error",
+              description: "Payment may have been successful but activation failed. Please contact support.",
               variant: "destructive"
             });
           }
         },
-        prefill: {
-          email: user.email,
+        modal: {
+          ondismiss: function() {
+            setLoadingPlan(null);
+            document.body.classList.remove('razorpay-open');
+            toast({
+              title: "Upgrade Cancelled",
+              description: "You can complete your upgrade anytime.",
+            });
+          },
+          escape: true,
+          backdropclose: false
         },
         theme: {
-          color: '#3B82F6'
+          color: "#6366f1",
+          backdrop_color: "rgba(0, 0, 0, 0.8)"
         },
-        modal: {
-          ondismiss: () => {
-            setLoadingPlan(null);
-          }
+        prefill: {
+          name: user.user_metadata?.full_name || "",
+          email: user.email || "", 
+          contact: ""
+        },
+        notes: {
+          plan: plan.name,
+          duration: plan.duration,
+          upgrade: true
         }
       };
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
-    } catch (error: any) {
-      console.error('Payment initiation failed:', error);
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response: any) {
+        setLoadingPlan(null);
+        toast({
+          title: "Payment Failed",
+          description: `${response.error.description}. Please try again or contact support.`,
+          variant: "destructive"
+        });
+        console.error('Payment failed:', response.error);
+      });
+      
+      // Blur any currently focused element
+      if (document.activeElement && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      
+      // Open payment modal first
+      paymentObject.open();
+      
+      // Add class to body after modal opens to avoid affecting Razorpay
+      setTimeout(() => {
+        document.body.classList.add('razorpay-open');
+      }, 100);
+      
+      // Simple focus management - just ensure window focus
+      setTimeout(() => {
+        window.focus();
+      }, 300);
+      
+    } catch (error) {
+      console.error('Payment initialization error:', error);
       toast({
-        title: "Payment Failed",
-        description: error.message || "Unable to initiate payment. Please try again.",
+        title: "Error",
+        description: "Failed to initialize payment. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setLoadingPlan(null);
     }
   };
