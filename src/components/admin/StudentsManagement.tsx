@@ -168,13 +168,18 @@ export const StudentsManagement = () => {
       }
 
       // Get user profiles with email, full_name and username
-      const { data: profiles } = await supabase
+      console.log('Fetching profiles for user IDs:', userIds);
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, email, username')
         .in('user_id', userIds);
 
+      console.log('Profiles fetched:', profiles);
+      console.log('Profiles error:', profilesError);
+
       const studentsWithProfiles = assignmentsData?.map(assignment => {
         const profile = profiles?.find(p => p.user_id === assignment.user_id);
+        console.log('Assignment user_id:', assignment.user_id, 'Found profile:', profile);
         
         return {
           id: assignment.id,
