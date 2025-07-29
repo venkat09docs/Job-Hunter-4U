@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
+import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
 import { Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -36,7 +36,7 @@ interface JobEntry {
 
 const JobTracker = () => {
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile, hasActiveSubscription } = useProfile();
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -282,29 +282,40 @@ const JobTracker = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={() => setShowArchived(!showArchived)} size="sm">
-                {showArchived ? 'Show Active' : 'Show Archived'}
-              </Button>
-              
-              <Button onClick={exportToCSV} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-              
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Job
+              {hasActiveSubscription() ? (
+                <>
+                  <Button variant="outline" onClick={() => setShowArchived(!showArchived)} size="sm">
+                    {showArchived ? 'Show Active' : 'Show Archived'}
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add New Job</DialogTitle>
-                  </DialogHeader>
-                  <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
+                  
+                  <Button onClick={exportToCSV} variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                  
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Job
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Add New Job</DialogTitle>
+                      </DialogHeader>
+                      <JobTrackerForm onSubmit={handleAddJob} onCancel={() => setIsAddDialogOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+                </>
+              ) : (
+                <SubscriptionUpgrade featureName="job tracker">
+                  <Button size="sm" variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upgrade to Add Jobs
+                  </Button>
+                </SubscriptionUpgrade>
+              )}
             </div>
           </div>
 
@@ -343,7 +354,8 @@ const JobTracker = () => {
           </Card>
 
           {/* Integrated Kanban Board with Pipeline */}
-          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+          {hasActiveSubscription() ? (
+            <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
             {getVisibleStatusOptions().map(status => {
               const statusJobs = filteredJobs.filter(job => job.status === status);
               const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
@@ -416,9 +428,22 @@ const JobTracker = () => {
                     )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="p-8">
+              <CardContent className="text-center space-y-4">
+                <h3 className="text-xl font-semibold">Premium Feature</h3>
+                <p className="text-muted-foreground">Job tracking is a premium feature. Upgrade your subscription to track your job applications.</p>
+                <SubscriptionUpgrade featureName="job tracker">
+                  <Button>
+                    Upgrade to Premium
+                  </Button>
+                </SubscriptionUpgrade>
+              </CardContent>
+            </Card>
+          )}
 
           {filteredJobs.length === 0 && (
             <Card>

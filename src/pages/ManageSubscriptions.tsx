@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, ArrowLeft } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
+import { Link } from 'react-router-dom';
 
 interface PremiumFeature {
   id: string;
@@ -106,6 +107,17 @@ export default function ManageSubscriptions() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Top Navigation */}
+      <div className="flex items-center gap-4 mb-6">
+        <Link to="/dashboard">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go to Dashboard
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">Manage Subscription Features</h1>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle>Manage Subscription Features</CardTitle>
