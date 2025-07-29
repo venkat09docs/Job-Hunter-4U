@@ -63,11 +63,12 @@ serve(async (req) => {
 
     if (assignmentError) throw assignmentError
 
-    // Update the profile with email (since we need it for management)
+    // Update the profile with email and full_name (since we need it for management)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         full_name,
+        email,
       })
       .eq('user_id', authData.user.id)
 
