@@ -22,6 +22,8 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
   const [noteContent, setNoteContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<any>(null);
 
   useEffect(() => {
     if (selectedNote) {
@@ -30,12 +32,18 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
     }
   }, [selectedNote]);
 
+  useEffect(() => {
+    if (editingNote) {
+      setNoteTitle(editingNote.title);
+      setNoteContent(editingNote.messages[0]?.content || '');
+    }
+  }, [editingNote]);
+
   const handleCreateNote = () => {
     setIsCreating(true);
     setSelectedNote(null);
     setNoteTitle('');
     setNoteContent('');
-    setIsEditing(true);
   };
 
   const handleSaveNote = async () => {
@@ -125,9 +133,53 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
 
   const handleEditNote = (note: any, e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedNote(note);
-    setIsEditing(true);
-    setIsCreating(false);
+    setEditingNote(note);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEditNote = async () => {
+    if (!noteTitle.trim() || !noteContent.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter both title and content',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      await updateToolChat(editingNote.id, { 
+        title: noteTitle,
+        messages: [{ 
+          id: Date.now().toString(),
+          type: 'user',
+          content: noteContent,
+          timestamp: new Date().toISOString()
+        }]
+      });
+      
+      setIsEditDialogOpen(false);
+      setEditingNote(null);
+      setNoteTitle('');
+      setNoteContent('');
+      toast({
+        title: 'Success',
+        description: 'Note updated successfully'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update note',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingNote(null);
+    setNoteTitle('');
+    setNoteContent('');
   };
 
   return (
@@ -256,37 +308,46 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
           </div>
         </ScrollArea>
 
-        {/* Note Editor */}
-        {(selectedNote || isCreating) && (
+        {/* Note Viewer */}
+        {selectedNote && (
           <div className="border-t bg-background p-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">
-                  {isCreating ? 'New Note' : 'Edit Note'}
-                </h4>
-                 {!isEditing && !isCreating && (
-                   <div className="flex gap-2">
-                     <Button
-                       size="sm"
-                       variant="outline"
-                       onClick={() => setIsEditing(true)}
-                     >
-                       <Edit2 className="w-3 h-3 mr-1" />
-                       Edit
-                     </Button>
-                     <Button
-                       size="sm"
-                       variant="outline"
-                       onClick={() => {
-                         setSelectedNote(null);
-                         setNoteTitle('');
-                         setNoteContent('');
-                       }}
-                     >
-                       Close
-                     </Button>
-                   </div>
-                 )}
+                <h4 className="font-medium text-sm">View Note</h4>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedNote(null);
+                    setNoteTitle('');
+                    setNoteContent('');
+                  }}
+                >
+                  Close
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">{selectedNote.title}</div>
+                <div className="bg-muted/50 p-3 rounded-md border max-h-[200px] overflow-y-auto">
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {selectedNote.messages[0]?.content || 'No content'}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Created: {new Date(selectedNote.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Note Creator */}
+        {isCreating && (
+          <div className="border-t bg-background p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-sm">New Note</h4>
               </div>
 
               <div className="space-y-2">
@@ -294,52 +355,81 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                   placeholder="Note title..."
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
-                  disabled={!isEditing && !isCreating}
                   className="text-sm"
                 />
                 <Textarea
                   placeholder="Write your notes here... You can copy and paste content from chats or add your own thoughts."
                   value={noteContent}
                   onChange={(e) => setNoteContent(e.target.value)}
-                  disabled={!isEditing && !isCreating}
                   className="min-h-[120px] text-sm resize-none"
                 />
               </div>
 
-              {(isEditing || isCreating) && (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleSaveNote}
-                    className="flex-1"
-                  >
-                    <Save className="w-3 h-3 mr-1" />
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setIsCreating(false);
-                      if (selectedNote) {
-                        setNoteTitle(selectedNote.title);
-                        setNoteContent(selectedNote.messages[0]?.content || '');
-                      } else {
-                        setNoteTitle('');
-                        setNoteContent('');
-                        setSelectedNote(null);
-                      }
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSaveNote}
+                  className="flex-1"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsCreating(false);
+                    setNoteTitle('');
+                    setNoteContent('');
+                    setSelectedNote(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Edit Note Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl w-full h-[80vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
+            <DialogTitle className="text-lg font-semibold">Edit Note</DialogTitle>
+            {editingNote && (
+              <p className="text-sm text-muted-foreground">
+                Created: {new Date(editingNote.created_at).toLocaleDateString()}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="flex-1 min-h-0 py-4 space-y-4">
+            <Input
+              placeholder="Note title..."
+              value={noteTitle}
+              onChange={(e) => setNoteTitle(e.target.value)}
+              className="text-sm"
+            />
+            <div className="flex-1 min-h-0">
+              <Textarea
+                placeholder="Write your notes here..."
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                className="h-full resize-none"
+              />
+            </div>
+          </div>
+          <div className="flex-shrink-0 flex gap-2 pt-4 border-t">
+            <Button onClick={handleSaveEditNote} className="flex-1">
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+            <Button variant="outline" onClick={handleCloseEditDialog}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
