@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, UserCheck, Trash2, User } from 'lucide-react';
+import { Search, Edit, UserCheck, Trash2, User, Download, Filter } from 'lucide-react';
+import * as Papa from 'papaparse';
 import {
   Dialog,
   DialogContent,
@@ -58,6 +59,23 @@ interface Institute {
   code: string;
 }
 
+interface Batch {
+  id: string;
+  name: string;
+  code: string;
+  institute_id: string;
+}
+
+interface UserWithAssignments extends UserWithRole {
+  assignments?: {
+    institute_id: string;
+    institute_name: string;
+    batch_id?: string;
+    batch_name?: string;
+    assignment_type: string;
+  }[];
+}
+
 export default function UserManagement() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
@@ -90,12 +108,20 @@ export default function UserManagement() {
     subscription_plan: '',
   });
   const [availablePlans, setAvailablePlans] = useState<Array<{id: string, name: string, duration_days: number, description: string}>>([]);
+  
+  // Filter states
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterInstitute, setFilterInstitute] = useState<string>('all');
+  const [filterBatch, setFilterBatch] = useState<string>('all');
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [usersWithAssignments, setUsersWithAssignments] = useState<UserWithAssignments[]>([]);
 
   useEffect(() => {
     if (isAdmin || isInstituteAdmin) {
       fetchUsers();
       fetchInstitutes();
       fetchAvailablePlans();
+      fetchBatches();
     }
   }, [isAdmin, isInstituteAdmin]);
 
@@ -114,19 +140,86 @@ export default function UserManagement() {
     }
   };
 
+  // Enhanced filter logic with user assignments
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredUsers(users);
-    } else {
-      const filtered = users.filter(user => 
+    const fetchUsersWithAssignments = async () => {
+      if (users.length === 0) return;
+
+      try {
+        const { data: assignments, error } = await supabase
+          .from('user_assignments')
+          .select(`
+            user_id,
+            institute_id,
+            batch_id,
+            assignment_type,
+            institutes!inner(name),
+            batches(name)
+          `)
+          .eq('is_active', true);
+
+        if (error) throw error;
+
+        const usersWithAssignmentsData = users.map(user => ({
+          ...user,
+          assignments: assignments?.filter(a => a.user_id === user.user_id).map(a => ({
+            institute_id: a.institute_id || '',
+            institute_name: a.institutes?.name || '',
+            batch_id: a.batch_id || '',
+            batch_name: a.batches?.name || '',
+            assignment_type: a.assignment_type
+          })) || []
+        }));
+
+        setUsersWithAssignments(usersWithAssignmentsData);
+      } catch (error) {
+        console.error('Error fetching user assignments:', error);
+        setUsersWithAssignments(users.map(user => ({ ...user, assignments: [] })));
+      }
+    };
+
+    fetchUsersWithAssignments();
+  }, [users]);
+
+  // Apply all filters
+  useEffect(() => {
+    let filtered = usersWithAssignments;
+
+    // Search filter
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(user => 
         user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.user_id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredUsers(filtered);
     }
-  }, [searchQuery, users]);
+
+    // User type filter
+    if (filterType !== 'all') {
+      if (filterType === 'active') {
+        filtered = filtered.filter(user => user.subscription_active);
+      } else if (filterType === 'inactive') {
+        filtered = filtered.filter(user => !user.subscription_active);
+      }
+    }
+
+    // Institute filter
+    if (filterInstitute !== 'all') {
+      filtered = filtered.filter(user => 
+        user.assignments?.some(assignment => assignment.institute_id === filterInstitute)
+      );
+    }
+
+    // Batch filter
+    if (filterBatch !== 'all') {
+      filtered = filtered.filter(user => 
+        user.assignments?.some(assignment => assignment.batch_id === filterBatch)
+      );
+    }
+
+    setFilteredUsers(filtered);
+  }, [searchQuery, usersWithAssignments, filterType, filterInstitute, filterBatch]);
 
   const fetchUsers = async () => {
     try {
@@ -252,6 +345,25 @@ export default function UserManagement() {
       toast({
         title: 'Error',
         description: 'Failed to fetch institutes',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchBatches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('batches')
+        .select('id, name, code, institute_id')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setBatches(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch batches',
         variant: 'destructive',
       });
     }
@@ -546,6 +658,73 @@ export default function UserManagement() {
     }
   };
 
+  // Reset batch filter when institute changes
+  useEffect(() => {
+    if (filterInstitute === 'all') {
+      setFilterBatch('all');
+    }
+  }, [filterInstitute]);
+
+  // Get filtered batches based on selected institute
+  const getFilteredBatches = () => {
+    if (filterInstitute === 'all') return [];
+    return batches.filter(batch => batch.institute_id === filterInstitute);
+  };
+
+  // Export to CSV function
+  const exportToCSV = () => {
+    const dataToExport = filteredUsers.map(user => {
+      const userAssignments = usersWithAssignments.find(u => u.user_id === user.user_id);
+      const institutes = userAssignments?.assignments?.map(a => a.institute_name).join(', ') || 'None';
+      const batches = userAssignments?.assignments?.map(a => a.batch_name).filter(Boolean).join(', ') || 'None';
+
+      return {
+        'Name': user.full_name || 'No name',
+        'Username': user.username || 'No username',
+        'Email': user.email || 'No email',
+        'Role': user.current_role === 'institute_admin' ? 'Institute Admin' : 
+               user.current_role.charAt(0).toUpperCase() + user.current_role.slice(1),
+        'Subscription Status': user.subscription_active ? 'Active' : 'Free',
+        'Institutes': institutes,
+        'Batches': batches,
+        'Joined Date': new Date(user.created_at).toLocaleDateString(),
+        'User ID': user.user_id
+      };
+    });
+
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with current date and filter info
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    let filename = `users_export_${dateStr}`;
+    
+    if (filterType !== 'all') filename += `_${filterType}`;
+    if (filterInstitute !== 'all') {
+      const inst = institutes.find(i => i.id === filterInstitute);
+      filename += `_${inst?.code || 'institute'}`;
+    }
+    if (filterBatch !== 'all') {
+      const batch = batches.find(b => b.id === filterBatch);
+      filename += `_${batch?.code || 'batch'}`;
+    }
+    
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Success',
+      description: `Exported ${filteredUsers.length} users to CSV`,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -608,6 +787,14 @@ export default function UserManagement() {
                 <CardTitle className="flex items-center justify-between">
                   <span>Users ({filteredUsers.length})</span>
                   <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={exportToCSV}
+                      variant="outline"
+                      disabled={filteredUsers.length === 0}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export CSV
+                    </Button>
                     {isAdmin && (
                       <Button onClick={() => setShowAddUserDialog(true)}>
                         <User className="h-4 w-4 mr-2" />
@@ -625,6 +812,86 @@ export default function UserManagement() {
                     </div>
                   </div>
                 </CardTitle>
+                
+                {/* Filters Section */}
+                <div className="bg-muted/30 p-4 rounded-lg space-y-4">
+                  <div className="flex items-center space-x-2 text-sm font-medium">
+                    <Filter className="h-4 w-4" />
+                    <span>Filters</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* User Type Filter */}
+                    <div className="space-y-2">
+                      <Label>User Type</Label>
+                      <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Users" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Users</SelectItem>
+                          <SelectItem value="active">Active Subscribers</SelectItem>
+                          <SelectItem value="inactive">Free Users</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Institute Filter */}
+                    <div className="space-y-2">
+                      <Label>Institute</Label>
+                      <Select value={filterInstitute} onValueChange={setFilterInstitute}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Institutes" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Institutes</SelectItem>
+                          {institutes.map((institute) => (
+                            <SelectItem key={institute.id} value={institute.id}>
+                              {institute.name} ({institute.code})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Batch Filter */}
+                    <div className="space-y-2">
+                      <Label>Batch</Label>
+                      <Select 
+                        value={filterBatch} 
+                        onValueChange={setFilterBatch}
+                        disabled={filterInstitute === 'all'}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={filterInstitute === 'all' ? 'Select Institute First' : 'All Batches'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Batches</SelectItem>
+                          {getFilteredBatches().map((batch) => (
+                            <SelectItem key={batch.id} value={batch.id}>
+                              {batch.name} ({batch.code})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Clear Filters */}
+                    <div className="space-y-2">
+                      <Label>&nbsp;</Label>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setFilterType('all');
+                          setFilterInstitute('all');
+                          setFilterBatch('all');
+                        }}
+                        className="w-full"
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loadingUsers ? (
