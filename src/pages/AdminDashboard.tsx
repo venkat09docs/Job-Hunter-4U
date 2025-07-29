@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building, Users, GraduationCap, Settings } from 'lucide-react';
@@ -11,6 +13,35 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
+  const { user } = useAuth();
+  const [instituteName, setInstituteName] = useState<string>('');
+
+  useEffect(() => {
+    if (isInstituteAdmin && user) {
+      fetchInstituteName();
+    }
+  }, [isInstituteAdmin, user]);
+
+  const fetchInstituteName = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('institute_admin_assignments')
+        .select(`
+          institutes (
+            name
+          )
+        `)
+        .eq('user_id', user?.id)
+        .eq('is_active', true)
+        .single();
+
+      if (data?.institutes) {
+        setInstituteName(data.institutes.name);
+      }
+    } catch (error) {
+      console.error('Error fetching institute name:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -49,17 +80,29 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold mb-2">
               {isAdmin ? 'Super Admin Dashboard' : 'Institute Admin Dashboard'}
             </h1>
+            {isInstituteAdmin && instituteName && (
+              <div className="mb-2">
+                <span className="text-lg font-semibold text-primary">
+                  {instituteName}
+                </span>
+              </div>
+            )}
             <p className="text-muted-foreground">
-              Manage your organization's institutes, batches, and user assignments
+              {isAdmin 
+                ? 'Manage your organization\'s institutes, batches, and user assignments'
+                : 'Manage your institute\'s batches and user assignments'
+              }
             </p>
           </div>
 
-          <Tabs defaultValue="institutes" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="institutes" className="flex items-center space-x-2">
-                <Building className="h-4 w-4" />
-                <span>Institutes</span>
-              </TabsTrigger>
+          <Tabs defaultValue={isAdmin ? "institutes" : "batches"} className="space-y-6">
+            <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {isAdmin && (
+                <TabsTrigger value="institutes" className="flex items-center space-x-2">
+                  <Building className="h-4 w-4" />
+                  <span>Institutes</span>
+                </TabsTrigger>
+              )}
               <TabsTrigger value="batches" className="flex items-center space-x-2">
                 <GraduationCap className="h-4 w-4" />
                 <span>Batches</span>
@@ -70,9 +113,11 @@ export default function AdminDashboard() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="institutes">
-              <InstituteManagement />
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="institutes">
+                <InstituteManagement />
+              </TabsContent>
+            )}
 
             <TabsContent value="batches">
               <BatchManagement />
