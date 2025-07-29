@@ -208,33 +208,29 @@ export const StudentsManagement = () => {
           description: 'Student assignment updated successfully',
         });
       } else {
-        // Create new user account
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              full_name: formData.full_name,
-            },
+        // Create new user account using edge function to avoid auto-login
+        const { data: session } = await supabase.auth.getSession();
+        
+        const response = await fetch('/functions/v1/create-student', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token}`,
           },
-        });
-
-        if (authError) throw authError;
-
-        if (!authData.user) throw new Error('Failed to create user account');
-
-        // Create user assignment
-        const { error: assignmentError } = await supabase
-          .from('user_assignments')
-          .insert({
-            user_id: authData.user.id,
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            full_name: formData.full_name,
             batch_id: formData.batch_id,
             institute_id: instituteId,
-            assignment_type: 'batch',
-            assigned_by: user.id,
-          });
+          }),
+        });
 
-        if (assignmentError) throw assignmentError;
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create student account');
+        }
 
         toast({
           title: 'Success',
