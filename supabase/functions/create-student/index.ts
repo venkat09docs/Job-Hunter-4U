@@ -96,7 +96,9 @@ serve(async (req) => {
     if (assignmentError) throw assignmentError
 
     // Update the profile with email, full_name and username (since we need it for management)
-    const { error: profileError } = await supabaseAdmin
+    console.log('Attempting to update profile for user:', authData.user.id, 'with data:', { full_name, username, email })
+    
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         full_name,
@@ -104,11 +106,14 @@ serve(async (req) => {
         email,
       })
       .eq('user_id', authData.user.id)
+      .select()
 
     if (profileError) {
       console.error('Profile update error:', profileError)
-      // Don't throw here as the user is already created, just log the error
+      throw new Error(`Failed to update profile: ${profileError.message}`)
     }
+    
+    console.log('Profile updated successfully:', profileData)
 
     return new Response(
       JSON.stringify({ 
