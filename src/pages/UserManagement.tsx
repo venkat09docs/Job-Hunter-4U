@@ -530,7 +530,9 @@ export default function UserManagement() {
       setPlanFormData({
         subscription_plan: '',
       });
-      fetchUsers();
+      
+      // Refresh the users list to show updated subscription status
+      await fetchUsers();
     } catch (error: any) {
       toast({
         title: 'Error',

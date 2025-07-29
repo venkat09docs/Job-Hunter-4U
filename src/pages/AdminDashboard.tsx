@@ -11,10 +11,14 @@ import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManag
 import { StudentsManagement } from '@/components/admin/StudentsManagement';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [instituteName, setInstituteName] = useState<string>('');
 
   useEffect(() => {
@@ -72,32 +76,36 @@ export default function AdminDashboard() {
     );
   }
 
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
+  // For Institute Admin, show a simplified layout without sidebar
+  if (isInstituteAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
         {/* Top Level Menu for Institute Admin */}
-        {isInstituteAdmin && (
-          <div className="border-b bg-card">
-            <div className="container mx-auto flex items-center justify-between p-4">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Manage your institute's data and settings
-                  </p>
-                </div>
+        <div className="border-b bg-card">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Go to Dashboard</span>
+              </Button>
+              <div className="h-6 w-px bg-border" />
+              <div>
+                <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+                <p className="text-sm text-muted-foreground">
+                  Manage your institute's data and settings
+                </p>
               </div>
             </div>
           </div>
-        )}
+        </div>
         
         <div className="container mx-auto p-6">
           <div className="mb-8">
-            {isAdmin && (
-              <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
-            )}
-            {isInstituteAdmin && instituteName && (
+            {instituteName && (
               <div className="mb-4">
                 <h1 className="text-4xl font-bold text-primary mb-2">
                   {instituteName}
@@ -105,43 +113,74 @@ export default function AdminDashboard() {
               </div>
             )}
             <p className="text-muted-foreground">
-              {isAdmin 
-                ? 'Manage your organization\'s institutes, batches, and user assignments'
-                : 'Manage your institute\'s batches and students'
-              }
+              Manage your institute's batches and students
             </p>
           </div>
 
-          <Tabs defaultValue={isAdmin ? "institutes" : "batches"} className="space-y-6">
-            <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
-              {isAdmin && (
-                <TabsTrigger value="institutes" className="flex items-center space-x-2">
-                  <Building className="h-4 w-4" />
-                  <span>Institutes</span>
-                </TabsTrigger>
-              )}
+          <Tabs defaultValue="batches" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="batches" className="flex items-center space-x-2">
                 <GraduationCap className="h-4 w-4" />
                 <span>Batches</span>
               </TabsTrigger>
               <TabsTrigger value="assignments" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
-                <span>{isInstituteAdmin ? 'Students Management' : 'User Assignments'}</span>
+                <span>Students Management</span>
               </TabsTrigger>
             </TabsList>
-
-            {isAdmin && (
-              <TabsContent value="institutes">
-                <InstituteManagement />
-              </TabsContent>
-            )}
 
             <TabsContent value="batches">
               <BatchManagement />
             </TabsContent>
 
             <TabsContent value="assignments">
-              {isInstituteAdmin ? <StudentsManagement /> : <UserAssignmentManagement />}
+              <StudentsManagement />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    );
+  }
+
+  // For Super Admin, show the full layout with sidebar
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>        
+        <div className="container mx-auto p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your organization's institutes, batches, and user assignments
+            </p>
+          </div>
+
+          <Tabs defaultValue="institutes" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="institutes" className="flex items-center space-x-2">
+                <Building className="h-4 w-4" />
+                <span>Institutes</span>
+              </TabsTrigger>
+              <TabsTrigger value="batches" className="flex items-center space-x-2">
+                <GraduationCap className="h-4 w-4" />
+                <span>Batches</span>
+              </TabsTrigger>
+              <TabsTrigger value="assignments" className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>User Assignments</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="institutes">
+              <InstituteManagement />
+            </TabsContent>
+
+            <TabsContent value="batches">
+              <BatchManagement />
+            </TabsContent>
+
+            <TabsContent value="assignments">
+              <UserAssignmentManagement />
             </TabsContent>
           </Tabs>
         </div>
