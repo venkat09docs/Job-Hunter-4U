@@ -140,46 +140,49 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Public URLs</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  {userSlug ? (
+        {/* Show Public URLs only for regular users, not admins */}
+        {!isAdmin && !isInstituteAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Public URLs</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    {userSlug ? (
+                      <a 
+                        href={`/profile/${userSlug}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="hover:bg-muted/50"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="ml-3">Bio Link</span>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground cursor-not-allowed">
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="ml-3">No Bio Link Yet</span>
+                      </span>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
                     <a 
-                      href={`/profile/${userSlug}`}
+                      href="/blogs"
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:bg-muted/50"
                     >
                       <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">Bio Link</span>
+                      <span className="ml-3">Blogs</span>
                     </a>
-                  ) : (
-                    <span className="text-muted-foreground cursor-not-allowed">
-                      <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">No Bio Link Yet</span>
-                    </span>
-                  )}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <a 
-                    href="/blogs"
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:bg-muted/50"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="ml-3">Blogs</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

@@ -53,6 +53,7 @@ interface StudentFormData {
   email: string;
   full_name: string;
   batch_id: string;
+  password: string;
 }
 
 export const StudentsManagement = () => {
@@ -68,6 +69,7 @@ export const StudentsManagement = () => {
     email: '',
     full_name: '',
     batch_id: '',
+    password: '',
   });
   const [instituteId, setInstituteId] = useState<string>('');
 
@@ -189,29 +191,6 @@ export const StudentsManagement = () => {
     if (!user) return;
 
     try {
-      // Create or invite the user first
-      // In a real implementation, you'd use the auth admin API to create the user
-      // For now, we'll assume the user exists and we have their ID
-      
-      // This is a simplified approach - in production you'd need proper user creation
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('full_name', formData.full_name)
-        .single();
-
-      let userId = existingProfile?.user_id;
-      
-      if (!userId) {
-        // For demo purposes, create a profile entry
-        // In production, this would be handled by proper user registration
-        toast({
-          title: 'Info',
-          description: 'In production, this would send an invitation to the user',
-        });
-        return;
-      }
-
       if (editingStudent) {
         // Update existing assignment
         const { error } = await supabase
@@ -229,22 +208,37 @@ export const StudentsManagement = () => {
           description: 'Student assignment updated successfully',
         });
       } else {
-        // Create new assignment
-        const { error } = await supabase
+        // Create new user account
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.full_name,
+            },
+          },
+        });
+
+        if (authError) throw authError;
+
+        if (!authData.user) throw new Error('Failed to create user account');
+
+        // Create user assignment
+        const { error: assignmentError } = await supabase
           .from('user_assignments')
           .insert({
-            user_id: userId,
+            user_id: authData.user.id,
             batch_id: formData.batch_id,
             institute_id: instituteId,
             assignment_type: 'batch',
             assigned_by: user.id,
           });
 
-        if (error) throw error;
+        if (assignmentError) throw assignmentError;
 
         toast({
           title: 'Success',
-          description: 'Student added successfully',
+          description: 'Student account created and assigned successfully',
         });
       }
 
@@ -254,6 +248,7 @@ export const StudentsManagement = () => {
         email: '',
         full_name: '',
         batch_id: '',
+        password: '',
       });
       fetchData(instituteId);
     } catch (error: any) {
@@ -271,6 +266,7 @@ export const StudentsManagement = () => {
       email: student.email || '',
       full_name: student.full_name || '',
       batch_id: student.batch_id || '',
+      password: '', // Don't populate password for editing
     });
     setShowForm(true);
   };
@@ -334,6 +330,7 @@ export const StudentsManagement = () => {
                 email: '',
                 full_name: '',
                 batch_id: '',
+                password: '',
               });
             }}>
               <UserPlus className="h-4 w-4 mr-2" />
@@ -371,6 +368,21 @@ export const StudentsManagement = () => {
                   disabled={!!editingStudent}
                 />
               </div>
+
+              {!editingStudent && (
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="Enter student password"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="batch_id">Batch *</Label>
