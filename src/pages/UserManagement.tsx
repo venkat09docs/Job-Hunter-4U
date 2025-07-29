@@ -57,7 +57,7 @@ interface Institute {
 }
 
 export default function UserManagement() {
-  const { isAdmin, loading } = useRole();
+  const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -77,11 +77,11 @@ export default function UserManagement() {
   });
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin || isInstituteAdmin) {
       fetchUsers();
       fetchInstitutes();
     }
-  }, [isAdmin]);
+  }, [isAdmin, isInstituteAdmin]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -101,41 +101,97 @@ export default function UserManagement() {
     try {
       setLoadingUsers(true);
       
-      // Get all user profiles with their roles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          full_name,
-          username,
-          email,
-          subscription_active,
-          created_at
-        `)
-        .order('created_at', { ascending: false });
+      if (isAdmin) {
+        // Admin can see all users
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select(`
+            user_id,
+            full_name,
+            username,
+            email,
+            subscription_active,
+            created_at
+          `)
+          .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+        if (profilesError) throw profilesError;
 
-      // Get user roles
-      const userIds = profiles?.map(p => p.user_id) || [];
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
+        // Get user roles
+        const userIds = profiles?.map(p => p.user_id) || [];
+        const { data: roles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', userIds);
 
-      if (rolesError) throw rolesError;
+        if (rolesError) throw rolesError;
 
-      // Combine profiles with roles
-      const usersWithRoles = profiles?.map(profile => {
-        const userRole = roles?.find(r => r.user_id === profile.user_id);
-        return {
-          ...profile,
-          current_role: userRole?.role || 'user'
-        };
-      }) || [];
+        // Combine profiles with roles
+        const usersWithRoles = profiles?.map(profile => {
+          const userRole = roles?.find(r => r.user_id === profile.user_id);
+          return {
+            ...profile,
+            current_role: userRole?.role || 'user'
+          };
+        }) || [];
 
-      setUsers(usersWithRoles);
-      setFilteredUsers(usersWithRoles);
+        setUsers(usersWithRoles);
+        setFilteredUsers(usersWithRoles);
+      } else if (isInstituteAdmin) {
+        // Institute admin can only see users assigned to their institutes
+        // First get all user assignments
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .eq('is_active', true);
+
+        if (assignmentsError) throw assignmentsError;
+
+        // Get unique user IDs
+        const userIds = [...new Set(assignments?.map(a => a.user_id) || [])];
+
+        if (userIds.length === 0) {
+          setUsers([]);
+          setFilteredUsers([]);
+          return;
+        }
+
+        // Get profiles for these users
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select(`
+            user_id,
+            full_name,
+            username,
+            email,
+            subscription_active,
+            created_at
+          `)
+          .in('user_id', userIds)
+          .order('created_at', { ascending: false });
+
+        if (profilesError) throw profilesError;
+
+        // Get user roles for these users
+        const { data: roles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', userIds);
+
+        if (rolesError) throw rolesError;
+
+        // Combine profiles with roles
+        const usersWithRoles = profiles?.map(profile => {
+          const userRole = roles?.find(r => r.user_id === profile.user_id);
+          return {
+            ...profile,
+            current_role: userRole?.role || 'user'
+          };
+        }) || [];
+
+        setUsers(usersWithRoles);
+        setFilteredUsers(usersWithRoles);
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -341,7 +397,7 @@ export default function UserManagement() {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && !isInstituteAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-96">
@@ -493,16 +549,16 @@ export default function UserManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">New Role</Label>
-                  <Select value={newRole} onValueChange={setNewRole}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="institute_admin">Institute Admin</SelectItem>
-                      <SelectItem value="admin">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
+                     <Select value={newRole} onValueChange={setNewRole}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Select a role" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="user">User</SelectItem>
+                         {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
+                         {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
+                       </SelectContent>
+                     </Select>
                 </div>
                 
                 {newRole === 'institute_admin' && (
