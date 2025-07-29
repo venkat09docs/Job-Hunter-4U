@@ -373,47 +373,35 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (user: UserWithRole) => {
-    if (!confirm(`Are you sure you want to delete ${user.full_name || 'this user'}? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete ${user.full_name || 'this user'}? This action cannot be undone and will remove all user data.`)) {
       return;
     }
 
     try {
-      // Delete user assignments first
-      await supabase
-        .from('user_assignments')
-        .update({ is_active: false })
-        .eq('user_id', user.user_id);
+      // Call the edge function to delete user completely
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: user.user_id }
+      });
 
-      // Delete institute admin assignments if any
-      await supabase
-        .from('institute_admin_assignments')
-        .delete()
-        .eq('user_id', user.user_id);
+      if (error) {
+        throw error;
+      }
 
-      // Delete user roles
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', user.user_id);
-
-      // Delete profile (this should cascade delete other related records)
-      await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', user.user_id);
-
-      // Note: Cannot delete from auth.users with anon key, but profile deletion is sufficient
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: 'Success',
-        description: 'User deleted successfully',
+        description: 'User deleted successfully from all systems',
       });
 
       fetchUsers();
     } catch (error: any) {
+      console.error('Delete user error:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete user',
+        description: error.message || 'Failed to delete user completely',
         variant: 'destructive',
       });
     }
