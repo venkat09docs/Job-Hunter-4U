@@ -282,24 +282,39 @@ const JobTracker = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
-              <Button 
-                variant="outline" 
-                onClick={hasActiveSubscription() ? () => setShowArchived(!showArchived) : undefined} 
-                size="sm"
-                disabled={!hasActiveSubscription()}
-              >
-                {showArchived ? 'Show Active' : 'Show Archived'}
-              </Button>
+              {hasActiveSubscription() ? (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowArchived(!showArchived)} 
+                  size="sm"
+                >
+                  {showArchived ? 'Show Active' : 'Show Archived'}
+                </Button>
+              ) : (
+                <SubscriptionUpgrade featureName="job tracker">
+                  <Button variant="outline" size="sm">
+                    {showArchived ? 'Show Active' : 'Show Archived'}
+                  </Button>
+                </SubscriptionUpgrade>
+              )}
               
-              <Button 
-                onClick={hasActiveSubscription() ? exportToCSV : undefined} 
-                variant="outline" 
-                size="sm"
-                disabled={!hasActiveSubscription()}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
+              {hasActiveSubscription() ? (
+                <Button 
+                  onClick={exportToCSV} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export CSV
+                </Button>
+              ) : (
+                <SubscriptionUpgrade featureName="job tracker">
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </SubscriptionUpgrade>
+              )}
               
               {hasActiveSubscription() ? (
                 <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -318,7 +333,7 @@ const JobTracker = () => {
                 </Dialog>
               ) : (
                 <SubscriptionUpgrade featureName="job tracker">
-                  <Button size="sm" variant="outline" disabled>
+                  <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Job
                   </Button>
@@ -396,51 +411,93 @@ const JobTracker = () => {
                             <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
                           )}
                            <div className="flex flex-col gap-1 pt-1">
-                             <Select 
-                               value={job.status} 
-                               onValueChange={hasActiveSubscription() ? (newStatus) => handleStatusChange(job.id, newStatus) : undefined}
-                               disabled={!hasActiveSubscription()}
-                             >
-                               <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                 <SelectValue />
-                               </SelectTrigger>
-                               <SelectContent>
-                                 {statusOptions.map(statusOption => (
-                                   <SelectItem key={statusOption} value={statusOption}>
-                                     {statusLabels[statusOption as keyof typeof statusLabels]}
-                                   </SelectItem>
-                                 ))}
-                               </SelectContent>
-                             </Select>
+                             {hasActiveSubscription() ? (
+                               <Select 
+                                 value={job.status} 
+                                 onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
+                               >
+                                 <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {statusOptions.map(statusOption => (
+                                     <SelectItem key={statusOption} value={statusOption}>
+                                       {statusLabels[statusOption as keyof typeof statusLabels]}
+                                     </SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             ) : (
+                               <SubscriptionUpgrade featureName="job tracker">
+                                 <Select value={job.status}>
+                                   <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                     <SelectValue />
+                                   </SelectTrigger>
+                                 </Select>
+                               </SubscriptionUpgrade>
+                             )}
                              <div className="flex items-center gap-1 justify-center">
-                               <Button 
-                                 variant="ghost" 
-                                 size="sm" 
-                                 onClick={hasActiveSubscription() ? () => setEditingJob(job) : undefined} 
-                                 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                 disabled={!hasActiveSubscription()}
-                               >
-                                 <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
-                               </Button>
-                               <Button 
-                                 variant="ghost" 
-                                 size="sm" 
-                                 onClick={hasActiveSubscription() ? () => handleArchiveJob(job.id, !job.is_archived) : undefined} 
-                                 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                 disabled={!hasActiveSubscription()}
-                               >
-                                 <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
-                               </Button>
-                               {showArchived && (
+                               {hasActiveSubscription() ? (
                                  <Button 
                                    variant="ghost" 
                                    size="sm" 
-                                   onClick={hasActiveSubscription() ? () => handleDeleteJob(job.id) : undefined} 
+                                   onClick={() => setEditingJob(job)} 
                                    className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                   disabled={!hasActiveSubscription()}
                                  >
-                                   <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
+                                   <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
                                  </Button>
+                               ) : (
+                                 <SubscriptionUpgrade featureName="job tracker">
+                                   <Button 
+                                     variant="ghost" 
+                                     size="sm" 
+                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                   >
+                                     <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
+                                   </Button>
+                                 </SubscriptionUpgrade>
+                               )}
+                               {hasActiveSubscription() ? (
+                                 <Button 
+                                   variant="ghost" 
+                                   size="sm" 
+                                   onClick={() => handleArchiveJob(job.id, !job.is_archived)} 
+                                   className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                 >
+                                   <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
+                                 </Button>
+                               ) : (
+                                 <SubscriptionUpgrade featureName="job tracker">
+                                   <Button 
+                                     variant="ghost" 
+                                     size="sm" 
+                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                   >
+                                     <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
+                                   </Button>
+                                 </SubscriptionUpgrade>
+                               )}
+                               {showArchived && (
+                                 hasActiveSubscription() ? (
+                                   <Button 
+                                     variant="ghost" 
+                                     size="sm" 
+                                     onClick={() => handleDeleteJob(job.id)} 
+                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                   >
+                                     <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
+                                   </Button>
+                                 ) : (
+                                   <SubscriptionUpgrade featureName="job tracker">
+                                     <Button 
+                                       variant="ghost" 
+                                       size="sm" 
+                                       className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                                     >
+                                       <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
+                                     </Button>
+                                   </SubscriptionUpgrade>
+                                 )
                                )}
                              </div>
                           </div>
