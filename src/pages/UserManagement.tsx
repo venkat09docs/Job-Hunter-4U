@@ -98,7 +98,7 @@ export default function UserManagement() {
     try {
       setLoadingUsers(true);
       
-      // Get all user profiles
+      // Get all user profiles with their roles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select(`
@@ -112,14 +112,8 @@ export default function UserManagement() {
 
       if (profilesError) throw profilesError;
 
-      if (!profiles || profiles.length === 0) {
-        setUsers([]);
-        setFilteredUsers([]);
-        return;
-      }
-
-      // Get user roles for all users
-      const userIds = profiles.map(p => p.user_id);
+      // Get user roles
+      const userIds = profiles?.map(p => p.user_id) || [];
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role')
@@ -128,18 +122,17 @@ export default function UserManagement() {
       if (rolesError) throw rolesError;
 
       // Combine profiles with roles
-      const usersWithRoles = profiles.map(profile => {
+      const usersWithRoles = profiles?.map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.user_id);
         return {
           ...profile,
           current_role: userRole?.role || 'user'
         };
-      });
+      }) || [];
 
       setUsers(usersWithRoles);
       setFilteredUsers(usersWithRoles);
     } catch (error: any) {
-      console.error('Error fetching users:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch users',
