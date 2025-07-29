@@ -22,6 +22,7 @@ import ManageCareerHub from "./pages/ManageCareerHub";
 import ManageSubscriptions from "./pages/ManageSubscriptions";
 import DigitalCareerHub from "./pages/DigitalCareerHub";
 import AdminDashboard from "./pages/AdminDashboard";
+import UserManagement from "./pages/UserManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -139,6 +140,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/users" 
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
                 </ProtectedRoute>
               } 
             />

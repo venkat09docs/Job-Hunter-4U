@@ -11,7 +11,9 @@ import {
   Linkedin,
   Wrench,
   Zap,
-  FileText
+  FileText,
+  Shield,
+  Users
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +44,8 @@ const mainItems = [
 ];
 
 const adminItems = [
+  { title: "Admin Dashboard", url: "/admin", icon: Shield },
+  { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
   { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
 ];
@@ -51,7 +55,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
-  const { isAdmin } = useRole();
+  const { isAdmin, isInstituteAdmin } = useRole();
   const [userSlug, setUserSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -103,21 +107,28 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
+        {(isAdmin || isInstituteAdmin) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink to={item.url} end className={getNavCls}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="ml-3">{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {adminItems.map((item) => {
+                  // Show User Management only for super admins
+                  if (item.title === "User Management" && !isAdmin) return null;
+                  // Show Manage Career Hub and Subscriptions only for super admins
+                  if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
+                  
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} end className={getNavCls}>
+                          <item.icon className="h-4 w-4" />
+                          <span className="ml-3">{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
