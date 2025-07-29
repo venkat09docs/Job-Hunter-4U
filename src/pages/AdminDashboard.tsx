@@ -76,6 +76,22 @@ export default function AdminDashboard() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
+        {/* Top Level Menu for Institute Admin */}
+        {isInstituteAdmin && (
+          <div className="border-b bg-card">
+            <div className="container mx-auto flex items-center justify-between p-4">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your institute's data and settings
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="container mx-auto p-6">
           <div className="mb-8">
             {isAdmin && (

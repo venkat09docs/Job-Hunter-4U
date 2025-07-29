@@ -424,13 +424,24 @@ export default function UserManagement() {
     }
 
     try {
-      // Cannot create users with anon key - redirect to signup page
-      toast({
-        title: 'Feature Not Available',
-        description: 'User creation requires direct signup. Please direct users to sign up normally.',
-        variant: 'destructive',
+      // Call the edge function to create user
+      const { data, error } = await supabase.functions.invoke('create-admin-user', {
+        body: {
+          email: addUserFormData.email,
+          password: addUserFormData.password,
+          full_name: addUserFormData.full_name,
+          username: addUserFormData.username,
+          role: 'user' // Default role
+        }
       });
-      return;
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast({
         title: 'Success',
@@ -446,6 +457,7 @@ export default function UserManagement() {
       });
       fetchUsers();
     } catch (error: any) {
+      console.error('Create user error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to create user',
@@ -500,8 +512,8 @@ export default function UserManagement() {
         .from('profiles')
         .update({
           subscription_plan: planFormData.subscription_plan,
-          subscription_start_date: now.toISOString().split('T')[0],
-          subscription_end_date: newEndDate.toISOString().split('T')[0],
+          subscription_start_date: now.toISOString(),
+          subscription_end_date: newEndDate.toISOString(),
           subscription_active: true,
         })
         .eq('user_id', selectedUser.user_id);
