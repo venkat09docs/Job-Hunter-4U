@@ -135,8 +135,8 @@ export const useProfile = () => {
   const getRemainingDays = () => {
     if (!profile?.subscription_end_date) return 0;
     
-    // Parse the end date (assuming it's in YYYY-MM-DD format)
-    const endDate = new Date(profile.subscription_end_date + 'T23:59:59.999Z');
+    // Parse the end date (handles both timestamp and date-only formats)
+    const endDate = new Date(profile.subscription_end_date);
     const now = new Date();
     
     // Reset current time to start of day for consistent calculation
