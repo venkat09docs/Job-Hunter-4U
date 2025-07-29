@@ -158,6 +158,12 @@ export const StudentsManagement = () => {
 
       // Get user profiles for the assigned users
       const userIds = assignmentsData?.map(a => a.user_id) || [];
+      
+      if (userIds.length === 0) {
+        setStudents([]);
+        return;
+      }
+
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, full_name')
@@ -209,27 +215,19 @@ export const StudentsManagement = () => {
         });
       } else {
         // Create new user account using edge function to avoid auto-login
-        const { data: session } = await supabase.auth.getSession();
-        
-        const response = await fetch('/functions/v1/create-student', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.session?.access_token}`,
-          },
-          body: JSON.stringify({
+        const { data, error } = await supabase.functions.invoke('create-student', {
+          body: {
             email: formData.email,
             password: formData.password,
             full_name: formData.full_name,
             batch_id: formData.batch_id,
             institute_id: instituteId,
-          }),
+          },
         });
 
-        const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to create student account');
+        if (error) throw error;
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to create student account');
         }
 
         toast({
