@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRole } from '@/hooks/useRole';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,8 +49,15 @@ interface UserWithRole extends UserProfile {
   current_role: string;
 }
 
+interface Institute {
+  id: string;
+  name: string;
+  code: string;
+}
+
 export default function UserManagement() {
   const { isAdmin, loading } = useRole();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserWithRole[]>([]);
@@ -58,10 +66,13 @@ export default function UserManagement() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [newRole, setNewRole] = useState<string>('');
+  const [institutes, setInstitutes] = useState<Institute[]>([]);
+  const [selectedInstitute, setSelectedInstitute] = useState<string>('');
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
+      fetchInstitutes();
     }
   }, [isAdmin]);
 
@@ -127,34 +138,84 @@ export default function UserManagement() {
     }
   };
 
+  const fetchInstitutes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('institutes')
+        .select('id, name, code')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setInstitutes(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch institutes',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleRoleChange = async () => {
     if (!selectedUser || !newRole) return;
+    
+    // Validate that institute is selected for institute_admin role
+    if (newRole === 'institute_admin' && !selectedInstitute) {
+      toast({
+        title: 'Error',
+        description: 'Please select an institute for Institute Admin role',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
-      // First, delete existing role
+      // First, delete existing role and institute assignments
       await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', selectedUser.user_id);
 
+      if (selectedUser.current_role === 'institute_admin') {
+        await supabase
+          .from('institute_admin_assignments')
+          .delete()
+          .eq('user_id', selectedUser.user_id);
+      }
+
       // Then insert new role
-      const { error } = await supabase
+      const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
           user_id: selectedUser.user_id,
           role: newRole as 'admin' | 'institute_admin' | 'user'
         });
 
-      if (error) throw error;
+      if (roleError) throw roleError;
+
+      // If assigning institute_admin role, also create institute assignment
+      if (newRole === 'institute_admin' && selectedInstitute) {
+        const { error: assignmentError } = await supabase
+          .from('institute_admin_assignments')
+          .insert({
+            user_id: selectedUser.user_id,
+            institute_id: selectedInstitute,
+            assigned_by: user?.id || selectedUser.user_id
+          });
+
+        if (assignmentError) throw assignmentError;
+      }
 
       toast({
         title: 'Success',
-        description: `User role updated to ${newRole}`,
+        description: `User role updated to ${newRole}${newRole === 'institute_admin' ? ' with institute assignment' : ''}`,
       });
 
       setShowRoleDialog(false);
       setSelectedUser(null);
       setNewRole('');
+      setSelectedInstitute('');
       fetchUsers();
     } catch (error: any) {
       toast({
@@ -328,6 +389,24 @@ export default function UserManagement() {
                     </SelectContent>
                   </Select>
                 </div>
+                
+                {newRole === 'institute_admin' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="institute">Select Institute</Label>
+                    <Select value={selectedInstitute} onValueChange={setSelectedInstitute}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an institute" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {institutes.map((institute) => (
+                          <SelectItem key={institute.id} value={institute.id}>
+                            {institute.name} ({institute.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setShowRoleDialog(false)}>
