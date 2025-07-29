@@ -187,21 +187,23 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                                <Eye className="w-3 h-3" />
                              </Button>
                            </DialogTrigger>
-                           <DialogContent className="max-w-md">
-                             <DialogHeader>
-                               <DialogTitle>{note.title}</DialogTitle>
-                             </DialogHeader>
-                             <div className="mt-4">
-                               <p className="text-sm text-muted-foreground mb-2">
-                                 Created: {new Date(note.created_at).toLocaleDateString()}
-                               </p>
-                               <div className="bg-muted p-3 rounded-md">
-                                 <p className="text-sm whitespace-pre-wrap">
-                                   {note.messages[0]?.content || 'No content'}
-                                 </p>
-                               </div>
-                             </div>
-                           </DialogContent>
+                            <DialogContent className="max-w-md max-h-[70vh]">
+                              <DialogHeader>
+                                <DialogTitle>{note.title}</DialogTitle>
+                              </DialogHeader>
+                              <div className="mt-4">
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  Created: {new Date(note.created_at).toLocaleDateString()}
+                                </p>
+                                <ScrollArea className="max-h-[50vh]">
+                                  <div className="bg-muted p-3 rounded-md">
+                                    <p className="text-sm whitespace-pre-wrap">
+                                      {note.messages[0]?.content || 'No content'}
+                                    </p>
+                                  </div>
+                                </ScrollArea>
+                              </div>
+                            </DialogContent>
                          </Dialog>
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
