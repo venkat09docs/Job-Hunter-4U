@@ -35,6 +35,7 @@ interface Student {
   id: string;
   user_id: string;
   full_name?: string;
+  username?: string;
   email?: string;
   batch_name?: string;
   batch_code?: string;
@@ -166,10 +167,10 @@ export const StudentsManagement = () => {
         return;
       }
 
-      // Get user profiles with email and full_name
+      // Get user profiles with email, full_name and username
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name, email')
+        .select('user_id, full_name, email, username')
         .in('user_id', userIds);
 
       const studentsWithProfiles = assignmentsData?.map(assignment => {
@@ -179,6 +180,7 @@ export const StudentsManagement = () => {
           id: assignment.id,
           user_id: assignment.user_id,
           full_name: profile?.full_name || 'Unknown Student',
+          username: profile?.username || 'No Username',
           email: profile?.email || '',
           batch_name: assignment.batches?.name,
           batch_code: assignment.batches?.code,
@@ -497,7 +499,7 @@ export const StudentsManagement = () => {
               {students.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell className="font-medium">
-                    {student.full_name || 'Unknown Student'}
+                    {student.username || 'No Username'}
                   </TableCell>
                   <TableCell>
                     {student.batch_name} ({student.batch_code})
