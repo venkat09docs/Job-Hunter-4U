@@ -10,7 +10,7 @@ interface PremiumFeature {
   is_premium: boolean;
 }
 
-export const usePremiumFeatures = () => {
+const usePremiumFeatures = () => {
   const [premiumFeatures, setPremiumFeatures] = useState<PremiumFeature[]>([]);
   const [loading, setLoading] = useState(true);
   const { hasActiveSubscription } = useProfile();
@@ -59,3 +59,5 @@ export const usePremiumFeatures = () => {
     refreshFeatures: fetchPremiumFeatures
   };
 };
+
+export { usePremiumFeatures };

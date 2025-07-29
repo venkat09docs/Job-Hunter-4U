@@ -31,8 +31,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
-import PricingDialog from "./PricingDialog";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, key: "dashboard" },
