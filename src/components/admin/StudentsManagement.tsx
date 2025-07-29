@@ -61,10 +61,12 @@ interface Student {
   batch_code?: string;
   batch_id?: string;
   assigned_at: string;
-  is_active?: boolean;
+  subscription_active?: boolean;
+  subscription_plan?: string;
+  subscription_end_date?: string;
 }
 
-type FilterType = 'all' | 'active' | 'inactive' | 'batch';
+type FilterType = 'all' | 'subscription_active' | 'subscription_inactive' | 'batch';
 
 interface Batch {
   id: string;
@@ -204,10 +206,10 @@ export const StudentsManagement = () => {
         return;
       }
 
-      // Get user profiles with email, full_name and username
+      // Get user profiles with email, full_name, username and subscription info
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, email, username')
+        .select('user_id, full_name, email, username, subscription_active, subscription_plan, subscription_end_date')
         .in('user_id', userIds);
 
       if (profilesError) throw profilesError;
@@ -225,7 +227,9 @@ export const StudentsManagement = () => {
           batch_code: assignment.batches?.code,
           batch_id: assignment.batch_id,
           assigned_at: assignment.assigned_at,
-          is_active: true, // Simplified for now - can be enhanced later
+          subscription_active: profile?.subscription_active || false,
+          subscription_plan: profile?.subscription_plan || 'None',
+          subscription_end_date: profile?.subscription_end_date || null,
         };
       }) || [];
 
@@ -323,11 +327,11 @@ export const StudentsManagement = () => {
   const applyFilters = (studentsData: Student[] = students) => {
     let filtered = [...studentsData];
 
-    // Apply status filter
-    if (filterType === 'active') {
-      filtered = filtered.filter(student => student.is_active);
-    } else if (filterType === 'inactive') {
-      filtered = filtered.filter(student => !student.is_active);
+    // Apply subscription status filter
+    if (filterType === 'subscription_active') {
+      filtered = filtered.filter(student => student.subscription_active);
+    } else if (filterType === 'subscription_inactive') {
+      filtered = filtered.filter(student => !student.subscription_active);
     }
 
     // Apply batch filter
@@ -351,7 +355,9 @@ export const StudentsManagement = () => {
       'Username': student.username || '',
       'Batch Name': student.batch_name || '',
       'Batch Code': student.batch_code || '',
-      'Status': student.is_active ? 'Active' : 'Inactive',
+      'Subscription Status': student.subscription_active ? 'Active' : 'Inactive',
+      'Subscription Plan': student.subscription_plan || 'None',
+      'Subscription End': student.subscription_end_date ? new Date(student.subscription_end_date).toLocaleDateString() : 'N/A',
       'Assigned Date': new Date(student.assigned_at).toLocaleDateString(),
     }));
 
@@ -709,7 +715,7 @@ export const StudentsManagement = () => {
         <CardContent>
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[200px]">
-              <Label htmlFor="filter-type">Filter by Status</Label>
+              <Label htmlFor="filter-type">Filter by Subscription Status</Label>
               <Select
                 value={filterType}
                 onValueChange={(value: FilterType) => setFilterType(value)}
@@ -719,8 +725,8 @@ export const StudentsManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Students</SelectItem>
-                  <SelectItem value="active">Active Users</SelectItem>
-                  <SelectItem value="inactive">Inactive Users</SelectItem>
+                  <SelectItem value="subscription_active">Active Users (Subscription Based)</SelectItem>
+                  <SelectItem value="subscription_inactive">Non Active Users (Subscription Based)</SelectItem>
                   <SelectItem value="batch">Filter by Batch</SelectItem>
                 </SelectContent>
               </Select>
@@ -796,7 +802,9 @@ export const StudentsManagement = () => {
             Students ({filteredStudents.length} of {students.length})
             {filterType !== 'all' && (
               <span className="text-sm font-normal text-muted-foreground ml-2">
-                - Filtered by {filterType === 'batch' ? `batch: ${batches.find(b => b.id === selectedBatch)?.name}` : filterType}
+                - Filtered by {filterType === 'batch' ? `batch: ${batches.find(b => b.id === selectedBatch)?.name}` : 
+                filterType === 'subscription_active' ? 'Active Subscription' :
+                filterType === 'subscription_inactive' ? 'Inactive Subscription' : filterType}
               </span>
             )}
           </CardTitle>
@@ -813,7 +821,8 @@ export const StudentsManagement = () => {
                   />
                 </TableHead>
                 <TableHead>Student Name</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Subscription Status</TableHead>
+                <TableHead>Subscription Plan</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Assigned Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -834,11 +843,21 @@ export const StudentsManagement = () => {
                   </TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      student.is_active 
+                      student.subscription_active 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
                         : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
                     }`}>
-                      {student.is_active ? 'Active' : 'Inactive'}
+                      {student.subscription_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">
+                      {student.subscription_plan || 'None'}
+                      {student.subscription_end_date && (
+                        <div className="text-xs text-muted-foreground">
+                          Expires: {new Date(student.subscription_end_date).toLocaleDateString()}
+                        </div>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -874,7 +893,11 @@ export const StudentsManagement = () => {
             <div className="text-center py-8 text-muted-foreground">
               {filterType === 'all' 
                 ? 'No students found. Add your first student to get started.'
-                : `No students found matching the selected filter: ${filterType}`
+                : `No students found matching the selected filter: ${
+                    filterType === 'subscription_active' ? 'Active Subscription' :
+                    filterType === 'subscription_inactive' ? 'Inactive Subscription' :
+                    filterType === 'batch' ? 'Selected Batch' : filterType
+                  }`
               }
             </div>
           )}
