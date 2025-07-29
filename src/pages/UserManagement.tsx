@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/table';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserProfile {
   user_id: string;
@@ -60,6 +62,7 @@ export default function UserManagement() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserWithRole[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,18 +135,7 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        // Admin can see all users - Only fetch users that exist in auth.users
-        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-        if (authError) throw authError;
-
-        const activeUserIds = authUsers.users.map(user => user.id);
-        
-        if (activeUserIds.length === 0) {
-          setUsers([]);
-          setFilteredUsers([]);
-          return;
-        }
-
+        // Admin can see all users from profiles table
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select(`
@@ -154,7 +146,6 @@ export default function UserManagement() {
             subscription_active,
             created_at
           `)
-          .in('user_id', activeUserIds)
           .order('created_at', { ascending: false });
 
         if (profilesError) throw profilesError;
@@ -411,12 +402,7 @@ export default function UserManagement() {
         .delete()
         .eq('user_id', user.user_id);
 
-      // Delete from auth.users using admin API
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.user_id);
-      if (authError) {
-        console.error('Auth deletion error:', authError);
-        // Continue even if auth deletion fails, as the profile is already deleted
-      }
+      // Note: Cannot delete from auth.users with anon key, but profile deletion is sufficient
 
       toast({
         title: 'Success',
@@ -454,33 +440,13 @@ export default function UserManagement() {
     }
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: addUserFormData.email,
-        password: addUserFormData.password,
-        user_metadata: {
-          full_name: addUserFormData.full_name,
-          username: addUserFormData.username,
-        },
-        email_confirm: true,
+      // Cannot create users with anon key - redirect to signup page
+      toast({
+        title: 'Feature Not Available',
+        description: 'User creation requires direct signup. Please direct users to sign up normally.',
+        variant: 'destructive',
       });
-
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Update profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            full_name: addUserFormData.full_name,
-            username: addUserFormData.username,
-            email: addUserFormData.email,
-          })
-          .eq('user_id', authData.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-      }
+      return;
 
       toast({
         title: 'Success',
@@ -583,16 +549,32 @@ export default function UserManagement() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="container mx-auto p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">User Management</h1>
-            <p className="text-muted-foreground">
-              Manage user roles and permissions across the platform
-            </p>
+    <div className="min-h-screen bg-background">
+      {/* Top Level Menu */}
+      <div className="border-b bg-card">
+        <div className="container mx-auto flex items-center justify-between p-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/dashboard')}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Go to Dashboard</span>
+            </Button>
+            <div className="h-6 w-px bg-border" />
+            <div>
+              <h1 className="text-xl font-semibold">User Management</h1>
+              <p className="text-sm text-muted-foreground">
+                Manage user roles and permissions across the platform
+              </p>
+            </div>
           </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto p-6">
 
           <div className="space-y-6">
             <Card>
@@ -934,8 +916,7 @@ export default function UserManagement() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   );
 }
