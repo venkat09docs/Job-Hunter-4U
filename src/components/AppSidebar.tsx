@@ -31,12 +31,12 @@ import { useRole } from "@/hooks/useRole";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Resume Builder", url: "/dashboard/portfolio", icon: User },
   { title: "Job Search", url: "/dashboard/job-search", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
-  { title: "My Portfolio", url: "/dashboard/portfolio", icon: User },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
 ];

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Coins, ExternalLink, Zap, ArrowLeft, FileText, Monitor } from 'lucide-react';
+import { Coins, ExternalLink, Zap, ArrowLeft, FileText, Monitor, SidebarClose, SidebarOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -34,6 +34,7 @@ const DigitalCareerHub = () => {
   const [isToolDialogOpen, setIsToolDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('tool');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isNotesCollapsed, setIsNotesCollapsed] = useState(false);
 
   const organizedTools = useMemo(() => {
     const toolsByCategory = categories.reduce((acc, category) => {
@@ -247,30 +248,12 @@ const DigitalCareerHub = () => {
                           
                            <CardContent>
                              <div className="space-y-3">
-                               {hasActiveSubscription() ? (
-                                 <AlertDialog>
-                                   <AlertDialogTrigger asChild>
-                                     <Button className="w-full hover-scale">
-                                       <ExternalLink className="w-4 h-4 mr-2" />
-                                       Access Tool
-                                     </Button>
-                                   </AlertDialogTrigger>
-                                   <AlertDialogContent>
-                                     <AlertDialogHeader>
-                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                       <AlertDialogDescription>
-                                         This tool is available with your active subscription.
-                                       </AlertDialogDescription>
-                                     </AlertDialogHeader>
-                                     <AlertDialogFooter>
-                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                         Access Tool
-                                       </AlertDialogAction>
-                                     </AlertDialogFooter>
-                                   </AlertDialogContent>
-                                 </AlertDialog>
-                               ) : (
+                                {hasActiveSubscription() ? (
+                                  <Button className="w-full hover-scale" onClick={() => handleToolAccess(tool)}>
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Access Tool
+                                  </Button>
+                                ) : (
                                  <SubscriptionUpgrade featureName="AI tools">
                                    <Button className="w-full" variant="outline">
                                      <ExternalLink className="w-4 h-4 mr-2" />
@@ -320,30 +303,12 @@ const DigitalCareerHub = () => {
                           
                            <CardContent>
                              <div className="space-y-3">
-                               {hasActiveSubscription() ? (
-                                 <AlertDialog>
-                                   <AlertDialogTrigger asChild>
-                                     <Button className="w-full hover-scale">
-                                       <ExternalLink className="w-4 h-4 mr-2" />
-                                       Access Tool
-                                     </Button>
-                                   </AlertDialogTrigger>
-                                   <AlertDialogContent>
-                                     <AlertDialogHeader>
-                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                       <AlertDialogDescription>
-                                         This tool is available with your active subscription.
-                                       </AlertDialogDescription>
-                                     </AlertDialogHeader>
-                                     <AlertDialogFooter>
-                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                         Access Tool
-                                       </AlertDialogAction>
-                                     </AlertDialogFooter>
-                                   </AlertDialogContent>
-                                 </AlertDialog>
-                               ) : (
+                                {hasActiveSubscription() ? (
+                                  <Button className="w-full hover-scale" onClick={() => handleToolAccess(tool)}>
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Access Tool
+                                  </Button>
+                                ) : (
                                  <SubscriptionUpgrade featureName="AI tools">
                                    <Button className="w-full" variant="outline">
                                      <ExternalLink className="w-4 h-4 mr-2" />
@@ -381,30 +346,12 @@ const DigitalCareerHub = () => {
                           
                           <CardContent>
                              <div className="space-y-3">
-                               {hasActiveSubscription() ? (
-                                 <AlertDialog>
-                                   <AlertDialogTrigger asChild>
-                                     <Button className="w-full hover-scale">
-                                       <ExternalLink className="w-4 h-4 mr-2" />
-                                       Access Tool
-                                     </Button>
-                                   </AlertDialogTrigger>
-                                   <AlertDialogContent>
-                                     <AlertDialogHeader>
-                                       <AlertDialogTitle>Access {tool.tool_name}</AlertDialogTitle>
-                                       <AlertDialogDescription>
-                                         This tool is available with your active subscription.
-                                       </AlertDialogDescription>
-                                     </AlertDialogHeader>
-                                     <AlertDialogFooter>
-                                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                       <AlertDialogAction onClick={() => handleToolAccess(tool)}>
-                                         Access Tool
-                                       </AlertDialogAction>
-                                     </AlertDialogFooter>
-                                   </AlertDialogContent>
-                                 </AlertDialog>
-                               ) : (
+                                {hasActiveSubscription() ? (
+                                  <Button className="w-full hover-scale" onClick={() => handleToolAccess(tool)}>
+                                    <ExternalLink className="w-4 h-4 mr-2" />
+                                    Access Tool
+                                  </Button>
+                                ) : (
                                  <SubscriptionUpgrade featureName="AI tools">
                                    <Button className="w-full" variant="outline">
                                      <ExternalLink className="w-4 h-4 mr-2" />
@@ -475,9 +422,33 @@ const DigitalCareerHub = () => {
             /* Desktop Layout - Side by side */
             <div className="flex-1 min-h-0 flex">
               {/* Notes Sidebar */}
-              {selectedTool && (
-                <ToolNotesSidebar toolId={selectedTool.id} />
+              {selectedTool && !isNotesCollapsed && (
+                <div className="w-80 border-r bg-muted/20">
+                  <ToolNotesSidebar toolId={selectedTool.id} />
+                </div>
               )}
+              
+              {/* Notes Toggle Button */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsNotesCollapsed(!isNotesCollapsed)}
+                  className="absolute top-4 left-2 z-10 bg-background/80 backdrop-blur-sm"
+                >
+                  {isNotesCollapsed ? (
+                    <>
+                      <SidebarOpen className="w-4 h-4 mr-2" />
+                      Show Notes
+                    </>
+                  ) : (
+                    <>
+                      <SidebarClose className="w-4 h-4 mr-2" />
+                      Hide Notes
+                    </>
+                  )}
+                </Button>
+              </div>
               
               {/* Main Content Area */}
               <div className="flex-1 min-h-0 relative">
