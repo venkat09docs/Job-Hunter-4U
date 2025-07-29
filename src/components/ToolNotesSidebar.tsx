@@ -119,7 +119,15 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
     } else {
       setSelectedNote(note);
       setIsCreating(false);
+      setIsEditing(false); // Open in view mode by default
     }
+  };
+
+  const handleEditNote = (note: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedNote(note);
+    setIsEditing(true);
+    setIsCreating(false);
   };
 
   return (
@@ -175,35 +183,43 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                            {new Date(note.created_at).toLocaleDateString()}
                          </p>
                        </div>
-                       <div className="flex gap-1">
-                         <Dialog>
-                           <DialogTrigger asChild>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                               onClick={(e) => e.stopPropagation()}
-                             >
-                               <Eye className="w-3 h-3" />
-                             </Button>
-                           </DialogTrigger>
-                            <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
-                              <DialogHeader className="flex-shrink-0">
-                                <DialogTitle>{note.title}</DialogTitle>
-                              </DialogHeader>
-                              <div className="flex-1 min-h-0 flex flex-col">
-                                <p className="text-sm text-muted-foreground mb-3 flex-shrink-0">
-                                  Created: {new Date(note.created_at).toLocaleDateString()}
-                                </p>
-                                <ScrollArea className="flex-1 min-h-0">
-                                  <div className="bg-muted p-3 rounded-md">
-                                    <p className="text-sm whitespace-pre-wrap">
-                                      {note.messages[0]?.content || 'No content'}
-                                    </p>
-                                  </div>
-                                </ScrollArea>
-                              </div>
-                            </DialogContent>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                            onClick={(e) => handleEditNote(note, e)}
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                            </DialogTrigger>
+                             <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                               <DialogHeader className="flex-shrink-0 pb-4">
+                                 <DialogTitle className="text-lg font-semibold">{note.title}</DialogTitle>
+                                 <p className="text-sm text-muted-foreground">
+                                   Created: {new Date(note.created_at).toLocaleDateString()}
+                                 </p>
+                               </DialogHeader>
+                               <div className="flex-1 overflow-hidden">
+                                 <ScrollArea className="h-full max-h-[60vh]">
+                                   <div className="bg-muted/50 p-4 rounded-md border">
+                                     <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                                       {note.messages[0]?.content || 'No content'}
+                                     </p>
+                                   </div>
+                                 </ScrollArea>
+                               </div>
+                             </DialogContent>
                          </Dialog>
                          <AlertDialog>
                            <AlertDialogTrigger asChild>
@@ -248,16 +264,29 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
                 <h4 className="font-medium text-sm">
                   {isCreating ? 'New Note' : 'Edit Note'}
                 </h4>
-                {!isEditing && !isCreating && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <Edit2 className="w-3 h-3 mr-1" />
-                    Edit
-                  </Button>
-                )}
+                 {!isEditing && !isCreating && (
+                   <div className="flex gap-2">
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => setIsEditing(true)}
+                     >
+                       <Edit2 className="w-3 h-3 mr-1" />
+                       Edit
+                     </Button>
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => {
+                         setSelectedNote(null);
+                         setNoteTitle('');
+                         setNoteContent('');
+                       }}
+                     >
+                       Close
+                     </Button>
+                   </div>
+                 )}
               </div>
 
               <div className="space-y-2">
