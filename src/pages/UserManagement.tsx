@@ -511,7 +511,7 @@ export default function UserManagement() {
         newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
       }
 
-      // Update the user's subscription
+      // Update the user's subscription with proper timestamp format
       const { error } = await supabase
         .from('profiles')
         .update({

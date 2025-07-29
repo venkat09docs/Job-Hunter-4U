@@ -62,6 +62,9 @@ serve(async (req) => {
 
     if (!authData.user) throw new Error('Failed to create user account')
 
+    // Wait a bit for the trigger to create the profile, then update it
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
     // Update the profile with the provided information
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -74,6 +77,20 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Profile update error:', profileError)
+      // Retry once if it fails
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const { error: retryError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          full_name,
+          username,
+          email,
+        })
+        .eq('user_id', authData.user.id)
+      
+      if (retryError) {
+        console.error('Profile retry update error:', retryError)
+      }
     }
 
     // Assign the specified role (default is 'user', which is already assigned by trigger)
