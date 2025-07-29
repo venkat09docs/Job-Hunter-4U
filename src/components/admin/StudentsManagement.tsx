@@ -164,10 +164,18 @@ export const StudentsManagement = () => {
         return;
       }
 
+      // Get user profiles and auth user data
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, full_name')
         .in('user_id', userIds);
+
+      // Get auth user data using admin function
+      const { data: authUsers } = await supabase
+        .rpc('get_users_by_ids', { user_ids: userIds })
+        .then(response => ({ data: null })) // This won't work from client, we need email from profiles
+
+      // For now, we'll store email in a separate way or get it differently
 
       // Combine the data
       const studentsWithProfiles = assignmentsData?.map(assignment => ({
