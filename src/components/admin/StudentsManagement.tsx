@@ -504,7 +504,7 @@ export const StudentsManagement = () => {
               {students.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell className="font-medium">
-                    {student.username || 'No Username'}
+                    {student.full_name || student.username || 'No Name'}
                   </TableCell>
                   <TableCell>
                     {student.batch_name} ({student.batch_code})
