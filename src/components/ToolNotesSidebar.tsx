@@ -340,14 +340,12 @@ export const ToolNotesSidebar = ({ toolId }: ToolNotesSidebarProps) => {
               </p>
             )}
           </DialogHeader>
-          <div className="flex-1 overflow-hidden py-4">
-            <ScrollArea className="h-full max-h-[60vh]">
-              <div className="bg-muted/50 p-6 rounded-md border mr-4">
-                <p className="text-base whitespace-pre-wrap leading-relaxed">
-                  {viewingNote?.messages[0]?.content || 'No content'}
-                </p>
-              </div>
-            </ScrollArea>
+          <div className="flex-1 overflow-auto py-4">
+            <div className="bg-muted/50 p-6 rounded-md border mr-4">
+              <p className="text-base whitespace-pre-wrap leading-relaxed">
+                {viewingNote?.messages[0]?.content || 'No content'}
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

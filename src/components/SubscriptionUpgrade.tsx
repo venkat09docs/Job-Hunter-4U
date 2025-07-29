@@ -127,11 +127,13 @@ export const SubscriptionStatus = () => {
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <Calendar className="h-4 w-4 text-green-600" />
-      <span className="text-green-600">{getRemainingDays()} days remaining</span>
+    <div className="flex items-center gap-3 text-sm">
+      <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-green-600" />
+        <span className="text-green-600">{getRemainingDays()} days remaining</span>
+      </div>
       {profile?.subscription_plan && (
-        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium">
           {profile.subscription_plan}
         </span>
       )}

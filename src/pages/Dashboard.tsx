@@ -244,9 +244,12 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Access all premium features with your active subscription
-                    </p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        Access all premium features with your active subscription
+                      </p>
+                      <SubscriptionStatus />
+                    </div>
                     <SubscriptionUpgrade featureName="premium features">
                       <Button 
                         variant="premium" 
