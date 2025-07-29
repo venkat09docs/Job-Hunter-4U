@@ -36,6 +36,37 @@ serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
+    // Check if user has admin or institute_admin role
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', currentUser.id)
+      .single()
+
+    if (roleError || !roleData) {
+      throw new Error('Unable to verify user permissions')
+    }
+
+    const userRole = roleData.role
+    if (userRole !== 'admin' && userRole !== 'institute_admin') {
+      throw new Error('Insufficient permissions. Only admins and institute admins can create students.')
+    }
+
+    // For institute admins, verify they can manage the target institute
+    if (userRole === 'institute_admin') {
+      const { data: adminAssignment, error: assignmentError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', currentUser.id)
+        .eq('institute_id', institute_id)
+        .eq('is_active', true)
+        .single()
+
+      if (assignmentError || !adminAssignment) {
+        throw new Error('You are not authorized to manage students in this institute.')
+      }
+    }
+
     // Create user account using admin client (won't affect current session)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
