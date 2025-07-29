@@ -1,7 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { 
-  BarChart3, 
   User, 
   Settings, 
   ExternalLink,
@@ -12,8 +11,7 @@ import {
   Linkedin,
   Wrench,
   Zap,
-  FileText,
-  Lock
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,9 +28,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
-import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
@@ -57,9 +52,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const { user } = useAuth();
   const { isAdmin } = useRole();
-  const { canAccessFeature } = usePremiumFeatures();
   const [userSlug, setUserSlug] = useState<string | null>(null);
-  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -96,45 +89,16 @@ export function AppSidebar() {
           <SidebarGroupLabel>Digital Career Hub</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => {
-                // Generate feature key from URL (remove /dashboard prefix)
-                const featureKey = item.url.replace('/dashboard/', '').replace('/dashboard', 'dashboard');
-                const canAccess = canAccessFeature(featureKey);
-                const isPremium = !canAccess;
-                
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    {isPremium ? (
-                      <SidebarMenuButton asChild>
-                        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
-                          <DialogTrigger asChild>
-                            <button
-                              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 rounded-md relative"
-                              onClick={() => setPricingDialogOpen(true)}
-                            >
-                              <div className="flex items-center">
-                                <item.icon className="h-4 w-4 text-muted-foreground" />
-                                <span className="ml-3 text-muted-foreground">{item.title}</span>
-                              </div>
-                              <Lock className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[600px]">
-                            <PricingDialog />
-                          </DialogContent>
-                        </Dialog>
-                      </SidebarMenuButton>
-                    ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} end className={getNavCls}>
-                          <item.icon className="h-4 w-4" />
-                          <span className="ml-3">{item.title}</span>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                );
-              })}
+              {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} end className={getNavCls}>
+                      <item.icon className="h-4 w-4" />
+                      <span className="ml-3">{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
