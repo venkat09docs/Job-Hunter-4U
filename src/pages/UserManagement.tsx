@@ -512,6 +512,13 @@ export default function UserManagement() {
       }
 
       // Update the user's subscription with proper timestamp format
+      console.log('Updating subscription for user:', selectedUser.user_id, {
+        subscription_plan: planFormData.subscription_plan,
+        subscription_start_date: now.toISOString(),
+        subscription_end_date: newEndDate.toISOString(),
+        subscription_active: true,
+      });
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -522,7 +529,12 @@ export default function UserManagement() {
         })
         .eq('user_id', selectedUser.user_id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Subscription update error:', error);
+        throw error;
+      }
+
+      console.log('Subscription updated successfully for user:', selectedUser.user_id);
 
       toast({
         title: 'Success',
