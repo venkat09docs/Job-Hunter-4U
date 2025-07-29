@@ -204,7 +204,7 @@ export const StudentsManagement = () => {
     try {
       if (editingStudent) {
         // Update existing assignment
-        const { error } = await supabase
+        const { error: assignmentError } = await supabase
           .from('user_assignments')
           .update({
             batch_id: formData.batch_id,
@@ -212,11 +212,24 @@ export const StudentsManagement = () => {
           })
           .eq('id', editingStudent.id);
 
-        if (error) throw error;
+        if (assignmentError) throw assignmentError;
+
+        // Update student profile if name or email changed
+        if (formData.full_name || formData.email) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              full_name: formData.full_name,
+              email: formData.email,
+            })
+            .eq('user_id', editingStudent.user_id);
+
+          if (profileError) throw profileError;
+        }
 
         toast({
           title: 'Success',
-          description: 'Student assignment updated successfully',
+          description: 'Student updated successfully',
         });
       } else {
         // Create new user account using edge function to avoid auto-login
@@ -339,7 +352,7 @@ export const StudentsManagement = () => {
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
-                {editingStudent ? 'Edit Student Assignment' : 'Add New Student'}
+                {editingStudent ? 'Edit Student' : 'Add New Student'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -352,7 +365,7 @@ export const StudentsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Enter student email"
                   required
-                  disabled={!!editingStudent}
+                  disabled={false}
                 />
               </div>
 
@@ -364,7 +377,7 @@ export const StudentsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                   placeholder="Enter student full name"
                   required
-                  disabled={!!editingStudent}
+                  disabled={false}
                 />
               </div>
 
@@ -415,7 +428,7 @@ export const StudentsManagement = () => {
                   Cancel
                 </Button>
                 <Button type="submit">
-                  {editingStudent ? 'Update Assignment' : 'Add Student'}
+                  {editingStudent ? 'Update Student' : 'Add Student'}
                 </Button>
               </div>
             </form>
