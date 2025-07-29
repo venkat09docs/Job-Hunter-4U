@@ -21,6 +21,7 @@ import LinkedInAutomation from "./pages/LinkedInAutomation";
 import ManageCareerHub from "./pages/ManageCareerHub";
 import ManageSubscriptions from "./pages/ManageSubscriptions";
 import DigitalCareerHub from "./pages/DigitalCareerHub";
+import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -130,6 +131,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DigitalCareerHub />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } 
             />

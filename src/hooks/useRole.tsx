@@ -3,7 +3,7 @@ import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
-type UserRole = 'admin' | 'user' | null;
+type UserRole = 'admin' | 'user' | 'institute_admin' | null;
 
 export const useRole = () => {
   const { user } = useAuth();
@@ -40,11 +40,13 @@ export const useRole = () => {
 
   const isAdmin = role === 'admin';
   const isUser = role === 'user';
+  const isInstituteAdmin = role === 'institute_admin';
 
   return {
     role,
     isAdmin,
     isUser,
+    isInstituteAdmin,
     loading,
     refreshRole: fetchUserRole
   };

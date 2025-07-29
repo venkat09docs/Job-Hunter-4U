@@ -207,6 +207,41 @@ export type Database = {
         }
         Relationships: []
       }
+      institute_admin_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          institute_id: string
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          id?: string
+          institute_id: string
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          id?: string
+          institute_id?: string
+          is_active?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       institutes: {
         Row: {
           address: string | null
@@ -795,6 +830,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_managed_institutes: {
+        Args: { user_id_param: string }
+        Returns: {
+          institute_id: string
+          institute_name: string
+          institute_code: string
+        }[]
+      }
       get_subscription_days_remaining: {
         Args: { user_id_param: string }
         Returns: number
@@ -821,6 +864,10 @@ export type Database = {
       increment_user_analytics: {
         Args: { action_type: string }
         Returns: undefined
+      }
+      is_institute_admin_for: {
+        Args: { user_id_param: string; institute_id_param: string }
+        Returns: boolean
       }
     }
     Enums: {
