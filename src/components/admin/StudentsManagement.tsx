@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Search, UserPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, UserPlus, Download, Users, Filter } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import Papa from 'papaparse';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +32,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Student {
   id: string;
@@ -41,7 +61,10 @@ interface Student {
   batch_code?: string;
   batch_id?: string;
   assigned_at: string;
+  is_active?: boolean;
 }
+
+type FilterType = 'all' | 'active' | 'inactive' | 'batch';
 
 interface Batch {
   id: string;
@@ -63,6 +86,7 @@ export const StudentsManagement = () => {
   const { isAdmin, isInstituteAdmin } = useRole();
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -75,6 +99,18 @@ export const StudentsManagement = () => {
     password: '',
   });
   const [instituteId, setInstituteId] = useState<string>('');
+  
+  // Filter and pagination states
+  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [selectedBatch, setSelectedBatch] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
+  
+  // Bulk operation states
+  const [showBulkBatchDialog, setShowBulkBatchDialog] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [bulkBatchId, setBulkBatchId] = useState<string>('');
 
   useEffect(() => {
     if (isInstituteAdmin || isAdmin) {
@@ -164,6 +200,7 @@ export const StudentsManagement = () => {
       
       if (userIds.length === 0) {
         setStudents([]);
+        setFilteredStudents([]);
         return;
       }
 
@@ -188,10 +225,12 @@ export const StudentsManagement = () => {
           batch_code: assignment.batches?.code,
           batch_id: assignment.batch_id,
           assigned_at: assignment.assigned_at,
+          is_active: true, // Simplified for now - can be enhanced later
         };
       }) || [];
 
       setStudents(studentsWithProfiles as Student[]);
+      applyFilters(studentsWithProfiles as Student[]);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -279,6 +318,172 @@ export const StudentsManagement = () => {
       });
     }
   };
+
+  // Filter and pagination functions
+  const applyFilters = (studentsData: Student[] = students) => {
+    let filtered = [...studentsData];
+
+    // Apply status filter
+    if (filterType === 'active') {
+      filtered = filtered.filter(student => student.is_active);
+    } else if (filterType === 'inactive') {
+      filtered = filtered.filter(student => !student.is_active);
+    }
+
+    // Apply batch filter
+    if (filterType === 'batch' && selectedBatch) {
+      filtered = filtered.filter(student => student.batch_id === selectedBatch);
+    }
+
+    setFilteredStudents(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+    setSelectedStudents(new Set()); // Clear selection when filters change
+  };
+
+  const exportToCSV = () => {
+    const dataToExport = selectedStudents.size > 0 
+      ? filteredStudents.filter(student => selectedStudents.has(student.id))
+      : filteredStudents;
+
+    const csvData = dataToExport.map(student => ({
+      'Student Name': student.full_name || student.username || 'No Name',
+      'Email': student.email || '',
+      'Username': student.username || '',
+      'Batch Name': student.batch_name || '',
+      'Batch Code': student.batch_code || '',
+      'Status': student.is_active ? 'Active' : 'Inactive',
+      'Assigned Date': new Date(student.assigned_at).toLocaleDateString(),
+    }));
+
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `students_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Success',
+      description: `Exported ${dataToExport.length} student records to CSV`,
+    });
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredStudents.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedStudents = filteredStudents.slice(startIndex, endIndex);
+
+  // Bulk operations
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(paginatedStudents.map(student => student.id));
+      setSelectedStudents(allIds);
+    } else {
+      setSelectedStudents(new Set());
+    }
+  };
+
+  const handleSelectStudent = (studentId: string, checked: boolean) => {
+    const newSelected = new Set(selectedStudents);
+    if (checked) {
+      newSelected.add(studentId);
+    } else {
+      newSelected.delete(studentId);
+    }
+    setSelectedStudents(newSelected);
+  };
+
+  const handleBulkBatchAssign = async () => {
+    if (!bulkBatchId || selectedStudents.size === 0) return;
+
+    try {
+      const selectedStudentsList = Array.from(selectedStudents);
+      
+      const { error } = await supabase
+        .from('user_assignments')
+        .update({ batch_id: bulkBatchId })
+        .in('id', selectedStudentsList);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Assigned ${selectedStudents.size} students to batch`,
+      });
+
+      setShowBulkBatchDialog(false);
+      setBulkBatchId('');
+      setSelectedStudents(new Set());
+      fetchData(instituteId);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to assign students to batch',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedStudents.size === 0) return;
+
+    try {
+      const selectedStudentsList = Array.from(selectedStudents);
+      const studentsToDelete = students.filter(s => selectedStudentsList.includes(s.id));
+
+      // Process each student deletion
+      for (const student of studentsToDelete) {
+        // Deactivate user assignments
+        await supabase
+          .from('user_assignments')
+          .update({ is_active: false })
+          .eq('user_id', student.user_id);
+
+        // Delete user roles
+        await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', student.user_id);
+
+        // Delete profile
+        await supabase
+          .from('profiles')
+          .delete()
+          .eq('user_id', student.user_id);
+
+        // Delete from auth.users using admin API
+        const { error: authError } = await supabase.auth.admin.deleteUser(student.user_id);
+        if (authError) {
+          console.error('Auth deletion error:', authError);
+        }
+      }
+
+      toast({
+        title: 'Success',
+        description: `Deleted ${selectedStudents.size} students`,
+      });
+
+      setShowBulkDeleteDialog(false);
+      setSelectedStudents(new Set());
+      fetchData(instituteId);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete students',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Apply filters when filter type or selected batch changes
+  useEffect(() => {
+    applyFilters();
+  }, [filterType, selectedBatch, students]);
 
   const handleEdit = (student: Student) => {
     setEditingStudent(student);
@@ -368,22 +573,31 @@ export const StudentsManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Students Management</h2>
-        <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingStudent(null);
-              setFormData({
-                email: '',
-                full_name: '',
-                username: '',
-                batch_id: '',
-                password: '',
-              });
-            }}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add Student
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={exportToCSV}
+            disabled={filteredStudents.length === 0}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV {selectedStudents.size > 0 && `(${selectedStudents.size})`}
+          </Button>
+          <Dialog open={showForm} onOpenChange={setShowForm}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingStudent(null);
+                setFormData({
+                  email: '',
+                  full_name: '',
+                  username: '',
+                  batch_id: '',
+                  password: '',
+                });
+              }}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>
@@ -481,27 +695,151 @@ export const StudentsManagement = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Filters & Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="filter-type">Filter by Status</Label>
+              <Select
+                value={filterType}
+                onValueChange={(value: FilterType) => setFilterType(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select filter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Students</SelectItem>
+                  <SelectItem value="active">Active Users</SelectItem>
+                  <SelectItem value="inactive">Inactive Users</SelectItem>
+                  <SelectItem value="batch">Filter by Batch</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {filterType === 'batch' && (
+              <div className="flex-1 min-w-[200px]">
+                <Label htmlFor="batch-filter">Select Batch</Label>
+                <Select
+                  value={selectedBatch}
+                  onValueChange={setSelectedBatch}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select batch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {batches.map((batch) => (
+                      <SelectItem key={batch.id} value={batch.id}>
+                        {batch.name} ({batch.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="flex-1 min-w-[150px]">
+              <Label htmlFor="records-per-page">Records per page</Label>
+              <Select
+                value={recordsPerPage.toString()}
+                onValueChange={(value) => {
+                  setRecordsPerPage(Number(value));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedStudents.size > 0 && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowBulkBatchDialog(true)}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Assign to Batch ({selectedStudents.size})
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowBulkDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete ({selectedStudents.size})
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Students ({students.length})</CardTitle>
+          <CardTitle>
+            Students ({filteredStudents.length} of {students.length})
+            {filterType !== 'all' && (
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                - Filtered by {filterType === 'batch' ? `batch: ${batches.find(b => b.id === selectedBatch)?.name}` : filterType}
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={paginatedStudents.length > 0 && paginatedStudents.every(student => selectedStudents.has(student.id))}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all students"
+                  />
+                </TableHead>
                 <TableHead>Student Name</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Batch</TableHead>
                 <TableHead>Assigned Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student) => (
+              {paginatedStudents.map((student) => (
                 <TableRow key={student.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedStudents.has(student.id)}
+                      onCheckedChange={(checked) => handleSelectStudent(student.id, !!checked)}
+                      aria-label={`Select student ${student.full_name || student.username}`}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {student.full_name || student.username || 'No Name'}
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      student.is_active 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                    }`}>
+                      {student.is_active ? 'Active' : 'Inactive'}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {student.batch_name} ({student.batch_code})
@@ -531,13 +869,108 @@ export const StudentsManagement = () => {
               ))}
             </TableBody>
           </Table>
-          {students.length === 0 && (
+          
+          {filteredStudents.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No students found. Add your first student to get started.
+              {filterType === 'all' 
+                ? 'No students found. Add your first student to get started.'
+                : `No students found matching the selected filter: ${filterType}`
+              }
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredStudents.length)} of {filteredStudents.length} students
+              </div>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(pageNum)}
+                        isActive={pageNum === currentPage}
+                        className="cursor-pointer"
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Batch Assignment Dialog */}
+      <AlertDialog open={showBulkBatchDialog} onOpenChange={setShowBulkBatchDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Assign Students to Batch</AlertDialogTitle>
+            <AlertDialogDescription>
+              Assign {selectedStudents.size} selected students to a batch.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="bulk-batch">Select Batch</Label>
+            <Select value={bulkBatchId} onValueChange={setBulkBatchId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a batch" />
+              </SelectTrigger>
+              <SelectContent>
+                {batches.map((batch) => (
+                  <SelectItem key={batch.id} value={batch.id}>
+                    {batch.name} ({batch.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkBatchAssign} disabled={!bulkBatchId}>
+              Assign to Batch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Students</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {selectedStudents.size} selected students? 
+              This action cannot be undone and will remove their accounts permanently.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Students
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
