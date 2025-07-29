@@ -165,21 +165,39 @@ export const StudentsManagement = () => {
       }
 
       // Get user profiles with email and full_name
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, email')
         .in('user_id', userIds);
 
-      const studentsWithProfiles = assignmentsData?.map(assignment => ({
-        id: assignment.id,
-        user_id: assignment.user_id,
-        full_name: profiles?.find(p => p.user_id === assignment.user_id)?.full_name,
-        email: profiles?.find(p => p.user_id === assignment.user_id)?.email,
-        batch_name: assignment.batches?.name,
-        batch_code: assignment.batches?.code,
-        batch_id: assignment.batch_id,
-        assigned_at: assignment.assigned_at,
-      })) || [];
+      console.log('Profiles data:', profiles);
+      console.log('User IDs:', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      const studentsWithProfiles = assignmentsData?.map(assignment => {
+        const profile = profiles?.find(p => p.user_id === assignment.user_id);
+        
+        console.log(`Assignment ${assignment.id}:`, {
+          user_id: assignment.user_id,
+          profile: profile,
+          full_name: profile?.full_name,
+          email: profile?.email
+        });
+        
+        return {
+          id: assignment.id,
+          user_id: assignment.user_id,
+          full_name: profile?.full_name || profile?.email || 'Unknown Student',
+          email: profile?.email || '',
+          batch_name: assignment.batches?.name,
+          batch_code: assignment.batches?.code,
+          batch_id: assignment.batch_id,
+          assigned_at: assignment.assigned_at,
+        };
+      }) || [];
 
       setStudents(studentsWithProfiles as Student[]);
     } catch (error: any) {
