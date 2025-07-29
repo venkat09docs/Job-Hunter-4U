@@ -284,15 +284,22 @@ export const StudentsManagement = () => {
   };
 
   const handleDelete = async (student: Student) => {
-    if (!confirm('Are you sure you want to remove this student from the batch?')) return;
+    if (!confirm(`Are you sure you want to remove ${student.full_name || 'this student'} from the batch? This will also deactivate their user account.`)) return;
 
     try {
-      const { error } = await supabase
+      // Deactivate user assignment
+      const { error: assignmentError } = await supabase
         .from('user_assignments')
         .update({ is_active: false })
         .eq('id', student.id);
 
-      if (error) throw error;
+      if (assignmentError) throw assignmentError;
+
+      // Also deactivate all other assignments for this user if needed
+      await supabase
+        .from('user_assignments')
+        .update({ is_active: false })
+        .eq('user_id', student.user_id);
 
       toast({
         title: 'Success',

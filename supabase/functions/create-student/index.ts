@@ -37,11 +37,11 @@ serve(async (req) => {
     }
 
     // Check if user has admin or institute_admin role
-    const { data: roleData, error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', currentUser.id)
-      .single()
+      .maybeSingle()
 
     if (roleError || !roleData) {
       throw new Error('Unable to verify user permissions')
@@ -54,13 +54,13 @@ serve(async (req) => {
 
     // For institute admins, verify they can manage the target institute
     if (userRole === 'institute_admin') {
-      const { data: adminAssignment, error: assignmentError } = await supabase
+      const { data: adminAssignment, error: assignmentError } = await supabaseAdmin
         .from('institute_admin_assignments')
         .select('institute_id')
         .eq('user_id', currentUser.id)
         .eq('institute_id', institute_id)
         .eq('is_active', true)
-        .single()
+        .maybeSingle()
 
       if (assignmentError || !adminAssignment) {
         throw new Error('You are not authorized to manage students in this institute.')

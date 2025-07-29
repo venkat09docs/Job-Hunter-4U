@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, UserCheck } from 'lucide-react';
+import { Search, Edit, UserCheck, Trash2, User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,7 @@ interface UserProfile {
   user_id: string;
   full_name: string;
   username: string;
+  email: string;
   subscription_active: boolean;
   created_at: string;
 }
@@ -64,10 +65,16 @@ export default function UserManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [newRole, setNewRole] = useState<string>('');
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [selectedInstitute, setSelectedInstitute] = useState<string>('');
+  const [editFormData, setEditFormData] = useState({
+    full_name: '',
+    username: '',
+    email: '',
+  });
 
   useEffect(() => {
     if (isAdmin) {
@@ -83,6 +90,7 @@ export default function UserManagement() {
       const filtered = users.filter(user => 
         user.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.user_id.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredUsers(filtered);
@@ -100,6 +108,7 @@ export default function UserManagement() {
           user_id,
           full_name,
           username,
+          email,
           subscription_active,
           created_at
         `)
@@ -232,6 +241,95 @@ export default function UserManagement() {
     setShowRoleDialog(true);
   };
 
+  const openEditDialog = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setEditFormData({
+      full_name: user.full_name || '',
+      username: user.username || '',
+      email: user.email || '',
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleEditUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: editFormData.full_name,
+          username: editFormData.username,
+          email: editFormData.email,
+        })
+        .eq('user_id', selectedUser.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'User profile updated successfully',
+      });
+
+      setShowEditDialog(false);
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update user profile',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteUser = async (user: UserWithRole) => {
+    if (!confirm(`Are you sure you want to delete ${user.full_name || 'this user'}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Delete user assignments first
+      await supabase
+        .from('user_assignments')
+        .update({ is_active: false })
+        .eq('user_id', user.user_id);
+
+      // Delete institute admin assignments if any
+      await supabase
+        .from('institute_admin_assignments')
+        .delete()
+        .eq('user_id', user.user_id);
+
+      // Delete user roles
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', user.user_id);
+
+      // Delete profile (this should cascade delete other related records)
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'User deleted successfully',
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete user',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -300,12 +398,13 @@ export default function UserManagement() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Username</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Subscription</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                         <TableHead>Name</TableHead>
+                         <TableHead>Username</TableHead>
+                         <TableHead>Email</TableHead>
+                         <TableHead>Role</TableHead>
+                         <TableHead>Subscription</TableHead>
+                         <TableHead>Joined</TableHead>
+                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -314,7 +413,8 @@ export default function UserManagement() {
                           <TableCell className="font-medium">
                             {user.full_name || 'No name set'}
                           </TableCell>
-                          <TableCell>{user.username || 'No username'}</TableCell>
+                           <TableCell>{user.username || 'No username'}</TableCell>
+                           <TableCell>{user.email || 'No email'}</TableCell>
                           <TableCell>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                               user.current_role === 'admin'
@@ -340,14 +440,29 @@ export default function UserManagement() {
                             {new Date(user.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openRoleDialog(user)}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Change Role
-                            </Button>
+                            <div className="flex justify-end space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openRoleDialog(user)}
+                              >
+                                <UserCheck className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -415,6 +530,53 @@ export default function UserManagement() {
                 <Button onClick={handleRoleChange}>
                   <UserCheck className="h-4 w-4 mr-2" />
                   Update Role
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Edit User Profile</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit_full_name">Full Name</Label>
+                  <Input
+                    id="edit_full_name"
+                    value={editFormData.full_name}
+                    onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_username">Username</Label>
+                  <Input
+                    id="edit_username"
+                    value={editFormData.username}
+                    onChange={(e) => setEditFormData({ ...editFormData, username: e.target.value })}
+                    placeholder="Enter username"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_email">Email</Label>
+                  <Input
+                    id="edit_email"
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleEditUser}>
+                  <User className="h-4 w-4 mr-2" />
+                  Update Profile
                 </Button>
               </div>
             </DialogContent>
