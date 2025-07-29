@@ -134,10 +134,18 @@ export const useProfile = () => {
 
   const getRemainingDays = () => {
     if (!profile?.subscription_end_date) return 0;
-    const endDate = new Date(profile.subscription_end_date);
+    
+    // Parse the end date (assuming it's in YYYY-MM-DD format)
+    const endDate = new Date(profile.subscription_end_date + 'T23:59:59.999Z');
     const now = new Date();
-    const diffTime = endDate.getTime() - now.getTime();
+    
+    // Reset current time to start of day for consistent calculation
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    
+    const diffTime = endDay.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
     return Math.max(0, diffDays);
   };
 

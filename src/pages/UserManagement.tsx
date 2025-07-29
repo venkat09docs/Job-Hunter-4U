@@ -88,8 +88,6 @@ export default function UserManagement() {
   });
   const [planFormData, setPlanFormData] = useState({
     subscription_plan: '',
-    subscription_start_date: '',
-    subscription_end_date: '',
   });
   const [availablePlans, setAvailablePlans] = useState<Array<{id: string, name: string, duration_days: number, description: string}>>([]);
 
@@ -411,8 +409,6 @@ export default function UserManagement() {
     setSelectedUser(user);
     setPlanFormData({
       subscription_plan: '',
-      subscription_start_date: '',
-      subscription_end_date: '',
     });
     setShowPlanDialog(true);
   };
@@ -462,25 +458,51 @@ export default function UserManagement() {
     if (!selectedUser || !planFormData.subscription_plan) return;
 
     try {
-      // Calculate end date based on plan if start date is provided
-      let endDate = planFormData.subscription_end_date;
-      if (planFormData.subscription_start_date && !endDate) {
-        const selectedPlan = availablePlans.find(plan => plan.name === planFormData.subscription_plan);
-        if (selectedPlan) {
-          const startDate = new Date(planFormData.subscription_start_date);
-          const endCalculatedDate = new Date(startDate);
-          endCalculatedDate.setDate(startDate.getDate() + selectedPlan.duration_days);
-          endDate = endCalculatedDate.toISOString().split('T')[0];
-        }
+      // Get the selected plan details
+      const selectedPlan = availablePlans.find(plan => plan.name === planFormData.subscription_plan);
+      if (!selectedPlan) {
+        throw new Error('Selected plan not found');
       }
 
+      // Get current user profile to check existing subscription
+      const { data: currentProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('subscription_end_date, subscription_active')
+        .eq('user_id', selectedUser.user_id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      let newEndDate: Date;
+      const now = new Date();
+
+      if (currentProfile?.subscription_active && currentProfile?.subscription_end_date) {
+        // User has active subscription - add days to existing end date
+        const existingEndDate = new Date(currentProfile.subscription_end_date);
+        
+        // If existing subscription hasn't expired yet, add to that date
+        if (existingEndDate > now) {
+          newEndDate = new Date(existingEndDate);
+          newEndDate.setDate(existingEndDate.getDate() + selectedPlan.duration_days);
+        } else {
+          // Existing subscription has expired, start from today
+          newEndDate = new Date(now);
+          newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+        }
+      } else {
+        // User has no active subscription - start from today
+        newEndDate = new Date(now);
+        newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+      }
+
+      // Update the user's subscription
       const { error } = await supabase
         .from('profiles')
         .update({
           subscription_plan: planFormData.subscription_plan,
-          subscription_start_date: planFormData.subscription_start_date || null,
-          subscription_end_date: endDate || null,
-          subscription_active: !!endDate,
+          subscription_start_date: now.toISOString().split('T')[0],
+          subscription_end_date: newEndDate.toISOString().split('T')[0],
+          subscription_active: true,
         })
         .eq('user_id', selectedUser.user_id);
 
@@ -488,15 +510,13 @@ export default function UserManagement() {
 
       toast({
         title: 'Success',
-        description: 'Plan assigned successfully',
+        description: `Plan assigned successfully. ${selectedPlan.duration_days} days added to subscription.`,
       });
 
       setShowPlanDialog(false);
       setSelectedUser(null);
       setPlanFormData({
         subscription_plan: '',
-        subscription_start_date: '',
-        subscription_end_date: '',
       });
       fetchUsers();
     } catch (error: any) {
@@ -862,36 +882,18 @@ export default function UserManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="plan">Subscription Plan</Label>
-                  <Select value={planFormData.subscription_plan} onValueChange={(value) => setPlanFormData({ ...planFormData, subscription_plan: value })}>
+                  <Select value={planFormData.subscription_plan} onValueChange={(value) => setPlanFormData({ subscription_plan: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a plan" />
                     </SelectTrigger>
                      <SelectContent>
                        {availablePlans.map((plan) => (
                          <SelectItem key={plan.id} value={plan.name}>
-                           {plan.name} ({plan.description})
+                           {plan.name} - {plan.duration_days} days ({plan.description})
                          </SelectItem>
                        ))}
                      </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="start_date">Start Date</Label>
-                  <Input
-                    id="start_date"
-                    type="date"
-                    value={planFormData.subscription_start_date}
-                    onChange={(e) => setPlanFormData({ ...planFormData, subscription_start_date: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date</Label>
-                  <Input
-                    id="end_date"
-                    type="date"
-                    value={planFormData.subscription_end_date}
-                    onChange={(e) => setPlanFormData({ ...planFormData, subscription_end_date: e.target.value })}
-                  />
                 </div>
               </div>
               <div className="flex justify-end space-x-2">
