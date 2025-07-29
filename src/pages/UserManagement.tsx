@@ -142,6 +142,8 @@ export default function UserManagement() {
             username,
             email,
             subscription_active,
+            subscription_plan,
+            subscription_end_date,
             created_at
           `)
           .order('created_at', { ascending: false });
@@ -196,6 +198,8 @@ export default function UserManagement() {
             username,
             email,
             subscription_active,
+            subscription_plan,
+            subscription_end_date,
             created_at
           `)
           .in('user_id', userIds)
@@ -578,7 +582,7 @@ export default function UserManagement() {
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
-              onClick={() => navigate(isAdmin ? '/admin/dashboard' : '/dashboard')}
+              onClick={() => navigate(isAdmin ? '/admin' : '/dashboard')}
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="h-4 w-4" />
