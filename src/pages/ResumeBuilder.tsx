@@ -132,6 +132,11 @@ const ResumeBuilder = () => {
     });
   }, [resumeData]);
 
+  // Load existing resume data
+  useEffect(() => {
+    loadResumeData();
+  }, [user]);
+
   const loadResumeData = async () => {
     if (!user) return;
     
@@ -365,10 +370,17 @@ ${resumeData.personalDetails.fullName}`;
   };
 
   const saveSection = useCallback(async (sectionName: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user found for save operation');
+      return;
+    }
+    
+    console.log('Saving section:', sectionName, 'for user:', user.id);
+    console.log('Resume data to save:', resumeData);
     
     try {
       // Use the new upsert function for proper data persistence
+      console.log('Calling upsert_resume_data function...');
       const { data, error } = await supabase.rpc('upsert_resume_data', {
         p_user_id: user.id,
         p_personal_details: resumeData.personalDetails as any,
@@ -386,8 +398,14 @@ ${resumeData.personalDetails.fullName}`;
         p_status: status
       });
 
-      if (error) throw error;
+      console.log('Upsert result:', { data, error });
 
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Section saved successfully:', sectionName);
       setRightColumnContent('preview');
       toast({
         title: `${sectionName} saved!`,
@@ -397,7 +415,7 @@ ${resumeData.personalDetails.fullName}`;
       console.error('Error saving section:', error);
       toast({
         title: 'Error saving section',
-        description: 'Please try again later.',
+        description: `Error: ${error?.message || 'Please try again later.'}`,
         variant: 'destructive'
       });
     }
