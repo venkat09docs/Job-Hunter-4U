@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ interface JobEntry {
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
+  const { progress: resumeProgress } = useResumeProgress();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -186,12 +188,12 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                            strokeDasharray={`${85 * 2.827} ${(100 - 85) * 2.827}`}
+                            strokeDasharray={`${resumeProgress * 2.827} ${(100 - resumeProgress) * 2.827}`}
                             className="transition-all duration-500"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">85%</span>
+                          <span className="text-lg font-bold text-primary">{resumeProgress}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">Resume & Cover Letter</h4>

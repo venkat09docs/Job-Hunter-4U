@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
+import { ResumeProgressBar } from '@/components/ResumeProgressBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,22 @@ const ResumeBuilder = () => {
     awards: [''],
     professionalSummary: ''
   });
+
+  // Use useCallback to prevent re-renders that lose focus
+  const updateResumeData = useCallback((updates: Partial<ResumeData>) => {
+    setResumeData(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const updatePersonalDetails = useCallback((field: string, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      personalDetails: { ...prev.personalDetails, [field]: value }
+    }));
+  }, []);
+
+  const updateProfessionalSummary = useCallback((value: string) => {
+    setResumeData(prev => ({ ...prev, professionalSummary: value }));
+  }, []);
 
   const [checklist, setChecklist] = useState({
     personalInfo: false,
@@ -377,10 +394,10 @@ ${resumeData.personalDetails.fullName}`;
     const suggestions = {
       personalDetails: [
         "Use a professional email address",
-        "Include your LinkedIn profile URL",
-        "Add your location (city, state/country)",
         "Ensure phone number is current and professional",
-        "Consider adding a GitHub profile if relevant to your field"
+        "Include your LinkedIn profile URL",
+        "Keep personal details concise and professional",
+        "Use consistent formatting throughout"
       ],
       experience: [
         "Use action verbs to start each bullet point",
@@ -424,44 +441,49 @@ ${resumeData.personalDetails.fullName}`;
 
   const generateResumePreview = () => {
     return (
-      <div className="space-y-6 text-sm">
-        {/* Personal Details Preview */}
+      <div className="space-y-6 text-sm bg-white p-6 rounded-lg border max-w-full">
+        {/* Header - ATS Optimized */}
         {resumeData.personalDetails.fullName && (
-          <div className="text-center border-b pb-4">
-            <h2 className="text-xl font-bold">{resumeData.personalDetails.fullName}</h2>
-            <div className="text-muted-foreground space-y-1">
-              {resumeData.personalDetails.email && <p>{resumeData.personalDetails.email}</p>}
-              {resumeData.personalDetails.phone && <p>{resumeData.personalDetails.phone}</p>}
-              {resumeData.personalDetails.location && <p>{resumeData.personalDetails.location}</p>}
-              {resumeData.personalDetails.linkedIn && <p>{resumeData.personalDetails.linkedIn}</p>}
+          <div className="border-b-2 border-gray-300 pb-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{resumeData.personalDetails.fullName}</h1>
+            <div className="text-gray-700 space-y-1">
+              {resumeData.personalDetails.email && <div>{resumeData.personalDetails.email}</div>}
+              {resumeData.personalDetails.phone && <div>{resumeData.personalDetails.phone}</div>}
+              {resumeData.personalDetails.linkedIn && <div>{resumeData.personalDetails.linkedIn}</div>}
             </div>
           </div>
         )}
 
-        {/* Professional Summary Preview */}
+        {/* Professional Summary - ATS Optimized */}
         {resumeData.professionalSummary && (
           <div>
-            <h3 className="font-semibold mb-2">Professional Summary</h3>
-            <p className="text-muted-foreground">{resumeData.professionalSummary}</p>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">PROFESSIONAL SUMMARY</h2>
+            <p className="text-gray-700 leading-relaxed">{resumeData.professionalSummary}</p>
           </div>
         )}
 
-        {/* Experience Preview */}
+        {/* Experience - ATS Optimized */}
         {resumeData.experience.some(exp => exp.company || exp.role) && (
           <div>
-            <h3 className="font-semibold mb-2">Experience</h3>
-            <div className="space-y-3">
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">WORK EXPERIENCE</h2>
+            <div className="space-y-4">
               {resumeData.experience.map((exp, index) => (
                 (exp.company || exp.role) && (
                   <div key={index}>
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start mb-1">
                       <div>
-                        <h4 className="font-medium">{exp.role}</h4>
-                        <p className="text-muted-foreground">{exp.company}</p>
+                        <h3 className="font-bold text-gray-900">{exp.role}</h3>
+                        <p className="font-semibold text-gray-700">{exp.company}</p>
                       </div>
-                      {exp.duration && <span className="text-sm text-muted-foreground">{exp.duration}</span>}
+                      {exp.duration && <span className="text-gray-600 font-medium">{exp.duration}</span>}
                     </div>
-                    {exp.description && <p className="text-sm text-muted-foreground mt-1">{exp.description}</p>}
+                    {exp.description && (
+                      <div className="text-gray-700 mt-2">
+                        {exp.description.split('\n').map((line, i) => (
+                          <div key={i} className="mb-1">• {line}</div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )
               ))}
@@ -469,20 +491,22 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
-        {/* Education Preview */}
+        {/* Education - ATS Optimized */}
         {resumeData.education.some(edu => edu.institution || edu.degree) && (
           <div>
-            <h3 className="font-semibold mb-2">Education</h3>
-            <div className="space-y-2">
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">EDUCATION</h2>
+            <div className="space-y-3">
               {resumeData.education.map((edu, index) => (
                 (edu.institution || edu.degree) && (
-                  <div key={index} className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{edu.degree}</h4>
-                      <p className="text-muted-foreground">{edu.institution}</p>
-                      {edu.gpa && <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>}
+                  <div key={index}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-gray-900">{edu.degree}</h3>
+                        <p className="font-semibold text-gray-700">{edu.institution}</p>
+                        {edu.gpa && <p className="text-gray-600">GPA: {edu.gpa}</p>}
+                      </div>
+                      {edu.duration && <span className="text-gray-600 font-medium">{edu.duration}</span>}
                     </div>
-                    {edu.duration && <span className="text-sm text-muted-foreground">{edu.duration}</span>}
                   </div>
                 )
               ))}
@@ -490,13 +514,45 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
-        {/* Skills Preview */}
+        {/* Skills - ATS Optimized */}
         {resumeData.skills.some(skill => skill.trim()) && (
           <div>
-            <h3 className="font-semibold mb-2">Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {resumeData.skills.filter(skill => skill.trim()).map((skill, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">{skill}</Badge>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">SKILLS</h2>
+            <div className="text-gray-700">
+              {resumeData.skills.filter(skill => skill.trim()).join(' • ')}
+            </div>
+          </div>
+        )}
+
+        {/* Interests - ATS Optimized */}
+        {resumeData.interests.some(interest => interest.trim()) && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">INTERESTS</h2>
+            <div className="text-gray-700">
+              {resumeData.interests.filter(interest => interest.trim()).join(' • ')}
+            </div>
+          </div>
+        )}
+
+        {/* Certifications - ATS Optimized */}
+        {resumeData.certifications.some(cert => cert.trim()) && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">CERTIFICATIONS</h2>
+            <div className="space-y-1">
+              {resumeData.certifications.filter(cert => cert.trim()).map((cert, index) => (
+                <div key={index} className="text-gray-700">• {cert}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Awards - ATS Optimized */}
+        {resumeData.awards.some(award => award.trim()) && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">AWARDS</h2>
+            <div className="space-y-1">
+              {resumeData.awards.filter(award => award.trim()).map((award, index) => (
+                <div key={index} className="text-gray-700">• {award}</div>
               ))}
             </div>
           </div>
@@ -593,6 +649,9 @@ ${resumeData.personalDetails.fullName}`;
             </TabsList>
 
             <TabsContent value="resume-builder" className="space-y-6 mt-6">
+              {/* Progress Bar */}
+              <ResumeProgressBar resumeData={resumeData} />
+              
               <div className="grid grid-cols-12 gap-6">
                 {/* Left Column - Form */}
                 <div className="col-span-8 space-y-6">
@@ -601,58 +660,35 @@ ${resumeData.personalDetails.fullName}`;
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="fullName">Full Name</Label>
-                        <Input 
-                          id="fullName"
-                          value={resumeData.personalDetails.fullName}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, fullName: e.target.value }
-                            }));
-                            updateChecklist();
-                          }}
+                           <Input 
+                             id="fullName"
+                             value={resumeData.personalDetails.fullName}
+                             onChange={(e) => updatePersonalDetails('fullName', e.target.value)}
                         />
                       </div>
                       <div>
                         <Label htmlFor="email">Email</Label>
-                        <Input 
-                          id="email"
-                          type="email"
-                          value={resumeData.personalDetails.email}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, email: e.target.value }
-                            }));
-                            updateChecklist();
-                          }}
+                           <Input 
+                             id="email"
+                             type="email"
+                             value={resumeData.personalDetails.email}
+                             onChange={(e) => updatePersonalDetails('email', e.target.value)}
                         />
                       </div>
                       <div>
                         <Label htmlFor="phone">Phone</Label>
-                        <Input 
-                          id="phone"
-                          value={resumeData.personalDetails.phone}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, phone: e.target.value }
-                            }));
-                            updateChecklist();
-                          }}
+                           <Input 
+                             id="phone"
+                             value={resumeData.personalDetails.phone}
+                             onChange={(e) => updatePersonalDetails('phone', e.target.value)}
                         />
                       </div>
                        <div>
                          <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
-                         <Input 
-                           id="linkedin"
-                           value={resumeData.personalDetails.linkedIn || ''}
-                           onChange={(e) => {
-                             setResumeData(prev => ({
-                               ...prev,
-                               personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
-                             }));
-                           }}
+                            <Input 
+                              id="linkedin"
+                              value={resumeData.personalDetails.linkedIn || ''}
+                              onChange={(e) => updatePersonalDetails('linkedIn', e.target.value)}
                          />
                        </div>
                     </div>
@@ -660,13 +696,10 @@ ${resumeData.personalDetails.fullName}`;
 
                   {/* Professional Summary */}
                   <CollapsibleSection title="Professional Summary" sectionKey="summary">
-                    <Textarea 
-                      placeholder="Write a compelling professional summary..."
-                      value={resumeData.professionalSummary}
-                      onChange={(e) => {
-                        setResumeData(prev => ({ ...prev, professionalSummary: e.target.value }));
-                        updateChecklist();
-                      }}
+                       <Textarea 
+                         placeholder="Write a compelling professional summary..."
+                         value={resumeData.professionalSummary}
+                         onChange={(e) => updateProfessionalSummary(e.target.value)}
                       rows={4}
                     />
                   </CollapsibleSection>
