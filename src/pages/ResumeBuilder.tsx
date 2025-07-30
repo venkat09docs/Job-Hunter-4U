@@ -642,45 +642,19 @@ ${resumeData.personalDetails.fullName}`;
                           }}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="location">Location</Label>
-                        <Input 
-                          id="location"
-                          value={resumeData.personalDetails.location}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, location: e.target.value }
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
-                        <Input 
-                          id="linkedin"
-                          value={resumeData.personalDetails.linkedIn}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="github">GitHub (Optional)</Label>
-                        <Input 
-                          id="github"
-                          value={resumeData.personalDetails.github}
-                          onChange={(e) => {
-                            setResumeData(prev => ({
-                              ...prev,
-                              personalDetails: { ...prev.personalDetails, github: e.target.value }
-                            }));
-                          }}
-                        />
-                      </div>
+                       <div>
+                         <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
+                         <Input 
+                           id="linkedin"
+                           value={resumeData.personalDetails.linkedIn || ''}
+                           onChange={(e) => {
+                             setResumeData(prev => ({
+                               ...prev,
+                               personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
+                             }));
+                           }}
+                         />
+                       </div>
                     </div>
                   </CollapsibleSection>
 

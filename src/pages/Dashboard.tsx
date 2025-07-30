@@ -153,81 +153,204 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* 6-Step Process */}
+            {/* My Profile Status */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" />
-                    Your Job Search Journey
+                    My Profile Status
                   </CardTitle>
                   <CardDescription>
-                    Follow these 6 essential steps to maximize your career opportunities
+                    Track your progress across all career development areas
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div 
-                      className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => navigate('/dashboard/resume-builder')}
-                    >
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        1
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Resume & Cover Letter Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${85 * 2.827} ${(100 - 85) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">85%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Resume & Cover Letter</h4>
-                        <p className="text-sm text-muted-foreground">Craft compelling documents</p>
-                      </div>
+                      <h4 className="font-medium text-center">Resume & Cover Letter</h4>
+                      <p className="text-sm text-muted-foreground text-center">Documents completed</p>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        2
+
+                    {/* LinkedIn Profile Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${60 * 2.827} ${(100 - 60) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">60%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">LinkedIn Profile</h4>
-                        <p className="text-sm text-muted-foreground">Optimize your professional presence</p>
-                      </div>
+                      <h4 className="font-medium text-center">LinkedIn Profile</h4>
+                      <p className="text-sm text-muted-foreground text-center">Profile optimization</p>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        3
+
+                    {/* GitHub & Blog Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${40 * 2.827} ${(100 - 40) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">40%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">GitHub & Blog Management</h4>
-                        <p className="text-sm text-muted-foreground">Showcase your technical skills</p>
-                      </div>
+                      <h4 className="font-medium text-center">GitHub & Blog</h4>
+                      <p className="text-sm text-muted-foreground text-center">Technical showcase</p>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        4
+
+                    {/* Job Search Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${75 * 2.827} ${(100 - 75) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">75%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Job Search</h4>
-                        <p className="text-sm text-muted-foreground">Find and apply to opportunities</p>
-                      </div>
+                      <h4 className="font-medium text-center">Job Search</h4>
+                      <p className="text-sm text-muted-foreground text-center">Applications submitted</p>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        5
+
+                    {/* LinkedIn Network Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${30 * 2.827} ${(100 - 30) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">30%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">LinkedIn Network</h4>
-                        <p className="text-sm text-muted-foreground">Build meaningful connections</p>
-                      </div>
+                      <h4 className="font-medium text-center">LinkedIn Network</h4>
+                      <p className="text-sm text-muted-foreground text-center">Professional connections</p>
                     </div>
-                    
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
-                        6
+
+                    {/* Enhancements Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${50 * 2.827} ${(100 - 50) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">50%</span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium">Enhancements</h4>
-                        <p className="text-sm text-muted-foreground">Continuous improvement</p>
-                      </div>
+                      <h4 className="font-medium text-center">Enhancements</h4>
+                      <p className="text-sm text-muted-foreground text-center">Continuous improvement</p>
                     </div>
                   </div>
                 </CardContent>

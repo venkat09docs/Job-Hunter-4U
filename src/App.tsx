@@ -24,6 +24,7 @@ import DigitalCareerHub from "./pages/DigitalCareerHub";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import ResumeBuilder from "./pages/ResumeBuilder";
+import MyProfileJourney from "./pages/MyProfileJourney";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -157,6 +158,14 @@ const App = () => (
                 <ResumeBuilder />
               </ProtectedRoute>
             } />
+            <Route 
+              path="/dashboard/my-profile-journey" 
+              element={
+                <ProtectedRoute>
+                  <MyProfileJourney />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="/blogs" element={<PublicBlogs />} />
             <Route path="/profile/:slug" element={<PublicProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
