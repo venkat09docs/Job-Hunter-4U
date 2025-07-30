@@ -7,13 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit } from 'lucide-react';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ChevronDown, ChevronRight, Target } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -58,6 +59,16 @@ const ResumeBuilder = () => {
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  
+  // Sidebar suggestions state
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    personalDetails: false,
+    experience: false,
+    education: false,
+    skills: false,
+    certifications: false,
+    summary: false
+  });
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalDetails: {
@@ -94,6 +105,71 @@ const ResumeBuilder = () => {
       skills: resumeData.skills.some(skill => skill.trim()),
       summary: !!resumeData.professionalSummary.trim()
     });
+  };
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const getSectionSuggestions = (section: string) => {
+    switch (section) {
+      case 'personalDetails':
+        return {
+          title: 'Personal Details Tips',
+          content: `• Use a professional email address
+• Include a complete phone number with area code
+• Consider adding your LinkedIn profile URL
+• Keep location general (city, state) for privacy
+• Use your full legal name as it appears on official documents`
+        };
+      case 'experience':
+        return {
+          title: 'Experience Enhancement',
+          content: `• Start each bullet point with strong action verbs
+• Quantify achievements with specific numbers and metrics
+• Focus on results and impact, not just responsibilities
+• Tailor experience to match job requirements
+• Keep descriptions concise but impactful (2-3 bullet points per role)`
+        };
+      case 'education':
+        return {
+          title: 'Education Optimization',
+          content: `• List most recent education first
+• Include relevant coursework for recent graduates
+• Mention honors, dean's list, or academic achievements
+• Only include GPA if it's 3.5 or higher
+• Add relevant certifications or additional training`
+        };
+      case 'skills':
+        return {
+          title: 'Skills & Interests Strategy',
+          content: `• Mix technical and soft skills relevant to your field
+• Group similar skills together (Programming, Marketing, etc.)
+• Include interests that show personality and cultural fit
+• Avoid outdated technologies unless specifically required
+• Be honest about proficiency levels`
+        };
+      case 'certifications':
+        return {
+          title: 'Certifications & Awards',
+          content: `• List industry-relevant certifications prominently
+• Include expiration dates for time-sensitive certifications
+• Mention any ongoing professional development
+• Highlight awards that demonstrate professional excellence
+• Include volunteer work that shows leadership skills`
+        };
+      case 'summary':
+        return {
+          title: 'Professional Summary Guide',
+          content: `• Keep it concise (3-4 sentences maximum)
+• Highlight your unique value proposition
+• Include years of experience and key specializations
+• Mention 2-3 key achievements or skills
+• Tailor it to the specific role you're targeting`
+        };
+      default:
+        return { title: 'Resume Tips', content: 'Fill out this section to get specific suggestions.' };
+    }
   };
 
   const addArrayItem = (field: keyof ResumeData, defaultValue: any) => {
@@ -273,7 +349,9 @@ ${resumeData.personalDetails.fullName}`;
 
           {/* Main Content */}
           <main className="flex-1 p-8 overflow-auto">
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="flex gap-8 max-w-7xl mx-auto">
+              {/* Left Column - Form */}
+              <div className="flex-1 space-y-8">
               {/* Status and Checklist */}
               <div className="grid md:grid-cols-2 gap-6">
                 <Card>
@@ -800,6 +878,179 @@ ${resumeData.personalDetails.fullName}`;
                   <Download className="h-4 w-4" />
                   Download Resume
                 </Button>
+                </div>
+              </div>
+
+              {/* Right Column - Suggestions Sidebar */}
+              <div className="w-80 space-y-4">
+                <Card className="sticky top-4">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Smart Suggestions
+                    </CardTitle>
+                    <CardDescription>
+                      Click on sections below to get targeted advice
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {/* Personal Details Suggestion */}
+                    <Collapsible 
+                      open={openSections.personalDetails} 
+                      onOpenChange={() => toggleSection('personalDetails')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Personal Details</span>
+                          {openSections.personalDetails ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('personalDetails').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('personalDetails').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Experience Suggestion */}
+                    <Collapsible 
+                      open={openSections.experience} 
+                      onOpenChange={() => toggleSection('experience')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Experience</span>
+                          {openSections.experience ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('experience').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('experience').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Education Suggestion */}
+                    <Collapsible 
+                      open={openSections.education} 
+                      onOpenChange={() => toggleSection('education')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Education</span>
+                          {openSections.education ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('education').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('education').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Skills & Interests Suggestion */}
+                    <Collapsible 
+                      open={openSections.skills} 
+                      onOpenChange={() => toggleSection('skills')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Skills & Interests</span>
+                          {openSections.skills ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('skills').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('skills').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Certifications & Awards Suggestion */}
+                    <Collapsible 
+                      open={openSections.certifications} 
+                      onOpenChange={() => toggleSection('certifications')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Certifications & Awards</span>
+                          {openSections.certifications ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('certifications').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('certifications').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Professional Summary Suggestion */}
+                    <Collapsible 
+                      open={openSections.summary} 
+                      onOpenChange={() => toggleSection('summary')}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" className="w-full justify-between p-2">
+                          <span className="text-sm font-medium">Professional Summary</span>
+                          {openSections.summary ? 
+                            <ChevronDown className="h-4 w-4" /> : 
+                            <ChevronRight className="h-4 w-4" />
+                          }
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-2 pb-2">
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {getSectionSuggestions('summary').title}
+                          </h4>
+                          <p className="whitespace-pre-line">
+                            {getSectionSuggestions('summary').content}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </main>
