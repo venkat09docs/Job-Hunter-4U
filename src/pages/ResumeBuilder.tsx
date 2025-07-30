@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -182,7 +182,7 @@ const ResumeBuilder = () => {
     });
   };
 
-  const toggleSection = (section: string) => {
+  const toggleSection = useCallback((section: string) => {
     const isOpening = !openSections[section];
     setOpenSections(prev => ({ ...prev, [section]: isOpening }));
     
@@ -194,28 +194,28 @@ const ResumeBuilder = () => {
       // Show preview when closing a section
       setRightColumnContent('preview');
     }
-  };
+  }, [openSections]);
 
-  const addArrayItem = (field: keyof ResumeData, defaultValue: any) => {
+  const addArrayItem = useCallback((field: keyof ResumeData, defaultValue: any) => {
     setResumeData(prev => ({
       ...prev,
       [field]: [...(prev[field] as any[]), defaultValue]
     }));
-  };
+  }, []);
 
-  const removeArrayItem = (field: keyof ResumeData, index: number) => {
+  const removeArrayItem = useCallback((field: keyof ResumeData, index: number) => {
     setResumeData(prev => ({
       ...prev,
       [field]: (prev[field] as any[]).filter((_, i) => i !== index)
     }));
-  };
+  }, []);
 
-  const updateArrayItem = (field: keyof ResumeData, index: number, value: any) => {
+  const updateArrayItem = useCallback((field: keyof ResumeData, index: number, value: any) => {
     setResumeData(prev => ({
       ...prev,
       [field]: (prev[field] as any[]).map((item, i) => i === index ? value : item)
     }));
-  };
+  }, []);
 
   const generateResumeSuggestions = async () => {
     setLoading(true);
@@ -353,7 +353,7 @@ ${resumeData.personalDetails.fullName}`;
     }
   };
 
-  const saveSection = async (sectionName: string) => {
+  const saveSection = useCallback(async (sectionName: string) => {
     if (!user) return;
     
     try {
@@ -388,7 +388,7 @@ ${resumeData.personalDetails.fullName}`;
         variant: 'destructive'
       });
     }
-  };
+  }, [user, resumeData]);
 
   const getSuggestions = (section: SectionType) => {
     const suggestions = {
@@ -561,7 +561,7 @@ ${resumeData.personalDetails.fullName}`;
     );
   };
 
-  const CollapsibleSection = ({ 
+  const CollapsibleSection = useMemo(() => ({ 
     title, 
     sectionKey, 
     children 
@@ -608,7 +608,7 @@ ${resumeData.personalDetails.fullName}`;
         </CollapsibleContent>
       </Card>
     </Collapsible>
-  );
+  ), [openSections, saveSection]);
 
   return (
     <div className="min-h-screen bg-gradient-hero">
