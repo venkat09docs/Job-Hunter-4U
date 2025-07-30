@@ -944,6 +944,19 @@ export type Database = {
         Args: { user_id_param: string; institute_id_param: string }
         Returns: boolean
       }
+      upsert_resume_data: {
+        Args: {
+          p_user_id: string
+          p_personal_details: Json
+          p_experience: Json
+          p_education: Json
+          p_skills_interests: Json
+          p_certifications_awards: Json
+          p_professional_summary: string
+          p_status: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "institute_admin"
