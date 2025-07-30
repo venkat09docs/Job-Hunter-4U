@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { ResumeProgressBar } from '@/components/ResumeProgressBar';
@@ -182,19 +182,6 @@ const ResumeBuilder = () => {
     });
   };
 
-  const toggleSection = useCallback((section: string) => {
-    const isOpening = !openSections[section];
-    setOpenSections(prev => ({ ...prev, [section]: isOpening }));
-    
-    if (isOpening) {
-      // Show suggestions when opening a section
-      setActiveSuggestionSection(section as SectionType);
-      setRightColumnContent('suggestions');
-    } else {
-      // Show preview when closing a section
-      setRightColumnContent('preview');
-    }
-  }, [openSections]);
 
   const addArrayItem = useCallback((field: keyof ResumeData, defaultValue: any) => {
     setResumeData(prev => ({
@@ -561,54 +548,19 @@ ${resumeData.personalDetails.fullName}`;
     );
   };
 
-  const CollapsibleSection = useMemo(() => ({ 
-    title, 
-    sectionKey, 
-    children 
-  }: { 
-    title: string; 
-    sectionKey: string; 
-    children: React.ReactNode;
-  }) => (
-    <Collapsible
-      open={openSections[sectionKey]}
-      onOpenChange={() => toggleSection(sectionKey)}
-    >
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              {title}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  {openSections[sectionKey] ? (
-                    <Minus className="h-4 w-4" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-          </div>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="space-y-4">
-            {children}
-            <Button
-              size="sm"
-              onClick={() => saveSection(title)}
-              className="flex items-center gap-1"
-            >
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
-  ), [openSections, saveSection]);
+  const handleSectionToggle = useCallback((sectionKey: string) => {
+    const isOpening = !openSections[sectionKey];
+    setOpenSections(prev => ({ ...prev, [sectionKey]: isOpening }));
+    
+    if (isOpening) {
+      // Show suggestions when opening a section
+      setActiveSuggestionSection(sectionKey as SectionType);
+      setRightColumnContent('suggestions');
+    } else {
+      // Show preview when closing a section
+      setRightColumnContent('preview');
+    }
+  }, [openSections]);
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -655,8 +607,13 @@ ${resumeData.personalDetails.fullName}`;
               <div className="grid grid-cols-12 gap-6">
                 {/* Left Column - Form */}
                 <div className="col-span-8 space-y-6">
-                  {/* Personal Details */}
-                  <CollapsibleSection title="Personal Details" sectionKey="personalDetails">
+                  <CollapsibleSection 
+                    title="Personal Details" 
+                    sectionKey="personalDetails"
+                    isOpen={openSections.personalDetails}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="fullName">Full Name</Label>
@@ -694,8 +651,13 @@ ${resumeData.personalDetails.fullName}`;
                     </div>
                   </CollapsibleSection>
 
-                  {/* Professional Summary */}
-                  <CollapsibleSection title="Professional Summary" sectionKey="summary">
+                  <CollapsibleSection 
+                    title="Professional Summary" 
+                    sectionKey="summary"
+                    isOpen={openSections.summary}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                        <Textarea 
                          placeholder="Write a compelling professional summary..."
                          value={resumeData.professionalSummary}
@@ -705,7 +667,13 @@ ${resumeData.personalDetails.fullName}`;
                   </CollapsibleSection>
 
                   {/* Experience */}
-                  <CollapsibleSection title="Experience" sectionKey="experience">
+                  <CollapsibleSection 
+                    title="Experience" 
+                    sectionKey="experience"
+                    isOpen={openSections.experience}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                     <div className="space-y-6">
                       <div className="flex justify-end">
                         <Button 
@@ -776,7 +744,13 @@ ${resumeData.personalDetails.fullName}`;
                   </CollapsibleSection>
 
                   {/* Education */}
-                  <CollapsibleSection title="Education Details" sectionKey="education">
+                  <CollapsibleSection 
+                    title="Education Details" 
+                    sectionKey="education"
+                    isOpen={openSections.education}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                     <div className="space-y-6">
                       <div className="flex justify-end">
                         <Button 
@@ -845,7 +819,13 @@ ${resumeData.personalDetails.fullName}`;
                   </CollapsibleSection>
 
                   {/* Skills & Interests */}
-                  <CollapsibleSection title="Key Skills & Interests" sectionKey="skills">
+                  <CollapsibleSection 
+                    title="Key Skills & Interests" 
+                    sectionKey="skills"
+                    isOpen={openSections.skills}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <div className="flex items-center justify-between mb-4">
@@ -919,7 +899,13 @@ ${resumeData.personalDetails.fullName}`;
                   </CollapsibleSection>
 
                   {/* Certifications & Awards */}
-                  <CollapsibleSection title="Certifications & Awards" sectionKey="certifications">
+                  <CollapsibleSection 
+                    title="Certifications & Awards" 
+                    sectionKey="certifications"
+                    isOpen={openSections.certifications}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <div className="flex items-center justify-between mb-4">
