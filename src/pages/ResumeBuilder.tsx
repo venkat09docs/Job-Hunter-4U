@@ -285,33 +285,33 @@ ${resumeData.personalDetails.fullName}`;
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('resume_data')
-        .upsert({
-          user_id: user.id,
-          personal_details: resumeData.personalDetails as any,
-          experience: resumeData.experience as any,
-          education: resumeData.education as any,
-          skills_interests: {
-            skills: resumeData.skills.filter(skill => skill.trim()),
-            interests: resumeData.interests.filter(interest => interest.trim())
-          } as any,
-          certifications_awards: [
-            ...resumeData.certifications.filter(cert => cert.trim()),
-            ...resumeData.awards.filter(award => award.trim())
-          ] as any,
-          professional_summary: resumeData.professionalSummary,
-          status: 'finalized'
-        });
+      // Use the new upsert function for proper data persistence
+      const { data, error } = await supabase.rpc('upsert_resume_data', {
+        p_user_id: user.id,
+        p_personal_details: resumeData.personalDetails as any,
+        p_experience: resumeData.experience as any,
+        p_education: resumeData.education as any,
+        p_skills_interests: {
+          skills: resumeData.skills.filter(skill => skill.trim()),
+          interests: resumeData.interests.filter(interest => interest.trim())
+        } as any,
+        p_certifications_awards: [
+          ...resumeData.certifications.filter(cert => cert.trim()),
+          ...resumeData.awards.filter(award => award.trim())
+        ] as any,
+        p_professional_summary: resumeData.professionalSummary,
+        p_status: 'finalized'
+      });
 
       if (error) throw error;
 
       setStatus('finalized');
       toast({
         title: 'Resume saved successfully!',
-        description: 'Your resume data has been saved to your profile.',
+        description: 'Your resume data has been saved permanently to your profile.',
       });
     } catch (error) {
+      console.error('Error saving resume:', error);
       toast({
         title: 'Error saving resume',
         description: 'Please try again later.',
@@ -344,38 +344,40 @@ ${resumeData.personalDetails.fullName}`;
     if (!user) return;
     
     try {
-      await supabase
-        .from('resume_data')
-        .upsert({
-          user_id: user.id,
-          personal_details: resumeData.personalDetails as any,
-          experience: resumeData.experience as any,
-          education: resumeData.education as any,
-          skills_interests: {
-            skills: resumeData.skills.filter(skill => skill.trim()),
-            interests: resumeData.interests.filter(interest => interest.trim())
-          } as any,
-          certifications_awards: [
-            ...resumeData.certifications.filter(cert => cert.trim()),
-            ...resumeData.awards.filter(award => award.trim())
-          ] as any,
-          professional_summary: resumeData.professionalSummary,
-          status: status
-        });
+      // Use the new upsert function for proper data persistence
+      const { data, error } = await supabase.rpc('upsert_resume_data', {
+        p_user_id: user.id,
+        p_personal_details: resumeData.personalDetails as any,
+        p_experience: resumeData.experience as any,
+        p_education: resumeData.education as any,
+        p_skills_interests: {
+          skills: resumeData.skills.filter(skill => skill.trim()),
+          interests: resumeData.interests.filter(interest => interest.trim())
+        } as any,
+        p_certifications_awards: [
+          ...resumeData.certifications.filter(cert => cert.trim()),
+          ...resumeData.awards.filter(award => award.trim())
+        ] as any,
+        p_professional_summary: resumeData.professionalSummary,
+        p_status: status
+      });
+
+      if (error) throw error;
 
       setRightColumnContent('preview');
       toast({
         title: `${sectionName} saved!`,
-        description: 'Your changes have been saved.',
+        description: 'Your changes have been saved permanently.',
       });
     } catch (error) {
+      console.error('Error saving section:', error);
       toast({
         title: 'Error saving section',
         description: 'Please try again later.',
         variant: 'destructive'
       });
     }
-  }, [user, resumeData]);
+  }, [user, resumeData, status]);
 
   const getSuggestions = (section: SectionType) => {
     const suggestions = {
