@@ -6,15 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ChevronDown, ChevronRight, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -53,6 +53,7 @@ type StatusType = 'draft' | 'finalized' | 'downloaded';
 const ResumeBuilder = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<StatusType>('draft');
   const [loading, setLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState('');
@@ -60,7 +61,7 @@ const ResumeBuilder = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
   
-  // Sidebar suggestions state
+  // Form sections collapse state
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     personalDetails: false,
     experience: false,
@@ -69,6 +70,8 @@ const ResumeBuilder = () => {
     certifications: false,
     summary: false
   });
+
+  const [activeTab, setActiveTab] = useState('resume-builder');
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalDetails: {
@@ -109,67 +112,6 @@ const ResumeBuilder = () => {
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const getSectionSuggestions = (section: string) => {
-    switch (section) {
-      case 'personalDetails':
-        return {
-          title: 'Personal Details Tips',
-          content: `• Use a professional email address
-• Include a complete phone number with area code
-• Consider adding your LinkedIn profile URL
-• Keep location general (city, state) for privacy
-• Use your full legal name as it appears on official documents`
-        };
-      case 'experience':
-        return {
-          title: 'Experience Enhancement',
-          content: `• Start each bullet point with strong action verbs
-• Quantify achievements with specific numbers and metrics
-• Focus on results and impact, not just responsibilities
-• Tailor experience to match job requirements
-• Keep descriptions concise but impactful (2-3 bullet points per role)`
-        };
-      case 'education':
-        return {
-          title: 'Education Optimization',
-          content: `• List most recent education first
-• Include relevant coursework for recent graduates
-• Mention honors, dean's list, or academic achievements
-• Only include GPA if it's 3.5 or higher
-• Add relevant certifications or additional training`
-        };
-      case 'skills':
-        return {
-          title: 'Skills & Interests Strategy',
-          content: `• Mix technical and soft skills relevant to your field
-• Group similar skills together (Programming, Marketing, etc.)
-• Include interests that show personality and cultural fit
-• Avoid outdated technologies unless specifically required
-• Be honest about proficiency levels`
-        };
-      case 'certifications':
-        return {
-          title: 'Certifications & Awards',
-          content: `• List industry-relevant certifications prominently
-• Include expiration dates for time-sensitive certifications
-• Mention any ongoing professional development
-• Highlight awards that demonstrate professional excellence
-• Include volunteer work that shows leadership skills`
-        };
-      case 'summary':
-        return {
-          title: 'Professional Summary Guide',
-          content: `• Keep it concise (3-4 sentences maximum)
-• Highlight your unique value proposition
-• Include years of experience and key specializations
-• Mention 2-3 key achievements or skills
-• Tailor it to the specific role you're targeting`
-        };
-      default:
-        return { title: 'Resume Tips', content: 'Fill out this section to get specific suggestions.' };
-    }
   };
 
   const addArrayItem = (field: keyof ResumeData, defaultValue: any) => {
@@ -324,191 +266,206 @@ ${resumeData.personalDetails.fullName}`;
     }
   };
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Resume Builder
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <SubscriptionStatus />
-                <UserProfileDropdown />
-              </div>
+  const saveSection = async (sectionName: string) => {
+    toast({
+      title: `${sectionName} saved!`,
+      description: 'Your changes have been saved.',
+    });
+  };
+
+  const CollapsibleSection = ({ 
+    title, 
+    sectionKey, 
+    children 
+  }: { 
+    title: string; 
+    sectionKey: string; 
+    children: React.ReactNode;
+  }) => (
+    <Collapsible
+      open={openSections[sectionKey]}
+      onOpenChange={() => toggleSection(sectionKey)}
+    >
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              {title}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={() => saveSection(title)}
+                className="flex items-center gap-1"
+              >
+                <Save className="h-4 w-4" />
+                Save
+              </Button>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  {openSections[sectionKey] ? (
+                    <Minus className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
             </div>
-          </header>
+          </div>
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent>
+            {children}
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
 
-          {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
-            <div className="flex gap-8 max-w-7xl mx-auto">
-              {/* Left Column - Form */}
-              <div className="flex-1 space-y-8">
-              {/* Status and Checklist */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Status Tracker
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge()}
-                      <span className="text-sm text-muted-foreground">
-                        Current status
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
+  return (
+    <div className="min-h-screen bg-gradient-hero">
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Resume & Cover Letter Builder
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <SubscriptionStatus />
+            <UserProfileDropdown />
+          </div>
+        </div>
+      </header>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5" />
-                      Resume Checklist
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {Object.entries(checklist).map(([key, completed]) => (
-                        <div key={key} className="flex items-center gap-2">
-                          <CheckCircle className={`h-4 w-4 ${completed ? 'text-green-500' : 'text-muted-foreground'}`} />
-                          <span className={`text-sm ${completed ? 'text-foreground' : 'text-muted-foreground'}`}>
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-auto">
+        <div className="max-w-7xl mx-auto">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="resume-builder">Resume Builder</TabsTrigger>
+              <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
+              <TabsTrigger value="status-tracker">Status Tracker</TabsTrigger>
+              <TabsTrigger value="resume-analyzer">Resume Analyzer</TabsTrigger>
+            </TabsList>
 
+            <TabsContent value="resume-builder" className="space-y-6 mt-6">
               {/* Personal Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Personal Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input 
-                        id="fullName"
-                        value={resumeData.personalDetails.fullName}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, fullName: e.target.value }
-                          }));
-                          updateChecklist();
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email"
-                        type="email"
-                        value={resumeData.personalDetails.email}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, email: e.target.value }
-                          }));
-                          updateChecklist();
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input 
-                        id="phone"
-                        value={resumeData.personalDetails.phone}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, phone: e.target.value }
-                          }));
-                          updateChecklist();
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="location">Location</Label>
-                      <Input 
-                        id="location"
-                        value={resumeData.personalDetails.location}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, location: e.target.value }
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
-                      <Input 
-                        id="linkedin"
-                        value={resumeData.personalDetails.linkedIn}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="github">GitHub (Optional)</Label>
-                      <Input 
-                        id="github"
-                        value={resumeData.personalDetails.github}
-                        onChange={(e) => {
-                          setResumeData(prev => ({
-                            ...prev,
-                            personalDetails: { ...prev.personalDetails, github: e.target.value }
-                          }));
-                        }}
-                      />
-                    </div>
+              <CollapsibleSection title="Personal Details" sectionKey="personalDetails">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input 
+                      id="fullName"
+                      value={resumeData.personalDetails.fullName}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, fullName: e.target.value }
+                        }));
+                        updateChecklist();
+                      }}
+                    />
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email"
+                      type="email"
+                      value={resumeData.personalDetails.email}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, email: e.target.value }
+                        }));
+                        updateChecklist();
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input 
+                      id="phone"
+                      value={resumeData.personalDetails.phone}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, phone: e.target.value }
+                        }));
+                        updateChecklist();
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input 
+                      id="location"
+                      value={resumeData.personalDetails.location}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, location: e.target.value }
+                        }));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
+                    <Input 
+                      id="linkedin"
+                      value={resumeData.personalDetails.linkedIn}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
+                        }));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="github">GitHub (Optional)</Label>
+                    <Input 
+                      id="github"
+                      value={resumeData.personalDetails.github}
+                      onChange={(e) => {
+                        setResumeData(prev => ({
+                          ...prev,
+                          personalDetails: { ...prev.personalDetails, github: e.target.value }
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+              </CollapsibleSection>
 
               {/* Professional Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Professional Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea 
-                    placeholder="Write a compelling professional summary..."
-                    value={resumeData.professionalSummary}
-                    onChange={(e) => {
-                      setResumeData(prev => ({ ...prev, professionalSummary: e.target.value }));
-                      updateChecklist();
-                    }}
-                    rows={4}
-                  />
-                </CardContent>
-              </Card>
+              <CollapsibleSection title="Professional Summary" sectionKey="summary">
+                <Textarea 
+                  placeholder="Write a compelling professional summary..."
+                  value={resumeData.professionalSummary}
+                  onChange={(e) => {
+                    setResumeData(prev => ({ ...prev, professionalSummary: e.target.value }));
+                    updateChecklist();
+                  }}
+                  rows={4}
+                />
+              </CollapsibleSection>
 
               {/* Experience */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Experience</CardTitle>
+              <CollapsibleSection title="Experience" sectionKey="experience">
+                <div className="space-y-6">
+                  <div className="flex justify-end">
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -518,8 +475,6 @@ ${resumeData.personalDetails.fullName}`;
                       Add Experience
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
                   {resumeData.experience.map((exp, index) => (
                     <div key={index} className="border rounded-lg p-4 space-y-4">
                       <div className="flex justify-between items-start">
@@ -575,14 +530,13 @@ ${resumeData.personalDetails.fullName}`;
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Education */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Education</CardTitle>
+              <CollapsibleSection title="Education Details" sectionKey="education">
+                <div className="space-y-6">
+                  <div className="flex justify-end">
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -592,8 +546,6 @@ ${resumeData.personalDetails.fullName}`;
                       Add Education
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
                   {resumeData.education.map((edu, index) => (
                     <div key={index} className="border rounded-lg p-4 space-y-4">
                       <div className="flex justify-between items-start">
@@ -647,15 +599,15 @@ ${resumeData.personalDetails.fullName}`;
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Skills & Interests */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Key Skills</CardTitle>
+              <CollapsibleSection title="Key Skills & Interests" sectionKey="skills">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium">Key Skills</h4>
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -664,36 +616,34 @@ ${resumeData.personalDetails.fullName}`;
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {resumeData.skills.map((skill, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input 
-                          value={skill}
-                          onChange={(e) => {
-                            updateArrayItem('skills', index, e.target.value);
-                            updateChecklist();
-                          }}
-                          placeholder="Enter a skill"
-                        />
-                        {resumeData.skills.length > 1 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeArrayItem('skills', index)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Interests</CardTitle>
+                    <div className="space-y-2">
+                      {resumeData.skills.map((skill, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input 
+                            value={skill}
+                            onChange={(e) => {
+                              updateArrayItem('skills', index, e.target.value);
+                              updateChecklist();
+                            }}
+                            placeholder="Enter a skill"
+                          />
+                          {resumeData.skills.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeArrayItem('skills', index)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium">Interests</h4>
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -702,36 +652,36 @@ ${resumeData.personalDetails.fullName}`;
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {resumeData.interests.map((interest, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input 
-                          value={interest}
-                          onChange={(e) => updateArrayItem('interests', index, e.target.value)}
-                          placeholder="Enter an interest"
-                        />
-                        {resumeData.interests.length > 1 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeArrayItem('interests', index)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+                    <div className="space-y-2">
+                      {resumeData.interests.map((interest, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input 
+                            value={interest}
+                            onChange={(e) => updateArrayItem('interests', index, e.target.value)}
+                            placeholder="Enter an interest"
+                          />
+                          {resumeData.interests.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeArrayItem('interests', index)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
 
               {/* Certifications & Awards */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Certifications</CardTitle>
+              <CollapsibleSection title="Certifications & Awards" sectionKey="certifications">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium">Certifications</h4>
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -740,33 +690,31 @@ ${resumeData.personalDetails.fullName}`;
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {resumeData.certifications.map((cert, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input 
-                          value={cert}
-                          onChange={(e) => updateArrayItem('certifications', index, e.target.value)}
-                          placeholder="Enter a certification"
-                        />
-                        {resumeData.certifications.length > 1 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeArrayItem('certifications', index)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
+                    <div className="space-y-2">
+                      {resumeData.certifications.map((cert, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input 
+                            value={cert}
+                            onChange={(e) => updateArrayItem('certifications', index, e.target.value)}
+                            placeholder="Enter a certification"
+                          />
+                          {resumeData.certifications.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeArrayItem('certifications', index)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>Awards</CardTitle>
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium">Awards</h4>
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -775,29 +723,29 @@ ${resumeData.personalDetails.fullName}`;
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {resumeData.awards.map((award, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input 
-                          value={award}
-                          onChange={(e) => updateArrayItem('awards', index, e.target.value)}
-                          placeholder="Enter an award"
-                        />
-                        {resumeData.awards.length > 1 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeArrayItem('awards', index)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+                    <div className="space-y-2">
+                      {resumeData.awards.map((award, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input 
+                            value={award}
+                            onChange={(e) => updateArrayItem('awards', index, e.target.value)}
+                            placeholder="Enter an award"
+                          />
+                          {resumeData.awards.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeArrayItem('awards', index)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CollapsibleSection>
 
               {/* Action Buttons */}
               <div className="flex gap-4">
@@ -810,13 +758,20 @@ ${resumeData.personalDetails.fullName}`;
                   Generate Resume Suggestions
                 </Button>
                 <Button 
-                  variant="outline"
-                  onClick={generateCoverLetter}
+                  onClick={saveToSupabase}
                   disabled={loading}
                   className="gap-2"
                 >
-                  <FileEdit className="h-4 w-4" />
-                  Generate Cover Letter
+                  <CheckCircle className="h-4 w-4" />
+                  Save Final Version
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={downloadResume}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download Resume
                 </Button>
               </div>
 
@@ -839,224 +794,110 @@ ${resumeData.personalDetails.fullName}`;
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
 
-              {/* Cover Letter */}
-              {showCoverLetter && (
+            <TabsContent value="cover-letter" className="space-y-6 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Cover Letter Generator</CardTitle>
+                  <CardDescription>
+                    Generate a personalized cover letter based on your resume data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button 
+                    onClick={generateCoverLetter}
+                    disabled={loading}
+                    className="gap-2"
+                  >
+                    <FileEdit className="h-4 w-4" />
+                    Generate Cover Letter
+                  </Button>
+
+                  {showCoverLetter && (
+                    <div className="space-y-4">
+                      <Label>Generated Cover Letter (Editable)</Label>
+                      <Textarea 
+                        value={coverLetterSuggestions}
+                        onChange={(e) => setCoverLetterSuggestions(e.target.value)}
+                        rows={12}
+                        className="font-mono text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm">Save Cover Letter</Button>
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="status-tracker" className="space-y-6 mt-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>AI Generated Cover Letter</CardTitle>
-                    <CardDescription>
-                      Customize this cover letter for your applications
-                    </CardDescription>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Status Tracker
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Textarea 
-                      value={coverLetterSuggestions}
-                      onChange={(e) => setCoverLetterSuggestions(e.target.value)}
-                      rows={12}
-                      className="font-mono text-sm"
-                    />
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge()}
+                      <span className="text-sm text-muted-foreground">
+                        Current status
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Save and Download */}
-              <div className="flex gap-4">
-                <Button 
-                  onClick={saveToSupabase}
-                  disabled={loading}
-                  className="gap-2"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Save Final Version
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={downloadResume}
-                  className="gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Resume
-                </Button>
-                </div>
-              </div>
-
-              {/* Right Column - Suggestions Sidebar */}
-              <div className="w-80 space-y-4">
-                <Card className="sticky top-4">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Smart Suggestions
+                      <CheckCircle className="h-5 w-5" />
+                      Resume Checklist
                     </CardTitle>
-                    <CardDescription>
-                      Click on sections below to get targeted advice
-                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    {/* Personal Details Suggestion */}
-                    <Collapsible 
-                      open={openSections.personalDetails} 
-                      onOpenChange={() => toggleSection('personalDetails')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Personal Details</span>
-                          {openSections.personalDetails ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('personalDetails').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('personalDetails').content}
-                          </p>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {Object.entries(checklist).map(([key, completed]) => (
+                        <div key={key} className="flex items-center gap-2">
+                          <CheckCircle className={`h-4 w-4 ${completed ? 'text-green-500' : 'text-muted-foreground'}`} />
+                          <span className={`text-sm ${completed ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </span>
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Experience Suggestion */}
-                    <Collapsible 
-                      open={openSections.experience} 
-                      onOpenChange={() => toggleSection('experience')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Experience</span>
-                          {openSections.experience ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('experience').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('experience').content}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Education Suggestion */}
-                    <Collapsible 
-                      open={openSections.education} 
-                      onOpenChange={() => toggleSection('education')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Education</span>
-                          {openSections.education ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('education').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('education').content}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Skills & Interests Suggestion */}
-                    <Collapsible 
-                      open={openSections.skills} 
-                      onOpenChange={() => toggleSection('skills')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Skills & Interests</span>
-                          {openSections.skills ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('skills').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('skills').content}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Certifications & Awards Suggestion */}
-                    <Collapsible 
-                      open={openSections.certifications} 
-                      onOpenChange={() => toggleSection('certifications')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Certifications & Awards</span>
-                          {openSections.certifications ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('certifications').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('certifications').content}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Professional Summary Suggestion */}
-                    <Collapsible 
-                      open={openSections.summary} 
-                      onOpenChange={() => toggleSection('summary')}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between p-2">
-                          <span className="text-sm font-medium">Professional Summary</span>
-                          {openSections.summary ? 
-                            <ChevronDown className="h-4 w-4" /> : 
-                            <ChevronRight className="h-4 w-4" />
-                          }
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="px-2 pb-2">
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          <h4 className="font-medium text-foreground">
-                            {getSectionSuggestions('summary').title}
-                          </h4>
-                          <p className="whitespace-pre-line">
-                            {getSectionSuggestions('summary').content}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
-            </div>
-          </main>
+            </TabsContent>
+
+            <TabsContent value="resume-analyzer" className="space-y-6 mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Resume Analyzer</CardTitle>
+                  <CardDescription>
+                    Coming soon - Analyze your resume for ATS compatibility and optimization
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Resume analysis feature will be available soon</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 
