@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save } from 'lucide-react';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -49,6 +49,7 @@ interface ResumeData {
 }
 
 type StatusType = 'draft' | 'finalized' | 'downloaded';
+type SectionType = 'personalDetails' | 'experience' | 'education' | 'skills' | 'certifications' | 'summary';
 
 const ResumeBuilder = () => {
   const { user } = useAuth();
@@ -60,6 +61,10 @@ const ResumeBuilder = () => {
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  
+  // Right column state
+  const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
+  const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
   
   // Form sections collapse state
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -99,6 +104,56 @@ const ResumeBuilder = () => {
     summary: false
   });
 
+  // Load existing resume data
+  useEffect(() => {
+    loadResumeData();
+  }, [user]);
+
+  const loadResumeData = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('resume_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        const personalDetails = data.personal_details as any || {};
+        const experience = Array.isArray(data.experience) ? (data.experience as unknown as Experience[]) : [{ company: '', role: '', duration: '', description: '' }];
+        const education = Array.isArray(data.education) ? (data.education as unknown as Education[]) : [{ institution: '', degree: '', duration: '', gpa: '' }];
+        const skillsInterests = data.skills_interests as any || {};
+        const certAwards = Array.isArray(data.certifications_awards) ? (data.certifications_awards as unknown as string[]) : [''];
+
+        setResumeData({
+          personalDetails: {
+            fullName: personalDetails.fullName || '',
+            email: personalDetails.email || '',
+            phone: personalDetails.phone || '',
+            location: personalDetails.location || '',
+            linkedIn: personalDetails.linkedIn || '',
+            github: personalDetails.github || ''
+          },
+          experience: experience,
+          education: education,
+          skills: Array.isArray(skillsInterests.skills) ? skillsInterests.skills : [''],
+          interests: Array.isArray(skillsInterests.interests) ? skillsInterests.interests : [''],
+          certifications: certAwards,
+          awards: [''],
+          professionalSummary: data.professional_summary || ''
+        });
+        setStatus(data.status as StatusType || 'draft');
+      }
+    } catch (error) {
+      console.error('Error loading resume data:', error);
+    }
+  };
+
   // Update checklist based on form data
   const updateChecklist = () => {
     setChecklist({
@@ -111,7 +166,17 @@ const ResumeBuilder = () => {
   };
 
   const toggleSection = (section: string) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+    const isOpening = !openSections[section];
+    setOpenSections(prev => ({ ...prev, [section]: isOpening }));
+    
+    if (isOpening) {
+      // Show suggestions when opening a section
+      setActiveSuggestionSection(section as SectionType);
+      setRightColumnContent('suggestions');
+    } else {
+      // Show preview when closing a section
+      setRightColumnContent('preview');
+    }
   };
 
   const addArrayItem = (field: keyof ResumeData, defaultValue: any) => {
@@ -217,17 +282,22 @@ ${resumeData.personalDetails.fullName}`;
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('portfolios')
+        .from('resume_data')
         .upsert({
           user_id: user.id,
-          full_name: resumeData.personalDetails.fullName,
-          email: resumeData.personalDetails.email,
-          phone: resumeData.personalDetails.phone,
-          location: resumeData.personalDetails.location,
+          personal_details: resumeData.personalDetails as any,
           experience: resumeData.experience as any,
           education: resumeData.education as any,
-          skills: resumeData.skills.filter(skill => skill.trim()) as any,
-          parsed_summary: resumeData.professionalSummary
+          skills_interests: {
+            skills: resumeData.skills.filter(skill => skill.trim()),
+            interests: resumeData.interests.filter(interest => interest.trim())
+          } as any,
+          certifications_awards: [
+            ...resumeData.certifications.filter(cert => cert.trim()),
+            ...resumeData.awards.filter(award => award.trim())
+          ] as any,
+          professional_summary: resumeData.professionalSummary,
+          status: 'finalized'
         });
 
       if (error) throw error;
@@ -267,10 +337,172 @@ ${resumeData.personalDetails.fullName}`;
   };
 
   const saveSection = async (sectionName: string) => {
-    toast({
-      title: `${sectionName} saved!`,
-      description: 'Your changes have been saved.',
-    });
+    if (!user) return;
+    
+    try {
+      await supabase
+        .from('resume_data')
+        .upsert({
+          user_id: user.id,
+          personal_details: resumeData.personalDetails as any,
+          experience: resumeData.experience as any,
+          education: resumeData.education as any,
+          skills_interests: {
+            skills: resumeData.skills.filter(skill => skill.trim()),
+            interests: resumeData.interests.filter(interest => interest.trim())
+          } as any,
+          certifications_awards: [
+            ...resumeData.certifications.filter(cert => cert.trim()),
+            ...resumeData.awards.filter(award => award.trim())
+          ] as any,
+          professional_summary: resumeData.professionalSummary,
+          status: status
+        });
+
+      setRightColumnContent('preview');
+      toast({
+        title: `${sectionName} saved!`,
+        description: 'Your changes have been saved.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error saving section',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const getSuggestions = (section: SectionType) => {
+    const suggestions = {
+      personalDetails: [
+        "Use a professional email address",
+        "Include your LinkedIn profile URL",
+        "Add your location (city, state/country)",
+        "Ensure phone number is current and professional",
+        "Consider adding a GitHub profile if relevant to your field"
+      ],
+      experience: [
+        "Use action verbs to start each bullet point",
+        "Quantify achievements with numbers and percentages",
+        "Focus on accomplishments, not just responsibilities",
+        "Include relevant keywords from job descriptions",
+        "Keep descriptions concise but impactful"
+      ],
+      education: [
+        "List education in reverse chronological order",
+        "Include GPA if 3.5 or higher",
+        "Add relevant coursework for entry-level positions",
+        "Include academic honors and achievements",
+        "Mention relevant projects or thesis topics"
+      ],
+      skills: [
+        "Organize skills by category (Technical, Soft Skills, etc.)",
+        "Include both hard and soft skills",
+        "Match skills to job requirements",
+        "Be honest about proficiency levels",
+        "Include relevant certifications and tools"
+      ],
+      certifications: [
+        "List certifications in reverse chronological order",
+        "Include expiration dates if applicable",
+        "Add professional awards and recognitions",
+        "Include relevant volunteer work",
+        "Mention publications or speaking engagements"
+      ],
+      summary: [
+        "Keep it concise (3-4 sentences)",
+        "Highlight your unique value proposition",
+        "Include years of experience and key skills",
+        "Tailor to the specific role you're applying for",
+        "Use keywords from the job description"
+      ]
+    };
+    
+    return suggestions[section] || [];
+  };
+
+  const generateResumePreview = () => {
+    return (
+      <div className="space-y-6 text-sm">
+        {/* Personal Details Preview */}
+        {resumeData.personalDetails.fullName && (
+          <div className="text-center border-b pb-4">
+            <h2 className="text-xl font-bold">{resumeData.personalDetails.fullName}</h2>
+            <div className="text-muted-foreground space-y-1">
+              {resumeData.personalDetails.email && <p>{resumeData.personalDetails.email}</p>}
+              {resumeData.personalDetails.phone && <p>{resumeData.personalDetails.phone}</p>}
+              {resumeData.personalDetails.location && <p>{resumeData.personalDetails.location}</p>}
+              {resumeData.personalDetails.linkedIn && <p>{resumeData.personalDetails.linkedIn}</p>}
+            </div>
+          </div>
+        )}
+
+        {/* Professional Summary Preview */}
+        {resumeData.professionalSummary && (
+          <div>
+            <h3 className="font-semibold mb-2">Professional Summary</h3>
+            <p className="text-muted-foreground">{resumeData.professionalSummary}</p>
+          </div>
+        )}
+
+        {/* Experience Preview */}
+        {resumeData.experience.some(exp => exp.company || exp.role) && (
+          <div>
+            <h3 className="font-semibold mb-2">Experience</h3>
+            <div className="space-y-3">
+              {resumeData.experience.map((exp, index) => (
+                (exp.company || exp.role) && (
+                  <div key={index}>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{exp.role}</h4>
+                        <p className="text-muted-foreground">{exp.company}</p>
+                      </div>
+                      {exp.duration && <span className="text-sm text-muted-foreground">{exp.duration}</span>}
+                    </div>
+                    {exp.description && <p className="text-sm text-muted-foreground mt-1">{exp.description}</p>}
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Education Preview */}
+        {resumeData.education.some(edu => edu.institution || edu.degree) && (
+          <div>
+            <h3 className="font-semibold mb-2">Education</h3>
+            <div className="space-y-2">
+              {resumeData.education.map((edu, index) => (
+                (edu.institution || edu.degree) && (
+                  <div key={index} className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{edu.degree}</h4>
+                      <p className="text-muted-foreground">{edu.institution}</p>
+                      {edu.gpa && <p className="text-sm text-muted-foreground">GPA: {edu.gpa}</p>}
+                    </div>
+                    {edu.duration && <span className="text-sm text-muted-foreground">{edu.duration}</span>}
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Skills Preview */}
+        {resumeData.skills.some(skill => skill.trim()) && (
+          <div>
+            <h3 className="font-semibold mb-2">Skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {resumeData.skills.filter(skill => skill.trim()).map((skill, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">{skill}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const CollapsibleSection = ({ 
@@ -293,14 +525,6 @@ ${resumeData.personalDetails.fullName}`;
               {title}
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => saveSection(title)}
-                className="flex items-center gap-1"
-              >
-                <Save className="h-4 w-4" />
-                Save
-              </Button>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm">
                   {openSections[sectionKey] ? (
@@ -314,8 +538,16 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent>
+          <CardContent className="space-y-4">
             {children}
+            <Button
+              size="sm"
+              onClick={() => saveSection(title)}
+              className="flex items-center gap-1"
+            >
+              <Save className="h-4 w-4" />
+              Save
+            </Button>
           </CardContent>
         </CollapsibleContent>
       </Card>
@@ -361,439 +593,513 @@ ${resumeData.personalDetails.fullName}`;
             </TabsList>
 
             <TabsContent value="resume-builder" className="space-y-6 mt-6">
-              {/* Personal Details */}
-              <CollapsibleSection title="Personal Details" sectionKey="personalDetails">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input 
-                      id="fullName"
-                      value={resumeData.personalDetails.fullName}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, fullName: e.target.value }
-                        }));
-                        updateChecklist();
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email"
-                      type="email"
-                      value={resumeData.personalDetails.email}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, email: e.target.value }
-                        }));
-                        updateChecklist();
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input 
-                      id="phone"
-                      value={resumeData.personalDetails.phone}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, phone: e.target.value }
-                        }));
-                        updateChecklist();
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="location">Location</Label>
-                    <Input 
-                      id="location"
-                      value={resumeData.personalDetails.location}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, location: e.target.value }
-                        }));
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
-                    <Input 
-                      id="linkedin"
-                      value={resumeData.personalDetails.linkedIn}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
-                        }));
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="github">GitHub (Optional)</Label>
-                    <Input 
-                      id="github"
-                      value={resumeData.personalDetails.github}
-                      onChange={(e) => {
-                        setResumeData(prev => ({
-                          ...prev,
-                          personalDetails: { ...prev.personalDetails, github: e.target.value }
-                        }));
-                      }}
-                    />
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Professional Summary */}
-              <CollapsibleSection title="Professional Summary" sectionKey="summary">
-                <Textarea 
-                  placeholder="Write a compelling professional summary..."
-                  value={resumeData.professionalSummary}
-                  onChange={(e) => {
-                    setResumeData(prev => ({ ...prev, professionalSummary: e.target.value }));
-                    updateChecklist();
-                  }}
-                  rows={4}
-                />
-              </CollapsibleSection>
-
-              {/* Experience */}
-              <CollapsibleSection title="Experience" sectionKey="experience">
-                <div className="space-y-6">
-                  <div className="flex justify-end">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => addArrayItem('experience', { company: '', role: '', duration: '', description: '' })}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Experience
-                    </Button>
-                  </div>
-                  {resumeData.experience.map((exp, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium">Experience {index + 1}</h4>
-                        {resumeData.experience.length > 1 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => removeArrayItem('experience', index)}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Company</Label>
-                          <Input 
-                            value={exp.company}
-                            onChange={(e) => {
-                              updateArrayItem('experience', index, { ...exp, company: e.target.value });
-                              updateChecklist();
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Label>Role</Label>
-                          <Input 
-                            value={exp.role}
-                            onChange={(e) => {
-                              updateArrayItem('experience', index, { ...exp, role: e.target.value });
-                              updateChecklist();
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Label>Duration</Label>
-                          <Input 
-                            placeholder="e.g., Jan 2020 - Dec 2022"
-                            value={exp.duration}
-                            onChange={(e) => updateArrayItem('experience', index, { ...exp, duration: e.target.value })}
-                          />
-                        </div>
+              <div className="grid grid-cols-12 gap-6">
+                {/* Left Column - Form */}
+                <div className="col-span-8 space-y-6">
+                  {/* Personal Details */}
+                  <CollapsibleSection title="Personal Details" sectionKey="personalDetails">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="fullName">Full Name</Label>
+                        <Input 
+                          id="fullName"
+                          value={resumeData.personalDetails.fullName}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, fullName: e.target.value }
+                            }));
+                            updateChecklist();
+                          }}
+                        />
                       </div>
                       <div>
-                        <Label>Description</Label>
-                        <Textarea 
-                          placeholder="Describe your responsibilities and achievements..."
-                          value={exp.description}
-                          onChange={(e) => updateArrayItem('experience', index, { ...exp, description: e.target.value })}
-                          rows={3}
+                        <Label htmlFor="email">Email</Label>
+                        <Input 
+                          id="email"
+                          type="email"
+                          value={resumeData.personalDetails.email}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, email: e.target.value }
+                            }));
+                            updateChecklist();
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input 
+                          id="phone"
+                          value={resumeData.personalDetails.phone}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, phone: e.target.value }
+                            }));
+                            updateChecklist();
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input 
+                          id="location"
+                          value={resumeData.personalDetails.location}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, location: e.target.value }
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
+                        <Input 
+                          id="linkedin"
+                          value={resumeData.personalDetails.linkedIn}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, linkedIn: e.target.value }
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="github">GitHub (Optional)</Label>
+                        <Input 
+                          id="github"
+                          value={resumeData.personalDetails.github}
+                          onChange={(e) => {
+                            setResumeData(prev => ({
+                              ...prev,
+                              personalDetails: { ...prev.personalDetails, github: e.target.value }
+                            }));
+                          }}
                         />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CollapsibleSection>
+                  </CollapsibleSection>
 
-              {/* Education */}
-              <CollapsibleSection title="Education Details" sectionKey="education">
-                <div className="space-y-6">
-                  <div className="flex justify-end">
+                  {/* Professional Summary */}
+                  <CollapsibleSection title="Professional Summary" sectionKey="summary">
+                    <Textarea 
+                      placeholder="Write a compelling professional summary..."
+                      value={resumeData.professionalSummary}
+                      onChange={(e) => {
+                        setResumeData(prev => ({ ...prev, professionalSummary: e.target.value }));
+                        updateChecklist();
+                      }}
+                      rows={4}
+                    />
+                  </CollapsibleSection>
+
+                  {/* Experience */}
+                  <CollapsibleSection title="Experience" sectionKey="experience">
+                    <div className="space-y-6">
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('experience', { company: '', role: '', duration: '', description: '' })}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Experience
+                        </Button>
+                      </div>
+                      {resumeData.experience.map((exp, index) => (
+                        <div key={index} className="border rounded-lg p-4 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Experience {index + 1}</h4>
+                            {resumeData.experience.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('experience', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Company</Label>
+                              <Input 
+                                value={exp.company}
+                                onChange={(e) => {
+                                  updateArrayItem('experience', index, { ...exp, company: e.target.value });
+                                  updateChecklist();
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Role</Label>
+                              <Input 
+                                value={exp.role}
+                                onChange={(e) => {
+                                  updateArrayItem('experience', index, { ...exp, role: e.target.value });
+                                  updateChecklist();
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Duration</Label>
+                              <Input 
+                                placeholder="e.g., Jan 2020 - Dec 2022"
+                                value={exp.duration}
+                                onChange={(e) => updateArrayItem('experience', index, { ...exp, duration: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Description</Label>
+                            <Textarea 
+                              placeholder="Describe your responsibilities and achievements..."
+                              value={exp.description}
+                              onChange={(e) => updateArrayItem('experience', index, { ...exp, description: e.target.value })}
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Education */}
+                  <CollapsibleSection title="Education Details" sectionKey="education">
+                    <div className="space-y-6">
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('education', { institution: '', degree: '', duration: '', gpa: '' })}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Education
+                        </Button>
+                      </div>
+                      {resumeData.education.map((edu, index) => (
+                        <div key={index} className="border rounded-lg p-4 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Education {index + 1}</h4>
+                            {resumeData.education.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('education', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Institution</Label>
+                              <Input 
+                                value={edu.institution}
+                                onChange={(e) => {
+                                  updateArrayItem('education', index, { ...edu, institution: e.target.value });
+                                  updateChecklist();
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Degree</Label>
+                              <Input 
+                                value={edu.degree}
+                                onChange={(e) => {
+                                  updateArrayItem('education', index, { ...edu, degree: e.target.value });
+                                  updateChecklist();
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <Label>Duration</Label>
+                              <Input 
+                                placeholder="e.g., 2018 - 2022"
+                                value={edu.duration}
+                                onChange={(e) => updateArrayItem('education', index, { ...edu, duration: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label>GPA (Optional)</Label>
+                              <Input 
+                                value={edu.gpa}
+                                onChange={(e) => updateArrayItem('education', index, { ...edu, gpa: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Skills & Interests */}
+                  <CollapsibleSection title="Key Skills & Interests" sectionKey="skills">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Key Skills</h4>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => addArrayItem('skills', '')}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {resumeData.skills.map((skill, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input 
+                                value={skill}
+                                onChange={(e) => {
+                                  updateArrayItem('skills', index, e.target.value);
+                                  updateChecklist();
+                                }}
+                                placeholder="Enter a skill"
+                              />
+                              {resumeData.skills.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => removeArrayItem('skills', index)}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Interests</h4>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => addArrayItem('interests', '')}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {resumeData.interests.map((interest, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input 
+                                value={interest}
+                                onChange={(e) => updateArrayItem('interests', index, e.target.value)}
+                                placeholder="Enter an interest"
+                              />
+                              {resumeData.interests.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => removeArrayItem('interests', index)}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Certifications & Awards */}
+                  <CollapsibleSection title="Certifications & Awards" sectionKey="certifications">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Certifications</h4>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => addArrayItem('certifications', '')}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {resumeData.certifications.map((cert, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input 
+                                value={cert}
+                                onChange={(e) => updateArrayItem('certifications', index, e.target.value)}
+                                placeholder="Enter a certification"
+                              />
+                              {resumeData.certifications.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => removeArrayItem('certifications', index)}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium">Awards</h4>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => addArrayItem('awards', '')}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {resumeData.awards.map((award, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input 
+                                value={award}
+                                onChange={(e) => updateArrayItem('awards', index, e.target.value)}
+                                placeholder="Enter an award"
+                              />
+                              {resumeData.awards.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => removeArrayItem('awards', index)}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4">
                     <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => addArrayItem('education', { institution: '', degree: '', duration: '', gpa: '' })}
+                      onClick={generateResumeSuggestions}
+                      disabled={loading}
+                      className="gap-2"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Education
+                      <Sparkles className="h-4 w-4" />
+                      Generate Resume Suggestions
+                    </Button>
+                    <Button 
+                      onClick={saveToSupabase}
+                      disabled={loading}
+                      className="gap-2"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Save Final Version
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={downloadResume}
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Resume
                     </Button>
                   </div>
-                  {resumeData.education.map((edu, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-4">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium">Education {index + 1}</h4>
-                        {resumeData.education.length > 1 && (
-                          <Button 
-                            variant="ghost" 
+
+                  {/* AI Suggestions */}
+                  {showSuggestions && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>AI Resume Suggestions</CardTitle>
+                        <CardDescription>
+                          Review and edit these AI-generated suggestions
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Textarea 
+                          value={aiSuggestions}
+                          onChange={(e) => setAiSuggestions(e.target.value)}
+                          rows={10}
+                          className="font-mono text-sm"
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Right Column - Suggestions/Preview */}
+                <div className="col-span-4">
+                  <Card className="sticky top-4">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2">
+                          {rightColumnContent === 'suggestions' ? (
+                            <>
+                              <Sparkles className="h-5 w-5" />
+                              Suggestions
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-5 w-5" />
+                              Resume Preview
+                            </>
+                          )}
+                        </CardTitle>
+                        <div className="flex gap-1">
+                          <Button
+                            variant={rightColumnContent === 'suggestions' ? 'default' : 'ghost'}
                             size="sm"
-                            onClick={() => removeArrayItem('education', index)}
+                            onClick={() => setRightColumnContent('suggestions')}
                           >
-                            <Minus className="h-4 w-4" />
+                            Tips
                           </Button>
-                        )}
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Institution</Label>
-                          <Input 
-                            value={edu.institution}
-                            onChange={(e) => {
-                              updateArrayItem('education', index, { ...edu, institution: e.target.value });
-                              updateChecklist();
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Label>Degree</Label>
-                          <Input 
-                            value={edu.degree}
-                            onChange={(e) => {
-                              updateArrayItem('education', index, { ...edu, degree: e.target.value });
-                              updateChecklist();
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Label>Duration</Label>
-                          <Input 
-                            placeholder="e.g., 2018 - 2022"
-                            value={edu.duration}
-                            onChange={(e) => updateArrayItem('education', index, { ...edu, duration: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label>GPA (Optional)</Label>
-                          <Input 
-                            value={edu.gpa}
-                            onChange={(e) => updateArrayItem('education', index, { ...edu, gpa: e.target.value })}
-                          />
+                          <Button
+                            variant={rightColumnContent === 'preview' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setRightColumnContent('preview')}
+                          >
+                            Preview
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </CardHeader>
+                    <CardContent>
+                      {rightColumnContent === 'suggestions' ? (
+                        <div className="space-y-4">
+                          {activeSuggestionSection ? (
+                            <div>
+                              <h4 className="font-medium mb-3 capitalize">
+                                {activeSuggestionSection.replace(/([A-Z])/g, ' $1').trim()} Tips
+                              </h4>
+                              <ul className="space-y-2 text-sm">
+                                {getSuggestions(activeSuggestionSection).map((suggestion, index) => (
+                                  <li key={index} className="flex gap-2">
+                                    <span className="text-primary">•</span>
+                                    <span>{suggestion}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ) : (
+                            <div className="text-center text-muted-foreground">
+                              <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>Click on a section to see specific tips and suggestions</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="max-h-96 overflow-y-auto">
+                          {generateResumePreview()}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
-              </CollapsibleSection>
-
-              {/* Skills & Interests */}
-              <CollapsibleSection title="Key Skills & Interests" sectionKey="skills">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium">Key Skills</h4>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addArrayItem('skills', '')}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {resumeData.skills.map((skill, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input 
-                            value={skill}
-                            onChange={(e) => {
-                              updateArrayItem('skills', index, e.target.value);
-                              updateChecklist();
-                            }}
-                            placeholder="Enter a skill"
-                          />
-                          {resumeData.skills.length > 1 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeArrayItem('skills', index)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium">Interests</h4>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addArrayItem('interests', '')}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {resumeData.interests.map((interest, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input 
-                            value={interest}
-                            onChange={(e) => updateArrayItem('interests', index, e.target.value)}
-                            placeholder="Enter an interest"
-                          />
-                          {resumeData.interests.length > 1 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeArrayItem('interests', index)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Certifications & Awards */}
-              <CollapsibleSection title="Certifications & Awards" sectionKey="certifications">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium">Certifications</h4>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addArrayItem('certifications', '')}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {resumeData.certifications.map((cert, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input 
-                            value={cert}
-                            onChange={(e) => updateArrayItem('certifications', index, e.target.value)}
-                            placeholder="Enter a certification"
-                          />
-                          {resumeData.certifications.length > 1 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeArrayItem('certifications', index)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium">Awards</h4>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => addArrayItem('awards', '')}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {resumeData.awards.map((award, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input 
-                            value={award}
-                            onChange={(e) => updateArrayItem('awards', index, e.target.value)}
-                            placeholder="Enter an award"
-                          />
-                          {resumeData.awards.length > 1 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removeArrayItem('awards', index)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <Button 
-                  onClick={generateResumeSuggestions}
-                  disabled={loading}
-                  className="gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Generate Resume Suggestions
-                </Button>
-                <Button 
-                  onClick={saveToSupabase}
-                  disabled={loading}
-                  className="gap-2"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Save Final Version
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={downloadResume}
-                  className="gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download Resume
-                </Button>
               </div>
-
-              {/* AI Suggestions */}
-              {showSuggestions && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>AI Resume Suggestions</CardTitle>
-                    <CardDescription>
-                      Review and edit these AI-generated suggestions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Textarea 
-                      value={aiSuggestions}
-                      onChange={(e) => setAiSuggestions(e.target.value)}
-                      rows={10}
-                      className="font-mono text-sm"
-                    />
-                  </CardContent>
-                </Card>
-              )}
             </TabsContent>
 
             <TabsContent value="cover-letter" className="space-y-6 mt-6">

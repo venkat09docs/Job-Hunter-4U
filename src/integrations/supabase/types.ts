@@ -653,6 +653,48 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_data: {
+        Row: {
+          certifications_awards: Json | null
+          created_at: string
+          education: Json | null
+          experience: Json | null
+          id: string
+          personal_details: Json | null
+          professional_summary: string | null
+          skills_interests: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certifications_awards?: Json | null
+          created_at?: string
+          education?: Json | null
+          experience?: Json | null
+          id?: string
+          personal_details?: Json | null
+          professional_summary?: string | null
+          skills_interests?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certifications_awards?: Json | null
+          created_at?: string
+          education?: Json | null
+          experience?: Json | null
+          id?: string
+          personal_details?: Json | null
+          professional_summary?: string | null
+          skills_interests?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscription_plans: {
         Row: {
           created_at: string
