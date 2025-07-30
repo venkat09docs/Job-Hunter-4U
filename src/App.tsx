@@ -23,6 +23,7 @@ import ManageSubscriptions from "./pages/ManageSubscriptions";
 import DigitalCareerHub from "./pages/DigitalCareerHub";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
+import ResumeBuilder from "./pages/ResumeBuilder";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -149,8 +150,13 @@ const App = () => (
                 <ProtectedRoute>
                   <UserManagement />
                 </ProtectedRoute>
-              } 
+            } 
             />
+            <Route path="/dashboard/resume-builder" element={
+              <ProtectedRoute>
+                <ResumeBuilder />
+              </ProtectedRoute>
+            } />
             <Route path="/blogs" element={<PublicBlogs />} />
             <Route path="/profile/:slug" element={<PublicProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
