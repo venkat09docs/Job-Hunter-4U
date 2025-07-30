@@ -121,10 +121,16 @@ const ResumeBuilder = () => {
     summary: false
   });
 
-  // Load existing resume data
-  useEffect(() => {
-    loadResumeData();
-  }, [user]);
+  // Update checklist based on form data
+  const updateChecklist = useCallback(() => {
+    setChecklist({
+      personalInfo: !!(resumeData.personalDetails.fullName && resumeData.personalDetails.email && resumeData.personalDetails.phone),
+      experience: resumeData.experience.some(exp => exp.company && exp.role),
+      education: resumeData.education.some(edu => edu.institution && edu.degree),
+      skills: resumeData.skills.some(skill => skill.trim()),
+      summary: !!resumeData.professionalSummary.trim()
+    });
+  }, [resumeData]);
 
   const loadResumeData = async () => {
     if (!user) return;
@@ -171,16 +177,6 @@ const ResumeBuilder = () => {
     }
   };
 
-  // Update checklist based on form data
-  const updateChecklist = () => {
-    setChecklist({
-      personalInfo: !!(resumeData.personalDetails.fullName && resumeData.personalDetails.email && resumeData.personalDetails.phone),
-      experience: resumeData.experience.some(exp => exp.company && exp.role),
-      education: resumeData.education.some(edu => edu.institution && edu.degree),
-      skills: resumeData.skills.some(skill => skill.trim()),
-      summary: !!resumeData.professionalSummary.trim()
-    });
-  };
 
 
   const addArrayItem = useCallback((field: keyof ResumeData, defaultValue: any) => {
@@ -201,6 +197,34 @@ const ResumeBuilder = () => {
     setResumeData(prev => ({
       ...prev,
       [field]: (prev[field] as any[]).map((item, i) => i === index ? value : item)
+    }));
+  }, []);
+
+  const updateSkill = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      skills: prev.skills.map((skill, i) => i === index ? value : skill)
+    }));
+  }, []);
+
+  const updateInterest = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      interests: prev.interests.map((interest, i) => i === index ? value : interest)
+    }));
+  }, []);
+
+  const updateCertification = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      certifications: prev.certifications.map((cert, i) => i === index ? value : cert)
+    }));
+  }, []);
+
+  const updateAward = useCallback((index: number, value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      awards: prev.awards.map((award, i) => i === index ? value : award)
     }));
   }, []);
 
@@ -706,20 +730,14 @@ ${resumeData.personalDetails.fullName}`;
                               <Label>Company</Label>
                               <Input 
                                 value={exp.company}
-                                onChange={(e) => {
-                                  updateArrayItem('experience', index, { ...exp, company: e.target.value });
-                                  updateChecklist();
-                                }}
+                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, company: e.target.value })}
                               />
                             </div>
                             <div>
                               <Label>Role</Label>
                               <Input 
                                 value={exp.role}
-                                onChange={(e) => {
-                                  updateArrayItem('experience', index, { ...exp, role: e.target.value });
-                                  updateChecklist();
-                                }}
+                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, role: e.target.value })}
                               />
                             </div>
                             <div>
@@ -783,20 +801,14 @@ ${resumeData.personalDetails.fullName}`;
                               <Label>Institution</Label>
                               <Input 
                                 value={edu.institution}
-                                onChange={(e) => {
-                                  updateArrayItem('education', index, { ...edu, institution: e.target.value });
-                                  updateChecklist();
-                                }}
+                                 onChange={(e) => updateArrayItem('education', index, { ...edu, institution: e.target.value })}
                               />
                             </div>
                             <div>
                               <Label>Degree</Label>
                               <Input 
                                 value={edu.degree}
-                                onChange={(e) => {
-                                  updateArrayItem('education', index, { ...edu, degree: e.target.value });
-                                  updateChecklist();
-                                }}
+                                 onChange={(e) => updateArrayItem('education', index, { ...edu, degree: e.target.value })}
                               />
                             </div>
                             <div>
@@ -843,14 +855,11 @@ ${resumeData.personalDetails.fullName}`;
                         <div className="space-y-2">
                           {resumeData.skills.map((skill, index) => (
                             <div key={index} className="flex gap-2">
-                              <Input 
-                                value={skill}
-                                onChange={(e) => {
-                                  updateArrayItem('skills', index, e.target.value);
-                                  updateChecklist();
-                                }}
-                                placeholder="Enter a skill"
-                              />
+                               <Input 
+                                 value={skill}
+                                 onChange={(e) => updateSkill(index, e.target.value)}
+                                 placeholder="Enter a skill"
+                               />
                               {resumeData.skills.length > 1 && (
                                 <Button 
                                   variant="ghost" 
@@ -881,7 +890,7 @@ ${resumeData.personalDetails.fullName}`;
                             <div key={index} className="flex gap-2">
                               <Input 
                                 value={interest}
-                                onChange={(e) => updateArrayItem('interests', index, e.target.value)}
+                                 onChange={(e) => updateInterest(index, e.target.value)}
                                 placeholder="Enter an interest"
                               />
                               {resumeData.interests.length > 1 && (
@@ -925,7 +934,7 @@ ${resumeData.personalDetails.fullName}`;
                             <div key={index} className="flex gap-2">
                               <Input 
                                 value={cert}
-                                onChange={(e) => updateArrayItem('certifications', index, e.target.value)}
+                                 onChange={(e) => updateCertification(index, e.target.value)}
                                 placeholder="Enter a certification"
                               />
                               {resumeData.certifications.length > 1 && (
@@ -958,7 +967,7 @@ ${resumeData.personalDetails.fullName}`;
                             <div key={index} className="flex gap-2">
                               <Input 
                                 value={award}
-                                onChange={(e) => updateArrayItem('awards', index, e.target.value)}
+                                 onChange={(e) => updateAward(index, e.target.value)}
                                 placeholder="Enter an award"
                               />
                               {resumeData.awards.length > 1 && (
