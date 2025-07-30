@@ -398,7 +398,7 @@ ${resumeData.personalDetails.fullName}`;
         p_status: status
       });
 
-      console.log('Upsert result:', { data, error });
+      console.log('Upsert result - data:', data, 'error:', error);
 
       if (error) {
         console.error('Database error:', error);
