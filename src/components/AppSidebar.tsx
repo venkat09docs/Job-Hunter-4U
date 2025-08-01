@@ -85,7 +85,11 @@ export function AppSidebar() {
   const isExpanded = mainItems.some((i) => isActive(i.url));
   
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-primary/10 text-primary font-medium border-r-2 border-primary" : "hover:bg-muted/50";
+    `flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+      isActive 
+        ? "bg-primary text-primary-foreground shadow-md" 
+        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm"
+    }`;
 
   return (
     <Sidebar>
@@ -108,8 +112,8 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} end className={getNavCls}>
-                          <item.icon className="h-4 w-4" />
-                          <span className="ml-3">{item.title}</span>
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="font-medium text-sm">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -129,10 +133,10 @@ export function AppSidebar() {
                 {mainItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} end className={getNavCls}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="ml-3">{item.title}</span>
-                      </NavLink>
+                        <NavLink to={item.url} end className={getNavCls}>
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="font-medium text-sm">{item.title}</span>
+                        </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -154,15 +158,15 @@ export function AppSidebar() {
                         href={`/profile/${userSlug}`}
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="hover:bg-muted/50"
+                        className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        <span className="ml-3">Bio Link</span>
+                        <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                        <span className="font-medium text-sm">Bio Link</span>
                       </a>
                     ) : (
-                      <span className="text-muted-foreground cursor-not-allowed">
-                        <ExternalLink className="h-4 w-4" />
-                        <span className="ml-3">No Bio Link Yet</span>
+                      <span className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium text-muted-foreground cursor-not-allowed">
+                        <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                        <span className="font-medium text-sm">No Bio Link Yet</span>
                       </span>
                     )}
                   </SidebarMenuButton>
@@ -173,10 +177,10 @@ export function AppSidebar() {
                       href="/blogs"
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="hover:bg-muted/50"
+                      className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sm"
                     >
-                      <ExternalLink className="h-4 w-4" />
-                      <span className="ml-3">Blogs</span>
+                      <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium text-sm">Blogs</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
