@@ -48,25 +48,26 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 ];
 
 const LinkedInNetwork = () => {
-  const { completionPercentage, updateTaskCompletion, updateMetrics, getTodayMetrics } = useLinkedInNetworkProgress();
+  const { completionPercentage, updateTaskCompletion, updateMetrics, getTodayMetrics, getCompletedTasks } = useLinkedInNetworkProgress();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    const metrics = getTodayMetrics(dateKey);
-    setTodayMetrics(metrics);
-    
-    // Load completed tasks for selected date
-    const completed = localStorage.getItem(`linkedin_network_completed_${dateKey}`);
-    if (completed) {
-      setCompletedTasks(new Set(JSON.parse(completed)));
-    } else {
-      setCompletedTasks(new Set());
-    }
-  }, [selectedDate, getTodayMetrics]);
+    const loadData = async () => {
+      const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      const [metrics, tasks] = await Promise.all([
+        getTodayMetrics(dateKey),
+        getCompletedTasks(dateKey)
+      ]);
+      
+      setTodayMetrics(metrics);
+      setCompletedTasks(new Set(tasks));
+    };
+
+    loadData();
+  }, [selectedDate, getTodayMetrics, getCompletedTasks]);
 
   const handleTaskToggle = (taskId: string, checked: boolean) => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -79,9 +80,6 @@ const LinkedInNetwork = () => {
       newCompleted.delete(taskId);
     }
     setCompletedTasks(newCompleted);
-    
-    // Save to localStorage
-    localStorage.setItem(`linkedin_network_completed_${dateKey}`, JSON.stringify(Array.from(newCompleted)));
     
     toast({
       title: checked ? 'Task Completed!' : 'Task Unchecked',

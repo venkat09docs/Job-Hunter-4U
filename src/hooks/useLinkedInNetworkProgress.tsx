@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityMetrics {
   [key: string]: number;
@@ -18,13 +19,22 @@ export const useLinkedInNetworkProgress = () => {
     }
   }, [user]);
 
-  const fetchNetworkProgress = () => {
+  const fetchNetworkProgress = async () => {
+    if (!user) return;
+    
     try {
-      // Get today's date
       const today = new Date().toISOString().split('T')[0];
-      const savedProgress = localStorage.getItem(`linkedin_network_completed_${today}`);
-      const completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
-      const percentage = Math.round((completedTasks.length / TOTAL_TASKS) * 100);
+      const { data, error } = await supabase
+        .from('linkedin_network_completions')
+        .select('task_id')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .eq('completed', true);
+
+      if (error) throw error;
+
+      const completedCount = data?.length || 0;
+      const percentage = Math.round((completedCount / TOTAL_TASKS) * 100);
       setCompletionPercentage(percentage);
     } catch (error) {
       console.error('Error fetching LinkedIn network progress:', error);
@@ -34,77 +44,121 @@ export const useLinkedInNetworkProgress = () => {
     }
   };
 
-  const updateTaskCompletion = (taskId: string, completed: boolean, date: string) => {
+  const updateTaskCompletion = async (taskId: string, completed: boolean, date: string) => {
+    if (!user) return;
+
     try {
-      const storageKey = `linkedin_network_completed_${date}`;
-      const savedProgress = localStorage.getItem(storageKey);
-      let completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
-      
-      if (completed && !completedTasks.includes(taskId)) {
-        completedTasks.push(taskId);
-      } else if (!completed) {
-        completedTasks = completedTasks.filter((id: string) => id !== taskId);
-      }
-      
-      localStorage.setItem(storageKey, JSON.stringify(completedTasks));
-      
+      const { error } = await supabase
+        .from('linkedin_network_completions')
+        .upsert({
+          user_id: user.id,
+          date,
+          task_id: taskId,
+          completed,
+          completed_at: completed ? new Date().toISOString() : null,
+        });
+
+      if (error) throw error;
+
       // Update percentage for today's date
       const today = new Date().toISOString().split('T')[0];
       if (date === today) {
-        const percentage = Math.round((completedTasks.length / TOTAL_TASKS) * 100);
-        setCompletionPercentage(percentage);
+        await fetchNetworkProgress();
       }
     } catch (error) {
       console.error('Error updating task completion:', error);
     }
   };
 
-  const updateMetrics = (activityId: string, value: number, date: string) => {
+  const updateMetrics = async (activityId: string, value: number, date: string) => {
+    if (!user) return;
+
     try {
-      const storageKey = `linkedin_network_metrics_${date}`;
-      const savedMetrics = localStorage.getItem(storageKey);
-      const metrics = savedMetrics ? JSON.parse(savedMetrics) : {};
-      
-      metrics[activityId] = value;
-      localStorage.setItem(storageKey, JSON.stringify(metrics));
+      const { error } = await supabase
+        .from('linkedin_network_metrics')
+        .upsert({
+          user_id: user.id,
+          date,
+          activity_id: activityId,
+          value,
+        });
+
+      if (error) throw error;
     } catch (error) {
       console.error('Error updating metrics:', error);
     }
   };
 
-  const getTodayMetrics = (date: string): ActivityMetrics => {
+  const getTodayMetrics = async (date: string): Promise<ActivityMetrics> => {
+    if (!user) return {};
+
     try {
-      const storageKey = `linkedin_network_metrics_${date}`;
-      const savedMetrics = localStorage.getItem(storageKey);
-      return savedMetrics ? JSON.parse(savedMetrics) : {};
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('activity_id, value')
+        .eq('user_id', user.id)
+        .eq('date', date);
+
+      if (error) throw error;
+
+      const metrics: ActivityMetrics = {};
+      data?.forEach(metric => {
+        metrics[metric.activity_id] = metric.value;
+      });
+
+      return metrics;
     } catch (error) {
       console.error('Error fetching today metrics:', error);
       return {};
     }
   };
 
-  const getWeeklyMetrics = (): ActivityMetrics => {
+  const getWeeklyMetrics = async (): Promise<ActivityMetrics> => {
+    if (!user) return {};
+
     try {
-      const weekMetrics: ActivityMetrics = {};
       const today = new Date();
-      
-      // Get metrics for the last 7 days
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        const dateKey = date.toISOString().split('T')[0];
-        const dayMetrics = getTodayMetrics(dateKey);
-        
-        // Aggregate metrics
-        Object.entries(dayMetrics).forEach(([key, value]) => {
-          weekMetrics[key] = (weekMetrics[key] || 0) + value;
-        });
-      }
-      
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 6);
+
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('activity_id, value')
+        .eq('user_id', user.id)
+        .gte('date', weekAgo.toISOString().split('T')[0])
+        .lte('date', today.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      const weekMetrics: ActivityMetrics = {};
+      data?.forEach(metric => {
+        weekMetrics[metric.activity_id] = (weekMetrics[metric.activity_id] || 0) + metric.value;
+      });
+
       return weekMetrics;
     } catch (error) {
       console.error('Error fetching weekly metrics:', error);
       return {};
+    }
+  };
+
+  const getCompletedTasks = async (date: string): Promise<string[]> => {
+    if (!user) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('linkedin_network_completions')
+        .select('task_id')
+        .eq('user_id', user.id)
+        .eq('date', date)
+        .eq('completed', true);
+
+      if (error) throw error;
+
+      return data?.map(item => item.task_id) || [];
+    } catch (error) {
+      console.error('Error fetching completed tasks:', error);
+      return [];
     }
   };
 
@@ -115,6 +169,7 @@ export const useLinkedInNetworkProgress = () => {
     updateMetrics,
     getTodayMetrics,
     getWeeklyMetrics,
+    getCompletedTasks,
     refreshProgress: fetchNetworkProgress
   };
 };

@@ -9,12 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Key, User, Upload, X } from 'lucide-react';
+import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
+import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 
 const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -25,6 +28,13 @@ type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
 const Settings = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { canAccessFeature } = usePremiumFeatures();
+  
+  const hasActiveSubscription = () => {
+    return profile?.subscription_active && 
+           profile?.subscription_end_date && 
+           new Date(profile.subscription_end_date) > new Date();
+  };
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -231,6 +241,39 @@ const Settings = () => {
                     className="hidden"
                     disabled={uploadingImage}
                   />
+                </CardContent>
+              </Card>
+
+              {/* Subscription Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Subscription Status
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your subscription and access to premium features
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-muted-foreground">
+                        Access all premium features with your active subscription
+                      </p>
+                      <SubscriptionStatus />
+                    </div>
+                    <SubscriptionUpgrade featureName="premium features">
+                      <Button 
+                        variant="premium" 
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        {hasActiveSubscription() ? 'Manage Plan' : 'View Plans'}
+                      </Button>
+                    </SubscriptionUpgrade>
+                  </div>
                 </CardContent>
               </Card>
 

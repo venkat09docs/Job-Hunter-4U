@@ -3,6 +3,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
+  const { metrics: networkMetrics, loading: networkLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -363,36 +365,52 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Subscription Section */}
+            {/* My Network Growth */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      <CardTitle className="text-lg">Subscription Status</CardTitle>
-                    </div>
-                  </div>
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    My Network Growth
+                  </CardTitle>
+                  <CardDescription>
+                    Track your LinkedIn networking activities and overall growth
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-2">
-                      <p className="text-sm text-muted-foreground">
-                        Access all premium features with your active subscription
-                      </p>
-                      <SubscriptionStatus />
+                  {networkLoading ? (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                      {[...Array(5)].map((_, index) => (
+                        <div key={index} className="text-center p-4 rounded-lg border bg-card animate-pulse">
+                          <div className="h-8 bg-muted rounded mb-2"></div>
+                          <div className="h-4 bg-muted rounded"></div>
+                        </div>
+                      ))}
                     </div>
-                    <SubscriptionUpgrade featureName="premium features">
-                      <Button 
-                        variant="premium" 
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <CreditCard className="h-4 w-4" />
-                        {hasActiveSubscription() ? 'Manage Plan' : 'View Plans'}
-                      </Button>
-                    </SubscriptionUpgrade>
-                  </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-blue-500">{networkMetrics.totalConnections}</div>
+                        <div className="text-sm text-muted-foreground">Total Connections</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-rose-500">{networkMetrics.totalLikes}</div>
+                        <div className="text-sm text-muted-foreground">Posts Liked</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-purple-500">{networkMetrics.totalComments}</div>
+                        <div className="text-sm text-muted-foreground">Comments Made</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-green-500">{networkMetrics.totalPosts}</div>
+                        <div className="text-sm text-muted-foreground">Posts Created</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-orange-500">{networkMetrics.weeklyProgress}</div>
+                        <div className="text-sm text-muted-foreground">Weekly Activity</div>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

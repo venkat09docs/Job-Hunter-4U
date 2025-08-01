@@ -422,6 +422,69 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_network_completions: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          date: string
+          id: string
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linkedin_network_metrics: {
+        Row: {
+          activity_id: string
+          created_at: string
+          date: string
+          id: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          date: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       linkedin_progress: {
         Row: {
           completed: boolean
