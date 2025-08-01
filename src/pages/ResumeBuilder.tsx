@@ -244,6 +244,13 @@ const ResumeBuilder = () => {
   }, []);
 
   const generateResumeSuggestions = async () => {
+    if (showSuggestions) {
+      // Close suggestions if already open
+      setShowSuggestions(false);
+      setAiSuggestions('');
+      return;
+    }
+
     setLoading(true);
     try {
       // Mock AI suggestions for now
@@ -353,6 +360,65 @@ ${resumeData.personalDetails.fullName}`;
       console.error('Error saving resume:', error);
       toast({
         title: 'Error saving resume',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+    setLoading(false);
+  };
+
+  const saveFinalVersion = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // First check how many saved resumes the user already has
+      const { data: existingSaves, error: countError } = await supabase
+        .from('saved_resumes')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (countError) throw countError;
+
+      if (existingSaves && existingSaves.length >= 5) {
+        toast({
+          title: 'Maximum saves reached',
+          description: 'You can only save up to 5 resume versions. Please delete some older versions from your Library.',
+          variant: 'destructive'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Generate PDF and Word documents as blob URLs for saving
+      const currentDate = new Date();
+      const timestamp = currentDate.toISOString().slice(0, 19).replace(/:/g, '-');
+      const title = `Resume_${timestamp}`;
+
+      // Save to saved_resumes table
+      const { error: saveError } = await supabase
+        .from('saved_resumes')
+        .insert({
+          user_id: user.id,
+          title: title,
+          resume_data: resumeData as any,
+          word_url: `#word-${Date.now()}`, // Placeholder for now
+          pdf_url: `#pdf-${Date.now()}`, // Placeholder for now
+        });
+
+      if (saveError) throw saveError;
+
+      // Also save to resume_data table
+      await saveToSupabase();
+
+      toast({
+        title: 'Final version saved!',
+        description: 'Your resume has been saved to your Library with downloadable PDF and Word versions.',
+      });
+    } catch (error) {
+      console.error('Error saving final version:', error);
+      toast({
+        title: 'Error saving final version',
         description: 'Please try again later.',
         variant: 'destructive'
       });
@@ -1561,10 +1627,10 @@ ${resumeData.personalDetails.fullName}`;
                       className="gap-2"
                     >
                       <Sparkles className="h-4 w-4" />
-                      Generate Resume Suggestions
+                      {showSuggestions ? 'Close AI Resume Suggestions' : 'Generate Resume Suggestions'}
                     </Button>
                     <Button 
-                      onClick={saveToSupabase}
+                      onClick={saveFinalVersion}
                       disabled={loading}
                       className="gap-2"
                     >

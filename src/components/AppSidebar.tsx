@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { 
+import {
   User, 
   Settings, 
   ExternalLink,
@@ -13,7 +13,8 @@ import {
   Zap,
   FileText,
   Shield,
-  Users
+  Users,
+  Archive
 } from "lucide-react";
 import {
   Sidebar,
@@ -41,6 +42,7 @@ const mainItems = [
   { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
+  { title: "Library", url: "/dashboard/library", icon: Archive },
 ];
 
 const adminItems = [

@@ -24,6 +24,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import MyProfileJourney from "./pages/MyProfileJourney";
+import ResourcesLibrary from "./pages/ResourcesLibrary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -154,6 +155,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MyProfileJourney />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/library" 
+              element={
+                <ProtectedRoute>
+                  <ResourcesLibrary />
                 </ProtectedRoute>
               } 
             />
