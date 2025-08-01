@@ -81,6 +81,7 @@ const ResumeBuilder = () => {
     experience: false,
     education: false,
     skills: false,
+    interests: false,
     certifications: false,
     summary: false
   });
@@ -423,6 +424,32 @@ ${resumeData.personalDetails.fullName}`;
       currentY += 8;
     }
 
+    // Key Skills (ATS Section)
+    const validSkills = resumeData.skills.filter(skill => skill.trim());
+    if (validSkills.length > 0) {
+      addATSText('KEY SKILLS', 12, true, true);
+      // ATS-friendly skill listing
+      validSkills.forEach(skill => {
+        addATSText(`• ${skill.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
+    // Education (ATS Standard)
+    const validEducation = resumeData.education.filter(edu => edu.institution && edu.degree);
+    if (validEducation.length > 0) {
+      addATSText('EDUCATION', 12, true, true);
+      validEducation.forEach(edu => {
+        addATSText(edu.degree, 11, true);
+        addATSText(`${edu.institution} | ${edu.duration}`, 10);
+        if (edu.gpa) {
+          addATSText(`GPA: ${edu.gpa}`, 10);
+        }
+        currentY += 3;
+      });
+      currentY += 3;
+    }
+
     // Work Experience (ATS Standard)
     const validExperience = resumeData.experience.filter(exp => exp.company && exp.role);
     if (validExperience.length > 0) {
@@ -444,28 +471,12 @@ ${resumeData.personalDetails.fullName}`;
       currentY += 3;
     }
 
-    // Education (ATS Standard)
-    const validEducation = resumeData.education.filter(edu => edu.institution && edu.degree);
-    if (validEducation.length > 0) {
-      addATSText('EDUCATION', 12, true, true);
-      validEducation.forEach(edu => {
-        addATSText(edu.degree, 11, true);
-        addATSText(`${edu.institution} | ${edu.duration}`, 10);
-        if (edu.gpa) {
-          addATSText(`GPA: ${edu.gpa}`, 10);
-        }
-        currentY += 3;
-      });
-      currentY += 3;
-    }
-
-    // Core Competencies/Skills (ATS Section)
-    const validSkills = resumeData.skills.filter(skill => skill.trim());
-    if (validSkills.length > 0) {
-      addATSText('CORE COMPETENCIES', 12, true, true);
-      // ATS-friendly skill listing
-      validSkills.forEach(skill => {
-        addATSText(`• ${skill.trim()}`, 10);
+    // Interests (ATS Section)
+    const validInterests = resumeData.interests.filter(interest => interest.trim());
+    if (validInterests.length > 0) {
+      addATSText('INTERESTS', 12, true, true);
+      validInterests.forEach(interest => {
+        addATSText(`• ${interest.trim()}`, 10);
       });
       currentY += 8;
     }
@@ -598,6 +609,82 @@ ${resumeData.personalDetails.fullName}`;
             }),
           ] : []),
 
+          // Key Skills (ATS Section)
+          ...(resumeData.skills.filter(skill => skill.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "KEY SKILLS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.skills.filter(skill => skill.trim()).map(skill =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${skill.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
+          // Education (ATS Format)
+          ...(resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "EDUCATION",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.education.filter(edu => edu.institution && edu.degree).flatMap(edu => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: edu.degree,
+                    bold: true,
+                    font: "Arial",
+                    size: 22,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${edu.institution} | ${edu.duration}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              ...(edu.gpa ? [new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `GPA: ${edu.gpa}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 100 },
+              })] : [new Paragraph({ text: "", spacing: { after: 100 } })]),
+            ]),
+          ] : []),
+
           // Work Experience (ATS Standard)
           ...(resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? [
             new Paragraph({
@@ -649,12 +736,12 @@ ${resumeData.personalDetails.fullName}`;
             ]),
           ] : []),
 
-          // Education (ATS Format)
-          ...(resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? [
+          // Interests (ATS Section)
+          ...(resumeData.interests.filter(interest => interest.trim()).length > 0 ? [
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "EDUCATION",
+                  text: "INTERESTS",
                   bold: true,
                   font: "Arial",
                   size: 24,
@@ -662,59 +749,11 @@ ${resumeData.personalDetails.fullName}`;
               ],
               spacing: { after: 100 },
             }),
-            ...resumeData.education.filter(edu => edu.institution && edu.degree).flatMap(edu => [
+            ...resumeData.interests.filter(interest => interest.trim()).map(interest =>
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: edu.degree,
-                    bold: true,
-                    font: "Arial",
-                    size: 22,
-                  }),
-                ],
-                spacing: { after: 50 },
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `${edu.institution} | ${edu.duration}`,
-                    font: "Arial",
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 50 },
-              }),
-              ...(edu.gpa ? [new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `GPA: ${edu.gpa}`,
-                    font: "Arial",
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 100 },
-              })] : [new Paragraph({ text: "", spacing: { after: 100 } })]),
-            ]),
-          ] : []),
-
-          // Core Competencies (ATS Section)
-          ...(resumeData.skills.filter(skill => skill.trim()).length > 0 ? [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "CORE COMPETENCIES",
-                  bold: true,
-                  font: "Arial",
-                  size: 24,
-                }),
-              ],
-              spacing: { after: 100 },
-            }),
-            ...resumeData.skills.filter(skill => skill.trim()).map(skill =>
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${skill.trim()}`,
+                    text: `• ${interest.trim()}`,
                     font: "Arial",
                     size: 20,
                   }),
@@ -923,25 +962,15 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
-        {/* Work Experience - ATS Standard */}
-        {resumeData.experience.filter(exp => exp.company && exp.role).length > 0 && (
+        {/* Key Skills - ATS Section */}
+        {resumeData.skills.filter(skill => skill.trim()).length > 0 && (
           <div className="mb-4">
-            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Work Experience</h2>
-            <div className="space-y-3">
-              {resumeData.experience
-                .filter(exp => exp.company && exp.role)
-                .map((exp, index) => (
-                  <div key={index} className="border-l-2 border-gray-200 pl-3">
-                    <h3 className="text-xs font-bold text-gray-900">{exp.role}</h3>
-                    <p className="text-xs text-gray-600 mb-1">{exp.company} | {exp.duration}</p>
-                    {exp.description && (
-                      <div className="text-xs text-gray-700">
-                        {exp.description.split('\n').filter(desc => desc.trim()).map((desc, i) => (
-                          <div key={i} className="mb-1">• {desc.trim()}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Key Skills</h2>
+            <div className="grid grid-cols-1 gap-1">
+              {resumeData.skills
+                .filter(skill => skill.trim())
+                .map((skill, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {skill.trim()}</div>
                 ))}
             </div>
           </div>
@@ -965,15 +994,25 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
-        {/* Core Competencies - ATS Section */}
-        {resumeData.skills.filter(skill => skill.trim()).length > 0 && (
+        {/* Work Experience - ATS Standard */}
+        {resumeData.experience.filter(exp => exp.company && exp.role).length > 0 && (
           <div className="mb-4">
-            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Core Competencies</h2>
-            <div className="grid grid-cols-1 gap-1">
-              {resumeData.skills
-                .filter(skill => skill.trim())
-                .map((skill, index) => (
-                  <div key={index} className="text-xs text-gray-700">• {skill.trim()}</div>
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Work Experience</h2>
+            <div className="space-y-3">
+              {resumeData.experience
+                .filter(exp => exp.company && exp.role)
+                .map((exp, index) => (
+                  <div key={index} className="border-l-2 border-gray-200 pl-3">
+                    <h3 className="text-xs font-bold text-gray-900">{exp.role}</h3>
+                    <p className="text-xs text-gray-600 mb-1">{exp.company} | {exp.duration}</p>
+                    {exp.description && (
+                      <div className="text-xs text-gray-700">
+                        {exp.description.split('\n').filter(desc => desc.trim()).map((desc, i) => (
+                          <div key={i} className="mb-1">• {desc.trim()}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
             </div>
           </div>
@@ -1134,74 +1173,45 @@ ${resumeData.personalDetails.fullName}`;
                     />
                   </CollapsibleSection>
 
-                  {/* Experience */}
+                  {/* Key Skills */}
                   <CollapsibleSection 
-                    title="Experience" 
-                    sectionKey="experience"
-                    isOpen={openSections.experience}
+                    title="Key Skills" 
+                    sectionKey="skills"
+                    isOpen={openSections.skills}
                     onToggle={handleSectionToggle}
                     onSave={saveSection}
                   >
-                    <div className="space-y-6">
-                      <div className="flex justify-end">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium">Key Skills</h4>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => addArrayItem('experience', { company: '', role: '', duration: '', description: '' })}
+                          onClick={() => addArrayItem('skills', '')}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Experience
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
-                      {resumeData.experience.map((exp, index) => (
-                        <div key={index} className="border rounded-lg p-4 space-y-4">
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-medium">Experience {index + 1}</h4>
-                            {resumeData.experience.length > 1 && (
+                      <div className="space-y-2">
+                        {resumeData.skills.map((skill, index) => (
+                          <div key={index} className="flex gap-2">
+                             <Input 
+                               value={skill}
+                               onChange={(e) => updateSkill(index, e.target.value)}
+                               placeholder="Enter a skill"
+                             />
+                            {resumeData.skills.length > 1 && (
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                onClick={() => removeArrayItem('experience', index)}
+                                onClick={() => removeArrayItem('skills', index)}
                               >
                                 <Minus className="h-4 w-4" />
                               </Button>
                             )}
                           </div>
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <Label>Company</Label>
-                              <Input 
-                                value={exp.company}
-                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, company: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label>Role</Label>
-                              <Input 
-                                value={exp.role}
-                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, role: e.target.value })}
-                              />
-                            </div>
-                            <div>
-                              <Label>Duration</Label>
-                              <Input 
-                                placeholder="e.g., Jan 2020 - Dec 2022"
-                                value={exp.duration}
-                                onChange={(e) => updateArrayItem('experience', index, { ...exp, duration: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <Label>Description</Label>
-                            <Textarea 
-                              placeholder="Describe your responsibilities and achievements..."
-                              value={exp.description}
-                              onChange={(e) => updateArrayItem('experience', index, { ...exp, description: e.target.value })}
-                              rows={3}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </CollapsibleSection>
 
@@ -1274,79 +1284,115 @@ ${resumeData.personalDetails.fullName}`;
                     </div>
                   </CollapsibleSection>
 
-                  {/* Skills & Interests */}
+                  {/* Experience */}
                   <CollapsibleSection 
-                    title="Key Skills & Interests" 
-                    sectionKey="skills"
-                    isOpen={openSections.skills}
+                    title="Experience" 
+                    sectionKey="experience"
+                    isOpen={openSections.experience}
                     onToggle={handleSectionToggle}
                     onSave={saveSection}
                   >
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium">Key Skills</h4>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => addArrayItem('skills', '')}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {resumeData.skills.map((skill, index) => (
-                            <div key={index} className="flex gap-2">
-                               <Input 
-                                 value={skill}
-                                 onChange={(e) => updateSkill(index, e.target.value)}
-                                 placeholder="Enter a skill"
-                               />
-                              {resumeData.skills.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => removeArrayItem('skills', index)}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                    <div className="space-y-6">
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('experience', { company: '', role: '', duration: '', description: '' })}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Experience
+                        </Button>
                       </div>
-                      
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium">Interests</h4>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => addArrayItem('interests', '')}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {resumeData.interests.map((interest, index) => (
-                            <div key={index} className="flex gap-2">
+                      {resumeData.experience.map((exp, index) => (
+                        <div key={index} className="border rounded-lg p-4 space-y-4">
+                          <div className="flex justify-between items-start">
+                            <h4 className="font-medium">Experience {index + 1}</h4>
+                            {resumeData.experience.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('experience', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Company</Label>
                               <Input 
-                                value={interest}
-                                 onChange={(e) => updateInterest(index, e.target.value)}
-                                placeholder="Enter an interest"
+                                value={exp.company}
+                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, company: e.target.value })}
                               />
-                              {resumeData.interests.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => removeArrayItem('interests', index)}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                              )}
                             </div>
-                          ))}
+                            <div>
+                              <Label>Role</Label>
+                              <Input 
+                                value={exp.role}
+                                 onChange={(e) => updateArrayItem('experience', index, { ...exp, role: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label>Duration</Label>
+                              <Input 
+                                placeholder="e.g., Jan 2020 - Dec 2022"
+                                value={exp.duration}
+                                onChange={(e) => updateArrayItem('experience', index, { ...exp, duration: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>Description</Label>
+                            <Textarea 
+                              placeholder="Describe your responsibilities and achievements..."
+                              value={exp.description}
+                              onChange={(e) => updateArrayItem('experience', index, { ...exp, description: e.target.value })}
+                              rows={3}
+                            />
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Interests */}
+                  <CollapsibleSection 
+                    title="Interests" 
+                    sectionKey="interests"
+                    isOpen={openSections.interests}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium">Interests</h4>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('interests', '')}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {resumeData.interests.map((interest, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input 
+                              value={interest}
+                               onChange={(e) => updateInterest(index, e.target.value)}
+                              placeholder="Enter an interest"
+                            />
+                            {resumeData.interests.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('interests', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </CollapsibleSection>
