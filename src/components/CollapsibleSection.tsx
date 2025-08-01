@@ -26,24 +26,22 @@ export const CollapsibleSection = React.memo(({
     onOpenChange={() => onToggle(sectionKey)}
   >
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            {title}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                {isOpen ? (
-                  <Minus className="h-4 w-4" />
-                ) : (
-                  <Plus className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
+      <CollapsibleTrigger asChild>
+        <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              {title}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {isOpen ? (
+                <Minus className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
+      </CollapsibleTrigger>
       <CollapsibleContent>
         <CardContent className="space-y-4">
           {children}
