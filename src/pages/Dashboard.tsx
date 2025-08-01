@@ -2,6 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
+import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
+  const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -314,12 +316,12 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                            strokeDasharray={`${30 * 2.827} ${(100 - 30) * 2.827}`}
+                            strokeDasharray={`${networkProgress * 2.827} ${(100 - networkProgress) * 2.827}`}
                             className="transition-all duration-500"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">30%</span>
+                          <span className="text-lg font-bold text-primary">{networkProgress}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">LinkedIn Network</h4>
