@@ -119,7 +119,16 @@ const ResourcesLibrary = () => {
               Access your saved resumes and career resources
             </p>
           </div>
-          <UserProfileDropdown />
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/dashboard'}
+              className="flex items-center gap-2"
+            >
+              Go to Dashboard
+            </Button>
+            <UserProfileDropdown />
+          </div>
         </div>
 
         {/* Tabs */}
