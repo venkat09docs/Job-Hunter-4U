@@ -48,11 +48,12 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 ];
 
 const LinkedInNetwork = () => {
-  const { completionPercentage, updateTaskCompletion, updateMetrics, getTodayMetrics, getCompletedTasks } = useLinkedInNetworkProgress();
+  const { updateTaskCompletion, updateMetrics, getTodayMetrics, getCompletedTasks } = useLinkedInNetworkProgress();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -64,6 +65,11 @@ const LinkedInNetwork = () => {
       
       setTodayMetrics(metrics);
       setCompletedTasks(new Set(tasks));
+      
+      // Calculate completion percentage for selected date
+      const completedCount = tasks.length;
+      const percentage = Math.round((completedCount / DAILY_ACTIVITIES.length) * 100);
+      setCompletionPercentage(percentage);
     };
 
     loadData();
@@ -80,6 +86,11 @@ const LinkedInNetwork = () => {
       newCompleted.delete(taskId);
     }
     setCompletedTasks(newCompleted);
+    
+    // Update completion percentage immediately
+    const newCompletedCount = checked ? newCompleted.size : newCompleted.size;
+    const newPercentage = Math.round((newCompletedCount / DAILY_ACTIVITIES.length) * 100);
+    setCompletionPercentage(newPercentage);
     
     toast({
       title: checked ? 'Task Completed!' : 'Task Unchecked',
