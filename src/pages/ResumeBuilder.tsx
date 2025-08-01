@@ -390,10 +390,18 @@ ${resumeData.personalDetails.fullName}`;
         return;
       }
 
-      // Generate PDF and Word documents as blob URLs for saving
+      // Generate PDF and Word documents
       const currentDate = new Date();
       const timestamp = currentDate.toISOString().slice(0, 19).replace(/:/g, '-');
       const title = `Resume_${timestamp}`;
+
+      // Generate PDF blob
+      const pdfBlob = await generatePDFBlob();
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+
+      // Generate Word blob  
+      const wordBlob = await generateWordBlob();
+      const wordUrl = URL.createObjectURL(wordBlob);
 
       // Save to saved_resumes table
       const { error: saveError } = await supabase
@@ -402,8 +410,8 @@ ${resumeData.personalDetails.fullName}`;
           user_id: user.id,
           title: title,
           resume_data: resumeData as any,
-          word_url: `#word-${Date.now()}`, // Placeholder for now
-          pdf_url: `#pdf-${Date.now()}`, // Placeholder for now
+          word_url: wordUrl,
+          pdf_url: pdfUrl,
         });
 
       if (saveError) throw saveError;
@@ -424,6 +432,476 @@ ${resumeData.personalDetails.fullName}`;
       });
     }
     setLoading(false);
+  };
+
+  const generatePDFBlob = async (): Promise<Blob> => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 20;
+    let currentY = margin;
+
+    // ATS-friendly helper function
+    const addATSText = (text: string, fontSize: number = 11, isBold: boolean = false, isHeader: boolean = false) => {
+      // Use ATS-friendly fonts
+      if (isBold || isHeader) {
+        pdf.setFont('arial', 'bold');
+      } else {
+        pdf.setFont('arial', 'normal');
+      }
+      
+      pdf.setFontSize(fontSize);
+      
+      // Handle page breaks
+      if (currentY > 270) {
+        pdf.addPage();
+        currentY = margin;
+      }
+      
+      const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
+      lines.forEach((line: string) => {
+        if (currentY > 270) {
+          pdf.addPage();
+          currentY = margin;
+        }
+        pdf.text(line, margin, currentY);
+        currentY += fontSize * 0.4;
+      });
+      
+      // Add spacing after sections
+      if (isHeader) {
+        currentY += 3;
+      } else {
+        currentY += 2;
+      }
+    };
+
+    // Contact Information (ATS Standard)
+    addATSText(resumeData.personalDetails.fullName, 16, true);
+    currentY += 2;
+    
+    const contactDetails = [];
+    if (resumeData.personalDetails.email) contactDetails.push(`Email: ${resumeData.personalDetails.email}`);
+    if (resumeData.personalDetails.phone) contactDetails.push(`Phone: ${resumeData.personalDetails.phone}`);
+    if (resumeData.personalDetails.location) contactDetails.push(`Location: ${resumeData.personalDetails.location}`);
+    if (resumeData.personalDetails.linkedIn) contactDetails.push(`LinkedIn: ${resumeData.personalDetails.linkedIn}`);
+    if (resumeData.personalDetails.github) contactDetails.push(`GitHub: ${resumeData.personalDetails.github}`);
+    
+    contactDetails.forEach(detail => {
+      addATSText(detail, 10);
+    });
+    currentY += 8;
+
+    // Professional Summary (ATS Section)
+    if (resumeData.professionalSummary) {
+      addATSText('PROFESSIONAL SUMMARY', 12, true, true);
+      addATSText(resumeData.professionalSummary, 11);
+      currentY += 8;
+    }
+
+    // Key Skills (ATS Section)
+    const validSkills = resumeData.skills.filter(skill => skill.trim());
+    if (validSkills.length > 0) {
+      addATSText('KEY SKILLS', 12, true, true);
+      validSkills.forEach(skill => {
+        addATSText(`• ${skill.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
+    // Education (ATS Standard)
+    const validEducation = resumeData.education.filter(edu => edu.institution && edu.degree);
+    if (validEducation.length > 0) {
+      addATSText('EDUCATION', 12, true, true);
+      validEducation.forEach(edu => {
+        addATSText(edu.degree, 11, true);
+        addATSText(`${edu.institution} | ${edu.duration}`, 10);
+        if (edu.gpa) {
+          addATSText(`GPA: ${edu.gpa}`, 10);
+        }
+        currentY += 3;
+      });
+      currentY += 3;
+    }
+
+    // Work Experience (ATS Standard)
+    const validExperience = resumeData.experience.filter(exp => exp.company && exp.role);
+    if (validExperience.length > 0) {
+      addATSText('WORK EXPERIENCE', 12, true, true);
+      validExperience.forEach(exp => {
+        addATSText(exp.role, 11, true);
+        addATSText(`${exp.company} | ${exp.duration}`, 10);
+        if (exp.description) {
+          addATSText(exp.description, 10);
+        }
+        currentY += 5;
+      });
+    }
+
+    // Certifications (ATS Section)
+    const validCertifications = resumeData.certifications.filter(cert => cert.trim());
+    if (validCertifications.length > 0) {
+      addATSText('CERTIFICATIONS', 12, true, true);
+      validCertifications.forEach(cert => {
+        addATSText(`• ${cert.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
+    // Awards (ATS Section)
+    const validAwards = resumeData.awards.filter(award => award.trim());
+    if (validAwards.length > 0) {
+      addATSText('AWARDS', 12, true, true);
+      validAwards.forEach(award => {
+        addATSText(`• ${award.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
+    // Interests (ATS Section)
+    const validInterests = resumeData.interests.filter(interest => interest.trim());
+    if (validInterests.length > 0) {
+      addATSText('INTERESTS', 12, true, true);
+      addATSText(validInterests.join(', '), 10);
+    }
+
+    return pdf.output('blob');
+  };
+
+  const generateWordBlob = async (): Promise<Blob> => {
+    const doc = new Document({
+      creator: "Digital Career Hub Resume Builder",
+      title: `${resumeData.personalDetails.fullName} - Resume`,
+      description: "ATS-Optimized Resume",
+      styles: {
+        paragraphStyles: [{
+          id: "Heading1",
+          name: "Heading 1",
+          basedOn: "Normal",
+          next: "Normal",
+          run: {
+            bold: true,
+            size: 24,
+            font: "Arial",
+          },
+          paragraph: {
+            spacing: { after: 120 },
+          },
+        }],
+      },
+      sections: [{
+        properties: {
+          page: {
+            margin: {
+              top: 720,
+              right: 720,
+              bottom: 720,
+              left: 720,
+            },
+          },
+        },
+        children: [
+          // Contact Information Header (ATS Standard)
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: resumeData.personalDetails.fullName,
+                bold: true,
+                font: "Arial",
+                size: 32, // 16pt
+              }),
+            ],
+            spacing: { after: 100 },
+          }),
+
+          ...(resumeData.personalDetails.email ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Email: ${resumeData.personalDetails.email}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.phone ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Phone: ${resumeData.personalDetails.phone}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.location ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Location: ${resumeData.personalDetails.location}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.linkedIn ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `LinkedIn: ${resumeData.personalDetails.linkedIn}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.github ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `GitHub: ${resumeData.personalDetails.github}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 200 },
+          })] : []),
+
+          // Professional Summary (ATS Section)
+          ...(resumeData.professionalSummary ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "PROFESSIONAL SUMMARY",
+                  bold: true,
+                  font: "Arial",
+                  size: 24, // 12pt
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: resumeData.professionalSummary,
+                  font: "Arial",
+                  size: 22,
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
+          ] : []),
+
+          // Key Skills (ATS Section)
+          ...(resumeData.skills.filter(skill => skill.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "KEY SKILLS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.skills.filter(skill => skill.trim()).map(skill =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${skill.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
+          // Education (ATS Format)
+          ...(resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "EDUCATION",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.education.filter(edu => edu.institution && edu.degree).flatMap(edu => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: edu.degree,
+                    bold: true,
+                    font: "Arial",
+                    size: 22,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${edu.institution} | ${edu.duration}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              ...(edu.gpa ? [new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `GPA: ${edu.gpa}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 100 },
+              })] : [new Paragraph({ text: "", spacing: { after: 100 } })]),
+            ]),
+          ] : []),
+
+          // Work Experience (ATS Standard)
+          ...(resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "WORK EXPERIENCE",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.experience.filter(exp => exp.company && exp.role).flatMap(exp => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: exp.role,
+                    bold: true,
+                    font: "Arial",
+                    size: 22,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${exp.company} | ${exp.duration}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              ...(exp.description ? [new Paragraph({
+                children: [
+                  new TextRun({
+                    text: exp.description,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 150 },
+              })] : [new Paragraph({ text: "", spacing: { after: 100 } })]),
+            ]),
+          ] : []),
+
+          // Certifications (ATS Section)
+          ...(resumeData.certifications.filter(cert => cert.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "CERTIFICATIONS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.certifications.filter(cert => cert.trim()).map(cert =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${cert.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
+          // Awards (ATS Section)
+          ...(resumeData.awards.filter(award => award.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "AWARDS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.awards.filter(award => award.trim()).map(award =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${award.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
+          // Interests (ATS Section) 
+          ...(resumeData.interests.filter(interest => interest.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "INTERESTS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: resumeData.interests.filter(interest => interest.trim()).join(', '),
+                  font: "Arial",
+                  size: 20,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+          ] : []),
+        ],
+      }],
+    });
+
+    return await Packer.toBlob(doc);
   };
 
   const downloadResumeAsPDF = () => {

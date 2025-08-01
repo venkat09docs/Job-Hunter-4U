@@ -79,6 +79,15 @@ const ResourcesLibrary = () => {
   };
 
   const downloadFile = (url: string, filename: string) => {
+    if (url.startsWith('#')) {
+      toast({
+        title: 'Download not available',
+        description: 'This file was not properly generated. Please regenerate your resume.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
