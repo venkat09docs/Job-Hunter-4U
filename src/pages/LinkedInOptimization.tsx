@@ -62,26 +62,19 @@ const LinkedInOptimization = () => {
 
   const loadLinkedInProgress = async () => {
     try {
-      const { data, error } = await supabase
-        .from('linkedin_progress')
-        .select('task_id, completed')
-        .eq('user_id', user?.id);
-
-      if (error && error.code !== 'PGRST116') { // Ignore "table doesn't exist" error for now
-        throw error;
-      }
-
-      const completedTasks = new Set(data?.map(item => item.task_id) || []);
+      // Use localStorage for now as a temporary solution
+      const savedProgress = localStorage.getItem(`linkedin_progress_${user?.id}`);
+      const completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
       
       const tasksWithStatus = LINKEDIN_TASKS.map(task => ({
         ...task,
-        completed: completedTasks.has(task.id)
+        completed: completedTasks.includes(task.id)
       }));
 
       setTasks(tasksWithStatus);
     } catch (error) {
       console.error('Error loading LinkedIn progress:', error);
-      // Initialize with default tasks if table doesn't exist yet
+      // Initialize with default tasks if error
       setTasks(LINKEDIN_TASKS.map(task => ({ ...task, completed: false })));
     } finally {
       setLoading(false);
@@ -90,22 +83,19 @@ const LinkedInOptimization = () => {
 
   const updateTaskStatus = async (taskId: string, completed: boolean) => {
     try {
+      // Use localStorage for now
+      const savedProgress = localStorage.getItem(`linkedin_progress_${user?.id}`);
+      let completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
+      
       if (completed) {
-        await supabase
-          .from('linkedin_progress')
-          .upsert({
-            user_id: user?.id,
-            task_id: taskId,
-            completed: true,
-            completed_at: new Date().toISOString()
-          });
+        if (!completedTasks.includes(taskId)) {
+          completedTasks.push(taskId);
+        }
       } else {
-        await supabase
-          .from('linkedin_progress')
-          .delete()
-          .eq('user_id', user?.id)
-          .eq('task_id', taskId);
+        completedTasks = completedTasks.filter((id: string) => id !== taskId);
       }
+      
+      localStorage.setItem(`linkedin_progress_${user?.id}`, JSON.stringify(completedTasks));
 
       setTasks(prev => prev.map(task => 
         task.id === taskId ? { ...task, completed } : task

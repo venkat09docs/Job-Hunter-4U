@@ -25,6 +25,7 @@ import UserManagement from "./pages/UserManagement";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import MyProfileJourney from "./pages/MyProfileJourney";
 import ResourcesLibrary from "./pages/ResourcesLibrary";
+import LinkedInOptimization from "./pages/LinkedInOptimization";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
@@ -163,6 +164,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ResourcesLibrary />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/linkedin-optimization" 
+              element={
+                <ProtectedRoute>
+                  <LinkedInOptimization />
                 </ProtectedRoute>
               } 
             />
