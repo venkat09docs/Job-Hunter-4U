@@ -359,6 +359,7 @@ ${resumeData.personalDetails.fullName}`;
   };
 
   const downloadResumeAsPDF = () => {
+    console.log('Downloading PDF...');
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.getWidth();
     const margin = 20;
@@ -453,6 +454,7 @@ ${resumeData.personalDetails.fullName}`;
   };
 
   const downloadResumeAsWord = async () => {
+    console.log('Downloading Word document...');
     // Create Word document
     const doc = new Document({
       sections: [{
@@ -1257,11 +1259,17 @@ ${resumeData.personalDetails.fullName}`;
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56 bg-background border shadow-md z-50">
-                        <DropdownMenuItem onClick={downloadResumeAsPDF} className="cursor-pointer">
+                        <DropdownMenuItem 
+                          onClick={() => downloadResumeAsPDF()} 
+                          className="cursor-pointer"
+                        >
                           <FileText className="h-4 w-4 mr-2" />
                           Download as PDF
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={downloadResumeAsWord} className="cursor-pointer">
+                        <DropdownMenuItem 
+                          onClick={() => downloadResumeAsWord()} 
+                          className="cursor-pointer"
+                        >
                           <FileText className="h-4 w-4 mr-2" />
                           Download as Word Document
                         </DropdownMenuItem>
