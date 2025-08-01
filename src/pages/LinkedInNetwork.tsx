@@ -63,12 +63,13 @@ const LinkedInNetwork = () => {
         getCompletedTasks(dateKey)
       ]);
       
-      setTodayMetrics(metrics);
-      setCompletedTasks(new Set(tasks));
-      
       // Calculate completion percentage for selected date
       const completedCount = tasks.length;
       const percentage = Math.round((completedCount / DAILY_ACTIVITIES.length) * 100);
+      
+      // Batch state updates to prevent flickering
+      setTodayMetrics(metrics);
+      setCompletedTasks(new Set(tasks));
       setCompletionPercentage(percentage);
     };
 
