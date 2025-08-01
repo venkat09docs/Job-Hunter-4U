@@ -54,7 +54,7 @@ interface ResumeData {
 }
 
 type StatusType = 'draft' | 'finalized' | 'downloaded';
-type SectionType = 'personalDetails' | 'experience' | 'education' | 'skills' | 'certifications' | 'summary';
+type SectionType = 'personalDetails' | 'experience' | 'education' | 'skills' | 'interests' | 'certifications' | 'awards' | 'summary';
 
 const ResumeBuilder = () => {
   const { user } = useAuth();
@@ -83,6 +83,7 @@ const ResumeBuilder = () => {
     skills: false,
     interests: false,
     certifications: false,
+    awards: false,
     summary: false
   });
 
@@ -471,6 +472,26 @@ ${resumeData.personalDetails.fullName}`;
       currentY += 3;
     }
 
+    // Certifications (ATS Section)
+    const validCertifications = resumeData.certifications.filter(cert => cert.trim());
+    if (validCertifications.length > 0) {
+      addATSText('CERTIFICATIONS', 12, true, true);
+      validCertifications.forEach(cert => {
+        addATSText(`• ${cert.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
+    // Awards (ATS Section)
+    const validAwards = resumeData.awards.filter(award => award.trim());
+    if (validAwards.length > 0) {
+      addATSText('AWARDS', 12, true, true);
+      validAwards.forEach(award => {
+        addATSText(`• ${award.trim()}`, 10);
+      });
+      currentY += 8;
+    }
+
     // Interests (ATS Section)
     const validInterests = resumeData.interests.filter(interest => interest.trim());
     if (validInterests.length > 0) {
@@ -479,15 +500,6 @@ ${resumeData.personalDetails.fullName}`;
         addATSText(`• ${interest.trim()}`, 10);
       });
       currentY += 8;
-    }
-
-    // Certifications & Awards (ATS Standard)
-    const validCertifications = resumeData.certifications.filter(cert => cert.trim());
-    if (validCertifications.length > 0) {
-      addATSText('CERTIFICATIONS & AWARDS', 12, true, true);
-      validCertifications.forEach(cert => {
-        addATSText(`• ${cert.trim()}`, 10);
-      });
     }
 
     pdf.save(`${resumeData.personalDetails.fullName || 'Resume'}_ATS_Resume.pdf`);
@@ -736,6 +748,62 @@ ${resumeData.personalDetails.fullName}`;
             ]),
           ] : []),
 
+          // Certifications (ATS Section)
+          ...(resumeData.certifications.filter(cert => cert.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "CERTIFICATIONS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.certifications.filter(cert => cert.trim()).map(cert =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${cert.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
+          // Awards (ATS Section)
+          ...(resumeData.awards.filter(award => award.trim()).length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "AWARDS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            ...resumeData.awards.filter(award => award.trim()).map(award =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${award.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
+          ] : []),
+
           // Interests (ATS Section)
           ...(resumeData.interests.filter(interest => interest.trim()).length > 0 ? [
             new Paragraph({
@@ -764,32 +832,6 @@ ${resumeData.personalDetails.fullName}`;
             new Paragraph({ text: "", spacing: { after: 200 } }),
           ] : []),
 
-          // Certifications & Awards (ATS Standard)
-          ...(resumeData.certifications.filter(cert => cert.trim()).length > 0 ? [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: "CERTIFICATIONS & AWARDS",
-                  bold: true,
-                  font: "Arial",
-                  size: 24,
-                }),
-              ],
-              spacing: { after: 100 },
-            }),
-            ...resumeData.certifications.filter(cert => cert.trim()).map(cert =>
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${cert.trim()}`,
-                    font: "Arial",
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 50 },
-              })
-            ),
-          ] : []),
         ],
       }],
     });
@@ -908,9 +950,23 @@ ${resumeData.personalDetails.fullName}`;
       certifications: [
         "List certifications in reverse chronological order", 
         "Include expiration dates if applicable",
-        "Add professional awards and recognitions",
-        "Include relevant volunteer work",
+        "Add issuing organization name",
+        "Include certification numbers or IDs when relevant",
+        "Focus on industry-specific certifications that match job requirements"
+      ],
+      awards: [
+        "List awards in reverse chronological order",
+        "Include the awarding organization",
+        "Add context about the significance of the award",
+        "Include relevant volunteer work achievements",
         "Mention publications or speaking engagements"
+      ],
+      interests: [
+        "Keep interests professional and relevant to the role",
+        "Avoid controversial or overly personal topics",
+        "Include interests that demonstrate valuable skills",
+        "Show interests that indicate cultural fit",
+        "Use interests to highlight soft skills like teamwork or leadership"
       ],
       summary: [
         "Keep it concise (3-4 sentences)",
@@ -1018,6 +1074,34 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
+        {/* Certifications - ATS Standard */}
+        {resumeData.certifications.filter(cert => cert.trim()).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Certifications</h2>
+            <div className="space-y-1">
+              {resumeData.certifications
+                .filter(cert => cert.trim())
+                .map((cert, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {cert.trim()}</div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Awards - ATS Standard */}
+        {resumeData.awards.filter(award => award.trim()).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Awards</h2>
+            <div className="space-y-1">
+              {resumeData.awards
+                .filter(award => award.trim())
+                .map((award, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {award.trim()}</div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Interests - ATS Format */}
         {resumeData.interests.filter(interest => interest.trim()).length > 0 && (
           <div className="mb-4">
@@ -1032,19 +1116,6 @@ ${resumeData.personalDetails.fullName}`;
           </div>
         )}
 
-        {/* Certifications & Awards - ATS Standard */}
-        {resumeData.certifications.filter(cert => cert.trim()).length > 0 && (
-          <div className="mb-4">
-            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Certifications & Awards</h2>
-            <div className="space-y-1">
-              {resumeData.certifications
-                .filter(cert => cert.trim())
-                .map((cert, index) => (
-                  <div key={index} className="text-xs text-gray-700">• {cert.trim()}</div>
-                ))}
-            </div>
-          </div>
-        )}
 
         {/* ATS Notice */}
         <div className="mt-4 pt-3 border-t border-gray-200">
@@ -1355,6 +1426,91 @@ ${resumeData.personalDetails.fullName}`;
                     </div>
                   </CollapsibleSection>
 
+
+                  {/* Certifications */}
+                  <CollapsibleSection 
+                    title="Certifications" 
+                    sectionKey="certifications"
+                    isOpen={openSections.certifications}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium">Certifications</h4>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('certifications', '')}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {resumeData.certifications.map((cert, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input 
+                              value={cert}
+                               onChange={(e) => updateCertification(index, e.target.value)}
+                              placeholder="Enter a certification"
+                            />
+                            {resumeData.certifications.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('certifications', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+
+                  {/* Awards */}
+                  <CollapsibleSection 
+                    title="Awards" 
+                    sectionKey="awards"
+                    isOpen={openSections.awards}
+                    onToggle={handleSectionToggle}
+                    onSave={saveSection}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium">Awards</h4>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => addArrayItem('awards', '')}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {resumeData.awards.map((award, index) => (
+                          <div key={index} className="flex gap-2">
+                            <Input 
+                              value={award}
+                               onChange={(e) => updateAward(index, e.target.value)}
+                              placeholder="Enter an award"
+                            />
+                            {resumeData.awards.length > 1 && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => removeArrayItem('awards', index)}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+
                   {/* Interests */}
                   <CollapsibleSection 
                     title="Interests" 
@@ -1393,83 +1549,6 @@ ${resumeData.personalDetails.fullName}`;
                             )}
                           </div>
                         ))}
-                      </div>
-                    </div>
-                  </CollapsibleSection>
-
-                  {/* Certifications & Awards */}
-                  <CollapsibleSection 
-                    title="Certifications & Awards" 
-                    sectionKey="certifications"
-                    isOpen={openSections.certifications}
-                    onToggle={handleSectionToggle}
-                    onSave={saveSection}
-                  >
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium">Certifications</h4>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => addArrayItem('certifications', '')}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {resumeData.certifications.map((cert, index) => (
-                            <div key={index} className="flex gap-2">
-                              <Input 
-                                value={cert}
-                                 onChange={(e) => updateCertification(index, e.target.value)}
-                                placeholder="Enter a certification"
-                              />
-                              {resumeData.certifications.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => removeArrayItem('certifications', index)}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium">Awards</h4>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => addArrayItem('awards', '')}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {resumeData.awards.map((award, index) => (
-                            <div key={index} className="flex gap-2">
-                              <Input 
-                                value={award}
-                                 onChange={(e) => updateAward(index, e.target.value)}
-                                placeholder="Enter an award"
-                              />
-                              {resumeData.awards.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => removeArrayItem('awards', index)}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
                       </div>
                     </div>
                   </CollapsibleSection>
