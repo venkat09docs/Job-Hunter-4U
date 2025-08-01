@@ -365,190 +365,389 @@ ${resumeData.personalDetails.fullName}`;
     const margin = 20;
     let currentY = margin;
 
-    // Helper function to add text with word wrapping
-    const addText = (text: string, fontSize: number = 12, isBold: boolean = false) => {
-      if (isBold) {
-        pdf.setFont('helvetica', 'bold');
+    // ATS-friendly helper function
+    const addATSText = (text: string, fontSize: number = 11, isBold: boolean = false, isHeader: boolean = false) => {
+      // Use ATS-friendly fonts
+      if (isBold || isHeader) {
+        pdf.setFont('arial', 'bold');
       } else {
-        pdf.setFont('helvetica', 'normal');
+        pdf.setFont('arial', 'normal');
       }
+      
       pdf.setFontSize(fontSize);
+      
+      // Handle page breaks
+      if (currentY > 270) {
+        pdf.addPage();
+        currentY = margin;
+      }
       
       const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
       lines.forEach((line: string) => {
-        if (currentY > 280) { // Check if we need a new page
+        if (currentY > 270) {
           pdf.addPage();
           currentY = margin;
         }
         pdf.text(line, margin, currentY);
-        currentY += fontSize * 0.5;
+        currentY += fontSize * 0.4;
       });
-      currentY += 5; // Add some spacing
+      
+      // Add spacing after sections
+      if (isHeader) {
+        currentY += 3;
+      } else {
+        currentY += 2;
+      }
     };
 
-    // Header
-    addText(resumeData.personalDetails.fullName, 20, true);
-    const contactInfo = [
-      resumeData.personalDetails.email,
-      resumeData.personalDetails.phone,
-      resumeData.personalDetails.location,
-      resumeData.personalDetails.linkedIn,
-      resumeData.personalDetails.github
-    ].filter(Boolean).join(' | ');
-    addText(contactInfo, 10);
-    currentY += 10;
+    // Contact Information (ATS Standard)
+    addATSText(resumeData.personalDetails.fullName, 16, true);
+    currentY += 2;
+    
+    const contactDetails = [];
+    if (resumeData.personalDetails.email) contactDetails.push(`Email: ${resumeData.personalDetails.email}`);
+    if (resumeData.personalDetails.phone) contactDetails.push(`Phone: ${resumeData.personalDetails.phone}`);
+    if (resumeData.personalDetails.location) contactDetails.push(`Location: ${resumeData.personalDetails.location}`);
+    if (resumeData.personalDetails.linkedIn) contactDetails.push(`LinkedIn: ${resumeData.personalDetails.linkedIn}`);
+    if (resumeData.personalDetails.github) contactDetails.push(`GitHub: ${resumeData.personalDetails.github}`);
+    
+    contactDetails.forEach(detail => {
+      addATSText(detail, 10);
+    });
+    currentY += 8;
 
-    // Professional Summary
+    // Professional Summary (ATS Section)
     if (resumeData.professionalSummary) {
-      addText('PROFESSIONAL SUMMARY', 14, true);
-      addText(resumeData.professionalSummary, 12);
-      currentY += 10;
+      addATSText('PROFESSIONAL SUMMARY', 12, true, true);
+      addATSText(resumeData.professionalSummary, 11);
+      currentY += 8;
     }
 
-    // Experience
+    // Work Experience (ATS Standard)
     const validExperience = resumeData.experience.filter(exp => exp.company && exp.role);
     if (validExperience.length > 0) {
-      addText('EXPERIENCE', 14, true);
+      addATSText('WORK EXPERIENCE', 12, true, true);
       validExperience.forEach(exp => {
-        addText(`${exp.role} at ${exp.company} (${exp.duration})`, 12, true);
-        addText(exp.description, 11);
+        // Job title and company (ATS format)
+        addATSText(`${exp.role}`, 11, true);
+        addATSText(`${exp.company} | ${exp.duration}`, 10);
+        
+        // Description with bullet points
+        if (exp.description) {
+          const descriptions = exp.description.split('\n').filter(desc => desc.trim());
+          descriptions.forEach(desc => {
+            addATSText(`• ${desc.trim()}`, 10);
+          });
+        }
         currentY += 5;
       });
-      currentY += 10;
+      currentY += 3;
     }
 
-    // Education
+    // Education (ATS Standard)
     const validEducation = resumeData.education.filter(edu => edu.institution && edu.degree);
     if (validEducation.length > 0) {
-      addText('EDUCATION', 14, true);
+      addATSText('EDUCATION', 12, true, true);
       validEducation.forEach(edu => {
-        const eduText = `${edu.degree} - ${edu.institution} (${edu.duration})${edu.gpa ? ` - GPA: ${edu.gpa}` : ''}`;
-        addText(eduText, 12);
+        addATSText(edu.degree, 11, true);
+        addATSText(`${edu.institution} | ${edu.duration}`, 10);
+        if (edu.gpa) {
+          addATSText(`GPA: ${edu.gpa}`, 10);
+        }
+        currentY += 3;
       });
-      currentY += 10;
+      currentY += 3;
     }
 
-    // Skills
+    // Core Competencies/Skills (ATS Section)
     const validSkills = resumeData.skills.filter(skill => skill.trim());
     if (validSkills.length > 0) {
-      addText('SKILLS', 14, true);
-      addText(validSkills.join(' • '), 12);
-      currentY += 10;
+      addATSText('CORE COMPETENCIES', 12, true, true);
+      // ATS-friendly skill listing
+      validSkills.forEach(skill => {
+        addATSText(`• ${skill.trim()}`, 10);
+      });
+      currentY += 8;
     }
 
-    // Certifications
+    // Certifications & Awards (ATS Standard)
     const validCertifications = resumeData.certifications.filter(cert => cert.trim());
     if (validCertifications.length > 0) {
-      addText('CERTIFICATIONS', 14, true);
+      addATSText('CERTIFICATIONS & AWARDS', 12, true, true);
       validCertifications.forEach(cert => {
-        addText(`• ${cert}`, 12);
+        addATSText(`• ${cert.trim()}`, 10);
       });
     }
 
-    pdf.save(`${resumeData.personalDetails.fullName || 'Resume'}_Resume.pdf`);
+    pdf.save(`${resumeData.personalDetails.fullName || 'Resume'}_ATS_Resume.pdf`);
     setStatus('downloaded');
     toast({
-      title: 'Resume downloaded as PDF!',
-      description: 'Your resume has been downloaded as a PDF file.',
+      title: 'ATS-Optimized Resume downloaded as PDF!',
+      description: 'Your ATS-friendly resume has been downloaded as a PDF file.',
     });
   };
 
   const downloadResumeAsWord = async () => {
     console.log('Downloading Word document...');
-    // Create Word document
+    
+    // ATS-optimized Word document structure
     const doc = new Document({
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: "Arial", // ATS-friendly font
+              size: 22, // 11pt font size
+            },
+          },
+        },
+      },
       sections: [{
         children: [
-          // Header
+          // Contact Information (ATS Standard Format)
           new Paragraph({
-            text: resumeData.personalDetails.fullName,
-            heading: HeadingLevel.TITLE,
-            alignment: 'center',
+            children: [
+              new TextRun({
+                text: resumeData.personalDetails.fullName,
+                bold: true,
+                size: 32, // 16pt
+                font: "Arial",
+              }),
+            ],
+            spacing: { after: 100 },
           }),
-          new Paragraph({
-            text: [
-              resumeData.personalDetails.email,
-              resumeData.personalDetails.phone,
-              resumeData.personalDetails.location,
-              resumeData.personalDetails.linkedIn,
-              resumeData.personalDetails.github
-            ].filter(Boolean).join(' | '),
-            alignment: 'center',
-          }),
-          new Paragraph({ text: '' }), // Empty line
 
-          // Professional Summary
+          // Contact Details (Each on separate line for ATS)
+          ...(resumeData.personalDetails.email ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Email: ${resumeData.personalDetails.email}`,
+                font: "Arial",
+                size: 20, // 10pt
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.phone ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Phone: ${resumeData.personalDetails.phone}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.location ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `Location: ${resumeData.personalDetails.location}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.linkedIn ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `LinkedIn: ${resumeData.personalDetails.linkedIn}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 50 },
+          })] : []),
+
+          ...(resumeData.personalDetails.github ? [new Paragraph({
+            children: [
+              new TextRun({
+                text: `GitHub: ${resumeData.personalDetails.github}`,
+                font: "Arial",
+                size: 20,
+              }),
+            ],
+            spacing: { after: 200 },
+          })] : []),
+
+          // Professional Summary (ATS Section)
           ...(resumeData.professionalSummary ? [
             new Paragraph({
-              text: 'PROFESSIONAL SUMMARY',
-              heading: HeadingLevel.HEADING_2,
+              children: [
+                new TextRun({
+                  text: "PROFESSIONAL SUMMARY",
+                  bold: true,
+                  font: "Arial",
+                  size: 24, // 12pt
+                }),
+              ],
+              spacing: { after: 100 },
             }),
             new Paragraph({
-              text: resumeData.professionalSummary,
+              children: [
+                new TextRun({
+                  text: resumeData.professionalSummary,
+                  font: "Arial",
+                  size: 22,
+                }),
+              ],
+              spacing: { after: 200 },
             }),
-            new Paragraph({ text: '' }), // Empty line
           ] : []),
 
-          // Experience
+          // Work Experience (ATS Standard)
           ...(resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? [
             new Paragraph({
-              text: 'EXPERIENCE',
-              heading: HeadingLevel.HEADING_2,
+              children: [
+                new TextRun({
+                  text: "WORK EXPERIENCE",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
             }),
             ...resumeData.experience.filter(exp => exp.company && exp.role).flatMap(exp => [
               new Paragraph({
                 children: [
                   new TextRun({
-                    text: `${exp.role} at ${exp.company}`,
+                    text: exp.role,
                     bold: true,
-                  }),
-                  new TextRun({
-                    text: ` (${exp.duration})`,
+                    font: "Arial",
+                    size: 22,
                   }),
                 ],
+                spacing: { after: 50 },
               }),
               new Paragraph({
-                text: exp.description,
+                children: [
+                  new TextRun({
+                    text: `${exp.company} | ${exp.duration}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
               }),
-              new Paragraph({ text: '' }), // Empty line
+              ...(exp.description ? exp.description.split('\n').filter(desc => desc.trim()).map(desc =>
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `• ${desc.trim()}`,
+                      font: "Arial",
+                      size: 20,
+                    }),
+                  ],
+                  spacing: { after: 50 },
+                })
+              ) : []),
+              new Paragraph({ text: "", spacing: { after: 100 } }),
             ]),
           ] : []),
 
-          // Education
+          // Education (ATS Format)
           ...(resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? [
             new Paragraph({
-              text: 'EDUCATION',
-              heading: HeadingLevel.HEADING_2,
+              children: [
+                new TextRun({
+                  text: "EDUCATION",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
             }),
-            ...resumeData.education.filter(edu => edu.institution && edu.degree).map(edu => 
+            ...resumeData.education.filter(edu => edu.institution && edu.degree).flatMap(edu => [
               new Paragraph({
-                text: `${edu.degree} - ${edu.institution} (${edu.duration})${edu.gpa ? ` - GPA: ${edu.gpa}` : ''}`,
-              })
-            ),
-            new Paragraph({ text: '' }), // Empty line
+                children: [
+                  new TextRun({
+                    text: edu.degree,
+                    bold: true,
+                    font: "Arial",
+                    size: 22,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${edu.institution} | ${edu.duration}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              }),
+              ...(edu.gpa ? [new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `GPA: ${edu.gpa}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 100 },
+              })] : [new Paragraph({ text: "", spacing: { after: 100 } })]),
+            ]),
           ] : []),
 
-          // Skills
+          // Core Competencies (ATS Section)
           ...(resumeData.skills.filter(skill => skill.trim()).length > 0 ? [
             new Paragraph({
-              text: 'SKILLS',
-              heading: HeadingLevel.HEADING_2,
+              children: [
+                new TextRun({
+                  text: "CORE COMPETENCIES",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
             }),
-            new Paragraph({
-              text: resumeData.skills.filter(skill => skill.trim()).join(' • '),
-            }),
-            new Paragraph({ text: '' }), // Empty line
+            ...resumeData.skills.filter(skill => skill.trim()).map(skill =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `• ${skill.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
+              })
+            ),
+            new Paragraph({ text: "", spacing: { after: 200 } }),
           ] : []),
 
-          // Certifications
+          // Certifications & Awards (ATS Standard)
           ...(resumeData.certifications.filter(cert => cert.trim()).length > 0 ? [
             new Paragraph({
-              text: 'CERTIFICATIONS',
-              heading: HeadingLevel.HEADING_2,
+              children: [
+                new TextRun({
+                  text: "CERTIFICATIONS & AWARDS",
+                  bold: true,
+                  font: "Arial",
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 100 },
             }),
             ...resumeData.certifications.filter(cert => cert.trim()).map(cert =>
               new Paragraph({
-                text: `• ${cert}`,
+                children: [
+                  new TextRun({
+                    text: `• ${cert.trim()}`,
+                    font: "Arial",
+                    size: 20,
+                  }),
+                ],
+                spacing: { after: 50 },
               })
             ),
           ] : []),
@@ -561,7 +760,7 @@ ${resumeData.personalDetails.fullName}`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${resumeData.personalDetails.fullName || 'Resume'}_Resume.docx`;
+    link.download = `${resumeData.personalDetails.fullName || 'Resume'}_ATS_Resume.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -569,8 +768,8 @@ ${resumeData.personalDetails.fullName}`;
 
     setStatus('downloaded');
     toast({
-      title: 'Resume downloaded as Word document!',
-      description: 'Your resume has been downloaded as a Word (.docx) file.',
+      title: 'ATS-Optimized Resume downloaded as Word document!',
+      description: 'Your ATS-friendly resume has been downloaded as a Word (.docx) file.',
     });
   };
 
@@ -701,122 +900,119 @@ ${resumeData.personalDetails.fullName}`;
 
   const generateResumePreview = () => {
     return (
-      <div className="space-y-6 text-sm bg-white p-6 rounded-lg border max-w-full">
-        {/* Header - ATS Optimized */}
+      <div className="space-y-4 text-sm bg-white p-6 rounded-lg border max-w-full font-['Arial']">
+        {/* Contact Information - ATS Standard Format */}
         {resumeData.personalDetails.fullName && (
-          <div className="border-b-2 border-gray-300 pb-4">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{resumeData.personalDetails.fullName}</h1>
-            <div className="text-gray-700 space-y-1">
-              {resumeData.personalDetails.email && <div>{resumeData.personalDetails.email}</div>}
-              {resumeData.personalDetails.phone && <div>{resumeData.personalDetails.phone}</div>}
-              {resumeData.personalDetails.linkedIn && <div>{resumeData.personalDetails.linkedIn}</div>}
+          <div className="border-b border-gray-300 pb-3 mb-4">
+            <h1 className="text-lg font-bold text-gray-900 mb-2 text-left">{resumeData.personalDetails.fullName}</h1>
+            <div className="text-gray-700 space-y-1 text-xs">
+              {resumeData.personalDetails.email && <div>Email: {resumeData.personalDetails.email}</div>}
+              {resumeData.personalDetails.phone && <div>Phone: {resumeData.personalDetails.phone}</div>}
+              {resumeData.personalDetails.location && <div>Location: {resumeData.personalDetails.location}</div>}
+              {resumeData.personalDetails.linkedIn && <div>LinkedIn: {resumeData.personalDetails.linkedIn}</div>}
+              {resumeData.personalDetails.github && <div>GitHub: {resumeData.personalDetails.github}</div>}
             </div>
           </div>
         )}
 
-        {/* Professional Summary - ATS Optimized */}
+        {/* Professional Summary - ATS Section */}
         {resumeData.professionalSummary && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">PROFESSIONAL SUMMARY</h2>
-            <p className="text-gray-700 leading-relaxed">{resumeData.professionalSummary}</p>
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Professional Summary</h2>
+            <p className="text-gray-700 text-xs leading-relaxed">{resumeData.professionalSummary}</p>
           </div>
         )}
 
-        {/* Experience - ATS Optimized */}
-        {resumeData.experience.some(exp => exp.company || exp.role) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">WORK EXPERIENCE</h2>
-            <div className="space-y-4">
-              {resumeData.experience.map((exp, index) => (
-                (exp.company || exp.role) && (
-                  <div key={index}>
-                    <div className="flex justify-between items-start mb-1">
-                      <div>
-                        <h3 className="font-bold text-gray-900">{exp.role}</h3>
-                        <p className="font-semibold text-gray-700">{exp.company}</p>
-                      </div>
-                      {exp.duration && <span className="text-gray-600 font-medium">{exp.duration}</span>}
-                    </div>
+        {/* Work Experience - ATS Standard */}
+        {resumeData.experience.filter(exp => exp.company && exp.role).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Work Experience</h2>
+            <div className="space-y-3">
+              {resumeData.experience
+                .filter(exp => exp.company && exp.role)
+                .map((exp, index) => (
+                  <div key={index} className="border-l-2 border-gray-200 pl-3">
+                    <h3 className="text-xs font-bold text-gray-900">{exp.role}</h3>
+                    <p className="text-xs text-gray-600 mb-1">{exp.company} | {exp.duration}</p>
                     {exp.description && (
-                      <div className="text-gray-700 mt-2">
-                        {exp.description.split('\n').map((line, i) => (
-                          <div key={i} className="mb-1">• {line}</div>
+                      <div className="text-xs text-gray-700">
+                        {exp.description.split('\n').filter(desc => desc.trim()).map((desc, i) => (
+                          <div key={i} className="mb-1">• {desc.trim()}</div>
                         ))}
                       </div>
                     )}
                   </div>
-                )
-              ))}
+                ))}
             </div>
           </div>
         )}
 
-        {/* Education - ATS Optimized */}
-        {resumeData.education.some(edu => edu.institution || edu.degree) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">EDUCATION</h2>
-            <div className="space-y-3">
-              {resumeData.education.map((edu, index) => (
-                (edu.institution || edu.degree) && (
+        {/* Education - ATS Format */}
+        {resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Education</h2>
+            <div className="space-y-2">
+              {resumeData.education
+                .filter(edu => edu.institution && edu.degree)
+                .map((edu, index) => (
                   <div key={index}>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold text-gray-900">{edu.degree}</h3>
-                        <p className="font-semibold text-gray-700">{edu.institution}</p>
-                        {edu.gpa && <p className="text-gray-600">GPA: {edu.gpa}</p>}
-                      </div>
-                      {edu.duration && <span className="text-gray-600 font-medium">{edu.duration}</span>}
-                    </div>
+                    <h3 className="text-xs font-bold text-gray-900">{edu.degree}</h3>
+                    <p className="text-xs text-gray-600">{edu.institution} | {edu.duration}</p>
+                    {edu.gpa && <p className="text-xs text-gray-600">GPA: {edu.gpa}</p>}
                   </div>
-                )
-              ))}
+                ))}
             </div>
           </div>
         )}
 
-        {/* Skills - ATS Optimized */}
-        {resumeData.skills.some(skill => skill.trim()) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">SKILLS</h2>
-            <div className="text-gray-700">
-              {resumeData.skills.filter(skill => skill.trim()).join(' • ')}
+        {/* Core Competencies - ATS Section */}
+        {resumeData.skills.filter(skill => skill.trim()).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Core Competencies</h2>
+            <div className="grid grid-cols-1 gap-1">
+              {resumeData.skills
+                .filter(skill => skill.trim())
+                .map((skill, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {skill.trim()}</div>
+                ))}
             </div>
           </div>
         )}
 
-        {/* Interests - ATS Optimized */}
-        {resumeData.interests.some(interest => interest.trim()) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">INTERESTS</h2>
-            <div className="text-gray-700">
-              {resumeData.interests.filter(interest => interest.trim()).join(' • ')}
+        {/* Interests - ATS Format */}
+        {resumeData.interests.filter(interest => interest.trim()).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Interests</h2>
+            <div className="grid grid-cols-1 gap-1">
+              {resumeData.interests
+                .filter(interest => interest.trim())
+                .map((interest, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {interest.trim()}</div>
+                ))}
             </div>
           </div>
         )}
 
-        {/* Certifications - ATS Optimized */}
-        {resumeData.certifications.some(cert => cert.trim()) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">CERTIFICATIONS</h2>
+        {/* Certifications & Awards - ATS Standard */}
+        {resumeData.certifications.filter(cert => cert.trim()).length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">Certifications & Awards</h2>
             <div className="space-y-1">
-              {resumeData.certifications.filter(cert => cert.trim()).map((cert, index) => (
-                <div key={index} className="text-gray-700">• {cert}</div>
-              ))}
+              {resumeData.certifications
+                .filter(cert => cert.trim())
+                .map((cert, index) => (
+                  <div key={index} className="text-xs text-gray-700">• {cert.trim()}</div>
+                ))}
             </div>
           </div>
         )}
 
-        {/* Awards - ATS Optimized */}
-        {resumeData.awards.some(award => award.trim()) && (
-          <div>
-            <h2 className="text-lg font-bold text-gray-900 border-b border-gray-300 pb-1 mb-3">AWARDS</h2>
-            <div className="space-y-1">
-              {resumeData.awards.filter(award => award.trim()).map((award, index) => (
-                <div key={index} className="text-gray-700">• {award}</div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ATS Notice */}
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <p className="text-xs text-gray-500 italic text-center">
+            ✓ ATS-Optimized Format | Standard Fonts | Clean Layout | Keyword-Friendly
+          </p>
+        </div>
       </div>
     );
   };
