@@ -15,7 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye } from 'lucide-react';
+import { useToolChats } from '@/hooks/useToolChats';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -62,6 +63,10 @@ const ResumeBuilder = () => {
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  
+  // Job Application Tracker notes
+  const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
+  const { chats: jobTrackerNotes } = useToolChats(JOB_TRACKER_TOOL_ID);
   
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
@@ -425,7 +430,7 @@ ${resumeData.personalDetails.fullName}`;
     const suggestions = {
       personalDetails: [
         "Use a professional email address",
-        "Ensure phone number is current and professional",
+        "Ensure phone number is current and professional", 
         "Include your LinkedIn profile URL",
         "Keep personal details concise and professional",
         "Use consistent formatting throughout"
@@ -433,7 +438,7 @@ ${resumeData.personalDetails.fullName}`;
       experience: [
         "Use action verbs to start each bullet point",
         "Quantify achievements with numbers and percentages",
-        "Focus on accomplishments, not just responsibilities",
+        "Focus on accomplishments, not just responsibilities", 
         "Include relevant keywords from job descriptions",
         "Keep descriptions concise but impactful"
       ],
@@ -441,7 +446,7 @@ ${resumeData.personalDetails.fullName}`;
         "List education in reverse chronological order",
         "Include GPA if 3.5 or higher",
         "Add relevant coursework for entry-level positions",
-        "Include academic honors and achievements",
+        "Include academic honors and achievements", 
         "Mention relevant projects or thesis topics"
       ],
       skills: [
@@ -452,7 +457,7 @@ ${resumeData.personalDetails.fullName}`;
         "Include relevant certifications and tools"
       ],
       certifications: [
-        "List certifications in reverse chronological order",
+        "List certifications in reverse chronological order", 
         "Include expiration dates if applicable",
         "Add professional awards and recognitions",
         "Include relevant volunteer work",
@@ -468,6 +473,19 @@ ${resumeData.personalDetails.fullName}`;
     };
     
     return suggestions[section] || [];
+  };
+
+  // Get job tracker notes content for suggestions
+  const getJobTrackerNotes = () => {
+    if (!jobTrackerNotes || jobTrackerNotes.length === 0) {
+      return [];
+    }
+    
+    return jobTrackerNotes.map(note => ({
+      title: note.title,
+      content: note.messages[0]?.content || 'No content',
+      createdAt: note.created_at
+    }));
   };
 
   const generateResumePreview = () => {
@@ -637,10 +655,9 @@ ${resumeData.personalDetails.fullName}`;
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="resume-builder">Resume Builder</TabsTrigger>
               <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
-              <TabsTrigger value="status-tracker">Status Tracker</TabsTrigger>
               <TabsTrigger value="resume-analyzer">Resume Analyzer</TabsTrigger>
             </TabsList>
 
@@ -1090,29 +1107,89 @@ ${resumeData.personalDetails.fullName}`;
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {rightColumnContent === 'suggestions' ? (
-                        <div className="space-y-4">
-                          {activeSuggestionSection ? (
-                            <div>
-                              <h4 className="font-medium mb-3 capitalize">
-                                {activeSuggestionSection.replace(/([A-Z])/g, ' $1').trim()} Tips
-                              </h4>
-                              <ul className="space-y-2 text-sm">
-                                {getSuggestions(activeSuggestionSection).map((suggestion, index) => (
-                                  <li key={index} className="flex gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>{suggestion}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ) : (
-                            <div className="text-center text-muted-foreground">
-                              <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p>Click on a section to see specific tips and suggestions</p>
-                            </div>
-                          )}
-                        </div>
+                       {rightColumnContent === 'suggestions' ? (
+                         <div className="space-y-4">
+                           {activeSuggestionSection ? (
+                             <div className="space-y-6">
+                               <div>
+                                 <h4 className="font-medium mb-3 capitalize">
+                                   {activeSuggestionSection.replace(/([A-Z])/g, ' $1').trim()} Tips
+                                 </h4>
+                                 <ul className="space-y-2 text-sm">
+                                   {getSuggestions(activeSuggestionSection).map((suggestion, index) => (
+                                     <li key={index} className="flex gap-2">
+                                       <span className="text-primary">•</span>
+                                       <span>{suggestion}</span>
+                                     </li>
+                                   ))}
+                                 </ul>
+                               </div>
+                               
+                               {/* Job Tracker Notes */}
+                               <div>
+                                 <h4 className="font-medium mb-3 flex items-center gap-2">
+                                   <StickyNote className="h-4 w-4" />
+                                   Your Job Tracker Notes
+                                 </h4>
+                                 <div className="space-y-2 max-h-48 overflow-y-auto">
+                                   {getJobTrackerNotes().length > 0 ? (
+                                     getJobTrackerNotes().map((note, index) => (
+                                       <div key={index} className="p-3 bg-muted/50 rounded-lg border">
+                                         <h5 className="font-medium text-sm mb-1">{note.title}</h5>
+                                         <p className="text-xs text-muted-foreground mb-2">
+                                           {new Date(note.createdAt).toLocaleDateString()}
+                                         </p>
+                                         <p className="text-sm text-foreground/80 line-clamp-3">
+                                           {note.content}
+                                         </p>
+                                       </div>
+                                     ))
+                                   ) : (
+                                     <p className="text-sm text-muted-foreground">
+                                       No notes found in Job Application Tracker & Checklist. 
+                                       Create notes there to see them here.
+                                     </p>
+                                   )}
+                                 </div>
+                               </div>
+                             </div>
+                           ) : (
+                             <div className="space-y-6">
+                               <div className="text-center text-muted-foreground">
+                                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                 <p>Click on a section to see specific tips and suggestions</p>
+                               </div>
+                               
+                               {/* Show all notes when no section is active */}
+                               <div>
+                                 <h4 className="font-medium mb-3 flex items-center gap-2">
+                                   <StickyNote className="h-4 w-4" />
+                                   Your Job Tracker Notes
+                                 </h4>
+                                 <div className="space-y-2 max-h-64 overflow-y-auto">
+                                   {getJobTrackerNotes().length > 0 ? (
+                                     getJobTrackerNotes().map((note, index) => (
+                                       <div key={index} className="p-3 bg-muted/50 rounded-lg border">
+                                         <h5 className="font-medium text-sm mb-1">{note.title}</h5>
+                                         <p className="text-xs text-muted-foreground mb-2">
+                                           {new Date(note.createdAt).toLocaleDateString()}
+                                         </p>
+                                         <p className="text-sm text-foreground/80 line-clamp-3">
+                                           {note.content}
+                                         </p>
+                                       </div>
+                                     ))
+                                   ) : (
+                                     <p className="text-sm text-muted-foreground">
+                                       No notes found in Job Application Tracker & Checklist. 
+                                       Create notes there to see them here.
+                                     </p>
+                                   )}
+                                 </div>
+                               </div>
+                             </div>
+                           )}
+                         </div>
                       ) : (
                         <div className="max-h-96 overflow-y-auto">
                           {generateResumePreview()}
@@ -1164,47 +1241,6 @@ ${resumeData.personalDetails.fullName}`;
               </Card>
             </TabsContent>
 
-            <TabsContent value="status-tracker" className="space-y-6 mt-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Status Tracker
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge()}
-                      <span className="text-sm text-muted-foreground">
-                        Current status
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5" />
-                      Resume Checklist
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {Object.entries(checklist).map(([key, completed]) => (
-                        <div key={key} className="flex items-center gap-2">
-                          <CheckCircle className={`h-4 w-4 ${completed ? 'text-green-500' : 'text-muted-foreground'}`} />
-                          <span className={`text-sm ${completed ? 'text-foreground' : 'text-muted-foreground'}`}>
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
 
             <TabsContent value="resume-analyzer" className="space-y-6 mt-6">
               <Card>
