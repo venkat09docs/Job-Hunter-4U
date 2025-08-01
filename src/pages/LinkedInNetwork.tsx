@@ -76,6 +76,22 @@ const LinkedInNetwork = () => {
   }, [selectedDate, getTodayMetrics, getCompletedTasks]);
 
   const handleTaskToggle = (taskId: string, checked: boolean) => {
+    if (checked) {
+      // Find the activity to get target value
+      const activity = DAILY_ACTIVITIES.find(a => a.id === taskId);
+      if (activity?.targetValue) {
+        const currentMetric = todayMetrics[taskId] || 0;
+        if (currentMetric < activity.targetValue) {
+          toast({
+            title: 'Cannot Complete Task',
+            description: `Please enter at least ${activity.targetValue} ${activity.unit} to mark this task as completed`,
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+    }
+    
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     updateTaskCompletion(taskId, checked, dateKey);
     
@@ -88,7 +104,7 @@ const LinkedInNetwork = () => {
     setCompletedTasks(newCompleted);
     
     // Update completion percentage immediately
-    const newCompletedCount = checked ? newCompleted.size : newCompleted.size;
+    const newCompletedCount = newCompleted.size;
     const newPercentage = Math.round((newCompletedCount / DAILY_ACTIVITIES.length) * 100);
     setCompletionPercentage(newPercentage);
     
