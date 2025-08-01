@@ -88,7 +88,7 @@ export function AppSidebar() {
     `flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
       isActive 
         ? "bg-primary text-primary-foreground shadow-md" 
-        : "text-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
+        : "bg-card text-card-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
     }`;
 
   return (
@@ -158,7 +158,7 @@ export function AppSidebar() {
                         href={`/profile/${userSlug}`}
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
+                        className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-card text-card-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
                       >
                         <ExternalLink className="h-5 w-5 flex-shrink-0" />
                         <span className="font-medium text-sm">Bio Link</span>
@@ -177,7 +177,7 @@ export function AppSidebar() {
                       href="/blogs"
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
+                      className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-card text-card-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
                     >
                       <ExternalLink className="h-5 w-5 flex-shrink-0" />
                       <span className="font-medium text-sm">Blogs</span>
