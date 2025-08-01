@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
@@ -16,7 +17,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useToolChats } from '@/hooks/useToolChats';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote } from 'lucide-react';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -355,87 +358,208 @@ ${resumeData.personalDetails.fullName}`;
     setLoading(false);
   };
 
-  const downloadResume = () => {
-    // Create a temporary div to render the resume
-    const resumeElement = document.createElement('div');
-    resumeElement.innerHTML = `
-      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333;">
-        <!-- Header -->
-        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
-          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">${resumeData.personalDetails.fullName}</h1>
-          <div style="margin-top: 10px; font-size: 14px;">
-            ${resumeData.personalDetails.email} | ${resumeData.personalDetails.phone} | ${resumeData.personalDetails.location}
-            ${resumeData.personalDetails.linkedIn ? `| LinkedIn: ${resumeData.personalDetails.linkedIn}` : ''}
-            ${resumeData.personalDetails.github ? `| GitHub: ${resumeData.personalDetails.github}` : ''}
-          </div>
-        </div>
+  const downloadResumeAsPDF = () => {
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 20;
+    let currentY = margin;
 
-        <!-- Professional Summary -->
-        ${resumeData.professionalSummary ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Professional Summary</h2>
-          <p>${resumeData.professionalSummary}</p>
-        </div>
-        ` : ''}
+    // Helper function to add text with word wrapping
+    const addText = (text: string, fontSize: number = 12, isBold: boolean = false) => {
+      if (isBold) {
+        pdf.setFont('helvetica', 'bold');
+      } else {
+        pdf.setFont('helvetica', 'normal');
+      }
+      pdf.setFontSize(fontSize);
+      
+      const lines = pdf.splitTextToSize(text, pageWidth - 2 * margin);
+      lines.forEach((line: string) => {
+        if (currentY > 280) { // Check if we need a new page
+          pdf.addPage();
+          currentY = margin;
+        }
+        pdf.text(line, margin, currentY);
+        currentY += fontSize * 0.5;
+      });
+      currentY += 5; // Add some spacing
+    };
 
-        <!-- Experience -->
-        ${resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Experience</h2>
-          ${resumeData.experience.filter(exp => exp.company && exp.role).map(exp => `
-          <div style="margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-              <h3 style="margin: 0; font-size: 16px;">${exp.role} at ${exp.company}</h3>
-              <span style="font-style: italic; color: #666;">${exp.duration}</span>
-            </div>
-            <p style="margin: 5px 0 0 0;">${exp.description}</p>
-          </div>
-          `).join('')}
-        </div>
-        ` : ''}
+    // Header
+    addText(resumeData.personalDetails.fullName, 20, true);
+    const contactInfo = [
+      resumeData.personalDetails.email,
+      resumeData.personalDetails.phone,
+      resumeData.personalDetails.location,
+      resumeData.personalDetails.linkedIn,
+      resumeData.personalDetails.github
+    ].filter(Boolean).join(' | ');
+    addText(contactInfo, 10);
+    currentY += 10;
 
-        <!-- Education -->
-        ${resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Education</h2>
-          ${resumeData.education.filter(edu => edu.institution && edu.degree).map(edu => `
-          <div style="margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-              <h3 style="margin: 0; font-size: 16px;">${edu.degree} - ${edu.institution}</h3>
-              <span style="font-style: italic; color: #666;">${edu.duration}</span>
-            </div>
-            ${edu.gpa ? `<p style="margin: 5px 0 0 0;">GPA: ${edu.gpa}</p>` : ''}
-          </div>
-          `).join('')}
-        </div>
-        ` : ''}
+    // Professional Summary
+    if (resumeData.professionalSummary) {
+      addText('PROFESSIONAL SUMMARY', 14, true);
+      addText(resumeData.professionalSummary, 12);
+      currentY += 10;
+    }
 
-        <!-- Skills -->
-        ${resumeData.skills.filter(skill => skill.trim()).length > 0 ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Skills</h2>
-          <p>${resumeData.skills.filter(skill => skill.trim()).join(' • ')}</p>
-        </div>
-        ` : ''}
+    // Experience
+    const validExperience = resumeData.experience.filter(exp => exp.company && exp.role);
+    if (validExperience.length > 0) {
+      addText('EXPERIENCE', 14, true);
+      validExperience.forEach(exp => {
+        addText(`${exp.role} at ${exp.company} (${exp.duration})`, 12, true);
+        addText(exp.description, 11);
+        currentY += 5;
+      });
+      currentY += 10;
+    }
 
-        <!-- Certifications -->
-        ${resumeData.certifications.filter(cert => cert.trim()).length > 0 ? `
-        <div style="margin-bottom: 30px;">
-          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Certifications</h2>
-          <ul>
-            ${resumeData.certifications.filter(cert => cert.trim()).map(cert => `<li>${cert}</li>`).join('')}
-          </ul>
-        </div>
-        ` : ''}
-      </div>
-    `;
+    // Education
+    const validEducation = resumeData.education.filter(edu => edu.institution && edu.degree);
+    if (validEducation.length > 0) {
+      addText('EDUCATION', 14, true);
+      validEducation.forEach(edu => {
+        const eduText = `${edu.degree} - ${edu.institution} (${edu.duration})${edu.gpa ? ` - GPA: ${edu.gpa}` : ''}`;
+        addText(eduText, 12);
+      });
+      currentY += 10;
+    }
 
-    // Create and trigger download
-    const blob = new Blob([resumeElement.innerHTML], { type: 'text/html' });
+    // Skills
+    const validSkills = resumeData.skills.filter(skill => skill.trim());
+    if (validSkills.length > 0) {
+      addText('SKILLS', 14, true);
+      addText(validSkills.join(' • '), 12);
+      currentY += 10;
+    }
+
+    // Certifications
+    const validCertifications = resumeData.certifications.filter(cert => cert.trim());
+    if (validCertifications.length > 0) {
+      addText('CERTIFICATIONS', 14, true);
+      validCertifications.forEach(cert => {
+        addText(`• ${cert}`, 12);
+      });
+    }
+
+    pdf.save(`${resumeData.personalDetails.fullName || 'Resume'}_Resume.pdf`);
+    setStatus('downloaded');
+    toast({
+      title: 'Resume downloaded as PDF!',
+      description: 'Your resume has been downloaded as a PDF file.',
+    });
+  };
+
+  const downloadResumeAsWord = async () => {
+    // Create Word document
+    const doc = new Document({
+      sections: [{
+        children: [
+          // Header
+          new Paragraph({
+            text: resumeData.personalDetails.fullName,
+            heading: HeadingLevel.TITLE,
+            alignment: 'center',
+          }),
+          new Paragraph({
+            text: [
+              resumeData.personalDetails.email,
+              resumeData.personalDetails.phone,
+              resumeData.personalDetails.location,
+              resumeData.personalDetails.linkedIn,
+              resumeData.personalDetails.github
+            ].filter(Boolean).join(' | '),
+            alignment: 'center',
+          }),
+          new Paragraph({ text: '' }), // Empty line
+
+          // Professional Summary
+          ...(resumeData.professionalSummary ? [
+            new Paragraph({
+              text: 'PROFESSIONAL SUMMARY',
+              heading: HeadingLevel.HEADING_2,
+            }),
+            new Paragraph({
+              text: resumeData.professionalSummary,
+            }),
+            new Paragraph({ text: '' }), // Empty line
+          ] : []),
+
+          // Experience
+          ...(resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? [
+            new Paragraph({
+              text: 'EXPERIENCE',
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...resumeData.experience.filter(exp => exp.company && exp.role).flatMap(exp => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${exp.role} at ${exp.company}`,
+                    bold: true,
+                  }),
+                  new TextRun({
+                    text: ` (${exp.duration})`,
+                  }),
+                ],
+              }),
+              new Paragraph({
+                text: exp.description,
+              }),
+              new Paragraph({ text: '' }), // Empty line
+            ]),
+          ] : []),
+
+          // Education
+          ...(resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? [
+            new Paragraph({
+              text: 'EDUCATION',
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...resumeData.education.filter(edu => edu.institution && edu.degree).map(edu => 
+              new Paragraph({
+                text: `${edu.degree} - ${edu.institution} (${edu.duration})${edu.gpa ? ` - GPA: ${edu.gpa}` : ''}`,
+              })
+            ),
+            new Paragraph({ text: '' }), // Empty line
+          ] : []),
+
+          // Skills
+          ...(resumeData.skills.filter(skill => skill.trim()).length > 0 ? [
+            new Paragraph({
+              text: 'SKILLS',
+              heading: HeadingLevel.HEADING_2,
+            }),
+            new Paragraph({
+              text: resumeData.skills.filter(skill => skill.trim()).join(' • '),
+            }),
+            new Paragraph({ text: '' }), // Empty line
+          ] : []),
+
+          // Certifications
+          ...(resumeData.certifications.filter(cert => cert.trim()).length > 0 ? [
+            new Paragraph({
+              text: 'CERTIFICATIONS',
+              heading: HeadingLevel.HEADING_2,
+            }),
+            ...resumeData.certifications.filter(cert => cert.trim()).map(cert =>
+              new Paragraph({
+                text: `• ${cert}`,
+              })
+            ),
+          ] : []),
+        ],
+      }],
+    });
+
+    // Generate and download
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${resumeData.personalDetails.fullName || 'Resume'}_Resume.html`;
+    link.download = `${resumeData.personalDetails.fullName || 'Resume'}_Resume.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -443,8 +567,8 @@ ${resumeData.personalDetails.fullName}`;
 
     setStatus('downloaded');
     toast({
-      title: 'Resume downloaded!',
-      description: 'Your resume has been downloaded as an HTML file.',
+      title: 'Resume downloaded as Word document!',
+      description: 'Your resume has been downloaded as a Word (.docx) file.',
     });
   };
 
@@ -1124,14 +1248,25 @@ ${resumeData.personalDetails.fullName}`;
                       <CheckCircle className="h-4 w-4" />
                       Save Final Version
                     </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={downloadResume}
-                      className="gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download Resume
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          Download Resume
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56 bg-background border shadow-md z-50">
+                        <DropdownMenuItem onClick={downloadResumeAsPDF} className="cursor-pointer">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download as PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={downloadResumeAsWord} className="cursor-pointer">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Download as Word Document
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   {/* AI Suggestions */}
