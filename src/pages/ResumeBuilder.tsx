@@ -356,10 +356,95 @@ ${resumeData.personalDetails.fullName}`;
   };
 
   const downloadResume = () => {
+    // Create a temporary div to render the resume
+    const resumeElement = document.createElement('div');
+    resumeElement.innerHTML = `
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333;">
+        <!-- Header -->
+        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: bold;">${resumeData.personalDetails.fullName}</h1>
+          <div style="margin-top: 10px; font-size: 14px;">
+            ${resumeData.personalDetails.email} | ${resumeData.personalDetails.phone} | ${resumeData.personalDetails.location}
+            ${resumeData.personalDetails.linkedIn ? `| LinkedIn: ${resumeData.personalDetails.linkedIn}` : ''}
+            ${resumeData.personalDetails.github ? `| GitHub: ${resumeData.personalDetails.github}` : ''}
+          </div>
+        </div>
+
+        <!-- Professional Summary -->
+        ${resumeData.professionalSummary ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Professional Summary</h2>
+          <p>${resumeData.professionalSummary}</p>
+        </div>
+        ` : ''}
+
+        <!-- Experience -->
+        ${resumeData.experience.filter(exp => exp.company && exp.role).length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Experience</h2>
+          ${resumeData.experience.filter(exp => exp.company && exp.role).map(exp => `
+          <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <h3 style="margin: 0; font-size: 16px;">${exp.role} at ${exp.company}</h3>
+              <span style="font-style: italic; color: #666;">${exp.duration}</span>
+            </div>
+            <p style="margin: 5px 0 0 0;">${exp.description}</p>
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        <!-- Education -->
+        ${resumeData.education.filter(edu => edu.institution && edu.degree).length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Education</h2>
+          ${resumeData.education.filter(edu => edu.institution && edu.degree).map(edu => `
+          <div style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <h3 style="margin: 0; font-size: 16px;">${edu.degree} - ${edu.institution}</h3>
+              <span style="font-style: italic; color: #666;">${edu.duration}</span>
+            </div>
+            ${edu.gpa ? `<p style="margin: 5px 0 0 0;">GPA: ${edu.gpa}</p>` : ''}
+          </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        <!-- Skills -->
+        ${resumeData.skills.filter(skill => skill.trim()).length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Skills</h2>
+          <p>${resumeData.skills.filter(skill => skill.trim()).join(' • ')}</p>
+        </div>
+        ` : ''}
+
+        <!-- Certifications -->
+        ${resumeData.certifications.filter(cert => cert.trim()).length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">Certifications</h2>
+          <ul>
+            ${resumeData.certifications.filter(cert => cert.trim()).map(cert => `<li>${cert}</li>`).join('')}
+          </ul>
+        </div>
+        ` : ''}
+      </div>
+    `;
+
+    // Create and trigger download
+    const blob = new Blob([resumeElement.innerHTML], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${resumeData.personalDetails.fullName || 'Resume'}_Resume.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     setStatus('downloaded');
     toast({
       title: 'Resume downloaded!',
-      description: 'Your resume has been prepared for download.',
+      description: 'Your resume has been downloaded as an HTML file.',
     });
   };
 
