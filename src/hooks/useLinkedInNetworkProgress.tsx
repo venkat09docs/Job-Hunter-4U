@@ -56,6 +56,8 @@ export const useLinkedInNetworkProgress = () => {
           task_id: taskId,
           completed,
           completed_at: completed ? new Date().toISOString() : null,
+        }, {
+          onConflict: 'user_id,date,task_id'
         });
 
       if (error) throw error;
@@ -81,6 +83,8 @@ export const useLinkedInNetworkProgress = () => {
           date,
           activity_id: activityId,
           value,
+        }, {
+          onConflict: 'user_id,date,activity_id'
         });
 
       if (error) throw error;
