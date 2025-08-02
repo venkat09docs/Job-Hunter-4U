@@ -233,7 +233,7 @@ const Dashboard = () => {
 
                     {/* Cover Letter Status */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                         onClick={() => navigate('/dashboard/resume-builder')}>
+                         onClick={() => navigate('/dashboard/resume-builder?tab=cover-letter')}>
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -327,7 +327,8 @@ const Dashboard = () => {
                     </div>
 
                     {/* Blog Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/blog-dashboard')}>
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{publishedBlogsCount}</span>
