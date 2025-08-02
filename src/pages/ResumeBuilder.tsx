@@ -72,6 +72,10 @@ const ResumeBuilder = () => {
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
   const { chats: jobTrackerNotes } = useToolChats(JOB_TRACKER_TOOL_ID);
   
+  // Generate Resume Summary tool notes
+  const RESUME_SUMMARY_TOOL_ID = '733fcfc9-f0cd-4429-a8c2-66f1605e63df';
+  const { chats: resumeSummaryNotes } = useToolChats(RESUME_SUMMARY_TOOL_ID);
+  
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
   const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
@@ -1542,6 +1546,19 @@ ${resumeData.personalDetails.fullName}`;
     }));
   };
 
+  // Get resume summary notes content for suggestions
+  const getResumeSummaryNotes = () => {
+    if (!resumeSummaryNotes || resumeSummaryNotes.length === 0) {
+      return [];
+    }
+    
+    return resumeSummaryNotes.map(note => ({
+      title: note.title,
+      content: note.messages[0]?.content || 'No content',
+      createdAt: note.created_at
+    }));
+  };
+
   const generateResumePreview = () => {
     return (
       <div className="space-y-4 text-sm bg-white p-6 rounded-lg border max-w-full font-['Arial']">
@@ -2223,33 +2240,65 @@ ${resumeData.personalDetails.fullName}`;
                                  </ul>
                                </div>
                                
-                               {/* Job Tracker Notes */}
-                               <div>
-                                 <h4 className="font-medium mb-3 flex items-center gap-2">
-                                   <StickyNote className="h-4 w-4" />
-                                   Your Job Tracker Notes
-                                 </h4>
-                                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                                   {getJobTrackerNotes().length > 0 ? (
-                                     getJobTrackerNotes().map((note, index) => (
-                                       <div key={index} className="p-3 bg-muted/50 rounded-lg border">
-                                         <h5 className="font-medium text-sm mb-1">{note.title}</h5>
-                                         <p className="text-xs text-muted-foreground mb-2">
-                                           {new Date(note.createdAt).toLocaleDateString()}
-                                         </p>
-                                         <p className="text-sm text-foreground/80 line-clamp-3">
-                                           {note.content}
-                                         </p>
-                                       </div>
-                                     ))
-                                   ) : (
-                                     <p className="text-sm text-muted-foreground">
-                                       No notes found in Job Application Tracker & Checklist. 
-                                       Create notes there to see them here.
-                                     </p>
-                                   )}
-                                 </div>
-                               </div>
+                                {/* Professional Summary Notes - Show for summary section */}
+                                {activeSuggestionSection === 'summary' && (
+                                  <div>
+                                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                                      <StickyNote className="h-4 w-4" />
+                                      Your Resume Summary Notes
+                                    </h4>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                      {getResumeSummaryNotes().length > 0 ? (
+                                        getResumeSummaryNotes().map((note, index) => (
+                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border">
+                                            <h5 className="font-medium text-sm mb-1">{note.title}</h5>
+                                            <p className="text-xs text-muted-foreground mb-2">
+                                              {new Date(note.createdAt).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-sm text-foreground/80 line-clamp-3">
+                                              {note.content}
+                                            </p>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                          No notes found in "3. Generate Resume Summary" tool. 
+                                          Create notes there to see them here.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Job Tracker Notes - Show for other sections */}
+                                {activeSuggestionSection !== 'summary' && (
+                                  <div>
+                                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                                      <StickyNote className="h-4 w-4" />
+                                      Your Job Tracker Notes
+                                    </h4>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                      {getJobTrackerNotes().length > 0 ? (
+                                        getJobTrackerNotes().map((note, index) => (
+                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border">
+                                            <h5 className="font-medium text-sm mb-1">{note.title}</h5>
+                                            <p className="text-xs text-muted-foreground mb-2">
+                                              {new Date(note.createdAt).toLocaleDateString()}
+                                            </p>
+                                            <p className="text-sm text-foreground/80 line-clamp-3">
+                                              {note.content}
+                                            </p>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                          No notes found in Job Application Tracker & Checklist. 
+                                          Create notes there to see them here.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                              </div>
                            ) : (
                              <div className="space-y-6">
