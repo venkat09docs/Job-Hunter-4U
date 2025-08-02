@@ -189,7 +189,8 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Resume & Cover Letter Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/resume-builder')}>
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -220,7 +221,8 @@ const Dashboard = () => {
                     </div>
 
                     {/* LinkedIn Profile Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/linkedin-optimization')}>
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -282,7 +284,8 @@ const Dashboard = () => {
                     </div>
 
                     {/* Job Tracker Stats */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/job-tracker')}>
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{totalJobApplications}</span>
@@ -293,7 +296,8 @@ const Dashboard = () => {
                     </div>
 
                     {/* LinkedIn Network Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/linkedin-network')}>
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</span>
@@ -362,23 +366,28 @@ const Dashboard = () => {
                     </div>
                   ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      <div className="text-center p-4 rounded-lg border bg-card">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/linkedin-network')}>
                         <div className="text-2xl font-bold text-blue-500">{networkMetrics.totalConnections}</div>
                         <div className="text-sm text-muted-foreground">Total Connections</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/linkedin-network')}>
                         <div className="text-2xl font-bold text-rose-500">{networkMetrics.totalLikes}</div>
                         <div className="text-sm text-muted-foreground">Posts Liked</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/linkedin-network')}>
                         <div className="text-2xl font-bold text-purple-500">{networkMetrics.totalComments}</div>
                         <div className="text-sm text-muted-foreground">Comments Made</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/linkedin-network')}>
                         <div className="text-2xl font-bold text-green-500">{networkMetrics.totalPosts}</div>
                         <div className="text-sm text-muted-foreground">Posts Created</div>
                       </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/linkedin-network')}>
                         <div className="text-2xl font-bold text-orange-500">{networkMetrics.weeklyProgress}</div>
                         <div className="text-sm text-muted-foreground">Weekly Activity</div>
                       </div>
