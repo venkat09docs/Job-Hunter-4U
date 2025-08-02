@@ -88,6 +88,10 @@ const ResumeBuilder = () => {
   const CAPSTONE_TOOL_ID = 'c0df061d-c6de-400f-a33e-2ea98f425d75';
   const { chats: capstoneNotes } = useToolChats(CAPSTONE_TOOL_ID);
   
+  // Write an Effective Resume tool notes
+  const EFFECTIVE_RESUME_TOOL_ID = 'b1d7a888-49b8-412b-861b-b6d850eda7a4';
+  const { chats: effectiveResumeNotes } = useToolChats(EFFECTIVE_RESUME_TOOL_ID);
+  
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
   const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
@@ -274,8 +278,8 @@ const ResumeBuilder = () => {
 
     setLoading(true);
     try {
-      // Mock AI suggestions for now
-      const suggestions = `Based on your information, here are some resume enhancement suggestions:
+      // Generate resume suggestions with notes from "Write an Effective Resume" tool
+      let suggestions = `Based on your information, here are some resume enhancement suggestions:
 
 **Professional Summary Enhancement:**
 Dynamic professional with ${resumeData.experience.length} years of experience in ${resumeData.skills.slice(0, 3).join(', ')}. Proven track record of delivering results and driving innovation.
@@ -292,6 +296,18 @@ Consider adding these relevant skills: Project Management, Data Analysis, Team L
 - Include relevant certifications prominently
 - Tailor your resume to specific job descriptions
 - Keep it concise but comprehensive (1-2 pages)`;
+
+      // Add notes from "Write an Effective Resume" tool if available
+      if (effectiveResumeNotes && effectiveResumeNotes.length > 0) {
+        suggestions += `\n\n**Your "Write an Effective Resume" Tool Notes:**\n\n`;
+        effectiveResumeNotes.forEach((note, index) => {
+          const content = note.messages
+            .filter(msg => msg.type === 'assistant')
+            .map(msg => msg.content)
+            .join('\n');
+          suggestions += `${index + 1}. **${note.title || 'Note'}** (${new Date(note.created_at).toLocaleDateString()})\n${content}\n\n`;
+        });
+      }
 
       setAiSuggestions(suggestions);
       setShowSuggestions(true);
@@ -2230,19 +2246,59 @@ ${resumeData.personalDetails.fullName}`;
                   {/* AI Suggestions */}
                   {showSuggestions && (
                     <Card>
-                      <CardHeader>
-                        <CardTitle>AI Resume Suggestions</CardTitle>
-                        <CardDescription>
-                          Review and edit these AI-generated suggestions
-                        </CardDescription>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                        <div>
+                          <CardTitle>AI Resume Suggestions</CardTitle>
+                          <CardDescription>
+                            Review these AI-generated suggestions and notes from your tools
+                          </CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(aiSuggestions);
+                              toast({
+                                title: 'Copied to clipboard!',
+                                description: 'Resume suggestions have been copied.',
+                              });
+                            }}
+                            className="gap-2"
+                          >
+                            <Copy className="h-4 w-4" />
+                            Copy
+                          </Button>
+                          {(!effectiveResumeNotes || effectiveResumeNotes.length === 0) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=b1d7a888-49b8-412b-861b-b6d850eda7a4', '_blank')}
+                              className="gap-2"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Go to Write Effective Resume Tool
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
                       <CardContent>
-                        <Textarea 
-                          value={aiSuggestions}
-                          onChange={(e) => setAiSuggestions(e.target.value)}
-                          rows={10}
-                          className="font-mono text-sm"
-                        />
+                        <div className="space-y-4">
+                          <Textarea 
+                            value={aiSuggestions}
+                            onChange={(e) => setAiSuggestions(e.target.value)}
+                            rows={12}
+                            className="font-mono text-sm max-h-96 overflow-y-auto resize-none"
+                            placeholder="AI suggestions will appear here..."
+                          />
+                          {(!effectiveResumeNotes || effectiveResumeNotes.length === 0) && (
+                            <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
+                              <p className="text-sm text-muted-foreground mb-3">
+                                No notes found from "Write an Effective Resume" tool. Generate content using the tool to see personalized resume guidance here.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   )}
