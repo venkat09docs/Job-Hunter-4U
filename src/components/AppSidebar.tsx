@@ -34,7 +34,6 @@ import { useRole } from "@/hooks/useRole";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "My Profile Journey", url: "/dashboard/my-profile-journey", icon: Target },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   // Hidden items (keep for future): Job Search, LinkedIn Automation, Talent Screener
   // { title: "Job Search", url: "/dashboard/job-search", icon: Search },
