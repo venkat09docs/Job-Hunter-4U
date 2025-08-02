@@ -59,7 +59,7 @@ const Pricing = () => {
     },
     {
       name: "3 Months Plan",
-      price: 1999,
+      price: 2499,
       duration: "3 months",
       description: "Best value for comprehensive career growth",
       features: [
