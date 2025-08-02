@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
+  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
 
   const handleSignOut = async () => {
     try {
@@ -94,8 +95,18 @@ const Dashboard = () => {
 
         if (countError) throw countError;
         setTotalJobApplications(count || 0);
+
+        // Fetch published blogs count
+        const { count: blogsCount, error: blogsError } = await supabase
+          .from('blogs')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_public', true);
+
+        if (blogsError) throw blogsError;
+        setPublishedBlogsCount(blogsCount || 0);
       } catch (error) {
-        console.error('Error fetching job data:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setJobsLoading(false);
       }
@@ -188,7 +199,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Resume & Cover Letter Status */}
+                    {/* Resume Status */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                          onClick={() => navigate('/dashboard/resume-builder')}>
                       <div className="relative w-20 h-20 mb-4">
@@ -216,8 +227,40 @@ const Dashboard = () => {
                           <span className="text-lg font-bold text-primary">{resumeProgress}%</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">Resume & Cover Letter</h4>
-                      <p className="text-sm text-muted-foreground text-center">Documents completed</p>
+                      <h4 className="font-medium text-center">Resume</h4>
+                      <p className="text-sm text-muted-foreground text-center">Document completed</p>
+                    </div>
+
+                    {/* Cover Letter Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/resume-builder')}>
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${65 * 2.827} ${(100 - 65) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">65%</span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">Cover Letter</h4>
+                      <p className="text-sm text-muted-foreground text-center">Template completed</p>
                     </div>
 
                     {/* LinkedIn Profile Status */}
@@ -287,10 +330,10 @@ const Dashboard = () => {
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">12</span>
+                          <span className="text-2xl font-bold text-primary">{publishedBlogsCount}</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">Blog</h4>
+                      <h4 className="font-medium text-center">No of Blog Posts</h4>
                       <p className="text-sm text-muted-foreground text-center">Articles published</p>
                     </div>
 
