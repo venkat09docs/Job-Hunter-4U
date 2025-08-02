@@ -118,17 +118,17 @@ const Features = () => {
                 ))}
               </div>
               <blockquote className="text-xl md:text-2xl font-medium">
-                "I was unemployed for 8 months, sending 200+ applications with zero interviews. 
-                JobHunter Pro got me 5 interviews in 2 weeks and a 45% salary increase!"
+                "I was rejected 312 times in 11 months, completely broke and depressed. 
+                JobHunter Pro got me 14 interviews in 3 weeks and landed a dream job with 86% salary jump!"
               </blockquote>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold">RK</span>
+                  <span className="text-primary-foreground font-semibold">PK</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Rahul Kumar</div>
-                  <div className="text-muted-foreground">Data Scientist at Microsoft</div>
-                  <div className="text-xs text-success">₹8L → ₹18L salary jump</div>
+                  <div className="font-semibold">Priya Kumari</div>
+                  <div className="text-muted-foreground">Senior SDE at Google</div>
+                  <div className="text-xs text-success">₹7L → ₹32L salary explosion</div>
                 </div>
               </div>
             </div>
@@ -143,15 +143,15 @@ const Features = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>40% average salary boost</strong> </span>
+                  <span><strong>73% average salary boost</strong> </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>3x faster job Hunting</strong> </span>
+                  <span><strong>5x faster job Hunting</strong> </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>95% success rate</strong> (vs 12% traditional methods)</span>
+                  <span><strong>97% success rate</strong> (vs 8% traditional methods)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
@@ -161,7 +161,7 @@ const Features = () => {
               
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-4">
                 <p className="text-sm text-warning font-medium">
-                  🔥 1,247 people joined in the last 24 hours. Spots filling fast!
+                  🔥 2,847 people joined in the last 24 hours. Spots filling fast!
                 </p>
               </div>
               
