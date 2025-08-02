@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
-import jobTrackerScreenshot from "@/assets/job-tracker-screenshot.jpg";
 
 const JobTrackerShowcase = () => {
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ const JobTrackerShowcase = () => {
             onClick={handleClick}
           >
             <img 
-              src={jobTrackerScreenshot} 
+              src="/lovable-uploads/4f3c4e46-2e72-4083-a576-51cc0828a7ac.png" 
               alt="Job Status Tracker Dashboard" 
               className="w-full h-auto"
             />
