@@ -47,23 +47,24 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     
     if (userError) {
-      console.error('Authentication error:', userError);
-      throw new Error(`Authentication failed: ${userError.message}. Please login again.`);
+      console.error('Authentication error:', userError.message);
+      throw new Error(`Authentication failed: ${userError.message}. Please refresh the page and login again.`);
     }
     
     if (!userData || !userData.user) {
-      console.error('No user data returned');
-      throw new Error('User session expired. Please login again.');
+      console.error('No user data returned from auth');
+      throw new Error('User session expired. Please refresh the page and login again.');
     }
     
     const user = userData.user;
     if (!user.email) {
-      console.error('User email not found');
-      throw new Error('User email not available. Please complete your profile.');
+      console.error('User email not available:', user);
+      throw new Error('User email not available. Please complete your profile setup.');
     }
     
-    console.log('User authenticated successfully:', user.email);
+    console.log('✅ User authenticated successfully:', user.email);
     console.log('User ID:', user.id);
+    console.log('User role:', user.role);
 
     // Parse request body
     console.log('Parsing request body...');

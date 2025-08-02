@@ -33,9 +33,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Handle specific auth events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+        }
       }
     );
 
@@ -50,7 +57,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Signout error:', error);
+        throw error;
+      }
+      // Clear local state
+      setSession(null);
+      setUser(null);
+    } catch (error) {
+      console.error('Error during signout:', error);
+      // Force clear local state even if signout fails
+      setSession(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

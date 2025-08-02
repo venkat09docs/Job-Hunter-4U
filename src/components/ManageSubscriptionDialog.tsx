@@ -129,10 +129,23 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       return;
     }
 
-    // Check if user session is still valid
+    // Check if user session is still valid before making the payment request
     try {
+      console.log('Checking user session before payment...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        toast({
+          title: "Session Error",
+          description: "There was an error checking your session. Please refresh the page and login again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!session || !session.user) {
+        console.error('No valid session found');
         toast({
           title: "Session Expired",
           description: "Your session has expired. Please refresh the page and login again.",
@@ -140,7 +153,10 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         });
         return;
       }
+      
+      console.log('✅ Session is valid, proceeding with payment...');
     } catch (error) {
+      console.error('Session validation error:', error);
       toast({
         title: "Authentication Error",
         description: "Unable to verify your session. Please refresh the page and try again.",
@@ -151,10 +167,13 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
     setLoadingPlan(plan.name);
     
+    
     try {
       // Load Razorpay SDK
+      console.log('Loading Razorpay SDK...');
       const res = await loadRazorpay();
       if (!res) {
+        console.error('Razorpay SDK failed to load');
         toast({
           title: "Error",
           description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
@@ -163,8 +182,10 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         setLoadingPlan(null);
         return;
       }
+      console.log('✅ Razorpay SDK loaded successfully');
 
       // Create order using our edge function
+      console.log('Creating payment order...', { amount: plan.price, plan_name: plan.name });
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
           amount: plan.price,
@@ -173,16 +194,29 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         }
       });
 
-      if (orderError || !orderData) {
+      if (orderError) {
         console.error('Order creation error:', orderError);
         toast({
-          title: "Error",
-          description: "Failed to create payment order. Please try again.",
+          title: "Payment Order Failed",
+          description: `Failed to create payment order: ${orderError.message}. Please try refreshing the page and logging in again.`,
           variant: "destructive"
         });
         setLoadingPlan(null);
         return;
       }
+
+      if (!orderData) {
+        console.error('No order data returned');
+        toast({
+          title: "Error",
+          description: "No payment order data received. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
+      }
+
+      console.log('✅ Payment order created successfully:', orderData);
 
       // Calculate upgraded end date
       const upgradedEndDate = calculateUpgradedEndDate(plan.days);
