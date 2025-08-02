@@ -13,6 +13,7 @@ import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useWeeklyProgress } from '@/hooks/useWeeklyProgress';
 import { format, startOfWeek, subWeeks } from 'date-fns';
 
 interface WeeklyMetrics {
@@ -42,8 +43,8 @@ export default function CareerGrowth() {
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
+  const { formatWeeklyMetrics, getWeeklyTrends, loading: weeklyLoading, createCurrentWeekSnapshot } = useWeeklyProgress();
   
-  const [weeklyMetrics, setWeeklyMetrics] = useState<WeeklyMetrics[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
@@ -59,8 +60,8 @@ export default function CareerGrowth() {
 
   useEffect(() => {
     if (user && totalJobApplications !== undefined && publishedBlogsCount !== undefined) {
-      loadWeeklyMetrics();
       generateSuggestions();
+      setLoading(false);
     }
   }, [user, resumeProgress, linkedinProgress, githubProgress, networkProgress, totalJobApplications, publishedBlogsCount]);
 
@@ -93,37 +94,22 @@ export default function CareerGrowth() {
     }
   };
 
-  const loadWeeklyMetrics = () => {
-    // Generate last 4 weeks of data
-    const metrics: WeeklyMetrics[] = [];
-    const currentWeek = startOfWeek(new Date(), { weekStartsOn: 6 }); // Saturday start
-    
-    for (let i = 0; i < 4; i++) {
-      const weekDate = subWeeks(currentWeek, i);
-      const weekKey = format(weekDate, 'yyyy-MM-dd');
-      
-      // Get stored weekly data or current values for this week
-      const storedData = localStorage.getItem(`weekly_metrics_${user?.id}_${weekKey}`);
-      
-      if (storedData) {
-        metrics.unshift(JSON.parse(storedData));
-      } else {
-        // For current week, use current values
-        metrics.unshift({
-          week: format(weekDate, 'MMM dd'),
-          resumeProgress: i === 0 ? resumeProgress : Math.max(0, resumeProgress - (i * 5)),
-          linkedinProgress: i === 0 ? linkedinProgress : Math.max(0, linkedinProgress - (i * 8)),
-          githubProgress: i === 0 ? githubProgress : Math.max(0, githubProgress - (i * 10)),
-          networkProgress: i === 0 ? networkProgress : Math.max(0, networkProgress - (i * 7)),
-          jobApplications: i === 0 ? totalJobApplications : Math.max(0, totalJobApplications - (i * 2)),
-          blogPosts: i === 0 ? publishedBlogsCount : Math.max(0, publishedBlogsCount - (i * 1))
-        });
-      }
-    }
-    
-    setWeeklyMetrics(metrics);
-    setLoading(false);
+  const getOverallScore = () => {
+    const scores = [resumeProgress, linkedinProgress, githubProgress, networkProgress];
+    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'destructive';
+      case 'medium': return 'secondary';
+      case 'low': return 'outline';
+      default: return 'outline';
+    }
+  };
+
+  const weeklyMetrics = formatWeeklyMetrics();
+  const trends = getWeeklyTrends();
 
   const generateSuggestions = () => {
     const newSuggestions: Suggestion[] = [];
@@ -203,21 +189,8 @@ export default function CareerGrowth() {
     setSuggestions(newSuggestions);
   };
 
-  const getOverallScore = () => {
-    const scores = [resumeProgress, linkedinProgress, githubProgress, networkProgress];
-    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
-  };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'destructive';
-      case 'medium': return 'secondary';
-      case 'low': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  if (loading) {
+  if (loading || weeklyLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -282,6 +255,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
                     Resume
+                    {trends.resume && <span className="text-lg">{trends.resume}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -301,6 +275,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-600" />
                     LinkedIn Profile
+                    {trends.linkedin && <span className="text-lg">{trends.linkedin}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -320,6 +295,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-gray-800" />
                     GitHub Profile
+                    {trends.github && <span className="text-lg">{trends.github}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -339,6 +315,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500" />
                     Network Growth
+                    {trends.network && <span className="text-lg">{trends.network}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -358,6 +335,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-purple-500" />
                     Job Applications
+                    {trends.jobApplications && <span className="text-lg">{trends.jobApplications}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -374,6 +352,7 @@ export default function CareerGrowth() {
                   <CardTitle className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-orange-500" />
                     Content Creation
+                    {trends.blogs && <span className="text-lg">{trends.blogs}</span>}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -389,7 +368,16 @@ export default function CareerGrowth() {
           <TabsContent value="metrics" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>4-Week Progress Trend</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  4-Week Progress Trend
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={createCurrentWeekSnapshot}
+                  >
+                    Update Current Week
+                  </Button>
+                </CardTitle>
                 <CardDescription>Track your weekly improvements across all areas</CardDescription>
               </CardHeader>
               <CardContent>
