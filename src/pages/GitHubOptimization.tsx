@@ -1,213 +1,132 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useState } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Github, Star, GitFork, Code, Users } from 'lucide-react';
+import { Download, Github, Eye, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 
-interface GitHubTask {
-  id: string;
+interface ProfileData {
+  name: string;
   title: string;
-  description: string;
-  category: string;
-  completed: boolean;
+  bio: string;
+  location: string;
+  email: string;
+  website: string;
+  github: string;
+  linkedin: string;
+  skills: string;
+  experience: string;
+  education: string;
+  projects: string;
+  achievements: string;
+  languages: string;
+  interests: string;
 }
 
-const GITHUB_TASKS: GitHubTask[] = [
-  // Profile Setup
-  {
-    id: 'profile_picture',
-    title: 'Add a professional profile picture',
-    description: 'Upload a clear, professional headshot or avatar',
-    category: 'Profile Setup',
-    completed: false
-  },
-  {
-    id: 'bio',
-    title: 'Write a compelling bio',
-    description: 'Add a brief description about yourself and your expertise',
-    category: 'Profile Setup',
-    completed: false
-  },
-  {
-    id: 'location',
-    title: 'Add your location',
-    description: 'Include your current city or region',
-    category: 'Profile Setup',
-    completed: false
-  },
-  {
-    id: 'company',
-    title: 'Add your current company/organization',
-    description: 'Show where you currently work or study',
-    category: 'Profile Setup',
-    completed: false
-  },
-  {
-    id: 'website',
-    title: 'Add your personal website or portfolio',
-    description: 'Link to your portfolio, blog, or personal website',
-    category: 'Profile Setup',
-    completed: false
-  },
-
-  // Repository Management
-  {
-    id: 'pinned_repos',
-    title: 'Pin your best repositories',
-    description: 'Pin 6 repositories that showcase your best work',
-    category: 'Repository Management',
-    completed: false
-  },
-  {
-    id: 'repo_descriptions',
-    title: 'Add descriptions to your repositories',
-    description: 'Write clear descriptions for all your public repositories',
-    category: 'Repository Management',
-    completed: false
-  },
-  {
-    id: 'readme_files',
-    title: 'Create README files for major projects',
-    description: 'Add comprehensive README files with setup instructions and project details',
-    category: 'Repository Management',
-    completed: false
-  },
-  {
-    id: 'topics_tags',
-    title: 'Add topics/tags to repositories',
-    description: 'Use relevant topics to make your repositories discoverable',
-    category: 'Repository Management',
-    completed: false
-  },
-  {
-    id: 'license',
-    title: 'Add licenses to your repositories',
-    description: 'Include appropriate licenses for your open-source projects',
-    category: 'Repository Management',
-    completed: false
-  },
-
-  // Activity & Engagement
-  {
-    id: 'regular_commits',
-    title: 'Maintain regular commit activity',
-    description: 'Keep your GitHub activity consistent with regular commits',
-    category: 'Activity & Engagement',
-    completed: false
-  },
-  {
-    id: 'contribute_opensource',
-    title: 'Contribute to open-source projects',
-    description: 'Make contributions to other repositories and open-source projects',
-    category: 'Activity & Engagement',
-    completed: false
-  },
-  {
-    id: 'github_pages',
-    title: 'Set up GitHub Pages',
-    description: 'Use GitHub Pages to host your portfolio or project demos',
-    category: 'Activity & Engagement',
-    completed: false
-  },
-  {
-    id: 'follow_developers',
-    title: 'Follow other developers',
-    description: 'Build your network by following interesting developers and organizations',
-    category: 'Activity & Engagement',
-    completed: false
-  }
-];
-
 const GitHubOptimization = () => {
-  const { user } = useAuth();
   const { profile } = useProfile();
-  const { tasks, loading, updateTaskStatus } = useGitHubProgress();
-  const [localTasks, setLocalTasks] = useState<GitHubTask[]>(GITHUB_TASKS);
+  const [profileData, setProfileData] = useState<ProfileData>({
+    name: profile?.full_name || '',
+    title: '',
+    bio: '',
+    location: '',
+    email: profile?.email || '',
+    website: '',
+    github: profile?.github_url || '',
+    linkedin: profile?.linkedin_url || '',
+    skills: '',
+    experience: '',
+    education: '',
+    projects: '',
+    achievements: '',
+    languages: '',
+    interests: ''
+  });
 
-  useEffect(() => {
-    if (!loading && tasks.length > 0) {
-      setLocalTasks(prev => 
-        prev.map(task => ({
-          ...task,
-          completed: tasks.some(t => t.task_id === task.id && t.completed)
-        }))
-      );
-    }
-  }, [tasks, loading]);
+  const generateReadme = () => {
+    const { name, title, bio, location, email, website, github, linkedin, skills, experience, education, projects, achievements, languages, interests } = profileData;
+    
+    return `# Hi there, I'm ${name} 👋
 
-  const handleTaskToggle = async (taskId: string, completed: boolean) => {
-    try {
-      await updateTaskStatus(taskId, completed);
-      setLocalTasks(prev =>
-        prev.map(task =>
-          task.id === taskId ? { ...task, completed } : task
-        )
-      );
-      toast.success(completed ? 'Task completed!' : 'Task marked as incomplete');
-    } catch (error) {
-      toast.error('Failed to update task status');
-    }
+${bio ? `${bio}\n` : ''}
+${title ? `## 💼 ${title}\n` : ''}
+${location ? `📍 **Location:** ${location}\n` : ''}
+${email ? `📧 **Email:** ${email}\n` : ''}
+${website ? `🌐 **Website:** [${website}](${website})\n` : ''}
+${linkedin ? `💼 **LinkedIn:** [Connect with me](${linkedin})\n` : ''}
+
+${skills ? `## 🛠️ Skills & Technologies
+
+${skills}
+` : ''}
+${experience ? `## 💼 Professional Experience
+
+${experience}
+` : ''}
+${education ? `## 🎓 Education
+
+${education}
+` : ''}
+${projects ? `## 🚀 Featured Projects
+
+${projects}
+` : ''}
+${achievements ? `## 🏆 Achievements
+
+${achievements}
+` : ''}
+${languages ? `## 🗣️ Languages
+
+${languages}
+` : ''}
+${interests ? `## 🎯 Interests
+
+${interests}
+` : ''}
+## 📊 GitHub Stats
+
+![${name}'s GitHub stats](https://github-readme-stats.vercel.app/api?username=${github.split('/').pop() || 'username'}&show_icons=true&theme=radical)
+
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=${github.split('/').pop() || 'username'}&layout=compact&theme=radical)
+
+## 🔥 GitHub Streak
+
+[![GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=${github.split('/').pop() || 'username'}&theme=radical)](https://git.io/streak-stats)
+
+---
+
+⭐️ From [${name}](${github})`;
   };
 
-  const handleGoToGitHub = () => {
-    const githubUrl = profile?.github_url;
-    if (githubUrl) {
-      window.open(githubUrl, '_blank');
-    } else {
-      window.open('https://github.com', '_blank');
-    }
+  const handleInputChange = (field: keyof ProfileData, value: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const completedTasks = localTasks.filter(task => task.completed).length;
-  const totalTasks = localTasks.length;
-  const completionPercentage = Math.round((completedTasks / totalTasks) * 100);
+  const handleDownload = () => {
+    const readmeContent = generateReadme();
+    const blob = new Blob([readmeContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'README.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success('README.md downloaded successfully!');
+  };
 
-  const groupedTasks = localTasks.reduce((acc, task) => {
-    if (!acc[task.category]) {
-      acc[task.category] = [];
-    }
-    acc[task.category].push(task);
-    return acc;
-  }, {} as Record<string, GitHubTask[]>);
-
-  if (loading) {
-    return (
-      <SidebarProvider>
-        <div className="flex h-screen w-full">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <header className="flex items-center justify-between p-6 border-b">
-              <div>
-                <Skeleton className="h-8 w-64 mb-2" />
-                <Skeleton className="h-4 w-96" />
-              </div>
-              <div className="flex items-center gap-4">
-                <SubscriptionUpgrade />
-                <UserProfileDropdown />
-              </div>
-            </header>
-            <main className="flex-1 overflow-auto p-6">
-              <div className="space-y-6">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-96 w-full" />
-              </div>
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
-    );
-  }
 
   return (
     <SidebarProvider>
@@ -217,149 +136,266 @@ const GitHubOptimization = () => {
           <header className="flex items-center justify-between p-6 border-b">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Github className="h-8 w-8" />
-                GitHub Profile Optimization
+                <FileText className="h-8 w-8" />
+                GitHub Profile README Generator
               </h1>
               <p className="text-muted-foreground">
-                Optimize your GitHub profile to showcase your coding skills and attract opportunities
+                Create a professional README.md for your GitHub profile
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <Button onClick={handleGoToGitHub} variant="outline">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View My GitHub
+              <Button onClick={handleDownload} className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Download README.md
               </Button>
               <SubscriptionUpgrade />
               <UserProfileDropdown />
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-6 space-y-6">
-            {/* Progress Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your GitHub Optimization Progress</CardTitle>
-                <CardDescription>
-                  Complete these tasks to optimize your GitHub profile
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          <main className="flex-1 overflow-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+              {/* Left Side - Input Fields */}
+              <div className="p-6 border-r overflow-auto">
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Github className="h-5 w-5" />
+                        Basic Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          value={profileData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="title">Professional Title</Label>
+                        <Input
+                          id="title"
+                          value={profileData.title}
+                          onChange={(e) => handleInputChange('title', e.target.value)}
+                          placeholder="Full Stack Developer"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bio">Bio/Introduction</Label>
+                        <Textarea
+                          id="bio"
+                          value={profileData.bio}
+                          onChange={(e) => handleInputChange('bio', e.target.value)}
+                          placeholder="I'm a passionate developer who loves creating innovative solutions..."
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          value={profileData.location}
+                          onChange={(e) => handleInputChange('location', e.target.value)}
+                          placeholder="San Francisco, CA"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Contact & Links</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={profileData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          placeholder="john@example.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="website">Website</Label>
+                        <Input
+                          id="website"
+                          value={profileData.website}
+                          onChange={(e) => handleInputChange('website', e.target.value)}
+                          placeholder="https://johndoe.dev"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="github">GitHub Profile URL</Label>
+                        <Input
+                          id="github"
+                          value={profileData.github}
+                          onChange={(e) => handleInputChange('github', e.target.value)}
+                          placeholder="https://github.com/johndoe"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
+                        <Input
+                          id="linkedin"
+                          value={profileData.linkedin}
+                          onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                          placeholder="https://linkedin.com/in/johndoe"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Professional Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="skills">Skills & Technologies</Label>
+                        <Textarea
+                          id="skills"
+                          value={profileData.skills}
+                          onChange={(e) => handleInputChange('skills', e.target.value)}
+                          placeholder="- JavaScript, TypeScript, Python
+- React, Node.js, Django
+- AWS, Docker, Kubernetes"
+                          rows={4}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="experience">Experience</Label>
+                        <Textarea
+                          id="experience"
+                          value={profileData.experience}
+                          onChange={(e) => handleInputChange('experience', e.target.value)}
+                          placeholder="- **Senior Developer at TechCorp** (2022-Present)
+- **Full Stack Developer at StartupXYZ** (2020-2022)"
+                          rows={4}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="education">Education</Label>
+                        <Textarea
+                          id="education"
+                          value={profileData.education}
+                          onChange={(e) => handleInputChange('education', e.target.value)}
+                          placeholder="- **BS Computer Science** - University of Technology (2020)
+- **Certified AWS Solutions Architect** (2021)"
+                          rows={3}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Additional Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="projects">Featured Projects</Label>
+                        <Textarea
+                          id="projects"
+                          value={profileData.projects}
+                          onChange={(e) => handleInputChange('projects', e.target.value)}
+                          placeholder="- **[Project Name](link)** - Description of the project
+- **[Another Project](link)** - Another project description"
+                          rows={4}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="achievements">Achievements</Label>
+                        <Textarea
+                          id="achievements"
+                          value={profileData.achievements}
+                          onChange={(e) => handleInputChange('achievements', e.target.value)}
+                          placeholder="- Winner of Hackathon 2023
+- Open Source Contributor with 100+ contributions"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="languages">Languages</Label>
+                        <Input
+                          id="languages"
+                          value={profileData.languages}
+                          onChange={(e) => handleInputChange('languages', e.target.value)}
+                          placeholder="English (Native), Spanish (Fluent), French (Basic)"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="interests">Interests</Label>
+                        <Input
+                          id="interests"
+                          value={profileData.interests}
+                          onChange={(e) => handleInputChange('interests', e.target.value)}
+                          placeholder="Machine Learning, Open Source, Photography"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Right Side - Preview */}
+              <div className="p-6 bg-muted/30 overflow-auto">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold">{completionPercentage}% Complete</span>
-                    <Badge variant="secondary">
-                      {completedTasks} of {totalTasks} tasks completed
-                    </Badge>
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      README.md Preview
+                    </h2>
+                    <Badge variant="outline">Live Preview</Badge>
                   </div>
-                  <Progress value={completionPercentage} className="h-3" />
+                  
+                  <Card>
+                    <CardContent className="p-6">
+                      <pre className="whitespace-pre-wrap text-sm font-mono bg-background p-4 rounded-lg border overflow-auto max-h-[calc(100vh-200px)]">
+                        {generateReadme()}
+                      </pre>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Setup Instructions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">1. Create Special Repository</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Create a new repository with the same name as your GitHub username (e.g., if your username is "johndoe", create a repository named "johndoe").
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">2. Add README.md</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Upload the downloaded README.md file to the root of this special repository.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">3. Make it Public</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Ensure the repository is public so that the README appears on your GitHub profile.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">4. Customize Further</h4>
+                        <p className="text-sm text-muted-foreground">
+                          You can add GitHub stats widgets, visitor counters, and other dynamic elements to make your profile even more engaging.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Task Categories */}
-            {Object.entries(groupedTasks).map(([category, categoryTasks]) => {
-              const categoryCompleted = categoryTasks.filter(task => task.completed).length;
-              const categoryTotal = categoryTasks.length;
-              const categoryProgress = Math.round((categoryCompleted / categoryTotal) * 100);
-
-              return (
-                <Card key={category}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        {category === 'Profile Setup' && <Users className="h-5 w-5" />}
-                        {category === 'Repository Management' && <Code className="h-5 w-5" />}
-                        {category === 'Activity & Engagement' && <Star className="h-5 w-5" />}
-                        {category}
-                      </CardTitle>
-                      <Badge variant="outline">
-                        {categoryCompleted}/{categoryTotal}
-                      </Badge>
-                    </div>
-                    <Progress value={categoryProgress} className="h-2" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {categoryTasks.map((task) => (
-                        <div key={task.id} className="flex items-start space-x-3 p-3 rounded-lg border">
-                          <Checkbox
-                            id={task.id}
-                            checked={task.completed}
-                            onCheckedChange={(checked) => 
-                              handleTaskToggle(task.id, checked as boolean)
-                            }
-                            className="mt-1"
-                          />
-                          <div className="flex-1 space-y-1">
-                            <label
-                              htmlFor={task.id}
-                              className={`text-sm font-medium cursor-pointer ${
-                                task.completed ? 'line-through text-muted-foreground' : ''
-                              }`}
-                            >
-                              {task.title}
-                            </label>
-                            <p className="text-sm text-muted-foreground">
-                              {task.description}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-
-            {/* Pro Tips */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Pro Tips for GitHub Success
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <GitFork className="h-4 w-4" />
-                      Showcase Your Best Work
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Pin repositories that demonstrate your skills and include live demos when possible.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Code className="h-4 w-4" />
-                      Write Quality Code
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Use consistent coding standards, meaningful commit messages, and proper documentation.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Engage with Community
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Contribute to open source, participate in discussions, and help others.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      Stay Consistent
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      Maintain regular activity and keep your profile updated with recent projects.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </main>
         </div>
       </div>
