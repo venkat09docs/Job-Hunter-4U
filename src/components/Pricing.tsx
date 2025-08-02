@@ -244,18 +244,34 @@ const Pricing = () => {
   return (
     <section id="pricing" className="py-20">
       <div className="container px-4">
-        {/* Header */}
-        <div className="text-center space-y-4 mb-16">
+        {/* Header with FOMO */}
+        <div className="text-center space-y-6 mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-destructive/10 text-destructive text-sm font-medium">
+            ⚠️ Price increases to ₹1,999 after 100 more signups
+          </div>
+          
           <h2 className="text-3xl md:text-4xl font-bold">
-            Choose Your{" "}
+            Stop Competing. Start{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Career Plan
+              Dominating
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Invest in your future with our affordable plans designed to accelerate 
-            your job search and career growth.
+          
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            While others send 100+ applications and get ghosted, our users get hired in 30 days with 40% salary increases. 
+            <strong className="text-foreground">Your competition is already using AI. Don't get left behind.</strong>
           </p>
+          
+          <div className="bg-gradient-card rounded-lg p-6 max-w-md mx-auto border border-primary/20">
+            <div className="text-center space-y-2">
+              <div className="text-2xl font-bold text-primary">LIMITED TIME</div>
+              <div className="text-sm text-muted-foreground">70% OFF - Ends Soon</div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg line-through text-muted-foreground">₹1,999</span>
+                <span className="text-3xl font-bold text-success">₹299</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Pricing cards */}
@@ -324,6 +340,48 @@ const Pricing = () => {
               </div>
             </Card>
           ))}
+        </div>
+
+        {/* Social proof and urgency */}
+        <div className="mt-16 text-center space-y-8">
+          <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
+            <h3 className="text-2xl font-bold mb-6">Why JobHunter Pro Users Get Hired Faster</h3>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-success">94%</div>
+                <div className="text-sm text-muted-foreground">Resume ATS Pass Rate</div>
+                <div className="text-xs text-muted-foreground">(vs 23% industry avg)</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-primary">2 weeks</div>
+                <div className="text-sm text-muted-foreground">Average Time to Hire</div>
+                <div className="text-xs text-muted-foreground">(vs 6 months traditional)</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl font-bold text-warning">₹8.2L</div>
+                <div className="text-sm text-muted-foreground">Average Starting Salary</div>
+                <div className="text-xs text-muted-foreground">(40% above market)</div>
+              </div>
+            </div>
+            
+            <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mb-6">
+              <p className="text-sm text-warning font-medium">
+                🔥 Flash Sale: Next 50 customers get lifetime access to all future features at current price
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Perfect for:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Students</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Fresh Graduates</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Career Switchers</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Experienced Professionals</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Remote Job Seekers</span>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

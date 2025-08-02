@@ -16,54 +16,78 @@ const Hero = () => {
           {/* Text content */}
           <div className="space-y-8">
             <div className="space-y-4">
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                🔥 Last 24hrs: 1,247 people got hired
+              </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                Land Your{" "}
-                <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Dream Job
+                Stop Getting{" "}
+                <span className="bg-gradient-primary bg-clip-text text-transparent line-through opacity-60">
+                  Rejected
                 </span>{" "}
-                Faster
+                Start Getting{" "}
+                <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  Hired
+                </span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Join thousands of professionals who've accelerated their career growth 
-                with our premium job hunting platform. Get matched with top employers 
-                and access exclusive opportunities.
+                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 50K+ students and job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium">50K+ Active Users</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium">95% Success Rate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Search className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium">10K+ Job Listings</span>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <p className="text-sm text-destructive font-medium">
+                  ⚠️ Your competition is already using AI. Don't get left behind.
+                </p>
               </div>
             </div>
 
-            {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                variant="hero" 
-                size="lg" 
-                className="group"
-                onClick={() => navigate('/auth')}
-              >
-                Start Your Journey
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => navigate('/blogs')}
-              >
-                View Community Blogs
-              </Button>
+            {/* Stats with urgency */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-success" />
+                  <span className="text-sm font-medium">50K+ Got Hired</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-success" />
+                  <span className="text-sm font-medium">95% Success Rate</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Search className="w-5 h-5 text-success" />
+                  <span className="text-sm font-medium">3x Faster Hiring</span>
+                </div>
+              </div>
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                <p className="text-sm text-warning font-medium">
+                  🕒 Limited Time: Get access for just ₹299/week (Regular price: ₹1,999)
+                </p>
+              </div>
+            </div>
+
+            {/* CTA buttons with urgency */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="group animate-pulse"
+                  onClick={() => navigate('/auth')}
+                >
+                  Get Hired in 30 Days - Start Free
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => navigate('/blogs')}
+                >
+                  See Success Stories
+                </Button>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <span>⭐⭐⭐⭐⭐</span>
+                <span>4.9/5 from 10K+ reviews</span>
+                <span>•</span>
+                <span className="text-success">No credit card required</span>
+              </div>
             </div>
           </div>
 

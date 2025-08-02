@@ -12,54 +12,85 @@ import {
 } from "lucide-react";
 
 const Features = () => {
+  const painPoints = [
+    "Sending 100+ applications with zero responses",
+    "Getting rejected after multiple interview rounds", 
+    "Not knowing how to optimize your resume for ATS",
+    "Missing out on opportunities due to poor LinkedIn profile",
+    "Struggling to stand out among thousands of candidates",
+    "Accepting lower salaries due to lack of market insights"
+  ];
+
   const features = [
     {
       icon: Search,
-      title: "Smart Job Matching",
-      description: "AI-powered algorithm matches you with relevant job opportunities based on your skills, experience, and preferences."
+      title: "AI Resume Scanner",
+      description: "Beat ATS systems with our AI that optimizes your resume for each job application. 94% pass rate vs 23% industry average."
     },
     {
       icon: Users,
-      title: "Network Building", 
-      description: "Connect with industry professionals, mentors, and potential employers to expand your professional network."
+      title: "LinkedIn Automation", 
+      description: "Grow your network 10x faster with automated connection requests and engagement. Build relationships while you sleep."
     },
     {
       icon: Target,
-      title: "Career Coaching",
-      description: "Get personalized career guidance from experienced professionals to accelerate your career growth."
+      title: "Job Application Tracker",
+      description: "Never lose track of applications again. Get insights on response rates and optimize your approach based on data."
     },
     {
       icon: Shield,
-      title: "Privacy Protection",
-      description: "Your profile remains confidential until you choose to reveal it to interested employers."
+      title: "Interview Preparation AI",
+      description: "Practice with our AI interviewer trained on 10K+ real interviews. Boost confidence and ace every interview."
     },
     {
       icon: Zap,
-      title: "Instant Notifications",
-      description: "Get real-time alerts for new job openings that match your criteria and never miss an opportunity."
+      title: "Salary Negotiation Tools",
+      description: "Know your worth with real-time market data. Our users negotiate 40% higher salaries on average."
     },
     {
       icon: TrendingUp,
-      title: "Salary Insights",
-      description: "Access market salary data and negotiate better compensation with confidence."
+      title: "Portfolio Builder",
+      description: "Create stunning portfolios that showcase your work. Stand out with professional presentations that impress recruiters."
     }
   ];
 
   return (
     <section className="py-20 bg-muted/30">
       <div className="container px-4">
-        {/* Header */}
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold">
-            Everything You Need to{" "}
-            <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Succeed
-            </span>
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Our comprehensive platform provides all the tools and resources you need 
-            to land your dream job and advance your career.
-          </p>
+        {/* Pain Points Section */}
+        <div className="text-center space-y-8 mb-16">
+          <div className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-destructive">
+              Are You Stuck in This{" "}
+              <span className="bg-gradient-to-r from-destructive to-warning bg-clip-text text-transparent">
+                Job Search Hell?
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              If any of these sound familiar, you're not alone. 89% of job seekers face these exact problems.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {painPoints.map((pain, index) => (
+              <div key={index} className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
+                <p className="text-sm text-destructive font-medium">❌ {pain}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
+            <h3 className="text-2xl font-bold mb-4">
+              Here's How{" "}
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                JobHunter Pro
+              </span>{" "}
+              Solves Every Problem
+            </h3>
+            <p className="text-muted-foreground">
+              Stop struggling alone. Join 50K+ professionals who transformed their career with our AI-powered platform.
+            </p>
+          </div>
         </div>
 
         {/* Features grid */}
@@ -87,39 +118,60 @@ const Features = () => {
                 ))}
               </div>
               <blockquote className="text-xl md:text-2xl font-medium">
-                "This platform completely transformed my job search. I landed my dream role 
-                in just 3 weeks thanks to their amazing matching algorithm and career coaching."
+                "I was unemployed for 8 months, sending 200+ applications with zero interviews. 
+                JobHunter Pro got me 5 interviews in 2 weeks and a 45% salary increase!"
               </blockquote>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold">SJ</span>
+                  <span className="text-primary-foreground font-semibold">RK</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Sarah Johnson</div>
-                  <div className="text-muted-foreground">Senior Software Engineer</div>
+                  <div className="font-semibold">Rahul Kumar</div>
+                  <div className="text-muted-foreground">Data Scientist at Microsoft</div>
+                  <div className="text-xs text-success">₹8L → ₹18L salary jump</div>
                 </div>
               </div>
             </div>
             
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold">Join 50,000+ Successful Job Hunters</h3>
+              <div className="bg-primary/10 rounded-lg p-4 mb-4">
+                <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
+                <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
+              </div>
+              
+              <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span>Average 40% salary increase</span>
+                  <span><strong>40% average salary boost</strong> (₹6L → ₹10L+)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span>Land interviews 3x faster</span>
+                  <span><strong>3x faster job placement</strong> (2 weeks vs 6 months)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span>95% job placement success rate</span>
+                  <span><strong>95% success rate</strong> (vs 12% traditional methods)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <span><strong>Works for all levels:</strong> Students to CXOs</span>
                 </div>
               </div>
-              <Button variant="hero" size="lg" className="w-full">
-                Start Your Success Story
+              
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-4">
+                <p className="text-sm text-warning font-medium">
+                  🔥 1,247 people joined in the last 24 hours. Spots filling fast!
+                </p>
+              </div>
+              
+              <Button variant="hero" size="lg" className="w-full animate-pulse">
+                Join 50K+ Winners Today - Just ₹299
               </Button>
+              
+              <p className="text-xs text-center text-muted-foreground">
+                30-day money-back guarantee • Cancel anytime • No hidden fees
+              </p>
             </div>
           </div>
         </div>
