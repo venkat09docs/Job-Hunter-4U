@@ -1104,6 +1104,60 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_progress_snapshots: {
+        Row: {
+          created_at: string
+          github_progress: number
+          id: string
+          job_applications_count: number
+          linkedin_progress: number
+          network_progress: number
+          published_blogs_count: number
+          resume_progress: number
+          total_ai_queries: number
+          total_job_searches: number
+          total_resume_opens: number
+          updated_at: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          github_progress?: number
+          id?: string
+          job_applications_count?: number
+          linkedin_progress?: number
+          network_progress?: number
+          published_blogs_count?: number
+          resume_progress?: number
+          total_ai_queries?: number
+          total_job_searches?: number
+          total_resume_opens?: number
+          updated_at?: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          github_progress?: number
+          id?: string
+          job_applications_count?: number
+          linkedin_progress?: number
+          network_progress?: number
+          published_blogs_count?: number
+          resume_progress?: number
+          total_ai_queries?: number
+          total_job_searches?: number
+          total_resume_opens?: number
+          updated_at?: string
+          user_id?: string
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
