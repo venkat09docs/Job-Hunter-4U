@@ -7,26 +7,13 @@ const Footer = () => {
     product: [
       { name: "Features", href: "#features" },
       { name: "Pricing", href: "#pricing" },
-      { name: "Success Stories", href: "#testimonials" },
+      { name: "Contact", href: "#testimonials" },
       { name: "Blog", href: "#blog" }
-    ],
-    company: [
-      { name: "About Us", href: "#about" },
-      { name: "Careers", href: "#careers" },
-      { name: "Press", href: "#press" },
-      { name: "Contact", href: "#contact" }
-    ],
-    support: [
-      { name: "Help Center", href: "#help" },
-      { name: "Community", href: "#community" },
-      { name: "API Docs", href: "#api" },
-      { name: "Status", href: "#status" }
-    ],
+    ],    
     legal: [
       { name: "Privacy Policy", href: "#privacy" },
       { name: "Terms of Service", href: "#terms" },
-      { name: "Cookie Policy", href: "#cookies" },
-      { name: "GDPR", href: "#gdpr" }
+      { name: "Cookie Policy", href: "#cookies" }      
     ]
   };
 
@@ -63,15 +50,15 @@ const Footer = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span>hello@jobhunterpro.com</span>
+                <span>info@risenshinetechnologies.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4" />
-                <span>+91 98765 43210</span>
+                <span>+91 8686988042</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                <span>Mumbai, India</span>
+                <span>Hyderabad, India</span>
               </div>
             </div>
           </div>
@@ -150,7 +137,7 @@ const Footer = () => {
         {/* Bottom footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 JobHunter Pro. All rights reserved.
+            © 2025 Rise n Shine. All rights reserved.
           </p>
           
           {/* Social links */}
