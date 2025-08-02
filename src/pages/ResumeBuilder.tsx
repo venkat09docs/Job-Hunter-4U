@@ -2542,42 +2542,14 @@ ${resumeData.personalDetails.fullName}`;
                                   </div>
                                 )}
                              </div>
-                           ) : (
-                             <div className="space-y-6">
-                               <div className="text-center text-muted-foreground">
-                                 <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                 <p>Click on a section to see specific tips and suggestions</p>
-                               </div>
-                               
-                               {/* Show all notes when no section is active */}
-                               <div>
-                                 <h4 className="font-medium mb-3 flex items-center gap-2">
-                                   <StickyNote className="h-4 w-4" />
-                                   Your Job Tracker Notes
-                                 </h4>
-                                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                                   {getJobTrackerNotes().length > 0 ? (
-                                     getJobTrackerNotes().map((note, index) => (
-                                       <div key={index} className="p-3 bg-muted/50 rounded-lg border">
-                                         <h5 className="font-medium text-sm mb-1">{note.title}</h5>
-                                         <p className="text-xs text-muted-foreground mb-2">
-                                           {new Date(note.createdAt).toLocaleDateString()}
-                                         </p>
-                                         <p className="text-sm text-foreground/80 line-clamp-3">
-                                           {note.content}
-                                         </p>
-                                       </div>
-                                     ))
-                                   ) : (
-                                     <p className="text-sm text-muted-foreground">
-                                       No notes found in Job Application Tracker & Checklist. 
-                                       Create notes there to see them here.
-                                     </p>
-                                   )}
-                                 </div>
-                               </div>
-                             </div>
-                           )}
+                            ) : (
+                              <div className="space-y-6">
+                                <div className="text-center text-muted-foreground">
+                                  <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>Click on a section to see specific tips and suggestions</p>
+                                </div>
+                              </div>
+                            )}
                          </div>
                       ) : (
                         <div className="max-h-96 overflow-y-auto">

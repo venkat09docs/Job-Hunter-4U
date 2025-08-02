@@ -51,19 +51,6 @@ const DigitalCareerHub = () => {
     return toolsByCategory;
   }, [tools, categories]);
 
-  // Handle URL parameters to auto-open specific tools
-  useEffect(() => {
-    const toolId = searchParams.get('toolId');
-    if (toolId && tools.length > 0 && !selectedTool) {
-      const tool = tools.find(t => t.id === toolId);
-      if (tool) {
-        handleToolAccess(tool);
-        // Remove the toolId parameter from URL after opening
-        setSearchParams({}, { replace: true });
-      }
-    }
-  }, [tools, selectedTool, searchParams, setSearchParams]);
-
   const handleToolAccess = async (tool: any) => {
     try {
       if (!hasActiveSubscription()) {
@@ -85,6 +72,25 @@ const DigitalCareerHub = () => {
       // Error handling is done in the hook
     }
   };
+
+  // Handle URL parameters to auto-open specific tools
+  useEffect(() => {
+    const toolId = searchParams.get('toolId');
+    console.log('Digital Career Hub - toolId from URL:', toolId);
+    console.log('Digital Career Hub - tools available:', tools.length);
+    console.log('Digital Career Hub - selectedTool:', selectedTool);
+    
+    if (toolId && tools.length > 0 && !selectedTool) {
+      const tool = tools.find(t => t.id === toolId);
+      console.log('Digital Career Hub - found tool:', tool);
+      if (tool) {
+        console.log('Digital Career Hub - opening tool:', tool.tool_name);
+        handleToolAccess(tool);
+        // Remove the toolId parameter from URL after opening
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [tools, selectedTool, searchParams, setSearchParams]);
 
   const renderEmbedCode = (embedCode: string) => {
     // Clean up the embed code and ensure it's properly formatted
