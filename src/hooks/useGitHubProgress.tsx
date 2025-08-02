@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface GitHubProgress {
@@ -28,14 +29,19 @@ export const useGitHubProgress = () => {
 
     try {
       setLoading(true);
-      // For now, we'll use localStorage until the database types are updated
-      const storedProgress = localStorage.getItem(`github_progress_${user.id}`);
-      if (storedProgress) {
-        setTasks(JSON.parse(storedProgress));
-      }
+      // Fetch from database instead of localStorage
+      const { data, error } = await supabase
+        .from('github_progress')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setTasks(data || []);
     } catch (error) {
       console.error('Error fetching GitHub progress:', error);
       toast.error('Failed to load GitHub progress');
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -45,40 +51,22 @@ export const useGitHubProgress = () => {
     if (!user) return;
 
     try {
-      // For now, we'll use localStorage until the database types are updated
-      const storedProgress = localStorage.getItem(`github_progress_${user.id}`);
-      let allTasks: GitHubProgress[] = [];
-      
-      if (storedProgress) {
-        allTasks = JSON.parse(storedProgress);
-      }
-
-      const existingTaskIndex = allTasks.findIndex(task => task.task_id === taskId);
-      
-      if (existingTaskIndex >= 0) {
-        // Update existing task
-        allTasks[existingTaskIndex] = {
-          ...allTasks[existingTaskIndex],
-          completed,
-          completed_at: completed ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString()
-        };
-      } else {
-        // Add new task
-        const newTask: GitHubProgress = {
-          id: crypto.randomUUID(),
+      // Update database instead of localStorage
+      const { error } = await supabase
+        .from('github_progress')
+        .upsert({
           user_id: user.id,
           task_id: taskId,
           completed,
           completed_at: completed ? new Date().toISOString() : null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        allTasks.push(newTask);
-      }
+        }, {
+          onConflict: 'user_id,task_id'
+        });
 
-      localStorage.setItem(`github_progress_${user.id}`, JSON.stringify(allTasks));
-      setTasks(allTasks);
+      if (error) throw error;
+
+      // Refresh the tasks
+      await fetchGitHubProgress();
     } catch (error) {
       console.error('Error updating GitHub progress:', error);
       toast.error('Failed to update progress');

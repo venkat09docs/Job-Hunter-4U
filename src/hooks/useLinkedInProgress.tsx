@@ -16,11 +16,19 @@ export const useLinkedInProgress = () => {
   }, [user]);
 
   const fetchLinkedInProgress = async () => {
+    if (!user) return;
+    
     try {
-      // Use localStorage for now
-      const savedProgress = localStorage.getItem(`linkedin_progress_${user?.id}`);
-      const completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
-      const percentage = Math.round((completedTasks.length / TOTAL_TASKS) * 100);
+      // Fetch from database instead of localStorage
+      const { count, error } = await supabase
+        .from('linkedin_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('completed', true);
+
+      if (error) throw error;
+
+      const percentage = Math.round((count || 0) * 100 / TOTAL_TASKS);
       setCompletionPercentage(percentage);
     } catch (error) {
       console.error('Error fetching LinkedIn progress:', error);
