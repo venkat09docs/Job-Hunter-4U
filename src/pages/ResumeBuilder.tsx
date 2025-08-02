@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToolChats } from '@/hooks/useToolChats';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy } from 'lucide-react';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -2334,12 +2334,23 @@ ${resumeData.personalDetails.fullName}`;
                                              </div>
                                            </div>
                                          ))
-                                       ) : (
-                                         <p className="text-sm text-muted-foreground">
-                                           No notes found in "3. Generate Resume Summary" tool. 
-                                           Create notes there to see them here.
-                                         </p>
-                                       )}
+                                        ) : (
+                                          <div className="text-sm text-muted-foreground space-y-3">
+                                            <p>
+                                              No notes found in "3. Generate Resume Summary" tool. 
+                                              Create notes there to see them here.
+                                            </p>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm" 
+                                              className="gap-2"
+                                              onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                            >
+                                              <ExternalLink className="h-3 w-3" />
+                                              Go to Resume Summary Tool
+                                            </Button>
+                                          </div>
+                                        )}
                                     </div>
                                   </div>
                                  )}
@@ -2375,12 +2386,23 @@ ${resumeData.personalDetails.fullName}`;
                                             </div>
                                           </div>
                                         ))
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                          No notes found in "1. Resume Builder - Top 6 Skills" tool. 
-                                          Create notes there to see them here.
-                                        </p>
-                                      )}
+                                        ) : (
+                                          <div className="text-sm text-muted-foreground space-y-3">
+                                            <p>
+                                              No notes found in "1. Resume Builder - Top 6 Skills" tool. 
+                                              Create notes there to see them here.
+                                            </p>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm" 
+                                              className="gap-2"
+                                              onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                            >
+                                              <ExternalLink className="h-3 w-3" />
+                                              Go to Top Skills Tool
+                                            </Button>
+                                          </div>
+                                        )}
                                     </div>
                                   </div>
                                  )}
@@ -2418,12 +2440,23 @@ ${resumeData.personalDetails.fullName}`;
                                               </div>
                                             </div>
                                           ))
-                                        ) : (
-                                          <p className="text-sm text-muted-foreground">
-                                            No notes found in "2. Resume Builder - Achievements" tool. 
-                                            Create notes there to see them here.
-                                          </p>
-                                        )}
+                                         ) : (
+                                           <div className="text-sm text-muted-foreground space-y-3">
+                                             <p>
+                                               No notes found in "2. Resume Builder - Achievements" tool. 
+                                               Create notes there to see them here.
+                                             </p>
+                                             <Button 
+                                               variant="outline" 
+                                               size="sm" 
+                                               className="gap-2"
+                                               onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                             >
+                                               <ExternalLink className="h-3 w-3" />
+                                               Go to Achievements Tool
+                                             </Button>
+                                           </div>
+                                         )}
                                       </div>
                                     </div>
 
@@ -2457,12 +2490,23 @@ ${resumeData.personalDetails.fullName}`;
                                               </div>
                                             </div>
                                           ))
-                                        ) : (
-                                          <p className="text-sm text-muted-foreground">
-                                            No notes found in "4. Generate Capstone Project Ideas" tool. 
-                                            Create notes there to see them here.
-                                          </p>
-                                        )}
+                                         ) : (
+                                           <div className="text-sm text-muted-foreground space-y-3">
+                                             <p>
+                                               No notes found in "4. Generate Capstone Project Ideas" tool. 
+                                               Create notes there to see them here.
+                                             </p>
+                                             <Button 
+                                               variant="outline" 
+                                               size="sm" 
+                                               className="gap-2"
+                                               onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                             >
+                                               <ExternalLink className="h-3 w-3" />
+                                               Go to Capstone Ideas Tool
+                                             </Button>
+                                           </div>
+                                         )}
                                       </div>
                                     </div>
                                   </div>
