@@ -17,7 +17,7 @@ const Hero = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                🔥 Last 24hrs: 2,847 people got hired using our AI
+                🔥 Last 24hrs: 20+ people joined
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
@@ -30,7 +30,7 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 120K+ students and job seekers who landed their dream jobs 5x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 73%</span>
+                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 100+ students and job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
@@ -44,15 +44,15 @@ const Hero = () => {
               <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">120K+ Got Hired</span>
+                  <span className="text-sm font-medium">100+ Got Hired</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">97% Success Rate</span>
+                  <span className="text-sm font-medium">90% Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Search className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">5x Faster Hiring</span>
+                  <span className="text-sm font-medium">3x Faster Hiring</span>
                 </div>
               </div>
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
@@ -84,7 +84,7 @@ const Hero = () => {
               </div>
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>⭐⭐⭐⭐⭐</span>
-                <span>4.9/5 from 25K+ reviews</span>
+                <span>4.9/5 from 10K+ reviews</span>
                 <span>•</span>
                 <span className="text-success">No credit card required</span>
               </div>
