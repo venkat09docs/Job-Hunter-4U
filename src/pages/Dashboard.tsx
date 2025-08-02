@@ -421,12 +421,12 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                             strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
-                             className="transition-all duration-500"
-                           />
-                         </svg>
-                         <div className="absolute inset-0 flex items-center justify-center">
-                           <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
+                            strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">Enhancements</h4>
