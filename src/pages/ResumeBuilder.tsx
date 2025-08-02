@@ -80,6 +80,14 @@ const ResumeBuilder = () => {
   const TOP_SKILLS_TOOL_ID = '20c53c53-70c1-4d50-b0af-655fe09aef7b';
   const { chats: topSkillsNotes } = useToolChats(TOP_SKILLS_TOOL_ID);
   
+  // Resume Builder - Achievements tool notes
+  const ACHIEVEMENTS_TOOL_ID = '5a5f5729-8e66-478c-a59b-2db0e3e15c53';
+  const { chats: achievementsNotes } = useToolChats(ACHIEVEMENTS_TOOL_ID);
+  
+  // Generate Capstone Project Ideas tool notes
+  const CAPSTONE_TOOL_ID = '66d85dd8-69c3-4ea5-a00c-df2d91fd3c30';
+  const { chats: capstoneNotes } = useToolChats(CAPSTONE_TOOL_ID);
+  
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
   const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
@@ -1576,6 +1584,32 @@ ${resumeData.personalDetails.fullName}`;
     }));
   };
 
+  // Get achievements notes content for suggestions
+  const getAchievementsNotes = () => {
+    if (!achievementsNotes || achievementsNotes.length === 0) {
+      return [];
+    }
+    
+    return achievementsNotes.map(note => ({
+      title: note.title,
+      content: note.messages[0]?.content || 'No content',
+      createdAt: note.created_at
+    }));
+  };
+
+  // Get capstone project notes content for suggestions
+  const getCapstoneNotes = () => {
+    if (!capstoneNotes || capstoneNotes.length === 0) {
+      return [];
+    }
+    
+    return capstoneNotes.map(note => ({
+      title: note.title,
+      content: note.messages[0]?.content || 'No content',
+      createdAt: note.created_at
+    }));
+  };
+
   // Copy content to clipboard
   const copyToClipboard = async (text: string) => {
     try {
@@ -1718,12 +1752,6 @@ ${resumeData.personalDetails.fullName}`;
         )}
 
 
-        {/* ATS Notice */}
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 italic text-center">
-            ✓ ATS-Optimized Format | Standard Fonts | Clean Layout | Keyword-Friendly
-          </p>
-        </div>
       </div>
     );
   };
@@ -2355,10 +2383,93 @@ ${resumeData.personalDetails.fullName}`;
                                       )}
                                     </div>
                                   </div>
+                                 )}
+
+                                {/* Experience Notes - Show for experience section */}
+                                {activeSuggestionSection === 'experience' && (
+                                  <div className="space-y-4">
+                                    {/* Achievements Notes */}
+                                    <div>
+                                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                                        <StickyNote className="h-4 w-4" />
+                                        Your Achievements Notes
+                                      </h4>
+                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                        {getAchievementsNotes().length > 0 ? (
+                                          getAchievementsNotes().map((note, index) => (
+                                            <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
+                                              <div className="flex justify-between items-start mb-1">
+                                                <h5 className="font-medium text-sm pr-8">{note.title}</h5>
+                                                <button
+                                                  onClick={() => copyToClipboard(note.content)}
+                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                                                  title="Copy content"
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </button>
+                                              </div>
+                                              <p className="text-xs text-muted-foreground mb-2">
+                                                {new Date(note.createdAt).toLocaleDateString()}
+                                              </p>
+                                              <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                                <p className="whitespace-pre-wrap break-words">
+                                                  {note.content}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p className="text-sm text-muted-foreground">
+                                            No notes found in "2. Resume Builder - Achievements" tool. 
+                                            Create notes there to see them here.
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Capstone Project Notes */}
+                                    <div>
+                                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                                        <StickyNote className="h-4 w-4" />
+                                        Your Capstone Project Ideas
+                                      </h4>
+                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                        {getCapstoneNotes().length > 0 ? (
+                                          getCapstoneNotes().map((note, index) => (
+                                            <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
+                                              <div className="flex justify-between items-start mb-1">
+                                                <h5 className="font-medium text-sm pr-8">{note.title}</h5>
+                                                <button
+                                                  onClick={() => copyToClipboard(note.content)}
+                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                                                  title="Copy content"
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </button>
+                                              </div>
+                                              <p className="text-xs text-muted-foreground mb-2">
+                                                {new Date(note.createdAt).toLocaleDateString()}
+                                              </p>
+                                              <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                                <p className="whitespace-pre-wrap break-words">
+                                                  {note.content}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ))
+                                        ) : (
+                                          <p className="text-sm text-muted-foreground">
+                                            No notes found in "4. Generate Capstone Project Ideas" tool. 
+                                            Create notes there to see them here.
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
                                 )}
 
-                                 {/* Job Tracker Notes - Show for other sections */}
-                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && (
+                                 {/* Job Tracker Notes - Show for other sections except summary, skills, experience, and education */}
+                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && activeSuggestionSection !== 'experience' && activeSuggestionSection !== 'education' && (
                                   <div>
                                     <h4 className="font-medium mb-3 flex items-center gap-2">
                                       <StickyNote className="h-4 w-4" />
