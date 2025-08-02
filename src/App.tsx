@@ -28,6 +28,7 @@ import ResourcesLibrary from "./pages/ResourcesLibrary";
 import LinkedInOptimization from "./pages/LinkedInOptimization";
 import GitHubOptimization from "./pages/GitHubOptimization";
 import GitHubActivityTracker from "./pages/GitHubActivityTracker";
+import CareerGrowth from "./pages/CareerGrowth";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
@@ -201,6 +202,14 @@ const App = () => (
                 <PremiumProtectedRoute featureKey="page_linkedin_network">
                   <LinkedInNetwork />
                 </PremiumProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/career-growth" 
+              element={
+                <ProtectedRoute>
+                  <CareerGrowth />
+                </ProtectedRoute>
               } 
             />
             <Route path="/blogs" element={<PublicBlogs />} />

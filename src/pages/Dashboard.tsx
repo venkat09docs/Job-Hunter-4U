@@ -366,7 +366,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Enhancements Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                      onClick={() => navigate('/dashboard/career-growth')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
