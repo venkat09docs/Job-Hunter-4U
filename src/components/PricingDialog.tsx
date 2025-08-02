@@ -29,7 +29,7 @@ const PricingDialog = () => {
       features: [
         "AI-powered job matching",
         "Resume builder & optimization",
-        "LinkedIn automation tools", 
+        "LinkedIn optimization",
         "Job tracker & analytics",
         "AI career assistant",
         "Portfolio builder",
