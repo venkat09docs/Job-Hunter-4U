@@ -252,7 +252,7 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground text-center">Profile optimization</p>
                     </div>
 
-                    {/* GitHub & Blog Status */}
+                    {/* GitHub Status */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
@@ -271,16 +271,27 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                            strokeDasharray={`${40 * 2.827} ${(100 - 40) * 2.827}`}
+                            strokeDasharray={`${45 * 2.827} ${(100 - 45) * 2.827}`}
                             className="transition-all duration-500"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">40%</span>
+                          <span className="text-lg font-bold text-primary">45%</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">GitHub & Blog</h4>
-                      <p className="text-sm text-muted-foreground text-center">Technical showcase</p>
+                      <h4 className="font-medium text-center">GitHub</h4>
+                      <p className="text-sm text-muted-foreground text-center">Repository showcase</p>
+                    </div>
+
+                    {/* Blog Status */}
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                      <div className="relative w-20 h-20 mb-4">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">12</span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">Blog</h4>
+                      <p className="text-sm text-muted-foreground text-center">Articles published</p>
                     </div>
 
                     {/* Job Tracker Stats */}
@@ -291,7 +302,7 @@ const Dashboard = () => {
                           <span className="text-2xl font-bold text-primary">{totalJobApplications}</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">Job Tracker Stats</h4>
+                      <h4 className="font-medium text-center">Jobs In Process</h4>
                       <p className="text-sm text-muted-foreground text-center">Total applications</p>
                     </div>
 
