@@ -61,7 +61,7 @@ const Hero = () => {
 
             {/* CTA buttons with urgency */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   variant="hero" 
                   size="lg" 

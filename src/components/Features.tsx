@@ -29,7 +29,7 @@ const Features = () => {
     },
     {
       icon: Users,
-      title: "LinkedIn Automation", 
+      title: "LinkedIn Optimization", 
       description: "Grow your network 10x faster with complete tracking connection requests and engagement."
     },
     {
@@ -143,7 +143,7 @@ const Features = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>73% average salary boost</strong> </span>
+                  <span><strong>40% average salary boost</strong> </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
@@ -151,7 +151,7 @@ const Features = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>97% success rate</strong> (vs 8% traditional methods)</span>
+                  <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
@@ -159,19 +159,11 @@ const Features = () => {
                 </div>
               </div>
               
-              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-4">
-                <p className="text-sm text-warning font-medium">
-                  🔥 2,847 people joined in the last 24 hours. Spots filling fast!
-                </p>
-              </div>
               
               <Button variant="hero" size="lg" className="w-full animate-pulse">
                 Join JobHunter Pro Winners Platform Today - Just ₹299
               </Button>
               
-              <p className="text-xs text-center text-muted-foreground">
-                30-day money-back guarantee • Cancel anytime • No hidden fees
-              </p>
             </div>
           </div>
         </div>

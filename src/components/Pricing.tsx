@@ -258,7 +258,7 @@ const Pricing = () => {
           </h2>
           
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            While others send 100+ applications and get ghosted, our users get hired in 30 days with 40% salary increases. 
+            While others send 100+ applications and get ghosted, our users get hired with 40% salary increases. 
             <strong className="text-foreground">Your competition is already using AI. Don't get left behind.</strong>
           </p>
           
@@ -354,13 +354,13 @@ const Pricing = () => {
                 <div className="text-xs text-muted-foreground">(vs 23% industry avg)</div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">2 weeks</div>
-                <div className="text-sm text-muted-foreground">Average Time to Hire</div>
-                <div className="text-xs text-muted-foreground">(vs 6 months traditional)</div>
+                <div className="text-3xl font-bold text-primary">20+</div>
+                <div className="text-sm text-muted-foreground">AI Agents</div>
+                <div className="text-xs text-muted-foreground">(3x Boost your Job Search)</div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-bold text-warning">₹8.2L</div>
-                <div className="text-sm text-muted-foreground">Average Starting Salary</div>
+                <div className="text-3xl font-bold text-warning">Live Job Board</div>
+                <div className="text-sm text-muted-foreground">Matching to Your Profile</div>
                 <div className="text-xs text-muted-foreground">(40% above market)</div>
               </div>
             </div>
