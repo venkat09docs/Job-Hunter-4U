@@ -35,11 +35,12 @@ import { useRole } from "@/hooks/useRole";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "My Profile Journey", url: "/dashboard/my-profile-journey", icon: Target },
-  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
-  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
+  // Hidden items (keep for future): Job Search, Job Tracker, LinkedIn Automation, Talent Screener
+  // { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  // { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
+  // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
+  // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
-  { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },

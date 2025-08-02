@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Users, MessageSquare, Share2, Heart, UserPlus, CheckCircle, Target, TrendingUp, Activity } from 'lucide-react';
+import { Calendar, Users, MessageSquare, Share2, Heart, UserPlus, CheckCircle, Target, TrendingUp, Activity, ArrowLeft, User } from 'lucide-react';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek } from 'date-fns';
@@ -50,31 +49,32 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 const LinkedInNetwork = () => {
   const { updateTaskCompletion, updateMetrics, getTodayMetrics, getCompletedTasks } = useLinkedInNetworkProgress();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
-  useEffect(() => {
-    const loadData = async () => {
-      const dateKey = format(selectedDate, 'yyyy-MM-dd');
-      const [metrics, tasks] = await Promise.all([
-        getTodayMetrics(dateKey),
-        getCompletedTasks(dateKey)
-      ]);
-      
-      // Calculate completion percentage for selected date
-      const completedCount = tasks.length;
-      const percentage = Math.round((completedCount / DAILY_ACTIVITIES.length) * 100);
-      
-      // Batch state updates to prevent flickering
-      setTodayMetrics(metrics);
-      setCompletedTasks(new Set(tasks));
-      setCompletionPercentage(percentage);
-    };
+  const loadData = useCallback(async (dateKey: string) => {
+    const [metrics, tasks] = await Promise.all([
+      getTodayMetrics(dateKey),
+      getCompletedTasks(dateKey)
+    ]);
+    
+    // Calculate completion percentage for selected date
+    const completedCount = tasks.length;
+    const percentage = Math.round((completedCount / DAILY_ACTIVITIES.length) * 100);
+    
+    // Single state update to prevent flickering
+    setTodayMetrics(metrics);
+    setCompletedTasks(new Set(tasks));
+    setCompletionPercentage(percentage);
+  }, [getTodayMetrics, getCompletedTasks]);
 
-    loadData();
-  }, [selectedDate, getTodayMetrics, getCompletedTasks]);
+  useEffect(() => {
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    loadData(dateKey);
+  }, [selectedDate, loadData]);
 
   const handleTaskToggle = (taskId: string, checked: boolean) => {
     if (checked) {
@@ -164,27 +164,41 @@ const LinkedInNetwork = () => {
   const weekDates = generateWeekDates();
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  LinkedIn Network Management
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <SubscriptionStatus />
-                <UserProfileDropdown />
-              </div>
+    <div className="min-h-screen flex w-full bg-gradient-hero">
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="border-b bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Go to Dashboard
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/dashboard/my-profile-journey')}
+                className="flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                Go to My Profile Journey
+              </Button>
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                LinkedIn Network Management
+              </h1>
             </div>
-          </header>
+            
+            <div className="flex items-center gap-4">
+              <SubscriptionStatus />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
 
           {/* Main Content */}
           <main className="flex-1 p-8 overflow-auto">
@@ -358,7 +372,6 @@ const LinkedInNetwork = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
   );
 };
 
