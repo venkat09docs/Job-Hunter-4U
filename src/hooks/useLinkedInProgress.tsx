@@ -12,6 +12,28 @@ export const useLinkedInProgress = () => {
   useEffect(() => {
     if (user) {
       fetchLinkedInProgress();
+      
+      // Set up real-time subscription for LinkedIn progress updates
+      const channel = supabase
+        .channel('linkedin-progress-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'linkedin_progress',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh data when changes occur
+            fetchLinkedInProgress();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 
