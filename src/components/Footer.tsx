@@ -20,22 +20,6 @@ const Footer = () => {
   return (
     <footer className="bg-muted/30 border-t">
       <div className="container px-4 py-16">
-        {/* Newsletter section */}
-        <div className="bg-gradient-card rounded-2xl p-8 mb-16 text-center shadow-elegant border">
-          <h3 className="text-2xl font-bold mb-4">Stay Updated</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Get the latest job opportunities and career tips delivered to your inbox.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-2 rounded-md border border-input bg-background"
-            />
-            <Button variant="hero">Subscribe</Button>
-          </div>
-        </div>
-
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Company info */}
