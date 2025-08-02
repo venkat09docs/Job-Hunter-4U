@@ -17,7 +17,7 @@ const Hero = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                🔥 Last 24hrs: 1,247 people got hired
+                🔥 Last 24hrs: 20+ people Joined
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
@@ -30,7 +30,7 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 50K+ students and job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
+                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join the Platform where already job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
