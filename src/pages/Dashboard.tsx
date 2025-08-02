@@ -32,11 +32,11 @@ interface JobEntry {
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
-  const { progress: resumeProgress } = useResumeProgress();
-  const { completionPercentage: linkedinProgress } = useLinkedInProgress();
-  const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
-  const { getCompletionPercentage: getGitHubProgress } = useGitHubProgress();
-  const { metrics: networkMetrics, loading: networkLoading } = useNetworkGrowthMetrics();
+  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
+  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
+  const { completionPercentage: networkProgress, loading: networkLoading, refreshProgress: refreshNetworkProgress } = useLinkedInNetworkProgress();
+  const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -117,6 +117,40 @@ const Dashboard = () => {
     fetchJobData();
   }, [user]);
 
+  // Calculate overall career development score
+  const getOverallCareerScore = () => {
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), networkProgress];
+    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
+  };
+
+  // Listen for real-time updates from Career Growth page
+  useEffect(() => {
+    if (user) {
+      const channel = supabase
+        .channel('dashboard-progress-sync')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'daily_progress_snapshots',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh all progress data when daily snapshots are updated
+            refreshLinkedInProgress();
+            refreshNetworkProgress();
+            refreshGitHubProgress();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user, refreshLinkedInProgress, refreshNetworkProgress, refreshGitHubProgress]);
+
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
   };
@@ -139,7 +173,7 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -387,12 +421,12 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                            strokeDasharray={`${50 * 2.827} ${(100 - 50) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">50%</span>
+                             strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
+                             className="transition-all duration-500"
+                           />
+                         </svg>
+                         <div className="absolute inset-0 flex items-center justify-center">
+                           <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">Enhancements</h4>
@@ -416,7 +450,7 @@ const Dashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {networkLoading ? (
+                  {networkGrowthLoading ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
                       {[...Array(5)].map((_, index) => (
                         <div key={index} className="text-center p-4 rounded-lg border bg-card animate-pulse">
