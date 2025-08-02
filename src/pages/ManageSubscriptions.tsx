@@ -6,8 +6,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Plus, ArrowLeft } from 'lucide-react';
+import { Loader2, Plus, ArrowLeft, MousePointer, Lock } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
 import { Link } from 'react-router-dom';
 
@@ -19,8 +20,18 @@ interface PremiumFeature {
   is_premium: boolean;
 }
 
+interface DashboardClickPermission {
+  id: string;
+  feature_key: string;
+  feature_name: string;
+  feature_description: string | null;
+  requires_premium: boolean;
+  is_active: boolean;
+}
+
 export default function ManageSubscriptions() {
   const [features, setFeatures] = useState<PremiumFeature[]>([]);
+  const [dashboardPermissions, setDashboardPermissions] = useState<DashboardClickPermission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -29,6 +40,7 @@ export default function ManageSubscriptions() {
   useEffect(() => {
     if (isAdmin) {
       fetchFeatures();
+      fetchDashboardPermissions();
     }
   }, [isAdmin]);
 
@@ -44,6 +56,24 @@ export default function ManageSubscriptions() {
     } catch (error: any) {
       toast({
         title: 'Error fetching features',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const fetchDashboardPermissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('dashboard_click_permissions')
+        .select('*')
+        .order('feature_name');
+      
+      if (error) throw error;
+      setDashboardPermissions(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error fetching dashboard permissions',
         description: error.message,
         variant: 'destructive'
       });
@@ -89,6 +119,43 @@ export default function ManageSubscriptions() {
     updateFeature(id, { description });
   };
 
+  const updateDashboardPermission = async (id: string, updates: Partial<DashboardClickPermission>) => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('dashboard_click_permissions')
+        .update(updates)
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setDashboardPermissions(prev => prev.map(permission => 
+        permission.id === id ? { ...permission, ...updates } : permission
+      ));
+      
+      toast({
+        title: 'Permission updated',
+        description: 'Dashboard click permission settings have been saved.'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error updating permission',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleDashboardPremium = (id: string, requires_premium: boolean) => {
+    updateDashboardPermission(id, { requires_premium });
+  };
+
+  const updateDashboardDescription = (id: string, feature_description: string) => {
+    updateDashboardPermission(id, { feature_description });
+  };
+
   if (!isAdmin) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -118,64 +185,140 @@ export default function ManageSubscriptions() {
         <h1 className="text-2xl font-bold">Manage Subscription Features</h1>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Manage Subscription Features</CardTitle>
-          <CardDescription>
-            Configure which features require an active subscription. Premium features will show a lock icon for non-subscribed users.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {features.map((feature) => (
-            <Card key={feature.id} className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor={`feature-${feature.id}`} className="text-base font-medium">
-                      {feature.feature_name}
-                    </Label>
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor={`premium-${feature.id}`} className="text-sm">
-                        Premium Feature
-                      </Label>
-                      <Switch
-                        id={`premium-${feature.id}`}
-                        checked={feature.is_premium}
-                        onCheckedChange={(checked) => togglePremium(feature.id, checked)}
-                        disabled={saving}
-                      />
+      <Tabs defaultValue="features" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="features" className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Premium Features
+          </TabsTrigger>
+          <TabsTrigger value="dashboard" className="flex items-center gap-2">
+            <MousePointer className="h-4 w-4" />
+            Dashboard Click Permissions
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="features">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Premium Features</CardTitle>
+              <CardDescription>
+                Configure which features require an active subscription. Premium features will show a lock icon for non-subscribed users.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {features.map((feature) => (
+                <Card key={feature.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={`feature-${feature.id}`} className="text-base font-medium">
+                          {feature.feature_name}
+                        </Label>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor={`premium-${feature.id}`} className="text-sm">
+                            Premium Feature
+                          </Label>
+                          <Switch
+                            id={`premium-${feature.id}`}
+                            checked={feature.is_premium}
+                            onCheckedChange={(checked) => togglePremium(feature.id, checked)}
+                            disabled={saving}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        Feature Key: <code className="bg-muted px-1 rounded">{feature.feature_key}</code>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`desc-${feature.id}`} className="text-sm">
+                          Description
+                        </Label>
+                        <Textarea
+                          id={`desc-${feature.id}`}
+                          value={feature.description || ''}
+                          onChange={(e) => {
+                            const newDesc = e.target.value;
+                            setFeatures(prev => prev.map(f => 
+                              f.id === feature.id ? { ...f, description: newDesc } : f
+                            ));
+                          }}
+                          onBlur={(e) => updateDescription(feature.id, e.target.value)}
+                          placeholder="Enter feature description..."
+                          className="min-h-[60px]"
+                          disabled={saving}
+                        />
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="text-sm text-muted-foreground">
-                    Feature Key: <code className="bg-muted px-1 rounded">{feature.feature_key}</code>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="dashboard">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dashboard Click Permissions</CardTitle>
+              <CardDescription>
+                Control which dashboard elements require premium access. Users without premium subscriptions will see upgrade prompts when clicking restricted items.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {dashboardPermissions.map((permission) => (
+                <Card key={permission.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={`dashboard-${permission.id}`} className="text-base font-medium">
+                          {permission.feature_name}
+                        </Label>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor={`dashboard-premium-${permission.id}`} className="text-sm">
+                            Requires Premium
+                          </Label>
+                          <Switch
+                            id={`dashboard-premium-${permission.id}`}
+                            checked={permission.requires_premium}
+                            onCheckedChange={(checked) => toggleDashboardPremium(permission.id, checked)}
+                            disabled={saving}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        Feature Key: <code className="bg-muted px-1 rounded">{permission.feature_key}</code>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`dashboard-desc-${permission.id}`} className="text-sm">
+                          Description
+                        </Label>
+                        <Textarea
+                          id={`dashboard-desc-${permission.id}`}
+                          value={permission.feature_description || ''}
+                          onChange={(e) => {
+                            const newDesc = e.target.value;
+                            setDashboardPermissions(prev => prev.map(p => 
+                              p.id === permission.id ? { ...p, feature_description: newDesc } : p
+                            ));
+                          }}
+                          onBlur={(e) => updateDashboardDescription(permission.id, e.target.value)}
+                          placeholder="Enter permission description..."
+                          className="min-h-[60px]"
+                          disabled={saving}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor={`desc-${feature.id}`} className="text-sm">
-                      Description
-                    </Label>
-                    <Textarea
-                      id={`desc-${feature.id}`}
-                      value={feature.description || ''}
-                      onChange={(e) => {
-                        const newDesc = e.target.value;
-                        setFeatures(prev => prev.map(f => 
-                          f.id === feature.id ? { ...f, description: newDesc } : f
-                        ));
-                      }}
-                      onBlur={(e) => updateDescription(feature.id, e.target.value)}
-                      placeholder="Enter feature description..."
-                      className="min-h-[60px]"
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </CardContent>
-      </Card>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

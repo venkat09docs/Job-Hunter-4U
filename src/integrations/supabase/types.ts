@@ -207,6 +207,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_click_permissions: {
+        Row: {
+          created_at: string
+          feature_description: string | null
+          feature_key: string
+          feature_name: string
+          id: string
+          is_active: boolean
+          requires_premium: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feature_description?: string | null
+          feature_key: string
+          feature_name: string
+          id?: string
+          is_active?: boolean
+          requires_premium?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feature_description?: string | null
+          feature_key?: string
+          feature_name?: string
+          id?: string
+          is_active?: boolean
+          requires_premium?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       institute_admin_assignments: {
         Row: {
           assigned_at: string
