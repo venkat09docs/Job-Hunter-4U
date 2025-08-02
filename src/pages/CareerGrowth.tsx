@@ -45,6 +45,8 @@ export default function CareerGrowth() {
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot } = useDailyProgress();
   
+  const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
+  
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
@@ -190,6 +192,18 @@ export default function CareerGrowth() {
     setSuggestions(newSuggestions);
   };
 
+
+  const handleUpdateProgress = async () => {
+    setIsUpdatingProgress(true);
+    try {
+      await createTodaySnapshot();
+      // The hook will automatically refresh the data
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    } finally {
+      setIsUpdatingProgress(false);
+    }
+  };
 
   if (loading || dailyLoading) {
     return (
@@ -428,8 +442,21 @@ export default function CareerGrowth() {
           <TabsContent value="daily" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Daily Progress (Last 7 Days)</CardTitle>
-                <CardDescription>See your day-to-day progress patterns</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Daily Progress (Last 7 Days)</CardTitle>
+                    <CardDescription>See your day-to-day progress patterns</CardDescription>
+                  </div>
+                  <Button 
+                    onClick={handleUpdateProgress}
+                    disabled={isUpdatingProgress}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <TrendingUp className="h-4 w-4" />
+                    {isUpdatingProgress ? 'Updating...' : 'Update Today\'s Progress'}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
