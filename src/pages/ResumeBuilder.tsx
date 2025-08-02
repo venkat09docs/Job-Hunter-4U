@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToolChats } from '@/hooks/useToolChats';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
-import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown } from 'lucide-react';
+import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy } from 'lucide-react';
 
 interface Experience {
   company: string;
@@ -1559,6 +1559,24 @@ ${resumeData.personalDetails.fullName}`;
     }));
   };
 
+  // Copy content to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to clipboard",
+        description: "Content has been copied to your clipboard.",
+      });
+    } catch (error) {
+      console.error('Failed to copy text: ', error);
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy content to clipboard.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const generateResumePreview = () => {
     return (
       <div className="space-y-4 text-sm bg-white p-6 rounded-lg border max-w-full font-['Arial']">
@@ -2247,25 +2265,36 @@ ${resumeData.personalDetails.fullName}`;
                                       <StickyNote className="h-4 w-4" />
                                       Your Resume Summary Notes
                                     </h4>
-                                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                                      {getResumeSummaryNotes().length > 0 ? (
-                                        getResumeSummaryNotes().map((note, index) => (
-                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border">
-                                            <h5 className="font-medium text-sm mb-1">{note.title}</h5>
-                                            <p className="text-xs text-muted-foreground mb-2">
-                                              {new Date(note.createdAt).toLocaleDateString()}
-                                            </p>
-                                            <p className="text-sm text-foreground/80 line-clamp-3">
-                                              {note.content}
-                                            </p>
-                                          </div>
-                                        ))
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                          No notes found in "3. Generate Resume Summary" tool. 
-                                          Create notes there to see them here.
-                                        </p>
-                                      )}
+                                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                       {getResumeSummaryNotes().length > 0 ? (
+                                         getResumeSummaryNotes().map((note, index) => (
+                                           <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
+                                             <div className="flex justify-between items-start mb-1">
+                                               <h5 className="font-medium text-sm pr-8">{note.title}</h5>
+                                               <button
+                                                 onClick={() => copyToClipboard(note.content)}
+                                                 className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                                                 title="Copy content"
+                                               >
+                                                 <Copy className="h-3 w-3" />
+                                               </button>
+                                             </div>
+                                             <p className="text-xs text-muted-foreground mb-2">
+                                               {new Date(note.createdAt).toLocaleDateString()}
+                                             </p>
+                                             <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                               <p className="whitespace-pre-wrap break-words">
+                                                 {note.content}
+                                               </p>
+                                             </div>
+                                           </div>
+                                         ))
+                                       ) : (
+                                         <p className="text-sm text-muted-foreground">
+                                           No notes found in "3. Generate Resume Summary" tool. 
+                                           Create notes there to see them here.
+                                         </p>
+                                       )}
                                     </div>
                                   </div>
                                 )}
