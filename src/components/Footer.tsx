@@ -37,9 +37,9 @@ const Footer = () => {
         </div>
 
         {/* Main footer content */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Company info */}
-          <div className="col-span-2 space-y-4">
+          <div className="md:col-span-1 space-y-4">
             <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               JobHunter Pro
             </h3>
@@ -79,7 +79,6 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-
 
           {/* Legal links */}
           <div className="space-y-4">

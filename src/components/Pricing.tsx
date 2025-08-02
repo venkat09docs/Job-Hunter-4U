@@ -356,7 +356,7 @@ const Pricing = () => {
               <div className="space-y-2">
                 <div className="text-3xl font-bold text-primary">20+</div>
                 <div className="text-sm text-muted-foreground">AI Agents</div>
-                <div className="text-xs text-muted-foreground">(3x Boost your Job Search)</div>
+                <div className="text-xs text-muted-foreground">(5x Boost your Job Search)</div>
               </div>
               <div className="space-y-2">
                 <div className="text-3xl font-bold text-warning">Live Job Board</div>
