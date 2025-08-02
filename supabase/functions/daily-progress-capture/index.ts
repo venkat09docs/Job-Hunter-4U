@@ -167,7 +167,7 @@ async function captureUserProgress(supabase: any, userId: string, snapshotDate: 
     .eq('user_id', userId)
     .eq('completed', true);
 
-  const linkedinProgress = Math.round((linkedinCompletedTasks || 0) * 100 / 15);
+  const linkedinProgress = Math.round((linkedinCompletedTasks || 0) * 100 / 9);
 
   // Get GitHub progress
   const { count: githubCompletedTasks } = await supabase

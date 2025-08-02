@@ -7,7 +7,7 @@ export const useLinkedInProgress = () => {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const TOTAL_TASKS = 15; // Total number of LinkedIn optimization tasks
+  const TOTAL_TASKS = 9; // Total number of LinkedIn optimization tasks (must match LINKEDIN_TASKS array)
 
   useEffect(() => {
     if (user) {
