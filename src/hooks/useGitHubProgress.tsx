@@ -87,7 +87,7 @@ export const useGitHubProgress = () => {
   };
 
   const getCompletionPercentage = () => {
-    const totalTasks = 14; // Total number of GitHub tasks
+    const totalTasks = 5; // Total number of profile setup tasks (moved activity tasks to separate tracker)
     const completedTasks = tasks.filter(task => task.completed).length;
     return Math.round((completedTasks / totalTasks) * 100);
   };

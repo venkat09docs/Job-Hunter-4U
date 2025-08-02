@@ -38,7 +38,7 @@ const GitHubOptimization = () => {
     title: '',
     bio: '',
     location: '',
-    email: profile?.email || '',
+    email: '',
     website: '',
     github: profile?.github_url || '',
     linkedin: profile?.linkedin_url || '',

@@ -27,6 +27,7 @@ import MyProfileJourney from "./pages/MyProfileJourney";
 import ResourcesLibrary from "./pages/ResourcesLibrary";
 import LinkedInOptimization from "./pages/LinkedInOptimization";
 import GitHubOptimization from "./pages/GitHubOptimization";
+import GitHubActivityTracker from "./pages/GitHubActivityTracker";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
@@ -183,6 +184,14 @@ const App = () => (
               element={
                 <PremiumProtectedRoute featureKey="page_github_optimization">
                   <GitHubOptimization />
+                </PremiumProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/github-activity-tracker" 
+              element={
+                <PremiumProtectedRoute featureKey="page_github_activity_tracker">
+                  <GitHubActivityTracker />
                 </PremiumProtectedRoute>
               } 
             />
