@@ -54,6 +54,12 @@ const Pricing = () => {
         "Interview preparation",
         "All premium features included"
       ],
+      bonuses: [
+        "1-time personal review of: Your Resume",
+        "LinkedIn Profile",
+        "GitHub Profile",
+        "Free Access to Career Growth Live Cohort on every Saturday"
+      ],
       popular: true,
       variant: "hero" as const
     },
@@ -71,6 +77,10 @@ const Pricing = () => {
         "Portfolio builder",
         "Interview preparation",
         "All premium features included"
+      ],
+      bonuses: [
+        "1 Month Plan Bonuses +",
+        "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
       variant: "premium" as const
@@ -91,6 +101,7 @@ const Pricing = () => {
         "All premium features included"
       ],
       bonuses: [
+        "3 Months Plan Bonuses +",
         "Video Based Bio Links",
         "Digital Profile",
         "100+ Job Applications per month",
