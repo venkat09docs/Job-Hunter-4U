@@ -64,6 +64,10 @@ function calculateSubscriptionEndDate(duration: string): Date {
     case 'three months':
       endDate.setMonth(now.getMonth() + 3);
       break;
+    case '1 year':
+    case 'one year':
+      endDate.setFullYear(now.getFullYear() + 1);
+      break;
     default:
       // Default to 1 month if duration is not recognized
       endDate.setMonth(now.getMonth() + 1);

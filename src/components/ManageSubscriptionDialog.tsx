@@ -36,10 +36,12 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       features: [
         "AI-powered job matching",
         "Resume builder & optimization",
-        "LinkedIn automation tools", 
+        "LinkedIn optimization", 
         "Job tracker & analytics",
         "AI career assistant",
-        "Portfolio builder"
+        "Portfolio builder",
+        "Interview preparation",
+        "All premium features included"
       ],
       popular: false,
       variant: "outline" as const,
@@ -52,38 +54,52 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       days: 30,
       description: "Perfect for focused job searching",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Priority support"
+        "Everything in 1 Week Plan +"
+      ],
+      bonuses: [
+        "1-time personal review of Resume, LinkedIn and GitHub Profile",
+        "Free Access to Career Growth Live Cohort on every Saturday"
       ],
       popular: true,
       variant: "default" as const,
       icon: Crown
     },
     {
-      name: "Three Month Plan",
+      name: "3 Months Plan",
       price: 2499,
       duration: "3 months",
       days: 90,
-      description: "Comprehensive career transformation",
+      description: "Best value for comprehensive career growth",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools",
-        "Job tracker & analytics", 
-        "AI career assistant",
-        "Portfolio builder",
-        "Priority support",
-        "1-on-1 career consultation",
-        "Interview preparation tools"
+        "Everything in 1 Month Plan +"
+      ],
+      bonuses: [
+        "1 Month Plan Bonuses +",
+        "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
       variant: "secondary" as const,
       icon: Star
+    },
+    {
+      name: "1 Year Plan",
+      price: 11999,
+      duration: "1 year",
+      days: 365,
+      description: "Complete career transformation package",
+      features: [
+        "Everything in 3 Months Plan +"
+      ],
+      bonuses: [
+        "3 Months Plan Bonuses +",
+        "Video Based Bio Links",
+        "Digital Profile",
+        "100+ Job Applications per month",
+        "Automated Job-Hunting Process"
+      ],
+      popular: false,
+      variant: "secondary" as const,
+      icon: Crown
     }
   ];
 
@@ -296,7 +312,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="flex gap-3 mt-6 px-2">{/* Single line layout with equal distribution */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-6 px-2">{/* Four column grid layout */}
           {plans.map((plan) => {
             const isCurrentPlan = plan.name === profile?.subscription_plan;
             const Icon = plan.icon;
@@ -373,6 +389,23 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                     </p>
                   )}
                 </div>
+
+                {/* Bonuses (for plans that have them) */}
+                {'bonuses' in plan && plan.bonuses && (
+                  <div className="space-y-1 mb-4 pt-2 border-t border-primary/20">
+                    <div className="text-xs font-medium text-primary text-center">
+                      🎁 EXCLUSIVE BONUSES
+                    </div>
+                    {plan.bonuses.map((bonus, bonusIndex) => (
+                      <div key={bonusIndex} className="flex items-start gap-2">
+                        <div className="mt-0.5">
+                          <Star className="h-3 w-3 text-warning flex-shrink-0" />
+                        </div>
+                        <span className="text-xs font-medium text-warning leading-relaxed">{bonus}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Button
