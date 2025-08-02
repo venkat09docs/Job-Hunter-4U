@@ -48,8 +48,7 @@ const Pricing = () => {
         "Everything in 1 Week Plan +"
       ],
       bonuses: [
-        "1-time personal review of Resume, LinkedIn and GitHub Profile",
-        "Free Access to Career Growth Live Cohort on every Saturday"
+        "1-time personal review of Resume, LinkedIn and GitHub Profile"
       ],
       popular: true,
       variant: "hero" as const
@@ -63,7 +62,7 @@ const Pricing = () => {
         "Everything in 1 Month Plan +"
       ],
       bonuses: [
-        "1 Month Plan Bonuses +",
+        "Free Access to Career Growth Live Cohort on every Saturday",
         "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
@@ -78,7 +77,6 @@ const Pricing = () => {
         "Everything in 3 Months Plan +"
       ],
       bonuses: [
-        "3 Months Plan Bonuses +",
         "Video Based Bio Links",
         "Digital Profile",
         "100+ Job Applications per month",
