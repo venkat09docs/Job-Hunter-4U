@@ -35,9 +35,9 @@ import { useRole } from "@/hooks/useRole";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "My Profile Journey", url: "/dashboard/my-profile-journey", icon: Target },
-  // Hidden items (keep for future): Job Search, Job Tracker, LinkedIn Automation, Talent Screener
+  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
+  // Hidden items (keep for future): Job Search, LinkedIn Automation, Talent Screener
   // { title: "Job Search", url: "/dashboard/job-search", icon: Search },
-  // { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },

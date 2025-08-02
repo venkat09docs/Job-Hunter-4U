@@ -277,8 +277,8 @@ const JobTracker = () => {
         <div className="max-w-full mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Job Tracker</h1>
-              <p className="text-muted-foreground">Track your job applications and interview progress</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Job Status Tracker</h1>
+              <p className="text-muted-foreground">Complete job tracking system from application to hire</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-2">
@@ -340,6 +340,25 @@ const JobTracker = () => {
                 </SubscriptionUpgrade>
               )}
             </div>
+          </div>
+
+          {/* Statistics Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            {statusOptions.map(status => {
+              const count = getStatusCounts()[status];
+              return (
+                <Card key={status} className="p-4">
+                  <div className="text-center">
+                    <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-lg p-2 mb-2`}>
+                      <div className="text-lg font-bold">{count}</div>
+                    </div>
+                    <div className="text-xs font-medium text-muted-foreground">
+                      {statusLabels[status as keyof typeof statusLabels]}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
 
           {/* Filters */}

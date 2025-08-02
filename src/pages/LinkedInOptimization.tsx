@@ -38,15 +38,6 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
   { id: 'skills', title: 'Add Skills', description: 'Add relevant skills (aim for 50+ skills)', category: 'Skills' },
   { id: 'endorsements', title: 'Get Endorsements', description: 'Request endorsements from colleagues and connections', category: 'Skills' },
   
-  // Content & Engagement
-  { id: 'post-content', title: 'Share Content', description: 'Post industry-relevant content regularly', category: 'Content' },
-  { id: 'engage-posts', title: 'Engage with Others', description: 'Like, comment, and share others\' posts', category: 'Content' },
-  { id: 'join-groups', title: 'Join Groups', description: 'Join relevant industry groups and participate', category: 'Content' },
-  
-  // Network Building
-  { id: 'connect-colleagues', title: 'Connect with Colleagues', description: 'Send connection requests to current and former colleagues', category: 'Network' },
-  { id: 'connect-industry', title: 'Industry Connections', description: 'Connect with professionals in your industry', category: 'Network' },
-  { id: 'request-recommendations', title: 'Request Recommendations', description: 'Ask for recommendations from supervisors and colleagues', category: 'Network' },
 ];
 
 const LinkedInOptimization = () => {
