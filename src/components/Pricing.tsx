@@ -77,7 +77,7 @@ const Pricing = () => {
     },
     {
       name: "1 Year Plan",
-      price: 7999,
+      price: 11999,
       duration: "1 year",
       description: "Complete career transformation package",
       features: [
@@ -88,11 +88,13 @@ const Pricing = () => {
         "AI career assistant",
         "Portfolio builder",
         "Interview preparation",
+        "All premium features included"
+      ],
+      bonuses: [
         "Video Based Bio Links",
         "Digital Profile",
         "100+ Job Applications per month",
-        "Automated Job-Hunting Process",
-        "All premium features included"
+        "Automated Job-Hunting Process"
       ],
       popular: false,
       variant: "premium" as const
@@ -337,6 +339,21 @@ const Pricing = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Bonuses (only for 1 Year Plan) */}
+                {'bonuses' in plan && plan.bonuses && (
+                  <div className="space-y-3 pt-2 border-t border-primary/20">
+                    <div className="text-sm font-medium text-primary text-center">
+                      🎁 EXCLUSIVE BONUSES
+                    </div>
+                    {plan.bonuses.map((bonus, bonusIndex) => (
+                      <div key={bonusIndex} className="flex items-center gap-3">
+                        <Star className="w-5 h-5 text-warning flex-shrink-0" />
+                        <span className="text-sm font-medium text-warning">{bonus}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* CTA button */}
                 <Button 
