@@ -37,6 +37,10 @@ export default function ManageSubscriptions() {
   const { toast } = useToast();
   const { isAdmin } = useRole();
 
+  // Separate page features from other features
+  const pageFeatures = features.filter(f => f.feature_key.startsWith('page_'));
+  const otherFeatures = features.filter(f => !f.feature_key.startsWith('page_'));
+
   useEffect(() => {
     if (isAdmin) {
       fetchFeatures();
@@ -185,28 +189,98 @@ export default function ManageSubscriptions() {
         <h1 className="text-2xl font-bold">Manage Subscription Features</h1>
       </div>
       
-      <Tabs defaultValue="features" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="pages" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="pages" className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            Page Access
+          </TabsTrigger>
           <TabsTrigger value="features" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            Premium Features
+            Other Features
           </TabsTrigger>
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <MousePointer className="h-4 w-4" />
-            Dashboard Click Permissions
+            Dashboard Clicks
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="pages">
+          <Card>
+            <CardHeader>
+              <CardTitle>Page Access Control</CardTitle>
+              <CardDescription>
+                Control which pages require premium subscription access. Users without premium will be redirected to upgrade when trying to access restricted pages.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {pageFeatures.map((feature) => (
+                <Card key={feature.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={`page-${feature.id}`} className="text-base font-medium">
+                          {feature.feature_name}
+                        </Label>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor={`page-premium-${feature.id}`} className="text-sm">
+                            Requires Premium
+                          </Label>
+                          <Switch
+                            id={`page-premium-${feature.id}`}
+                            checked={feature.is_premium}
+                            onCheckedChange={(checked) => togglePremium(feature.id, checked)}
+                            disabled={saving}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        Page Key: <code className="bg-muted px-1 rounded">{feature.feature_key}</code>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`page-desc-${feature.id}`} className="text-sm">
+                          Description
+                        </Label>
+                        <Textarea
+                          id={`page-desc-${feature.id}`}
+                          value={feature.description || ''}
+                          onChange={(e) => {
+                            const newDesc = e.target.value;
+                            setFeatures(prev => prev.map(f => 
+                              f.id === feature.id ? { ...f, description: newDesc } : f
+                            ));
+                          }}
+                          onBlur={(e) => updateDescription(feature.id, e.target.value)}
+                          placeholder="Enter page description..."
+                          className="min-h-[60px]"
+                          disabled={saving}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+              {pageFeatures.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No page-level features found.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="features">
           <Card>
             <CardHeader>
-              <CardTitle>Manage Premium Features</CardTitle>
+              <CardTitle>Other Premium Features</CardTitle>
               <CardDescription>
-                Configure which features require an active subscription. Premium features will show a lock icon for non-subscribed users.
+                Configure other application features that require an active subscription. Premium features will show a lock icon for non-subscribed users.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {features.map((feature) => (
+              {otherFeatures.map((feature) => (
                 <Card key={feature.id} className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 space-y-2">
@@ -254,6 +328,11 @@ export default function ManageSubscriptions() {
                   </div>
                 </Card>
               ))}
+              {otherFeatures.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No other premium features found.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
