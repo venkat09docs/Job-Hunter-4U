@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Edit, Plus, Tag, Folder, ArrowLeft } from 'lucide-react';
+import { Trash2, Edit, Plus, Tag, Folder, ArrowLeft, Upload, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Switch } from '@/components/ui/switch';
@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ToolForm {
   tool_name: string;
@@ -78,6 +79,9 @@ const ManageCareerHub = () => {
   });
   
   const [isExtractingInfo, setIsExtractingInfo] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
 
   if (roleLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -147,20 +151,86 @@ const ManageCareerHub = () => {
     }
   };
 
+  const handleImageUpload = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `tool-images/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('tool-images')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('tool-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: 'Error',
+          description: 'Image size must be less than 5MB',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      setUploadedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setUploadedImage(null);
+    setImagePreview('');
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsUploading(true);
     
     try {
+      let imageUrl = formData.image_url;
+      
+      // Upload image if a new one was selected
+      if (uploadedImage) {
+        imageUrl = await handleImageUpload(uploadedImage);
+      }
+
+      const toolData = {
+        ...formData,
+        image_url: imageUrl
+      };
+
       if (editingTool) {
-        await updateTool(editingTool.id, formData);
+        await updateTool(editingTool.id, toolData);
       } else {
-        await createTool(formData);
+        await createTool(toolData);
       }
       
       resetForm();
       setIsDialogOpen(false);
     } catch (error) {
-      // Error handling is done in the hook
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to save tool',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -192,6 +262,8 @@ const ManageCareerHub = () => {
       category_id: ''
     });
     setEditingTool(null);
+    setUploadedImage(null);
+    setImagePreview('');
   };
 
   const resetCategoryForm = () => {
@@ -215,6 +287,10 @@ const ManageCareerHub = () => {
       image_url: tool.image_url || '',
       category_id: tool.category_id || ''
     });
+    // Set preview if editing and there's an existing image
+    if (tool.image_url) {
+      setImagePreview(tool.image_url);
+    }
     setIsDialogOpen(true);
   };
 
@@ -300,7 +376,7 @@ const ManageCareerHub = () => {
                     Add New Tool
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingTool ? 'Edit AI Tool' : 'Add New AI Tool'}</DialogTitle>
                     <DialogDescription>
@@ -331,13 +407,47 @@ const ManageCareerHub = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="image_url">Tool Image URL (Optional)</Label>
-                      <Input
-                        id="image_url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                        placeholder="Enter image URL for the tool"
-                      />
+                      <Label htmlFor="image_upload">Tool Image (Optional)</Label>
+                      <div className="space-y-4">
+                        {!imagePreview ? (
+                          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground mb-2">Click to upload an image</p>
+                            <Input
+                              id="image_upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="hidden"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => document.getElementById('image_upload')?.click()}
+                            >
+                              Choose Image
+                            </Button>
+                            <p className="text-xs text-muted-foreground mt-2">Max size: 5MB</p>
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <img 
+                              src={imagePreview} 
+                              alt="Tool preview" 
+                              className="w-full h-32 object-cover rounded-lg border"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={removeImage}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -407,8 +517,8 @@ const ManageCareerHub = () => {
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button type="submit">
-                        {editingTool ? 'Update Tool' : 'Create Tool'}
+                      <Button type="submit" disabled={isUploading}>
+                        {isUploading ? 'Saving...' : editingTool ? 'Update Tool' : 'Create Tool'}
                       </Button>
                     </div>
                   </form>
