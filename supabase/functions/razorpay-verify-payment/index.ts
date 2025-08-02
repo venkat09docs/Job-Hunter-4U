@@ -84,6 +84,8 @@ serve(async (req) => {
 
   try {
     console.log('=== PAYMENT VERIFICATION START ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Parse request body
     const requestBody = await req.json();
@@ -107,27 +109,34 @@ serve(async (req) => {
       throw new Error('Missing required payment verification fields');
     }
 
-    // Authenticate user
+    // Authenticate user - Create client with service role first to validate token
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('No authorization header provided');
       throw new Error('No authorization header provided');
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
     const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    console.log('Token received, length:', token.length);
+
+    // Verify user token manually using service role
+    const { data: userData, error: userError } = await supabaseService.auth.getUser(token);
     
     if (userError || !userData.user?.id) {
       console.error('Authentication error:', userError);
+      console.log('Token validation failed for user verification');
       throw new Error('User not authenticated');
     }
     
     const userId = userData.user.id;
-    console.log('Authenticated user:', userId);
+    console.log('✅ User authenticated successfully:', userData.user.email);
+    console.log('User ID:', userId);
 
     // Determine which secret key to use based on mode
     const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
@@ -144,20 +153,18 @@ serve(async (req) => {
     console.log('Using', isLiveMode ? 'live' : 'test', 'mode for verification');
 
     // Verify the signature
+    console.log('Starting signature verification...');
     const isValidSignature = await verifySignature(razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpayKeySecret);
     
     if (!isValidSignature) {
+      console.error('❌ Signature verification failed');
       throw new Error('Invalid payment signature');
     }
-
-    // Use service role to update payment and subscription details
-    const supabaseService = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    );
+    
+    console.log('✅ Payment signature verified successfully');
 
     // Get the payment record to fetch plan details
+    console.log('Fetching payment record for order:', razorpay_order_id, 'user:', userId);
     const { data: paymentData, error: fetchError } = await supabaseService
       .from('payments')
       .select('*')
@@ -166,14 +173,23 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !paymentData) {
-      console.error('Payment fetch error:', fetchError);
+      console.error('❌ Payment fetch error:', fetchError);
       console.log('Order ID:', razorpay_order_id, 'User ID:', userId);
+      
+      // Try to find payment without user_id filter to debug
+      const { data: debugData } = await supabaseService
+        .from('payments')
+        .select('*')
+        .eq('razorpay_order_id', razorpay_order_id);
+      console.log('Debug - All payments for order:', debugData);
+      
       throw new Error('Payment record not found');
     }
     
-    console.log('Found payment record:', paymentData.id);
+    console.log('✅ Found payment record:', paymentData.id, 'Plan:', paymentData.plan_name);
 
     // Update payment status with verification details
+    console.log('Updating payment status to paid...');
     const { error: updateError } = await supabaseService
       .from('payments')
       .update({
@@ -185,9 +201,11 @@ serve(async (req) => {
       .eq('razorpay_order_id', razorpay_order_id);
 
     if (updateError) {
-      console.error('Payment update error:', updateError);
+      console.error('❌ Payment update error:', updateError);
       throw new Error('Failed to update payment status');
     }
+    
+    console.log('✅ Payment status updated to paid');
 
     // Calculate subscription dates - use upgrade_end_date if provided (for upgrades with remaining days)
     const startDate = new Date();
@@ -200,6 +218,15 @@ serve(async (req) => {
     });
 
     // Update user profile with subscription details
+    console.log('Updating user profile with subscription details...');
+    console.log('Profile update data:', {
+      subscription_plan: paymentData.plan_name,
+      subscription_start_date: startDate.toISOString(),
+      subscription_end_date: endDate.toISOString(),
+      subscription_active: true,
+      user_id: paymentData.user_id
+    });
+    
     const { error: profileError } = await supabaseService
       .from('profiles')
       .update({
@@ -212,11 +239,12 @@ serve(async (req) => {
       .eq('user_id', paymentData.user_id);
 
     if (profileError) {
-      console.error('Profile update error:', profileError);
+      console.error('❌ Profile update error:', profileError);
       throw new Error('Failed to update subscription');
     }
 
-    console.log('Payment verified and subscription updated for user:', paymentData.user_id);
+    console.log('✅ Subscription activated successfully for user:', paymentData.user_id);
+    console.log('Plan:', paymentData.plan_name, 'Valid until:', endDate.toISOString());
     console.log('=== PAYMENT VERIFICATION END ===');
 
     return new Response(
