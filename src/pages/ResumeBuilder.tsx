@@ -2344,7 +2344,7 @@ ${resumeData.personalDetails.fullName}`;
                                               variant="outline" 
                                               size="sm" 
                                               className="gap-2"
-                                              onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
+                                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd', '_blank')}
                                             >
                                               <ExternalLink className="h-3 w-3" />
                                               Go to Resume Summary Tool
@@ -2396,7 +2396,7 @@ ${resumeData.personalDetails.fullName}`;
                                               variant="outline" 
                                               size="sm" 
                                               className="gap-2"
-                                              onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
+                                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=20c53c53-70c1-4d50-b0af-655fe09aef7b', '_blank')}
                                             >
                                               <ExternalLink className="h-3 w-3" />
                                               Go to Top Skills Tool
@@ -2450,7 +2450,7 @@ ${resumeData.personalDetails.fullName}`;
                                                variant="outline" 
                                                size="sm" 
                                                className="gap-2"
-                                                onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
+                                                onClick={() => window.open('/dashboard/digital-career-hub?toolId=55b57cf9-4781-4b80-8e40-eb154420ce49', '_blank')}
                                              >
                                                <ExternalLink className="h-3 w-3" />
                                                Go to Achievements Tool
@@ -2500,7 +2500,7 @@ ${resumeData.personalDetails.fullName}`;
                                                variant="outline" 
                                                size="sm" 
                                                className="gap-2"
-                                               onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
+                                               onClick={() => window.open('/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75', '_blank')}
                                              >
                                                <ExternalLink className="h-3 w-3" />
                                                Go to Capstone Ideas Tool

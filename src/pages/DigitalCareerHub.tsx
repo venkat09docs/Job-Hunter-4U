@@ -11,7 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Coins, ExternalLink, Zap, ArrowLeft, FileText, Monitor, SidebarClose, SidebarOpen } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -30,6 +30,7 @@ const DigitalCareerHub = () => {
   const { profile, refreshProfile, hasActiveSubscription } = useProfile();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTool, setSelectedTool] = useState<any>(null);
   const [isToolDialogOpen, setIsToolDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('tool');
@@ -49,6 +50,19 @@ const DigitalCareerHub = () => {
     
     return toolsByCategory;
   }, [tools, categories]);
+
+  // Handle URL parameters to auto-open specific tools
+  useEffect(() => {
+    const toolId = searchParams.get('toolId');
+    if (toolId && tools.length > 0 && !selectedTool) {
+      const tool = tools.find(t => t.id === toolId);
+      if (tool) {
+        handleToolAccess(tool);
+        // Remove the toolId parameter from URL after opening
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [tools, selectedTool, searchParams, setSearchParams]);
 
   const handleToolAccess = async (tool: any) => {
     try {
