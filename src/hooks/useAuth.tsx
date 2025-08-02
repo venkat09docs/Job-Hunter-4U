@@ -30,30 +30,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    // Check for existing session FIRST
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (error) {
+            console.error('Error getting session:', error);
+          }
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state change:', event, !!session);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
         
-        // Handle specific auth events
-        if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setUser(null);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          // Only set loading to false if we haven't already initialized
+          if (loading) {
+            setLoading(false);
+          }
+          
+          // Handle specific auth events
+          if (event === 'SIGNED_OUT') {
+            setSession(null);
+            setUser(null);
+          }
         }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Initialize auth
+    initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

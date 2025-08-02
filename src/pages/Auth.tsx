@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail } from 'lucide-react';
 import ManageSubscriptionDialog from '@/components/ManageSubscriptionDialog';
 
@@ -18,6 +19,14 @@ const Auth = () => {
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     // Check if user came from pricing page
