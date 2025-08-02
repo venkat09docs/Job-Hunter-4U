@@ -98,31 +98,66 @@ Deno.serve(async (req) => {
 });
 
 async function captureUserProgress(supabase: any, userId: string, snapshotDate: string): Promise<ProgressData> {
-  // Calculate resume progress
+  // Calculate resume progress using the same logic as frontend
   const { data: resumeData } = await supabase
     .from('resume_data')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   let resumeProgress = 0;
   if (resumeData) {
     const personalDetails = resumeData.personal_details || {};
     const experience = resumeData.experience || [];
     const education = resumeData.education || [];
-    const skills = (resumeData.skills_interests || {}).skills || [];
+    const skillsInterests = resumeData.skills_interests || {};
+    const skills = skillsInterests.skills || [];
+    const interests = skillsInterests.interests || [];
+    const certifications = resumeData.certifications_awards || [];
     const professionalSummary = resumeData.professional_summary || '';
 
-    resumeProgress = Math.min(100, 
-      (personalDetails.fullName ? 15 : 0) +
-      (personalDetails.email ? 10 : 0) +
-      (personalDetails.phone ? 10 : 0) +
-      (personalDetails.location ? 5 : 0) +
-      (experience.length > 0 ? 20 : 0) +
-      (education.length > 0 ? 15 : 0) +
-      (skills.length > 0 ? 15 : 0) +
-      (professionalSummary ? 10 : 0)
+    let totalProgress = 0;
+    
+    // Personal Details - 15% (name, email, phone required)
+    const personalDetailsComplete = !!(
+      personalDetails.fullName &&
+      personalDetails.email &&
+      personalDetails.phone
     );
+    if (personalDetailsComplete) totalProgress += 15;
+    
+    // Professional Summary - 20%
+    if (professionalSummary && professionalSummary.trim()) totalProgress += 20;
+    
+    // Experience - 10% (at least one with company and role)
+    const experienceComplete = experience.some((exp: any) => 
+      exp.company && exp.company.trim() && exp.role && exp.role.trim()
+    );
+    if (experienceComplete) totalProgress += 10;
+    
+    // Education - 15% (at least one with institution and degree)
+    const educationComplete = education.some((edu: any) => 
+      edu.institution && edu.institution.trim() && edu.degree && edu.degree.trim()
+    );
+    if (educationComplete) totalProgress += 15;
+    
+    // Skills - 10% (at least one skill)
+    const skillsComplete = skills.some((skill: any) => skill && skill.trim());
+    if (skillsComplete) totalProgress += 10;
+    
+    // Interests - 5% (at least one interest)
+    const interestsComplete = interests.some((interest: any) => interest && interest.trim());
+    if (interestsComplete) totalProgress += 5;
+    
+    // Certifications - 15% (at least one certification)
+    const certificationsComplete = certifications.some((cert: any) => cert && cert.trim());
+    if (certificationsComplete) totalProgress += 15;
+    
+    // Awards - 10% (using certifications field for now as there's no separate awards field)
+    const awardsComplete = certifications.length > 1; // If more than one item, consider some as awards
+    if (awardsComplete) totalProgress += 10;
+    
+    resumeProgress = Math.min(totalProgress, 100);
   }
 
   // Get LinkedIn progress
