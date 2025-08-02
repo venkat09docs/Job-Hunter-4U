@@ -19,27 +19,43 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== CREATE ORDER DEBUG START ===');
+    
     // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    console.log('Auth header exists:', !!authHeader);
+    
     if (!authHeader) {
       throw new Error('No authorization header');
     }
 
-    // Create a Supabase client with the Auth context of the user that sent the request
+    // Create a Supabase client with anon key for user authentication
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Get the user
+    // Get the user from the JWT token
     const token = authHeader.replace('Bearer ', '');
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-
-    if (!user?.email) {
-      throw new Error('User not authenticated');
+    console.log('Token exists:', !!token);
+    
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    console.log('User data error:', userError);
+    console.log('User exists:', !!userData?.user);
+    console.log('User email exists:', !!userData?.user?.email);
+    
+    if (userError) {
+      console.error('Authentication error:', userError);
+      throw new Error(`Authentication failed: ${userError.message}`);
     }
+    
+    const user = userData.user;
+    if (!user?.email) {
+      throw new Error('User not authenticated or email missing');
+    }
+    
+    console.log('User authenticated successfully:', user.email);
+    console.log('=== CREATE ORDER DEBUG END ===');
 
     const { amount, plan_name, plan_duration }: OrderRequest = await req.json();
 
