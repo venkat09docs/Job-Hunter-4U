@@ -187,7 +187,7 @@ async function captureUserProgress(supabase: any, userId: string, snapshotDate: 
     .eq('date', snapshotDate);
 
   const uniqueNetworkTasks = new Set(networkTasks?.map(t => t.task_id) || []);
-  const networkProgress = Math.round(uniqueNetworkTasks.size * 100 / 5);
+  const networkProgress = Math.round(uniqueNetworkTasks.size * 100 / 10);
 
   // Get job applications count
   const { count: jobApplicationsCount } = await supabase
