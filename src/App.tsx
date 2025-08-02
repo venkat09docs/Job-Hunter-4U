@@ -28,6 +28,7 @@ import ResourcesLibrary from "./pages/ResourcesLibrary";
 import LinkedInOptimization from "./pages/LinkedInOptimization";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 
@@ -86,33 +87,33 @@ const App = () => (
             <Route 
               path="/dashboard/job-search" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_job_search">
                   <JobSearch />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/job-tracker" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_job_tracker">
                   <JobTracker />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/linkedin-automation" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_linkedin_automation">
                   <LinkedInAutomation />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/manage-career-hub" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_manage_career_hub">
                   <ManageCareerHub />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
@@ -126,9 +127,9 @@ const App = () => (
             <Route 
               path="/dashboard/digital-career-hub" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_digital_career_hub">
                   <DigitalCareerHub />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
@@ -148,40 +149,40 @@ const App = () => (
             } 
             />
             <Route path="/dashboard/resume-builder" element={
-              <ProtectedRoute>
+              <PremiumProtectedRoute featureKey="page_resume_builder">
                 <ResumeBuilder />
-              </ProtectedRoute>
+              </PremiumProtectedRoute>
             } />
             <Route 
               path="/dashboard/my-profile-journey" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_my_profile_journey">
                   <MyProfileJourney />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/library" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_resources_library">
                   <ResourcesLibrary />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/linkedin-optimization" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_linkedin_optimization">
                   <LinkedInOptimization />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
               path="/dashboard/linkedin-network" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="page_linkedin_network">
                   <LinkedInNetwork />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route path="/blogs" element={<PublicBlogs />} />
