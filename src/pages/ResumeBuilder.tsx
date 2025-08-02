@@ -2344,7 +2344,7 @@ ${resumeData.personalDetails.fullName}`;
                                               variant="outline" 
                                               size="sm" 
                                               className="gap-2"
-                                              onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                              onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
                                             >
                                               <ExternalLink className="h-3 w-3" />
                                               Go to Resume Summary Tool
@@ -2396,7 +2396,7 @@ ${resumeData.personalDetails.fullName}`;
                                               variant="outline" 
                                               size="sm" 
                                               className="gap-2"
-                                              onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                              onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
                                             >
                                               <ExternalLink className="h-3 w-3" />
                                               Go to Top Skills Tool
@@ -2450,7 +2450,7 @@ ${resumeData.personalDetails.fullName}`;
                                                variant="outline" 
                                                size="sm" 
                                                className="gap-2"
-                                               onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                                onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
                                              >
                                                <ExternalLink className="h-3 w-3" />
                                                Go to Achievements Tool
@@ -2500,7 +2500,7 @@ ${resumeData.personalDetails.fullName}`;
                                                variant="outline" 
                                                size="sm" 
                                                className="gap-2"
-                                               onClick={() => window.open('/dashboard/ai-tools', '_blank')}
+                                               onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
                                              >
                                                <ExternalLink className="h-3 w-3" />
                                                Go to Capstone Ideas Tool
