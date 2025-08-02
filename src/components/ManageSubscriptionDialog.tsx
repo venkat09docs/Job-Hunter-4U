@@ -129,6 +129,26 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       return;
     }
 
+    // Check if user session is still valid
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        toast({
+          title: "Session Expired",
+          description: "Your session has expired. Please refresh the page and login again.",
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      toast({
+        title: "Authentication Error",
+        description: "Unable to verify your session. Please refresh the page and try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoadingPlan(plan.name);
     
     try {

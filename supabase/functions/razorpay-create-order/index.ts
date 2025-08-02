@@ -24,40 +24,53 @@ serve(async (req) => {
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization');
     console.log('Auth header exists:', !!authHeader);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     if (!authHeader) {
-      throw new Error('No authorization header');
+      console.error('No authorization header provided');
+      throw new Error('Authentication required. Please login and try again.');
     }
 
-    // Create a Supabase client with anon key for user authentication
+    // Extract token
+    const token = authHeader.replace('Bearer ', '');
+    console.log('Token extracted, length:', token.length);
+    
+    // Create Supabase client for authentication
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    // Get the user from the JWT token
-    const token = authHeader.replace('Bearer ', '');
-    console.log('Token exists:', !!token);
-    
+    // Validate user authentication
+    console.log('Attempting to authenticate user...');
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    console.log('User data error:', userError);
-    console.log('User exists:', !!userData?.user);
-    console.log('User email exists:', !!userData?.user?.email);
     
     if (userError) {
       console.error('Authentication error:', userError);
-      throw new Error(`Authentication failed: ${userError.message}`);
+      throw new Error(`Authentication failed: ${userError.message}. Please login again.`);
+    }
+    
+    if (!userData || !userData.user) {
+      console.error('No user data returned');
+      throw new Error('User session expired. Please login again.');
     }
     
     const user = userData.user;
-    if (!user?.email) {
-      throw new Error('User not authenticated or email missing');
+    if (!user.email) {
+      console.error('User email not found');
+      throw new Error('User email not available. Please complete your profile.');
     }
     
     console.log('User authenticated successfully:', user.email);
-    console.log('=== CREATE ORDER DEBUG END ===');
+    console.log('User ID:', user.id);
 
-    const { amount, plan_name, plan_duration }: OrderRequest = await req.json();
+    // Parse request body
+    console.log('Parsing request body...');
+    const requestBody = await req.json();
+    console.log('Request body:', requestBody);
+    
+    const { amount, plan_name, plan_duration }: OrderRequest = requestBody;
 
     if (!amount || !plan_name || !plan_duration) {
       throw new Error('Missing required fields: amount, plan_name, plan_duration');
