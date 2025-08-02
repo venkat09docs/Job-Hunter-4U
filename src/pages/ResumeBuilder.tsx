@@ -76,6 +76,10 @@ const ResumeBuilder = () => {
   const RESUME_SUMMARY_TOOL_ID = '733fcfc9-f0cd-4429-a8c2-66f1605e63df';
   const { chats: resumeSummaryNotes } = useToolChats(RESUME_SUMMARY_TOOL_ID);
   
+  // Top 6 Skills tool notes
+  const TOP_SKILLS_TOOL_ID = '20c53c53-70c1-4d50-b0af-655fe09aef7b';
+  const { chats: topSkillsNotes } = useToolChats(TOP_SKILLS_TOOL_ID);
+  
   // Right column state
   const [rightColumnContent, setRightColumnContent] = useState<'suggestions' | 'preview'>('suggestions');
   const [activeSuggestionSection, setActiveSuggestionSection] = useState<SectionType | null>(null);
@@ -1559,6 +1563,19 @@ ${resumeData.personalDetails.fullName}`;
     }));
   };
 
+  // Get top skills notes content for suggestions
+  const getTopSkillsNotes = () => {
+    if (!topSkillsNotes || topSkillsNotes.length === 0) {
+      return [];
+    }
+    
+    return topSkillsNotes.map(note => ({
+      title: note.title,
+      content: note.messages[0]?.content || 'No content',
+      createdAt: note.created_at
+    }));
+  };
+
   // Copy content to clipboard
   const copyToClipboard = async (text: string) => {
     try {
@@ -2297,10 +2314,51 @@ ${resumeData.personalDetails.fullName}`;
                                        )}
                                     </div>
                                   </div>
+                                 )}
+
+                                {/* Top Skills Notes - Show for skills section */}
+                                {activeSuggestionSection === 'skills' && (
+                                  <div>
+                                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                                      <StickyNote className="h-4 w-4" />
+                                      Your Top Skills Notes
+                                    </h4>
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                      {getTopSkillsNotes().length > 0 ? (
+                                        getTopSkillsNotes().map((note, index) => (
+                                          <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
+                                            <div className="flex justify-between items-start mb-1">
+                                              <h5 className="font-medium text-sm pr-8">{note.title}</h5>
+                                              <button
+                                                onClick={() => copyToClipboard(note.content)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                                                title="Copy content"
+                                              >
+                                                <Copy className="h-3 w-3" />
+                                              </button>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mb-2">
+                                              {new Date(note.createdAt).toLocaleDateString()}
+                                            </p>
+                                            <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                              <p className="whitespace-pre-wrap break-words">
+                                                {note.content}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                          No notes found in "1. Resume Builder - Top 6 Skills" tool. 
+                                          Create notes there to see them here.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
                                 )}
 
-                                {/* Job Tracker Notes - Show for other sections */}
-                                {activeSuggestionSection !== 'summary' && (
+                                 {/* Job Tracker Notes - Show for other sections */}
+                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && (
                                   <div>
                                     <h4 className="font-medium mb-3 flex items-center gap-2">
                                       <StickyNote className="h-4 w-4" />
