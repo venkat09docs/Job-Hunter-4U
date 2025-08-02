@@ -16,9 +16,6 @@ const Hero = () => {
           {/* Text content */}
           <div className="space-y-8">
             <div className="space-y-4">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                🔥 Last 24hrs: 20+ people Joined
-              </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent line-through opacity-60">
@@ -44,7 +41,7 @@ const Hero = () => {
               <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">50K+ Got Hired</span>
+                  <span className="text-sm font-medium">1000+ Got Hired</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-success" />
@@ -71,20 +68,13 @@ const Hero = () => {
                   className="group animate-pulse"
                   onClick={() => navigate('/auth')}
                 >
-                  Get Hired - Start Free
+                  Build Profile - for Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={() => navigate('/blogs')}
-                >
-                  See Success Stories
                 </Button>
               </div>
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <span>⭐⭐⭐⭐⭐</span>
-                <span>4.9/5 from 10K+ reviews</span>
+                <span>4.6/5 and 13 Years of Trust</span>
                 <span>•</span>
                 <span className="text-success">No credit card required</span>
               </div>
