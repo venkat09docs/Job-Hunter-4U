@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Badge } from '@/components/ui/badge';
-import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileData {
   name: string;
@@ -31,6 +34,7 @@ interface ProfileData {
 
 const GitHubOptimization = () => {
   const { profile } = useProfile();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
     title: '',
@@ -48,6 +52,10 @@ const GitHubOptimization = () => {
     languages: '',
     interests: ''
   });
+  
+  const [savedNotes, setSavedNotes] = useState<any[]>([]);
+  const [activeField, setActiveField] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   const generateReadme = () => {
     const { name, title, bio, location, email, website, github, linkedin, skills, experience, education, projects, achievements, languages, interests } = profileData;
@@ -111,7 +119,84 @@ ${interests}
     }));
   };
 
-  const navigate = useNavigate();
+  // Fetch saved notes from Job Application Tracker AI tool
+  useEffect(() => {
+    const fetchSavedNotes = async () => {
+      try {
+        // First, get the Job Application Tracker tool ID
+        const { data: tools } = await supabase
+          .from('ai_tools')
+          .select('id')
+          .ilike('tool_name', '%job%application%tracker%')
+          .single();
+
+        if (tools) {
+          // Fetch chat messages from this tool
+          const { data: chats } = await supabase
+            .from('tool_chats')
+            .select('messages, title, created_at')
+            .eq('tool_id', tools.id)
+            .order('created_at', { ascending: false });
+
+          if (chats) {
+            setSavedNotes(chats);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching saved notes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSavedNotes();
+  }, []);
+
+  const getFieldTips = (field: string) => {
+    const tips = {
+      name: [
+        "Use your real name for credibility",
+        "Consider adding emojis to make it more engaging",
+        "Keep it professional but friendly"
+      ],
+      title: [
+        "Be specific about your role and tech stack",
+        "Include your years of experience",
+        "Add technologies you specialize in"
+      ],
+      bio: [
+        "Keep it concise but impactful (2-3 lines max)",
+        "Mention what you're passionate about",
+        "Include what makes you unique as a developer"
+      ],
+      skills: [
+        "Group skills by category (Frontend, Backend, Tools)",
+        "Use bullet points for better readability",
+        "Include proficiency levels if relevant"
+      ],
+      experience: [
+        "Use reverse chronological order",
+        "Include company names and duration",
+        "Highlight key achievements and technologies used"
+      ],
+      education: [
+        "Include degree, institution, and year",
+        "Add relevant certifications",
+        "Mention any honors or special achievements"
+      ],
+      projects: [
+        "Include live demo links and repository links",
+        "Briefly describe the tech stack used",
+        "Highlight the problem solved or impact created"
+      ],
+      achievements: [
+        "Include hackathon wins, certifications, awards",
+        "Add open source contributions",
+        "Mention any speaking engagements or publications"
+      ]
+    };
+    return tips[field as keyof typeof tips] || [];
+  };
 
   const handleDownload = () => {
     const readmeContent = generateReadme();
@@ -137,6 +222,10 @@ ${interests}
         window.open('https://github.com', '_blank');
       }, 2000);
     }
+  };
+
+  const handleFieldFocus = (fieldName: string) => {
+    setActiveField(fieldName);
   };
 
 
@@ -178,7 +267,7 @@ ${interests}
       </header>
 
       <main className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
           {/* Left Side - Input Fields */}
           <div className="p-6 border-r overflow-auto">
             <div className="space-y-6">
@@ -196,6 +285,7 @@ ${interests}
                       id="name"
                       value={profileData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
+                      onFocus={() => handleFieldFocus('name')}
                       placeholder="John Doe"
                     />
                   </div>
@@ -205,6 +295,7 @@ ${interests}
                       id="title"
                       value={profileData.title}
                       onChange={(e) => handleInputChange('title', e.target.value)}
+                      onFocus={() => handleFieldFocus('title')}
                       placeholder="Full Stack Developer"
                     />
                   </div>
@@ -214,6 +305,7 @@ ${interests}
                       id="bio"
                       value={profileData.bio}
                       onChange={(e) => handleInputChange('bio', e.target.value)}
+                      onFocus={() => handleFieldFocus('bio')}
                       placeholder="I'm a passionate developer who loves creating innovative solutions..."
                       rows={3}
                     />
@@ -224,6 +316,7 @@ ${interests}
                       id="location"
                       value={profileData.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
+                      onFocus={() => handleFieldFocus('location')}
                       placeholder="San Francisco, CA"
                     />
                   </div>
@@ -242,6 +335,7 @@ ${interests}
                       type="email"
                       value={profileData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      onFocus={() => handleFieldFocus('email')}
                       placeholder="john@example.com"
                     />
                   </div>
@@ -251,6 +345,7 @@ ${interests}
                       id="website"
                       value={profileData.website}
                       onChange={(e) => handleInputChange('website', e.target.value)}
+                      onFocus={() => handleFieldFocus('website')}
                       placeholder="https://johndoe.dev"
                     />
                   </div>
@@ -260,6 +355,7 @@ ${interests}
                       id="github"
                       value={profileData.github}
                       onChange={(e) => handleInputChange('github', e.target.value)}
+                      onFocus={() => handleFieldFocus('github')}
                       placeholder="https://github.com/johndoe"
                     />
                   </div>
@@ -269,6 +365,7 @@ ${interests}
                       id="linkedin"
                       value={profileData.linkedin}
                       onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                      onFocus={() => handleFieldFocus('linkedin')}
                       placeholder="https://linkedin.com/in/johndoe"
                     />
                   </div>
@@ -286,6 +383,7 @@ ${interests}
                       id="skills"
                       value={profileData.skills}
                       onChange={(e) => handleInputChange('skills', e.target.value)}
+                      onFocus={() => handleFieldFocus('skills')}
                       placeholder="- JavaScript, TypeScript, Python
 - React, Node.js, Django
 - AWS, Docker, Kubernetes"
@@ -298,6 +396,7 @@ ${interests}
                       id="experience"
                       value={profileData.experience}
                       onChange={(e) => handleInputChange('experience', e.target.value)}
+                      onFocus={() => handleFieldFocus('experience')}
                       placeholder="- **Senior Developer at TechCorp** (2022-Present)
 - **Full Stack Developer at StartupXYZ** (2020-2022)"
                       rows={4}
@@ -309,6 +408,7 @@ ${interests}
                       id="education"
                       value={profileData.education}
                       onChange={(e) => handleInputChange('education', e.target.value)}
+                      onFocus={() => handleFieldFocus('education')}
                       placeholder="- **BS Computer Science** - University of Technology (2020)
 - **Certified AWS Solutions Architect** (2021)"
                       rows={3}
@@ -328,6 +428,7 @@ ${interests}
                       id="projects"
                       value={profileData.projects}
                       onChange={(e) => handleInputChange('projects', e.target.value)}
+                      onFocus={() => handleFieldFocus('projects')}
                       placeholder="- **[Project Name](link)** - Description of the project
 - **[Another Project](link)** - Another project description"
                       rows={4}
@@ -339,6 +440,7 @@ ${interests}
                       id="achievements"
                       value={profileData.achievements}
                       onChange={(e) => handleInputChange('achievements', e.target.value)}
+                      onFocus={() => handleFieldFocus('achievements')}
                       placeholder="- Winner of Hackathon 2023
 - Open Source Contributor with 100+ contributions"
                       rows={3}
@@ -350,6 +452,7 @@ ${interests}
                       id="languages"
                       value={profileData.languages}
                       onChange={(e) => handleInputChange('languages', e.target.value)}
+                      onFocus={() => handleFieldFocus('languages')}
                       placeholder="English (Native), Spanish (Fluent), French (Basic)"
                     />
                   </div>
@@ -359,9 +462,104 @@ ${interests}
                       id="interests"
                       value={profileData.interests}
                       onChange={(e) => handleInputChange('interests', e.target.value)}
+                      onFocus={() => handleFieldFocus('interests')}
                       placeholder="Machine Learning, Open Source, Photography"
                     />
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Middle - Notes & Tips */}
+          <div className="p-6 border-r overflow-auto bg-muted/10">
+            <div className="space-y-6">
+              {/* Dynamic Tips Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Lightbulb className="h-5 w-5" />
+                    {activeField ? `Tips for ${activeField.charAt(0).toUpperCase() + activeField.slice(1)}` : 'GitHub Profile Tips'}
+                  </CardTitle>
+                  <CardDescription>
+                    {activeField ? `Best practices for your ${activeField} section` : 'Select a field to see specific tips'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {activeField ? (
+                    <ScrollArea className="h-40">
+                      <div className="space-y-2">
+                        {getFieldTips(activeField).map((tip, index) => (
+                          <div key={index} className="flex items-start gap-2 p-2 rounded-md bg-accent/20">
+                            <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                            <p className="text-sm text-muted-foreground">{tip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Click on any input field to see specific tips for that section.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Separator />
+
+              {/* Saved Notes Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <StickyNote className="h-5 w-5" />
+                    Job Application Notes
+                  </CardTitle>
+                  <CardDescription>
+                    Your saved notes from Job Application Tracker AI tool
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center h-32">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : savedNotes.length > 0 ? (
+                    <ScrollArea className="h-64">
+                      <div className="space-y-3">
+                        {savedNotes.map((note, index) => (
+                          <Card key={index} className="p-3 bg-accent/10">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-sm">{note.title}</h4>
+                              <Badge variant="outline" className="text-xs">
+                                {new Date(note.created_at).toLocaleDateString()}
+                              </Badge>
+                            </div>
+                            <ScrollArea className="h-20">
+                              <div className="space-y-1">
+                                {note.messages?.slice(-3).map((message: any, msgIndex: number) => (
+                                  <p key={msgIndex} className="text-xs text-muted-foreground">
+                                    {message.content?.substring(0, 100)}...
+                                  </p>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <div className="text-center h-32 flex items-center justify-center">
+                      <div className="space-y-2">
+                        <StickyNote className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          No saved notes found from Job Application Tracker tool
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Use the AI tool to create and save notes
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
