@@ -110,7 +110,8 @@ const Features = () => {
 
         {/* Testimonial section */}
         <div className="bg-gradient-card rounded-2xl p-8 md:p-12 shadow-elegant border">
-          <div className="grid lg:grid-cols-2 gap-8 items-center">
+          <div className="space-y-8">
+            {/* First Testimonial */}
             <div className="space-y-6">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -118,53 +119,68 @@ const Features = () => {
                 ))}
               </div>
               <blockquote className="text-xl md:text-2xl font-medium">
-                "I was rejected 312 times in 11 months, completely broke and depressed. 
-                JobHunter Pro got me 14 interviews in 3 weeks and landed a dream job with 86% salary jump!"
+                "I tried every job board and networking hack, but nothing worked—until I automated my outreach. The AI agents found HR contacts, sent personalized messages, and followed up exactly when they needed to. I've never felt more confident in my job search."
               </blockquote>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold">PK</span>
+                  <span className="text-primary-foreground font-semibold">D</span>
                 </div>
                 <div>
-                  <div className="font-semibold">Priya Kumari</div>
-                  <div className="text-muted-foreground">Senior SDE at Google</div>
-                  <div className="text-xs text-success">₹7L → ₹32L salary explosion</div>
+                  <div className="font-semibold">Deepak</div>
+                  <div className="text-muted-foreground">Software Engineer</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Second Testimonial */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-xl md:text-2xl font-medium">
+                "As a recent graduate, I didn't know where to start. The platform's step-by-step automation guided me through crafting a standout LinkedIn profile, targeting the right companies, and even prepping for interviews. I landed a full-time position before graduation!"
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-semibold">K</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Kavya</div>
+                  <div className="text-muted-foreground">Software Engineer</div>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-4">
-              <div className="bg-primary/10 rounded-lg p-4 mb-4">
-                <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
-                <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
-              </div>
-              
-              <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>40% average salary boost</strong> </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>5x faster job Hunting</strong> </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>Works for all levels:</strong> Students to CXOs</span>
-                </div>
-              </div>
-              
-              
-              <Button variant="hero" size="lg" className="w-full animate-pulse">
-                Join JobHunter Pro Winners Platform Today - Just ₹299
-              </Button>
-              
+            <div className="bg-primary/10 rounded-lg p-4 mb-4">
+              <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
+              <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
             </div>
+            
+            <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>40% average salary boost</strong> </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>5x faster job Hunting</strong> </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>Works for all levels:</strong> Students to CXOs</span>
+              </div>
+            </div>
+            
+            <Button variant="hero" size="lg" className="w-full animate-pulse">
+              Join JobHunter Pro Winners Platform Today - Just ₹299
+            </Button>
           </div>
         </div>
       </div>
