@@ -26,6 +26,7 @@ import ResumeBuilder from "./pages/ResumeBuilder";
 import MyProfileJourney from "./pages/MyProfileJourney";
 import ResourcesLibrary from "./pages/ResourcesLibrary";
 import LinkedInOptimization from "./pages/LinkedInOptimization";
+import GitHubOptimization from "./pages/GitHubOptimization";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
@@ -174,6 +175,14 @@ const App = () => (
               element={
                 <PremiumProtectedRoute featureKey="page_linkedin_optimization">
                   <LinkedInOptimization />
+                </PremiumProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/github-optimization" 
+              element={
+                <PremiumProtectedRoute featureKey="page_github_optimization">
+                  <GitHubOptimization />
                 </PremiumProtectedRoute>
               } 
             />

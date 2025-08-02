@@ -4,13 +4,14 @@ import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
+import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -34,6 +35,7 @@ const Dashboard = () => {
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
+  const { getCompletionPercentage: getGitHubProgress } = useGitHubProgress();
   const { metrics: networkMetrics, loading: networkLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -296,7 +298,8 @@ const Dashboard = () => {
                     </div>
 
                     {/* GitHub Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/github-optimization')}>
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -314,12 +317,12 @@ const Dashboard = () => {
                             stroke="hsl(var(--primary))"
                             strokeWidth="8"
                             fill="none"
-                            strokeDasharray={`${45 * 2.827} ${(100 - 45) * 2.827}`}
+                            strokeDasharray={`${getGitHubProgress() * 2.827} ${(100 - getGitHubProgress()) * 2.827}`}
                             className="transition-all duration-500"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">45%</span>
+                          <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">GitHub</h4>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
@@ -29,13 +28,11 @@ export const useGitHubProgress = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('github_progress')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      setTasks(data || []);
+      // For now, we'll use localStorage until the database types are updated
+      const storedProgress = localStorage.getItem(`github_progress_${user.id}`);
+      if (storedProgress) {
+        setTasks(JSON.parse(storedProgress));
+      }
     } catch (error) {
       console.error('Error fetching GitHub progress:', error);
       toast.error('Failed to load GitHub progress');
@@ -48,41 +45,40 @@ export const useGitHubProgress = () => {
     if (!user) return;
 
     try {
-      const { data: existingTask } = await supabase
-        .from('github_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('task_id', taskId)
-        .single();
-
-      if (existingTask) {
-        // Update existing task
-        const { error } = await supabase
-          .from('github_progress')
-          .update({
-            completed,
-            completed_at: completed ? new Date().toISOString() : null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingTask.id);
-
-        if (error) throw error;
-      } else {
-        // Insert new task
-        const { error } = await supabase
-          .from('github_progress')
-          .insert({
-            user_id: user.id,
-            task_id: taskId,
-            completed,
-            completed_at: completed ? new Date().toISOString() : null
-          });
-
-        if (error) throw error;
+      // For now, we'll use localStorage until the database types are updated
+      const storedProgress = localStorage.getItem(`github_progress_${user.id}`);
+      let allTasks: GitHubProgress[] = [];
+      
+      if (storedProgress) {
+        allTasks = JSON.parse(storedProgress);
       }
 
-      // Refresh the tasks
-      await fetchGitHubProgress();
+      const existingTaskIndex = allTasks.findIndex(task => task.task_id === taskId);
+      
+      if (existingTaskIndex >= 0) {
+        // Update existing task
+        allTasks[existingTaskIndex] = {
+          ...allTasks[existingTaskIndex],
+          completed,
+          completed_at: completed ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        };
+      } else {
+        // Add new task
+        const newTask: GitHubProgress = {
+          id: crypto.randomUUID(),
+          user_id: user.id,
+          task_id: taskId,
+          completed,
+          completed_at: completed ? new Date().toISOString() : null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        allTasks.push(newTask);
+      }
+
+      localStorage.setItem(`github_progress_${user.id}`, JSON.stringify(allTasks));
+      setTasks(allTasks);
     } catch (error) {
       console.error('Error updating GitHub progress:', error);
       toast.error('Failed to update progress');
