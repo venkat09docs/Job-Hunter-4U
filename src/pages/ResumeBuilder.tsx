@@ -297,18 +297,6 @@ Consider adding these relevant skills: Project Management, Data Analysis, Team L
 - Tailor your resume to specific job descriptions
 - Keep it concise but comprehensive (1-2 pages)`;
 
-      // Add notes from "Write an Effective Resume" tool if available
-      if (effectiveResumeNotes && effectiveResumeNotes.length > 0) {
-        suggestions += `\n\n**Your "Write an Effective Resume" Tool Notes:**\n\n`;
-        effectiveResumeNotes.forEach((note, index) => {
-          const content = note.messages
-            .filter(msg => msg.type === 'assistant')
-            .map(msg => msg.content)
-            .join('\n');
-          suggestions += `${index + 1}. **${note.title || 'Note'}** (${new Date(note.created_at).toLocaleDateString()})\n${content}\n\n`;
-        });
-      }
-
       setAiSuggestions(suggestions);
       setShowSuggestions(true);
       
@@ -2284,20 +2272,80 @@ ${resumeData.personalDetails.fullName}`;
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-4">
-                          <Textarea 
-                            value={aiSuggestions}
-                            onChange={(e) => setAiSuggestions(e.target.value)}
-                            rows={12}
-                            className="font-mono text-sm max-h-96 overflow-y-auto resize-none"
-                            placeholder="AI suggestions will appear here..."
-                          />
-                          {(!effectiveResumeNotes || effectiveResumeNotes.length === 0) && (
-                            <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
-                              <p className="text-sm text-muted-foreground mb-3">
-                                No notes found from "Write an Effective Resume" tool. Generate content using the tool to see personalized resume guidance here.
-                              </p>
-                            </div>
-                          )}
+                          {/* AI Suggestions Section */}
+                          <div>
+                            <h4 className="font-semibold mb-2">AI Resume Suggestions</h4>
+                            <Textarea 
+                              value={aiSuggestions}
+                              onChange={(e) => setAiSuggestions(e.target.value)}
+                              rows={8}
+                              className="font-mono text-sm max-h-64 overflow-y-auto resize-none"
+                              placeholder="AI suggestions will appear here..."
+                            />
+                          </div>
+
+                          {/* Tool Notes Section */}
+                          <div>
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <FileText className="h-4 w-4" />
+                              "Write an Effective Resume" Tool Notes
+                            </h4>
+                            {effectiveResumeNotes && effectiveResumeNotes.length > 0 ? (
+                              <div className="space-y-3 max-h-64 overflow-y-auto border rounded-lg p-4 bg-muted/20">
+                                {effectiveResumeNotes.map((note, index) => {
+                                  const content = note.messages
+                                    .filter(msg => msg.type === 'assistant')
+                                    .map(msg => msg.content)
+                                    .join('\n');
+                                  
+                                  return (
+                                    <div key={note.id} className="p-3 bg-background rounded-lg border">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <h5 className="font-medium text-sm">{note.title || `Note ${index + 1}`}</h5>
+                                        <div className="flex gap-1">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(content);
+                                              toast({
+                                                title: 'Copied!',
+                                                description: 'Note content copied to clipboard.',
+                                              });
+                                            }}
+                                            className="h-6 w-6 p-0"
+                                          >
+                                            <Copy className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mb-2">
+                                        {new Date(note.created_at).toLocaleDateString()}
+                                      </p>
+                                      <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                        <pre className="whitespace-pre-wrap font-sans">{content}</pre>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="p-4 bg-muted/50 rounded-lg border border-dashed">
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  No notes found from "Write an Effective Resume" tool. Generate content using the tool to see personalized resume guidance here.
+                                </p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=b1d7a888-49b8-412b-861b-b6d850eda7a4', '_blank')}
+                                  className="gap-2"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  Go to Write Effective Resume Tool
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
