@@ -429,8 +429,8 @@ const Dashboard = () => {
                           <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">Enhancements</h4>
-                      <p className="text-sm text-muted-foreground text-center">Continuous improvement</p>
+                      <h4 className="font-medium text-center">Overall Progress</h4>
+                      <p className="text-sm text-muted-foreground text-center">Career development score</p>
                     </div>
                   </div>
                 </CardContent>
