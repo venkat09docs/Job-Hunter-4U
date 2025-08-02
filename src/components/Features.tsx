@@ -30,7 +30,7 @@ const Features = () => {
     {
       icon: Users,
       title: "LinkedIn Automation", 
-      description: "Grow your network 10x faster with automated connection requests and engagement. Build relationships while you sleep."
+      description: "Grow your network 10x faster with complete tracking connection requests and engagement."
     },
     {
       icon: Target,
@@ -40,7 +40,7 @@ const Features = () => {
     {
       icon: Shield,
       title: "Interview Preparation AI",
-      description: "Practice with our AI interviewer trained on 10K+ real interviews. Boost confidence and ace every interview."
+      description: "Practice with our AI interviewer trained on real interviews. Boost confidence and ace every interview."
     },
     {
       icon: Zap,
@@ -88,7 +88,7 @@ const Features = () => {
               Solves Every Problem
             </h3>
             <p className="text-muted-foreground">
-              Stop struggling alone. Join 50K+ professionals who transformed their career with our AI-powered platform.
+              Stop struggling alone. Join the platform who transformed their career with our AI-powered platform.
             </p>
           </div>
         </div>
@@ -143,11 +143,11 @@ const Features = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>40% average salary boost</strong> (₹6L → ₹10L+)</span>
+                  <span><strong>40% average salary boost</strong> </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
-                  <span><strong>3x faster job placement</strong> (2 weeks vs 6 months)</span>
+                  <span><strong>3x faster job Hunting</strong> </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
@@ -166,7 +166,7 @@ const Features = () => {
               </div>
               
               <Button variant="hero" size="lg" className="w-full animate-pulse">
-                Join 50K+ Winners Today - Just ₹299
+                Join JobHunter Pro Winners Platform Today - Just ₹299
               </Button>
               
               <p className="text-xs text-center text-muted-foreground">
