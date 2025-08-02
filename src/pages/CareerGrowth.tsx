@@ -13,7 +13,7 @@ import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
-import { useWeeklyProgress } from '@/hooks/useWeeklyProgress';
+import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { format, startOfWeek, subWeeks } from 'date-fns';
 
 interface WeeklyMetrics {
@@ -43,7 +43,7 @@ export default function CareerGrowth() {
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
-  const { formatWeeklyMetrics, getWeeklyTrends, loading: weeklyLoading, createCurrentWeekSnapshot } = useWeeklyProgress();
+  const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot } = useDailyProgress();
   
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,8 @@ export default function CareerGrowth() {
   };
 
   const weeklyMetrics = formatWeeklyMetrics();
-  const trends = getWeeklyTrends();
+  const dailyMetrics = formatDailyMetrics();
+  const trends = getDailyTrends();
 
   const generateSuggestions = () => {
     const newSuggestions: Suggestion[] = [];
@@ -190,7 +191,7 @@ export default function CareerGrowth() {
   };
 
 
-  if (loading || weeklyLoading) {
+  if (loading || dailyLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -240,9 +241,10 @@ export default function CareerGrowth() {
         </Card>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="metrics">Weekly Metrics</TabsTrigger>
+            <TabsTrigger value="weekly">Weekly Trends</TabsTrigger>
+            <TabsTrigger value="daily">Daily Progress</TabsTrigger>
             <TabsTrigger value="suggestions">Action Items</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
           </TabsList>
@@ -365,7 +367,7 @@ export default function CareerGrowth() {
             </div>
           </TabsContent>
 
-          <TabsContent value="metrics" className="space-y-6">
+          <TabsContent value="weekly" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -373,9 +375,9 @@ export default function CareerGrowth() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={createCurrentWeekSnapshot}
+                    onClick={createTodaySnapshot}
                   >
-                    Update Current Week
+                    Update Today's Progress
                   </Button>
                 </CardTitle>
                 <CardDescription>Track your weekly improvements across all areas</CardDescription>
@@ -386,8 +388,8 @@ export default function CareerGrowth() {
                     <div key={week.week} className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold">Week of {week.week}</h3>
-                        <Badge variant={index === 0 ? "default" : "secondary"}>
-                          {index === 0 ? "Current" : `${index} week${index > 1 ? 's' : ''} ago`}
+                        <Badge variant={index === weeklyMetrics.length - 1 ? "default" : "secondary"}>
+                          {index === weeklyMetrics.length - 1 ? "Current" : `${weeklyMetrics.length - 1 - index} week${weeklyMetrics.length - 1 - index > 1 ? 's' : ''} ago`}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -414,6 +416,55 @@ export default function CareerGrowth() {
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground mb-1">Blogs</div>
                           <div className="text-lg font-semibold">{week.blogPosts}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="daily" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Progress (Last 7 Days)</CardTitle>
+                <CardDescription>See your day-to-day progress patterns</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {dailyMetrics.map((day, index) => (
+                    <div key={day.date} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">{day.date}</h3>
+                        <Badge variant={index === dailyMetrics.length - 1 ? "default" : "outline"}>
+                          {index === dailyMetrics.length - 1 ? "Today" : `${dailyMetrics.length - 1 - index} day${dailyMetrics.length - 1 - index > 1 ? 's' : ''} ago`}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Resume</div>
+                          <div className="text-lg font-semibold">{day.resumeProgress}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">LinkedIn</div>
+                          <div className="text-lg font-semibold">{day.linkedinProgress}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">GitHub</div>
+                          <div className="text-lg font-semibold">{day.githubProgress}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Network</div>
+                          <div className="text-lg font-semibold">{day.networkProgress}%</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Jobs</div>
+                          <div className="text-lg font-semibold">{day.jobApplications}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm text-muted-foreground mb-1">Blogs</div>
+                          <div className="text-lg font-semibold">{day.blogPosts}</div>
                         </div>
                       </div>
                     </div>

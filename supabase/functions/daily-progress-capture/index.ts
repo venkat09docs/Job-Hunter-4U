@@ -19,7 +19,7 @@ interface ProgressData {
 }
 
 Deno.serve(async (req) => {
-  console.log('Weekly progress capture function started');
+  console.log('Daily progress capture function started');
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -33,23 +33,11 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Calculate week start (Saturday) and end (Friday)
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
-    const daysToSubtract = dayOfWeek === 6 ? 0 : (dayOfWeek + 1); // If Saturday, use today, otherwise go back to last Saturday
-    
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - daysToSubtract);
-    weekStart.setHours(0, 0, 0, 0);
-    
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
+    // Get today's date for snapshot
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
 
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-    const weekEndStr = weekEnd.toISOString().split('T')[0];
-
-    console.log(`Processing week: ${weekStartStr} to ${weekEndStr}`);
+    console.log(`Processing daily snapshot for: ${todayStr}`);
 
     // Get all users to capture their progress
     const { data: users, error: usersError } = await supabase
@@ -68,7 +56,7 @@ Deno.serve(async (req) => {
     // Process each user
     for (const user of users || []) {
       try {
-        const progressData = await captureUserProgress(supabase, user.user_id, weekStartStr, weekEndStr);
+        const progressData = await captureUserProgress(supabase, user.user_id, todayStr);
         results.push({ user_id: user.user_id, status: 'success', data: progressData });
       } catch (error) {
         console.error(`Error capturing progress for user ${user.user_id}:`, error);
@@ -84,9 +72,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Weekly progress captured for ${successCount} users`,
-        week_start: weekStartStr,
-        week_end: weekEndStr,
+        message: `Daily progress captured for ${successCount} users`,
+        snapshot_date: todayStr,
         results: results
       }),
       {
@@ -110,7 +97,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function captureUserProgress(supabase: any, userId: string, weekStart: string, weekEnd: string): Promise<ProgressData> {
+async function captureUserProgress(supabase: any, userId: string, snapshotDate: string): Promise<ProgressData> {
   // Calculate resume progress
   const { data: resumeData } = await supabase
     .from('resume_data')
@@ -156,14 +143,13 @@ async function captureUserProgress(supabase: any, userId: string, weekStart: str
 
   const githubProgress = Math.round((githubCompletedTasks || 0) * 100 / 5);
 
-  // Get network progress for this week
+  // Get network progress for today
   const { data: networkTasks } = await supabase
     .from('linkedin_network_completions')
     .select('task_id')
     .eq('user_id', userId)
     .eq('completed', true)
-    .gte('date', weekStart)
-    .lte('date', weekEnd);
+    .eq('date', snapshotDate);
 
   const uniqueNetworkTasks = new Set(networkTasks?.map(t => t.task_id) || []);
   const networkProgress = Math.round(uniqueNetworkTasks.size * 100 / 5);
@@ -203,16 +189,15 @@ async function captureUserProgress(supabase: any, userId: string, weekStart: str
     total_ai_queries: profile?.total_ai_queries || 0
   };
 
-  // Insert or update weekly snapshot
+  // Insert or update daily snapshot
   const { error } = await supabase
-    .from('weekly_progress_snapshots')
+    .from('daily_progress_snapshots')
     .upsert({
       user_id: userId,
-      week_start_date: weekStart,
-      week_end_date: weekEnd,
+      snapshot_date: snapshotDate,
       ...progressData
     }, {
-      onConflict: 'user_id,week_start_date'
+      onConflict: 'user_id,snapshot_date'
     });
 
   if (error) {

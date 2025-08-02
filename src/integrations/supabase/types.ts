@@ -207,6 +207,57 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_progress_snapshots: {
+        Row: {
+          created_at: string
+          github_progress: number
+          id: string
+          job_applications_count: number
+          linkedin_progress: number
+          network_progress: number
+          published_blogs_count: number
+          resume_progress: number
+          snapshot_date: string
+          total_ai_queries: number
+          total_job_searches: number
+          total_resume_opens: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          github_progress?: number
+          id?: string
+          job_applications_count?: number
+          linkedin_progress?: number
+          network_progress?: number
+          published_blogs_count?: number
+          resume_progress?: number
+          snapshot_date: string
+          total_ai_queries?: number
+          total_job_searches?: number
+          total_resume_opens?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          github_progress?: number
+          id?: string
+          job_applications_count?: number
+          linkedin_progress?: number
+          network_progress?: number
+          published_blogs_count?: number
+          resume_progress?: number
+          snapshot_date?: string
+          total_ai_queries?: number
+          total_job_searches?: number
+          total_resume_opens?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dashboard_click_permissions: {
         Row: {
           created_at: string
@@ -1101,60 +1152,6 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      weekly_progress_snapshots: {
-        Row: {
-          created_at: string
-          github_progress: number
-          id: string
-          job_applications_count: number
-          linkedin_progress: number
-          network_progress: number
-          published_blogs_count: number
-          resume_progress: number
-          total_ai_queries: number
-          total_job_searches: number
-          total_resume_opens: number
-          updated_at: string
-          user_id: string
-          week_end_date: string
-          week_start_date: string
-        }
-        Insert: {
-          created_at?: string
-          github_progress?: number
-          id?: string
-          job_applications_count?: number
-          linkedin_progress?: number
-          network_progress?: number
-          published_blogs_count?: number
-          resume_progress?: number
-          total_ai_queries?: number
-          total_job_searches?: number
-          total_resume_opens?: number
-          updated_at?: string
-          user_id: string
-          week_end_date: string
-          week_start_date: string
-        }
-        Update: {
-          created_at?: string
-          github_progress?: number
-          id?: string
-          job_applications_count?: number
-          linkedin_progress?: number
-          network_progress?: number
-          published_blogs_count?: number
-          resume_progress?: number
-          total_ai_queries?: number
-          total_job_searches?: number
-          total_resume_opens?: number
-          updated_at?: string
-          user_id?: string
-          week_end_date?: string
-          week_start_date?: string
         }
         Relationships: []
       }

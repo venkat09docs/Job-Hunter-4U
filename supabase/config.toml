@@ -1,6 +1,6 @@
 project_id = "moirryvajzyriagqihbe"
 
-[functions.weekly-progress-capture]
+[functions.daily-progress-capture]
 verify_jwt = false
 
 [functions.razorpay-verify-payment]
