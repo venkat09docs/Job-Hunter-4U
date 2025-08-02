@@ -74,6 +74,28 @@ const Pricing = () => {
       ],
       popular: false,
       variant: "premium" as const
+    },
+    {
+      name: "1 Year Plan",
+      price: 7999,
+      duration: "1 year",
+      description: "Complete career transformation package",
+      features: [
+        "AI-powered job matching",
+        "Resume builder & optimization",
+        "LinkedIn automation tools", 
+        "Job tracker & analytics",
+        "AI career assistant",
+        "Portfolio builder",
+        "Interview preparation",
+        "Video Based Bio Links",
+        "Digital Profile",
+        "100+ Job Applications per month",
+        "Automated Job-Hunting Process",
+        "All premium features included"
+      ],
+      popular: false,
+      variant: "premium" as const
     }
   ];
 
@@ -275,7 +297,7 @@ const Pricing = () => {
         </div>
 
         {/* Pricing cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
