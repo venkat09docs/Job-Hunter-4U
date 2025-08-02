@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Pricing from "@/components/Pricing";
+import BuildProfileCTA from "@/components/BuildProfileCTA";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
       <Hero />
       <Features />
       <Pricing />
+      <BuildProfileCTA />
       <Footer />
     </div>
   );

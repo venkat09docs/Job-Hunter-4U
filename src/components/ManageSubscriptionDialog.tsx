@@ -59,8 +59,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       bonuses: [
         "1-time personal review of Resume, LinkedIn and GitHub Profile"
       ],
-      popular: true,
-      variant: "default" as const,
+      popular: false,
+      variant: "outline" as const,
       icon: Crown
     },
     {
@@ -77,7 +77,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
-      variant: "secondary" as const,
+      variant: "outline" as const,
       icon: Star
     },
     {
@@ -95,8 +95,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         "100+ Job Applications per month",
         "Automated Job-Hunting Process"
       ],
-      popular: false,
-      variant: "secondary" as const,
+      popular: true,
+      variant: "default" as const,
       icon: Crown
     }
   ];

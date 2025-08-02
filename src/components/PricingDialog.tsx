@@ -51,8 +51,8 @@ const PricingDialog = () => {
       bonuses: [
         "1-time personal review of Resume, LinkedIn and GitHub Profile"
       ],
-      popular: true,
-      variant: "hero" as const,
+      popular: false,
+      variant: "outline" as const,
       icon: Crown
     },
     {
@@ -68,7 +68,7 @@ const PricingDialog = () => {
         "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
-      variant: "premium" as const,
+      variant: "outline" as const,
       icon: Sparkles
     },
     {
@@ -85,8 +85,8 @@ const PricingDialog = () => {
         "100+ Job Applications per month",
         "Automated Job-Hunting Process"
       ],
-      popular: false,
-      variant: "premium" as const,
+      popular: true,
+      variant: "hero" as const,
       icon: Crown
     }
   ];

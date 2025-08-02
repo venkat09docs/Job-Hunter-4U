@@ -50,8 +50,8 @@ const Pricing = () => {
       bonuses: [
         "1-time personal review of Resume, LinkedIn and GitHub Profile"
       ],
-      popular: true,
-      variant: "hero" as const
+      popular: false,
+      variant: "outline" as const
     },
     {
       name: "3 Months Plan",
@@ -66,7 +66,7 @@ const Pricing = () => {
         "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
-      variant: "premium" as const
+      variant: "outline" as const
     },
     {
       name: "1 Year Plan",
@@ -82,8 +82,8 @@ const Pricing = () => {
         "100+ Job Applications per month",
         "Automated Job-Hunting Process"
       ],
-      popular: false,
-      variant: "premium" as const
+      popular: true,
+      variant: "hero" as const
     }
   ];
 
