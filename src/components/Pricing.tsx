@@ -45,14 +45,7 @@ const Pricing = () => {
       duration: "1 month",
       description: "Perfect for focused job searching",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "All premium features included"
+        "Everything in 1 Week Plan +"
       ],
       bonuses: [
         "1-time personal review of: Your Resume",
@@ -69,14 +62,7 @@ const Pricing = () => {
       duration: "3 months",
       description: "Best value for comprehensive career growth",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "All premium features included"
+        "Everything in 1 Week Plan +"
       ],
       bonuses: [
         "1 Month Plan Bonuses +",
@@ -91,14 +77,7 @@ const Pricing = () => {
       duration: "1 year",
       description: "Complete career transformation package",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "All premium features included"
+        "Everything in 1 Week Plan +"
       ],
       bonuses: [
         "3 Months Plan Bonuses +",
