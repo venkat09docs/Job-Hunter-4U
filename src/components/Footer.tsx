@@ -9,7 +9,19 @@ const Footer = () => {
       { name: "Pricing", href: "#pricing" },
       { name: "Contact", href: "#testimonials" },
       { name: "Blog", href: "#blog" }
-    ],    
+    ],
+    company: [
+      { name: "About Us", href: "#about" },
+      { name: "Careers", href: "#careers" },
+      { name: "Partners", href: "#partners" },
+      { name: "News", href: "#news" }
+    ],
+    support: [
+      { name: "Help Center", href: "#help" },
+      { name: "Documentation", href: "#docs" },
+      { name: "Community", href: "#community" },
+      { name: "Contact Support", href: "#support" }
+    ],
     legal: [
       { name: "Privacy Policy", href: "#privacy" },
       { name: "Terms of Service", href: "#terms" },
