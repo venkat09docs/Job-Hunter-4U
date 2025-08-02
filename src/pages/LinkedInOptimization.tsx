@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Linkedin, CheckCircle, Target } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
+import { Linkedin, CheckCircle, Target, ExternalLink } from 'lucide-react';
 
 interface LinkedInTask {
   id: string;
@@ -50,6 +51,7 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
 
 const LinkedInOptimization = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const [tasks, setTasks] = useState<LinkedInTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,6 +115,19 @@ const LinkedInOptimization = () => {
         variant: 'destructive'
       });
     }
+  };
+
+  const handleGoToLinkedIn = () => {
+    if (!profile?.linkedin_url) {
+      toast({
+        title: 'LinkedIn URL not configured',
+        description: 'Please configure your LinkedIn URL in Settings > Professional Details',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    window.open(profile.linkedin_url, '_blank');
   };
 
   const completedCount = tasks.filter(task => task.completed).length;
@@ -213,14 +228,25 @@ const LinkedInOptimization = () => {
                 return (
                   <Card key={category} className="shadow-elegant">
                     <CardHeader>
-                      <CardTitle className="text-lg flex items-center justify-between">
+                     <CardTitle className="text-lg flex items-center justify-between">
                         <span className="flex items-center gap-2">
                           <Target className="h-4 w-4 text-primary" />
                           {category}
                         </span>
-                        <Badge variant="outline">
-                          {categoryCompleted}/{categoryTotal}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleGoToLinkedIn}
+                            className="gap-1 text-xs"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Go to LinkedIn
+                          </Button>
+                          <Badge variant="outline">
+                            {categoryCompleted}/{categoryTotal}
+                          </Badge>
+                        </div>
                       </CardTitle>
                       <Progress value={categoryPercentage} className="h-2" />
                     </CardHeader>

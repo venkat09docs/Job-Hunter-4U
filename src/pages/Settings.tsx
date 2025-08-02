@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard } from 'lucide-react';
+import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard, Link } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,7 +23,16 @@ const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
+const professionalDetailsSchema = z.object({
+  bio_link_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  digital_profile_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  github_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  leetcode_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+});
+
 type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
+type ProfessionalDetailsFormData = z.infer<typeof professionalDetailsSchema>;
 
 const Settings = () => {
   const { user } = useAuth();
@@ -40,6 +49,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [savingProfessionalDetails, setSavingProfessionalDetails] = useState(false);
 
   const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(passwordResetSchema),
@@ -47,6 +57,30 @@ const Settings = () => {
       email: user?.email || '',
     },
   });
+
+  const professionalForm = useForm<ProfessionalDetailsFormData>({
+    resolver: zodResolver(professionalDetailsSchema),
+    defaultValues: {
+      bio_link_url: profile?.bio_link_url || '',
+      digital_profile_url: profile?.digital_profile_url || '',
+      linkedin_url: profile?.linkedin_url || '',
+      github_url: profile?.github_url || '',
+      leetcode_url: profile?.leetcode_url || '',
+    },
+  });
+
+  // Update professional form when profile data loads
+  useEffect(() => {
+    if (profile) {
+      professionalForm.reset({
+        bio_link_url: profile.bio_link_url || '',
+        digital_profile_url: profile.digital_profile_url || '',
+        linkedin_url: profile.linkedin_url || '',
+        github_url: profile.github_url || '',
+        leetcode_url: profile.leetcode_url || '',
+      });
+    }
+  }, [profile, professionalForm]);
 
   const onSubmit = async (data: PasswordResetFormData) => {
     setLoading(true);
@@ -147,6 +181,40 @@ const Settings = () => {
     }
   };
 
+  const onProfessionalDetailsSubmit = async (data: ProfessionalDetailsFormData) => {
+    if (!user) return;
+
+    setSavingProfessionalDetails(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          bio_link_url: data.bio_link_url || null,
+          digital_profile_url: data.digital_profile_url || null,
+          linkedin_url: data.linkedin_url || null,
+          github_url: data.github_url || null,
+          leetcode_url: data.leetcode_url || null,
+        } as any)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Professional details updated',
+        description: 'Your professional links have been successfully saved.',
+      });
+    } catch (error: any) {
+      console.error('Error updating professional details:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update professional details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingProfessionalDetails(false);
+    }
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-hero">
@@ -241,6 +309,109 @@ const Settings = () => {
                     className="hidden"
                     disabled={uploadingImage}
                   />
+                </CardContent>
+              </Card>
+
+              {/* Professional Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link className="h-5 w-5" />
+                    Professional Details
+                  </CardTitle>
+                  <CardDescription>
+                    Configure your professional links and URLs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...professionalForm}>
+                    <form onSubmit={professionalForm.handleSubmit(onProfessionalDetailsSubmit)} className="space-y-4">
+                      <FormField
+                        control={professionalForm.control}
+                        name="bio_link_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bio Link URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://your-bio-link.com" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="digital_profile_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Digital Profile URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://your-digital-profile.com" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="linkedin_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>LinkedIn URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://www.linkedin.com/in/your-profile" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="github_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>GitHub URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://github.com/your-username" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="leetcode_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>LeetCode URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://leetcode.com/your-username" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" disabled={savingProfessionalDetails} className="gap-2">
+                        <Link className="h-4 w-4" />
+                        {savingProfessionalDetails ? 'Saving...' : 'Save Professional Details'}
+                      </Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
 

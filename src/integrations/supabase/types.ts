@@ -640,10 +640,15 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio_link_url: string | null
           created_at: string
+          digital_profile_url: string | null
           email: string | null
           full_name: string | null
+          github_url: string | null
           id: string
+          leetcode_url: string | null
+          linkedin_url: string | null
           profile_image_url: string | null
           subscription_active: boolean | null
           subscription_end_date: string | null
@@ -657,10 +662,15 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          bio_link_url?: string | null
           created_at?: string
+          digital_profile_url?: string | null
           email?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
+          leetcode_url?: string | null
+          linkedin_url?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null
@@ -674,10 +684,15 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          bio_link_url?: string | null
           created_at?: string
+          digital_profile_url?: string | null
           email?: string | null
           full_name?: string | null
+          github_url?: string | null
           id?: string
+          leetcode_url?: string | null
+          linkedin_url?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null

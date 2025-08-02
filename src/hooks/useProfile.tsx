@@ -16,6 +16,11 @@ interface Profile {
   total_resume_opens: number;
   total_job_searches: number;
   total_ai_queries: number;
+  bio_link_url?: string | null;
+  digital_profile_url?: string | null;
+  linkedin_url?: string | null;
+  github_url?: string | null;
+  leetcode_url?: string | null;
   created_at: string;
   updated_at: string;
 }
