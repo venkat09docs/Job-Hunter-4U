@@ -179,7 +179,7 @@ const Features = () => {
             </div>
             
             <Button variant="hero" size="lg" className="w-full animate-pulse">
-              Join JobHunter Pro Winners Platform Today - Just ₹299
+              Join JobHunter Pro Winners Platform Today - Just ₹499
             </Button>
           </div>
         </div>

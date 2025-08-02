@@ -29,7 +29,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
   const plans = [
     {
       name: "One Week Plan",
-      price: 299,
+      price: 499,
       duration: "1 week",
       days: 7,
       description: "Quick access to all career tools",

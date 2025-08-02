@@ -23,7 +23,7 @@ const PricingDialog = () => {
   const plans = [
     {
       name: "One Week Plan",
-      price: 299,
+      price: 499,
       duration: "1 week",
       description: "Quick access to all career tools",
       features: [

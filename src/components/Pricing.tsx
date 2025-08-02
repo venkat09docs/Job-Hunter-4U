@@ -23,7 +23,7 @@ const Pricing = () => {
   const plans = [
     {
       name: "One Week Plan",
-      price: 299,
+      price: 499,
       duration: "1 week",
       description: "Quick access to all career tools",
       features: [
@@ -278,7 +278,7 @@ const Pricing = () => {
               <div className="text-sm text-muted-foreground">70% OFF - Ends Soon</div>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-lg line-through text-muted-foreground">₹1,999</span>
-                <span className="text-3xl font-bold text-success">₹299</span>
+                <span className="text-3xl font-bold text-success">₹499</span>
               </div>
             </div>
           </div>
