@@ -39,6 +39,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
+  const [totalJobApplications, setTotalJobApplications] = useState(0);
 
   const handleSignOut = async () => {
     try {
@@ -65,13 +66,14 @@ const Dashboard = () => {
     });
   };
 
-  // Fetch recent job applications
+  // Fetch recent job applications and total count
   useEffect(() => {
-    const fetchRecentJobs = async () => {
+    const fetchJobData = async () => {
       if (!user) return;
       
       try {
-        const { data, error } = await supabase
+        // Fetch recent jobs
+        const { data: recentData, error: recentError } = await supabase
           .from('job_tracker')
           .select('id, company_name, job_title, status, application_date, created_at')
           .eq('user_id', user.id)
@@ -79,16 +81,27 @@ const Dashboard = () => {
           .order('created_at', { ascending: false })
           .limit(5);
 
-        if (error) throw error;
-        setRecentJobs(data || []);
+        if (recentError) throw recentError;
+        setRecentJobs(recentData || []);
+
+        // Fetch total job applications (excluding wishlist)
+        const { count, error: countError } = await supabase
+          .from('job_tracker')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_archived', false)
+          .neq('status', 'wishlist');
+
+        if (countError) throw countError;
+        setTotalJobApplications(count || 0);
       } catch (error) {
-        console.error('Error fetching recent jobs:', error);
+        console.error('Error fetching job data:', error);
       } finally {
         setJobsLoading(false);
       }
     };
 
-    fetchRecentJobs();
+    fetchJobData();
   }, [user]);
 
   const handleJobClick = (jobId: string) => {
@@ -268,66 +281,26 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground text-center">Technical showcase</p>
                     </div>
 
-                    {/* Job Search Status */}
+                    {/* Job Tracker Stats */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                       <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${75 * 2.827} ${(100 - 75) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">75%</span>
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{totalJobApplications}</span>
                         </div>
                       </div>
-                      <h4 className="font-medium text-center">Job Search</h4>
-                      <p className="text-sm text-muted-foreground text-center">Applications submitted</p>
+                      <h4 className="font-medium text-center">Job Tracker Stats</h4>
+                      <p className="text-sm text-muted-foreground text-center">Total applications</p>
                     </div>
 
                     {/* LinkedIn Network Status */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
                       <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${networkProgress * 2.827} ${(100 - networkProgress) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{networkProgress}%</span>
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">LinkedIn Network</h4>
-                      <p className="text-sm text-muted-foreground text-center">Professional connections</p>
+                      <p className="text-sm text-muted-foreground text-center">Weekly activities</p>
                     </div>
 
                     {/* Enhancements Status */}
