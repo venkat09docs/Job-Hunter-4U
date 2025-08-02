@@ -48,9 +48,7 @@ const Pricing = () => {
         "Everything in 1 Week Plan +"
       ],
       bonuses: [
-        "1-time personal review of: Your Resume",
-        "LinkedIn Profile",
-        "GitHub Profile",
+        "1-time personal review of Resume, LinkedIn and GitHub Profile",
         "Free Access to Career Growth Live Cohort on every Saturday"
       ],
       popular: true,
@@ -62,7 +60,7 @@ const Pricing = () => {
       duration: "3 months",
       description: "Best value for comprehensive career growth",
       features: [
-        "Everything in 1 Week Plan +"
+        "Everything in 1 Month Plan +"
       ],
       bonuses: [
         "1 Month Plan Bonuses +",
@@ -77,7 +75,7 @@ const Pricing = () => {
       duration: "1 year",
       description: "Complete career transformation package",
       features: [
-        "Everything in 1 Week Plan +"
+        "Everything in 3 Months Plan +"
       ],
       bonuses: [
         "3 Months Plan Bonuses +",
