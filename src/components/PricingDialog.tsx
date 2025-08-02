@@ -32,7 +32,9 @@ const PricingDialog = () => {
         "LinkedIn automation tools", 
         "Job tracker & analytics",
         "AI career assistant",
-        "Portfolio builder"
+        "Portfolio builder",
+        "Interview preparation",
+        "All premium features included"
       ],
       popular: false,
       variant: "outline" as const,
@@ -44,14 +46,11 @@ const PricingDialog = () => {
       duration: "1 month",
       description: "Perfect for focused job searching",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "Priority support"
+        "Everything in 1 Week Plan +"
+      ],
+      bonuses: [
+        "1-time personal review of Resume, LinkedIn and GitHub Profile",
+        "Free Access to Career Growth Live Cohort on every Saturday"
       ],
       popular: true,
       variant: "hero" as const,
@@ -59,23 +58,38 @@ const PricingDialog = () => {
     },
     {
       name: "3 Months Plan",
-      price: 1999,
+      price: 2499,
       duration: "3 months",
       description: "Best value for comprehensive career growth",
       features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn automation tools", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "Priority support",
-        "Career coaching calls"
+        "Everything in 1 Month Plan +"
+      ],
+      bonuses: [
+        "1 Month Plan Bonuses +",
+        "1 Mock Interview in the 3rd Month"
       ],
       popular: false,
       variant: "premium" as const,
       icon: Sparkles
+    },
+    {
+      name: "1 Year Plan",
+      price: 11999,
+      duration: "1 year",
+      description: "Complete career transformation package",
+      features: [
+        "Everything in 3 Months Plan +"
+      ],
+      bonuses: [
+        "3 Months Plan Bonuses +",
+        "Video Based Bio Links",
+        "Digital Profile",
+        "100+ Job Applications per month",
+        "Automated Job-Hunting Process"
+      ],
+      popular: false,
+      variant: "premium" as const,
+      icon: Crown
     }
   ];
 
@@ -273,7 +287,7 @@ const PricingDialog = () => {
       </div>
 
       {/* Pricing cards - Compact grid for dialog */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
         {plans.map((plan, index) => {
           const IconComponent = plan.icon;
           return (
@@ -323,6 +337,21 @@ const PricingDialog = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Bonuses (for plans that have them) */}
+                {'bonuses' in plan && plan.bonuses && (
+                  <div className="space-y-2 pt-2 border-t border-primary/20">
+                    <div className="text-xs font-medium text-primary text-center">
+                      🎁 EXCLUSIVE BONUSES
+                    </div>
+                    {plan.bonuses.map((bonus, bonusIndex) => (
+                      <div key={bonusIndex} className="flex items-start gap-2">
+                        <Star className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+                        <span className="text-xs font-medium text-warning">{bonus}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* CTA button */}
                 <Button 
