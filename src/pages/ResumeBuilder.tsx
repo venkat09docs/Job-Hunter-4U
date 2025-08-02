@@ -80,12 +80,12 @@ const ResumeBuilder = () => {
   const TOP_SKILLS_TOOL_ID = '20c53c53-70c1-4d50-b0af-655fe09aef7b';
   const { chats: topSkillsNotes } = useToolChats(TOP_SKILLS_TOOL_ID);
   
-  // Resume Builder - Achievements tool notes
-  const ACHIEVEMENTS_TOOL_ID = '5a5f5729-8e66-478c-a59b-2db0e3e15c53';
+  // Resume Builder - Achievements tool notes  
+  const ACHIEVEMENTS_TOOL_ID = '55b57cf9-4781-4b80-8e40-eb154420ce49';
   const { chats: achievementsNotes } = useToolChats(ACHIEVEMENTS_TOOL_ID);
   
   // Generate Capstone Project Ideas tool notes
-  const CAPSTONE_TOOL_ID = '66d85dd8-69c3-4ea5-a00c-df2d91fd3c30';
+  const CAPSTONE_TOOL_ID = 'c0df061d-c6de-400f-a33e-2ea98f425d75';
   const { chats: capstoneNotes } = useToolChats(CAPSTONE_TOOL_ID);
   
   // Right column state
@@ -2468,8 +2468,8 @@ ${resumeData.personalDetails.fullName}`;
                                   </div>
                                 )}
 
-                                 {/* Job Tracker Notes - Show for other sections except summary, skills, experience, and education */}
-                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && activeSuggestionSection !== 'experience' && activeSuggestionSection !== 'education' && (
+                                 {/* Job Tracker Notes - Show for other sections except summary, skills, experience, education, and personalDetails */}
+                                 {activeSuggestionSection !== 'summary' && activeSuggestionSection !== 'skills' && activeSuggestionSection !== 'experience' && activeSuggestionSection !== 'education' && activeSuggestionSection !== 'personalDetails' && (
                                   <div>
                                     <h4 className="font-medium mb-3 flex items-center gap-2">
                                       <StickyNote className="h-4 w-4" />
