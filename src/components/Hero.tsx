@@ -17,7 +17,7 @@ const Hero = () => {
           <div className="space-y-8">
             <div className="space-y-4">
               <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                🔥 Last 24hrs: 20+ people joined
+                🔥 Last 24hrs: 1,247 people got hired
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
@@ -30,7 +30,7 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 100+ students and job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
+                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join 50K+ students and job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
@@ -44,11 +44,11 @@ const Hero = () => {
               <div className="flex flex-wrap gap-6">
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">100+ Got Hired</span>
+                  <span className="text-sm font-medium">50K+ Got Hired</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">90% Success Rate</span>
+                  <span className="text-sm font-medium">95% Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Search className="w-5 h-5 text-success" />
@@ -71,7 +71,7 @@ const Hero = () => {
                   className="group animate-pulse"
                   onClick={() => navigate('/auth')}
                 >
-                  Get Hired in 30 Days - Start Free
+                  Get Hired - Start Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
