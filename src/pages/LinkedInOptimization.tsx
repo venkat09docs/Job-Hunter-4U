@@ -55,13 +55,22 @@ const LinkedInOptimization = () => {
 
   const loadLinkedInProgress = async () => {
     try {
-      // Use localStorage for now as a temporary solution
-      const savedProgress = localStorage.getItem(`linkedin_progress_${user?.id}`);
-      const completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
+      if (!user) return;
+
+      // Fetch from database instead of localStorage
+      const { data, error } = await supabase
+        .from('linkedin_progress')
+        .select('task_id')
+        .eq('user_id', user.id)
+        .eq('completed', true);
+
+      if (error) throw error;
+
+      const completedTaskIds = data?.map(item => item.task_id) || [];
       
       const tasksWithStatus = LINKEDIN_TASKS.map(task => ({
         ...task,
-        completed: completedTasks.includes(task.id)
+        completed: completedTaskIds.includes(task.id)
       }));
 
       setTasks(tasksWithStatus);
@@ -76,20 +85,35 @@ const LinkedInOptimization = () => {
 
   const updateTaskStatus = async (taskId: string, completed: boolean) => {
     try {
-      // Use localStorage for now
-      const savedProgress = localStorage.getItem(`linkedin_progress_${user?.id}`);
-      let completedTasks = savedProgress ? JSON.parse(savedProgress) : [];
-      
-      if (completed) {
-        if (!completedTasks.includes(taskId)) {
-          completedTasks.push(taskId);
-        }
-      } else {
-        completedTasks = completedTasks.filter((id: string) => id !== taskId);
-      }
-      
-      localStorage.setItem(`linkedin_progress_${user?.id}`, JSON.stringify(completedTasks));
+      if (!user) return;
 
+      // Update database instead of localStorage
+      if (completed) {
+        // Insert new task completion
+        const { error } = await supabase
+          .from('linkedin_progress')
+          .upsert({
+            user_id: user.id,
+            task_id: taskId,
+            completed: true,
+            completed_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id,task_id'
+          });
+
+        if (error) throw error;
+      } else {
+        // Remove task completion
+        const { error } = await supabase
+          .from('linkedin_progress')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('task_id', taskId);
+
+        if (error) throw error;
+      }
+
+      // Update local state
       setTasks(prev => prev.map(task => 
         task.id === taskId ? { ...task, completed } : task
       ));
