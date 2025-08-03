@@ -3235,7 +3235,7 @@ ${resumeData.personalDetails.fullName}`;
                                   variant="outline" 
                                   size="sm" 
                                   className="gap-2"
-                                  onClick={() => window.open('/dashboard/career-hub', '_blank')}
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
                                 >
                                   <ExternalLink className="h-3 w-3" />
                                   Go to Cover Letter Tool
