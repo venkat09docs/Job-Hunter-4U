@@ -171,6 +171,21 @@ const ResourcesLibrary = () => {
     document.body.removeChild(link);
   };
 
+  const downloadCoverLetter = (coverLetter: SavedCoverLetter) => {
+    const element = document.createElement('a');
+    const file = new Blob([coverLetter.content], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${coverLetter.title}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: 'Download Started',
+      description: 'Your cover letter has been downloaded.',
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -354,6 +369,15 @@ const ResourcesLibrary = () => {
                                 >
                                   <Copy className="h-4 w-4" />
                                   Copy Content
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => downloadCoverLetter(coverLetter)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Download className="h-4 w-4" />
+                                  Download
                                 </Button>
                               </div>
                             </div>
