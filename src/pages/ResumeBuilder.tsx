@@ -76,6 +76,10 @@ const ResumeBuilder = () => {
   const RESUME_SUMMARY_TOOL_ID = '733fcfc9-f0cd-4429-a8c2-66f1605e63df';
   const { chats: resumeSummaryNotes } = useToolChats(RESUME_SUMMARY_TOOL_ID);
   
+  // Cover Letter tool notes
+  const COVER_LETTER_TOOL_ID = '5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55';
+  const { chats: coverLetterNotes } = useToolChats(COVER_LETTER_TOOL_ID);
+  
   // Top 6 Skills tool notes
   const TOP_SKILLS_TOOL_ID = '20c53c53-70c1-4d50-b0af-655fe09aef7b';
   const { chats: topSkillsNotes } = useToolChats(TOP_SKILLS_TOOL_ID);
@@ -1578,6 +1582,34 @@ ${resumeData.personalDetails.fullName}`;
     }));
   };
 
+  // Get cover letter notes content for suggestions
+  const getCoverLetterNotes = () => {
+    const notes: { title: string; content: string; createdAt: string }[] = [];
+    
+    coverLetterNotes.forEach(chat => {
+      if (chat.messages && Array.isArray(chat.messages)) {
+        chat.messages.forEach(message => {
+          if (message.content) {
+            const content = typeof message.content === 'string' 
+              ? message.content 
+              : JSON.stringify(message.content);
+            
+            // Extract content from user or assistant messages
+            if (content && content.trim()) {
+              notes.push({
+                title: `Note from ${new Date(chat.created_at).toLocaleDateString()}`,
+                content: content,
+                createdAt: chat.created_at
+              });
+            }
+          }
+        });
+      }
+    });
+    
+    return notes.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
+
   // Get resume summary notes content for suggestions
   const getResumeSummaryNotes = () => {
     if (!resumeSummaryNotes || resumeSummaryNotes.length === 0) {
@@ -2940,43 +2972,133 @@ ${resumeData.personalDetails.fullName}`;
             </TabsContent>
 
             <TabsContent value="cover-letter" className="space-y-6 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Cover Letter Generator</CardTitle>
-                  <CardDescription>
-                    Generate a personalized cover letter based on your resume data
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button 
-                    onClick={generateCoverLetter}
-                    disabled={loading}
-                    className="gap-2"
-                  >
-                    <FileEdit className="h-4 w-4" />
-                    Generate Cover Letter
-                  </Button>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Cover Letter Generator */}
+                <div className="lg:col-span-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Cover Letter Generator</CardTitle>
+                      <CardDescription>
+                        Generate a personalized cover letter based on your resume data
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Button 
+                        onClick={generateCoverLetter}
+                        disabled={loading}
+                        className="gap-2"
+                      >
+                        <FileEdit className="h-4 w-4" />
+                        Generate Cover Letter
+                      </Button>
 
-                  {showCoverLetter && (
-                    <div className="space-y-4">
-                      <Label>Generated Cover Letter (Editable)</Label>
-                      <Textarea 
-                        value={coverLetterSuggestions}
-                        onChange={(e) => setCoverLetterSuggestions(e.target.value)}
-                        rows={12}
-                        className="font-mono text-sm"
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm">Save Cover Letter</Button>
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      {showCoverLetter && (
+                        <div className="space-y-4">
+                          <Label>Generated Cover Letter (Editable)</Label>
+                          <Textarea 
+                            value={coverLetterSuggestions}
+                            onChange={(e) => setCoverLetterSuggestions(e.target.value)}
+                            rows={12}
+                            className="font-mono text-sm"
+                          />
+                          <div className="flex gap-2">
+                            <Button size="sm">Save Cover Letter</Button>
+                            <Button variant="outline" size="sm">
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Cover Letter Suggestions - Right Column */}
+                {showCoverLetter && (
+                  <div className="lg:col-span-1">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Cover Letter Suggestions</CardTitle>
+                        <CardDescription>
+                          Tips and your saved notes to improve your cover letter
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Cover Letter Tips */}
+                        <div>
+                          <h4 className="font-medium mb-3 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            Cover Letter Tips
+                          </h4>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>• Start with a strong opening that grabs attention</p>
+                            <p>• Mention the specific job title and company name</p>
+                            <p>• Highlight 2-3 key achievements relevant to the role</p>
+                            <p>• Show knowledge about the company and role</p>
+                            <p>• Use keywords from the job description</p>
+                            <p>• Keep it concise - ideally one page</p>
+                            <p>• End with a strong call to action</p>
+                            <p>• Proofread for grammar and spelling errors</p>
+                          </div>
+                        </div>
+
+                        {/* Cover Letter Notes */}
+                        <div>
+                          <h4 className="font-medium mb-3 flex items-center gap-2">
+                            <StickyNote className="h-4 w-4" />
+                            Your Cover Letter Notes
+                          </h4>
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {getCoverLetterNotes().length > 0 ? (
+                              getCoverLetterNotes().map((note, index) => (
+                                <div key={index} className="p-3 bg-muted/50 rounded-lg border">
+                                  <div className="flex items-start justify-between gap-2 mb-2">
+                                    <h5 className="font-medium text-sm">{note.title}</h5>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(note.content);
+                                        toast({
+                                          title: "Copied!",
+                                          description: "Note content copied to clipboard",
+                                        });
+                                      }}
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    {new Date(note.createdAt).toLocaleDateString()}
+                                  </p>
+                                  <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                    {note.content}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg border border-dashed">
+                                <p className="mb-2">No notes found from the "Write a powerful cover letter" tool.</p>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="gap-2"
+                                  onClick={() => window.open('/dashboard/career-hub', '_blank')}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  Go to Cover Letter Tool
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
 
