@@ -13,7 +13,10 @@ import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
-import { Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft } from 'lucide-react';
+import { 
+  Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft,
+  MapPin, Building, Clock, ExternalLink, DollarSign
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface JobEntry {
@@ -44,6 +47,7 @@ const JobTracker = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
+  const [selectedJob, setSelectedJob] = useState<JobEntry | null>(null);
 
   const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted'];
   const statusColors = {
@@ -414,10 +418,14 @@ const JobTracker = () => {
                   </div>
                   
                   {/* Board Column */}
-                  <div className="flex-1 space-y-1 sm:space-y-2 min-h-[150px] sm:min-h-[200px] md:min-h-[250px] p-1 sm:p-2 md:p-3 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
-                    {statusJobs.map(job => (
-                      <Card key={job.id} className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background">
-                        <div className="space-y-1">
+                   <div className="flex-1 space-y-1 sm:space-y-2 min-h-[150px] sm:min-h-[200px] md:min-h-[250px] p-1 sm:p-2 md:p-3 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+                     {statusJobs.map(job => (
+                       <Card 
+                         key={job.id} 
+                         className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background"
+                         onClick={() => setSelectedJob(job)}
+                       >
+                         <div className="space-y-1">
                           <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
                           <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
                           <div className="text-[9px] sm:text-xs text-muted-foreground">
@@ -429,9 +437,9 @@ const JobTracker = () => {
                           {job.salary_range && (
                             <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
                           )}
-                           <div className="flex flex-col gap-1 pt-1">
-                             {hasActiveSubscription() ? (
-                               <Select 
+                            <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+                              {hasActiveSubscription() ? (
+                                <Select
                                  value={job.status} 
                                  onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
                                >
@@ -454,9 +462,9 @@ const JobTracker = () => {
                                    </SelectTrigger>
                                  </Select>
                                </SubscriptionUpgrade>
-                             )}
-                             <div className="flex items-center gap-1 justify-center">
-                               {hasActiveSubscription() ? (
+                              )}
+                              <div className="flex items-center gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+                                {hasActiveSubscription() ? (
                                  <Button 
                                    variant="ghost" 
                                    size="sm" 
@@ -568,6 +576,131 @@ const JobTracker = () => {
                   onSubmit={handleEditJob} 
                   onCancel={() => setEditingJob(null)} 
                 />
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Job Details Modal */}
+          <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold">
+                  {selectedJob?.job_title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              {selectedJob && (
+                <div className="space-y-6">
+                  {/* Company and Location Info */}
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Building className="h-5 w-5" />
+                      <span className="font-medium">{selectedJob.company_name}</span>
+                    </div>
+                    {selectedJob.location && (
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-5 w-5" />
+                        <span>{selectedJob.location}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-5 w-5" />
+                      <span>Applied {new Date(selectedJob.application_date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Status</h3>
+                    <Badge className={`${statusColors[selectedJob.status as keyof typeof statusColors]} text-white`}>
+                      {statusLabels[selectedJob.status as keyof typeof statusLabels]}
+                    </Badge>
+                  </div>
+
+                  {/* Salary Information */}
+                  {selectedJob.salary_range && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Salary Range</h3>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-lg font-medium">{selectedJob.salary_range}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contact Information */}
+                  {(selectedJob.contact_person || selectedJob.contact_email) && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Contact Information</h3>
+                      <div className="space-y-2">
+                        {selectedJob.contact_person && (
+                          <div>
+                            <span className="font-medium">Contact Person: </span>
+                            <span>{selectedJob.contact_person}</span>
+                          </div>
+                        )}
+                        {selectedJob.contact_email && (
+                          <div>
+                            <span className="font-medium">Email: </span>
+                            <a href={`mailto:${selectedJob.contact_email}`} className="text-primary hover:underline">
+                              {selectedJob.contact_email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Next Follow-up */}
+                  {selectedJob.next_follow_up && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Next Follow-up</h3>
+                      <span>{new Date(selectedJob.next_follow_up).toLocaleDateString()}</span>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {selectedJob.notes && (
+                    <div>
+                      <h3 className="font-semibold text-lg mb-2">Notes</h3>
+                      <div className="bg-muted/50 p-4 rounded-lg">
+                        <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+                          {selectedJob.notes}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4 pt-4 border-t">
+                    {selectedJob.job_url && (
+                      <Button className="flex items-center gap-2" asChild>
+                        <a 
+                          href={selectedJob.job_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          View Job Posting
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    
+                    {hasActiveSubscription() && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setEditingJob(selectedJob);
+                          setSelectedJob(null);
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Job
+                      </Button>
+                    )}
+                  </div>
+                </div>
               )}
             </DialogContent>
           </Dialog>
