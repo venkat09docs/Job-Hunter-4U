@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,13 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
-import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 interface JobResult {
   job_id: string;
@@ -153,31 +151,31 @@ const FindYourNextRole = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Find Your Next Role
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <SubscriptionUpgrade />
-                <UserProfileDropdown />
-              </div>
-            </div>
-          </header>
+    <div className="min-h-screen bg-gradient-hero">
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Go to Dashboard
+              </Button>
+            </Link>
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Find Your Next Role
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <UserProfileDropdown />
+          </div>
+        </div>
+      </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="container mx-auto space-y-6">
+      {/* Main Content */}
+      <main className="flex-1 p-6 overflow-auto">
+        <div className="container mx-auto space-y-6">
               <div>
                 <h2 className="text-3xl font-bold text-foreground">Find Your Next Role</h2>
                 <p className="text-muted-foreground mt-2">
@@ -471,11 +469,9 @@ const FindYourNextRole = () => {
                   )}
                 </DialogContent>
               </Dialog>
-            </div>
-          </main>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </div>
   );
 };
 
