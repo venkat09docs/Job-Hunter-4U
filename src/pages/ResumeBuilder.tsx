@@ -127,7 +127,7 @@ const ResumeBuilder = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(location.search);
-    return params.get('tab') || 'resume-builder';
+    return params.get('tab') || 'before-starting';
   });
 
   const [resumeData, setResumeData] = useState<ResumeData>({
@@ -1821,11 +1821,250 @@ ${resumeData.personalDetails.fullName}`;
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="before-starting">Before Starting</TabsTrigger>
               <TabsTrigger value="resume-builder">Resume Builder</TabsTrigger>
               <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
               <TabsTrigger value="resume-analyzer">Resume Analyzer</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="before-starting" className="space-y-6 mt-6">
+              <div className="grid grid-cols-2 gap-8">
+                {/* Instructions Column */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Resume & Cover Letter Instructions
+                    </CardTitle>
+                    <CardDescription>
+                      Essential guidelines to create professional resume and cover letter
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">Resume Building Guidelines</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Keep your resume to 1-2 pages maximum</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Use a clean, professional format with consistent styling</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Include quantifiable achievements with numbers and percentages</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Tailor your resume for each job application</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Use action verbs to start bullet points (e.g., Developed, Managed, Led)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Include relevant keywords from the job description</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Proofread carefully for grammar and spelling errors</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">Cover Letter Best Practices</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Address the hiring manager by name when possible</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Start with a compelling opening that grabs attention</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Highlight specific achievements that match job requirements</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Show enthusiasm for the company and role</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>Keep it concise - one page maximum</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                          <span>End with a strong call-to-action</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">AI Tools Integration</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-500 mt-0.5" />
+                          <span>Use "Generate Resume Summary" tool for professional summaries</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-500 mt-0.5" />
+                          <span>Leverage "Top 6 Skills" tool to identify key competencies</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-500 mt-0.5" />
+                          <span>Use "Resume Builder - Achievements" for impact statements</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-500 mt-0.5" />
+                          <span>Access "Write an Effective Resume" for detailed guidance</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Checklist Column */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5" />
+                      Pre-Application Checklist
+                    </CardTitle>
+                    <CardDescription>
+                      Complete these steps before building your resume and cover letter
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">Preparation Phase</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="job-description" />
+                          <label htmlFor="job-description" className="text-sm">
+                            Read and analyze the job description thoroughly
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="company-research" />
+                          <label htmlFor="company-research" className="text-sm">
+                            Research the company culture and values
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="keywords" />
+                          <label htmlFor="keywords" className="text-sm">
+                            Identify key skills and keywords from job posting
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="achievements" />
+                          <label htmlFor="achievements" className="text-sm">
+                            List your quantifiable achievements and accomplishments
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">Content Gathering</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="contact-info" />
+                          <label htmlFor="contact-info" className="text-sm">
+                            Verify all contact information is current
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="work-history" />
+                          <label htmlFor="work-history" className="text-sm">
+                            Organize work experience with dates and details
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="education" />
+                          <label htmlFor="education" className="text-sm">
+                            Gather education details, certifications, and awards
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="skills-list" />
+                          <label htmlFor="skills-list" className="text-sm">
+                            Create comprehensive list of technical and soft skills
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">AI Tools Preparation</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="effective-resume-notes" />
+                          <label htmlFor="effective-resume-notes" className="text-sm">
+                            Review "Write an Effective Resume" tool notes
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="skills-analysis" />
+                          <label htmlFor="skills-analysis" className="text-sm">
+                            Use "Top 6 Skills" tool to identify key competencies
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="achievements-tool" />
+                          <label htmlFor="achievements-tool" className="text-sm">
+                            Generate achievements using AI achievement tool
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="summary-ready" />
+                          <label htmlFor="summary-ready" className="text-sm">
+                            Prepare content for AI resume summary generation
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-primary mb-3">Final Preparation</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="templates" />
+                          <label htmlFor="templates" className="text-sm">
+                            Choose appropriate resume template/format
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="references" />
+                          <label htmlFor="references" className="text-sm">
+                            Prepare list of professional references
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="portfolio" />
+                          <label htmlFor="portfolio" className="text-sm">
+                            Update portfolio and LinkedIn profile
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-muted rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">Pro Tip:</span> Complete at least 80% of this checklist before proceeding to the Resume Builder tab for best results.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
             <TabsContent value="resume-builder" className="space-y-6 mt-6">
               {/* Progress Bar */}
