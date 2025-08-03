@@ -6,10 +6,12 @@ const corsHeaders = {
 }
 
 interface JobSearchRequest {
-  jobTitle: string;
-  location: string;
-  experienceLevel: string;
-  userId: string;
+  query: string;
+  page: number;
+  num_pages: number;
+  date_posted: string;
+  country: string;
+  language: string;
 }
 
 Deno.serve(async (req) => {
@@ -39,19 +41,16 @@ Deno.serve(async (req) => {
       refresh_token: '',
     });
 
-    const { jobTitle, location, experienceLevel, userId }: JobSearchRequest = await req.json();
+    const { query, page, num_pages, date_posted, country, language }: JobSearchRequest = await req.json();
     
-    if (!jobTitle || !userId) {
-      throw new Error('Missing required fields: jobTitle and userId');
+    if (!query) {
+      throw new Error('Missing required field: query');
     }
 
-    console.log('Job search request:', { jobTitle, location, experienceLevel, userId });
+    console.log('Job search request:', { query, page, num_pages, date_posted, country, language });
 
-    // Get n8n webhook URL from environment
-    const n8nWebhookUrl = Deno.env.get('N8N_WEBHOOK_URL');
-    if (!n8nWebhookUrl) {
-      throw new Error('N8N_WEBHOOK_URL not configured');
-    }
+    // Use the specific n8n webhook URL you provided
+    const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook-test/find-next-job-role';
 
     // Send job search request to n8n
     console.log('Sending to n8n webhook:', n8nWebhookUrl);
@@ -61,11 +60,12 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        jobTitle,
-        location,
-        experienceLevel,
-        userId,
-        action: 'job_search'
+        query,
+        page,
+        num_pages,
+        date_posted,
+        country,
+        language
       }),
     });
 
@@ -88,9 +88,12 @@ Deno.serve(async (req) => {
         data: {
           jobs: jobResults,
           searchCriteria: {
-            jobTitle,
-            location,
-            experienceLevel
+            query,
+            page,
+            num_pages,
+            date_posted,
+            country,
+            language
           },
           totalResults: jobResults.length
         }

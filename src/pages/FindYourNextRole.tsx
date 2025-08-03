@@ -54,11 +54,11 @@ const FindYourNextRole = () => {
         throw error;
       }
 
-      if (data && data.jobs) {
-        setJobs(data.jobs);
+      if (data && data.success && data.data && data.data.jobs) {
+        setJobs(data.data.jobs);
         toast({
           title: "Jobs found successfully",
-          description: `Found ${data.jobs.length} job opportunities for you.`,
+          description: `Found ${data.data.jobs.length} job opportunities for you.`,
         });
       } else {
         toast({
