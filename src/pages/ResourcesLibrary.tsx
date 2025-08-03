@@ -7,12 +7,17 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface SavedResume {
   id: string;
@@ -42,6 +47,13 @@ const ResourcesLibrary = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return location.state?.activeTab || 'saved-resumes';
   });
+  
+  // Edit functionality state
+  const [editingCoverLetter, setEditingCoverLetter] = useState<SavedCoverLetter | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -137,6 +149,63 @@ const ResourcesLibrary = () => {
         description: 'Please try again later.',
         variant: 'destructive'
       });
+    }
+  };
+
+  const openEditDialog = (coverLetter: SavedCoverLetter) => {
+    setEditingCoverLetter(coverLetter);
+    setEditTitle(coverLetter.title);
+    setEditContent(coverLetter.content);
+    setIsEditDialogOpen(true);
+  };
+
+  const updateCoverLetter = async () => {
+    if (!editingCoverLetter || !editTitle.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a title for your cover letter.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('saved_cover_letters')
+        .update({
+          title: editTitle.trim(),
+          content: editContent.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingCoverLetter.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setSavedCoverLetters(prev => 
+        prev.map(cl => 
+          cl.id === editingCoverLetter.id 
+            ? { ...cl, title: editTitle.trim(), content: editContent.trim() }
+            : cl
+        )
+      );
+
+      setIsEditDialogOpen(false);
+      setEditingCoverLetter(null);
+      toast({
+        title: 'Cover letter updated successfully',
+        description: 'Your changes have been saved.',
+      });
+    } catch (error) {
+      console.error('Error updating cover letter:', error);
+      toast({
+        title: 'Error updating cover letter',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -471,6 +540,15 @@ const ResourcesLibrary = () => {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  onClick={() => openEditDialog(coverLetter)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   onClick={() => copyToClipboard(coverLetter.content)}
                                   className="flex items-center gap-1"
                                 >
@@ -506,14 +584,36 @@ const ResourcesLibrary = () => {
                                 </DropdownMenu>
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => deleteSavedCoverLetter(coverLetter.id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Cover Letter</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{coverLetter.title}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteSavedCoverLetter(coverLetter.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -524,6 +624,56 @@ const ResourcesLibrary = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Edit Cover Letter Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Edit Cover Letter</DialogTitle>
+              <DialogDescription>
+                Update your cover letter title and content.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  placeholder="Enter cover letter title"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-content">Content</Label>
+                <Textarea
+                  id="edit-content"
+                  placeholder="Enter your cover letter content"
+                  className="min-h-[300px] resize-none"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="button" 
+                onClick={updateCoverLetter}
+                disabled={isSaving || !editTitle.trim()}
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
