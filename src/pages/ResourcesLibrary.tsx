@@ -73,7 +73,26 @@ const ResourcesLibrary = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSavedResumes(data || []);
+      
+      const resumes = data || [];
+      
+      // If there's exactly one resume and it's not marked as default, set it as default
+      if (resumes.length === 1 && !resumes[0].is_default) {
+        try {
+          const { error: updateError } = await supabase
+            .from('saved_resumes')
+            .update({ is_default: true })
+            .eq('id', resumes[0].id);
+
+          if (!updateError) {
+            resumes[0].is_default = true;
+          }
+        } catch (updateError) {
+          console.error('Error setting single resume as default:', updateError);
+        }
+      }
+      
+      setSavedResumes(resumes);
     } catch (error) {
       console.error('Error fetching saved resumes:', error);
       toast({
@@ -158,11 +177,53 @@ const ResourcesLibrary = () => {
 
       if (error) throw error;
 
-      setSavedResumes(prev => prev.filter(resume => resume.id !== id));
-      toast({
-        title: 'Resume deleted successfully',
-        description: 'The saved resume has been removed from your library.',
-      });
+      // Update local state first
+      const updatedResumes = savedResumes.filter(resume => resume.id !== id);
+      setSavedResumes(updatedResumes);
+
+      // If only one resume remains, automatically set it as default
+      if (updatedResumes.length === 1) {
+        const remainingResume = updatedResumes[0];
+        if (!remainingResume.is_default) {
+          try {
+            const { error: defaultError } = await supabase
+              .from('saved_resumes')
+              .update({ is_default: true })
+              .eq('id', remainingResume.id);
+
+            if (defaultError) throw defaultError;
+
+            // Update local state to reflect the default status
+            setSavedResumes(prev => 
+              prev.map(resume => ({
+                ...resume,
+                is_default: resume.id === remainingResume.id
+              }))
+            );
+
+            toast({
+              title: 'Resume deleted successfully',
+              description: 'The remaining resume has been automatically set as default.',
+            });
+          } catch (defaultError) {
+            console.error('Error setting remaining resume as default:', defaultError);
+            toast({
+              title: 'Resume deleted successfully',
+              description: 'The saved resume has been removed from your library.',
+            });
+          }
+        } else {
+          toast({
+            title: 'Resume deleted successfully',
+            description: 'The saved resume has been removed from your library.',
+          });
+        }
+      } else {
+        toast({
+          title: 'Resume deleted successfully',
+          description: 'The saved resume has been removed from your library.',
+        });
+      }
     } catch (error) {
       console.error('Error deleting saved resume:', error);
       toast({
