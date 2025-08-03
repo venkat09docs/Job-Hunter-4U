@@ -213,53 +213,68 @@ const ResourcesLibrary = () => {
   };
 
   const downloadCoverLetterWord = async (coverLetter: SavedCoverLetter) => {
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: coverLetter.title,
-                  bold: true,
-                  size: 32,
-                }),
-              ],
-              spacing: {
-                after: 400,
-              },
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: coverLetter.content,
-                  size: 24,
-                }),
-              ],
-              spacing: {
-                line: 276,
-              },
-            }),
-          ],
-        },
-      ],
-    });
+    try {
+      console.log('Starting Word document download for:', coverLetter.title);
+      
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: coverLetter.title,
+                    bold: true,
+                    size: 32,
+                  }),
+                ],
+                spacing: {
+                  after: 400,
+                },
+              }),
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: coverLetter.content,
+                    size: 24,
+                  }),
+                ],
+                spacing: {
+                  line: 276,
+                },
+              }),
+            ],
+          },
+        ],
+      });
 
-    const buffer = await Packer.toBuffer(doc);
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    
-    const element = document.createElement('a');
-    element.href = URL.createObjectURL(blob);
-    element.download = `${coverLetter.title}.docx`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    
-    toast({
-      title: 'Word Download Started',
-      description: 'Your cover letter has been downloaded as Word document.',
-    });
+      console.log('Document created, generating buffer...');
+      const buffer = await Packer.toBuffer(doc);
+      console.log('Buffer generated, creating blob...');
+      
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      
+      const element = document.createElement('a');
+      element.href = URL.createObjectURL(blob);
+      element.download = `${coverLetter.title}.docx`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      
+      console.log('Word document download initiated');
+      toast({
+        title: 'Word Download Started',
+        description: 'Your cover letter has been downloaded as Word document.',
+      });
+    } catch (error) {
+      console.error('Error downloading Word document:', error);
+      toast({
+        title: 'Download Error',
+        description: 'Failed to download Word document. Please try again.',
+        variant: 'destructive'
+      });
+    }
   };
 
   if (loading) {
