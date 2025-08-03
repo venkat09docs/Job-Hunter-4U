@@ -948,6 +948,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_default: boolean
           pdf_url: string | null
           resume_data: Json
           title: string
@@ -958,6 +959,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_default?: boolean
           pdf_url?: string | null
           resume_data: Json
           title: string
@@ -968,6 +970,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_default?: boolean
           pdf_url?: string | null
           resume_data?: Json
           title?: string

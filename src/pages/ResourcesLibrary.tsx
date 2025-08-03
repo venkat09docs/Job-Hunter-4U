@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -27,6 +27,7 @@ interface SavedResume {
   resume_data: any;
   created_at: string;
   updated_at: string;
+  is_default: boolean;
 }
 
 interface SavedCoverLetter {
@@ -54,6 +55,7 @@ const ResourcesLibrary = () => {
   const [editContent, setEditContent] = useState('');
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [updatingDefault, setUpdatingDefault] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -101,6 +103,49 @@ const ResourcesLibrary = () => {
         description: 'Please try again later.',
         variant: 'destructive'
       });
+    }
+  };
+
+  const setDefaultResume = async (id: string) => {
+    setUpdatingDefault(id);
+    try {
+      // First, set all resumes as non-default
+      const { error: resetError } = await supabase
+        .from('saved_resumes')
+        .update({ is_default: false })
+        .eq('user_id', user?.id);
+
+      if (resetError) throw resetError;
+
+      // Then set the selected resume as default
+      const { error: setError } = await supabase
+        .from('saved_resumes')
+        .update({ is_default: true })
+        .eq('id', id);
+
+      if (setError) throw setError;
+
+      // Update local state
+      setSavedResumes(prev => 
+        prev.map(resume => ({
+          ...resume,
+          is_default: resume.id === id
+        }))
+      );
+
+      toast({
+        title: 'Default resume updated',
+        description: 'This resume will be used for job applications.',
+      });
+    } catch (error) {
+      console.error('Error setting default resume:', error);
+      toast({
+        title: 'Error updating default resume',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingDefault(null);
     }
   };
 
@@ -428,13 +473,21 @@ const ResourcesLibrary = () => {
                 ) : (
                   <div className="space-y-4">
                     {savedResumes.map((resume) => (
-                      <Card key={resume.id} className="border-2 hover:border-primary/50 transition-colors">
+                      <Card key={resume.id} className={`border-2 hover:border-primary/50 transition-colors ${resume.is_default ? 'border-primary bg-primary/5' : ''}`}>
                         <CardContent className="pt-6">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h3 className="font-semibold text-lg text-foreground mb-2">
-                                {resume.title}
-                              </h3>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-semibold text-lg text-foreground">
+                                  {resume.title}
+                                </h3>
+                                {resume.is_default && (
+                                  <Badge variant="default" className="flex items-center gap-1">
+                                    <Star className="h-3 w-3" />
+                                    Default
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
@@ -445,7 +498,19 @@ const ResourcesLibrary = () => {
                                   <span>{format(new Date(resume.created_at), 'hh:mm a')}</span>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
+                                {!resume.is_default && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setDefaultResume(resume.id)}
+                                    disabled={updatingDefault === resume.id}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <Star className="h-4 w-4" />
+                                    {updatingDefault === resume.id ? 'Setting...' : 'Set as Default'}
+                                  </Button>
+                                )}
                                 {resume.pdf_url && (
                                   <Button
                                     size="sm"
@@ -470,14 +535,37 @@ const ResourcesLibrary = () => {
                                 )}
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => deleteSavedResume(resume.id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-2">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Resume</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{resume.title}"? This action cannot be undone.
+                                      {resume.is_default && " This is your default resume for job applications."}
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteSavedResume(resume.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
