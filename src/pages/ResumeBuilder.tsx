@@ -98,7 +98,13 @@ const ResumeBuilder = () => {
     console.log('Effective Resume Notes Debug:', {
       toolId: EFFECTIVE_RESUME_TOOL_ID,
       notesCount: effectiveResumeNotes?.length || 0,
-      notes: effectiveResumeNotes
+      notes: effectiveResumeNotes?.map(note => ({
+        id: note.id,
+        title: note.title,
+        messagesCount: note.messages?.length || 0,
+        messages: note.messages,
+        created_at: note.created_at
+      }))
     });
   }, [effectiveResumeNotes]);
   
@@ -2308,10 +2314,28 @@ ${resumeData.personalDetails.fullName}`;
                           {effectiveResumeNotes && effectiveResumeNotes.length > 0 ? (
                             <div className="space-y-3 max-h-96 overflow-y-auto">
                               {effectiveResumeNotes.map((note, index) => {
-                                const content = note.messages
-                                  .filter(msg => msg.type === 'assistant')
-                                  .map(msg => msg.content)
-                                  .join('\n');
+                                // Extract all messages for display
+                                const assistantContent = note.messages
+                                  ?.filter(msg => msg.type === 'assistant')
+                                  ?.map(msg => msg.content)
+                                  ?.join('\n\n') || '';
+                                
+                                const userContent = note.messages
+                                  ?.filter(msg => msg.type === 'user')
+                                  ?.map(msg => msg.content)
+                                  ?.join('\n\n') || '';
+                                
+                                // Use assistant content if available, otherwise use user content
+                                const displayContent = assistantContent || userContent || 'No content available';
+                                
+                                console.log('Note Debug:', {
+                                  noteId: note.id,
+                                  title: note.title,
+                                  messagesCount: note.messages?.length,
+                                  assistantContent,
+                                  userContent,
+                                  displayContent: displayContent.substring(0, 100) + '...'
+                                });
                                 
                                 return (
                                   <div key={note.id} className="p-3 bg-muted/20 rounded-lg border">
@@ -2321,7 +2345,7 @@ ${resumeData.personalDetails.fullName}`;
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                          navigator.clipboard.writeText(content);
+                                          navigator.clipboard.writeText(displayContent);
                                           toast({
                                             title: 'Copied!',
                                             description: 'Note content copied to clipboard.',
@@ -2333,11 +2357,20 @@ ${resumeData.personalDetails.fullName}`;
                                       </Button>
                                     </div>
                                     <p className="text-xs text-muted-foreground mb-2">
-                                      {new Date(note.created_at).toLocaleDateString()}
+                                      {new Date(note.created_at).toLocaleDateString()} • {note.messages?.length || 0} messages
                                     </p>
-                                    <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                      <pre className="whitespace-pre-wrap font-sans">{content}</pre>
+                                    <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto border rounded p-2 bg-background/50">
+                                      {displayContent ? (
+                                        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed">{displayContent}</pre>
+                                      ) : (
+                                        <p className="text-muted-foreground italic">No content to display</p>
+                                      )}
                                     </div>
+                                    {!assistantContent && userContent && (
+                                      <p className="text-xs text-yellow-600 mt-1">
+                                        ⚠️ Showing user input - no AI response found
+                                      </p>
+                                    )}
                                   </div>
                                 );
                               })}
