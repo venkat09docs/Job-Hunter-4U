@@ -359,6 +359,13 @@ Sincerely,
 ${resumeData.personalDetails.fullName}`;
 
       setCoverLetterContent(coverLetter);
+      
+      // Auto-generate a name if not provided
+      if (!coverLetterName.trim()) {
+        const currentDate = new Date().toLocaleDateString();
+        setCoverLetterName(`Cover Letter - ${currentDate}`);
+      }
+      
       setShowCoverLetter(true);
       
       toast({
@@ -3061,39 +3068,66 @@ ${resumeData.personalDetails.fullName}`;
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <Button 
-                        onClick={generateCoverLetter}
-                        disabled={loading}
-                        className="gap-2"
-                      >
-                        <FileEdit className="h-4 w-4" />
-                        Generate Cover Letter
-                      </Button>
-
-                      {showCoverLetter && (
-                        <div className="space-y-4">
-                          <Label>Generated Cover Letter (Editable)</Label>
-                          <Textarea 
-                            value={coverLetterSuggestions}
-                            onChange={(e) => setCoverLetterSuggestions(e.target.value)}
-                            rows={12}
-                            className="font-mono text-sm"
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="coverLetterName" className="text-sm font-medium">
+                            Cover Letter Name *
+                          </Label>
+                          <Input
+                            id="coverLetterName"
+                            value={coverLetterName}
+                            onChange={(e) => setCoverLetterName(e.target.value)}
+                            placeholder="Enter a name for your cover letter..."
+                            className="mt-1"
                           />
-                          <div className="flex gap-2">
-                            <Button size="sm">Save Cover Letter</Button>
-                            <Button variant="outline" size="sm">
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </Button>
-                          </div>
                         </div>
-                      )}
+                        <div>
+                          <Label htmlFor="coverLetterContent" className="text-sm font-medium">
+                            Cover Letter Content *
+                          </Label>
+                          <Textarea
+                            id="coverLetterContent"
+                            value={coverLetterContent}
+                            onChange={(e) => setCoverLetterContent(e.target.value)}
+                            placeholder="Write your cover letter here or click 'Generate Cover Letter' to create one..."
+                            rows={12}
+                            className="min-h-[300px] mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button 
+                          onClick={generateCoverLetter}
+                          disabled={loading}
+                          className="flex items-center gap-2"
+                        >
+                          <FileEdit className="h-4 w-4" />
+                          {loading ? 'Generating...' : 'Generate Cover Letter'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={saveCoverLetter}
+                          disabled={!coverLetterName.trim() || !coverLetterContent.trim() || isSaving}
+                          className="flex items-center gap-2"
+                        >
+                          <Save className="h-4 w-4" />
+                          {isSaving ? 'Saving...' : 'Save Cover Letter'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => navigate('/dashboard/library', { state: { activeTab: 'saved-cover-letters' } })}
+                          className="flex items-center gap-2"
+                        >
+                          <Eye className="h-4 w-4" />
+                          View Cover Letters
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Cover Letter Suggestions - Right Column */}
-                {(showCoverLetter || coverLetterContent || coverLetterName) && (
+                {(coverLetterContent.trim() || coverLetterName.trim()) && (
                   <div className="lg:col-span-1">
                     <Card>
                       <CardHeader>
