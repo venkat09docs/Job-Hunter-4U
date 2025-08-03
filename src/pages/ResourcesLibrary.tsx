@@ -216,35 +216,47 @@ const ResourcesLibrary = () => {
     try {
       console.log('Starting Word document download for:', coverLetter.title);
       
+      // Split content into paragraphs to handle line breaks properly
+      const contentParagraphs = coverLetter.content.split('\n').filter(para => para.trim() !== '');
+      
+      const children = [
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: coverLetter.title,
+              bold: true,
+              size: 32,
+            }),
+          ],
+          spacing: {
+            after: 400,
+          },
+        }),
+      ];
+
+      // Add each paragraph as a separate Paragraph element
+      contentParagraphs.forEach(paragraph => {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: paragraph.trim(),
+                size: 24,
+              }),
+            ],
+            spacing: {
+              after: 200,
+              line: 276,
+            },
+          })
+        );
+      });
+
       const doc = new Document({
         sections: [
           {
             properties: {},
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: coverLetter.title,
-                    bold: true,
-                    size: 32,
-                  }),
-                ],
-                spacing: {
-                  after: 400,
-                },
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: coverLetter.content,
-                    size: 24,
-                  }),
-                ],
-                spacing: {
-                  line: 276,
-                },
-              }),
-            ],
+            children: children,
           },
         ],
       });
@@ -253,14 +265,21 @@ const ResourcesLibrary = () => {
       const buffer = await Packer.toBuffer(doc);
       console.log('Buffer generated, creating blob...');
       
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const blob = new Blob([buffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+      });
       
+      // Create download link
+      const url = URL.createObjectURL(blob);
       const element = document.createElement('a');
-      element.href = URL.createObjectURL(blob);
-      element.download = `${coverLetter.title}.docx`;
+      element.href = url;
+      element.download = `${coverLetter.title.replace(/[^a-z0-9]/gi, '_')}.docx`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
+      
+      // Clean up URL object
+      setTimeout(() => URL.revokeObjectURL(url), 100);
       
       console.log('Word document download initiated');
       toast({
@@ -271,7 +290,7 @@ const ResourcesLibrary = () => {
       console.error('Error downloading Word document:', error);
       toast({
         title: 'Download Error',
-        description: 'Failed to download Word document. Please try again.',
+        description: `Failed to download Word document: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive'
       });
     }
@@ -294,12 +313,6 @@ const ResourcesLibrary = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Resources Library</h1>
-            <p className="text-muted-foreground">
-              Access your saved resumes and career resources
-            </p>
-          </div>
           <div className="flex items-center gap-4">
             <Button 
               variant="outline" 
@@ -308,8 +321,14 @@ const ResourcesLibrary = () => {
             >
               Go to Dashboard
             </Button>
-            <UserProfileDropdown />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Resources Library</h1>
+              <p className="text-muted-foreground">
+                Access your saved resumes and career resources
+              </p>
+            </div>
           </div>
+          <UserProfileDropdown />
         </div>
 
         {/* Tabs */}
