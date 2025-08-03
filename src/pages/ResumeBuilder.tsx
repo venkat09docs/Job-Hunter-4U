@@ -3245,33 +3245,37 @@ ${resumeData.personalDetails.fullName}`;
                           </div>
                         </div>
 
-                        {/* Helpful Tools */}
-                        <div>
-                          <h4 className="font-medium mb-3 flex items-center gap-2">
-                            <ExternalLink className="h-4 w-4" />
-                            Helpful Tools
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <a 
-                              href="/dashboard/career-hub" 
-                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
-                            >
-                              🎯 AI Career Hub - Cover Letter Generator
-                            </a>
-                            <a 
-                              href="/dashboard/job-search" 
-                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
-                            >
-                              🔍 Job Search Assistant
-                            </a>
-                            <a 
-                              href="/dashboard/linkedin-optimization" 
-                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
-                            >
-                              💼 LinkedIn Profile Optimizer
-                            </a>
+                        {/* Helpful Tools - Only show tools with saved notes */}
+                        {(getCoverLetterNotes().length > 0 || getJobTrackerNotes().length > 0) && (
+                          <div>
+                            <h4 className="font-medium mb-3 flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4" />
+                              Helpful Tools
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              {getCoverLetterNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=5bd39f3b-1ed9-41eb-bc4c-ab7d0fe27a55', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🎯 AI Career Hub - Cover Letter Generator
+                                </Button>
+                              )}
+                              {getJobTrackerNotes().length > 0 && (
+                                <Button
+                                  variant="outline"
+                                  className="w-full justify-start gap-2 h-auto p-3"
+                                  onClick={() => window.open('/dashboard/digital-career-hub?toolId=343aeaa1-fe2d-40fb-b660-a2064774bee3', '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  🔍 Job Application Tracker
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
