@@ -7,11 +7,11 @@ const corsHeaders = {
 
 interface JobSearchRequest {
   query: string;
-  page: number;
   num_pages: number;
   date_posted: string;
   country: string;
   language: string;
+  job_requirements: string;
 }
 
 Deno.serve(async (req) => {
@@ -41,13 +41,13 @@ Deno.serve(async (req) => {
       refresh_token: '',
     });
 
-    const { query, page, num_pages, date_posted, country, language }: JobSearchRequest = await req.json();
+    const { query, num_pages, date_posted, country, language, job_requirements }: JobSearchRequest = await req.json();
     
     if (!query) {
       throw new Error('Missing required field: query');
     }
 
-    console.log('Job search request:', { query, page, num_pages, date_posted, country, language });
+    console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements });
 
     // Use the specific n8n webhook URL you provided
     const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook-test/find-next-job-role';
@@ -61,11 +61,11 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         query,
-        page,
         num_pages,
         date_posted,
         country,
-        language
+        language,
+        job_requirements
       }),
     });
 
@@ -89,11 +89,11 @@ Deno.serve(async (req) => {
           jobs: jobResults,
           searchCriteria: {
             query,
-            page,
             num_pages,
             date_posted,
             country,
-            language
+            language,
+            job_requirements
           },
           totalResults: jobResults.length
         }

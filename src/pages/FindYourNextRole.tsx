@@ -18,14 +18,23 @@ interface JobResult {
   salary?: string;
 }
 
+interface JobSearchForm {
+  query: string;
+  num_pages: string;
+  date_posted: string;
+  country: string;
+  language: string;
+  job_requirements: string;
+}
+
 const FindYourNextRole = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
-    page: "1",
     num_pages: "1",
     date_posted: "all",
     country: "us",
-    language: "en"
+    language: "en",
+    job_requirements: "under_3_years_experience"
   });
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
@@ -42,11 +51,11 @@ const FindYourNextRole = () => {
       const { data, error } = await supabase.functions.invoke('job-search', {
         body: {
           query: formData.query,
-          page: parseInt(formData.page),
           num_pages: parseInt(formData.num_pages),
           date_posted: formData.date_posted,
           country: formData.country,
-          language: formData.language
+          language: formData.language,
+          job_requirements: formData.job_requirements
         }
       });
 
@@ -108,17 +117,6 @@ const FindYourNextRole = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="page">Page Number</Label>
-                <Input
-                  id="page"
-                  type="number"
-                  min="1"
-                  value={formData.page}
-                  onChange={(e) => handleInputChange('page', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="num_pages">Number of Pages</Label>
                 <Input
                   id="num_pages"
@@ -128,6 +126,21 @@ const FindYourNextRole = () => {
                   value={formData.num_pages}
                   onChange={(e) => handleInputChange('num_pages', e.target.value)}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="job_requirements">Job Requirements</Label>
+                <Select value={formData.job_requirements} onValueChange={(value) => handleInputChange('job_requirements', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="under_3_years_experience">Under 3 years experience</SelectItem>
+                    <SelectItem value="more_than_3_years_experience">More than 3 years experience</SelectItem>
+                    <SelectItem value="no_experience">No experience</SelectItem>
+                    <SelectItem value="no_degree">No degree required</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
