@@ -4,10 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, MapPin, Building, Clock, ExternalLink, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 interface JobResult {
   job_id: string;
@@ -44,6 +49,7 @@ const FindYourNextRole = () => {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
+  const [selectedJob, setSelectedJob] = useState<JobResult | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -147,14 +153,37 @@ const FindYourNextRole = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Find Your Next Role</h1>
-          <p className="text-muted-foreground mt-2">
-            Search for job opportunities that match your skills and preferences
-          </p>
-        </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-hero">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Find Your Next Role
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <SubscriptionUpgrade />
+                <UserProfileDropdown />
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="container mx-auto space-y-6">
+              <div>
+                <h2 className="text-3xl font-bold text-foreground">Find Your Next Role</h2>
+                <p className="text-muted-foreground mt-2">
+                  Search for job opportunities that match your skills and preferences
+                </p>
+              </div>
 
         <Card>
           <CardHeader>
@@ -270,92 +299,183 @@ const FindYourNextRole = () => {
           </CardContent>
         </Card>
 
-        {jobs.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-4">
-              Job Results ({jobs.length} found)
-            </h2>
-            <div className="space-y-4">
-              {jobs.map((job, index) => (
-                <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">
-                          {job.job_title}
-                        </h3>
-                        <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                          <div className="flex items-center gap-1">
-                            <Building className="h-4 w-4" />
-                            {job.employer_name}
+              {jobs.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-4">
+                    Job Results ({jobs.length} found)
+                  </h2>
+                  <div className="space-y-4">
+                    {jobs.map((job, index) => (
+                      <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                                {job.job_title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                <div className="flex items-center gap-1">
+                                  <Building className="h-4 w-4" />
+                                  {job.employer_name}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {job.job_location}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {job.job_posted_at}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleAddToWishlist(job)}
+                                disabled={addingToWishlist === job.job_id}
+                                className="flex items-center gap-2"
+                              >
+                                {addingToWishlist === job.job_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Heart className="h-4 w-4" />
+                                )}
+                                Wishlist
+                              </Button>
+                              {job.job_apply_link && (
+                                <Button variant="outline" size="sm" asChild>
+                                  <a 
+                                    href={job.job_apply_link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2"
+                                  >
+                                    Apply
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-4 w-4" />
-                            {job.job_location}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {job.job_posted_at}
-                          </div>
+                          
+                          {(job.job_min_salary || job.job_max_salary) && (
+                            <div className="mb-3">
+                              <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                {job.job_min_salary && job.job_max_salary 
+                                  ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  : job.job_min_salary 
+                                  ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                }
+                              </span>
+                            </div>
+                          )}
+                          
+                          {job.job_description && (
+                            <p className="text-muted-foreground text-sm line-clamp-3">
+                              {job.job_description}
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Job Details Modal */}
+              <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-bold">
+                      {selectedJob?.job_title}
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  {selectedJob && (
+                    <div className="space-y-6">
+                      {/* Company and Location Info */}
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Building className="h-5 w-5" />
+                          <span className="font-medium">{selectedJob.employer_name}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-5 w-5" />
+                          <span>{selectedJob.job_location}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-5 w-5" />
+                          <span>Posted {selectedJob.job_posted_at}</span>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+
+                      {/* Salary Information */}
+                      {(selectedJob.job_min_salary || selectedJob.job_max_salary) && (
+                        <div>
+                          <h3 className="font-semibold text-lg mb-2">Salary Range</h3>
+                          <span className="inline-block bg-secondary text-secondary-foreground px-4 py-2 rounded-lg text-lg font-medium">
+                            {selectedJob.job_min_salary && selectedJob.job_max_salary 
+                              ? `$${selectedJob.job_min_salary.toLocaleString()} - $${selectedJob.job_max_salary.toLocaleString()}${selectedJob.job_salary_period ? ` / ${selectedJob.job_salary_period.toLowerCase()}` : ''}`
+                              : selectedJob.job_min_salary 
+                              ? `$${selectedJob.job_min_salary.toLocaleString()}+${selectedJob.job_salary_period ? ` / ${selectedJob.job_salary_period.toLowerCase()}` : ''}`
+                              : `Up to $${selectedJob.job_max_salary?.toLocaleString()}${selectedJob.job_salary_period ? ` / ${selectedJob.job_salary_period.toLowerCase()}` : ''}`
+                            }
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Job Description */}
+                      {selectedJob.job_description && (
+                        <div>
+                          <h3 className="font-semibold text-lg mb-2">Job Description</h3>
+                          <div className="bg-muted/50 p-4 rounded-lg">
+                            <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+                              {selectedJob.job_description}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-4 pt-4 border-t">
                         <Button 
                           variant="outline" 
-                          size="sm"
-                          onClick={() => handleAddToWishlist(job)}
-                          disabled={addingToWishlist === job.job_id}
+                          onClick={() => handleAddToWishlist(selectedJob)}
+                          disabled={addingToWishlist === selectedJob.job_id}
                           className="flex items-center gap-2"
                         >
-                          {addingToWishlist === job.job_id ? (
+                          {addingToWishlist === selectedJob.job_id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <Heart className="h-4 w-4" />
                           )}
-                          Wishlist
+                          Add to Wishlist
                         </Button>
-                        {job.job_apply_link && (
-                          <Button variant="outline" size="sm" asChild>
+                        
+                        {selectedJob.job_apply_link && (
+                          <Button className="flex items-center gap-2" asChild>
                             <a 
-                              href={job.job_apply_link} 
+                              href={selectedJob.job_apply_link} 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2"
                             >
-                              Apply
+                              Apply Now
                               <ExternalLink className="h-4 w-4" />
                             </a>
                           </Button>
                         )}
                       </div>
                     </div>
-                    
-                    {(job.job_min_salary || job.job_max_salary) && (
-                      <div className="mb-3">
-                        <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                          {job.job_min_salary && job.job_max_salary 
-                            ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                            : job.job_min_salary 
-                            ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                            : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                          }
-                        </span>
-                      </div>
-                    )}
-                    
-                    {job.job_description && (
-                      <p className="text-muted-foreground text-sm line-clamp-3">
-                        {job.job_description}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
-        )}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
