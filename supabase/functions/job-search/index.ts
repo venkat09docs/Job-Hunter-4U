@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     console.log('n8n job search result:', n8nResult);
 
     // Process the job search results
-    const jobResults = n8nResult.jobs || [];
+    const jobResults = Array.isArray(n8nResult) ? n8nResult : (n8nResult.jobs || []);
 
     console.log(`Job search completed successfully. Found ${jobResults.length} jobs`);
 
