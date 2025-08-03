@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface JobResult {
   job_id: string;
@@ -31,6 +32,7 @@ interface JobSearchForm {
 }
 
 const FindYourNextRole = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
     num_pages: "1",
@@ -41,6 +43,7 @@ const FindYourNextRole = () => {
   });
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
+  const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -87,6 +90,59 @@ const FindYourNextRole = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddToWishlist = async (job: JobResult) => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to add jobs to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToWishlist(job.job_id);
+    
+    try {
+      const { error } = await supabase
+        .from('job_tracker')
+        .insert({
+          user_id: user.id,
+          company_name: job.employer_name || 'Unknown Company',
+          job_title: job.job_title || 'Unknown Position',
+          status: 'wishlist',
+          application_date: new Date().toISOString().split('T')[0],
+          job_url: job.job_apply_link || '',
+          salary_range: job.job_min_salary && job.job_max_salary 
+            ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+            : job.job_min_salary 
+            ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+            : job.job_max_salary
+            ? `Up to $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+            : '',
+          location: job.job_location || '',
+          notes: job.job_description ? job.job_description.substring(0, 500) + (job.job_description.length > 500 ? '...' : '') : '',
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Added to Wishlist",
+        description: `${job.job_title} at ${job.employer_name} has been added to your job tracker.`,
+      });
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      toast({
+        title: "Error adding to wishlist",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToWishlist(null);
     }
   };
 
@@ -243,19 +299,35 @@ const FindYourNextRole = () => {
                           </div>
                         </div>
                       </div>
-                      {job.job_apply_link && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a 
-                            href={job.job_apply_link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2"
-                          >
-                            Apply
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleAddToWishlist(job)}
+                          disabled={addingToWishlist === job.job_id}
+                          className="flex items-center gap-2"
+                        >
+                          {addingToWishlist === job.job_id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Heart className="h-4 w-4" />
+                          )}
+                          Wishlist
                         </Button>
-                      )}
+                        {job.job_apply_link && (
+                          <Button variant="outline" size="sm" asChild>
+                            <a 
+                              href={job.job_apply_link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2"
+                            >
+                              Apply
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     
                     {(job.job_min_salary || job.job_max_salary) && (
