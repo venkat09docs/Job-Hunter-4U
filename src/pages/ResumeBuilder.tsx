@@ -2366,11 +2366,6 @@ ${resumeData.personalDetails.fullName}`;
                                         <p className="text-muted-foreground italic">No content to display</p>
                                       )}
                                     </div>
-                                    {!assistantContent && userContent && (
-                                      <p className="text-xs text-yellow-600 mt-1">
-                                        ⚠️ Showing user input - no AI response found
-                                      </p>
-                                    )}
                                   </div>
                                 );
                               })}
