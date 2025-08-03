@@ -3111,15 +3111,6 @@ ${resumeData.personalDetails.fullName}`;
                         </div>
                       ) : (
                         <>
-                          <Button 
-                            onClick={generateCoverLetter}
-                            disabled={loading}
-                            className="flex items-center gap-2 w-full"
-                          >
-                            <FileEdit className="h-4 w-4" />
-                            {loading ? 'Generating...' : 'Generate Cover Letter'}
-                          </Button>
-                          
                           <div className="space-y-4">
                             <div>
                               <Label htmlFor="coverLetterName" className="text-sm font-medium">
@@ -3183,7 +3174,7 @@ ${resumeData.personalDetails.fullName}`;
                 </div>
 
                 {/* Cover Letter Suggestions - Right Column */}
-                {showCoverLetterFields && (coverLetterContent.trim() || coverLetterName.trim()) && (
+                {showCoverLetterFields && (
                   <div className="lg:col-span-1">
                     <Card>
                       <CardHeader>
