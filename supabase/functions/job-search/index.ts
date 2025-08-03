@@ -79,6 +79,39 @@ Deno.serve(async (req) => {
     // Process the job search results
     const jobResults = Array.isArray(n8nResult) ? n8nResult : (n8nResult.jobs || []);
 
+    // Get the authenticated user
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (user) {
+      // Save the search results to database
+      try {
+        const { error: saveError } = await supabaseClient
+          .from('job_searches')
+          .insert({
+            user_id: user.id,
+            search_query: {
+              query,
+              num_pages,
+              date_posted,
+              country,
+              language,
+              job_requirements
+            },
+            results: jobResults,
+            results_count: jobResults.length,
+            searched_at: new Date().toISOString()
+          });
+
+        if (saveError) {
+          console.error('Error saving job search to database:', saveError);
+        } else {
+          console.log('Job search results saved to database successfully');
+        }
+      } catch (dbError) {
+        console.error('Database save error:', dbError);
+      }
+    }
+
     console.log(`Job search completed successfully. Found ${jobResults.length} jobs`);
 
     return new Response(

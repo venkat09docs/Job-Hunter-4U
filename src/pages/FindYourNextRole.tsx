@@ -9,13 +9,16 @@ import { Loader2, MapPin, Building, Clock, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface JobResult {
-  title: string;
-  company: string;
-  location: string;
-  date_posted: string;
-  job_url: string;
-  description: string;
-  salary?: string;
+  job_id: string;
+  job_title: string;
+  employer_name: string;
+  job_location: string;
+  job_posted_at: string;
+  job_apply_link: string;
+  job_description: string;
+  job_min_salary?: number;
+  job_max_salary?: number;
+  job_salary_period?: string;
 }
 
 interface JobSearchForm {
@@ -218,32 +221,32 @@ const FindYourNextRole = () => {
             </h2>
             <div className="space-y-4">
               {jobs.map((job, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow">
+                <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="text-xl font-semibold text-foreground mb-2">
-                          {job.title}
+                          {job.job_title}
                         </h3>
                         <div className="flex items-center gap-4 text-muted-foreground text-sm">
                           <div className="flex items-center gap-1">
                             <Building className="h-4 w-4" />
-                            {job.company}
+                            {job.employer_name}
                           </div>
                           <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
-                            {job.location}
+                            {job.job_location}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            {job.date_posted}
+                            {job.job_posted_at}
                           </div>
                         </div>
                       </div>
-                      {job.job_url && (
+                      {job.job_apply_link && (
                         <Button variant="outline" size="sm" asChild>
                           <a 
-                            href={job.job_url} 
+                            href={job.job_apply_link} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="flex items-center gap-2"
@@ -255,17 +258,22 @@ const FindYourNextRole = () => {
                       )}
                     </div>
                     
-                    {job.salary && (
+                    {(job.job_min_salary || job.job_max_salary) && (
                       <div className="mb-3">
                         <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                          {job.salary}
+                          {job.job_min_salary && job.job_max_salary 
+                            ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                            : job.job_min_salary 
+                            ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                            : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                          }
                         </span>
                       </div>
                     )}
                     
-                    {job.description && (
+                    {job.job_description && (
                       <p className="text-muted-foreground text-sm line-clamp-3">
-                        {job.description}
+                        {job.job_description}
                       </p>
                     )}
                   </CardContent>
