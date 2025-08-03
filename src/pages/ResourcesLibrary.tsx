@@ -7,9 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface SavedResume {
   id: string;
@@ -171,7 +174,7 @@ const ResourcesLibrary = () => {
     document.body.removeChild(link);
   };
 
-  const downloadCoverLetter = (coverLetter: SavedCoverLetter) => {
+  const downloadCoverLetterTXT = (coverLetter: SavedCoverLetter) => {
     const element = document.createElement('a');
     const file = new Blob([coverLetter.content], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
@@ -181,8 +184,81 @@ const ResourcesLibrary = () => {
     document.body.removeChild(element);
     
     toast({
-      title: 'Download Started',
-      description: 'Your cover letter has been downloaded.',
+      title: 'TXT Download Started',
+      description: 'Your cover letter has been downloaded as TXT.',
+    });
+  };
+
+  const downloadCoverLetterPDF = (coverLetter: SavedCoverLetter) => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
+    doc.text(coverLetter.title, 20, 25);
+    
+    // Add content
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    
+    const splitText = doc.splitTextToSize(coverLetter.content, 170);
+    doc.text(splitText, 20, 40);
+    
+    doc.save(`${coverLetter.title}.pdf`);
+    
+    toast({
+      title: 'PDF Download Started',
+      description: 'Your cover letter has been downloaded as PDF.',
+    });
+  };
+
+  const downloadCoverLetterWord = async (coverLetter: SavedCoverLetter) => {
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: coverLetter.title,
+                  bold: true,
+                  size: 32,
+                }),
+              ],
+              spacing: {
+                after: 400,
+              },
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: coverLetter.content,
+                  size: 24,
+                }),
+              ],
+              spacing: {
+                line: 276,
+              },
+            }),
+          ],
+        },
+      ],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    
+    const element = document.createElement('a');
+    element.href = URL.createObjectURL(blob);
+    element.download = `${coverLetter.title}.docx`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: 'Word Download Started',
+      description: 'Your cover letter has been downloaded as Word document.',
     });
   };
 
@@ -370,15 +446,33 @@ const ResourcesLibrary = () => {
                                   <Copy className="h-4 w-4" />
                                   Copy Content
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => downloadCoverLetter(coverLetter)}
-                                  className="flex items-center gap-1"
-                                >
-                                  <Download className="h-4 w-4" />
-                                  Download
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex items-center gap-1"
+                                    >
+                                      <Download className="h-4 w-4" />
+                                      Download
+                                      <ChevronDown className="h-3 w-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent>
+                                    <DropdownMenuItem onClick={() => downloadCoverLetterTXT(coverLetter)}>
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      Download as TXT
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => downloadCoverLetterPDF(coverLetter)}>
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      Download as PDF
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => downloadCoverLetterWord(coverLetter)}>
+                                      <FileText className="h-4 w-4 mr-2" />
+                                      Download as Word
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                             <Button

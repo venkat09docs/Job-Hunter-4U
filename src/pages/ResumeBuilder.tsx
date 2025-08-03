@@ -3151,15 +3151,6 @@ ${resumeData.personalDetails.fullName}`;
                             </Button>
                             <Button 
                               variant="outline" 
-                              onClick={downloadCoverLetter}
-                              disabled={!coverLetterContent.trim()}
-                              className="flex items-center gap-2"
-                            >
-                              <Download className="h-4 w-4" />
-                              Download Cover Letter
-                            </Button>
-                            <Button 
-                              variant="outline" 
                               onClick={() => navigate('/dashboard/library', { state: { activeTab: 'saved-cover-letters' } })}
                               className="flex items-center gap-2"
                             >
@@ -3251,6 +3242,34 @@ ${resumeData.personalDetails.fullName}`;
                                 </Button>
                               </div>
                             )}
+                          </div>
+                        </div>
+
+                        {/* Helpful Tools */}
+                        <div>
+                          <h4 className="font-medium mb-3 flex items-center gap-2">
+                            <ExternalLink className="h-4 w-4" />
+                            Helpful Tools
+                          </h4>
+                          <div className="space-y-2 text-sm">
+                            <a 
+                              href="/dashboard/career-hub" 
+                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
+                            >
+                              🎯 AI Career Hub - Cover Letter Generator
+                            </a>
+                            <a 
+                              href="/dashboard/job-search" 
+                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
+                            >
+                              🔍 Job Search Assistant
+                            </a>
+                            <a 
+                              href="/dashboard/linkedin-optimization" 
+                              className="block text-primary hover:underline p-2 rounded bg-muted/30 border border-dashed"
+                            >
+                              💼 LinkedIn Profile Optimizer
+                            </a>
                           </div>
                         </div>
                       </CardContent>
