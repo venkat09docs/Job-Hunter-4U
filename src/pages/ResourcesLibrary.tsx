@@ -7,8 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLocation } from 'react-router-dom';
 
 interface SavedResume {
   id: string;
@@ -20,15 +21,29 @@ interface SavedResume {
   updated_at: string;
 }
 
+interface SavedCoverLetter {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const ResourcesLibrary = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
   const [savedResumes, setSavedResumes] = useState<SavedResume[]>([]);
+  const [savedCoverLetters, setSavedCoverLetters] = useState<SavedCoverLetter[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(() => {
+    return location.state?.activeTab || 'saved-resumes';
+  });
 
   useEffect(() => {
     if (user) {
       fetchSavedResumes();
+      fetchSavedCoverLetters();
     }
   }, [user]);
 
@@ -54,6 +69,26 @@ const ResourcesLibrary = () => {
     }
   };
 
+  const fetchSavedCoverLetters = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_cover_letters')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedCoverLetters(data || []);
+    } catch (error) {
+      console.error('Error fetching saved cover letters:', error);
+      toast({
+        title: 'Error loading saved cover letters',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const deleteSavedResume = async (id: string) => {
     try {
       const { error } = await supabase
@@ -73,6 +108,46 @@ const ResourcesLibrary = () => {
       toast({
         title: 'Error deleting resume',
         description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const deleteSavedCoverLetter = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('saved_cover_letters')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSavedCoverLetters(prev => prev.filter(coverLetter => coverLetter.id !== id));
+      toast({
+        title: 'Cover letter deleted successfully',
+        description: 'The saved cover letter has been removed from your library.',
+      });
+    } catch (error) {
+      console.error('Error deleting saved cover letter:', error);
+      toast({
+        title: 'Error deleting cover letter',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const copyToClipboard = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast({
+        title: 'Copied to clipboard',
+        description: 'Cover letter content has been copied.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Failed to copy',
+        description: 'Please try again.',
         variant: 'destructive'
       });
     }
@@ -132,9 +207,10 @@ const ResourcesLibrary = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="saved-resumes" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 lg:w-[400px]">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
             <TabsTrigger value="saved-resumes">Saved Resumes</TabsTrigger>
+            <TabsTrigger value="saved-cover-letters">Saved Cover Letters</TabsTrigger>
           </TabsList>
 
           <TabsContent value="saved-resumes" className="mt-6">
@@ -207,6 +283,84 @@ const ResourcesLibrary = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => deleteSavedResume(resume.id)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="saved-cover-letters" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Your Saved Cover Letters
+                  <Badge variant="secondary">{savedCoverLetters.length}/10</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {savedCoverLetters.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No saved cover letters yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start building your cover letters and save final versions here
+                    </p>
+                    <Button onClick={() => window.location.href = '/dashboard/resume-builder?tab=cover-letter'}>
+                      Go to Cover Letter Builder
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {savedCoverLetters.map((coverLetter) => (
+                      <Card key={coverLetter.id} className="border-2 hover:border-primary/50 transition-colors">
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg text-foreground mb-2">
+                                {coverLetter.title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>Saved: {format(new Date(coverLetter.created_at), 'MMM dd, yyyy')}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{format(new Date(coverLetter.created_at), 'hh:mm a')}</span>
+                                </div>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-4 mb-4 max-h-40 overflow-y-auto">
+                                <p className="text-sm text-foreground/80 whitespace-pre-wrap">
+                                  {coverLetter.content.length > 300 
+                                    ? `${coverLetter.content.substring(0, 300)}...` 
+                                    : coverLetter.content}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => copyToClipboard(coverLetter.content)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                  Copy Content
+                                </Button>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteSavedCoverLetter(coverLetter.id)}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="h-4 w-4" />

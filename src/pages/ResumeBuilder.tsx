@@ -67,6 +67,10 @@ const ResumeBuilder = () => {
   const [coverLetterSuggestions, setCoverLetterSuggestions] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCoverLetter, setShowCoverLetter] = useState(false);
+  const [coverLetterName, setCoverLetterName] = useState('');
+  const [coverLetterContent, setCoverLetterContent] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -354,7 +358,7 @@ I am excited about the opportunity to discuss how my skills and experience align
 Sincerely,
 ${resumeData.personalDetails.fullName}`;
 
-      setCoverLetterSuggestions(coverLetter);
+      setCoverLetterContent(coverLetter);
       setShowCoverLetter(true);
       
       toast({
@@ -369,6 +373,80 @@ ${resumeData.personalDetails.fullName}`;
       });
     }
     setLoading(false);
+  };
+
+  const saveCoverLetter = async () => {
+    if (!coverLetterName.trim() || !coverLetterContent.trim()) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please provide both a name and content for your cover letter.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (savedCoverLetters.length >= 10) {
+      toast({
+        title: 'Limit Reached',
+        description: 'You can only save up to 10 cover letters. Please delete some to make room.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('saved_cover_letters')
+        .insert({
+          user_id: user?.id,
+          title: coverLetterName.trim(),
+          content: coverLetterContent.trim()
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Cover Letter Saved',
+        description: 'Your cover letter has been saved to your library.',
+      });
+
+      // Reset form
+      setCoverLetterName('');
+      setCoverLetterContent('');
+      
+      // Refresh count
+      fetchSavedCoverLettersCount();
+    } catch (error) {
+      console.error('Error saving cover letter:', error);
+      toast({
+        title: 'Error saving cover letter',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchSavedCoverLettersCount();
+    }
+  }, [user]);
+
+  const fetchSavedCoverLettersCount = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_cover_letters')
+        .select('id')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setSavedCoverLetters(data || []);
+    } catch (error) {
+      console.error('Error fetching saved cover letters count:', error);
+    }
   };
 
   const saveToSupabase = async () => {
@@ -3015,7 +3093,7 @@ ${resumeData.personalDetails.fullName}`;
                 </div>
 
                 {/* Cover Letter Suggestions - Right Column */}
-                {showCoverLetter && (
+                {(showCoverLetter || coverLetterContent || coverLetterName) && (
                   <div className="lg:col-span-1">
                     <Card>
                       <CardHeader>
