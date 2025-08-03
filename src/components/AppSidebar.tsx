@@ -41,7 +41,6 @@ const mainItems = [
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
-  { title: "My Profile", url: "/dashboard/my-profile-journey", icon: Target },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
 ];

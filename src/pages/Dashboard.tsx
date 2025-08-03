@@ -43,6 +43,7 @@ const Dashboard = () => {
   const [jobsLoading, setJobsLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
 
   const handleSignOut = async () => {
     try {
@@ -107,6 +108,15 @@ const Dashboard = () => {
 
         if (blogsError) throw blogsError;
         setPublishedBlogsCount(blogsCount || 0);
+
+        // Fetch saved cover letters count
+        const { count: coverLettersCount, error: coverLettersError } = await supabase
+          .from('saved_cover_letters')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (coverLettersError) throw coverLettersError;
+        setSavedCoverLettersCount(coverLettersCount || 0);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -269,34 +279,14 @@ const Dashboard = () => {
 
                     {/* Cover Letter Status */}
                     <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                         onClick={() => navigate('/dashboard/resume-builder?tab=cover-letter')}>
+                         onClick={() => navigate('/dashboard/library')}>
                       <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${65 * 2.827} ${(100 - 65) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">65%</span>
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{savedCoverLettersCount}</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">Cover Letter</h4>
-                      <p className="text-sm text-muted-foreground text-center">Template completed</p>
+                      <p className="text-sm text-muted-foreground text-center">Saved in library</p>
                     </div>
 
                     {/* LinkedIn Profile Status */}
