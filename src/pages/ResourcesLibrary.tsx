@@ -261,19 +261,16 @@ const ResourcesLibrary = () => {
         ],
       });
 
-      console.log('Document created, generating buffer...');
-      const buffer = await Packer.toBuffer(doc);
-      console.log('Buffer generated, creating blob...');
-      
-      const blob = new Blob([buffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-      });
+      console.log('Document created, generating blob...');
+      // Use toBlob instead of toBuffer for browser compatibility
+      const blob = await Packer.toBlob(doc);
+      console.log('Blob generated successfully');
       
       // Create download link
       const url = URL.createObjectURL(blob);
       const element = document.createElement('a');
       element.href = url;
-      element.download = `${coverLetter.title.replace(/[^a-z0-9]/gi, '_')}.docx`;
+      element.download = `${coverLetter.title.replace(/[^a-z0-9\s]/gi, '_')}.docx`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
