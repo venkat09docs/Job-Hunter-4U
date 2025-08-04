@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Briefcase, ExternalLink, Calendar, Loader2, Building2 } from "lucide-react";
+import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import Pricing from "@/components/Pricing";
 
 interface SavedJobResult {
   id: string;
@@ -53,7 +50,6 @@ interface SearchFilters {
 
 const JobSearch = () => {
   const { user } = useAuth();
-  const { profile, hasActiveSubscription, refreshProfile, incrementAnalytics } = useProfile();
   const { toast } = useToast();
   
   const [filters, setFilters] = useState<SearchFilters>({
@@ -62,14 +58,8 @@ const JobSearch = () => {
     experienceLevel: ""
   });
   
-  const [searching, setSearching] = useState(false);
-  const [jobResults, setJobResults] = useState<JobResult[]>([]);
   const [savedJobs, setSavedJobs] = useState<SavedJobResult[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPricing, setShowPricing] = useState(false);
-  const [lastSearchTime, setLastSearchTime] = useState<Date | null>(null);
-
-  const hasValidSubscription = hasActiveSubscription();
 
   const experienceLevels = [
     { value: "entry", label: "Entry Level (0-2 years)" },
@@ -319,16 +309,6 @@ const JobSearch = () => {
             </div>
           )}
         </div>
-
-        {/* Pricing Modal */}
-        <Dialog open={showPricing} onOpenChange={setShowPricing}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Purchase Tokens</DialogTitle>
-            </DialogHeader>
-            <Pricing />
-          </DialogContent>
-        </Dialog>
       </SidebarInset>
     </SidebarProvider>
   );
