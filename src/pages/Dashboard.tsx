@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -515,7 +515,79 @@ const Dashboard = () => {
               </Card>
             </div>
 
-
+            {/* Job Application Status */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Job Application Status
+                  </CardTitle>
+                  <CardDescription>
+                    Track your job applications across different pipeline stages
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {jobsLoading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {[...Array(5)].map((_, index) => (
+                        <div key={index} className="text-center p-4 rounded-lg border bg-card animate-pulse">
+                          <div className="h-8 bg-muted rounded mb-2"></div>
+                          <div className="h-4 bg-muted rounded"></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/job-tracker')}>
+                        <div className="flex items-center justify-center mb-2">
+                          <Clock className="h-6 w-6 text-orange-500" />
+                        </div>
+                        <div className="text-2xl font-bold text-orange-500">{jobStatusCounts.wishlist}</div>
+                        <div className="text-sm text-muted-foreground">Wishlist</div>
+                      </div>
+                      
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/job-tracker')}>
+                        <div className="flex items-center justify-center mb-2">
+                          <Search className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div className="text-2xl font-bold text-blue-500">{jobStatusCounts.applied}</div>
+                        <div className="text-sm text-muted-foreground">Applied</div>
+                      </div>
+                      
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/job-tracker')}>
+                        <div className="flex items-center justify-center mb-2">
+                          <Users className="h-6 w-6 text-purple-500" />
+                        </div>
+                        <div className="text-2xl font-bold text-purple-500">{jobStatusCounts.interviewing}</div>
+                        <div className="text-sm text-muted-foreground">Interviewing</div>
+                      </div>
+                      
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/job-tracker')}>
+                        <div className="flex items-center justify-center mb-2">
+                          <DollarSign className="h-6 w-6 text-green-500" />
+                        </div>
+                        <div className="text-2xl font-bold text-green-500">{jobStatusCounts.negotiating}</div>
+                        <div className="text-sm text-muted-foreground">Negotiating</div>
+                      </div>
+                      
+                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                           onClick={() => navigate('/dashboard/job-tracker')}>
+                        <div className="flex items-center justify-center mb-2">
+                          <Trophy className="h-6 w-6 text-emerald-500" />
+                        </div>
+                        <div className="text-2xl font-bold text-emerald-500">{jobStatusCounts.accepted}</div>
+                        <div className="text-sm text-muted-foreground">Accepted</div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Recent Applications */}
             <Card className="shadow-elegant">
