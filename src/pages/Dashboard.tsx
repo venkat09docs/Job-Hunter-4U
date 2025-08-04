@@ -536,19 +536,6 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground text-center">Articles published</p>
                     </div>
 
-                    {/* Job Tracker Stats */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/job-tracker')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">{totalJobApplications}</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">Jobs In Process</h4>
-                      <p className="text-sm text-muted-foreground text-center">Total applications</p>
-                    </div>
 
 
                     {/* Enhancements Status */}
@@ -737,10 +724,10 @@ const Dashboard = () => {
                       <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/job-tracker')}>
                         <div className="flex items-center justify-center mb-2">
-                          <Archive className="h-4 lg:h-6 w-4 lg:w-6 text-gray-500" />
+                          <TrendingUp className="h-4 lg:h-6 w-4 lg:w-6 text-indigo-500" />
                         </div>
-                        <div className="text-lg lg:text-2xl font-bold text-gray-500">{jobStatusCounts.archived}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Archived</div>
+                        <div className="text-lg lg:text-2xl font-bold text-indigo-500">{totalJobApplications}</div>
+                        <div className="text-xs lg:text-sm text-muted-foreground">Total Jobs in Pipeline</div>
                       </div>
                     </div>
                   )}

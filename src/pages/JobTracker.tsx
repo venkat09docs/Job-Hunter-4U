@@ -50,7 +50,7 @@ const JobTracker = () => {
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobEntry | null>(null);
 
-  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
+  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
   const statusColors = {
     wishlist: 'bg-gray-500',
     applying: 'bg-blue-500',
