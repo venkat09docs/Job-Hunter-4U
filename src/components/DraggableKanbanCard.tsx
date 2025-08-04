@@ -61,9 +61,16 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
+    console.log('Card clicked:', job.company_name, 'isDragging:', isDragging);
+    console.log('Target element:', e.target);
+    console.log('Closest combobox:', (e.target as HTMLElement).closest('[role="combobox"]'));
+    
     // Only trigger card click if not clicking on the select dropdown and not dragging
     if (!(e.target as HTMLElement).closest('[role="combobox"]') && !isDragging) {
+      console.log('Opening job details for:', job.company_name);
       onCardClick(job);
+    } else {
+      console.log('Click blocked - either on dropdown or dragging');
     }
   };
 
@@ -74,14 +81,31 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
       className={`${isDragging ? 'z-50' : ''}`}
     >
       <Card 
-        className={`p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background ${
+        className={`relative p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background ${
           showWarning ? 'ring-2 ring-orange-300' : ''
         }`}
         onClick={handleCardClick}
       >
         <div className="space-y-1">
-          {/* Draggable area - only these elements trigger drag */}
-          <div {...listeners} {...attributes} style={{ cursor: 'grab' }} className="select-none">
+          {/* Drag handle - only this area triggers drag */}
+          <div 
+            {...listeners} 
+            {...attributes} 
+            className="absolute top-1 right-1 w-4 h-4 cursor-grab active:cursor-grabbing opacity-20 hover:opacity-60 transition-opacity"
+            style={{ zIndex: 10 }}
+          >
+            <div className="w-full h-full flex items-center justify-center">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor">
+                <circle cx="2" cy="2" r="1"/>
+                <circle cx="6" cy="2" r="1"/>
+                <circle cx="2" cy="6" r="1"/>
+                <circle cx="6" cy="6" r="1"/>
+              </svg>
+            </div>
+          </div>
+          
+          {/* Content area - clickable but not draggable */}
+          <div className="space-y-1">
             <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
             <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
             <div className="text-[9px] sm:text-xs text-muted-foreground">
