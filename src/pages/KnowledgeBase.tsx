@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Play, FileText, Clock, User } from "lucide-react";
+import { Play, FileText, Clock, User, ArrowLeft } from "lucide-react";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 
 const videoCategories = [
   {
@@ -165,6 +167,28 @@ export default function KnowledgeBase() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              to="/dashboard"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-medium">Go to Dashboard</span>
+            </Link>
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">
+                Knowledge Base
+              </div>
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <div className="container mx-auto py-8 px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">
