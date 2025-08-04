@@ -34,9 +34,10 @@ import { useRole } from "@/hooks/useRole";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  // Hidden items (keep for future): Job Search, LinkedIn Automation, Talent Screener
-  // { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  // Hidden items (keep for future): LinkedIn Automation, Talent Screener
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
@@ -45,9 +46,6 @@ const mainItems = [
   { title: "Library", url: "/dashboard/library", icon: Archive },
 ];
 
-const topLevelItems = [
-  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
-];
 
 const adminItems = [
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
@@ -129,25 +127,6 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* Top-level navigation items */}
-        {!isInstituteAdmin && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {topLevelItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                        <NavLink to={item.url} end className={getNavCls}>
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
-                          <span className="font-medium text-sm">{item.title}</span>
-                        </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
 
         {/* Hide other main items for institute admins */}
         {!isInstituteAdmin && (
