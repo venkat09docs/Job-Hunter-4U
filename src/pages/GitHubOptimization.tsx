@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 
+const GIT_LINKEDIN_TOOL_ID = 'eff64291-db9d-4bcf-8bfe-82d58bfeeebe';
+
 interface ProfileData {
   name: string;
   title: string;
@@ -119,28 +121,19 @@ ${interests}
     }));
   };
 
-  // Fetch saved notes from Job Application Tracker AI tool
+  // Fetch saved notes from Build Git & LinkedIn Profiles tool
   useEffect(() => {
     const fetchSavedNotes = async () => {
       try {
-        // First, get the Job Application Tracker tool ID
-        const { data: tools } = await supabase
-          .from('ai_tools')
-          .select('id')
-          .ilike('tool_name', '%job%application%tracker%')
-          .single();
+        // Fetch chat messages from Build Git & LinkedIn Profiles tool
+        const { data: chats } = await supabase
+          .from('tool_chats')
+          .select('messages, title, created_at')
+          .eq('tool_id', GIT_LINKEDIN_TOOL_ID)
+          .order('created_at', { ascending: false });
 
-        if (tools) {
-          // Fetch chat messages from this tool
-          const { data: chats } = await supabase
-            .from('tool_chats')
-            .select('messages, title, created_at')
-            .eq('tool_id', tools.id)
-            .order('created_at', { ascending: false });
-
-          if (chats) {
-            setSavedNotes(chats);
-          }
+        if (chats) {
+          setSavedNotes(chats);
         }
       } catch (error) {
         console.error('Error fetching saved notes:', error);
@@ -512,10 +505,10 @@ ${interests}
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <StickyNote className="h-5 w-5" />
-                    Job Application Notes
+                    Git & LinkedIn Profile Notes
                   </CardTitle>
                   <CardDescription>
-                    Your saved notes from Job Application Tracker AI tool
+                    Your saved notes from Build Git & LinkedIn Profiles tool
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -552,7 +545,7 @@ ${interests}
                       <div className="space-y-2">
                         <StickyNote className="h-8 w-8 mx-auto text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
-                          No saved notes found from Job Application Tracker tool
+                          No saved notes found from Build Git & LinkedIn Profiles tool
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Use the AI tool to create and save notes
