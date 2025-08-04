@@ -102,13 +102,13 @@ const Dashboard = () => {
         if (recentError) throw recentError;
         setRecentJobs(recentData || []);
 
-        // Fetch total job applications (excluding wishlist)
+        // Fetch total job applications in process (excluding specific statuses)
         const { count, error: countError } = await supabase
           .from('job_tracker')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('is_archived', false)
-          .neq('status', 'wishlist');
+          .not('status', 'in', '("Wishlist","Not Selected","No Response","Archived")');
 
         if (countError) throw countError;
         setTotalJobApplications(count || 0);
@@ -294,8 +294,8 @@ const Dashboard = () => {
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
                 <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-8 items-stretch min-h-[200px]">
-                    {/* Profile Picture Section - Full Height */}
+                  <div className="grid grid-cols-3 gap-8 items-stretch min-h-[200px]">
+                    {/* Profile Picture Section - 1/3rd width */}
                     <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6">
                       <Avatar className="h-32 w-32">
                         <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
@@ -309,8 +309,8 @@ const Dashboard = () => {
                       </div>
                     </div>
                     
-                    {/* Right Side - Header + 4 Boards */}
-                    <div className="flex flex-col justify-center space-y-6">
+                    {/* Right Side - Header + 4 Boards - 2/3rd width */}
+                    <div className="col-span-2 flex flex-col justify-center space-y-6">
                       {/* Header Section */}
                       <div className="text-left">
                         <h3 className="text-2xl font-bold mb-2">Overall Career Development Score</h3>
@@ -365,7 +365,7 @@ const Dashboard = () => {
                               </span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm">Job Application Status</h4>
+                          <h4 className="font-medium text-center text-sm"># Job Applications in Process</h4>
                           <p className="text-xs text-muted-foreground text-center">In pipeline</p>
                         </div>
 
