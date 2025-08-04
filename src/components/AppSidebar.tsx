@@ -36,7 +36,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  { title: "Job Search", url: "/dashboard/job-search", icon: Search },
+  { title: "Job Search History", url: "/dashboard/job-search", icon: Search },
   // Hidden items (keep for future): LinkedIn Automation, Talent Screener
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },

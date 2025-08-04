@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2, Heart } from "lucide-react";
+import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2, Heart, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
 
 interface SavedJobResult {
   id: string;
@@ -52,6 +51,7 @@ interface SearchFilters {
 
 const JobSearch = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   
   const [filters, setFilters] = useState<SearchFilters>({
@@ -271,19 +271,30 @@ const JobSearch = () => {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Job Search History</h1>
-              <p className="text-muted-foreground">
-                View and filter all job results from your searches in "Find Your Next Role"
-              </p>
-            </div>
-            
+    <div className="min-h-screen bg-background">
+      {/* Top Menu */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go to Dashboard
+          </Button>
+        </div>
+      </header>
+
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Job Search History</h1>
+            <p className="text-muted-foreground">
+              View and filter all job results from your searches in "Find Your Next Role"
+            </p>
           </div>
+        </div>
 
           {/* Search Filters */}
           <Card>
@@ -497,19 +508,18 @@ const JobSearch = () => {
             </div>
           )}
 
-          {/* No results message */}
-          {filteredJobs.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No job history found</h3>
-              <p className="text-muted-foreground">
-                Search for jobs in "Find Your Next Role" to build your job search history
-              </p>
-            </div>
-          )}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        {/* No results message */}
+        {filteredJobs.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium">No job history found</h3>
+            <p className="text-muted-foreground">
+              Search for jobs in "Find Your Next Role" to build your job search history
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
