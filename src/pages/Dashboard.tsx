@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [totalJobApplications, setTotalJobApplications] = useState(0);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
   const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
+  const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
   const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
   const [jobStatusCounts, setJobStatusCounts] = useState({
     wishlist: 0,
@@ -128,6 +129,15 @@ const Dashboard = () => {
 
         if (coverLettersError) throw coverLettersError;
         setSavedCoverLettersCount(coverLettersCount || 0);
+
+        // Fetch saved README files count
+        const { count: readmeFilesCount, error: readmeFilesError } = await supabase
+          .from('saved_readme_files')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (readmeFilesError) throw readmeFilesError;
+        setSavedReadmeFilesCount(readmeFilesCount || 0);
 
         // Fetch total job results count from job search history
         const { count: jobResultsCount, error: jobResultsError } = await supabase
@@ -408,13 +418,15 @@ const Dashboard = () => {
                             className="transition-all duration-500"
                           />
                         </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">GitHub</h4>
-                      <p className="text-sm text-muted-foreground text-center">Repository showcase</p>
-                    </div>
+                         <div className="absolute inset-0 flex items-center justify-center">
+                           <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
+                         </div>
+                       </div>
+                       <h4 className="font-medium text-center">GitHub</h4>
+                       <p className="text-sm text-muted-foreground text-center">
+                         {savedReadmeFilesCount} README files saved
+                       </p>
+                     </div>
 
                     {/* Blog Status */}
                     <div 
