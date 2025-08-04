@@ -309,9 +309,9 @@ const LinkedInOptimization = () => {
       </header>
 
       {/* Main Layout with responsive columns */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
         {/* Left Column - Main Content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto lg:h-[calc(100vh-80px)]">
           {/* Progress Overview */}
           <div className="mb-8">
             <Card className="shadow-elegant border-primary/20">
@@ -425,7 +425,7 @@ const LinkedInOptimization = () => {
         </main>
 
         {/* Right Column - Tips Panel */}
-        <aside className="w-full lg:w-96 xl:w-[28rem] 2xl:w-[32rem] border-t lg:border-t-0 lg:border-l bg-background/50 backdrop-blur-sm p-4 md:p-6 overflow-auto">`
+        <aside className="w-full lg:w-96 xl:w-[28rem] 2xl:w-[32rem] border-t lg:border-t-0 lg:border-l bg-background/50 backdrop-blur-sm p-4 md:p-6 overflow-auto max-h-screen lg:h-[calc(100vh-80px)]">
           <div className="space-y-6">
             {/* LinkedIn Profile Best Practices */}
             {selectedCategory === 'Profile Basics' && (
