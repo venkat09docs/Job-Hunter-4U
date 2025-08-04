@@ -43,7 +43,7 @@ const mainItems = [
   // Hidden items (keep for future): LinkedIn Automation, Talent Screener
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
-  { title: "Job Hunter Pro", url: "/dashboard/digital-career-hub", icon: Zap },
+  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },
@@ -135,7 +135,7 @@ export function AppSidebar() {
         {/* Hide other main items for institute admins */}
         {!isInstituteAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Digital Career Hub</SidebarGroupLabel>
+            <SidebarGroupLabel>Job Hunter Pro</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {mainItems.map((item) => (
