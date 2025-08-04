@@ -54,15 +54,26 @@ export const useProfile = () => {
         .eq('user_id', user?.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No profile found - this is expected for new users
+          console.log('No profile found for user, this is normal for new users');
+          setProfile(null);
+          return;
+        }
+        throw error;
+      }
       setProfile(data);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load profile data',
-        variant: 'destructive'
-      });
+      // Only show toast for unexpected errors, not for missing profiles
+      if (error.code !== 'PGRST116') {
+        toast({
+          title: 'Error',
+          description: 'Failed to load profile data',
+          variant: 'destructive'
+        });
+      }
     } finally {
       setLoading(false);
     }

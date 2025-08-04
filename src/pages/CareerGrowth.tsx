@@ -267,7 +267,7 @@ export default function CareerGrowth() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center mt-4">
-                  <p className="font-semibold text-lg">{profile?.full_name || profile?.username || 'Job Hunter'}</p>
+                  <p className="font-semibold text-lg">{profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'User'}</p>
                   <p className="text-sm text-muted-foreground">Career Professional</p>
                 </div>
               </div>

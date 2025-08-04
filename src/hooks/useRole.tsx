@@ -28,10 +28,26 @@ export const useRole = () => {
         .eq('user_id', user?.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No role found - default to user role
+          console.log('No role found for user, defaulting to user role');
+          setRole('user');
+          return;
+        }
+        throw error;
+      }
       setRole(data?.role || 'user');
     } catch (error: any) {
       console.error('Error fetching user role:', error);
+      // Only show toast for unexpected errors, not for missing roles
+      if (error.code !== 'PGRST116') {
+        toast({
+          title: 'Error', 
+          description: 'Failed to load user role',
+          variant: 'destructive'
+        });
+      }
       setRole('user'); // Default to user role
     } finally {
       setLoading(false);

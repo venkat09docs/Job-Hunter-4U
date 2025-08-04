@@ -296,7 +296,7 @@ const Dashboard = () => {
             {/* Welcome Section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
-                Welcome back, {profile?.username || profile?.full_name || 'Job Hunter'}!
+                Welcome back, {profile?.username || profile?.full_name || user?.email?.split('@')[0] || 'User'}!
               </h2>
               <p className="text-muted-foreground">
                 Here's your personalized dashboard. Track your progress and manage your job search.
@@ -317,7 +317,7 @@ const Dashboard = () => {
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-center mt-4">
-                        <p className="font-semibold text-lg">{profile?.full_name || profile?.username || 'Job Hunter'}</p>
+                        <p className="font-semibold text-lg">{profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'User'}</p>
                         <p className="text-sm text-muted-foreground">Career Professional</p>
                       </div>
                     </div>
