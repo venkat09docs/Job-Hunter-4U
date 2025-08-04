@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Search, Grid3X3, List, Calendar, Eye, Filter } from "lucide-react";
+import { Search, Grid3X3, List, Calendar, Eye, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,6 +39,8 @@ export default function PublicBlogs() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [sortBy, setSortBy] = useState<SortBy>('newest');
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
+  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchBlogs();
@@ -130,6 +133,16 @@ export default function PublicBlogs() {
 
   const getAuthorName = (userId: string) => {
     return profiles[userId]?.full_name || 'Anonymous';
+  };
+
+  const handleReadMore = (blog: Blog) => {
+    setSelectedBlog(blog);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedBlog(null);
+    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -275,7 +288,7 @@ export default function PublicBlogs() {
                     </p>
                   )}
                   <div className="mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleReadMore(blog)}>
                       Read More
                     </Button>
                   </div>
@@ -285,6 +298,47 @@ export default function PublicBlogs() {
           </div>
         )}
       </div>
+
+      {/* Blog Detail Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex-1 pr-4">
+                <DialogTitle className="text-2xl mb-2">
+                  {selectedBlog?.title}
+                </DialogTitle>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                  <span>By {selectedBlog ? getAuthorName(selectedBlog.user_id) : ''}</span>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {selectedBlog && format(new Date(selectedBlog.created_at), 'MMM dd, yyyy')}
+                  </div>
+                  <Badge variant={selectedBlog?.is_public ? "default" : "secondary"} className="ml-2">
+                    {userId ? (selectedBlog?.is_public ? "Public" : "Private") : "Public"}
+                  </Badge>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={closeModal}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="mt-4">
+            {selectedBlog?.excerpt && (
+              <p className="text-muted-foreground italic mb-4 border-l-4 border-primary pl-4">
+                {selectedBlog.excerpt}
+              </p>
+            )}
+            <div className="prose prose-sm max-w-none">
+              <p className="whitespace-pre-wrap leading-relaxed">
+                {selectedBlog?.content}
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
