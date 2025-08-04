@@ -516,10 +516,6 @@ const Dashboard = () => {
             </div>
 
 
-            {/* Activity Chart */}
-            <div className="mb-8">
-              <ActivityChart analytics={analytics} />
-            </div>
 
             {/* Recent Applications */}
             <Card className="shadow-elegant">
