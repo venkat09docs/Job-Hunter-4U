@@ -589,6 +589,56 @@ const Dashboard = () => {
               </Card>
             </div>
 
+            {/* Job Application Statistics */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Job Application Statistics
+                  </CardTitle>
+                  <CardDescription>
+                    View your job search activity and results
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/find-your-next-role')}>
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Search className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary mb-2">
+                          {profile?.total_job_searches || 0}
+                        </div>
+                        <h4 className="font-medium">No of Job Searches</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Total "Find Your Next Role" clicks
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                         onClick={() => navigate('/dashboard/job-search')}>
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Briefcase className="h-8 w-8 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary mb-2">
+                          {totalJobResultsCount}
+                        </div>
+                        <h4 className="font-medium">No of Jobs in History</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Total jobs found in search history
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Recent Applications */}
             <Card className="shadow-elegant">
               <CardHeader>
