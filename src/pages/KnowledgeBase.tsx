@@ -180,15 +180,7 @@ export default function KnowledgeBase() {
               <span className="font-medium">Go to Dashboard</span>
             </Link>
             <div className="flex items-center gap-4">
-              <div className="flex flex-col items-end">
-                <div className="text-sm text-muted-foreground">
-                  Knowledge Base
-                </div>
-                <SubscriptionStatus />
-              </div>
-              <SubscriptionUpgrade variant="outline" size="sm">
-                Upgrade Plan
-              </SubscriptionUpgrade>
+              <SubscriptionStatus />
               <UserProfileDropdown />
             </div>
           </div>
