@@ -1,11 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Users, Calendar, IndianRupee, Loader2 } from "lucide-react";
+import { Check, Users, Calendar, IndianRupee, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 declare global {
   interface Window {
@@ -168,7 +169,7 @@ const InstituteMembershipPlans = () => {
         order_id: orderData.order_id,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "Institute Membership",
+        name: "Rise n Shine Technologies",
         description: `${plan.name} - ${plan.members} Students Access for ${plan.duration}`,
         image: "/favicon.ico",
         handler: async function (response: any) {
@@ -262,8 +263,28 @@ const InstituteMembershipPlans = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="text-center mb-12">
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              to="/dashboard"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-medium">Go to Dashboard</span>
+            </Link>
+            <div className="text-sm text-muted-foreground">
+              Institute Membership Plans
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto py-8 px-4">
+        <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-foreground mb-4">
           Institute Membership Plans
         </h1>
@@ -271,9 +292,9 @@ const InstituteMembershipPlans = () => {
           Choose the perfect plan for your institute. All plans include full access to our digital career hub 
           with significant savings per student.
         </p>
-      </div>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {plans.map((plan) => (
           <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : ''}`}>
             {plan.popular && (
@@ -339,18 +360,19 @@ const InstituteMembershipPlans = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
 
-      <div className="mt-12 text-center">
-        <div className="bg-muted p-6 rounded-lg max-w-4xl mx-auto">
-          <h3 className="text-lg font-semibold mb-4">Need a Custom Plan?</h3>
-          <p className="text-muted-foreground mb-4">
-            If you have more than 500 students or need a customized solution, 
-            contact our sales team for enterprise pricing.
-          </p>
-          <Button variant="outline">
-            Contact Sales
-          </Button>
+        <div className="mt-12 text-center">
+          <div className="bg-muted p-6 rounded-lg max-w-4xl mx-auto">
+            <h3 className="text-lg font-semibold mb-4">Need a Custom Plan?</h3>
+            <p className="text-muted-foreground mb-4">
+              If you have more than 500 students or need a customized solution, 
+              contact our sales team for enterprise pricing.
+            </p>
+            <Button variant="outline">
+              Contact Sales
+            </Button>
+          </div>
         </div>
       </div>
     </div>
