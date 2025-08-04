@@ -7,11 +7,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb, Plus, Minus } from 'lucide-react';
+import { useToolChats } from '@/hooks/useToolChats';
+import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb, Plus, Minus, Copy, FileText } from 'lucide-react';
 
 interface LinkedInTask {
   id: string;
@@ -37,6 +39,10 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
   { id: 'skills', title: 'Add Skills', description: 'Add relevant skills (aim for 50+ skills)', category: 'Skills' },
   { id: 'endorsements', title: 'Get Endorsements', description: 'Request endorsements from colleagues and connections', category: 'Skills' },
 ];
+
+// Tool IDs for fetching notes
+const GIT_LINKEDIN_TOOL_ID = 'd48e085e-51bf-4b89-a795-371d2f7ae6b3'; // 7. Build Git & LinkedIn Profiles
+const EFFECTIVE_LINKEDIN_TOOL_ID = '97a32a5a-9506-4e06-a5cb-ca9477e54bf8'; // 8. Creating an effective LinkedIn Profile
 
 const CATEGORY_TIPS: Record<string, string[]> = {
   'Profile Basics': [
@@ -75,6 +81,10 @@ const LinkedInOptimization = () => {
     'Experience': false,
     'Skills': false
   });
+
+  // Fetch notes from specific tools
+  const { chats: gitLinkedInNotes } = useToolChats(GIT_LINKEDIN_TOOL_ID);
+  const { chats: effectiveLinkedInNotes } = useToolChats(EFFECTIVE_LINKEDIN_TOOL_ID);
 
   useEffect(() => {
     if (user) {
@@ -186,6 +196,35 @@ const LinkedInOptimization = () => {
     } else {
       setSelectedCategory('');
     }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copied!',
+        description: 'Content copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: 'Copy failed',
+        description: 'Failed to copy content to clipboard',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const getCombinedNotes = () => {
+    return [...gitLinkedInNotes, ...effectiveLinkedInNotes];
+  };
+
+  const hasNotes = () => {
+    return getCombinedNotes().length > 0;
+  };
+
+  const navigateToTool = (toolId: string, toolName: string) => {
+    const toolUrl = `/digital-career-hub?toolId=${toolId}`;
+    window.open(toolUrl, '_blank');
   };
 
   const completedCount = tasks.filter(task => task.completed).length;
@@ -358,27 +397,136 @@ const LinkedInOptimization = () => {
 
         {/* Right Column - Tips Panel */}
         <aside className="w-80 border-l bg-background/50 backdrop-blur-sm p-6 overflow-auto">
-          <Card className="sticky top-0">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-amber-500" />
-                Tips for {selectedCategory}
-              </CardTitle>
-              <CardDescription>
-                Expand sections using + to see specific tips
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {CATEGORY_TIPS[selectedCategory]?.map((tip, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-primary font-bold text-xs mt-1">•</span>
-                    <span>{tip}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            {/* LinkedIn Profile Best Practices */}
+            {selectedCategory === 'Profile Basics' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
+                    LinkedIn Profile Best Practices
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {CATEGORY_TIPS[selectedCategory]?.map((tip, index) => (
+                      <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-primary font-bold text-xs mt-1">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tips for other categories */}
+            {selectedCategory !== 'Profile Basics' && selectedCategory && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-amber-500" />
+                    Tips for {selectedCategory}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {CATEGORY_TIPS[selectedCategory]?.map((tip, index) => (
+                      <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-primary font-bold text-xs mt-1">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Saved Notes Section - Only show for Profile Basics */}
+            {selectedCategory === 'Profile Basics' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-blue-500" />
+                    Your Saved Notes
+                  </CardTitle>
+                  <CardDescription>
+                    Notes from LinkedIn profile tools
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {hasNotes() ? (
+                    <ScrollArea className="h-96">
+                      <div className="space-y-4">
+                        {getCombinedNotes().map((chat, index) => (
+                          <div key={`${chat.id}-${index}`} className="border rounded-lg p-4 bg-muted/50">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-sm truncate">{chat.title}</h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(chat.messages[0]?.content || '')}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <ScrollArea className="h-24">
+                              <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                                {chat.messages[0]?.content || 'No content'}
+                              </p>
+                            </ScrollArea>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(chat.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <div className="text-center py-6">
+                      <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground mb-4">
+                        No notes available from LinkedIn profile tools
+                      </p>
+                      <div className="space-y-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateToTool(GIT_LINKEDIN_TOOL_ID, '7. Build Git & LinkedIn Profiles')}
+                          className="w-full text-xs"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Open "Build Git & LinkedIn Profiles" Tool
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateToTool(EFFECTIVE_LINKEDIN_TOOL_ID, '8. Creating an effective LinkedIn Profile')}
+                          className="w-full text-xs"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Open "Creating an effective LinkedIn Profile" Tool
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Default message when no section is selected */}
+            {!selectedCategory && (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Lightbulb className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Expand sections using + to see specific tips and notes
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </aside>
       </div>
     </div>
