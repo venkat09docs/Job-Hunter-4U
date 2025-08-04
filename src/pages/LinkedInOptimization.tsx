@@ -44,6 +44,7 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
 const GIT_LINKEDIN_TOOL_ID = 'd48e085e-51bf-4b89-a795-371d2f7ae6b3'; // 7. Build Git & LinkedIn Profiles
 const EFFECTIVE_LINKEDIN_TOOL_ID = '97a32a5a-9506-4e06-a5cb-ca9477e54bf8'; // 8. Creating an effective LinkedIn Profile
 const RESUME_BUILDER_TOOL_ID = '55b57cf9-4781-4b80-8e40-eb154420ce49'; // 2. Resume Builder - Achievements
+const TOP_SKILLS_TOOL_ID = '20c53c53-70c1-4d50-b0af-655fe09aef7b'; // 1. Resume Builder - Top 6 Skills
 
 const CATEGORY_TIPS: Record<string, string[]> = {
   'Profile Basics': [
@@ -87,6 +88,7 @@ const LinkedInOptimization = () => {
   const { chats: gitLinkedInNotes } = useToolChats(GIT_LINKEDIN_TOOL_ID);
   const { chats: effectiveLinkedInNotes } = useToolChats(EFFECTIVE_LINKEDIN_TOOL_ID);
   const { chats: resumeBuilderNotes } = useToolChats(RESUME_BUILDER_TOOL_ID);
+  const { chats: topSkillsNotes } = useToolChats(TOP_SKILLS_TOOL_ID);
 
   useEffect(() => {
     if (user) {
@@ -224,6 +226,8 @@ const LinkedInOptimization = () => {
     
     if (category === 'Experience') {
       baseTools.push({ id: RESUME_BUILDER_TOOL_ID, name: '2. Resume Builder - Achievements', notes: resumeBuilderNotes });
+    } else if (category === 'Skills') {
+      baseTools.push({ id: TOP_SKILLS_TOOL_ID, name: '1. Resume Builder - Top 6 Skills', notes: topSkillsNotes });
     }
     
     return baseTools;
@@ -232,6 +236,8 @@ const LinkedInOptimization = () => {
   const getCombinedNotes = (category?: string) => {
     if (category === 'Experience') {
       return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...resumeBuilderNotes];
+    } else if (category === 'Skills') {
+      return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...topSkillsNotes];
     }
     return [...gitLinkedInNotes, ...effectiveLinkedInNotes];
   };
@@ -460,8 +466,8 @@ const LinkedInOptimization = () => {
               </Card>
             )}
 
-            {/* Saved Notes Section - Show for Profile Basics and Experience */}
-            {(selectedCategory === 'Profile Basics' || selectedCategory === 'Experience') && (
+            {/* Saved Notes Section - Show for Profile Basics, Experience, and Skills */}
+            {(selectedCategory === 'Profile Basics' || selectedCategory === 'Experience' || selectedCategory === 'Skills') && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -469,7 +475,7 @@ const LinkedInOptimization = () => {
                     Your Saved Notes
                   </CardTitle>
                   <CardDescription>
-                    Notes from {selectedCategory === 'Experience' ? 'LinkedIn and Resume tools' : 'LinkedIn profile tools'}
+                    Notes from {selectedCategory === 'Experience' ? 'LinkedIn and Resume tools' : selectedCategory === 'Skills' ? 'LinkedIn and Skills tools' : 'LinkedIn profile tools'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
