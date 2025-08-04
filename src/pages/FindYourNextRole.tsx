@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -35,6 +35,13 @@ interface JobSearchForm {
   job_requirements: string;
 }
 
+interface SavedJobSearch {
+  id: string;
+  name: string;
+  search_criteria: JobSearchForm;
+  created_at: string;
+}
+
 const FindYourNextRole = () => {
   const { user } = useAuth();
   const { incrementAnalytics } = useProfile();
@@ -51,6 +58,12 @@ const FindYourNextRole = () => {
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobResult | null>(null);
   const [wishlistedJobs, setWishlistedJobs] = useState<Set<string>>(new Set());
+  const [savedSearches, setSavedSearches] = useState<SavedJobSearch[]>([]);
+  const [loadingSavedSearches, setLoadingSavedSearches] = useState(false);
+  const [savingSearch, setSavingSearch] = useState(false);
+  const [saveSearchName, setSaveSearchName] = useState("");
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showLoadDialog, setShowLoadDialog] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -217,6 +230,120 @@ const FindYourNextRole = () => {
     }
   };
 
+  const fetchSavedSearches = async () => {
+    if (!user) return;
+    
+    setLoadingSavedSearches(true);
+    try {
+      const { data, error } = await supabase
+        .from('saved_job_searches')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      setSavedSearches((data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        search_criteria: item.search_criteria as unknown as JobSearchForm,
+        created_at: item.created_at
+      })));
+    } catch (error) {
+      console.error('Error fetching saved searches:', error);
+      toast({
+        title: "Error loading saved searches",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSavedSearches(false);
+    }
+  };
+
+  const handleSaveSearch = async () => {
+    if (!user || !saveSearchName.trim()) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a name for your search.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSavingSearch(true);
+    try {
+      const { error } = await supabase
+        .from('saved_job_searches')
+        .insert({
+          user_id: user.id,
+          name: saveSearchName.trim(),
+          search_criteria: formData as any
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Search saved successfully",
+        description: `"${saveSearchName}" has been saved for future use.`,
+      });
+
+      setSaveSearchName("");
+      setShowSaveDialog(false);
+      fetchSavedSearches(); // Refresh the list
+    } catch (error) {
+      console.error('Error saving search:', error);
+      toast({
+        title: "Error saving search",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingSearch(false);
+    }
+  };
+
+  const handleLoadSearch = (savedSearch: SavedJobSearch) => {
+    setFormData(savedSearch.search_criteria);
+    setShowLoadDialog(false);
+    toast({
+      title: "Search loaded",
+      description: `Loaded search criteria: "${savedSearch.name}"`,
+    });
+  };
+
+  const handleDeleteSavedSearch = async (searchId: string, searchName: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('saved_job_searches')
+        .delete()
+        .eq('id', searchId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Search deleted",
+        description: `"${searchName}" has been deleted.`,
+      });
+
+      fetchSavedSearches(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting search:', error);
+      toast({
+        title: "Error deleting search",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
@@ -346,20 +473,135 @@ const FindYourNextRole = () => {
               </div>
             </div>
 
-            <Button 
-              onClick={handleSubmit} 
-              disabled={loading}
-              className="w-full md:w-auto"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Searching...
-                </>
-              ) : (
-                "Find Your Next Role"
-              )}
-            </Button>
+            <div className="flex flex-wrap gap-3 pt-4">
+              <Button 
+                onClick={handleSubmit} 
+                disabled={loading}
+                className="flex-1 md:flex-none"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  "Find Your Next Role"
+                )}
+              </Button>
+
+              <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex-1 md:flex-none">
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Search
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Save Search Criteria</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="search-name">Search Name</Label>
+                      <Input
+                        id="search-name"
+                        value={saveSearchName}
+                        onChange={(e) => setSaveSearchName(e.target.value)}
+                        placeholder="e.g., Frontend Developer Jobs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSaveSearch}
+                        disabled={savingSearch || !saveSearchName.trim()}
+                        className="flex-1"
+                      >
+                        {savingSearch ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save"
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowSaveDialog(false);
+                          setSaveSearchName("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={showLoadDialog} onOpenChange={(open) => {
+                setShowLoadDialog(open);
+                if (open) fetchSavedSearches();
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex-1 md:flex-none">
+                    <FolderOpen className="mr-2 h-4 w-4" />
+                    Load Search
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Load Saved Search</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {loadingSavedSearches ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span className="ml-2">Loading saved searches...</span>
+                      </div>
+                    ) : savedSearches.length === 0 ? (
+                      <div className="text-center py-4 text-muted-foreground">
+                        No saved searches found. Save your current search criteria first.
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {savedSearches.map((savedSearch) => (
+                          <div 
+                            key={savedSearch.id}
+                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                          >
+                            <div className="flex-1">
+                              <h4 className="font-medium">{savedSearch.name}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Query: {savedSearch.search_criteria.query}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Saved: {new Date(savedSearch.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleLoadSearch(savedSearch)}
+                              >
+                                Load
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteSavedSearch(savedSearch.id, savedSearch.name)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardContent>
         </Card>
 
