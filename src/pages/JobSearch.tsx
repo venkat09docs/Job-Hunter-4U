@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2 } from "lucide-react";
+import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -43,9 +43,11 @@ interface JobResult {
 }
 
 interface SearchFilters {
-  jobTitle: string;
-  location: string;
-  experienceLevel: string;
+  query: string;
+  date_posted: string;
+  job_requirements: string;
+  country: string;
+  language: string;
 }
 
 const JobSearch = () => {
@@ -53,19 +55,49 @@ const JobSearch = () => {
   const { toast } = useToast();
   
   const [filters, setFilters] = useState<SearchFilters>({
-    jobTitle: "",
-    location: "",
-    experienceLevel: ""
+    query: "",
+    date_posted: "all",
+    job_requirements: "",
+    country: "",
+    language: ""
   });
   
   const [savedJobs, setSavedJobs] = useState<SavedJobResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
+  const [jobStatuses, setJobStatuses] = useState<Map<string, string>>(new Map());
 
-  const experienceLevels = [
-    { value: "entry", label: "Entry Level (0-2 years)" },
-    { value: "mid", label: "Mid Level (3-5 years)" },
-    { value: "senior", label: "Senior Level (5+ years)" },
-    { value: "executive", label: "Executive Level" }
+  const jobRequirementOptions = [
+    { value: "under_3_years_experience", label: "Under 3 years experience" },
+    { value: "more_than_3_years_experience", label: "More than 3 years experience" },
+    { value: "no_experience", label: "No experience" },
+    { value: "no_degree", label: "No degree required" }
+  ];
+
+  const countryOptions = [
+    { value: "us", label: "United States" },
+    { value: "ca", label: "Canada" },
+    { value: "uk", label: "United Kingdom" },
+    { value: "de", label: "Germany" },
+    { value: "fr", label: "France" },
+    { value: "au", label: "Australia" },
+    { value: "in", label: "India" }
+  ];
+
+  const languageOptions = [
+    { value: "en", label: "English" },
+    { value: "es", label: "Spanish" },
+    { value: "fr", label: "French" },
+    { value: "de", label: "German" },
+    { value: "it", label: "Italian" }
+  ];
+
+  const datePostedOptions = [
+    { value: "all", label: "All time" },
+    { value: "today", label: "Today" },
+    { value: "3days", label: "Last 3 days" },
+    { value: "week", label: "This week" },
+    { value: "month", label: "This month" }
   ];
 
   const loadSavedJobs = async () => {
@@ -82,6 +114,9 @@ const JobSearch = () => {
       if (error) throw error;
 
       setSavedJobs(data || []);
+      
+      // Load job statuses from job_tracker
+      await loadJobStatuses();
     } catch (error) {
       console.error('Error loading saved jobs:', error);
       toast({
@@ -94,23 +129,53 @@ const JobSearch = () => {
     }
   };
 
+  const loadJobStatuses = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('job_tracker')
+        .select('job_title, company_name, status')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const statusMap = new Map<string, string>();
+      data?.forEach(job => {
+        // Create a key based on job title and company for matching
+        const key = `${job.job_title?.toLowerCase()}-${job.company_name?.toLowerCase()}`;
+        statusMap.set(key, job.status);
+      });
+      setJobStatuses(statusMap);
+    } catch (error) {
+      console.error('Error loading job statuses:', error);
+    }
+  };
+
   const filterSavedJobs = () => {
-    if (!filters.jobTitle.trim() && !filters.location.trim() && !filters.experienceLevel) {
+    if (!filters.query.trim() && !filters.date_posted && !filters.job_requirements && !filters.country && !filters.language) {
       return savedJobs;
     }
 
     return savedJobs.filter(job => {
-      const titleMatch = !filters.jobTitle.trim() || 
-        job.job_title.toLowerCase().includes(filters.jobTitle.toLowerCase());
+      const queryMatch = !filters.query.trim() || 
+        job.job_title.toLowerCase().includes(filters.query.toLowerCase()) ||
+        job.employer_name.toLowerCase().includes(filters.query.toLowerCase()) ||
+        job.job_location.toLowerCase().includes(filters.query.toLowerCase());
       
-      const locationMatch = !filters.location.trim() || 
-        job.job_location.toLowerCase().includes(filters.location.toLowerCase());
+      const dateMatch = !filters.date_posted || filters.date_posted === "all" ||
+        job.search_query?.date_posted === filters.date_posted;
       
-      // For experience level, we would need to check the search_query
-      const experienceMatch = !filters.experienceLevel || 
-        job.search_query?.job_requirements === filters.experienceLevel;
+      const requirementsMatch = !filters.job_requirements || 
+        job.search_query?.job_requirements === filters.job_requirements;
 
-      return titleMatch && locationMatch && experienceMatch;
+      const countryMatch = !filters.country || 
+        job.search_query?.country === filters.country;
+
+      const languageMatch = !filters.language || 
+        job.search_query?.language === filters.language;
+
+      return queryMatch && dateMatch && requirementsMatch && countryMatch && languageMatch;
     });
   };
 
@@ -140,16 +205,81 @@ const JobSearch = () => {
     }));
   };
 
+  const getJobStatus = (job: SavedJobResult): string | null => {
+    const key = `${job.job_title?.toLowerCase()}-${job.employer_name?.toLowerCase()}`;
+    return jobStatuses.get(key) || null;
+  };
+
+  const handleAddToWishlist = async (job: SavedJobResult) => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to add jobs to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingToWishlist(job.job_id);
+    
+    try {
+      const { error } = await supabase
+        .from('job_tracker')
+        .insert({
+          user_id: user.id,
+          company_name: job.employer_name || 'Unknown Company',
+          job_title: job.job_title || 'Unknown Position',
+          status: 'wishlist',
+          application_date: new Date().toISOString().split('T')[0],
+          job_url: job.job_apply_link || '',
+          salary_range: formatSalary(job) || '',
+          location: job.job_location || '',
+          notes: job.job_description ? job.job_description.substring(0, 500) + (job.job_description.length > 500 ? '...' : '') : '',
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Update job statuses
+      await loadJobStatuses();
+      
+      toast({
+        title: "Added to Wishlist",
+        description: `${job.job_title} at ${job.employer_name} has been added to your job tracker.`,
+      });
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      toast({
+        title: "Error adding to wishlist",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingToWishlist(null);
+    }
+  };
+
+  const handleApplyAndWishlist = async (job: SavedJobResult) => {
+    // Add to wishlist first
+    await handleAddToWishlist(job);
+    
+    // Then open the apply link
+    if (job.job_apply_link) {
+      window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <div className="container mx-auto p-6 space-y-6">
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Job Search</h1>
+              <h1 className="text-3xl font-bold">Job Search History</h1>
               <p className="text-muted-foreground">
-                View and filter your saved job results from "Find Your Next Role"
+                View and filter all job results from your searches in "Find Your Next Role"
               </p>
             </div>
             
@@ -160,44 +290,82 @@ const JobSearch = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5" />
-                Search Filters
+                Job Search Parameters
               </CardTitle>
               <CardDescription>
-                Filter through your saved job results from searches
+                Filter through your job search history using the same parameters as "Find Your Next Role"
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="jobTitle">Job Title *</Label>
+                  <Label htmlFor="query">Search Query</Label>
                   <Input
-                    id="jobTitle"
-                    placeholder="e.g., Software Engineer"
-                    value={filters.jobTitle}
-                    onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                    id="query"
+                    placeholder="e.g., developer jobs in chicago"
+                    value={filters.query}
+                    onChange={(e) => handleInputChange('query', e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="e.g., New York, NY or Remote"
-                    value={filters.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                  />
+                  <Label htmlFor="date_posted">Date Posted</Label>
+                  <Select value={filters.date_posted} onValueChange={(value) => handleInputChange('date_posted', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select date range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {datePostedOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="experienceLevel">Experience Level</Label>
-                  <Select value={filters.experienceLevel} onValueChange={(value) => handleInputChange('experienceLevel', value)}>
+                  <Label htmlFor="job_requirements">Job Requirements</Label>
+                  <Select value={filters.job_requirements} onValueChange={(value) => handleInputChange('job_requirements', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select experience level" />
                     </SelectTrigger>
                     <SelectContent>
-                      {experienceLevels.map((level) => (
-                        <SelectItem key={level.value} value={level.value}>
-                          {level.label}
+                      {jobRequirementOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Select value={filters.country} onValueChange={(value) => handleInputChange('country', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countryOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="language">Language</Label>
+                  <Select value={filters.language} onValueChange={(value) => handleInputChange('language', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languageOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -224,76 +392,107 @@ const JobSearch = () => {
               <Separator />
               
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Saved Job Results</h2>
+                <h2 className="text-2xl font-bold">Job Search History</h2>
                 <div className="text-sm text-muted-foreground">
                   {filteredJobs.length} jobs found from your searches
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {filteredJobs.map((job) => (
-                  <Card key={job.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 space-y-3">
-                          <div>
-                            <h3 className="text-xl font-semibold">{job.job_title}</h3>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                              <div className="flex items-center gap-1">
-                                <Building2 className="h-4 w-4" />
-                                {job.employer_name}
+                {filteredJobs.map((job) => {
+                  const jobStatus = getJobStatus(job);
+                  const isInTracker = jobStatus !== null;
+                  const isWishlisted = jobStatus === 'wishlist';
+                  const isApplied = jobStatus === 'applied' || jobStatus === 'applying' || jobStatus === 'interviewing' || jobStatus === 'negotiating';
+                  
+                  return (
+                    <Card key={job.id} className={`hover:shadow-md transition-shadow ${isInTracker ? 'ring-2 ring-primary/20 bg-primary/5' : ''}`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-semibold">{job.job_title}</h3>
+                                {isInTracker && (
+                                  <Badge variant={isApplied ? "default" : "secondary"} className="text-xs">
+                                    {jobStatus}
+                                  </Badge>
+                                )}
                               </div>
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-4 w-4" />
-                                {job.job_location}
-                              </div>
-                              {job.job_employment_type && (
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                                 <div className="flex items-center gap-1">
-                                  <Briefcase className="h-4 w-4" />
-                                  {job.job_employment_type}
+                                  <Building2 className="h-4 w-4" />
+                                  {job.employer_name}
                                 </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {job.job_location}
+                                </div>
+                                {job.job_employment_type && (
+                                  <div className="flex items-center gap-1">
+                                    <Briefcase className="h-4 w-4" />
+                                    {job.job_employment_type}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {job.job_description}
+                            </p>
+
+                            <div className="flex items-center gap-3">
+                              {formatSalary(job) && (
+                                <Badge variant="secondary">{formatSalary(job)}</Badge>
                               )}
+                              {job.job_posted_at && (
+                                <span className="text-xs text-muted-foreground">
+                                  Posted {job.job_posted_at}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                Saved {new Date(job.created_at).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
 
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {job.job_description}
-                          </p>
-
-                          <div className="flex items-center gap-3">
-                            {formatSalary(job) && (
-                              <Badge variant="secondary">{formatSalary(job)}</Badge>
-                            )}
-                            {job.job_posted_at && (
-                              <span className="text-xs text-muted-foreground">
-                                Posted {job.job_posted_at}
-                              </span>
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              Saved {new Date(job.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="ml-4">
-                          {job.job_apply_link && (
-                            <Button asChild>
-                              <a
-                                href={job.job_apply_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                          <div className="ml-4 flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleAddToWishlist(job)}
+                              disabled={addingToWishlist === job.job_id || isInTracker}
+                              className="flex items-center gap-2"
+                            >
+                              {addingToWishlist === job.job_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
+                              )}
+                              {isInTracker ? (isWishlisted ? 'Wishlisted' : 'In Tracker') : 'Wishlist'}
+                            </Button>
+                            {job.job_apply_link && (
+                              <Button 
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleApplyAndWishlist(job)}
+                                disabled={addingToWishlist === job.job_id}
                                 className="flex items-center gap-2"
                               >
-                                Apply Now
-                                <ExternalLink className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
+                                {addingToWishlist === job.job_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <ExternalLink className="h-4 w-4" />
+                                )}
+                                {isInTracker ? 'Apply' : 'Apply & Add to Tracker'}
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -302,9 +501,9 @@ const JobSearch = () => {
           {filteredJobs.length === 0 && !loading && (
             <div className="text-center py-12">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No saved jobs found</h3>
+              <h3 className="text-lg font-medium">No job history found</h3>
               <p className="text-muted-foreground">
-                Search for jobs in "Find Your Next Role" to see them here
+                Search for jobs in "Find Your Next Role" to build your job search history
               </p>
             </div>
           )}
