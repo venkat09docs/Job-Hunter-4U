@@ -516,39 +516,6 @@ const Dashboard = () => {
             </div>
 
 
-            {/* Job Application Status */}
-            <div className="mb-8">
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Job Application Status</CardTitle>
-                  <CardDescription>
-                    Your job search activity summary
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="flex flex-col items-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-primary mb-2">{profile?.total_job_searches || 0}</div>
-                      <div className="text-sm font-medium text-center">No of Job Searches</div>
-                      <div className="text-xs text-muted-foreground text-center">Times you searched for jobs</div>
-                    </div>
-                    
-                    <div className="flex flex-col items-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-primary mb-2">{totalJobResultsCount}</div>
-                      <div className="text-sm font-medium text-center">No of jobs in history</div>
-                      <div className="text-xs text-muted-foreground text-center">Total jobs found from searches</div>
-                    </div>
-                    
-                    <div className="flex flex-col items-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-primary mb-2">{totalJobApplications}</div>
-                      <div className="text-sm font-medium text-center">Recent Applications</div>
-                      <div className="text-xs text-muted-foreground text-center">Total job applications</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Activity Chart */}
             <div className="mb-8">
               <ActivityChart analytics={analytics} />
