@@ -43,6 +43,7 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
 // Tool IDs for fetching notes
 const GIT_LINKEDIN_TOOL_ID = 'd48e085e-51bf-4b89-a795-371d2f7ae6b3'; // 7. Build Git & LinkedIn Profiles
 const EFFECTIVE_LINKEDIN_TOOL_ID = '97a32a5a-9506-4e06-a5cb-ca9477e54bf8'; // 8. Creating an effective LinkedIn Profile
+const RESUME_BUILDER_TOOL_ID = 'c8b8f3e0-4c2a-4b8a-9f5e-1a2b3c4d5e6f'; // Resume Builder - Achievements
 
 const CATEGORY_TIPS: Record<string, string[]> = {
   'Profile Basics': [
@@ -85,6 +86,7 @@ const LinkedInOptimization = () => {
   // Fetch notes from specific tools
   const { chats: gitLinkedInNotes } = useToolChats(GIT_LINKEDIN_TOOL_ID);
   const { chats: effectiveLinkedInNotes } = useToolChats(EFFECTIVE_LINKEDIN_TOOL_ID);
+  const { chats: resumeBuilderNotes } = useToolChats(RESUME_BUILDER_TOOL_ID);
 
   useEffect(() => {
     if (user) {
@@ -214,12 +216,15 @@ const LinkedInOptimization = () => {
     }
   };
 
-  const getCombinedNotes = () => {
+  const getCombinedNotes = (category?: string) => {
+    if (category === 'Experience') {
+      return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...resumeBuilderNotes];
+    }
     return [...gitLinkedInNotes, ...effectiveLinkedInNotes];
   };
 
-  const hasNotes = () => {
-    return getCombinedNotes().length > 0;
+  const hasNotes = (category?: string) => {
+    return getCombinedNotes(category).length > 0;
   };
 
   const navigateToTool = (toolId: string, toolName: string) => {
@@ -442,8 +447,8 @@ const LinkedInOptimization = () => {
               </Card>
             )}
 
-            {/* Saved Notes Section - Only show for Profile Basics */}
-            {selectedCategory === 'Profile Basics' && (
+            {/* Saved Notes Section - Show for Profile Basics and Experience */}
+            {(selectedCategory === 'Profile Basics' || selectedCategory === 'Experience') && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -451,14 +456,14 @@ const LinkedInOptimization = () => {
                     Your Saved Notes
                   </CardTitle>
                   <CardDescription>
-                    Notes from LinkedIn profile tools
+                    Notes from {selectedCategory === 'Experience' ? 'LinkedIn and Resume tools' : 'LinkedIn profile tools'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {hasNotes() ? (
+                  {hasNotes(selectedCategory) ? (
                     <ScrollArea className="h-96">
                       <div className="space-y-4">
-                        {getCombinedNotes().map((chat, index) => (
+                        {getCombinedNotes(selectedCategory).map((chat, index) => (
                           <div key={`${chat.id}-${index}`} className="border rounded-lg p-4 bg-muted/50">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium text-sm truncate">{chat.title}</h4>
@@ -466,7 +471,7 @@ const LinkedInOptimization = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => copyToClipboard(chat.messages[0]?.content || '')}
-                                className="h-8 w-8 p-0"
+                                className="h-8 w-8 p-0 shrink-0"
                               >
                                 <Copy className="h-3 w-3" />
                               </Button>
@@ -487,27 +492,38 @@ const LinkedInOptimization = () => {
                     <div className="text-center py-6">
                       <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground mb-4">
-                        No notes available from LinkedIn profile tools
+                        No notes available from {selectedCategory === 'Experience' ? 'LinkedIn and Resume tools' : 'LinkedIn profile tools'}
                       </p>
                       <div className="space-y-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigateToTool(GIT_LINKEDIN_TOOL_ID, '7. Build Git & LinkedIn Profiles')}
-                          className="w-full text-xs"
+                          onClick={() => navigateToTool(GIT_LINKEDIN_TOOL_ID, 'Build Git & LinkedIn Profiles')}
+                          className="w-full text-xs flex items-center justify-center gap-2"
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Open "Build Git & LinkedIn Profiles" Tool
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Open "Build Git & LinkedIn Profiles" Tool</span>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => navigateToTool(EFFECTIVE_LINKEDIN_TOOL_ID, '8. Creating an effective LinkedIn Profile')}
-                          className="w-full text-xs"
+                          onClick={() => navigateToTool(EFFECTIVE_LINKEDIN_TOOL_ID, 'Creating an effective LinkedIn Profile')}
+                          className="w-full text-xs flex items-center justify-center gap-2"
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Open "Creating an effective LinkedIn Profile" Tool
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Open "Creating an effective LinkedIn Profile" Tool</span>
                         </Button>
+                        {selectedCategory === 'Experience' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigateToTool(RESUME_BUILDER_TOOL_ID, 'Resume Builder - Achievements')}
+                            className="w-full text-xs flex items-center justify-center gap-2"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            <span>Open "Resume Builder - Achievements" Tool</span>
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )}
