@@ -59,7 +59,13 @@ export const useDailyProgress = () => {
       const hasToday = snapshots?.some(s => s.snapshot_date === todayStr);
       
       if (!hasToday) {
-        await createTodaySnapshot();
+        console.log('No data for today, creating snapshot...');
+        try {
+          await createTodaySnapshot();
+        } catch (error) {
+          console.error('Failed to create today snapshot:', error);
+          // Continue anyway, don't block the UI
+        }
       }
 
     } catch (error) {
@@ -84,10 +90,13 @@ export const useDailyProgress = () => {
       }
 
       console.log('Created today snapshot:', data);
-      // Refresh the data
-      await fetchDailySnapshots();
+      
+      // Only refresh if this was called manually (not during initial load)
+      // This prevents infinite loops
+      return data;
     } catch (error) {
       console.error('Error calling daily progress capture:', error);
+      throw error;
     }
   };
 

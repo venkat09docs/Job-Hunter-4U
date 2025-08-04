@@ -43,7 +43,7 @@ export default function CareerGrowth() {
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
   const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
-  const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot } = useDailyProgress();
+  const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
   
@@ -197,7 +197,8 @@ export default function CareerGrowth() {
     setIsUpdatingProgress(true);
     try {
       await createTodaySnapshot();
-      // The hook will automatically refresh the data
+      // Manually refresh the daily snapshots after creating a new one
+      await refreshProgress();
     } catch (error) {
       console.error('Error updating progress:', error);
     } finally {
@@ -208,7 +209,10 @@ export default function CareerGrowth() {
   if (loading || dailyLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading career growth data...</p>
+        </div>
       </div>
     );
   }
