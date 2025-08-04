@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Play, FileText, Clock, User, ArrowLeft } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 const videoCategories = [
   {
@@ -182,6 +183,9 @@ export default function KnowledgeBase() {
               <div className="text-sm text-muted-foreground">
                 Knowledge Base
               </div>
+              <SubscriptionUpgrade variant="outline" size="sm">
+                Upgrade Plan
+              </SubscriptionUpgrade>
               <UserProfileDropdown />
             </div>
           </div>
