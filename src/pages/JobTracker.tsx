@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
+import { DraggableKanbanCard } from '@/components/DraggableKanbanCard';
+import { DroppableStatusColumn } from '@/components/DroppableStatusColumn';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from 'react-router-dom';
+import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 
 interface JobEntry {
   id: string;
@@ -207,6 +210,31 @@ const JobTracker = () => {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) {
+      return;
+    }
+    
+    const jobId = active.id as string;
+    const newStatus = over.id as string;
+    
+    // Check if the drop target is a valid status
+    if (!statusOptions.includes(newStatus)) {
+      return;
+    }
+    
+    // Find the job being dragged
+    const job = jobs.find(j => j.id === jobId);
+    if (!job || job.status === newStatus) {
+      return;
+    }
+    
+    // Update the job status
+    await handleStatusChange(jobId, newStatus);
+  };
+
   const exportToCSV = () => {
     const csvContent = [
       ['Company', 'Job Title', 'Status', 'Application Date', 'Location', 'Salary Range', 'Notes'].join(','),
@@ -389,149 +417,76 @@ const JobTracker = () => {
           </Card>
 
           {/* Integrated Kanban Board with Pipeline */}
-          <div className="grid grid-cols-8 gap-1 sm:gap-2 md:gap-3">
-            {getVisibleStatusOptions().map(status => {
-              const statusJobs = filteredJobs.filter(job => job.status === status);
-              const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
-              
-              return (
-                <div key={status} className="flex flex-col">
-                  {/* Pipeline Header */}
-                  <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-t-lg p-1 sm:p-2 md:p-3 mb-1 sm:mb-2`}>
-                    <div className="text-center">
-                      <div className="text-sm sm:text-lg md:text-xl font-bold">{count}</div>
-                      <div className="text-[10px] sm:text-xs md:text-sm font-medium leading-tight break-words">
-                        {statusLabels[status as keyof typeof statusLabels]}
+          <DndContext 
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="grid grid-cols-8 gap-1 sm:gap-2 md:gap-3">
+              {getVisibleStatusOptions().map(status => {
+                const statusJobs = filteredJobs.filter(job => job.status === status);
+                const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
+                
+                return (
+                  <DroppableStatusColumn
+                    key={status}
+                    status={status}
+                    statusColor={statusColors[status as keyof typeof statusColors]}
+                    statusLabel={statusLabels[status as keyof typeof statusLabels]}
+                    count={count}
+                  >
+                    {statusJobs.map(job => {
+                      const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                      const showWarning = daysSinceUpdate > 1;
+                      
+                      if (showWarning) {
+                        return (
+                          <TooltipProvider key={job.id}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div>
+                                  <DraggableKanbanCard
+                                    job={job}
+                                    statusOptions={statusOptions}
+                                    statusLabels={statusLabels}
+                                    hasActiveSubscription={hasActiveSubscription()}
+                                    showWarning={true}
+                                    onStatusChange={handleStatusChange}
+                                    onCardClick={setSelectedJob}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-sm">
+                                  ⚠️ The status of this job application was changed {daysSinceUpdate} days ago. Please verify and update the status.
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      } else {
+                        return (
+                          <DraggableKanbanCard
+                            key={job.id}
+                            job={job}
+                            statusOptions={statusOptions}
+                            statusLabels={statusLabels}
+                            hasActiveSubscription={hasActiveSubscription()}
+                            onStatusChange={handleStatusChange}
+                            onCardClick={setSelectedJob}
+                          />
+                        );
+                      }
+                    })}
+                    {statusJobs.length === 0 && (
+                      <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
+                        No applications
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Board Column */}
-                   <div className="flex-1 space-y-1 sm:space-y-2 min-h-[150px] sm:min-h-[200px] md:min-h-[250px] p-1 sm:p-2 md:p-3 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
-                     {statusJobs.map(job => {
-                       const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
-                       const showWarning = daysSinceUpdate > 1;
-                       
-                       if (showWarning) {
-                         return (
-                           <TooltipProvider key={job.id}>
-                             <Tooltip>
-                               <TooltipTrigger asChild>
-                                 <Card 
-                                   className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background ring-2 ring-orange-300"
-                                   onClick={() => setSelectedJob(job)}
-                                 >
-                                   <div className="space-y-1">
-                                    <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-                                    <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
-                                    <div className="text-[9px] sm:text-xs text-muted-foreground">
-                                      {new Date(job.application_date).toLocaleDateString()}
-                                    </div>
-                                    {job.location && (
-                                      <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
-                                    )}
-                                    {job.salary_range && (
-                                      <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
-                                    )}
-                                      <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
-                                        {hasActiveSubscription() ? (
-                                          <Select
-                                           value={job.status} 
-                                           onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
-                                         >
-                                           <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                             <SelectValue />
-                                           </SelectTrigger>
-                                           <SelectContent>
-                                             {statusOptions.map(statusOption => (
-                                               <SelectItem key={statusOption} value={statusOption}>
-                                                 {statusLabels[statusOption as keyof typeof statusLabels]}
-                                               </SelectItem>
-                                             ))}
-                                           </SelectContent>
-                                         </Select>
-                                       ) : (
-                                         <SubscriptionUpgrade featureName="job tracker">
-                                           <Select value={job.status}>
-                                             <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                        </Select>
-                                      </SubscriptionUpgrade>
-                                     )}
-                                 </div>
-                               </div>
-                             </Card>
-                               </TooltipTrigger>
-                               <TooltipContent>
-                                 <p className="text-sm">
-                                   ⚠️ The status of this job application was changed {daysSinceUpdate} days ago. Please verify and update the status.
-                                 </p>
-                               </TooltipContent>
-                             </Tooltip>
-                           </TooltipProvider>
-                         );
-                       } else {
-                         return (
-                           <Card 
-                             key={job.id} 
-                             className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background"
-                             onClick={() => setSelectedJob(job)}
-                           >
-                             <div className="space-y-1">
-                              <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-                              <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
-                              <div className="text-[9px] sm:text-xs text-muted-foreground">
-                                {new Date(job.application_date).toLocaleDateString()}
-                              </div>
-                              {job.location && (
-                                <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
-                              )}
-                              {job.salary_range && (
-                                <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
-                              )}
-                                <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
-                                  {hasActiveSubscription() ? (
-                                    <Select
-                                     value={job.status} 
-                                     onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
-                                   >
-                                     <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                       <SelectValue />
-                                     </SelectTrigger>
-                                     <SelectContent>
-                                       {statusOptions.map(statusOption => (
-                                         <SelectItem key={statusOption} value={statusOption}>
-                                           {statusLabels[statusOption as keyof typeof statusLabels]}
-                                         </SelectItem>
-                                       ))}
-                                     </SelectContent>
-                                   </Select>
-                                 ) : (
-                                   <SubscriptionUpgrade featureName="job tracker">
-                                     <Select value={job.status}>
-                                       <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </Select>
-                                </SubscriptionUpgrade>
-                               )}
-                           </div>
-                         </div>
-                       </Card>
-                         );
-                       }
-                     })}
-                     {statusJobs.length === 0 && (
-                       <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
-                         No applications
-                       </div>
-                     )}
-                   </div>
-                 </div>
-                 );
-               })}
-             </div>
+                    )}
+                  </DroppableStatusColumn>
+                );
+              })}
+            </div>
+          </DndContext>
 
           {filteredJobs.length === 0 && (
             <Card>
