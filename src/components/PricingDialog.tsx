@@ -67,8 +67,8 @@ const PricingDialog = () => {
         "Free Access to Career Growth Live Cohort on every Saturday",
         "1 Mock Interview in the 3rd Month"
       ],
-      popular: false,
-      variant: "outline" as const,
+      popular: true,
+      variant: "hero" as const,
       icon: Sparkles
     },
     {
@@ -85,8 +85,8 @@ const PricingDialog = () => {
         "100+ Job Applications per month",
         "Automated Job-Hunting Process"
       ],
-      popular: true,
-      variant: "hero" as const,
+      popular: false,
+      variant: "outline" as const,
       icon: Crown
     }
   ];

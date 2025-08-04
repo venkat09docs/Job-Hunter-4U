@@ -34,6 +34,7 @@ import { useRole } from "@/hooks/useRole";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User },
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search },
