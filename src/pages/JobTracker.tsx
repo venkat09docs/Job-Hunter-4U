@@ -346,24 +346,6 @@ const JobTracker = () => {
             </div>
           </div>
 
-          {/* Statistics Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-            {statusOptions.map(status => {
-              const count = getStatusCounts()[status];
-              return (
-                <Card key={status} className="p-4">
-                  <div className="text-center">
-                    <div className={`${statusColors[status as keyof typeof statusColors]} text-white rounded-lg p-2 mb-2`}>
-                      <div className="text-lg font-bold">{count}</div>
-                    </div>
-                    <div className="text-xs font-medium text-muted-foreground">
-                      {statusLabels[status as keyof typeof statusLabels]}
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
 
           {/* Filters */}
           <Card>
