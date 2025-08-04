@@ -313,8 +313,7 @@ const Dashboard = () => {
                     <div className="col-span-2 flex flex-col justify-center space-y-6">
                       {/* Header Section */}
                       <div className="text-left">
-                        <h3 className="text-2xl font-bold mb-2">Overall Career Development Score</h3>
-                        <p className="text-muted-foreground">Your comprehensive career readiness assessment</p>
+                        <h3 className="text-2xl font-bold mb-2">Status Tracker</h3>
                       </div>
                       
                       {/* 4 Boards Section */}
