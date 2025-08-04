@@ -48,6 +48,7 @@ const FindYourNextRole = () => {
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobResult | null>(null);
+  const [wishlistedJobs, setWishlistedJobs] = useState<Set<string>>(new Set());
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -134,6 +135,9 @@ const FindYourNextRole = () => {
         throw error;
       }
 
+      // Add to wishlist state
+      setWishlistedJobs(prev => new Set([...prev, job.job_id]));
+      
       toast({
         title: "Added to Wishlist",
         description: `${job.job_title} at ${job.employer_name} has been added to your job tracker.`,
@@ -213,15 +217,19 @@ const FindYourNextRole = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="num_pages">Number of Pages</Label>
-                <Input
-                  id="num_pages"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.num_pages}
-                  onChange={(e) => handleInputChange('num_pages', e.target.value)}
-                />
+                <Label htmlFor="date_posted">Date Posted</Label>
+                <Select value={formData.date_posted} onValueChange={(value) => handleInputChange('date_posted', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All time</SelectItem>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="3days">Last 3 days</SelectItem>
+                    <SelectItem value="week">This week</SelectItem>
+                    <SelectItem value="month">This month</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -235,22 +243,6 @@ const FindYourNextRole = () => {
                     <SelectItem value="more_than_3_years_experience">More than 3 years experience</SelectItem>
                     <SelectItem value="no_experience">No experience</SelectItem>
                     <SelectItem value="no_degree">No degree required</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date_posted">Date Posted</Label>
-                <Select value={formData.date_posted} onValueChange={(value) => handleInputChange('date_posted', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="3days">Last 3 days</SelectItem>
-                    <SelectItem value="week">This week</SelectItem>
-                    <SelectItem value="month">This month</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -287,6 +279,18 @@ const FindYourNextRole = () => {
                     <SelectItem value="it">Italian</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="num_pages">Number of Pages</Label>
+                <Input
+                  id="num_pages"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.num_pages}
+                  onChange={(e) => handleInputChange('num_pages', e.target.value)}
+                />
               </div>
             </div>
 
@@ -347,7 +351,7 @@ const FindYourNextRole = () => {
                                 {addingToWishlist === job.job_id ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  <Heart className="h-4 w-4" />
+                                  <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
                                 )}
                                 Wishlist
                         </Button>

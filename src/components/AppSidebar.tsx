@@ -35,7 +35,6 @@ import { useRole } from "@/hooks/useRole";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   // Hidden items (keep for future): Job Search, LinkedIn Automation, Talent Screener
   // { title: "Job Search", url: "/dashboard/job-search", icon: Search },
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
@@ -44,6 +43,10 @@ const mainItems = [
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
+];
+
+const topLevelItems = [
+  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
 ];
 
 const adminItems = [
@@ -121,6 +124,26 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                   );
                 })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Top-level navigation items */}
+        {!isInstituteAdmin && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {topLevelItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                        <NavLink to={item.url} end className={getNavCls}>
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          <span className="font-medium text-sm">{item.title}</span>
+                        </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
