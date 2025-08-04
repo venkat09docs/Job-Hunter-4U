@@ -31,6 +31,7 @@ import GitHubActivityTracker from "./pages/GitHubActivityTracker";
 import CareerGrowth from "./pages/CareerGrowth";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import FindYourNextRole from "./pages/FindYourNextRole";
+import BuildMyProfile from "./pages/BuildMyProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -219,6 +220,14 @@ const App = () => (
                 <PremiumProtectedRoute featureKey="page_find_your_next_role">
                   <FindYourNextRole />
                 </PremiumProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/build-my-profile" 
+              element={
+                <ProtectedRoute>
+                  <BuildMyProfile />
+                </ProtectedRoute>
               } 
             />
             <Route path="/blogs" element={<PublicBlogs />} />

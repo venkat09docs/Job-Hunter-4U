@@ -1,0 +1,345 @@
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useResumeProgress } from '@/hooks/useResumeProgress';
+import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
+import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
+import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, ExternalLink, CheckCircle, Circle } from 'lucide-react';
+import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
+
+interface JobEntry {
+  id: string;
+  company_name: string;
+  job_title: string;
+  status: string;
+  application_date: string;
+  created_at: string;
+}
+
+const BuildMyProfile = () => {
+  const { user, signOut } = useAuth();
+  const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
+  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
+  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
+  const { completionPercentage: networkProgress, loading: networkLoading, refreshProgress: refreshNetworkProgress } = useLinkedInNetworkProgress();
+  const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
+
+  // Fetch published blogs and cover letters count
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (!user) return;
+      
+      try {
+        // Fetch published blogs count
+        const { count: blogsCount, error: blogsError } = await supabase
+          .from('blogs')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('is_public', true);
+
+        if (blogsError) throw blogsError;
+        setPublishedBlogsCount(blogsCount || 0);
+
+        // Fetch saved cover letters count
+        const { count: coverLettersCount, error: coverLettersError } = await supabase
+          .from('saved_cover_letters')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (coverLettersError) throw coverLettersError;
+        setSavedCoverLettersCount(coverLettersCount || 0);
+      } catch (error) {
+        console.error('Error fetching counts:', error);
+      }
+    };
+
+    fetchCounts();
+  }, [user]);
+
+  // Calculate overall career development score
+  const getOverallCareerScore = () => {
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), networkProgress];
+    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
+  };
+
+  // Profile building tasks with progress tracking
+  const profileTasks = [
+    {
+      id: 'resume',
+      title: 'Complete Resume',
+      description: 'Build your professional resume with all sections',
+      progress: resumeProgress,
+      isCompleted: resumeProgress === 100,
+      action: () => navigate('/dashboard/resume-builder'),
+      category: 'Documents'
+    },
+    {
+      id: 'cover-letter',
+      title: 'Create Cover Letters',
+      description: 'Save multiple cover letter templates',
+      progress: savedCoverLettersCount > 0 ? 100 : 0,
+      isCompleted: savedCoverLettersCount > 0,
+      action: () => navigate('/dashboard/library'),
+      category: 'Documents'
+    },
+    {
+      id: 'linkedin',
+      title: 'Optimize LinkedIn Profile',
+      description: 'Complete all LinkedIn optimization tasks',
+      progress: linkedinProgress,
+      isCompleted: linkedinProgress === 100,
+      action: () => navigate('/dashboard/linkedin-optimization'),
+      category: 'Social Presence'
+    },
+    {
+      id: 'github',
+      title: 'Setup GitHub Portfolio',
+      description: 'Showcase your repositories and projects',
+      progress: getGitHubProgress(),
+      isCompleted: getGitHubProgress() === 100,
+      action: () => navigate('/dashboard/github-optimization'),
+      category: 'Social Presence'
+    },
+    {
+      id: 'blog',
+      title: 'Write Blog Posts',
+      description: 'Publish articles to showcase expertise',
+      progress: publishedBlogsCount > 0 ? 100 : 0,
+      isCompleted: publishedBlogsCount > 0,
+      action: () => navigate('/dashboard/blog'),
+      category: 'Content Creation'
+    },
+    {
+      id: 'network',
+      title: 'Build LinkedIn Network',
+      description: 'Connect with professionals in your field',
+      progress: networkProgress,
+      isCompleted: networkProgress === 100,
+      action: () => navigate('/dashboard/linkedin-network'),
+      category: 'Networking'
+    }
+  ];
+
+  // Group tasks by category
+  const tasksByCategory = profileTasks.reduce((acc, task) => {
+    if (!acc[task.category]) {
+      acc[task.category] = [];
+    }
+    acc[task.category].push(task);
+    return acc;
+  }, {} as Record<string, typeof profileTasks>);
+
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gradient-hero">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Build My Profile
+                </h1>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <SubscriptionStatus />
+                <UserProfileDropdown />
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 p-8 overflow-auto">
+            {/* Overall Progress */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Overall Profile Progress
+                  </CardTitle>
+                  <CardDescription>
+                    Your complete career profile development score
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-6">
+                    <div className="relative w-24 h-24">
+                      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          stroke="hsl(var(--muted))"
+                          strokeWidth="8"
+                          fill="none"
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="8"
+                          fill="none"
+                          strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
+                          className="transition-all duration-500"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xl font-bold text-primary">{getOverallCareerScore()}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Your Profile Strength</h3>
+                      <p className="text-muted-foreground">
+                        Complete all tasks below to achieve 100% profile completion and maximize your job search success.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Profile Building Tasks by Category */}
+            {Object.entries(tasksByCategory).map(([category, tasks]) => (
+              <div key={category} className="mb-8">
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <User className="h-5 w-5 text-primary" />
+                      {category}
+                    </CardTitle>
+                    <CardDescription>
+                      Complete these tasks to strengthen your {category.toLowerCase()}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {tasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={task.action}
+                        >
+                          <div className="flex-shrink-0">
+                            {task.isCompleted ? (
+                              <CheckCircle className="h-6 w-6 text-green-500" />
+                            ) : (
+                              <Circle className="h-6 w-6 text-muted-foreground" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">{task.title}</h4>
+                              <Badge variant={task.isCompleted ? "default" : "secondary"}>
+                                {task.progress}%
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                            
+                            {/* Progress Bar */}
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div
+                                className="bg-primary h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${task.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                          
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+
+            {/* Quick Actions */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Quick Actions
+                  </CardTitle>
+                  <CardDescription>
+                    Fast track your profile building process
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={() => navigate('/dashboard/career-growth')}
+                    >
+                      <TrendingUp className="h-6 w-6" />
+                      <span>View Career Growth</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={() => navigate('/dashboard/job-tracker')}
+                    >
+                      <Search className="h-6 w-6" />
+                      <span>Track Applications</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      className="h-auto p-4 flex-col gap-2"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      <Eye className="h-6 w-6" />
+                      <span>View Dashboard</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default BuildMyProfile;
