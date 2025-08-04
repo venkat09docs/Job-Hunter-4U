@@ -150,6 +150,16 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleApplyAndWishlist = async (job: JobResult) => {
+    // Add to wishlist first
+    await handleAddToWishlist(job);
+    
+    // Then open the apply link
+    if (job.job_apply_link) {
+      window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       {/* Header */}
@@ -340,20 +350,23 @@ const FindYourNextRole = () => {
                                   <Heart className="h-4 w-4" />
                                 )}
                                 Wishlist
-                              </Button>
-                              {job.job_apply_link && (
-                                <Button variant="outline" size="sm" asChild>
-                                  <a 
-                                    href={job.job_apply_link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2"
-                                  >
-                                    Apply
-                                    <ExternalLink className="h-4 w-4" />
-                                  </a>
-                                </Button>
-                              )}
+                        </Button>
+                        {job.job_apply_link && (
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleApplyAndWishlist(job)}
+                            disabled={addingToWishlist === job.job_id}
+                            className="flex items-center gap-2"
+                          >
+                            {addingToWishlist === job.job_id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <ExternalLink className="h-4 w-4" />
+                            )}
+                            Apply & Add to Tracker
+                          </Button>
+                        )}
                             </div>
                           </div>
                           
@@ -453,15 +466,17 @@ const FindYourNextRole = () => {
                         </Button>
                         
                         {selectedJob.job_apply_link && (
-                          <Button className="flex items-center gap-2" asChild>
-                            <a 
-                              href={selectedJob.job_apply_link} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                            >
-                              Apply Now
+                          <Button 
+                            className="flex items-center gap-2"
+                            onClick={() => handleApplyAndWishlist(selectedJob)}
+                            disabled={addingToWishlist === selectedJob.job_id}
+                          >
+                            {addingToWishlist === selectedJob.job_id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
                               <ExternalLink className="h-4 w-4" />
-                            </a>
+                            )}
+                            Apply & Add to Tracker
                           </Button>
                         )}
                       </div>
