@@ -85,104 +85,104 @@ const Dashboard = () => {
   };
 
   // Fetch recent job applications and total count
-  useEffect(() => {
-    const fetchJobData = async () => {
-      if (!user) return;
+  const fetchJobData = async () => {
+    if (!user) return;
+    
+    try {
+      // Fetch recent jobs
+      const { data: recentData, error: recentError } = await supabase
+        .from('job_tracker')
+        .select('id, company_name, job_title, status, application_date, created_at')
+        .eq('user_id', user.id)
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recentError) throw recentError;
+      setRecentJobs(recentData || []);
+
+      // Fetch total job applications in process (excluding specific statuses)
+      const { count, error: countError } = await supabase
+        .from('job_tracker')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_archived', false)
+        .not('status', 'in', '("Wishlist","Not Selected","No Response","Archived")');
+
+      if (countError) throw countError;
+      setTotalJobApplications(count || 0);
+
+      // Fetch published blogs count
+      const { count: blogsCount, error: blogsError } = await supabase
+        .from('blogs')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_public', true);
+
+      if (blogsError) throw blogsError;
+      setPublishedBlogsCount(blogsCount || 0);
+
+      // Fetch saved cover letters count
+      const { count: coverLettersCount, error: coverLettersError } = await supabase
+        .from('saved_cover_letters')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (coverLettersError) throw coverLettersError;
+      setSavedCoverLettersCount(coverLettersCount || 0);
+
+      // Fetch saved README files count
+      const { count: readmeFilesCount, error: readmeFilesError } = await supabase
+        .from('saved_readme_files')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (readmeFilesError) throw readmeFilesError;
+      setSavedReadmeFilesCount(readmeFilesCount || 0);
+
+      // Fetch total job results count from job search history
+      const { count: jobResultsCount, error: jobResultsError } = await supabase
+        .from('job_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (jobResultsError) throw jobResultsError;
+      setTotalJobResultsCount(jobResultsCount || 0);
+
+      // Fetch job status counts
+      const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
+      const statusCounts = { 
+        wishlist: 0, 
+        applied: 0, 
+        interviewing: 0, 
+        negotiating: 0, 
+        accepted: 0,
+        not_selected: 0,
+        no_response: 0,
+        archived: 0
+      };
       
-      try {
-        // Fetch recent jobs
-        const { data: recentData, error: recentError } = await supabase
-          .from('job_tracker')
-          .select('id, company_name, job_title, status, application_date, created_at')
-          .eq('user_id', user.id)
-          .eq('is_archived', false)
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        if (recentError) throw recentError;
-        setRecentJobs(recentData || []);
-
-        // Fetch total job applications in process (excluding specific statuses)
-        const { count, error: countError } = await supabase
+      for (const status of statusTypes) {
+        const { count: statusCount, error: statusError } = await supabase
           .from('job_tracker')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
-          .eq('is_archived', false)
-          .not('status', 'in', '("Wishlist","Not Selected","No Response","Archived")');
+          .eq('status', status)
+          .eq('is_archived', status === 'archived');
 
-        if (countError) throw countError;
-        setTotalJobApplications(count || 0);
-
-        // Fetch published blogs count
-        const { count: blogsCount, error: blogsError } = await supabase
-          .from('blogs')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('is_public', true);
-
-        if (blogsError) throw blogsError;
-        setPublishedBlogsCount(blogsCount || 0);
-
-        // Fetch saved cover letters count
-        const { count: coverLettersCount, error: coverLettersError } = await supabase
-          .from('saved_cover_letters')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        if (coverLettersError) throw coverLettersError;
-        setSavedCoverLettersCount(coverLettersCount || 0);
-
-        // Fetch saved README files count
-        const { count: readmeFilesCount, error: readmeFilesError } = await supabase
-          .from('saved_readme_files')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        if (readmeFilesError) throw readmeFilesError;
-        setSavedReadmeFilesCount(readmeFilesCount || 0);
-
-        // Fetch total job results count from job search history
-        const { count: jobResultsCount, error: jobResultsError } = await supabase
-          .from('job_results')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        if (jobResultsError) throw jobResultsError;
-        setTotalJobResultsCount(jobResultsCount || 0);
-
-        // Fetch job status counts
-        const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
-        const statusCounts = { 
-          wishlist: 0, 
-          applied: 0, 
-          interviewing: 0, 
-          negotiating: 0, 
-          accepted: 0,
-          not_selected: 0,
-          no_response: 0,
-          archived: 0
-        };
-        
-        for (const status of statusTypes) {
-          const { count: statusCount, error: statusError } = await supabase
-            .from('job_tracker')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .eq('status', status)
-            .eq('is_archived', status === 'archived');
-
-          if (statusError) throw statusError;
-          statusCounts[status as keyof typeof statusCounts] = statusCount || 0;
-        }
-        
-        setJobStatusCounts(statusCounts);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setJobsLoading(false);
+        if (statusError) throw statusError;
+        statusCounts[status as keyof typeof statusCounts] = statusCount || 0;
       }
-    };
+      
+      setJobStatusCounts(statusCounts);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setJobsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchJobData();
   }, [user]);
 
@@ -192,11 +192,11 @@ const Dashboard = () => {
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
-  // Listen for real-time updates from Career Growth page
+  // Listen for real-time updates from Career Growth page and Job Tracker
   useEffect(() => {
     if (user) {
       const channel = supabase
-        .channel('dashboard-progress-sync')
+        .channel('dashboard-sync')
         .on(
           'postgres_changes',
           {
@@ -210,6 +210,19 @@ const Dashboard = () => {
             refreshLinkedInProgress();
             refreshNetworkProgress();
             refreshGitHubProgress();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'job_tracker',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh job data when job tracker is updated
+            fetchJobData();
           }
         )
         .subscribe();
