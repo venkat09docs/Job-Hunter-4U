@@ -535,7 +535,7 @@ const Dashboard = () => {
               <Card className="shadow-elegant">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Job Searches
+                    No of jobs in history
                   </CardTitle>
                   <Search className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
@@ -609,6 +609,39 @@ const Dashboard = () => {
                         className="bg-green-500 h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${(jobStatusCounts.accepted / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
                       ></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Activity Overview */}
+            <div className="mb-8">
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Activity Overview</CardTitle>
+                  <CardDescription>
+                    Your job search activity summary
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-primary mb-2">{profile?.total_job_searches || 0}</div>
+                      <div className="text-sm font-medium text-center">No of Job Searches</div>
+                      <div className="text-xs text-muted-foreground text-center">Times you searched for jobs</div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-primary mb-2">{totalJobResultsCount}</div>
+                      <div className="text-sm font-medium text-center">No of jobs in history</div>
+                      <div className="text-xs text-muted-foreground text-center">Total jobs found from searches</div>
+                    </div>
+                    
+                    <div className="flex flex-col items-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-primary mb-2">{recentJobs.length}</div>
+                      <div className="text-sm font-medium text-center">Recent Applications</div>
+                      <div className="text-xs text-muted-foreground text-center">Latest 5 applications</div>
                     </div>
                   </div>
                 </CardContent>
