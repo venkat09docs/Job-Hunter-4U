@@ -51,6 +51,7 @@ export default function CareerGrowth() {
   const [loading, setLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
 
   const githubProgress = getCompletionPercentage();
 
@@ -91,6 +92,15 @@ export default function CareerGrowth() {
 
       if (blogsError) throw blogsError;
       setPublishedBlogsCount(blogsCount || 0);
+
+      // Fetch saved README files count
+      const { count: readmeFilesCount, error: readmeFilesError } = await supabase
+        .from('saved_readme_files')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (readmeFilesError) throw readmeFilesError;
+      setSavedReadmeFilesCount(readmeFilesCount || 0);
     } catch (error) {
       console.error('Error fetching job and blog data:', error);
     }
@@ -320,11 +330,8 @@ export default function CareerGrowth() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <Progress value={githubProgress} className="h-2" />
-                    <div className="flex justify-between text-sm">
-                      <span>{githubProgress}% Complete</span>
-                      <span className="text-muted-foreground">Target: 80%</span>
-                    </div>
+                    <div className="text-2xl font-bold">{savedReadmeFilesCount}</div>
+                    <div className="text-sm text-muted-foreground">README files saved</div>
                   </div>
                 </CardContent>
               </Card>
