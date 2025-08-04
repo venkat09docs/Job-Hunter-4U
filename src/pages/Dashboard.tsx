@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -139,8 +139,17 @@ const Dashboard = () => {
         setTotalJobResultsCount(jobResultsCount || 0);
 
         // Fetch job status counts
-        const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted'];
-        const statusCounts = { wishlist: 0, applied: 0, interviewing: 0, negotiating: 0, accepted: 0 };
+        const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
+        const statusCounts = { 
+          wishlist: 0, 
+          applied: 0, 
+          interviewing: 0, 
+          negotiating: 0, 
+          accepted: 0,
+          not_selected: 0,
+          no_response: 0,
+          archived: 0
+        };
         
         for (const status of statusTypes) {
           const { count: statusCount, error: statusError } = await supabase
@@ -148,7 +157,7 @@ const Dashboard = () => {
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .eq('status', status)
-            .eq('is_archived', false);
+            .eq('is_archived', status === 'archived');
 
           if (statusError) throw statusError;
           statusCounts[status as keyof typeof statusCounts] = statusCount || 0;
