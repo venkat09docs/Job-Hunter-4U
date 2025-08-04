@@ -71,10 +71,10 @@ const Features = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-w-4xl mx-auto">
             {painPoints.map((pain, index) => (
-              <div key={index} className="bg-destructive/5 border border-destructive/20 rounded-lg p-4">
-                <p className="text-sm text-destructive font-medium">❌ {pain}</p>
+              <div key={index} className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 md:p-4">
+                <p className="text-xs md:text-sm text-destructive font-medium">❌ {pain}</p>
               </div>
             ))}
           </div>
@@ -94,15 +94,15 @@ const Features = () => {
         </div>
 
         {/* Features grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 group">
-              <div className="space-y-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="w-6 h-6 text-primary" />
+            <Card key={index} className="p-4 md:p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 group">
+              <div className="space-y-3 md:space-y-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-lg md:text-xl font-semibold">{feature.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground">{feature.description}</p>
               </div>
             </Card>
           ))}

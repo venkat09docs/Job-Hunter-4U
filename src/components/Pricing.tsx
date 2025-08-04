@@ -285,7 +285,7 @@ const Pricing = () => {
         </div>
 
         {/* Pricing cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
             <Card 
               key={index} 
@@ -372,20 +372,20 @@ const Pricing = () => {
           <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
             <h3 className="text-2xl font-bold mb-6">Why JobHunter Pro Users Get Hired Faster</h3>
             
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-success">94%</div>
-                <div className="text-sm text-muted-foreground">Resume ATS Pass Rate</div>
+            <div className="grid sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-2xl md:text-3xl font-bold text-success">94%</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Resume ATS Pass Rate</div>
                 <div className="text-xs text-muted-foreground">(vs 23% industry avg)</div>
               </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-primary">20+</div>
-                <div className="text-sm text-muted-foreground">AI Agents</div>
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-2xl md:text-3xl font-bold text-primary">20+</div>
+                <div className="text-xs md:text-sm text-muted-foreground">AI Agents</div>
                 <div className="text-xs text-muted-foreground">(5x Boost your Job Search)</div>
               </div>
-              <div className="space-y-2">
-                <div className="text-3xl font-bold text-warning">Live Job Board</div>
-                <div className="text-sm text-muted-foreground">Matching to Your Profile</div>
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-warning">Live Job Board</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Matching to Your Profile</div>
                 <div className="text-xs text-muted-foreground">(40% above market)</div>
               </div>
             </div>

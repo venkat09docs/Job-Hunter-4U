@@ -32,6 +32,9 @@ import CareerGrowth from "./pages/CareerGrowth";
 import LinkedInNetwork from "./pages/LinkedInNetwork";
 import FindYourNextRole from "./pages/FindYourNextRole";
 import BuildMyProfile from "./pages/BuildMyProfile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -232,6 +235,9 @@ const App = () => (
             />
             <Route path="/blogs" element={<PublicBlogs />} />
             <Route path="/profile/:slug" element={<PublicProfile />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

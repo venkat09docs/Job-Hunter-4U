@@ -12,11 +12,11 @@ const Hero = () => {
       
       {/* Hero content */}
       <div className="container relative z-10 px-4 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text content */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8 text-center lg:text-left">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent line-through opacity-60">
                   Rejected
@@ -26,7 +26,7 @@ const Hero = () => {
                   Hired
                 </span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                 <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join the Platform where already job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
@@ -38,18 +38,18 @@ const Hero = () => {
 
             {/* Stats with urgency */}
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-6">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 md:gap-6">
                 <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">1000+ Got Hired</span>
+                  <Users className="w-4 h-4 md:w-5 md:h-5 text-success" />
+                  <span className="text-xs md:text-sm font-medium">1000+ Got Hired</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">95% Success Rate</span>
+                  <Target className="w-4 h-4 md:w-5 md:h-5 text-success" />
+                  <span className="text-xs md:text-sm font-medium">95% Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Search className="w-5 h-5 text-success" />
-                  <span className="text-sm font-medium">3x Faster Hiring</span>
+                  <Search className="w-4 h-4 md:w-5 md:h-5 text-success" />
+                  <span className="text-xs md:text-sm font-medium">3x Faster Hiring</span>
                 </div>
               </div>
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
@@ -61,20 +61,21 @@ const Hero = () => {
 
             {/* CTA buttons with urgency */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   variant="hero" 
                   size="lg" 
-                  className="group animate-pulse"
+                  className="group animate-pulse w-full sm:w-auto"
                   onClick={() => navigate('/auth')}
                 >
                   Build Profile - for Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground">
                 <span>⭐⭐⭐⭐⭐</span>
-                <span>4.6/5 and 13 Years of Trust</span>
+                <span className="hidden sm:inline">4.6/5 and 13 Years of Trust</span>
+                <span className="sm:hidden">4.6/5 Trust Score</span>
                 <span>•</span>
                 <span className="text-success">No credit card required</span>
               </div>
