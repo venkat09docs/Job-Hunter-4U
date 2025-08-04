@@ -261,19 +261,33 @@ export default function CareerGrowth() {
             <CardDescription>Your comprehensive career readiness assessment</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center gap-8 mb-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
-                <AvatarFallback className="text-lg">
-                  {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="text-center">
-                <div className="text-6xl font-bold text-primary mb-2">{getOverallScore()}%</div>
-                <TrendingUp className="h-12 w-12 text-green-500 mx-auto" />
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              {/* Profile Picture Section */}
+              <div className="flex flex-col items-center space-y-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
+                  <AvatarFallback className="text-2xl">
+                    {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                  <p className="font-semibold text-lg">{profile?.full_name || profile?.username || 'Job Hunter'}</p>
+                  <p className="text-sm text-muted-foreground">Career Professional</p>
+                </div>
+              </div>
+              
+              {/* Statistics Section */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-6xl font-bold text-primary">{getOverallScore()}%</div>
+                  <TrendingUp className="h-12 w-12 text-green-500" />
+                </div>
+                <Progress value={getOverallScore()} className="w-full max-w-sm h-3" />
+                <p className="text-sm text-muted-foreground text-center">
+                  Based on Resume, LinkedIn, GitHub & Network progress
+                </p>
               </div>
             </div>
-            <Progress value={getOverallScore()} className="w-full max-w-md mx-auto h-3" />
           </CardContent>
         </Card>
 
