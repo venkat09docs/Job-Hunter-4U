@@ -43,7 +43,7 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
 // Tool IDs for fetching notes
 const GIT_LINKEDIN_TOOL_ID = 'd48e085e-51bf-4b89-a795-371d2f7ae6b3'; // 7. Build Git & LinkedIn Profiles
 const EFFECTIVE_LINKEDIN_TOOL_ID = '97a32a5a-9506-4e06-a5cb-ca9477e54bf8'; // 8. Creating an effective LinkedIn Profile
-const RESUME_BUILDER_TOOL_ID = 'c8b8f3e0-4c2a-4b8a-9f5e-1a2b3c4d5e6f'; // Resume Builder - Achievements
+const RESUME_BUILDER_TOOL_ID = '55b57cf9-4781-4b80-8e40-eb154420ce49'; // 2. Resume Builder - Achievements
 
 const CATEGORY_TIPS: Record<string, string[]> = {
   'Profile Basics': [
@@ -223,7 +223,7 @@ const LinkedInOptimization = () => {
     ];
     
     if (category === 'Experience') {
-      baseTools.push({ id: RESUME_BUILDER_TOOL_ID, name: 'Resume Builder - Achievements', notes: resumeBuilderNotes });
+      baseTools.push({ id: RESUME_BUILDER_TOOL_ID, name: '2. Resume Builder - Achievements', notes: resumeBuilderNotes });
     }
     
     return baseTools;
