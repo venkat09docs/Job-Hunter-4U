@@ -413,8 +413,8 @@ export default function CareerGrowth() {
                     <div key={week.week} className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold">Week of {week.week}</h3>
-                        <Badge variant={index === weeklyMetrics.length - 1 ? "default" : "secondary"}>
-                          {index === weeklyMetrics.length - 1 ? "Current" : `${weeklyMetrics.length - 1 - index} week${weeklyMetrics.length - 1 - index > 1 ? 's' : ''} ago`}
+                        <Badge variant={index === 0 ? "default" : "secondary"}>
+                          {index === 0 ? "Current" : `${index + 1} week${index > 0 ? 's' : ''} ago`}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -475,8 +475,8 @@ export default function CareerGrowth() {
                     <div key={day.date} className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold">{day.date}</h3>
-                        <Badge variant={index === dailyMetrics.length - 1 ? "default" : "outline"}>
-                          {index === dailyMetrics.length - 1 ? "Today" : `${dailyMetrics.length - 1 - index} day${dailyMetrics.length - 1 - index > 1 ? 's' : ''} ago`}
+                        <Badge variant={index === 0 ? "default" : "outline"}>
+                          {index === 0 ? "Today" : `${index + 1} day${index > 0 ? 's' : ''} ago`}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

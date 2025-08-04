@@ -143,7 +143,7 @@ export const useDailyProgress = () => {
       // Get the most recent snapshot for this week (or average if multiple)
       if (weekSnapshots.length > 0) {
         const mostRecent = weekSnapshots[0]; // Already sorted by date desc
-        last4Weeks.unshift({
+        last4Weeks.push({
           week: format(subDays(new Date(), weekIndex * 7), 'MMM dd'),
           resumeProgress: mostRecent.resume_progress,
           linkedinProgress: mostRecent.linkedin_progress,
@@ -157,7 +157,7 @@ export const useDailyProgress = () => {
         });
       } else {
         // If no data for this week, use placeholder
-        last4Weeks.unshift({
+        last4Weeks.push({
           week: format(subDays(new Date(), weekIndex * 7), 'MMM dd'),
           resumeProgress: 0,
           linkedinProgress: 0,
@@ -187,7 +187,7 @@ export const useDailyProgress = () => {
       resumeOpens: snapshot.total_resume_opens,
       jobSearches: snapshot.total_job_searches,
       aiQueries: snapshot.total_ai_queries,
-    })).reverse(); // Reverse to show oldest first
+    })); // Show latest dates first (no reverse)
   };
 
   return {
