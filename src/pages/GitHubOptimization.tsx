@@ -550,6 +550,15 @@ ${interests}
                         <p className="text-xs text-muted-foreground">
                           Use the AI tool to create and save notes
                         </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => navigate('/dashboard/digital-career-hub')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Go to Tool
+                        </Button>
                       </div>
                     </div>
                   )}
