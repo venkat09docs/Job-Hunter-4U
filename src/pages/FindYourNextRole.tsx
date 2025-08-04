@@ -295,7 +295,6 @@ const FindYourNextRole = () => {
                     <SelectItem value="under_3_years_experience">Under 3 years experience</SelectItem>
                     <SelectItem value="more_than_3_years_experience">More than 3 years experience</SelectItem>
                     <SelectItem value="no_experience">No experience</SelectItem>
-                    <SelectItem value="no_degree">No degree required</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -335,7 +334,7 @@ const FindYourNextRole = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="num_pages">Number of Pages</Label>
+                <Label htmlFor="num_pages">Number of Records (Ex: 1 = 10, 2 = 20)</Label>
                 <Input
                   id="num_pages"
                   type="number"
