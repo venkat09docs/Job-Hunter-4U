@@ -540,9 +540,9 @@ const Dashboard = () => {
                     </div>
                     
                     <div className="flex flex-col items-center p-4 border rounded-lg">
-                      <div className="text-2xl font-bold text-primary mb-2">{recentJobs.length}</div>
+                      <div className="text-2xl font-bold text-primary mb-2">{totalJobApplications}</div>
                       <div className="text-sm font-medium text-center">Recent Applications</div>
-                      <div className="text-xs text-muted-foreground text-center">Latest 5 applications</div>
+                      <div className="text-xs text-muted-foreground text-center">Total job applications</div>
                     </div>
                   </div>
                 </CardContent>
