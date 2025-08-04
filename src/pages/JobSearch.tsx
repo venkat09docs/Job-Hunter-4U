@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,23 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
+
+interface SavedJobResult {
+  id: string;
+  job_id: string;
+  job_title: string;
+  employer_name: string;
+  job_location: string;
+  job_description: string;
+  job_apply_link: string;
+  job_posted_at: string;
+  job_min_salary?: number;
+  job_max_salary?: number;
+  job_salary_period?: string;
+  job_employment_type?: string;
+  search_query: any;
+  created_at: string;
+}
 
 interface JobResult {
   id: string;
@@ -47,6 +64,8 @@ const JobSearch = () => {
   
   const [searching, setSearching] = useState(false);
   const [jobResults, setJobResults] = useState<JobResult[]>([]);
+  const [savedJobs, setSavedJobs] = useState<SavedJobResult[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showPricing, setShowPricing] = useState(false);
   const [lastSearchTime, setLastSearchTime] = useState<Date | null>(null);
 
@@ -59,129 +78,77 @@ const JobSearch = () => {
     { value: "executive", label: "Executive Level" }
   ];
 
+  const loadSavedJobs = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('job_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setSavedJobs(data || []);
+    } catch (error) {
+      console.error('Error loading saved jobs:', error);
+      toast({
+        title: "Error loading jobs",
+        description: "Could not load your saved job results.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterSavedJobs = () => {
+    if (!filters.jobTitle.trim() && !filters.location.trim() && !filters.experienceLevel) {
+      return savedJobs;
+    }
+
+    return savedJobs.filter(job => {
+      const titleMatch = !filters.jobTitle.trim() || 
+        job.job_title.toLowerCase().includes(filters.jobTitle.toLowerCase());
+      
+      const locationMatch = !filters.location.trim() || 
+        job.job_location.toLowerCase().includes(filters.location.toLowerCase());
+      
+      // For experience level, we would need to check the search_query
+      const experienceMatch = !filters.experienceLevel || 
+        job.search_query?.job_requirements === filters.experienceLevel;
+
+      return titleMatch && locationMatch && experienceMatch;
+    });
+  };
+
+  const formatSalary = (job: SavedJobResult) => {
+    if (job.job_min_salary && job.job_max_salary) {
+      return `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`;
+    } else if (job.job_min_salary) {
+      return `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`;
+    } else if (job.job_max_salary) {
+      return `Up to $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadSavedJobs();
+    }
+  }, [user]);
+
+  const filteredJobs = filterSavedJobs();
+
   const handleInputChange = (field: keyof SearchFilters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [field]: value
     }));
   };
-
-  const logJobSearchToSupabase = async (searchQuery: SearchFilters, results: JobResult[]) => {
-    try {
-      // Log to job_searches table (commented out until table types are updated)
-      console.log('Job search logged:', {
-        user_id: user?.id,
-        search_query: searchQuery,
-        results_count: results.length,
-        results: results,
-        searched_at: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('Error logging to Supabase:', error);
-    }
-  };
-
-  const searchJobs = async () => {
-    if (!user || !filters.jobTitle.trim()) {
-      toast({
-        title: "Missing information",
-        description: "Please enter a job title to search",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!hasValidSubscription) {
-      toast({
-        title: "Subscription Required",
-        description: "You need an active subscription to search jobs. Please upgrade your plan.",
-        variant: "destructive",
-      });
-      setShowPricing(true);
-      return;
-    }
-
-    setSearching(true);
-
-    try {
-      // Call n8n webhook for job search
-      const { data, error } = await supabase.functions.invoke('job-search', {
-        body: {
-          jobTitle: filters.jobTitle,
-          location: filters.location,
-          experienceLevel: filters.experienceLevel,
-          userId: user.id
-        }
-      });
-
-      if (error) throw error;
-
-      // Generate mock job results for demonstration
-      const mockResults: JobResult[] = [
-        {
-          id: "1",
-          title: filters.jobTitle,
-          company: "TechCorp Inc.",
-          location: filters.location || "Remote",
-          description: "Exciting opportunity to work with cutting-edge technology...",
-          salary: "$80,000 - $120,000",
-          jobType: "Full-time",
-          postedDate: "2 days ago",
-          applyUrl: "https://example.com/apply/1"
-        },
-        {
-          id: "2",
-          title: `Senior ${filters.jobTitle}`,
-          company: "Innovation Labs",
-          location: filters.location || "New York, NY",
-          description: "Join our team of experts and make a real impact...",
-          salary: "$100,000 - $150,000",
-          jobType: "Full-time",
-          postedDate: "1 week ago",
-          applyUrl: "https://example.com/apply/2"
-        },
-        {
-          id: "3",
-          title: `${filters.jobTitle} Specialist`,
-          company: "StartupXYZ",
-          location: filters.location || "San Francisco, CA",
-          description: "Fast-paced startup environment with great growth opportunities...",
-          salary: "$70,000 - $100,000",
-          jobType: "Full-time",
-          postedDate: "3 days ago",
-          applyUrl: "https://example.com/apply/3"
-        }
-      ];
-
-      setJobResults(mockResults);
-      setLastSearchTime(new Date());
-
-      // Log search to Supabase
-      await logJobSearchToSupabase(filters, mockResults);
-
-      // Increment analytics
-      await incrementAnalytics('job_search');
-      await refreshProfile();
-
-      toast({
-        title: "Job search completed!",
-        description: `Found ${mockResults.length} jobs using your active subscription.`,
-      });
-
-    } catch (error: any) {
-      console.error('Error searching jobs:', error);
-      toast({
-        title: "Error searching jobs",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const isSearchDisabled = !filters.jobTitle.trim() || !hasValidSubscription || searching;
 
   return (
     <SidebarProvider>
@@ -192,16 +159,10 @@ const JobSearch = () => {
             <div>
               <h1 className="text-3xl font-bold">Job Search</h1>
               <p className="text-muted-foreground">
-                Find your next opportunity with AI-powered job matching
+                View and filter your saved job results from "Find Your Next Role"
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              <span className="font-medium">
-                Subscription Active
-              </span>
-            </div>
           </div>
 
           {/* Search Filters */}
@@ -212,7 +173,7 @@ const JobSearch = () => {
                 Search Filters
               </CardTitle>
               <CardDescription>
-                Define your search criteria. Requires active subscription.
+                Filter through your saved job results from searches
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -254,109 +215,90 @@ const JobSearch = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">Access:</span>
-                  <Badge variant={hasValidSubscription ? "default" : "destructive"}>
-                    {hasValidSubscription ? "Active Subscription" : "Subscription Required"}
-                  </Badge>
-                </div>
-                
-                <div className="flex gap-2">
-                  {!hasValidSubscription && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowPricing(true)}
-                    >
-                      Upgrade Plan
-                    </Button>
-                  )}
-                  
-                  <Button
-                    onClick={searchJobs}
-                    disabled={isSearchDisabled}
-                    className="min-w-32"
-                  >
-                    {searching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {searching ? "Searching..." : "Find Jobs"}
-                  </Button>
-                </div>
+              <div className="flex items-center justify-end pt-4">
+                <Button
+                  onClick={loadSavedJobs}
+                  disabled={loading}
+                  className="min-w-32"
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {loading ? "Loading..." : "Refresh Jobs"}
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Search Results */}
-          {jobResults.length > 0 && (
+          {/* Saved Job Results */}
+          {filteredJobs.length > 0 && (
             <div className="space-y-4">
               <Separator />
               
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Job Results</h2>
+                <h2 className="text-2xl font-bold">Saved Job Results</h2>
                 <div className="text-sm text-muted-foreground">
-                  {jobResults.length} jobs found
-                  {lastSearchTime && (
-                    <span className="ml-2">
-                      • Searched {lastSearchTime.toLocaleString()}
-                    </span>
-                  )}
+                  {filteredJobs.length} jobs found from your searches
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4">
-                {jobResults.map((job) => (
+                {filteredJobs.map((job) => (
                   <Card key={job.id} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 space-y-3">
                           <div>
-                            <h3 className="text-xl font-semibold">{job.title}</h3>
+                            <h3 className="text-xl font-semibold">{job.job_title}</h3>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                               <div className="flex items-center gap-1">
                                 <Building2 className="h-4 w-4" />
-                                {job.company}
+                                {job.employer_name}
                               </div>
                               <div className="flex items-center gap-1">
                                 <MapPin className="h-4 w-4" />
-                                {job.location}
+                                {job.job_location}
                               </div>
-                              {job.jobType && (
+                              {job.job_employment_type && (
                                 <div className="flex items-center gap-1">
                                   <Briefcase className="h-4 w-4" />
-                                  {job.jobType}
+                                  {job.job_employment_type}
                                 </div>
                               )}
                             </div>
                           </div>
 
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {job.description}
+                            {job.job_description}
                           </p>
 
                           <div className="flex items-center gap-3">
-                            {job.salary && (
-                              <Badge variant="secondary">{job.salary}</Badge>
+                            {formatSalary(job) && (
+                              <Badge variant="secondary">{formatSalary(job)}</Badge>
                             )}
-                            {job.postedDate && (
+                            {job.job_posted_at && (
                               <span className="text-xs text-muted-foreground">
-                                Posted {job.postedDate}
+                                Posted {job.job_posted_at}
                               </span>
                             )}
+                            <span className="text-xs text-muted-foreground">
+                              Saved {new Date(job.created_at).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
 
                         <div className="ml-4">
-                          <Button asChild>
-                            <a
-                              href={job.applyUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2"
-                            >
-                              Apply Now
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
+                          {job.job_apply_link && (
+                            <Button asChild>
+                              <a
+                                href={job.job_apply_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2"
+                              >
+                                Apply Now
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -367,12 +309,12 @@ const JobSearch = () => {
           )}
 
           {/* No results message */}
-          {jobResults.length === 0 && lastSearchTime && (
+          {filteredJobs.length === 0 && !loading && (
             <div className="text-center py-12">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No jobs found</h3>
+              <h3 className="text-lg font-medium">No saved jobs found</h3>
               <p className="text-muted-foreground">
-                Try adjusting your search criteria or location
+                Search for jobs in "Find Your Next Role" to see them here
               </p>
             </div>
           )}

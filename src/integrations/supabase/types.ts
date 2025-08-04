@@ -398,6 +398,63 @@ export type Database = {
         }
         Relationships: []
       }
+      job_results: {
+        Row: {
+          created_at: string
+          employer_name: string
+          id: string
+          job_apply_link: string | null
+          job_description: string | null
+          job_employment_type: string | null
+          job_id: string
+          job_location: string | null
+          job_max_salary: number | null
+          job_min_salary: number | null
+          job_posted_at: string | null
+          job_salary_period: string | null
+          job_title: string
+          search_query: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          employer_name: string
+          id?: string
+          job_apply_link?: string | null
+          job_description?: string | null
+          job_employment_type?: string | null
+          job_id: string
+          job_location?: string | null
+          job_max_salary?: number | null
+          job_min_salary?: number | null
+          job_posted_at?: string | null
+          job_salary_period?: string | null
+          job_title: string
+          search_query: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          employer_name?: string
+          id?: string
+          job_apply_link?: string | null
+          job_description?: string | null
+          job_employment_type?: string | null
+          job_id?: string
+          job_location?: string | null
+          job_max_salary?: number | null
+          job_min_salary?: number | null
+          job_posted_at?: string | null
+          job_salary_period?: string | null
+          job_title?: string
+          search_query?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_searches: {
         Row: {
           created_at: string

@@ -54,6 +54,46 @@ const FindYourNextRole = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const saveJobResultsToDatabase = async (jobResults: JobResult[], searchForm: JobSearchForm) => {
+    if (!user) return;
+
+    try {
+      const jobData = jobResults.map(job => ({
+        user_id: user.id,
+        job_id: job.job_id,
+        job_title: job.job_title,
+        employer_name: job.employer_name,
+        job_location: job.job_location || '',
+        job_description: job.job_description || '',
+        job_apply_link: job.job_apply_link || '',
+        job_posted_at: job.job_posted_at || '',
+        job_min_salary: job.job_min_salary || null,
+        job_max_salary: job.job_max_salary || null,
+        job_salary_period: job.job_salary_period || null,
+        job_employment_type: '', // Add this if available in the job data
+        search_query: {
+          query: searchForm.query,
+          num_pages: searchForm.num_pages,
+          date_posted: searchForm.date_posted,
+          country: searchForm.country,
+          language: searchForm.language,
+          job_requirements: searchForm.job_requirements
+        }
+      }));
+
+      const { error } = await supabase
+        .from('job_results')
+        .insert(jobData);
+
+      if (error) {
+        console.error('Error saving job results:', error);
+        // Don't show error to user as this is background operation
+      }
+    } catch (error) {
+      console.error('Error saving job results:', error);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setJobs([]);
@@ -76,6 +116,10 @@ const FindYourNextRole = () => {
 
       if (data && data.success && data.data && data.data.jobs) {
         setJobs(data.data.jobs);
+        
+        // Save all job results to database
+        await saveJobResultsToDatabase(data.data.jobs, formData);
+        
         toast({
           title: "Jobs found successfully",
           description: `Found ${data.data.jobs.length} job opportunities for you.`,
