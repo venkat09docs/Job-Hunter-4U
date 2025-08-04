@@ -50,7 +50,8 @@ const Auth = () => {
           emailRedirectTo: redirectUrl,
           data: {
             username: username,
-            full_name: username
+            full_name: username,
+            'Display Name': username
           }
         }
       });

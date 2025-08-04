@@ -1,3 +1,4 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/H6as7qxVFG5F9DoBoLVM/webhook-trigger/5e00d2ca-8b6a-4697-99a6-9932ddc8ca4a'
@@ -11,9 +12,22 @@ Deno.serve(async (req) => {
   try {
     console.log('User signup webhook triggered')
     
-    const { user } = await req.json()
+    // Initialize Supabase client to listen for notifications
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // This can be called directly or via database notification
+    const body = await req.json()
     
-    if (!user) {
+    let userData;
+    if (body.user) {
+      // Direct call format
+      userData = body.user
+    } else if (body.user_id) {
+      // Notification format
+      userData = body
+    } else {
       console.error('No user data provided')
       return new Response(
         JSON.stringify({ error: 'No user data provided' }),
@@ -24,18 +38,18 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('Processing webhook for user:', user.id)
+    console.log('Processing webhook for user:', userData.user_id || userData.id)
 
     // Prepare user details for webhook
     const webhookPayload = {
-      user_id: user.id,
-      email: user.email,
-      full_name: user.raw_user_meta_data?.full_name || user.email,
-      username: user.raw_user_meta_data?.username || '',
-      created_at: user.created_at,
-      email_verified: user.email_confirmed_at ? true : false,
-      phone: user.phone || '',
-      metadata: user.raw_user_meta_data || {}
+      user_id: userData.user_id || userData.id,
+      email: userData.email,
+      full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email,
+      username: userData.username || userData.raw_user_meta_data?.username || '',
+      created_at: userData.created_at,
+      email_verified: userData.email_confirmed_at ? true : false,
+      phone: userData.phone || '',
+      metadata: userData.raw_user_meta_data || {}
     }
 
     console.log('Sending webhook payload:', webhookPayload)
