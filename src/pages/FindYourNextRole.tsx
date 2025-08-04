@@ -83,9 +83,13 @@ const FindYourNextRole = () => {
         }
       }));
 
+      // Use upsert to prevent duplicates based on user_id and job_id
       const { error } = await supabase
         .from('job_results')
-        .insert(jobData);
+        .upsert(jobData, { 
+          onConflict: 'user_id,job_id',
+          ignoreDuplicates: false 
+        });
 
       if (error) {
         console.error('Error saving job results:', error);
