@@ -228,8 +228,7 @@ const LinkedInOptimization = () => {
   };
 
   const navigateToTool = (toolId: string, toolName: string) => {
-    const baseUrl = window.location.origin;
-    const toolUrl = `${baseUrl}/digital-career-hub?toolId=${toolId}`;
+    const toolUrl = `/dashboard/digital-career-hub?toolId=${toolId}`;
     window.open(toolUrl, '_blank');
   };
 
