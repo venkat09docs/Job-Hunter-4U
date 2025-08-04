@@ -216,6 +216,19 @@ const LinkedInOptimization = () => {
     }
   };
 
+  const getToolsForCategory = (category: string) => {
+    const baseTools = [
+      { id: GIT_LINKEDIN_TOOL_ID, name: 'Build Git & LinkedIn Profiles', notes: gitLinkedInNotes },
+      { id: EFFECTIVE_LINKEDIN_TOOL_ID, name: 'Creating an effective LinkedIn Profile', notes: effectiveLinkedInNotes }
+    ];
+    
+    if (category === 'Experience') {
+      baseTools.push({ id: RESUME_BUILDER_TOOL_ID, name: 'Resume Builder - Achievements', notes: resumeBuilderNotes });
+    }
+    
+    return baseTools;
+  };
+
   const getCombinedNotes = (category?: string) => {
     if (category === 'Experience') {
       return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...resumeBuilderNotes];
@@ -460,73 +473,73 @@ const LinkedInOptimization = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {hasNotes(selectedCategory) ? (
-                    <ScrollArea className="h-96">
-                      <div className="space-y-4">
-                        {getCombinedNotes(selectedCategory).map((chat, index) => (
-                          <div key={`${chat.id}-${index}`} className="border rounded-lg p-4 bg-muted/50">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm truncate">{chat.title}</h4>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => copyToClipboard(chat.messages[0]?.content || '')}
-                                className="h-8 w-8 p-0 shrink-0"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
+                  <div className="space-y-6">
+                    {/* Display notes from each tool individually */}
+                    {getToolsForCategory(selectedCategory).map((tool) => (
+                      <div key={tool.id} className="space-y-3">
+                        <div className="flex items-center gap-2 border-b pb-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <h4 className="font-medium text-sm">{tool.name}</h4>
+                        </div>
+                        
+                        {tool.notes.length > 0 ? (
+                          <ScrollArea className="h-48">
+                            <div className="space-y-3">
+                              {tool.notes.map((chat, index) => (
+                                <div key={`${chat.id}-${index}`} className="border rounded-lg p-3 bg-muted/30">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h5 className="font-medium text-xs truncate">{chat.title}</h5>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(chat.messages[0]?.content || '')}
+                                      className="h-6 w-6 p-0 shrink-0"
+                                    >
+                                      <Copy className="h-2.5 w-2.5" />
+                                    </Button>
+                                  </div>
+                                  <ScrollArea className="h-16">
+                                    <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+                                      {chat.messages[0]?.content || 'No content'}
+                                    </p>
+                                  </ScrollArea>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {new Date(chat.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              ))}
                             </div>
-                            <ScrollArea className="h-24">
-                              <p className="text-xs text-muted-foreground whitespace-pre-wrap">
-                                {chat.messages[0]?.content || 'No content'}
-                              </p>
-                            </ScrollArea>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {new Date(chat.created_at).toLocaleDateString()}
+                          </ScrollArea>
+                        ) : (
+                          <div className="text-center py-4 bg-muted/20 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-2">
+                              "{tool.name}" tool is not having saved Notes
                             </p>
                           </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="text-center py-6">
-                      <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mb-4">
-                        No notes available from {selectedCategory === 'Experience' ? 'LinkedIn and Resume tools' : 'LinkedIn profile tools'}
-                      </p>
-                      <div className="space-y-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigateToTool(GIT_LINKEDIN_TOOL_ID, 'Build Git & LinkedIn Profiles')}
-                          className="w-full text-xs flex items-center justify-center gap-2"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Open "Build Git & LinkedIn Profiles" Tool</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigateToTool(EFFECTIVE_LINKEDIN_TOOL_ID, 'Creating an effective LinkedIn Profile')}
-                          className="w-full text-xs flex items-center justify-center gap-2"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>Open "Creating an effective LinkedIn Profile" Tool</span>
-                        </Button>
-                        {selectedCategory === 'Experience' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigateToTool(RESUME_BUILDER_TOOL_ID, 'Resume Builder - Achievements')}
-                            className="w-full text-xs flex items-center justify-center gap-2"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            <span>Open "Resume Builder - Achievements" Tool</span>
-                          </Button>
                         )}
                       </div>
+                    ))}
+                    
+                    {/* Tool Links Section */}
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4 text-primary" />
+                        Access Tools
+                      </h4>
+                      {getToolsForCategory(selectedCategory).map((tool) => (
+                        <Button
+                          key={tool.id}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigateToTool(tool.id, tool.name)}
+                          className="w-full text-xs flex items-center justify-center gap-2"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>Open "{tool.name}" Tool</span>
+                        </Button>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             )}
