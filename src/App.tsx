@@ -35,6 +35,7 @@ import BuildMyProfile from "./pages/BuildMyProfile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
+import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -129,6 +130,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ManageSubscriptions />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/institute-membership-plans" 
+              element={
+                <ProtectedRoute>
+                  <InstituteMembershipPlans />
                 </ProtectedRoute>
               } 
             />
