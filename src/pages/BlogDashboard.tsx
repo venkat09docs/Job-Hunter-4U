@@ -223,9 +223,9 @@ export default function BlogDashboard() {
                 <h1 className="text-3xl font-bold">Blog Dashboard</h1>
                 <p className="text-muted-foreground">Manage your blog posts</p>
                 <div className="mt-2">
-                  <Button variant="outline" onClick={() => window.open('/blogs', '_blank')}>
+                  <Button variant="outline" onClick={() => window.open(`/blogs?userId=${user?.id}`, '_blank')}>
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    View Public Blogs
+                    View Blog Posts
                   </Button>
                 </div>
               </div>

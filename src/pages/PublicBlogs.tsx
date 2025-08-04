@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface Blog {
   id: string;
@@ -29,6 +29,8 @@ type ViewMode = 'grid' | 'list';
 type SortBy = 'newest' | 'oldest' | 'title';
 
 export default function PublicBlogs() {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId');
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
@@ -38,20 +40,29 @@ export default function PublicBlogs() {
   const [filteredBlogs, setFilteredBlogs] = useState<Blog[]>([]);
 
   useEffect(() => {
-    fetchPublicBlogs();
-  }, []);
+    fetchBlogs();
+  }, [userId]);
 
   useEffect(() => {
     filterAndSortBlogs();
   }, [blogs, searchTerm, sortBy]);
 
-  const fetchPublicBlogs = async () => {
+  const fetchBlogs = async () => {
     try {
-      // Fetch public blogs
-      const { data: blogsData, error: blogsError } = await supabase
+      // Build query based on whether we're filtering by user
+      let query = supabase
         .from('blogs')
-        .select('*')
-        .eq('is_public', true)
+        .select('*');
+      
+      if (userId) {
+        // Show all blogs for specific user (both public and private)
+        query = query.eq('user_id', userId);
+      } else {
+        // Show only public blogs for general viewing
+        query = query.eq('is_public', true);
+      }
+      
+      const { data: blogsData, error: blogsError } = await query
         .order('created_at', { ascending: false });
 
       if (blogsError) throw blogsError;
@@ -143,9 +154,14 @@ export default function PublicBlogs() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Public Blogs</h1>
+              <h1 className="text-3xl font-bold">
+                {userId ? 'My Blog Posts' : 'Public Blogs'}
+              </h1>
               <p className="text-muted-foreground mt-1">
-                Discover stories and insights from our community
+                {userId 
+                  ? 'Your published blog posts' 
+                  : 'Discover stories and insights from our community'
+                }
               </p>
             </div>
             <Link to="/">
@@ -242,7 +258,9 @@ export default function PublicBlogs() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="secondary">Public</Badge>
+                    <Badge variant={blog.is_public ? "default" : "secondary"}>
+                      {userId ? (blog.is_public ? "Public" : "Private") : "Public"}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
