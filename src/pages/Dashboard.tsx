@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
 import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
@@ -286,6 +288,31 @@ const Dashboard = () => {
               <p className="text-muted-foreground">
                 Here's your personalized dashboard. Track your progress and manage your job search.
               </p>
+            </div>
+
+            {/* Overall Career Development Score */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">Overall Career Development Score</CardTitle>
+                  <CardDescription>Your comprehensive career readiness assessment</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-center gap-8 mb-4">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
+                      <AvatarFallback className="text-lg">
+                        {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-center">
+                      <div className="text-6xl font-bold text-primary mb-2">{getOverallCareerScore()}%</div>
+                      <TrendingUp className="h-12 w-12 text-green-500 mx-auto" />
+                    </div>
+                  </div>
+                  <Progress value={getOverallCareerScore()} className="w-full max-w-md mx-auto h-3" />
+                </CardContent>
+              </Card>
             </div>
 
             {/* My Profile Status */}

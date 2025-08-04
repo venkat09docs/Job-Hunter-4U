@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -259,10 +260,18 @@ export default function CareerGrowth() {
             <CardTitle className="text-2xl">Overall Career Development Score</CardTitle>
             <CardDescription>Your comprehensive career readiness assessment</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="text-6xl font-bold text-primary">{getOverallScore()}%</div>
-              <TrendingUp className="h-12 w-12 text-green-500" />
+          <CardContent>
+            <div className="flex items-center justify-center gap-8 mb-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
+                <AvatarFallback className="text-lg">
+                  {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-center">
+                <div className="text-6xl font-bold text-primary mb-2">{getOverallScore()}%</div>
+                <TrendingUp className="h-12 w-12 text-green-500 mx-auto" />
+              </div>
             </div>
             <Progress value={getOverallScore()} className="w-full max-w-md mx-auto h-3" />
           </CardContent>
