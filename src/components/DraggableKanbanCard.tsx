@@ -60,37 +60,42 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only trigger card click if not clicking on the select dropdown and not dragging
+    if (!(e.target as HTMLElement).closest('[role="combobox"]') && !isDragging) {
+      onCardClick(job);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
-      {...attributes}
-      className={`cursor-grab active:cursor-grabbing ${isDragging ? 'z-50' : ''}`}
+      className={`${isDragging ? 'z-50' : ''}`}
     >
       <Card 
         className={`p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background ${
           showWarning ? 'ring-2 ring-orange-300' : ''
         }`}
-        onClick={(e) => {
-          // Only trigger card click if not clicking on the select dropdown
-          if (!(e.target as HTMLElement).closest('[role="combobox"]')) {
-            onCardClick(job);
-          }
-        }}
+        onClick={handleCardClick}
       >
         <div className="space-y-1">
-          <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-          <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
-          <div className="text-[9px] sm:text-xs text-muted-foreground">
-            {new Date(job.application_date).toLocaleDateString()}
+          {/* Draggable area - only these elements trigger drag */}
+          <div {...listeners} {...attributes} style={{ cursor: 'grab' }} className="select-none">
+            <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
+            <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
+            <div className="text-[9px] sm:text-xs text-muted-foreground">
+              {new Date(job.application_date).toLocaleDateString()}
+            </div>
+            {job.location && (
+              <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
+            )}
+            {job.salary_range && (
+              <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
+            )}
           </div>
-          {job.location && (
-            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
-          )}
-          {job.salary_range && (
-            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
-          )}
+          
+          {/* Status selector - not draggable */}
           <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
             {hasActiveSubscription ? (
               <Select
