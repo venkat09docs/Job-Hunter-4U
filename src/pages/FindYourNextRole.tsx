@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 
 interface JobResult {
@@ -36,6 +37,7 @@ interface JobSearchForm {
 
 const FindYourNextRole = () => {
   const { user } = useAuth();
+  const { incrementAnalytics } = useProfile();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
     num_pages: "1",
@@ -99,6 +101,9 @@ const FindYourNextRole = () => {
     setJobs([]);
 
     try {
+      // Track job search analytics
+      await incrementAnalytics('job_search');
+
       const { data, error } = await supabase.functions.invoke('job-search', {
         body: {
           query: formData.query,
