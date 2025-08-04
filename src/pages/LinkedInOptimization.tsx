@@ -228,7 +228,8 @@ const LinkedInOptimization = () => {
   };
 
   const navigateToTool = (toolId: string, toolName: string) => {
-    const toolUrl = `/digital-career-hub?toolId=${toolId}`;
+    const baseUrl = window.location.origin;
+    const toolUrl = `${baseUrl}/digital-career-hub?toolId=${toolId}`;
     window.open(toolUrl, '_blank');
   };
 
