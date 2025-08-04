@@ -515,111 +515,12 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <Card className="shadow-elegant">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    No of Job Searches
-                  </CardTitle>
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{profile?.total_job_searches || 0}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Times you searched for jobs
-                  </p>
-                </CardContent>
-              </Card>
 
-              <Card className="shadow-elegant">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    No of jobs in history
-                  </CardTitle>
-                  <Search className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalJobResultsCount}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Total jobs found from searches
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-elegant">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Job Application Status
-                  </CardTitle>
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Wishlist</span>
-                      <span className="font-medium">{jobStatusCounts.wishlist}</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(jobStatusCounts.wishlist / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
-                      ></div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Applied</span>
-                      <span className="font-medium">{jobStatusCounts.applied}</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-yellow-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(jobStatusCounts.applied / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
-                      ></div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Interviewing</span>
-                      <span className="font-medium">{jobStatusCounts.interviewing}</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-orange-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(jobStatusCounts.interviewing / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
-                      ></div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Negotiating</span>
-                      <span className="font-medium">{jobStatusCounts.negotiating}</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-purple-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(jobStatusCounts.negotiating / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
-                      ></div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Accepted</span>
-                      <span className="font-medium">{jobStatusCounts.accepted}</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${(jobStatusCounts.accepted / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Activity Overview */}
+            {/* Job Application Status */}
             <div className="mb-8">
               <Card className="shadow-elegant">
                 <CardHeader>
-                  <CardTitle>Activity Overview</CardTitle>
+                  <CardTitle>Job Application Status</CardTitle>
                   <CardDescription>
                     Your job search activity summary
                   </CardDescription>
