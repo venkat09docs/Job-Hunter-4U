@@ -44,7 +44,6 @@ const mainItems = [
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
-  { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },
@@ -95,8 +94,8 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
       isActive 
-        ? "bg-primary text-primary-foreground shadow-md" 
-        : "bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
+        ? "bg-primary/20 text-primary border border-primary/30 shadow-sm" 
+        : "bg-secondary/50 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
     }`;
 
   return (
@@ -162,32 +161,32 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    {userSlug ? (
-                      <a 
-                        href={`/profile/${userSlug}`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
-                      >
-                        <ExternalLink className="h-5 w-5 flex-shrink-0" />
-                        <span className="font-medium text-sm">Bio Link</span>
-                      </a>
-                    ) : (
-                      <span className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium text-muted-foreground cursor-not-allowed">
-                        <ExternalLink className="h-5 w-5 flex-shrink-0" />
-                        <span className="font-medium text-sm">No Bio Link Yet</span>
-                      </span>
+                     {userSlug ? (
+                       <a 
+                         href={`/profile/${userSlug}`}
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-secondary/50 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
+                       >
+                         <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                         <span className="font-medium text-sm">Bio Link</span>
+                       </a>
+                     ) : (
+                       <span className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium text-muted-foreground cursor-not-allowed bg-secondary/30">
+                         <ExternalLink className="h-5 w-5 flex-shrink-0" />
+                         <span className="font-medium text-sm">No Bio Link Yet</span>
+                       </span>
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a 
-                      href="/blogs"
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-sm"
-                    >
+                     <a 
+                       href="/blogs"
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 bg-secondary/50 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
+                     >
                       <ExternalLink className="h-5 w-5 flex-shrink-0" />
                       <span className="font-medium text-sm">Blogs</span>
                     </a>
