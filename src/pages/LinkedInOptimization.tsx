@@ -219,6 +219,13 @@ const LinkedInOptimization = () => {
   };
 
   const getToolsForCategory = (category: string) => {
+    if (category === 'Skills') {
+      return [
+        { id: GIT_LINKEDIN_TOOL_ID, name: 'Build Git & LinkedIn Profiles', notes: gitLinkedInNotes },
+        { id: TOP_SKILLS_TOOL_ID, name: '1. Resume Builder - Top 6 Skills', notes: topSkillsNotes }
+      ];
+    }
+    
     const baseTools = [
       { id: GIT_LINKEDIN_TOOL_ID, name: 'Build Git & LinkedIn Profiles', notes: gitLinkedInNotes },
       { id: EFFECTIVE_LINKEDIN_TOOL_ID, name: 'Creating an effective LinkedIn Profile', notes: effectiveLinkedInNotes }
@@ -226,8 +233,6 @@ const LinkedInOptimization = () => {
     
     if (category === 'Experience') {
       baseTools.push({ id: RESUME_BUILDER_TOOL_ID, name: '2. Resume Builder - Achievements', notes: resumeBuilderNotes });
-    } else if (category === 'Skills') {
-      baseTools.push({ id: TOP_SKILLS_TOOL_ID, name: '1. Resume Builder - Top 6 Skills', notes: topSkillsNotes });
     }
     
     return baseTools;
@@ -237,7 +242,7 @@ const LinkedInOptimization = () => {
     if (category === 'Experience') {
       return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...resumeBuilderNotes];
     } else if (category === 'Skills') {
-      return [...gitLinkedInNotes, ...effectiveLinkedInNotes, ...topSkillsNotes];
+      return [...gitLinkedInNotes, ...topSkillsNotes];
     }
     return [...gitLinkedInNotes, ...effectiveLinkedInNotes];
   };
