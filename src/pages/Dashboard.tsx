@@ -101,13 +101,13 @@ const Dashboard = () => {
       if (recentError) throw recentError;
       setRecentJobs(recentData || []);
 
-      // Fetch total job applications in process (excluding specific statuses)
+      // Fetch total job applications in process (excluding wishlist and final statuses)
       const { count, error: countError } = await supabase
         .from('job_tracker')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('is_archived', false)
-        .not('status', 'in', '("Wishlist","Not Selected","No Response","Archived")');
+        .not('status', 'in', '("wishlist","not_selected","no_response","archived")');
 
       if (countError) throw countError;
       setTotalJobApplications(count || 0);
@@ -372,9 +372,9 @@ const Dashboard = () => {
                         >
                           <div className="relative w-16 h-16 mb-2">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">
-                                {jobStatusCounts.applied + jobStatusCounts.interviewing + jobStatusCounts.negotiating}
-                              </span>
+                               <span className="text-lg font-bold text-primary">
+                                 {totalJobApplications}
+                               </span>
                             </div>
                           </div>
                           <h4 className="font-medium text-center text-sm"># Job Applications in Process</h4>
