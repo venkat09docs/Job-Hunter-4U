@@ -1,0 +1,2 @@
+INSERT INTO public.premium_features (feature_key, feature_name, description, is_premium)
+VALUES ('page_find_your_next_role', 'Find Your Next Role', 'Search and apply for job opportunities with wishlist functionality', true)
