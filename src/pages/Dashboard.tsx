@@ -301,7 +301,10 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Resume Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/resume-builder')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -332,7 +335,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Cover Letter Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/ai-tools')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{savedCoverLettersCount}</span>
@@ -343,7 +349,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* LinkedIn Profile Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/linkedin-optimization')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -374,7 +383,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* GitHub Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/github-optimization')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
@@ -405,7 +417,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Blog Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/blog-dashboard')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{publishedBlogsCount}</span>
@@ -416,7 +431,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Job Tracker Stats */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/job-tracker')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{totalJobApplications}</span>
@@ -427,7 +445,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* LinkedIn Network Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/linkedin-network')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</span>
@@ -438,7 +459,10 @@ const Dashboard = () => {
                     </div>
 
                     {/* Enhancements Status */}
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card">
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/career-growth')}
+                    >
                       <div className="relative w-20 h-20 mb-4">
                         <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
                           <circle
