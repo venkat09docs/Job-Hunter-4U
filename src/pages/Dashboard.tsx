@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [totalJobApplications, setTotalJobApplications] = useState(0);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
   const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
+  const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
 
   const handleSignOut = async () => {
     try {
@@ -117,6 +118,15 @@ const Dashboard = () => {
 
         if (coverLettersError) throw coverLettersError;
         setSavedCoverLettersCount(coverLettersCount || 0);
+
+        // Fetch total job results count from job search history
+        const { count: jobResultsCount, error: jobResultsError } = await supabase
+          .from('job_results')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (jobResultsError) throw jobResultsError;
+        setTotalJobResultsCount(jobResultsCount || 0);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -491,16 +501,9 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{profile?.total_job_searches || 0}</div>
-                  <p className="text-xs text-muted-foreground mb-2">
+                  <p className="text-xs text-muted-foreground">
                     Times you searched for jobs
                   </p>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleDemoAction('job_search')}
-                  >
-                    Demo: Track Resume View
-                  </Button>
                 </CardContent>
               </Card>
 
@@ -512,17 +515,10 @@ const Dashboard = () => {
                   <Search className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{profile?.total_job_searches || 0}</div>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Searches performed
+                  <div className="text-2xl font-bold">{totalJobResultsCount}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Total jobs found from searches
                   </p>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleDemoAction('job_search')}
-                  >
-                    Demo: Track Job Search
-                  </Button>
                 </CardContent>
               </Card>
 
