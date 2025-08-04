@@ -389,7 +389,7 @@ const JobTracker = () => {
           </Card>
 
           {/* Integrated Kanban Board with Pipeline */}
-          <div className="grid grid-cols-9 gap-1 sm:gap-2 md:gap-3">
+          <div className="grid grid-cols-8 gap-1 sm:gap-2 md:gap-3">
             {getVisibleStatusOptions().map(status => {
               const statusJobs = filteredJobs.filter(job => job.status === status);
               const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
