@@ -45,6 +45,13 @@ const Dashboard = () => {
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
   const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
   const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
+  const [jobStatusCounts, setJobStatusCounts] = useState({
+    wishlist: 0,
+    applied: 0,
+    interviewing: 0,
+    negotiating: 0,
+    accepted: 0
+  });
 
   const handleSignOut = async () => {
     try {
@@ -127,6 +134,24 @@ const Dashboard = () => {
 
         if (jobResultsError) throw jobResultsError;
         setTotalJobResultsCount(jobResultsCount || 0);
+
+        // Fetch job status counts
+        const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted'];
+        const statusCounts = { wishlist: 0, applied: 0, interviewing: 0, negotiating: 0, accepted: 0 };
+        
+        for (const status of statusTypes) {
+          const { count: statusCount, error: statusError } = await supabase
+            .from('job_tracker')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('status', status)
+            .eq('is_archived', false);
+
+          if (statusError) throw statusError;
+          statusCounts[status as keyof typeof statusCounts] = statusCount || 0;
+        }
+        
+        setJobStatusCounts(statusCounts);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -525,22 +550,67 @@ const Dashboard = () => {
               <Card className="shadow-elegant">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    AI Queries
+                    Job Application Status
                   </CardTitle>
-                  <Bot className="h-4 w-4 text-muted-foreground" />
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{profile?.total_ai_queries || 0}</div>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    AI assistance requests
-                  </p>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleDemoAction('ai_query')}
-                  >
-                    Demo: Track AI Query
-                  </Button>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Wishlist</span>
+                      <span className="font-medium">{jobStatusCounts.wishlist}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(jobStatusCounts.wishlist / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Applied</span>
+                      <span className="font-medium">{jobStatusCounts.applied}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-yellow-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(jobStatusCounts.applied / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Interviewing</span>
+                      <span className="font-medium">{jobStatusCounts.interviewing}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-orange-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(jobStatusCounts.interviewing / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Negotiating</span>
+                      <span className="font-medium">{jobStatusCounts.negotiating}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-purple-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(jobStatusCounts.negotiating / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Accepted</span>
+                      <span className="font-medium">{jobStatusCounts.accepted}</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(jobStatusCounts.accepted / Math.max(Object.values(jobStatusCounts).reduce((a, b) => a + b, 0), 1)) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
