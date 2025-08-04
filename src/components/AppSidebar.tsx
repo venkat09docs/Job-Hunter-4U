@@ -15,7 +15,8 @@ import {
   Shield,
   Users,
   Archive,
-  CreditCard
+  CreditCard,
+  BookOpen
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,7 @@ const mainItems = [
   { title: "Blog Dashboard", url: "/dashboard/blog", icon: PenTool },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
+  { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },
 ];
 
 

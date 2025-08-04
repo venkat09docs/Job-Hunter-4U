@@ -36,6 +36,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
+import KnowledgeBase from "./pages/KnowledgeBase";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -239,6 +240,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <BuildMyProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/knowledge-base" 
+              element={
+                <ProtectedRoute>
+                  <KnowledgeBase />
                 </ProtectedRoute>
               } 
             />
