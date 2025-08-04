@@ -293,41 +293,93 @@ const Dashboard = () => {
             {/* Overall Career Development Score */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-8 items-stretch min-h-[200px]">
-                    {/* Profile Picture Section - Full Height */}
-                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6">
-                      <Avatar className="h-32 w-32">
-                        <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
-                        <AvatarFallback className="text-3xl">
-                          {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-center mt-4">
-                        <p className="font-semibold text-lg">{profile?.full_name || profile?.username || 'Job Hunter'}</p>
-                        <p className="text-sm text-muted-foreground">Career Professional</p>
-                      </div>
-                    </div>
-                    
-                    {/* Right Side - Header + Statistics */}
-                    <div className="flex flex-col justify-center space-y-6">
-                      {/* Header Section */}
-                      <div className="text-left">
-                        <h3 className="text-2xl font-bold mb-2">Overall Career Development Score</h3>
-                        <p className="text-muted-foreground">Your comprehensive career readiness assessment</p>
-                      </div>
-                      
-                      {/* Statistics Section */}
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                          <div className="text-6xl font-bold text-primary">{getOverallCareerScore()}%</div>
-                          <TrendingUp className="h-12 w-12 text-green-500" />
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Overall Career Development Score
+                  </CardTitle>
+                  <CardDescription>
+                    Your comprehensive career readiness assessment
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {/* Profile Status */}
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/build-my-profile')}
+                    >
+                      <div className="relative w-20 h-20 mb-4">
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
                         </div>
-                        <Progress value={getOverallCareerScore()} className="w-full max-w-sm h-3" />
-                        <p className="text-sm text-muted-foreground">
-                          Based on Resume, LinkedIn, GitHub & Network progress
-                        </p>
                       </div>
+                      <h4 className="font-medium text-center">Profile Status</h4>
+                      <p className="text-sm text-muted-foreground text-center">Overall percentage</p>
+                    </div>
+
+                    {/* Job Application Status */}
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/job-tracker')}
+                    >
+                      <div className="relative w-20 h-20 mb-4">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">
+                            {jobStatusCounts.applied + jobStatusCounts.interviewing + jobStatusCounts.negotiating}
+                          </span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">Job Application Status</h4>
+                      <p className="text-sm text-muted-foreground text-center">In pipeline</p>
+                    </div>
+
+                    {/* Network Growth */}
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/linkedin-network')}
+                    >
+                      <div className="relative w-20 h-20 mb-4">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress || 0}</span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">Network Growth</h4>
+                      <p className="text-sm text-muted-foreground text-center">This week activities</p>
+                    </div>
+
+                    {/* GitHub Activities */}
+                    <div 
+                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => navigate('/dashboard/github-activity-tracker')}
+                    >
+                      <div className="relative w-20 h-20 mb-4">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{getGitHubProgress()}</span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">GitHub Activities</h4>
+                      <p className="text-sm text-muted-foreground text-center">This week activities</p>
                     </div>
                   </div>
                 </CardContent>
@@ -355,7 +407,7 @@ const Dashboard = () => {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Resume Status */}
                     <div 
                       className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
@@ -482,19 +534,6 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground text-center">Total applications</p>
                     </div>
 
-                    {/* LinkedIn Network Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/linkedin-network')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">LinkedIn Network</h4>
-                      <p className="text-sm text-muted-foreground text-center">Weekly activities</p>
-                    </div>
 
                     {/* Enhancements Status */}
                     <div 
@@ -543,7 +582,7 @@ const Dashboard = () => {
                 <CardHeader>
                   <CardTitle className="text-xl flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    My Network Growth
+                    My Network Growth Tracker
                   </CardTitle>
                   <CardDescription>
                     Track your LinkedIn networking activities and overall growth
