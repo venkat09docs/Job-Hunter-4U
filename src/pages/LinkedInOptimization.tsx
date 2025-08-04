@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { useNavigate } from 'react-router-dom';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { Linkedin, CheckCircle, Target, ExternalLink } from 'lucide-react';
+import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb } from 'lucide-react';
 
 interface LinkedInTask {
   id: string;
@@ -37,15 +36,40 @@ const LINKEDIN_TASKS: Omit<LinkedInTask, 'completed'>[] = [
   // Skills & Endorsements
   { id: 'skills', title: 'Add Skills', description: 'Add relevant skills (aim for 50+ skills)', category: 'Skills' },
   { id: 'endorsements', title: 'Get Endorsements', description: 'Request endorsements from colleagues and connections', category: 'Skills' },
-  
 ];
+
+const CATEGORY_TIPS: Record<string, string[]> = {
+  'Profile Basics': [
+    'Use a professional headshot with good lighting and a clean background',
+    'Include industry keywords in your headline to improve discoverability',
+    'Write your about section in first person and tell your professional story',
+    'Add your current city and industry to help with local networking',
+    'Use action verbs and quantifiable achievements in descriptions'
+  ],
+  'Experience': [
+    'Use bullet points to highlight key achievements in each role',
+    'Include metrics and numbers to demonstrate impact (e.g., "Increased sales by 25%")',
+    'Add relevant coursework, projects, and certifications to education',
+    'Update your current position regularly to reflect new responsibilities',
+    'Use industry-specific keywords throughout your experience descriptions'
+  ],
+  'Skills': [
+    'Add skills that are relevant to your target industry and role',
+    'Prioritize skills that are frequently mentioned in job postings',
+    'Endorse colleagues\' skills to encourage reciprocal endorsements',
+    'Take LinkedIn skill assessments to validate your expertise',
+    'Include both hard and soft skills for a well-rounded profile'
+  ]
+};
 
 const LinkedInOptimization = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<LinkedInTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Profile Basics');
 
   useEffect(() => {
     if (user) {
@@ -171,155 +195,166 @@ const LinkedInOptimization = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  LinkedIn Profile Optimization
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <SubscriptionStatus />
-                <UserProfileDropdown />
-              </div>
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
-            {/* Progress Overview */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Linkedin className="h-5 w-5 text-primary" />
-                    LinkedIn Optimization Progress
-                  </CardTitle>
-                  <CardDescription>
-                    Complete these tasks to optimize your LinkedIn profile for maximum visibility
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Overall Progress</span>
-                        <span className="text-sm text-muted-foreground">{completedCount} / {totalTasks} completed</span>
-                      </div>
-                      <Progress value={completionPercentage} className="h-3" />
-                    </div>
-                    <Badge variant={completionPercentage === 100 ? "default" : "secondary"} className="text-lg px-3 py-1">
-                      {completionPercentage}%
-                    </Badge>
-                  </div>
-                  
-                  {completionPercentage === 100 && (
-                    <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="text-green-800 dark:text-green-200 font-medium">
-                        Congratulations! Your LinkedIn profile is fully optimized!
-                      </span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Task Categories */}
-            <div className="space-y-6">
-              {Object.entries(groupedTasks).map(([category, categoryTasks]) => {
-                const categoryCompleted = categoryTasks.filter(task => task.completed).length;
-                const categoryTotal = categoryTasks.length;
-                const categoryPercentage = Math.round((categoryCompleted / categoryTotal) * 100);
-
-                return (
-                  <Card key={category} className="shadow-elegant">
-                    <CardHeader>
-                     <CardTitle className="text-lg flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <Target className="h-4 w-4 text-primary" />
-                          {category}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleGoToLinkedIn}
-                            className="gap-1 text-xs"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Go to LinkedIn
-                          </Button>
-                          <Badge variant="outline">
-                            {categoryCompleted}/{categoryTotal}
-                          </Badge>
-                        </div>
-                      </CardTitle>
-                      <Progress value={categoryPercentage} className="h-2" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {categoryTasks.map((task) => (
-                          <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                            <Checkbox
-                              id={task.id}
-                              checked={task.completed}
-                              onCheckedChange={(checked) => updateTaskStatus(task.id, !!checked)}
-                              className="mt-1"
-                            />
-                            <div className="flex-1 space-y-1">
-                              <label
-                                htmlFor={task.id}
-                                className={`font-medium cursor-pointer ${task.completed ? 'text-muted-foreground line-through' : ''}`}
-                              >
-                                {task.title}
-                              </label>
-                              <p className="text-sm text-muted-foreground">
-                                {task.description}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {/* Pro Tips */}
-            <div className="mt-8">
-              <Card className="shadow-elegant border-amber-200 dark:border-amber-800">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Target className="h-4 w-4 text-amber-600" />
-                    Pro Tips for LinkedIn Success
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>• Use keywords relevant to your industry throughout your profile</li>
-                    <li>• Post content consistently (aim for 2-3 times per week)</li>
-                    <li>• Engage with others' content before sharing your own</li>
-                    <li>• Personalize connection requests with a brief message</li>
-                    <li>• Update your profile regularly to stay current</li>
-                    <li>• Use LinkedIn's "Open to Work" feature when job searching</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
+    <div className="min-h-screen bg-gradient-hero">
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              LinkedIn Profile Optimization
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <SubscriptionStatus />
+            <UserProfileDropdown />
+          </div>
         </div>
+      </header>
+
+      {/* Main Layout with two columns */}
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Left Column - Main Content */}
+        <main className="flex-1 p-8 overflow-auto">
+          {/* Progress Overview */}
+          <div className="mb-8">
+            <Card className="shadow-elegant border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Linkedin className="h-5 w-5 text-primary" />
+                  LinkedIn Optimization Progress
+                </CardTitle>
+                <CardDescription>
+                  Complete these tasks to optimize your LinkedIn profile for maximum visibility
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Overall Progress</span>
+                      <span className="text-sm text-muted-foreground">{completedCount} / {totalTasks} completed</span>
+                    </div>
+                    <Progress value={completionPercentage} className="h-3" />
+                  </div>
+                  <Badge variant={completionPercentage === 100 ? "default" : "secondary"} className="text-lg px-3 py-1">
+                    {completionPercentage}%
+                  </Badge>
+                </div>
+                
+                {completionPercentage === 100 && (
+                  <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-green-800 dark:text-green-200 font-medium">
+                      Congratulations! Your LinkedIn profile is fully optimized!
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Task Categories */}
+          <div className="space-y-6">
+            {Object.entries(groupedTasks).map(([category, categoryTasks]) => {
+              const categoryCompleted = categoryTasks.filter(task => task.completed).length;
+              const categoryTotal = categoryTasks.length;
+              const categoryPercentage = Math.round((categoryCompleted / categoryTotal) * 100);
+
+              return (
+                <Card key={category} className="shadow-elegant">
+                  <CardHeader>
+                   <CardTitle className="text-lg flex items-center justify-between">
+                      <button
+                        onClick={() => setSelectedCategory(category)}
+                        className="flex items-center gap-2 text-left hover:text-primary transition-colors"
+                      >
+                        <Target className="h-4 w-4 text-primary" />
+                        {category}
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleGoToLinkedIn}
+                          className="gap-1 text-xs"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Go to LinkedIn
+                        </Button>
+                        <Badge variant="outline">
+                          {categoryCompleted}/{categoryTotal}
+                        </Badge>
+                      </div>
+                    </CardTitle>
+                    <Progress value={categoryPercentage} className="h-2" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {categoryTasks.map((task) => (
+                        <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                          <Checkbox
+                            id={task.id}
+                            checked={task.completed}
+                            onCheckedChange={(checked) => updateTaskStatus(task.id, !!checked)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 space-y-1">
+                            <label
+                              htmlFor={task.id}
+                              className={`font-medium cursor-pointer ${task.completed ? 'text-muted-foreground line-through' : ''}`}
+                            >
+                              {task.title}
+                            </label>
+                            <p className="text-sm text-muted-foreground">
+                              {task.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </main>
+
+        {/* Right Column - Tips Panel */}
+        <aside className="w-80 border-l bg-background/50 backdrop-blur-sm p-6 overflow-auto">
+          <Card className="sticky top-0">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-amber-500" />
+                Tips for {selectedCategory}
+              </CardTitle>
+              <CardDescription>
+                Click on a section to see specific tips
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {CATEGORY_TIPS[selectedCategory]?.map((tip, index) => (
+                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="text-primary font-bold text-xs mt-1">•</span>
+                    <span>{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </aside>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
