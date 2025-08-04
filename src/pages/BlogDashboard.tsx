@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit3, Trash2, Eye, EyeOff, Calendar, PenTool, Coins } from "lucide-react";
+import { Plus, Edit3, Trash2, Eye, EyeOff, Calendar, PenTool, Coins, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -221,6 +221,12 @@ export default function BlogDashboard() {
               <div>
                 <h1 className="text-3xl font-bold">Blog Dashboard</h1>
                 <p className="text-muted-foreground">Manage your blog posts</p>
+                <div className="mt-2">
+                  <Button variant="outline" onClick={() => window.open('/blogs', '_blank')}>
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Public Blogs
+                  </Button>
+                </div>
               </div>
               
               <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
