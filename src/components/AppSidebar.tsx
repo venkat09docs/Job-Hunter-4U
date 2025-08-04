@@ -94,8 +94,8 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
       isActive 
-        ? "text-primary border border-primary/30 shadow-sm" 
-        : "text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
+        ? "text-primary shadow-sm" 
+        : "text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm"
     }`;
 
   return (
@@ -166,7 +166,7 @@ export function AppSidebar() {
                          href={`/profile/${userSlug}`}
                          target="_blank" 
                          rel="noopener noreferrer"
-                         className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
+                         className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm"
                        >
                          <ExternalLink className="h-5 w-5 flex-shrink-0" />
                          <span className="font-medium text-sm">Bio Link</span>
@@ -185,7 +185,7 @@ export function AppSidebar() {
                        href="/blogs"
                        target="_blank" 
                        rel="noopener noreferrer"
-                       className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:border hover:border-primary/20 hover:shadow-sm"
+                       className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm"
                      >
                       <ExternalLink className="h-5 w-5 flex-shrink-0" />
                       <span className="font-medium text-sm">Blogs</span>
