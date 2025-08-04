@@ -17,6 +17,7 @@ import {
   Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft,
   MapPin, Building, Clock, ExternalLink, DollarSign
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from 'react-router-dom';
 
 interface JobEntry {
@@ -49,14 +50,17 @@ const JobTracker = () => {
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobEntry | null>(null);
 
-  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted'];
+  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
   const statusColors = {
     wishlist: 'bg-gray-500',
     applying: 'bg-blue-500',
     applied: 'bg-yellow-500',
     interviewing: 'bg-orange-500',
     negotiating: 'bg-purple-500',
-    accepted: 'bg-green-500'
+    accepted: 'bg-green-500',
+    not_selected: 'bg-red-500',
+    no_response: 'bg-slate-500',
+    archived: 'bg-gray-400'
   };
   const statusLabels = {
     wishlist: 'Wishlist',
@@ -64,7 +68,10 @@ const JobTracker = () => {
     applied: 'Applied',
     interviewing: 'Interviewing',
     negotiating: 'Negotiating',
-    accepted: 'Accepted'
+    accepted: 'Accepted',
+    not_selected: 'Not Selected',
+    no_response: 'No Response',
+    archived: 'Archived'
   };
 
   const getStatusCounts = () => {
@@ -382,7 +389,7 @@ const JobTracker = () => {
           </Card>
 
           {/* Integrated Kanban Board with Pipeline */}
-          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3">
+          <div className="grid grid-cols-9 gap-1 sm:gap-2 md:gap-3">
             {getVisibleStatusOptions().map(status => {
               const statusJobs = filteredJobs.filter(job => job.status === status);
               const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
@@ -401,128 +408,130 @@ const JobTracker = () => {
                   
                   {/* Board Column */}
                    <div className="flex-1 space-y-1 sm:space-y-2 min-h-[150px] sm:min-h-[200px] md:min-h-[250px] p-1 sm:p-2 md:p-3 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
-                     {statusJobs.map(job => (
-                       <Card 
-                         key={job.id} 
-                         className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background"
-                         onClick={() => setSelectedJob(job)}
-                       >
-                         <div className="space-y-1">
-                          <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
-                          <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
-                          <div className="text-[9px] sm:text-xs text-muted-foreground">
-                            {new Date(job.application_date).toLocaleDateString()}
-                          </div>
-                          {job.location && (
-                            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
-                          )}
-                          {job.salary_range && (
-                            <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
-                          )}
-                            <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
-                              {hasActiveSubscription() ? (
-                                <Select
-                                 value={job.status} 
-                                 onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
-                               >
-                                 <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   {statusOptions.map(statusOption => (
-                                     <SelectItem key={statusOption} value={statusOption}>
-                                       {statusLabels[statusOption as keyof typeof statusLabels]}
-                                     </SelectItem>
-                                   ))}
-                                 </SelectContent>
-                               </Select>
-                             ) : (
-                               <SubscriptionUpgrade featureName="job tracker">
-                                 <Select value={job.status}>
-                                   <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
-                                     <SelectValue />
-                                   </SelectTrigger>
-                                 </Select>
-                               </SubscriptionUpgrade>
+                     {statusJobs.map(job => {
+                       const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                       const showWarning = daysSinceUpdate > 1;
+                       
+                       if (showWarning) {
+                         return (
+                           <TooltipProvider key={job.id}>
+                             <Tooltip>
+                               <TooltipTrigger asChild>
+                                 <Card 
+                                   className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background ring-2 ring-orange-300"
+                                   onClick={() => setSelectedJob(job)}
+                                 >
+                                   <div className="space-y-1">
+                                    <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
+                                    <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
+                                    <div className="text-[9px] sm:text-xs text-muted-foreground">
+                                      {new Date(job.application_date).toLocaleDateString()}
+                                    </div>
+                                    {job.location && (
+                                      <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
+                                    )}
+                                    {job.salary_range && (
+                                      <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
+                                    )}
+                                      <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+                                        {hasActiveSubscription() ? (
+                                          <Select
+                                           value={job.status} 
+                                           onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
+                                         >
+                                           <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                             <SelectValue />
+                                           </SelectTrigger>
+                                           <SelectContent>
+                                             {statusOptions.map(statusOption => (
+                                               <SelectItem key={statusOption} value={statusOption}>
+                                                 {statusLabels[statusOption as keyof typeof statusLabels]}
+                                               </SelectItem>
+                                             ))}
+                                           </SelectContent>
+                                         </Select>
+                                       ) : (
+                                         <SubscriptionUpgrade featureName="job tracker">
+                                           <Select value={job.status}>
+                                             <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                        </Select>
+                                      </SubscriptionUpgrade>
+                                     )}
+                                 </div>
+                               </div>
+                             </Card>
+                               </TooltipTrigger>
+                               <TooltipContent>
+                                 <p className="text-sm">
+                                   ⚠️ The status of this job application was changed {daysSinceUpdate} days ago. Please verify and update the status.
+                                 </p>
+                               </TooltipContent>
+                             </Tooltip>
+                           </TooltipProvider>
+                         );
+                       } else {
+                         return (
+                           <Card 
+                             key={job.id} 
+                             className="p-1 sm:p-2 md:p-3 hover:shadow-md transition-all duration-200 cursor-pointer bg-background"
+                             onClick={() => setSelectedJob(job)}
+                           >
+                             <div className="space-y-1">
+                              <div className="font-medium text-[10px] sm:text-xs md:text-sm line-clamp-2">{job.company_name}</div>
+                              <div className="text-[9px] sm:text-xs text-muted-foreground line-clamp-2">{job.job_title}</div>
+                              <div className="text-[9px] sm:text-xs text-muted-foreground">
+                                {new Date(job.application_date).toLocaleDateString()}
+                              </div>
+                              {job.location && (
+                                <div className="text-[9px] sm:text-xs text-muted-foreground truncate">📍 {job.location}</div>
                               )}
-                              <div className="flex items-center gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
-                                {hasActiveSubscription() ? (
-                                 <Button 
-                                   variant="ghost" 
-                                   size="sm" 
-                                   onClick={() => setEditingJob(job)} 
-                                   className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                 >
-                                   <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
-                                 </Button>
-                               ) : (
-                                 <SubscriptionUpgrade featureName="job tracker">
-                                   <Button 
-                                     variant="ghost" 
-                                     size="sm" 
-                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
+                              {job.salary_range && (
+                                <div className="text-[9px] sm:text-xs text-muted-foreground truncate">💰 {job.salary_range}</div>
+                              )}
+                                <div className="flex flex-col gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+                                  {hasActiveSubscription() ? (
+                                    <Select
+                                     value={job.status} 
+                                     onValueChange={(newStatus) => handleStatusChange(job.id, newStatus)}
                                    >
-                                     <Edit className="h-2 w-2 sm:h-3 sm:w-3" />
-                                   </Button>
-                                 </SubscriptionUpgrade>
-                               )}
-                               {hasActiveSubscription() ? (
-                                 <Button 
-                                   variant="ghost" 
-                                   size="sm" 
-                                   onClick={() => handleArchiveJob(job.id, !job.is_archived)} 
-                                   className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                 >
-                                   <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
-                                 </Button>
-                               ) : (
-                                 <SubscriptionUpgrade featureName="job tracker">
-                                   <Button 
-                                     variant="ghost" 
-                                     size="sm" 
-                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                   >
-                                     <Archive className="h-2 w-2 sm:h-3 sm:w-3" />
-                                   </Button>
-                                 </SubscriptionUpgrade>
-                               )}
-                               {showArchived && (
-                                 hasActiveSubscription() ? (
-                                   <Button 
-                                     variant="ghost" 
-                                     size="sm" 
-                                     onClick={() => handleDeleteJob(job.id)} 
-                                     className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                   >
-                                     <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
-                                   </Button>
+                                     <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                       <SelectValue />
+                                     </SelectTrigger>
+                                     <SelectContent>
+                                       {statusOptions.map(statusOption => (
+                                         <SelectItem key={statusOption} value={statusOption}>
+                                           {statusLabels[statusOption as keyof typeof statusLabels]}
+                                         </SelectItem>
+                                       ))}
+                                     </SelectContent>
+                                   </Select>
                                  ) : (
                                    <SubscriptionUpgrade featureName="job tracker">
-                                     <Button 
-                                       variant="ghost" 
-                                       size="sm" 
-                                       className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 p-0"
-                                     >
-                                       <Trash2 className="h-2 w-2 sm:h-3 sm:w-3" />
-                                     </Button>
-                                   </SubscriptionUpgrade>
-                                 )
+                                     <Select value={job.status}>
+                                       <SelectTrigger className="h-5 sm:h-6 md:h-7 text-[9px] sm:text-xs w-full">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </Select>
+                                </SubscriptionUpgrade>
                                )}
-                             </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                    {statusJobs.length === 0 && (
-                      <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
-                        No applications
-                      </div>
-                    )}
-                  </div>
-                </div>
-                );
-              })}
-            </div>
+                           </div>
+                         </div>
+                       </Card>
+                         );
+                       }
+                     })}
+                     {statusJobs.length === 0 && (
+                       <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
+                         No applications
+                       </div>
+                     )}
+                   </div>
+                 </div>
+                 );
+               })}
+             </div>
 
           {filteredJobs.length === 0 && (
             <Card>
@@ -537,6 +546,7 @@ const JobTracker = () => {
                     </p>
                     <SubscriptionUpgrade featureName="job tracker">
                       <Button variant="outline">
+                        <Coins className="h-4 w-4 mr-2" />
                         Upgrade to Premium
                       </Button>
                     </SubscriptionUpgrade>
@@ -546,146 +556,119 @@ const JobTracker = () => {
             </Card>
           )}
 
-          {/* Edit Dialog */}
-          <Dialog open={!!editingJob} onOpenChange={() => setEditingJob(null)}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Edit Job</DialogTitle>
-              </DialogHeader>
-              {editingJob && (
+          {/* Edit Job Dialog */}
+          {editingJob && (
+            <Dialog open={!!editingJob} onOpenChange={() => setEditingJob(null)}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Job Application</DialogTitle>
+                </DialogHeader>
                 <JobTrackerForm 
                   initialData={editingJob} 
                   onSubmit={handleEditJob} 
                   onCancel={() => setEditingJob(null)} 
                 />
-              )}
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
 
-          {/* Job Details Modal */}
-          <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">
-                  {selectedJob?.job_title}
-                </DialogTitle>
-              </DialogHeader>
-              
-              {selectedJob && (
-                <div className="space-y-6">
-                  {/* Company and Location Info */}
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Building className="h-5 w-5" />
-                      <span className="font-medium">{selectedJob.company_name}</span>
+          {/* Job Details Dialog */}
+          {selectedJob && (
+            <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Job Application Details</DialogTitle>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold">{selectedJob.job_title}</h3>
+                      <p className="text-lg text-muted-foreground">{selectedJob.company_name}</p>
                     </div>
-                    {selectedJob.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-5 w-5" />
-                        <span>{selectedJob.location}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-5 w-5" />
-                      <span>Applied {new Date(selectedJob.application_date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Status</h3>
-                    <Badge className={`${statusColors[selectedJob.status as keyof typeof statusColors]} text-white`}>
+                    <Badge className={`${statusColors[selectedJob.status as keyof typeof statusColors]} text-white border-0`}>
                       {statusLabels[selectedJob.status as keyof typeof statusLabels]}
                     </Badge>
                   </div>
 
-                  {/* Salary Information */}
-                  {selectedJob.salary_range && (
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h3 className="font-semibold text-lg mb-2">Salary Range</h3>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-lg font-medium">{selectedJob.salary_range}</span>
+                      <p className="text-sm font-medium text-muted-foreground">Application Date</p>
+                      <p>{new Date(selectedJob.application_date).toLocaleDateString()}</p>
+                    </div>
+                    
+                    {selectedJob.location && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Location</p>
+                        <p>{selectedJob.location}</p>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Contact Information */}
-                  {(selectedJob.contact_person || selectedJob.contact_email) && (
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Contact Information</h3>
-                      <div className="space-y-2">
-                        {selectedJob.contact_person && (
-                          <div>
-                            <span className="font-medium">Contact Person: </span>
-                            <span>{selectedJob.contact_person}</span>
-                          </div>
-                        )}
-                        {selectedJob.contact_email && (
-                          <div>
-                            <span className="font-medium">Email: </span>
-                            <a href={`mailto:${selectedJob.contact_email}`} className="text-primary hover:underline">
-                              {selectedJob.contact_email}
-                            </a>
-                          </div>
-                        )}
+                    )}
+                    
+                    {selectedJob.salary_range && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Salary Range</p>
+                        <p>{selectedJob.salary_range}</p>
                       </div>
-                    </div>
-                  )}
+                    )}
+                    
+                    {selectedJob.contact_person && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Contact Person</p>
+                        <p>{selectedJob.contact_person}</p>
+                      </div>
+                    )}
+                    
+                    {selectedJob.contact_email && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Contact Email</p>
+                        <p>{selectedJob.contact_email}</p>
+                      </div>
+                    )}
+                    
+                    {selectedJob.next_follow_up && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Next Follow-up</p>
+                        <p>{new Date(selectedJob.next_follow_up).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Next Follow-up */}
-                  {selectedJob.next_follow_up && (
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Next Follow-up</h3>
-                      <span>{new Date(selectedJob.next_follow_up).toLocaleDateString()}</span>
-                    </div>
-                  )}
-
-                  {/* Notes */}
                   {selectedJob.notes && (
                     <div>
-                      <h3 className="font-semibold text-lg mb-2">Notes</h3>
-                      <div className="bg-muted/50 p-4 rounded-lg">
-                        <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-                          {selectedJob.notes}
-                        </p>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Notes</p>
+                      <div className="bg-muted p-3 rounded-md">
+                        <p className="whitespace-pre-wrap">{selectedJob.notes}</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-4 pt-4 border-t">
+                  <div className="flex gap-2 pt-4">
                     {selectedJob.job_url && (
-                      <Button className="flex items-center gap-2" asChild>
-                        <a 
-                          href={selectedJob.job_url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                        >
-                          View Job Posting
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => window.open(selectedJob.job_url, '_blank')}
+                        className="flex-1"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        View Job Posting
                       </Button>
                     )}
                     
-                    {hasActiveSubscription() && (
-                      <Button 
-                        variant="outline"
-                        onClick={() => {
-                          setEditingJob(selectedJob);
-                          setSelectedJob(null);
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <Edit className="h-4 w-4" />
-                        Edit Job
-                      </Button>
-                    )}
+                    <Button 
+                      onClick={() => {
+                        setEditingJob(selectedJob);
+                        setSelectedJob(null);
+                      }}
+                      className="flex-1"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Application
+                    </Button>
                   </div>
                 </div>
-              )}
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </main>
     </div>
