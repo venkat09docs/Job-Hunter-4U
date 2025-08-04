@@ -9,10 +9,11 @@ import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb } from 'lucide-react';
+import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const GIT_LINKEDIN_TOOL_ID = 'eff64291-db9d-4bcf-8bfe-82d58bfeeebe';
 
@@ -36,6 +37,7 @@ interface ProfileData {
 
 const GitHubOptimization = () => {
   const { profile } = useProfile();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
@@ -221,6 +223,33 @@ ${interests}
     setActiveField(fieldName);
   };
 
+  const handleSaveToLibrary = async () => {
+    if (!user) {
+      toast.error('Please login to save README files');
+      return;
+    }
+
+    const readmeContent = generateReadme();
+    const title = `README ${profileData.name || 'Profile'} - ${new Date().toLocaleDateString()}`;
+
+    try {
+      const { error } = await supabase
+        .from('saved_readme_files')
+        .insert({
+          user_id: user.id,
+          title,
+          content: readmeContent
+        });
+
+      if (error) throw error;
+
+      toast.success('README file saved to Resources Library!');
+    } catch (error) {
+      console.error('Error saving README file:', error);
+      toast.error('Failed to save README file. Please try again.');
+    }
+  };
+
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden">
@@ -247,6 +276,10 @@ ${interests}
                 <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-2">
                   <Download className="h-4 w-4" />
                   Download README.md
+                </Button>
+                <Button onClick={handleSaveToLibrary} variant="outline" size="sm" className="flex items-center gap-2">
+                  <Save className="h-4 w-4" />
+                  Save to Library
                 </Button>
                 <Button onClick={handleGoToGitHub} variant="outline" size="sm" className="flex items-center gap-2">
                   <ExternalLink className="h-4 w-4" />
@@ -554,7 +587,7 @@ ${interests}
                           variant="outline"
                           size="sm"
                           className="mt-2"
-                          onClick={() => navigate('/dashboard/digital-career-hub')}
+                          onClick={() => window.open('/dashboard/digital-career-hub', '_blank')}
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Go to Tool

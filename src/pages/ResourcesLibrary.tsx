@@ -38,12 +38,21 @@ interface SavedCoverLetter {
   updated_at: string;
 }
 
+interface SavedReadmeFile {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const ResourcesLibrary = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
   const [savedResumes, setSavedResumes] = useState<SavedResume[]>([]);
   const [savedCoverLetters, setSavedCoverLetters] = useState<SavedCoverLetter[]>([]);
+  const [savedReadmeFiles, setSavedReadmeFiles] = useState<SavedReadmeFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(() => {
     return location.state?.activeTab || 'saved-resumes';
@@ -61,6 +70,7 @@ const ResourcesLibrary = () => {
     if (user) {
       fetchSavedResumes();
       fetchSavedCoverLetters();
+      fetchSavedReadmeFiles();
     }
   }, [user]);
 
@@ -119,6 +129,26 @@ const ResourcesLibrary = () => {
       console.error('Error fetching saved cover letters:', error);
       toast({
         title: 'Error loading saved cover letters',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const fetchSavedReadmeFiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_readme_files')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedReadmeFiles(data || []);
+    } catch (error) {
+      console.error('Error fetching saved README files:', error);
+      toast({
+        title: 'Error loading saved README files',
         description: 'Please try again later.',
         variant: 'destructive'
       });
@@ -468,6 +498,45 @@ const ResourcesLibrary = () => {
     }
   };
 
+  const deleteSavedReadmeFile = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('saved_readme_files')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSavedReadmeFiles(prev => prev.filter(readme => readme.id !== id));
+      toast({
+        title: 'README file deleted successfully',
+        description: 'The saved README file has been removed from your library.',
+      });
+    } catch (error) {
+      console.error('Error deleting saved README file:', error);
+      toast({
+        title: 'Error deleting README file',
+        description: 'Please try again later.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const downloadReadmeFile = (readme: SavedReadmeFile) => {
+    const element = document.createElement('a');
+    const file = new Blob([readme.content], { type: 'text/markdown' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${readme.title.replace(/[^a-z0-9\s]/gi, '_')}.md`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: 'README Download Started',
+      description: 'Your README file has been downloaded.',
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -505,9 +574,10 @@ const ResourcesLibrary = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
             <TabsTrigger value="saved-resumes">Saved Resumes</TabsTrigger>
             <TabsTrigger value="saved-cover-letters">Saved Cover Letters</TabsTrigger>
+            <TabsTrigger value="saved-readme-files">README Files</TabsTrigger>
           </TabsList>
 
           <TabsContent value="saved-resumes" className="mt-6">
@@ -755,6 +825,115 @@ const ResourcesLibrary = () => {
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                       onClick={() => deleteSavedCoverLetter(coverLetter.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="saved-readme-files" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Your Saved README Files
+                  <Badge variant="secondary">{savedReadmeFiles.length}/3</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {savedReadmeFiles.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No saved README files yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create README files using the GitHub Profile README Generator and save them here
+                    </p>
+                    <Button onClick={() => window.location.href = '/dashboard/github-optimization'}>
+                      Go to README Generator
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {savedReadmeFiles.map((readme) => (
+                      <Card key={readme.id} className="border-2 hover:border-primary/50 transition-colors">
+                        <CardContent className="pt-6">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg text-foreground mb-2">
+                                {readme.title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>Saved: {format(new Date(readme.created_at), 'MMM dd, yyyy')}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  <span>{format(new Date(readme.created_at), 'hh:mm a')}</span>
+                                </div>
+                              </div>
+                              <div className="bg-muted/30 rounded-lg p-4 mb-4 max-h-40 overflow-y-auto">
+                                <pre className="text-sm text-foreground/80 whitespace-pre-wrap font-mono">
+                                  {readme.content.length > 300 
+                                    ? `${readme.content.substring(0, 300)}...` 
+                                    : readme.content}
+                                </pre>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => copyToClipboard(readme.content)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                  Copy Content
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => downloadReadmeFile(readme)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Download className="h-4 w-4" />
+                                  Download README.md
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete README File</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{readme.title}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteSavedReadmeFile(readme.id)}
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                     >
                                       Delete
