@@ -40,16 +40,26 @@ Deno.serve(async (req) => {
 
     console.log('Processing webhook for user:', userData.user_id || userData.id)
 
-    // Prepare user details for webhook
+    // Prepare comprehensive user details for webhook
     const webhookPayload = {
       user_id: userData.user_id || userData.id,
       email: userData.email,
-      full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email,
-      username: userData.username || userData.raw_user_meta_data?.username || '',
+      full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email?.split('@')[0],
+      username: userData.username || userData.raw_user_meta_data?.username || userData.email?.split('@')[0],
       created_at: userData.created_at,
+      updated_at: userData.updated_at || new Date().toISOString(),
       email_verified: userData.email_confirmed_at ? true : false,
       phone: userData.phone || '',
-      metadata: userData.raw_user_meta_data || {}
+      app_metadata: userData.app_metadata || {},
+      user_metadata: userData.user_metadata || userData.raw_user_meta_data || {},
+      raw_user_meta_data: userData.raw_user_meta_data || {},
+      provider: userData.app_metadata?.provider || 'email',
+      providers: userData.app_metadata?.providers || ['email'],
+      last_sign_in_at: userData.last_sign_in_at,
+      confirmed_at: userData.confirmed_at || userData.email_confirmed_at,
+      role: userData.role || 'authenticated',
+      signup_source: 'web_application',
+      timestamp: new Date().toISOString()
     }
 
     console.log('Sending webhook payload:', webhookPayload)
