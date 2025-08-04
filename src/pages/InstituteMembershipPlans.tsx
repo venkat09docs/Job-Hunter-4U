@@ -1,7 +1,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Users, Calendar, IndianRupee } from "lucide-react";
+import { Check, Users, Calendar, IndianRupee, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const plans = [
   {
@@ -85,6 +95,19 @@ const plans = [
 ];
 
 const InstituteMembershipPlans = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -94,9 +117,148 @@ const InstituteMembershipPlans = () => {
     }).format(price);
   };
 
-  const handleSelectPlan = (planId: string) => {
-    // Handle plan selection - this will be implemented later
-    console.log(`Selected plan: ${planId}`);
+  const handleSelectPlan = async (plan: typeof plans[0]) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to purchase an institute membership plan.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoadingPlan(plan.id);
+    
+    try {
+      // Load Razorpay SDK
+      const res = await loadRazorpay();
+      if (!res) {
+        toast({
+          title: "Error",
+          description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
+      }
+
+      // Create order using our edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+        body: {
+          amount: plan.price,
+          plan_name: plan.name,
+          plan_duration: plan.duration,
+        }
+      });
+
+      if (orderError || !orderData) {
+        console.error('Order creation error:', orderError);
+        toast({
+          title: "Error",
+          description: "Failed to create payment order. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+        return;
+      }
+
+      // Configure Razorpay options
+      const options = {
+        key: orderData.key,
+        order_id: orderData.order_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Institute Membership",
+        description: `${plan.name} - ${plan.members} Students Access for ${plan.duration}`,
+        image: "/favicon.ico",
+        handler: async function (response: any) {
+          try {
+            // Verify payment using our edge function
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            });
+
+            if (verifyError || !verifyData?.success) {
+              console.error('Payment verification error:', verifyError);
+              toast({
+                title: "Payment Verification Failed",
+                description: "Payment received but verification failed. Please contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            // Success!
+            toast({
+              title: "🎉 Payment Successful!",
+              description: `Welcome to ${plan.name}! Your institute membership is now active.`,
+            });
+            
+            // Remove body class when successful
+            document.body.classList.remove('razorpay-open');
+            
+            // Refresh the page to show updated subscription status
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+            
+          } catch (error) {
+            console.error('Error processing payment:', error);
+            toast({
+              title: "Payment Processing Error",
+              description: "Payment may have been successful but activation failed. Please contact support.",
+              variant: "destructive"
+            });
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setLoadingPlan(null);
+            document.body.classList.remove('razorpay-open');
+            toast({
+              title: "Payment Cancelled",
+              description: "You can complete your payment anytime to activate your institute membership.",
+            });
+          },
+          escape: true,
+          backdropclose: false
+        },
+        theme: {
+          color: "#6366f1",
+          backdrop_color: "rgba(0, 0, 0, 0.8)"
+        },
+        prefill: {
+          email: user.email || '',
+        }
+      };
+
+      // Open Razorpay checkout
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+      // Add class to body after modal opens to avoid affecting Razorpay
+      setTimeout(() => {
+        document.body.classList.add('razorpay-open');
+      }, 100);
+      
+      // Simple focus management - just ensure window focus
+      setTimeout(() => {
+        window.focus();
+      }, 300);
+      
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initialize payment. Please try again.",
+        variant: "destructive"
+      });
+      setLoadingPlan(null);
+    }
   };
 
   return (
@@ -162,9 +324,17 @@ const InstituteMembershipPlans = () => {
               <Button 
                 className="w-full" 
                 variant={plan.popular ? "default" : "outline"}
-                onClick={() => handleSelectPlan(plan.id)}
+                onClick={() => handleSelectPlan(plan)}
+                disabled={loadingPlan === plan.id}
               >
-                Select Plan
+                {loadingPlan === plan.id ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  "Select Plan"
+                )}
               </Button>
             </CardContent>
           </Card>
