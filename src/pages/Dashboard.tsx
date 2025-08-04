@@ -398,35 +398,15 @@ const Dashboard = () => {
                       onClick={() => navigate('/dashboard/github-optimization')}
                     >
                       <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${getGitHubProgress() * 2.827} ${(100 - getGitHubProgress()) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                         <div className="absolute inset-0 flex items-center justify-center">
-                           <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
-                         </div>
-                       </div>
-                       <h4 className="font-medium text-center">GitHub</h4>
-                       <p className="text-sm text-muted-foreground text-center">
-                         {savedReadmeFilesCount} README files saved
-                       </p>
-                     </div>
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                          <span className="text-2xl font-bold text-primary">{savedReadmeFilesCount}</span>
+                        </div>
+                      </div>
+                      <h4 className="font-medium text-center">GitHub</h4>
+                      <p className="text-sm text-muted-foreground text-center">
+                        {savedReadmeFilesCount} README files saved
+                      </p>
+                    </div>
 
                     {/* Blog Status */}
                     <div 
