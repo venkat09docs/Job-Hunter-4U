@@ -293,36 +293,41 @@ const Dashboard = () => {
             {/* Overall Career Development Score */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-2xl">Overall Career Development Score</CardTitle>
-                  <CardDescription>Your comprehensive career readiness assessment</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-8 items-center">
-                    {/* Profile Picture Section */}
-                    <div className="flex flex-col items-center space-y-4">
-                      <Avatar className="h-24 w-24">
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-8 items-stretch min-h-[200px]">
+                    {/* Profile Picture Section - Full Height */}
+                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6">
+                      <Avatar className="h-32 w-32">
                         <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
-                        <AvatarFallback className="text-2xl">
+                        <AvatarFallback className="text-3xl">
                           {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="text-center">
+                      <div className="text-center mt-4">
                         <p className="font-semibold text-lg">{profile?.full_name || profile?.username || 'Job Hunter'}</p>
                         <p className="text-sm text-muted-foreground">Career Professional</p>
                       </div>
                     </div>
                     
-                    {/* Statistics Section */}
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="text-6xl font-bold text-primary">{getOverallCareerScore()}%</div>
-                        <TrendingUp className="h-12 w-12 text-green-500" />
+                    {/* Right Side - Header + Statistics */}
+                    <div className="flex flex-col justify-center space-y-6">
+                      {/* Header Section */}
+                      <div className="text-left">
+                        <h3 className="text-2xl font-bold mb-2">Overall Career Development Score</h3>
+                        <p className="text-muted-foreground">Your comprehensive career readiness assessment</p>
                       </div>
-                      <Progress value={getOverallCareerScore()} className="w-full max-w-sm h-3" />
-                      <p className="text-sm text-muted-foreground text-center">
-                        Based on Resume, LinkedIn, GitHub & Network progress
-                      </p>
+                      
+                      {/* Statistics Section */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <div className="text-6xl font-bold text-primary">{getOverallCareerScore()}%</div>
+                          <TrendingUp className="h-12 w-12 text-green-500" />
+                        </div>
+                        <Progress value={getOverallCareerScore()} className="w-full max-w-sm h-3" />
+                        <p className="text-sm text-muted-foreground">
+                          Based on Resume, LinkedIn, GitHub & Network progress
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
