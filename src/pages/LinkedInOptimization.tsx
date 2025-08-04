@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb } from 'lucide-react';
+import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb, Plus, Minus } from 'lucide-react';
 
 interface LinkedInTask {
   id: string;
@@ -70,6 +70,11 @@ const LinkedInOptimization = () => {
   const [tasks, setTasks] = useState<LinkedInTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('Profile Basics');
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    'Profile Basics': true,
+    'Experience': false,
+    'Skills': false
+  });
 
   useEffect(() => {
     if (user) {
@@ -167,6 +172,20 @@ const LinkedInOptimization = () => {
     }
 
     window.open(profile.linkedin_url, '_blank');
+  };
+
+  const toggleSection = (category: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+    
+    // Update selected category for tips when expanding
+    if (!expandedSections[category]) {
+      setSelectedCategory(category);
+    } else {
+      setSelectedCategory('');
+    }
   };
 
   const completedCount = tasks.filter(task => task.completed).length;
@@ -272,15 +291,21 @@ const LinkedInOptimization = () => {
 
               return (
                 <Card key={category} className="shadow-elegant">
-                  <CardHeader>
-                   <CardTitle className="text-lg flex items-center justify-between">
-                      <button
-                        onClick={() => setSelectedCategory(category)}
-                        className="flex items-center gap-2 text-left hover:text-primary transition-colors"
-                      >
-                        <Target className="h-4 w-4 text-primary" />
-                        {category}
-                      </button>
+                   <CardHeader>
+                    <CardTitle className="text-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleSection(category)}
+                          className="flex items-center gap-2 text-left hover:text-primary transition-colors"
+                        >
+                          {expandedSections[category] ? (
+                            <Minus className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Plus className="h-4 w-4 text-primary" />
+                          )}
+                          {category}
+                        </button>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
@@ -298,31 +323,33 @@ const LinkedInOptimization = () => {
                     </CardTitle>
                     <Progress value={categoryPercentage} className="h-2" />
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {categoryTasks.map((task) => (
-                        <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
-                          <Checkbox
-                            id={task.id}
-                            checked={task.completed}
-                            onCheckedChange={(checked) => updateTaskStatus(task.id, !!checked)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1 space-y-1">
-                            <label
-                              htmlFor={task.id}
-                              className={`font-medium cursor-pointer ${task.completed ? 'text-muted-foreground line-through' : ''}`}
-                            >
-                              {task.title}
-                            </label>
-                            <p className="text-sm text-muted-foreground">
-                              {task.description}
-                            </p>
+                  {expandedSections[category] && (
+                    <CardContent>
+                      <div className="space-y-4">
+                        {categoryTasks.map((task) => (
+                          <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                            <Checkbox
+                              id={task.id}
+                              checked={task.completed}
+                              onCheckedChange={(checked) => updateTaskStatus(task.id, !!checked)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1 space-y-1">
+                              <label
+                                htmlFor={task.id}
+                                className={`font-medium cursor-pointer ${task.completed ? 'text-muted-foreground line-through' : ''}`}
+                              >
+                                {task.title}
+                              </label>
+                              <p className="text-sm text-muted-foreground">
+                                {task.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
+                        ))}
+                      </div>
+                    </CardContent>
+                  )}
                 </Card>
               );
             })}
@@ -338,7 +365,7 @@ const LinkedInOptimization = () => {
                 Tips for {selectedCategory}
               </CardTitle>
               <CardDescription>
-                Click on a section to see specific tips
+                Expand sections using + to see specific tips
               </CardDescription>
             </CardHeader>
             <CardContent>
