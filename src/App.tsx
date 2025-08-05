@@ -37,6 +37,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import StudentsReport from "./pages/StudentsReport";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -248,6 +249,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <KnowledgeBase />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/students-report" 
+              element={
+                <ProtectedRoute>
+                  <StudentsReport />
                 </ProtectedRoute>
               } 
             />

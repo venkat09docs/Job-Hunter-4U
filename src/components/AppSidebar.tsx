@@ -16,7 +16,8 @@ import {
   Users,
   Archive,
   CreditCard,
-  BookOpen
+  BookOpen,
+  BarChart3
 } from "lucide-react";
 import {
   Sidebar,
@@ -52,6 +53,7 @@ const mainItems = [
 
 const adminItems = [
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
+  { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Institute Membership Plans", url: "/dashboard/institute-membership-plans", icon: CreditCard },
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
@@ -108,8 +110,11 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => {
-                  // For institute admins, show Admin Dashboard and Institute Membership Plans
-                  if (isInstituteAdmin && !isAdmin && item.title !== "Admin Dashboard" && item.title !== "Institute Membership Plans") return null;
+                  // For institute admins, show Admin Dashboard, Students Report and Institute Membership Plans
+                  if (isInstituteAdmin && !isAdmin && 
+                      item.title !== "Admin Dashboard" && 
+                      item.title !== "Students Report" && 
+                      item.title !== "Institute Membership Plans") return null;
                   // Show User Management only for super admins
                   if (item.title === "User Management" && !isAdmin) return null;
                   // Show Manage Career Hub and Subscriptions only for super admins
