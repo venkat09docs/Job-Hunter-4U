@@ -90,6 +90,8 @@ export const InstituteManagement = () => {
   const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [instituteToDelete, setInstituteToDelete] = useState<Institute | null>(null);
+  const [toggleDialogOpen, setToggleDialogOpen] = useState(false);
+  const [instituteToToggle, setInstituteToToggle] = useState<Institute | null>(null);
   const [formData, setFormData] = useState<InstituteFormData>({
     name: "",
     code: "",
@@ -286,19 +288,29 @@ export const InstituteManagement = () => {
     }
   };
 
-  const toggleActiveStatus = async (institute: Institute) => {
+  const handleToggleStatus = (institute: Institute) => {
+    setInstituteToToggle(institute);
+    setToggleDialogOpen(true);
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!instituteToToggle) return;
+
     try {
       const { error } = await supabase
         .from('institutes')
-        .update({ is_active: !institute.is_active })
-        .eq('id', institute.id);
+        .update({ is_active: !instituteToToggle.is_active })
+        .eq('id', instituteToToggle.id);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: `Institute ${!institute.is_active ? 'activated' : 'deactivated'} successfully`,
+        description: `Institute ${!instituteToToggle.is_active ? 'activated' : 'deactivated'} successfully`,
       });
+      
+      setToggleDialogOpen(false);
+      setInstituteToToggle(null);
       fetchInstitutes();
     } catch (error: any) {
       toast({
@@ -544,7 +556,7 @@ export const InstituteManagement = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => toggleActiveStatus(institute)}
+                        onClick={() => handleToggleStatus(institute)}
                         title={institute.is_active ? "Deactivate" : "Activate"}
                       >
                         {institute.is_active ? (
@@ -723,6 +735,25 @@ export const InstituteManagement = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Toggle Status Confirmation Dialog */}
+      <AlertDialog open={toggleDialogOpen} onOpenChange={setToggleDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {instituteToToggle?.is_active ? 'deactivate' : 'activate'} the institute "{instituteToToggle?.name}"?
+              {instituteToToggle?.is_active && " This will make the institute inactive and may affect related batches and students."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmToggleStatus}>
+              {instituteToToggle?.is_active ? 'Deactivate' : 'Activate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
