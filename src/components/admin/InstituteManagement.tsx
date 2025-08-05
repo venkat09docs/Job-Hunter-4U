@@ -289,12 +289,15 @@ export const InstituteManagement = () => {
   };
 
   const handleToggleStatus = (institute: Institute) => {
+    console.log('Toggle clicked for institute:', institute.name, 'Current status:', institute.is_active);
     setInstituteToToggle(institute);
     setToggleDialogOpen(true);
   };
 
   const confirmToggleStatus = async () => {
     if (!instituteToToggle) return;
+    
+    console.log('Confirming toggle for:', instituteToToggle.name, 'New status will be:', !instituteToToggle.is_active);
 
     try {
       const { error } = await supabase
