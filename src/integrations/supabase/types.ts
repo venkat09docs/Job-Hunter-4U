@@ -368,6 +368,10 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          subscription_active: boolean | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
           updated_at: string
         }
         Insert: {
@@ -381,6 +385,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -394,6 +402,10 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           updated_at?: string
         }
         Relationships: []
