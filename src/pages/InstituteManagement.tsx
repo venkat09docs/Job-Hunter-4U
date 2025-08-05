@@ -24,7 +24,12 @@ import {
   Calendar,
   CheckCircle,
   XCircle,
-  Home
+  Home,
+  Edit,
+  Trash2,
+  Eye,
+  Settings,
+  GraduationCap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
@@ -65,7 +70,10 @@ export default function InstituteManagement() {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [selectedInstitute, setSelectedInstitute] = useState<string>('');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedInstitute, setSelectedInstitute] = useState<Institute | null>(null);
+  const [batchDetails, setBatchDetails] = useState<any[]>([]);
   const { toast } = useToast();
 
   const [newInstitute, setNewInstitute] = useState({
@@ -309,6 +317,120 @@ export default function InstituteManagement() {
       toast({
         title: 'Error',
         description: 'Failed to assign institute admin',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const updateInstitute = async () => {
+    try {
+      if (!selectedInstitute || !selectedInstitute.name || !selectedInstitute.code) {
+        toast({
+          title: 'Validation Error',
+          description: 'Please fill in all required fields',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('institutes')
+        .update({
+          name: selectedInstitute.name,
+          code: selectedInstitute.code,
+          description: selectedInstitute.description,
+          subscription_plan: selectedInstitute.subscription_plan
+        })
+        .eq('id', selectedInstitute.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Institute updated successfully'
+      });
+
+      setEditDialogOpen(false);
+      setSelectedInstitute(null);
+      fetchInstitutes();
+    } catch (error: any) {
+      console.error('Error updating institute:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update institute',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const deleteInstitute = async (institute: Institute) => {
+    try {
+      const { error } = await supabase
+        .from('institutes')
+        .update({ is_active: false })
+        .eq('id', institute.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Institute deactivated successfully'
+      });
+
+      fetchInstitutes();
+    } catch (error: any) {
+      console.error('Error deactivating institute:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to deactivate institute',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const viewBatchDetails = async (institute: Institute) => {
+    try {
+      const { data: batches, error } = await supabase
+        .from('batches')
+        .select(`
+          id,
+          name,
+          code,
+          description,
+          start_date,
+          end_date,
+          created_at
+        `)
+        .eq('institute_id', institute.id)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      // Get student count for each batch
+      const batchesWithStudents = await Promise.all(
+        (batches || []).map(async (batch) => {
+          const { count: studentCount } = await supabase
+            .from('user_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('batch_id', batch.id)
+            .eq('assignment_type', 'student')
+            .eq('is_active', true);
+
+          return {
+            ...batch,
+            student_count: studentCount || 0
+          };
+        })
+      );
+
+      setBatchDetails(batchesWithStudents);
+      setSelectedInstitute(institute);
+      setViewDialogOpen(true);
+    } catch (error: any) {
+      console.error('Error fetching batch details:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch batch details',
         variant: 'destructive'
       });
     }
@@ -559,6 +681,7 @@ export default function InstituteManagement() {
                 <TableHead>Batches</TableHead>
                 <TableHead>Students</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -616,12 +739,231 @@ export default function InstituteManagement() {
                   <TableCell className="text-sm">
                     {formatDate(institute.created_at)}
                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => viewBatchDetails(institute)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedInstitute(institute);
+                          setEditDialogOpen(true);
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteInstitute(institute)}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit Institute Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Institute</DialogTitle>
+            <DialogDescription>
+              Update institute details and subscription plan
+            </DialogDescription>
+          </DialogHeader>
+          {selectedInstitute && (
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto px-1">
+              <div>
+                <Label htmlFor="edit-name">Institute Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={selectedInstitute.name}
+                  onChange={(e) => setSelectedInstitute(prev => prev ? { ...prev, name: e.target.value } : null)}
+                  placeholder="Enter institute name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-code">Institute Code *</Label>
+                <Input
+                  id="edit-code"
+                  value={selectedInstitute.code}
+                  onChange={(e) => setSelectedInstitute(prev => prev ? { ...prev, code: e.target.value } : null)}
+                  placeholder="Enter unique institute code"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={selectedInstitute.description || ''}
+                  onChange={(e) => setSelectedInstitute(prev => prev ? { ...prev, description: e.target.value } : null)}
+                  placeholder="Enter institute description"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-subscription_plan">Subscription Plan</Label>
+                <Select
+                  value={selectedInstitute.subscription_plan || ''}
+                  onValueChange={(value) => setSelectedInstitute(prev => prev ? { ...prev, subscription_plan: value } : null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select subscription plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subscriptionPlans.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.name}>
+                        <div className="flex flex-col">
+                          <span>{plan.name}</span>
+                          {plan.member_limit && (
+                            <span className="text-xs text-muted-foreground">
+                              Up to {plan.member_limit} members
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setEditDialogOpen(false);
+              setSelectedInstitute(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={updateInstitute}>Update Institute</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Batch Details Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              {selectedInstitute?.name} - Batch & Student Details
+            </DialogTitle>
+            <DialogDescription>
+              View all batches and student counts for this institute (Read-only for Super Admin)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {batchDetails.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Total Batches</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{batchDetails.length}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Total Students</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {batchDetails.reduce((sum, batch) => sum + batch.student_count, 0)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Avg Students/Batch</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {Math.round(batchDetails.reduce((sum, batch) => sum + batch.student_count, 0) / batchDetails.length)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Batch Details</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Batch Name</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Students</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Created</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {batchDetails.map((batch) => (
+                        <TableRow key={batch.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{batch.name}</p>
+                              <p className="text-sm text-muted-foreground">{batch.description}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{batch.code}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              <span className="font-medium">{batch.student_count}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              <div>Start: {formatDate(batch.start_date)}</div>
+                              <div>End: {formatDate(batch.end_date)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatDate(batch.created_at)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-medium text-lg">No Batches Found</h3>
+                <p className="text-muted-foreground">This institute doesn't have any active batches yet.</p>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => {
+              setViewDialogOpen(false);
+              setSelectedInstitute(null);
+              setBatchDetails([]);
+            }}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
