@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { useRole } from './useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
@@ -28,32 +29,45 @@ interface BatchSummary {
 
 export const useInstituteStudents = () => {
   const { user } = useAuth();
+  const { role } = useRole();
   const { toast } = useToast();
   const [batches, setBatches] = useState<BatchSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user && role) {
       fetchInstituteStudents();
     }
-  }, [user]);
+  }, [user, role]);
 
   const fetchInstituteStudents = async () => {
     try {
       setLoading(true);
 
-      // Get institute admin's managed institutes
-      const { data: managedInstitutes, error: instituteError } = await supabase
-        .rpc('get_managed_institutes', { user_id_param: user?.id });
+      let instituteIds: string[] = [];
 
-      if (instituteError) throw instituteError;
+      if (role === 'admin') {
+        // Super admin can see all institutes
+        const { data: allInstitutes, error: instituteError } = await supabase
+          .from('institutes')
+          .select('id')
+          .eq('is_active', true);
 
-      if (!managedInstitutes || managedInstitutes.length === 0) {
+        if (instituteError) throw instituteError;
+        instituteIds = allInstitutes?.map(inst => inst.id) || [];
+      } else if (role === 'institute_admin') {
+        // Institute admin sees only their managed institutes
+        const { data: managedInstitutes, error: instituteError } = await supabase
+          .rpc('get_managed_institutes', { user_id_param: user?.id });
+
+        if (instituteError) throw instituteError;
+        instituteIds = managedInstitutes?.map((inst: any) => inst.institute_id) || [];
+      }
+
+      if (instituteIds.length === 0) {
         setBatches([]);
         return;
       }
-
-      const instituteIds = managedInstitutes.map((inst: any) => inst.institute_id);
 
       // Get all students assigned to these institutes with their batch info
       const { data: studentAssignments, error: assignmentError } = await supabase
