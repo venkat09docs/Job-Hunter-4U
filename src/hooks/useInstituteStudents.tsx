@@ -69,22 +69,40 @@ export const useInstituteStudents = () => {
         return;
       }
 
-      // Get all students assigned to these institutes with their batch info
+      // First, get all batches belonging to these institutes
+      const { data: instituteBatches, error: batchError } = await supabase
+        .from('batches')
+        .select('id, name, institute_id')
+        .in('institute_id', instituteIds)
+        .eq('is_active', true);
+
+      if (batchError) throw batchError;
+
+      if (!instituteBatches || instituteBatches.length === 0) {
+        setBatches([]);
+        return;
+      }
+
+      const batchIds = instituteBatches.map(batch => batch.id);
+
+      // Get all student assignments for these batches
       const { data: studentAssignments, error: assignmentError } = await supabase
         .from('user_assignments')
-        .select(`
-          user_id,
-          batch_id,
-          batches!inner(id, name)
-        `)
+        .select('user_id, batch_id, institute_id')
+        .in('batch_id', batchIds)
         .in('institute_id', instituteIds)
         .eq('is_active', true)
         .eq('assignment_type', 'student');
 
       if (assignmentError) throw assignmentError;
 
+      if (!studentAssignments || studentAssignments.length === 0) {
+        setBatches([]);
+        return;
+      }
+
       // Get profiles for all students
-      const studentIds = studentAssignments?.map(a => a.user_id) || [];
+      const studentIds = studentAssignments.map(a => a.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, email, username')
@@ -98,12 +116,17 @@ export const useInstituteStudents = () => {
         profileMap.set(profile.user_id, profile);
       });
 
-      // Group students by batch and fetch their statistics
+      // Create a map for quick batch lookup
       const batchMap = new Map<string, BatchSummary>();
+      const batchLookup = new Map();
+      instituteBatches.forEach(batch => {
+        batchLookup.set(batch.id, batch);
+      });
 
       for (const assignment of studentAssignments || []) {
         const batchId = assignment.batch_id;
-        const batchName = (assignment.batches as any).name;
+        const batchInfo = batchLookup.get(batchId);
+        const batchName = batchInfo?.name || 'Unknown Batch';
         const profile = profileMap.get(assignment.user_id);
         
         if (!batchMap.has(batchId)) {
