@@ -333,21 +333,64 @@ export default function InstituteManagement() {
         return;
       }
 
+      // Get current institute data to check existing subscription
+      const { data: currentInstitute } = await supabase
+        .from('institutes')
+        .select('subscription_active, subscription_end_date')
+        .eq('id', selectedInstitute.id)
+        .single();
+
+      let updateData: any = {
+        name: selectedInstitute.name,
+        code: selectedInstitute.code,
+        description: selectedInstitute.description,
+        subscription_plan: selectedInstitute.subscription_plan
+      };
+
+      // If a subscription plan is being assigned
+      if (selectedInstitute.subscription_plan) {
+        const now = new Date();
+        
+        // Calculate subscription dates
+        if (currentInstitute?.subscription_active && currentInstitute?.subscription_end_date) {
+          // Extend existing subscription by 90 days
+          const currentEndDate = new Date(currentInstitute.subscription_end_date);
+          const newEndDate = new Date(currentEndDate);
+          newEndDate.setDate(newEndDate.getDate() + 90);
+          
+          updateData = {
+            ...updateData,
+            is_active: true,
+            subscription_active: true,
+            subscription_end_date: newEndDate.toISOString()
+          };
+        } else {
+          // New subscription or reactivate
+          const endDate = new Date(now);
+          endDate.setDate(endDate.getDate() + 90);
+          
+          updateData = {
+            ...updateData,
+            is_active: true,
+            subscription_active: true,
+            subscription_start_date: now.toISOString(),
+            subscription_end_date: endDate.toISOString()
+          };
+        }
+      }
+
       const { error } = await supabase
         .from('institutes')
-        .update({
-          name: selectedInstitute.name,
-          code: selectedInstitute.code,
-          description: selectedInstitute.description,
-          subscription_plan: selectedInstitute.subscription_plan
-        })
+        .update(updateData)
         .eq('id', selectedInstitute.id);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: 'Institute updated successfully'
+        description: selectedInstitute.subscription_plan 
+          ? 'Institute updated and subscription activated successfully'
+          : 'Institute updated successfully'
       });
 
       setEditDialogOpen(false);
