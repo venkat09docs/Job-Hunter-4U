@@ -88,6 +88,7 @@ export default function InstituteManagement() {
 
   const fetchSubscriptionPlans = async () => {
     try {
+      console.log('Fetching subscription plans...');
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('id, name, description')
@@ -95,6 +96,7 @@ export default function InstituteManagement() {
         .order('name');
 
       if (error) throw error;
+      console.log('Subscription plans fetched:', data);
       setSubscriptionPlans(data || []);
     } catch (error: any) {
       console.error('Error fetching subscription plans:', error);
