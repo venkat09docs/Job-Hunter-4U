@@ -12,29 +12,125 @@ Deno.serve(async (req) => {
   try {
     console.log('User signup webhook triggered')
     
-    // Initialize Supabase client to listen for notifications
+    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // This can be called directly or via database notification
+    // Check if this is a queue processing request or direct user data
     const body = await req.json()
     
     let userData;
+    let isFromQueue = false;
+    
     if (body.user) {
       // Direct call format
       userData = body.user
     } else if (body.user_id) {
-      // Notification format
+      // Notification format or queue processing
       userData = body
+      isFromQueue = true
     } else {
-      console.error('No user data provided')
-      return new Response(
-        JSON.stringify({ error: 'No user data provided' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      // Try to process pending webhooks from queue
+      console.log('No direct user data, checking webhook queue...')
+      
+      const { data: queueItems, error: queueError } = await supabase
+        .from('webhook_queue')
+        .select('*')
+        .eq('status', 'pending')
+        .limit(10)
+      
+      if (queueError) {
+        console.error('Error fetching webhook queue:', queueError)
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch webhook queue' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      if (!queueItems || queueItems.length === 0) {
+        console.log('No pending webhooks in queue')
+        return new Response(
+          JSON.stringify({ message: 'No pending webhooks to process' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      // Process all pending webhooks
+      let processedCount = 0
+      let errorCount = 0
+      
+      for (const queueItem of queueItems) {
+        try {
+          console.log('Processing queued webhook for user:', queueItem.user_id)
+          
+          // Mark as processing
+          await supabase
+            .from('webhook_queue')
+            .update({ status: 'processing' })
+            .eq('id', queueItem.id)
+          
+          // Send webhook
+          const webhookResponse = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(queueItem.user_data)
+          })
+          
+          if (webhookResponse.ok) {
+            // Mark as completed
+            await supabase
+              .from('webhook_queue')
+              .update({ 
+                status: 'completed', 
+                processed_at: new Date().toISOString() 
+              })
+              .eq('id', queueItem.id)
+            
+            processedCount++
+            console.log('Successfully processed webhook for user:', queueItem.user_id)
+          } else {
+            const errorText = await webhookResponse.text()
+            console.error('Webhook failed for user:', queueItem.user_id, 'Error:', errorText)
+            
+            // Mark as failed
+            await supabase
+              .from('webhook_queue')
+              .update({ 
+                status: 'failed', 
+                error_message: `HTTP ${webhookResponse.status}: ${errorText}`,
+                processed_at: new Date().toISOString()
+              })
+              .eq('id', queueItem.id)
+            
+            errorCount++
+          }
+        } catch (error) {
+          console.error('Error processing webhook for user:', queueItem.user_id, error)
+          
+          // Mark as failed
+          await supabase
+            .from('webhook_queue')
+            .update({ 
+              status: 'failed', 
+              error_message: error.message,
+              processed_at: new Date().toISOString()
+            })
+            .eq('id', queueItem.id)
+          
+          errorCount++
         }
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          message: 'Queue processing completed',
+          processed: processedCount,
+          failed: errorCount
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
