@@ -29,7 +29,9 @@ import {
   Trash2,
   Eye,
   Settings,
-  GraduationCap
+  GraduationCap,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
@@ -46,6 +48,8 @@ interface Institute {
   batch_count: number;
   student_count: number;
   created_at: string;
+  is_active: boolean;
+  admin_name?: string;
 }
 
 interface User {
@@ -122,16 +126,12 @@ export default function InstituteManagement() {
     try {
       const { data, error } = await supabase
         .from('institutes')
-        .select(`
-          *,
-          batches!inner(count),
-          user_assignments!inner(count)
-        `);
+        .select('*');
 
       if (error) throw error;
 
-      // Transform data to include counts
-      const institutesWithCounts = await Promise.all(
+      // Transform data to include counts and admin name
+      const institutesWithDetails = await Promise.all(
         (data || []).map(async (institute) => {
           // Get batch count
           const { count: batchCount } = await supabase
@@ -148,15 +148,35 @@ export default function InstituteManagement() {
             .eq('assignment_type', 'student')
             .eq('is_active', true);
 
+          // Get institute admin name
+          const { data: adminAssignment } = await supabase
+            .from('institute_admin_assignments')
+            .select('user_id')
+            .eq('institute_id', institute.id)
+            .eq('is_active', true)
+            .single();
+
+          let adminName = 'Not Assigned';
+          if (adminAssignment) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('user_id', adminAssignment.user_id)
+              .single();
+            
+            adminName = profile?.full_name || profile?.email || 'Not Assigned';
+          }
+
           return {
             ...institute,
             batch_count: batchCount || 0,
-            student_count: studentCount || 0
+            student_count: studentCount || 0,
+            admin_name: adminName
           };
         })
       );
 
-      setInstitutes(institutesWithCounts);
+      setInstitutes(institutesWithDetails);
     } catch (error: any) {
       console.error('Error fetching institutes:', error);
       toast({
@@ -408,24 +428,68 @@ export default function InstituteManagement() {
 
   const deleteInstitute = async (institute: Institute) => {
     try {
+      // Check if there are any batches assigned to this institute
+      const { count: batchCount } = await supabase
+        .from('batches')
+        .select('*', { count: 'exact', head: true })
+        .eq('institute_id', institute.id)
+        .eq('is_active', true);
+
+      if (batchCount && batchCount > 0) {
+        toast({
+          title: 'Cannot Delete Institute',
+          description: `This institute has ${batchCount} active batch(es). Please delete all batches first before deleting the institute.`,
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // If no batches, proceed with deletion
       const { error } = await supabase
         .from('institutes')
-        .update({ is_active: false })
+        .delete()
         .eq('id', institute.id);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: 'Institute deactivated successfully'
+        description: 'Institute deleted successfully'
       });
 
       fetchInstitutes();
     } catch (error: any) {
-      console.error('Error deactivating institute:', error);
+      console.error('Error deleting institute:', error);
       toast({
         title: 'Error',
-        description: 'Failed to deactivate institute',
+        description: 'Failed to delete institute',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const toggleActiveStatus = async (institute: Institute) => {
+    try {
+      const newActiveStatus = !institute.is_active;
+      
+      const { error } = await supabase
+        .from('institutes')
+        .update({ is_active: newActiveStatus })
+        .eq('id', institute.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Institute ${newActiveStatus ? 'activated' : 'deactivated'} successfully`
+      });
+
+      fetchInstitutes();
+    } catch (error: any) {
+      console.error('Error toggling institute status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update institute status',
         variant: 'destructive'
       });
     }
@@ -718,6 +782,7 @@ export default function InstituteManagement() {
               <TableRow>
                 <TableHead>Institute Name</TableHead>
                 <TableHead>Code</TableHead>
+                <TableHead>Admin Name</TableHead>
                 <TableHead>Subscription Plan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Subscription Period</TableHead>
@@ -738,6 +803,11 @@ export default function InstituteManagement() {
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{institute.code}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className={institute.admin_name === 'Not Assigned' ? 'text-muted-foreground' : 'font-medium'}>
+                      {institute.admin_name}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {institute.subscription_plan ? (
@@ -782,37 +852,49 @@ export default function InstituteManagement() {
                   <TableCell className="text-sm">
                     {formatDate(institute.created_at)}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => viewBatchDetails(institute)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedInstitute(institute);
-                          setEditDialogOpen(true);
-                        }}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteInstitute(institute)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                   <TableCell>
+                     <div className="flex items-center justify-center gap-1">
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => viewBatchDetails(institute)}
+                         className="h-8 w-8 p-0"
+                         title="View Batch Details"
+                       >
+                         <Eye className="h-4 w-4" />
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => {
+                           setSelectedInstitute(institute);
+                           setEditDialogOpen(true);
+                         }}
+                         className="h-8 w-8 p-0"
+                         title="Edit Institute"
+                       >
+                         <Edit className="h-4 w-4" />
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => toggleActiveStatus(institute)}
+                         className={`h-8 w-8 p-0 ${institute.is_active ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-600'}`}
+                         title={institute.is_active ? "Deactivate Institute" : "Activate Institute"}
+                       >
+                         {institute.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                       </Button>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => deleteInstitute(institute)}
+                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                         title="Delete Institute"
+                       >
+                         <Trash2 className="h-4 w-4" />
+                       </Button>
+                     </div>
+                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
