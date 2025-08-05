@@ -55,6 +55,7 @@ interface SubscriptionPlan {
   id: string;
   name: string;
   description?: string;
+  member_limit?: number;
 }
 
 export default function InstituteManagement() {
@@ -88,21 +89,22 @@ export default function InstituteManagement() {
 
   const fetchSubscriptionPlans = async () => {
     try {
-      console.log('Fetching subscription plans...');
+      console.log('Fetching institute subscription plans...');
       const { data, error } = await supabase
         .from('subscription_plans')
-        .select('id, name, description')
+        .select('id, name, description, member_limit')
         .eq('is_active', true)
-        .order('name');
+        .eq('plan_type', 'institute')
+        .order('member_limit');
 
       if (error) throw error;
-      console.log('Subscription plans fetched:', data);
+      console.log('Institute subscription plans fetched:', data);
       setSubscriptionPlans(data || []);
     } catch (error: any) {
-      console.error('Error fetching subscription plans:', error);
+      console.error('Error fetching institute subscription plans:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch subscription plans',
+        description: 'Failed to fetch institute subscription plans',
         variant: 'destructive'
       });
     }
@@ -396,12 +398,14 @@ export default function InstituteManagement() {
                     <SelectContent>
                       {subscriptionPlans.map((plan) => (
                         <SelectItem key={plan.id} value={plan.name}>
-                          {plan.name}
-                          {plan.description && (
-                            <span className="text-xs text-muted-foreground ml-1">
-                              - {plan.description}
-                            </span>
-                          )}
+                          <div className="flex flex-col">
+                            <span>{plan.name}</span>
+                            {plan.member_limit && (
+                              <span className="text-xs text-muted-foreground">
+                                Up to {plan.member_limit} members
+                              </span>
+                            )}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

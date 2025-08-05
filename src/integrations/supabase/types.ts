@@ -1110,7 +1110,9 @@ export type Database = {
           duration_days: number
           id: string
           is_active: boolean
+          member_limit: number | null
           name: string
+          plan_type: string | null
           updated_at: string
         }
         Insert: {
@@ -1119,7 +1121,9 @@ export type Database = {
           duration_days: number
           id?: string
           is_active?: boolean
+          member_limit?: number | null
           name: string
+          plan_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -1128,7 +1132,9 @@ export type Database = {
           duration_days?: number
           id?: string
           is_active?: boolean
+          member_limit?: number | null
           name?: string
+          plan_type?: string | null
           updated_at?: string
         }
         Relationships: []
