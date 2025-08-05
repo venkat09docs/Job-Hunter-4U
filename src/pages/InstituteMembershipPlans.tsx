@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Users, Calendar, IndianRupee, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
@@ -14,91 +14,64 @@ declare global {
   }
 }
 
-const plans = [
-  {
-    id: "50-members",
-    name: "50 Members Pack",
-    members: 50,
-    price: 112500,
-    originalPrice: 125000,
-    discount: 250,
-    duration: "3 Months",
-    popular: false,
-    features: [
-      "50 Student Accounts",
-      "3 Months Access",
-      "Full Dashboard Access",
-      "Progress Tracking",
-      "Report Generation",
-      "Email Support"
-    ]
-  },
-  {
-    id: "100-members",
-    name: "100 Members Pack",
-    members: 100,
-    price: 200000,
-    originalPrice: 250000,
-    discount: 500,
-    duration: "3 Months",
-    popular: true,
-    features: [
-      "100 Student Accounts",
-      "3 Months Access",
-      "Full Dashboard Access",
-      "Progress Tracking",
-      "Report Generation",
-      "Priority Email Support",
-      "Bulk User Management"
-    ]
-  },
-  {
-    id: "200-members",
-    name: "200 Members Pack",
-    members: 200,
-    price: 350000,
-    originalPrice: 500000,
-    discount: 750,
-    duration: "3 Months",
-    popular: false,
-    features: [
-      "200 Student Accounts",
-      "3 Months Access",
-      "Full Dashboard Access",
-      "Progress Tracking",
-      "Report Generation",
-      "Priority Email Support",
-      "Bulk User Management",
-      "Custom Reports"
-    ]
-  },
-  {
-    id: "500-members",
-    name: "500 Members Pack",
-    members: 500,
-    price: 750000,
-    originalPrice: 1250000,
-    discount: 1000,
-    duration: "3 Months",
-    popular: false,
-    features: [
-      "500 Student Accounts",
-      "3 Months Access",
-      "Full Dashboard Access",
-      "Progress Tracking",
-      "Report Generation",
-      "24/7 Phone Support",
-      "Bulk User Management",
-      "Custom Reports",
-      "Dedicated Account Manager"
-    ]
-  }
-];
+interface Plan {
+  id: string;
+  name: string;
+  members: number;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  duration: string;
+  popular: boolean;
+  features: string[];
+}
 
 const InstituteMembershipPlans = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInstitutePlans();
+  }, []);
+
+  const fetchInstitutePlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('plan_type', 'institute')
+        .eq('is_active', true)
+        .order('member_limit');
+
+      if (error) throw error;
+
+      const formattedPlans: Plan[] = data.map(plan => ({
+        id: plan.id,
+        name: plan.name,
+        members: plan.member_limit || 0,
+        price: plan.price_paisa / 100, // Convert paisa to rupees
+        originalPrice: plan.original_price_paisa / 100,
+        discount: plan.discount_per_member || 0,
+        duration: `${Math.round(plan.duration_days / 30)} Months`,
+        popular: plan.is_popular || false,
+        features: Array.isArray(plan.features) ? plan.features as string[] : []
+      }));
+
+      setPlans(formattedPlans);
+    } catch (error) {
+      console.error('Error fetching institute plans:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load subscription plans. Please refresh the page.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -294,8 +267,14 @@ const InstituteMembershipPlans = () => {
         </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-        {plans.map((plan) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">Loading subscription plans...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {plans.map((plan) => (
           <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : ''}`}>
             {plan.popular && (
               <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
@@ -359,8 +338,9 @@ const InstituteMembershipPlans = () => {
               </Button>
             </CardContent>
           </Card>
-        ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12 text-center">
           <div className="bg-muted p-6 rounded-lg max-w-4xl mx-auto">

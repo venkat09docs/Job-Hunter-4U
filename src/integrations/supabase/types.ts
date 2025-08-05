@@ -1107,34 +1107,49 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          discount_per_member: number | null
           duration_days: number
+          features: Json | null
           id: string
           is_active: boolean
+          is_popular: boolean | null
           member_limit: number | null
           name: string
+          original_price_paisa: number | null
           plan_type: string | null
+          price_paisa: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          discount_per_member?: number | null
           duration_days: number
+          features?: Json | null
           id?: string
           is_active?: boolean
+          is_popular?: boolean | null
           member_limit?: number | null
           name: string
+          original_price_paisa?: number | null
           plan_type?: string | null
+          price_paisa?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          discount_per_member?: number | null
           duration_days?: number
+          features?: Json | null
           id?: string
           is_active?: boolean
+          is_popular?: boolean | null
           member_limit?: number | null
           name?: string
+          original_price_paisa?: number | null
           plan_type?: string | null
+          price_paisa?: number | null
           updated_at?: string
         }
         Relationships: []

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Users, Trash2 } from 'lucide-react';
+import { Plus, Edit, Users, Trash2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,23 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Institute {
   id: string;
@@ -35,6 +52,11 @@ interface Institute {
   contact_phone?: string;
   is_active: boolean;
   created_at: string;
+  subscription_plan?: string;
+  subscription_start_date?: string;
+  subscription_end_date?: string;
+  subscription_active?: boolean;
+  admin_name?: string;
 }
 
 interface InstituteFormData {
@@ -44,6 +66,16 @@ interface InstituteFormData {
   address: string;
   contact_email: string;
   contact_phone: string;
+  subscription_plan: string;
+}
+
+interface BatchDetail {
+  id: string;
+  name: string;
+  code: string;
+  student_count: number;
+  start_date?: string;
+  end_date?: string;
 }
 
 export const InstituteManagement = () => {
@@ -52,22 +84,47 @@ export const InstituteManagement = () => {
   const { toast } = useToast();
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewBatchDialogOpen, setIsViewBatchDialogOpen] = useState(false);
   const [editingInstitute, setEditingInstitute] = useState<Institute | null>(null);
+  const [selectedInstitute, setSelectedInstitute] = useState<Institute | null>(null);
+  const [batchDetails, setBatchDetails] = useState<BatchDetail[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<any[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [instituteToDelete, setInstituteToDelete] = useState<Institute | null>(null);
   const [formData, setFormData] = useState<InstituteFormData>({
-    name: '',
-    code: '',
-    description: '',
-    address: '',
-    contact_email: '',
-    contact_phone: '',
+    name: "",
+    code: "",
+    description: "",
+    address: "",
+    contact_email: "",
+    contact_phone: "",
+    subscription_plan: ""
   });
 
   useEffect(() => {
     if (isAdmin) {
       fetchInstitutes();
+      fetchSubscriptionPlans();
     }
   }, [isAdmin]);
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('plan_type', 'institute')
+        .eq('is_active', true)
+        .order('member_limit');
+
+      if (error) throw error;
+      setSubscriptionPlans(data || []);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+    }
+  };
 
   const fetchInstitutes = async () => {
     try {
@@ -77,7 +134,14 @@ export const InstituteManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setInstitutes(data || []);
+      
+      // For now, just set admin name as placeholder - can be enhanced later
+      const institutesWithAdmins = data?.map(institute => ({
+        ...institute,
+        admin_name: 'No Admin Assigned' // Simplified for now
+      })) || [];
+      
+      setInstitutes(institutesWithAdmins);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -95,19 +159,7 @@ export const InstituteManagement = () => {
 
     try {
       if (editingInstitute) {
-        const { error } = await supabase
-          .from('institutes')
-          .update({
-            ...formData,
-          })
-          .eq('id', editingInstitute.id);
-
-        if (error) throw error;
-
-        toast({
-          title: 'Success',
-          description: 'Institute updated successfully',
-        });
+        await updateInstitute();
       } else {
         const { error } = await supabase
           .from('institutes')
@@ -124,15 +176,17 @@ export const InstituteManagement = () => {
         });
       }
 
-      setShowForm(false);
+      setIsDialogOpen(false);
+      setIsEditDialogOpen(false);
       setEditingInstitute(null);
       setFormData({
-        name: '',
-        code: '',
-        description: '',
-        address: '',
-        contact_email: '',
-        contact_phone: '',
+        name: "",
+        code: "",
+        description: "",
+        address: "",
+        contact_email: "",
+        contact_phone: "",
+        subscription_plan: ""
       });
       fetchInstitutes();
     } catch (error: any) {
@@ -144,39 +198,179 @@ export const InstituteManagement = () => {
     }
   };
 
+  const updateInstitute = async () => {
+    if (!editingInstitute) return;
+
+    const updateData: any = {
+      name: editingInstitute.name,
+      code: editingInstitute.code,
+      description: editingInstitute.description,
+      address: editingInstitute.address,
+      contact_email: editingInstitute.contact_email,
+      contact_phone: editingInstitute.contact_phone,
+    };
+
+    // Handle subscription plan assignment
+    if (editingInstitute.subscription_plan) {
+      const selectedPlan = subscriptionPlans.find(plan => plan.name === editingInstitute.subscription_plan);
+      if (selectedPlan) {
+        const currentDate = new Date();
+        let subscriptionEndDate = new Date();
+        
+        if (editingInstitute.subscription_active && editingInstitute.subscription_end_date) {
+          // If already active, extend from current end date
+          const currentEndDate = new Date(editingInstitute.subscription_end_date);
+          if (currentEndDate > currentDate) {
+            subscriptionEndDate = new Date(currentEndDate);
+          }
+        }
+        
+        // Add 90 days to the subscription
+        subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 90);
+        
+        updateData.subscription_plan = editingInstitute.subscription_plan;
+        updateData.subscription_start_date = editingInstitute.subscription_active ? 
+          editingInstitute.subscription_start_date : 
+          currentDate.toISOString();
+        updateData.subscription_end_date = subscriptionEndDate.toISOString();
+        updateData.subscription_active = true;
+      }
+    }
+
+    const { error } = await supabase
+      .from('institutes')
+      .update(updateData)
+      .eq('id', editingInstitute.id);
+
+    if (error) throw error;
+
+    toast({
+      title: 'Success',
+      description: 'Institute updated successfully',
+    });
+  };
+
   const handleEdit = (institute: Institute) => {
     setEditingInstitute(institute);
-    setFormData({
-      name: institute.name,
-      code: institute.code,
-      description: institute.description || '',
-      address: institute.address || '',
-      contact_email: institute.contact_email || '',
-      contact_phone: institute.contact_phone || '',
-    });
-    setShowForm(true);
+    setIsEditDialogOpen(true);
   };
 
   const handleDelete = async (institute: Institute) => {
-    if (!confirm(`Are you sure you want to delete ${institute.name}?`)) return;
+    // First check if there are batches assigned to this institute
+    try {
+      const { data: batches, error } = await supabase
+        .from('batches')
+        .select('id')
+        .eq('institute_id', institute.id)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      if (batches && batches.length > 0) {
+        toast({
+          title: 'Cannot Delete Institute',
+          description: `This institute has ${batches.length} active batch(es) assigned. Please delete the batches first before deleting the institute.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // If no batches, proceed with deletion
+      setInstituteToDelete(institute);
+      setDeleteDialogOpen(true);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to check institute dependencies',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!instituteToDelete) return;
 
     try {
       const { error } = await supabase
         .from('institutes')
-        .update({ is_active: false })
+        .delete()
+        .eq('id', instituteToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Institute deleted successfully',
+      });
+      
+      setDeleteDialogOpen(false);
+      setInstituteToDelete(null);
+      fetchInstitutes();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete institute',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const toggleActiveStatus = async (institute: Institute) => {
+    try {
+      const { error } = await supabase
+        .from('institutes')
+        .update({ is_active: !institute.is_active })
         .eq('id', institute.id);
 
       if (error) throw error;
 
       toast({
         title: 'Success',
-        description: 'Institute deactivated successfully',
+        description: `Institute ${!institute.is_active ? 'activated' : 'deactivated'} successfully`,
       });
       fetchInstitutes();
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to deactivate institute',
+        description: 'Failed to update institute status',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const viewBatchDetails = async (institute: Institute) => {
+    try {
+      const { data, error } = await supabase
+        .from('batches')
+        .select(`
+          id,
+          name,
+          code,
+          start_date,
+          end_date,
+          user_assignments!inner(*)
+        `)
+        .eq('institute_id', institute.id)
+        .eq('is_active', true);
+
+      if (error) throw error;
+
+      const batchesWithStudentCount = data?.map(batch => ({
+        id: batch.id,
+        name: batch.name,
+        code: batch.code,
+        start_date: batch.start_date,
+        end_date: batch.end_date,
+        student_count: batch.user_assignments?.length || 0
+      })) || [];
+
+      setBatchDetails(batchesWithStudentCount);
+      setSelectedInstitute(institute);
+      setIsViewBatchDialogOpen(true);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch batch details',
         variant: 'destructive',
       });
     }
@@ -208,17 +402,18 @@ export const InstituteManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Institute Management</h2>
-        <Dialog open={showForm} onOpenChange={setShowForm}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingInstitute(null);
               setFormData({
-                name: '',
-                code: '',
-                description: '',
-                address: '',
-                contact_email: '',
-                contact_phone: '',
+                name: "",
+                code: "",
+                description: "",
+                address: "",
+                contact_email: "",
+                contact_phone: "",
+                subscription_plan: ""
               });
             }}>
               <Plus className="h-4 w-4 mr-2" />
@@ -227,9 +422,7 @@ export const InstituteManagement = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
-              <DialogTitle>
-                {editingInstitute ? 'Edit Institute' : 'Add New Institute'}
-              </DialogTitle>
+              <DialogTitle>Add New Institute</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -291,13 +484,27 @@ export const InstituteManagement = () => {
                 </div>
               </div>
 
+              <div>
+                <Label htmlFor="subscription_plan">Subscription Plan</Label>
+                <Select value={formData.subscription_plan} onValueChange={(value) => setFormData({...formData, subscription_plan: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select subscription plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subscriptionPlans.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.name}>
+                        {plan.name} - {plan.member_limit} members
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingInstitute ? 'Update' : 'Create'} Institute
-                </Button>
+                <Button type="submit">Create Institute</Button>
               </div>
             </form>
           </DialogContent>
@@ -306,7 +513,7 @@ export const InstituteManagement = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Institutes ({institutes.length})</CardTitle>
+          <CardTitle>All Institutes ({institutes.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -314,7 +521,9 @@ export const InstituteManagement = () => {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Code</TableHead>
+                <TableHead>Admin Name</TableHead>
                 <TableHead>Contact</TableHead>
+                <TableHead>Subscription</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -324,6 +533,7 @@ export const InstituteManagement = () => {
                 <TableRow key={institute.id}>
                   <TableCell className="font-medium">{institute.name}</TableCell>
                   <TableCell>{institute.code}</TableCell>
+                  <TableCell>{institute.admin_name}</TableCell>
                   <TableCell>
                     {institute.contact_email && (
                       <div>{institute.contact_email}</div>
@@ -332,6 +542,20 @@ export const InstituteManagement = () => {
                       <div className="text-sm text-muted-foreground">
                         {institute.contact_phone}
                       </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {institute.subscription_plan ? (
+                      <div>
+                        <div className="font-medium">{institute.subscription_plan}</div>
+                        {institute.subscription_active && institute.subscription_end_date && (
+                          <div className="text-xs text-muted-foreground">
+                            Expires: {new Date(institute.subscription_end_date).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">No Plan</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -348,14 +572,36 @@ export const InstituteManagement = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => viewBatchDetails(institute)}
+                        title="View Batch Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEdit(institute)}
+                        title="Edit Institute"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => toggleActiveStatus(institute)}
+                        title={institute.is_active ? "Deactivate" : "Activate"}
+                      >
+                        {institute.is_active ? (
+                          <ToggleRight className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <ToggleLeft className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDelete(institute)}
+                        title="Delete Institute"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -372,6 +618,173 @@ export const InstituteManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Institute Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Institute</DialogTitle>
+          </DialogHeader>
+          {editingInstitute && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_name">Institute Name *</Label>
+                  <Input
+                    id="edit_name"
+                    value={editingInstitute.name}
+                    onChange={(e) => setEditingInstitute(prev => prev ? {...prev, name: e.target.value} : null)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit_code">Institute Code *</Label>
+                  <Input
+                    id="edit_code"
+                    value={editingInstitute.code}
+                    onChange={(e) => setEditingInstitute(prev => prev ? {...prev, code: e.target.value} : null)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="edit_description">Description</Label>
+                <Textarea
+                  id="edit_description"
+                  value={editingInstitute.description || ""}
+                  onChange={(e) => setEditingInstitute(prev => prev ? {...prev, description: e.target.value} : null)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit_address">Address</Label>
+                <Textarea
+                  id="edit_address"
+                  value={editingInstitute.address || ""}
+                  onChange={(e) => setEditingInstitute(prev => prev ? {...prev, address: e.target.value} : null)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit_contact_email">Contact Email</Label>
+                  <Input
+                    id="edit_contact_email"
+                    type="email"
+                    value={editingInstitute.contact_email || ""}
+                    onChange={(e) => setEditingInstitute(prev => prev ? {...prev, contact_email: e.target.value} : null)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit_contact_phone">Contact Phone</Label>
+                  <Input
+                    id="edit_contact_phone"
+                    value={editingInstitute.contact_phone || ""}
+                    onChange={(e) => setEditingInstitute(prev => prev ? {...prev, contact_phone: e.target.value} : null)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit_subscription_plan">Subscription Plan</Label>
+                <Select value={editingInstitute?.subscription_plan || ""} onValueChange={(value) => setEditingInstitute(prev => prev ? {...prev, subscription_plan: value} : null)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select subscription plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subscriptionPlans.map((plan) => (
+                      <SelectItem key={plan.id} value={plan.name}>
+                        {plan.name} - {plan.member_limit} members
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Update Institute</Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Batch Details Dialog */}
+      <Dialog open={isViewBatchDialogOpen} onOpenChange={setIsViewBatchDialogOpen}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>
+              Batch Details - {selectedInstitute?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Total Batches: {batchDetails.length}
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Batch Name</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Students</TableHead>
+                  <TableHead>Duration</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {batchDetails.map((batch) => (
+                  <TableRow key={batch.id}>
+                    <TableCell className="font-medium">{batch.name}</TableCell>
+                    <TableCell>{batch.code}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        {batch.student_count}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {batch.start_date && batch.end_date ? (
+                        <div className="text-sm">
+                          <div>{new Date(batch.start_date).toLocaleDateString()} -</div>
+                          <div>{new Date(batch.end_date).toLocaleDateString()}</div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Not specified</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {batchDetails.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No batches found for this institute.
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the institute "{instituteToDelete?.name}" and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
