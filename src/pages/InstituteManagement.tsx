@@ -137,12 +137,47 @@ export default function InstituteManagement() {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase.auth.admin.listUsers();
-      
-      if (error) throw error;
-      setUsers(data.users);
+      // Fetch users with institute_admin role
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'institute_admin');
+
+      if (rolesError) throw rolesError;
+
+      if (!userRoles || userRoles.length === 0) {
+        setUsers([]);
+        return;
+      }
+
+      // Get user IDs
+      const userIds = userRoles.map(role => role.user_id);
+
+      // Fetch profile information for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email, username')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Transform the data to match the expected User interface
+      const instituteAdmins = profiles?.map(profile => ({
+        id: profile.user_id,
+        email: profile.email,
+        raw_user_meta_data: {
+          full_name: profile.full_name
+        }
+      })) || [];
+
+      setUsers(instituteAdmins);
     } catch (error: any) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching institute admin users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch institute admin users',
+        variant: 'destructive'
+      });
     }
   };
 
