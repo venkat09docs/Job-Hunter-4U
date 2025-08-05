@@ -38,6 +38,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import StudentsReport from "./pages/StudentsReport";
+import InstituteManagement from "./pages/InstituteManagement";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -257,6 +258,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <StudentsReport />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/institute-management" 
+              element={
+                <ProtectedRoute>
+                  <InstituteManagement />
                 </ProtectedRoute>
               } 
             />

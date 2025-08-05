@@ -22,9 +22,11 @@ import {
   User, 
   Briefcase, 
   Linkedin, 
-  Github 
+  Github,
+  Home 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 export default function StudentsReport() {
   const { batches, loading, refreshData, exportToExcel } = useInstituteStudents();
@@ -123,15 +125,21 @@ export default function StudentsReport() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Students Report</h1>
-          <p className="text-muted-foreground">
-            Monitor and track student progress across all batches
-          </p>
-        </div>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Students Report</h1>
+            <p className="text-muted-foreground">
+              Monitor and track student progress across all batches
+            </p>
+          </div>
         <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/dashboard">
+              <Home className="h-4 w-4 mr-2" />
+              Go to Dashboard
+            </Link>
+          </Button>
           <Button onClick={refreshData} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
