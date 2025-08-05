@@ -51,15 +51,16 @@ interface User {
   };
 }
 
-const SUBSCRIPTION_PLANS = [
-  { value: 'basic', label: 'Basic Plan' },
-  { value: 'premium', label: 'Premium Plan' },
-  { value: 'enterprise', label: 'Enterprise Plan' }
-];
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+}
 
 export default function InstituteManagement() {
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -71,7 +72,7 @@ export default function InstituteManagement() {
     code: '',
     description: '',
     subscription_plan: '',
-    subscription_duration: '365'
+    subscription_duration: '90'
   });
 
   const [assignment, setAssignment] = useState({
@@ -82,7 +83,28 @@ export default function InstituteManagement() {
   useEffect(() => {
     fetchInstitutes();
     fetchUsers();
+    fetchSubscriptionPlans();
   }, []);
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('id, name, description')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setSubscriptionPlans(data || []);
+    } catch (error: any) {
+      console.error('Error fetching subscription plans:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch subscription plans',
+        variant: 'destructive'
+      });
+    }
+  };
 
   const fetchInstitutes = async () => {
     try {
@@ -224,7 +246,7 @@ export default function InstituteManagement() {
         code: '',
         description: '',
         subscription_plan: '',
-        subscription_duration: '365'
+        subscription_duration: '90'
       });
       fetchInstitutes();
     } catch (error: any) {
@@ -325,14 +347,14 @@ export default function InstituteManagement() {
                 Create Institute
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Institute</DialogTitle>
                 <DialogDescription>
                   Create a new institute and set up its subscription plan
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto px-1">
                 <div>
                   <Label htmlFor="name">Institute Name *</Label>
                   <Input
@@ -370,9 +392,14 @@ export default function InstituteManagement() {
                       <SelectValue placeholder="Select subscription plan" />
                     </SelectTrigger>
                     <SelectContent>
-                      {SUBSCRIPTION_PLANS.map((plan) => (
-                        <SelectItem key={plan.value} value={plan.value}>
-                          {plan.label}
+                      {subscriptionPlans.map((plan) => (
+                        <SelectItem key={plan.id} value={plan.name}>
+                          {plan.name}
+                          {plan.description && (
+                            <span className="text-xs text-muted-foreground ml-1">
+                              - {plan.description}
+                            </span>
+                          )}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -385,7 +412,7 @@ export default function InstituteManagement() {
                     type="number"
                     value={newInstitute.subscription_duration}
                     onChange={(e) => setNewInstitute(prev => ({ ...prev, subscription_duration: e.target.value }))}
-                    placeholder="365"
+                    placeholder="90"
                   />
                 </div>
               </div>
@@ -543,7 +570,7 @@ export default function InstituteManagement() {
                   <TableCell>
                     {institute.subscription_plan ? (
                       <Badge variant="secondary">
-                        {SUBSCRIPTION_PLANS.find(p => p.value === institute.subscription_plan)?.label || institute.subscription_plan}
+                        {institute.subscription_plan}
                       </Badge>
                     ) : (
                       <span className="text-muted-foreground">No Plan</span>
