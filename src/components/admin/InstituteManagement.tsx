@@ -53,9 +53,6 @@ interface Institute {
   is_active: boolean;
   created_at: string;
   subscription_plan?: string;
-  subscription_start_date?: string;
-  subscription_end_date?: string;
-  subscription_active?: boolean;
   admin_name?: string;
 }
 
@@ -208,34 +205,8 @@ export const InstituteManagement = () => {
       address: editingInstitute.address,
       contact_email: editingInstitute.contact_email,
       contact_phone: editingInstitute.contact_phone,
+      subscription_plan: editingInstitute.subscription_plan,
     };
-
-    // Handle subscription plan assignment
-    if (editingInstitute.subscription_plan) {
-      const selectedPlan = subscriptionPlans.find(plan => plan.name === editingInstitute.subscription_plan);
-      if (selectedPlan) {
-        const currentDate = new Date();
-        let subscriptionEndDate = new Date();
-        
-        if (editingInstitute.subscription_active && editingInstitute.subscription_end_date) {
-          // If already active, extend from current end date
-          const currentEndDate = new Date(editingInstitute.subscription_end_date);
-          if (currentEndDate > currentDate) {
-            subscriptionEndDate = new Date(currentEndDate);
-          }
-        }
-        
-        // Add 90 days to the subscription
-        subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 90);
-        
-        updateData.subscription_plan = editingInstitute.subscription_plan;
-        updateData.subscription_start_date = editingInstitute.subscription_active ? 
-          editingInstitute.subscription_start_date : 
-          currentDate.toISOString();
-        updateData.subscription_end_date = subscriptionEndDate.toISOString();
-        updateData.subscription_active = true;
-      }
-    }
 
     const { error } = await supabase
       .from('institutes')
@@ -523,7 +494,6 @@ export const InstituteManagement = () => {
                 <TableHead>Code</TableHead>
                 <TableHead>Admin Name</TableHead>
                 <TableHead>Contact</TableHead>
-                <TableHead>Subscription</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -542,20 +512,6 @@ export const InstituteManagement = () => {
                       <div className="text-sm text-muted-foreground">
                         {institute.contact_phone}
                       </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {institute.subscription_plan ? (
-                      <div>
-                        <div className="font-medium">{institute.subscription_plan}</div>
-                        {institute.subscription_active && institute.subscription_end_date && (
-                          <div className="text-xs text-muted-foreground">
-                            Expires: {new Date(institute.subscription_end_date).toLocaleDateString()}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">No Plan</span>
                     )}
                   </TableCell>
                   <TableCell>
