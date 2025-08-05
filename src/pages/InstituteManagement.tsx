@@ -468,6 +468,12 @@ export default function InstituteManagement() {
     }
   };
 
+  const handleToggleStatus = (institute: Institute) => {
+    if (window.confirm(`Are you sure you want to ${institute.is_active ? 'deactivate' : 'activate'} the institute "${institute.name}"?`)) {
+      toggleActiveStatus(institute);
+    }
+  };
+
   const toggleActiveStatus = async (institute: Institute) => {
     try {
       const newActiveStatus = !institute.is_active;
@@ -785,7 +791,6 @@ export default function InstituteManagement() {
                 <TableHead>Admin Name</TableHead>
                 <TableHead>Subscription Plan</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Subscription Period</TableHead>
                 <TableHead>Batches</TableHead>
                 <TableHead>Students</TableHead>
                 <TableHead>Created</TableHead>
@@ -830,18 +835,12 @@ export default function InstituteManagement() {
                         Inactive
                       </Badge>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>Start: {formatDate(institute.subscription_start_date)}</div>
-                      <div>End: {formatDate(institute.subscription_end_date)}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-center">
-                      <p className="font-medium">{institute.batch_count}</p>
-                      <p className="text-xs text-muted-foreground">batches</p>
-                    </div>
+                   </TableCell>
+                   <TableCell>
+                     <div className="text-center">
+                       <p className="font-medium">{institute.batch_count}</p>
+                       <p className="text-xs text-muted-foreground">batches</p>
+                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="text-center">
@@ -875,15 +874,15 @@ export default function InstituteManagement() {
                        >
                          <Edit className="h-4 w-4" />
                        </Button>
-                       <Button
-                         variant="ghost"
-                         size="sm"
-                         onClick={() => toggleActiveStatus(institute)}
-                         className={`h-8 w-8 p-0 ${institute.is_active ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-600'}`}
-                         title={institute.is_active ? "Deactivate Institute" : "Activate Institute"}
-                       >
-                         {institute.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                       </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(institute)}
+                          className={`h-8 w-8 p-0 ${institute.is_active ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-600'}`}
+                          title={institute.is_active ? "Deactivate Institute" : "Activate Institute"}
+                        >
+                          {institute.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                        </Button>
                        <Button
                          variant="ghost"
                          size="sm"
