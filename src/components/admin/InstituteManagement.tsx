@@ -126,6 +126,7 @@ export const InstituteManagement = () => {
   };
 
   const fetchInstitutes = async () => {
+    console.log('Fetching institutes...');
     try {
       const { data, error } = await supabase
         .from('institutes')
@@ -134,14 +135,18 @@ export const InstituteManagement = () => {
 
       if (error) throw error;
       
+      console.log('Raw institute data:', data);
+      
       // For now, just set admin name as placeholder - can be enhanced later
       const institutesWithAdmins = data?.map(institute => ({
         ...institute,
         admin_name: 'No Admin Assigned' // Simplified for now
       })) || [];
       
+      console.log('Processed institutes:', institutesWithAdmins);
       setInstitutes(institutesWithAdmins);
     } catch (error: any) {
+      console.error('Error fetching institutes:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch institutes',
@@ -514,7 +519,9 @@ export const InstituteManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {institutes.map((institute) => (
+              {(() => {
+                console.log('Rendering institutes in table:', institutes);
+                return institutes.map((institute) => (
                 <TableRow key={institute.id}>
                   <TableCell className="font-medium">{institute.name}</TableCell>
                   <TableCell>{institute.code}</TableCell>
@@ -579,7 +586,8 @@ export const InstituteManagement = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                ));
+              })()}
             </TableBody>
           </Table>
           {institutes.length === 0 && (
