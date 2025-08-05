@@ -77,7 +77,7 @@ interface BatchDetail {
 
 export const InstituteManagement = () => {
   const { user } = useAuth();
-  const { isAdmin } = useRole();
+  const { isAdmin, role, loading: roleLoading } = useRole();
   const { toast } = useToast();
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,11 +103,35 @@ export const InstituteManagement = () => {
   });
 
   useEffect(() => {
+    console.log('InstituteManagement - User:', user?.id);
+    console.log('InstituteManagement - Role:', role);
+    console.log('InstituteManagement - isAdmin:', isAdmin);
+    console.log('InstituteManagement - roleLoading:', roleLoading);
+    
     if (isAdmin) {
+      console.log('User is admin, fetching data...');
       fetchInstitutes();
       fetchSubscriptionPlans();
+    } else {
+      console.log('User is not admin, role:', role);
     }
-  }, [isAdmin]);
+  }, [isAdmin, role, user]);
+
+  // Add this to check if user has admin role in the database
+  useEffect(() => {
+    const checkUserRole = async () => {
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+        
+        console.log('Direct role check from DB:', data, error);
+      }
+    };
+    
+    checkUserRole();
+  }, [user]);
 
   const fetchSubscriptionPlans = async () => {
     try {
@@ -367,19 +391,22 @@ export const InstituteManagement = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (!isAdmin && !roleLoading) {
+    console.log('Access denied - User role:', role, 'isAdmin:', isAdmin);
     return (
       <Card>
         <CardContent className="pt-6">
           <p className="text-center text-muted-foreground">
-            You don't have permission to access this page.
+            You don't have permission to access this page. This page is only accessible to Super Admins.
+            <br />
+            Current role: {role || 'No role assigned'}
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <Card>
         <CardContent className="pt-6">
