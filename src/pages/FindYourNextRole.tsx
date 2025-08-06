@@ -100,6 +100,67 @@ const FindYourNextRole = () => {
     setLinkedInFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleLinkedInSubmit = async () => {
+    setLoading(true);
+    setJobs([]);
+
+    try {
+      // Track job search analytics
+      await incrementAnalytics('job_search');
+
+      const { data, error } = await supabase.functions.invoke('linkedin-job-search', {
+        body: {
+          title: linkedInFormData.title,
+          location: linkedInFormData.location,
+          description: linkedInFormData.description,
+          type: linkedInFormData.type,
+          remote: linkedInFormData.remote,
+          industry: linkedInFormData.industry,
+          seniority: linkedInFormData.seniority,
+          external_apply: linkedInFormData.external_apply,
+          directapply: linkedInFormData.directapply
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.success && data.data && data.data.jobs) {
+        setJobs(data.data.jobs);
+        
+        // Save all job results to database
+        await saveJobResultsToDatabase(data.data.jobs, {
+          query: `LinkedIn: ${linkedInFormData.title}`,
+          num_pages: "1",
+          date_posted: "24hrs",
+          country: linkedInFormData.location,
+          language: "en",
+          job_requirements: linkedInFormData.seniority || "any"
+        });
+        
+        toast({
+          title: "LinkedIn jobs found successfully",
+          description: `Found ${data.data.jobs.length} LinkedIn job opportunities for you.`,
+        });
+      } else {
+        toast({
+          title: "No LinkedIn jobs found",
+          description: "Try adjusting your search criteria.",
+        });
+      }
+    } catch (error) {
+      console.error('Error searching LinkedIn jobs:', error);
+      toast({
+        title: "Error searching LinkedIn jobs",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const saveJobResultsToDatabase = async (jobResults: JobResult[], searchForm: JobSearchForm) => {
     if (!user) return;
 
@@ -874,17 +935,18 @@ const FindYourNextRole = () => {
 
                   <div className="flex gap-3 pt-4">
                     <Button 
-                      onClick={() => {
-                        // Handle LinkedIn job search
-                        toast({
-                          title: "LinkedIn Search",
-                          description: "LinkedIn job search functionality will be implemented soon.",
-                        });
-                      }}
-                      disabled={!linkedInFormData.title || !linkedInFormData.location}
+                      onClick={handleLinkedInSubmit}
+                      disabled={!linkedInFormData.title || !linkedInFormData.location || loading}
                       className="flex-1 md:flex-none"
                     >
-                      Search LinkedIn Jobs
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Searching LinkedIn...
+                        </>
+                      ) : (
+                        "Search LinkedIn Jobs"
+                      )}
                     </Button>
                   </div>
                 </CardContent>
