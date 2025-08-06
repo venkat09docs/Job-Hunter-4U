@@ -87,41 +87,28 @@ Deno.serve(async (req) => {
         throw new Error(`LinkedIn n8n webhook failed: ${n8nResponse.status} ${n8nResponse.statusText} - ${errorText}`);
       }
 
-      n8nResult = await n8nResponse.json();
-      console.log('LinkedIn n8n job search result:', n8nResult);
+      // Get response text first to handle potential JSON parsing issues
+      const responseText = await n8nResponse.text();
+      console.log('LinkedIn n8n raw response:', responseText);
+      
+      if (!responseText || responseText.trim() === '') {
+        throw new Error('Empty response from LinkedIn n8n webhook');
+      }
+
+      try {
+        n8nResult = JSON.parse(responseText);
+        console.log('LinkedIn n8n job search result:', n8nResult);
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        console.error('Response text was:', responseText);
+        throw new Error(`Invalid JSON response from LinkedIn n8n webhook: ${jsonError.message}`);
+      }
+
     } catch (fetchError) {
       console.error('Error calling LinkedIn n8n webhook:', fetchError);
       
-      // Return mock data for now to allow the frontend to work
-      console.log('Returning mock data due to LinkedIn n8n webhook failure');
-      n8nResult = {
-        jobs: [
-          {
-            job_id: 'linkedin-mock-1',
-            job_title: `${title} - LinkedIn`,
-            employer_name: 'LinkedIn Company',
-            job_location: location === 'us' ? 'United States' : location === 'uk' ? 'United Kingdom' : location,
-            job_posted_at: '1 day ago',
-            job_apply_link: 'https://linkedin.com/jobs/apply/mock',
-            job_description: `LinkedIn job posting for ${title}. Exciting opportunity to join our team.`,
-            job_min_salary: 80000,
-            job_max_salary: 120000,
-            job_salary_period: 'year'
-          },
-          {
-            job_id: 'linkedin-mock-2',
-            job_title: `Senior ${title}`,
-            employer_name: 'Tech Solutions Inc',
-            job_location: location === 'us' ? 'United States' : location === 'uk' ? 'United Kingdom' : location,
-            job_posted_at: '2 days ago',
-            job_apply_link: 'https://linkedin.com/jobs/apply/mock2',
-            job_description: `Senior level position for ${title}. Looking for experienced professionals.`,
-            job_min_salary: 100000,
-            job_max_salary: 150000,
-            job_salary_period: 'year'
-          }
-        ]
-      };
+      // Return an error response instead of mock data
+      throw new Error(`LinkedIn job search service is currently unavailable: ${fetchError.message}`);
     }
 
     // Process the job search results
