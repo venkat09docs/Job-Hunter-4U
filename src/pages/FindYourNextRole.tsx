@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -124,30 +124,42 @@ const FindYourNextRole = () => {
       }
 
       if (data && data.success && data.data && data.data.jobs) {
-        setJobs(data.data.jobs);
-        
-        // Save all job results to database
-        await saveJobResultsToDatabase(data.data.jobs, {
-          query: `LinkedIn: ${linkedInFormData.title}`,
-          num_pages: "1",
-          date_posted: "24hrs",
-          country: linkedInFormData.location,
-          language: "en",
-          job_requirements: linkedInFormData.seniority || "any"
-        });
-        
-        toast({
-          title: "LinkedIn jobs found successfully",
-          description: `Found ${data.data.jobs.length} LinkedIn job opportunities for you.`,
-        });
+        if (data.data.jobs.length === 0) {
+          // Display no results message
+          toast({
+            title: "No LinkedIn jobs found",
+            description: "No job opportunities found matching your criteria. Try adjusting your search parameters.",
+          });
+          setJobs([]);
+        } else {
+          setJobs(data.data.jobs);
+          
+          // Save all job results to database
+          await saveJobResultsToDatabase(data.data.jobs, {
+            query: `LinkedIn: ${linkedInFormData.title}`,
+            num_pages: "1",
+            date_posted: "24hrs",
+            country: linkedInFormData.location,
+            language: "en",
+            job_requirements: linkedInFormData.seniority || "any"
+          });
+          
+          toast({
+            title: "LinkedIn jobs found successfully",
+            description: `Found ${data.data.jobs.length} LinkedIn job opportunities for you.`,
+          });
+        }
       } else {
+        // No data received or empty response
+        setJobs([]);
         toast({
           title: "No LinkedIn jobs found",
-          description: "Try adjusting your search criteria.",
+          description: "No job opportunities found matching your criteria. Try adjusting your search parameters.",
         });
       }
     } catch (error) {
       console.error('Error searching LinkedIn jobs:', error);
+      setJobs([]);
       toast({
         title: "Error searching LinkedIn jobs",
         description: "Please try again later.",
@@ -226,23 +238,35 @@ const FindYourNextRole = () => {
       }
 
       if (data && data.success && data.data && data.data.jobs) {
-        setJobs(data.data.jobs);
-        
-        // Save all job results to database
-        await saveJobResultsToDatabase(data.data.jobs, formData);
-        
-        toast({
-          title: "Jobs found successfully",
-          description: `Found ${data.data.jobs.length} job opportunities for you.`,
-        });
+        if (data.data.jobs.length === 0) {
+          // Display no results message
+          toast({
+            title: "No jobs found",
+            description: "No job opportunities found matching your criteria. Try adjusting your search parameters.",
+          });
+          setJobs([]);
+        } else {
+          setJobs(data.data.jobs);
+          
+          // Save all job results to database
+          await saveJobResultsToDatabase(data.data.jobs, formData);
+          
+          toast({
+            title: "Jobs found successfully",
+            description: `Found ${data.data.jobs.length} job opportunities for you.`,
+          });
+        }
       } else {
+        // No data received or empty response
+        setJobs([]);
         toast({
           title: "No jobs found",
-          description: "Try adjusting your search criteria.",
+          description: "No job opportunities found matching your criteria. Try adjusting your search parameters.",
         });
       }
     } catch (error) {
       console.error('Error searching jobs:', error);
+      setJobs([]);
       toast({
         title: "Error searching jobs",
         description: "Please try again later.",
@@ -438,6 +462,17 @@ const FindYourNextRole = () => {
       });
     }
   };
+
+  const renderNoResultsMessage = () => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <Search className="h-16 w-16 text-muted-foreground mb-4" />
+      <h3 className="text-xl font-semibold text-foreground mb-2">No Records Found</h3>
+      <p className="text-muted-foreground max-w-md">
+        We couldn't find any job opportunities matching your search criteria. 
+        Try adjusting your search parameters or check back later for new listings.
+      </p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -708,7 +743,7 @@ const FindYourNextRole = () => {
               </CardContent>
             </Card>
 
-            {jobs.length > 0 && (
+            {jobs.length > 0 ? (
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-4">
                     Job Results ({jobs.length} found)
@@ -794,7 +829,13 @@ const FindYourNextRole = () => {
                     ))}
                   </div>
               </div>
-            )}
+            ) : !loading && activeTab === "regular-search" && (
+                <Card>
+                  <CardContent className="p-6">
+                    {renderNoResultsMessage()}
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="linkedin-jobs" className="space-y-6">
@@ -937,7 +978,7 @@ const FindYourNextRole = () => {
               </Card>
 
               {/* LinkedIn Job Results */}
-              {jobs.length > 0 && (
+              {jobs.length > 0 ? (
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-4">
                     LinkedIn Job Results ({jobs.length} found)
@@ -1001,9 +1042,7 @@ const FindYourNextRole = () => {
                                   ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
                                   : job.job_min_salary 
                                   ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : job.job_max_salary
-                                  ? `Up to $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : ''
+                                  : `Up to $${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
                                 }
                               </span>
                             </div>
@@ -1022,6 +1061,12 @@ const FindYourNextRole = () => {
                     ))}
                   </div>
                 </div>
+              ) : !loading && activeTab === "linkedin-jobs" && (
+                <Card>
+                  <CardContent className="p-6">
+                    {renderNoResultsMessage()}
+                  </CardContent>
+                </Card>
               )}
             </TabsContent>
           </Tabs>
