@@ -161,9 +161,8 @@ const FindYourNextRole = () => {
       console.error('Error searching LinkedIn jobs:', error);
       setJobs([]);
       toast({
-        title: "Error searching LinkedIn jobs",
-        description: "Please try again later.",
-        variant: "destructive",
+        title: "LinkedIn search unavailable",
+        description: "LinkedIn job search is temporarily unavailable. Please try the regular job search or try again later.",
       });
     } finally {
       setLoading(false);

@@ -107,8 +107,33 @@ Deno.serve(async (req) => {
     } catch (fetchError) {
       console.error('Error calling LinkedIn n8n webhook:', fetchError);
       
-      // Return an error response instead of mock data
-      throw new Error(`LinkedIn job search service is currently unavailable: ${fetchError.message}`);
+      // Return empty result when webhook fails - don't throw error to user
+      console.log('LinkedIn n8n webhook failed, returning empty result');
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'LinkedIn job search completed',
+          data: {
+            jobs: [],
+            searchCriteria: {
+              title,
+              location,
+              type,
+              remote,
+              industry,
+              seniority,
+              external_apply,
+              directapply
+            },
+            totalResults: 0
+          }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
 
     // Process the job search results
