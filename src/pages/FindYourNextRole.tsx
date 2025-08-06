@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +45,18 @@ interface SavedJobSearch {
   created_at: string;
 }
 
+interface LinkedInJobSearchForm {
+  title: string;
+  location: string;
+  description: string;
+  type: string;
+  remote: boolean;
+  industry: string;
+  seniority: string;
+  external_apply: boolean;
+  directapply: boolean;
+}
+
 const FindYourNextRole = () => {
   const { user } = useAuth();
   const { incrementAnalytics } = useProfile();
@@ -53,6 +68,18 @@ const FindYourNextRole = () => {
     language: "en",
     job_requirements: "under_3_years_experience"
   });
+  const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
+    title: "",
+    location: "us",
+    description: "",
+    type: "FULL_TIME",
+    remote: false,
+    industry: "",
+    seniority: "",
+    external_apply: false,
+    directapply: false
+  });
+  const [activeTab, setActiveTab] = useState("regular-search");
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
@@ -67,6 +94,10 @@ const FindYourNextRole = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLinkedInInputChange = (field: string, value: string | boolean) => {
+    setLinkedInFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const saveJobResultsToDatabase = async (jobResults: JobResult[], searchForm: JobSearchForm) => {
@@ -370,14 +401,21 @@ const FindYourNextRole = () => {
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-auto">
         <div className="container mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold text-foreground">Find Your Next Role</h2>
-                <p className="text-muted-foreground mt-2">
-                  Search for job opportunities that match your skills and preferences
-                </p>
-              </div>
+          <div>
+            <h2 className="text-3xl font-bold text-foreground">Find Your Next Role</h2>
+            <p className="text-muted-foreground mt-2">
+              Search for job opportunities that match your skills and preferences
+            </p>
+          </div>
 
-        <Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="regular-search">Find Your Next Role</TabsTrigger>
+              <TabsTrigger value="linkedin-jobs">LinkedIn - 24 Hrs Jobs</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="regular-search" className="space-y-6">
+              <Card>
           <CardHeader>
             <CardTitle>Job Search Parameters</CardTitle>
             <CardDescription>
@@ -603,10 +641,10 @@ const FindYourNextRole = () => {
                 </DialogContent>
               </Dialog>
             </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-              {jobs.length > 0 && (
+            {jobs.length > 0 && (
                 <div>
                   <h2 className="text-2xl font-bold text-foreground mb-4">
                     Job Results ({jobs.length} found)
@@ -691,10 +729,170 @@ const FindYourNextRole = () => {
                       </Card>
                     ))}
                   </div>
-                </div>
-              )}
+              </div>
+            )}
+            </TabsContent>
 
-              {/* Job Details Modal */}
+            <TabsContent value="linkedin-jobs" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>LinkedIn 24 Hours Jobs Search</CardTitle>
+                  <CardDescription>
+                    Search for recent LinkedIn job postings with advanced filtering options
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-title">Job Title *</Label>
+                      <Input
+                        id="linkedin-title"
+                        value={linkedInFormData.title}
+                        onChange={(e) => handleLinkedInInputChange('title', e.target.value)}
+                        placeholder="Ex: Data Engineer"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-location">Location *</Label>
+                      <Select value={linkedInFormData.location} onValueChange={(value) => handleLinkedInInputChange('location', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="us">United States</SelectItem>
+                          <SelectItem value="uk">United Kingdom</SelectItem>
+                          <SelectItem value="ca">Canada</SelectItem>
+                          <SelectItem value="ie">Ireland</SelectItem>
+                          <SelectItem value="de">Germany</SelectItem>
+                          <SelectItem value="fr">France</SelectItem>
+                          <SelectItem value="au">Australia</SelectItem>
+                          <SelectItem value="in">India</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-type">Employment Type</Label>
+                      <Select value={linkedInFormData.type} onValueChange={(value) => handleLinkedInInputChange('type', value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                          <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                          <SelectItem value="INTERN">Intern</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                          <SelectItem value="PART_TIME">Part Time</SelectItem>
+                          <SelectItem value="TEMPORARY">Temporary</SelectItem>
+                          <SelectItem value="VOLUNTEER">Volunteer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-industry">Industry</Label>
+                      <Input
+                        id="linkedin-industry"
+                        value={linkedInFormData.industry}
+                        onChange={(e) => handleLinkedInInputChange('industry', e.target.value)}
+                        placeholder="Ex: Accounting, Staffing and Recruiting"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-seniority">Seniority Level</Label>
+                      <Select value={linkedInFormData.seniority} onValueChange={(value) => handleLinkedInInputChange('seniority', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select seniority level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Associate">Associate</SelectItem>
+                          <SelectItem value="Director">Director</SelectItem>
+                          <SelectItem value="Executive">Executive</SelectItem>
+                          <SelectItem value="Mid-Senior level">Mid-Senior level</SelectItem>
+                          <SelectItem value="Entry level">Entry level</SelectItem>
+                          <SelectItem value="Not Applicable">Not Applicable</SelectItem>
+                          <SelectItem value="Internship">Internship</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-remote">Remote Work</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="linkedin-remote"
+                          checked={linkedInFormData.remote}
+                          onCheckedChange={(checked) => handleLinkedInInputChange('remote', checked)}
+                        />
+                        <Label htmlFor="linkedin-remote" className="text-sm">
+                          {linkedInFormData.remote ? 'Remote' : 'On-site'}
+                        </Label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-external-apply">External Apply</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="linkedin-external-apply"
+                          checked={linkedInFormData.external_apply}
+                          onCheckedChange={(checked) => handleLinkedInInputChange('external_apply', checked)}
+                        />
+                        <Label htmlFor="linkedin-external-apply" className="text-sm">
+                          {linkedInFormData.external_apply ? 'Enabled' : 'Disabled'}
+                        </Label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-directapply">Direct Apply</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="linkedin-directapply"
+                          checked={linkedInFormData.directapply}
+                          onCheckedChange={(checked) => handleLinkedInInputChange('directapply', checked)}
+                        />
+                        <Label htmlFor="linkedin-directapply" className="text-sm">
+                          {linkedInFormData.directapply ? 'Enabled' : 'Disabled'}
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin-description">Description</Label>
+                    <Textarea
+                      id="linkedin-description"
+                      value={linkedInFormData.description}
+                      onChange={(e) => handleLinkedInInputChange('description', e.target.value)}
+                      placeholder="Additional job description or requirements..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button 
+                      onClick={() => {
+                        // Handle LinkedIn job search
+                        toast({
+                          title: "LinkedIn Search",
+                          description: "LinkedIn job search functionality will be implemented soon.",
+                        });
+                      }}
+                      disabled={!linkedInFormData.title || !linkedInFormData.location}
+                      className="flex-1 md:flex-none"
+                    >
+                      Search LinkedIn Jobs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Job Details Modal */}
               <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
                 <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
