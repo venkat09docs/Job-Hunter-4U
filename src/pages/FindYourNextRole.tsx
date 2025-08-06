@@ -436,6 +436,7 @@ const FindYourNextRole = () => {
                     <SelectItem value="us">United States</SelectItem>
                     <SelectItem value="ca">Canada</SelectItem>
                     <SelectItem value="uk">United Kingdom</SelectItem>
+                    <SelectItem value="ie">Ireland</SelectItem>
                     <SelectItem value="de">Germany</SelectItem>
                     <SelectItem value="fr">France</SelectItem>
                     <SelectItem value="au">Australia</SelectItem>
