@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     console.log('LinkedIn job search request:', { title, location, type, remote, industry, seniority, external_apply, directapply });
 
     // Use the LinkedIn-specific n8n webhook URL
-    const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook/LinkedIn-24-hrs';
+    const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook-test/LinkedIn-24-hrs';
 
     // Send job search request to n8n
     console.log('Sending to LinkedIn n8n webhook:', n8nWebhookUrl);
