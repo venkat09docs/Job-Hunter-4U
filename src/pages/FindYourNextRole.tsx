@@ -818,22 +818,13 @@ const FindYourNextRole = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="linkedin-location">Location *</Label>
-                      <Select value={linkedInFormData.location} onValueChange={(value) => handleLinkedInInputChange('location', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="us">United States</SelectItem>
-                          <SelectItem value="uk">United Kingdom</SelectItem>
-                          <SelectItem value="ca">Canada</SelectItem>
-                          <SelectItem value="ie">Ireland</SelectItem>
-                          <SelectItem value="de">Germany</SelectItem>
-                          <SelectItem value="fr">France</SelectItem>
-                          <SelectItem value="au">Australia</SelectItem>
-                          <SelectItem value="in">India</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="linkedin-location">"United States" OR "United Kingdom"</Label>
+                      <Input
+                        id="linkedin-location"
+                        value={linkedInFormData.location}
+                        onChange={(e) => handleLinkedInInputChange('location', e.target.value)}
+                        placeholder="Ex: United States, United Kingdom"
+                      />
                     </div>
 
                     <div className="space-y-2">
