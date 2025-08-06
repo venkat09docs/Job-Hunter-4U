@@ -88,23 +88,10 @@ Deno.serve(async (req) => {
     } catch (fetchError) {
       console.error('Error calling n8n webhook:', fetchError);
       
-      // Return mock data for now to allow the frontend to work
-      console.log('Returning mock data due to n8n webhook failure');
+      // Return empty result when webhook fails
+      console.log('n8n webhook failed, returning empty result');
       n8nResult = {
-        jobs: [
-          {
-            job_id: 'mock-1',
-            job_title: 'Software Developer',
-            employer_name: 'Tech Company',
-            job_location: 'Remote',
-            job_posted_at: '2025-01-04',
-            job_apply_link: 'https://example.com/apply',
-            job_description: 'We are looking for a skilled software developer...',
-            job_min_salary: 70000,
-            job_max_salary: 90000,
-            job_salary_period: 'year'
-          }
-        ]
+        jobs: []
       };
     }
 
