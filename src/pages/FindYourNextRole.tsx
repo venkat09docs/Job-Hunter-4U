@@ -309,6 +309,12 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleApply = (job: JobResult) => {
+    if (job.job_apply_link) {
+      window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const handleApplyAndWishlist = async (job: JobResult) => {
     // Add to wishlist first
     await handleAddToWishlist(job);
@@ -938,6 +944,94 @@ const FindYourNextRole = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* LinkedIn Job Results */}
+              {jobs.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-4">
+                    LinkedIn Job Results ({jobs.length} found)
+                  </h2>
+                  <div className="space-y-4">
+                    {jobs.map((job, index) => (
+                      <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
+                        <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                                {job.job_title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                <div className="flex items-center gap-1">
+                                  <Building className="h-4 w-4" />
+                                  {job.employer_name}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {job.job_location}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {job.job_posted_at}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleAddToWishlist(job)}
+                                disabled={addingToWishlist === job.job_id}
+                                className="flex items-center gap-2"
+                              >
+                                {addingToWishlist === job.job_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                )}
+                                Wishlist
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleApply(job)}
+                                className="flex items-center gap-2"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                Apply Now
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Salary Information */}
+                          {(job.job_min_salary || job.job_max_salary) && (
+                            <div className="mb-3">
+                              <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                {job.job_min_salary && job.job_max_salary 
+                                  ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  : job.job_min_salary 
+                                  ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  : job.job_max_salary
+                                  ? `Up to $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  : ''
+                                }
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Job Description Preview */}
+                          {job.job_description && (
+                            <div className="text-sm text-muted-foreground">
+                              <p className="line-clamp-3">
+                                {job.job_description}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
