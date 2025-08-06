@@ -69,7 +69,7 @@ const FindYourNextRole = () => {
   });
   const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
     title: "",
-    location: "us",
+    location: '"United States" OR "United Kingdom"',
     type: "FULL_TIME",
     remote: false,
     industry: "",
