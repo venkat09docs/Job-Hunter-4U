@@ -8,7 +8,6 @@ const corsHeaders = {
 interface LinkedInJobSearchRequest {
   title: string;
   location: string;
-  description: string;
   type: string;
   remote: boolean;
   industry: string;
@@ -44,13 +43,13 @@ Deno.serve(async (req) => {
       refresh_token: '',
     });
 
-    const { title, location, description, type, remote, industry, seniority, external_apply, directapply }: LinkedInJobSearchRequest = await req.json();
+    const { title, location, type, remote, industry, seniority, external_apply, directapply }: LinkedInJobSearchRequest = await req.json();
     
     if (!title || !location) {
       throw new Error('Missing required fields: title and location');
     }
 
-    console.log('LinkedIn job search request:', { title, location, description, type, remote, industry, seniority, external_apply, directapply });
+    console.log('LinkedIn job search request:', { title, location, type, remote, industry, seniority, external_apply, directapply });
 
     // Use the LinkedIn-specific n8n webhook URL
     const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook/LinkedIn-24-hrs';
@@ -70,7 +69,6 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           title,
           location,
-          description,
           type,
           remote,
           industry,
@@ -105,7 +103,7 @@ Deno.serve(async (req) => {
             job_location: location === 'us' ? 'United States' : location === 'uk' ? 'United Kingdom' : location,
             job_posted_at: '1 day ago',
             job_apply_link: 'https://linkedin.com/jobs/apply/mock',
-            job_description: `LinkedIn job posting for ${title}. ${description || 'Exciting opportunity to join our team.'}`,
+            job_description: `LinkedIn job posting for ${title}. Exciting opportunity to join our team.`,
             job_min_salary: 80000,
             job_max_salary: 120000,
             job_salary_period: 'year'
@@ -117,7 +115,7 @@ Deno.serve(async (req) => {
             job_location: location === 'us' ? 'United States' : location === 'uk' ? 'United Kingdom' : location,
             job_posted_at: '2 days ago',
             job_apply_link: 'https://linkedin.com/jobs/apply/mock2',
-            job_description: `Senior level position for ${title}. ${description || 'Looking for experienced professionals.'}`,
+            job_description: `Senior level position for ${title}. Looking for experienced professionals.`,
             job_min_salary: 100000,
             job_max_salary: 150000,
             job_salary_period: 'year'
@@ -142,7 +140,6 @@ Deno.serve(async (req) => {
             search_query: {
               title,
               location,
-              description,
               type,
               remote,
               industry,
@@ -177,7 +174,6 @@ Deno.serve(async (req) => {
           searchCriteria: {
             title,
             location,
-            description,
             type,
             remote,
             industry,

@@ -48,7 +48,6 @@ interface SavedJobSearch {
 interface LinkedInJobSearchForm {
   title: string;
   location: string;
-  description: string;
   type: string;
   remote: boolean;
   industry: string;
@@ -71,7 +70,6 @@ const FindYourNextRole = () => {
   const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
     title: "",
     location: "us",
-    description: "",
     type: "FULL_TIME",
     remote: false,
     industry: "",
@@ -112,7 +110,6 @@ const FindYourNextRole = () => {
         body: {
           title: linkedInFormData.title,
           location: linkedInFormData.location,
-          description: linkedInFormData.description,
           type: linkedInFormData.type,
           remote: linkedInFormData.remote,
           industry: linkedInFormData.industry,
@@ -922,16 +919,6 @@ const FindYourNextRole = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin-description">Description</Label>
-                    <Textarea
-                      id="linkedin-description"
-                      value={linkedInFormData.description}
-                      onChange={(e) => handleLinkedInInputChange('description', e.target.value)}
-                      placeholder="Additional job description or requirements..."
-                      rows={3}
-                    />
-                  </div>
 
                   <div className="flex gap-3 pt-4">
                     <Button 
