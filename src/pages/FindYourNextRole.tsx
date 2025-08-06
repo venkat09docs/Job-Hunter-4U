@@ -818,12 +818,12 @@ const FindYourNextRole = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="linkedin-location">"United States" OR "United Kingdom"</Label>
+                      <Label htmlFor="linkedin-location">Location</Label>
                       <Input
                         id="linkedin-location"
                         value={linkedInFormData.location}
                         onChange={(e) => handleLinkedInInputChange('location', e.target.value)}
-                        placeholder="Ex: United States, United Kingdom"
+                        placeholder='"United States" OR "United Kingdom"'
                       />
                     </div>
 
