@@ -27,10 +27,9 @@ export default function SuperAI() {
                 className="w-full h-full border border-border rounded-lg"
                 style={{ minHeight: 'calc(100vh - 140px)' }}
                 title="Super AI Application"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; navigation-override"
                 allowFullScreen
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation-by-user-activation"
-                referrerPolicy="strict-origin-when-cross-origin"
+                loading="lazy"
               />
             </div>
           </main>
