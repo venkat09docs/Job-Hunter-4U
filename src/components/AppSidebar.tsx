@@ -19,7 +19,8 @@ import {
   BookOpen,
   BarChart3,
   Building,
-  Bot
+  Bot,
+  Briefcase
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +49,7 @@ const mainItems = [
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Super AI", url: "/dashboard/super-ai", icon: Bot },
+  { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },

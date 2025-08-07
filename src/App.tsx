@@ -44,6 +44,7 @@ import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 import SuperAI from "./pages/SuperAI";
+import DigitalPortfolio from "./pages/DigitalPortfolio";
 
 const queryClient = new QueryClient();
 
@@ -259,6 +260,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SuperAI />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/digital-portfolio" 
+              element={
+                <ProtectedRoute>
+                  <DigitalPortfolio />
                 </ProtectedRoute>
               } 
             />
