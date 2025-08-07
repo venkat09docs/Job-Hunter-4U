@@ -31,26 +31,25 @@ export default function SuperAI() {
             <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Bot className="w-8 h-8 text-primary" />
-                  </div>
                   <CardTitle className="text-2xl">Super AI Application</CardTitle>
                   <CardDescription>
                     Access the powerful Super AI application with advanced AI capabilities
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
-                  <p className="text-muted-foreground">
-                    Click the button below to open the Super AI application in a new window for the best experience.
-                  </p>
-                  <Button 
+                  <div 
                     onClick={handleOpenSuperAI}
-                    size="lg"
-                    className="gap-2"
+                    className="cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Open Super AI App
-                  </Button>
+                    <img 
+                      src="/lovable-uploads/d005493a-f4e8-4ac1-88fe-b291c81f9652.png" 
+                      alt="Super AI Application Preview"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                  <p className="text-muted-foreground">
+                    Click the image above to open the Super AI application in a new window for the best experience.
+                  </p>
                   <div className="mt-6 pt-6 border-t">
                     <p className="text-sm text-muted-foreground">
                       For optimal performance and full functionality, the Super AI application opens in a new browser window.
