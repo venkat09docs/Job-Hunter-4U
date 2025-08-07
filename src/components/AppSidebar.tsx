@@ -18,7 +18,8 @@ import {
   CreditCard,
   BookOpen,
   BarChart3,
-  Building
+  Building,
+  Bot
 } from "lucide-react";
 import {
   Sidebar,
@@ -46,6 +47,7 @@ const mainItems = [
   // { title: "LinkedIn Automation", url: "/dashboard/linkedin-automation", icon: Linkedin },
   // { title: "Talent Screener", url: "/dashboard/talent-screener", icon: Target },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
+  { title: "Super AI", url: "/dashboard/super-ai", icon: Bot },
   { title: "Edit Bio Tree", url: "/dashboard/profile", icon: User },
   { title: "Library", url: "/dashboard/library", icon: Archive },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },

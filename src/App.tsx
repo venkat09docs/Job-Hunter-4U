@@ -43,6 +43,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
+import SuperAI from "./pages/SuperAI";
 
 const queryClient = new QueryClient();
 
@@ -250,6 +251,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <KnowledgeBase />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/super-ai" 
+              element={
+                <ProtectedRoute>
+                  <SuperAI />
                 </ProtectedRoute>
               } 
             />
