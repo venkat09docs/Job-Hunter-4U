@@ -5,10 +5,24 @@ import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, Bot } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import PricingDialog from "@/components/PricingDialog";
+import { useState } from "react";
 
 export default function SuperAI() {
+  const { profile } = useProfile();
+  const [showPricing, setShowPricing] = useState(false);
+
   const handleOpenSuperAI = () => {
-    window.open("https://mysuperaiapp.com/", "_blank", "noopener,noreferrer");
+    // Check if user has '3 Months' or '1 Year' subscription
+    const hasRequiredSubscription = profile?.subscription_active && 
+      (profile?.subscription_plan === '3 Months' || profile?.subscription_plan === '1 Year');
+    
+    if (hasRequiredSubscription) {
+      window.open("https://chatgpt.com/g/g-6748bbe08e948191a4f8ebcb26a77c94-superai-advanced-ai-assistant", "_blank", "noopener,noreferrer");
+    } else {
+      setShowPricing(true);
+    }
   };
 
   return (
@@ -61,6 +75,20 @@ export default function SuperAI() {
           </main>
         </div>
       </div>
+      
+      {showPricing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <PricingDialog />
+            <button
+              onClick={() => setShowPricing(false)}
+              className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </SidebarProvider>
   );
 }
