@@ -31,26 +31,25 @@ export default function DigitalPortfolio() {
             <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader className="text-center">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Briefcase className="w-8 h-8 text-primary" />
-                  </div>
                   <CardTitle className="text-2xl">Digital Portfolio Builder</CardTitle>
                   <CardDescription>
                     Create and manage your professional digital portfolio with advanced tools
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
-                  <p className="text-muted-foreground">
-                    Click the button below to open the Digital Portfolio application in a new window for the best experience.
-                  </p>
-                  <Button 
+                  <div 
                     onClick={handleOpenPortfolio}
-                    size="lg"
-                    className="gap-2"
+                    className="cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Open Portfolio Builder
-                  </Button>
+                    <img 
+                      src="/lovable-uploads/a310aed4-f8e4-4c88-b1e5-12ba23207190.png" 
+                      alt="Digital Portfolio Builder Preview"
+                      className="w-full h-auto"
+                    />
+                  </div>
+                  <p className="text-muted-foreground">
+                    Click the image above to open the Digital Portfolio application in a new window for the best experience.
+                  </p>
                   <div className="mt-6 pt-6 border-t">
                     <p className="text-sm text-muted-foreground">
                       For optimal performance and full functionality, the Digital Portfolio application opens in a new browser window.
