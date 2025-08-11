@@ -96,26 +96,70 @@ const DigitalCareerHub = () => {
     // Clean up the embed code and ensure it's properly formatted
     const cleanCode = embedCode.trim();
     
-    // If it's an iframe, render it directly
+    // Security: Extract URL from iframe src if it's an iframe
     if (cleanCode.includes('<iframe')) {
+      const srcMatch = cleanCode.match(/src="([^"]+)"/);
+      if (srcMatch && srcMatch[1]) {
+        const url = srcMatch[1];
+        // Validate the URL and domain
+        if (isValidEmbedDomain(url)) {
+          const sanitizedUrl = sanitizeUrl(url);
+          if (sanitizedUrl) {
+            return (
+              <iframe
+                src={sanitizedUrl}
+                className="w-full h-full absolute inset-0 border-none"
+                title="AI Tool"
+                frameBorder="0"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                loading="lazy"
+              />
+            );
+          }
+        }
+      }
+      
+      // If iframe parsing fails, show error
       return (
-        <div 
-          className="w-full h-full absolute inset-0"
-          dangerouslySetInnerHTML={{ __html: cleanCode.replace(/style="[^"]*"/g, 'style="width: 100%; height: 100%; border: none;"') }}
-        />
+        <div className="w-full h-full absolute inset-0 p-4 bg-muted overflow-auto flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-destructive font-medium mb-2">Security Error</p>
+            <p className="text-muted-foreground text-sm">
+              This embed code contains unsafe content or is from an untrusted domain.
+            </p>
+          </div>
+        </div>
       );
     }
     
-    // If it's just a URL, create an iframe
+    // If it's just a URL, validate and create an iframe
     if (cleanCode.startsWith('http')) {
+      if (isValidEmbedDomain(cleanCode)) {
+        const sanitizedUrl = sanitizeUrl(cleanCode);
+        if (sanitizedUrl) {
+          return (
+            <iframe
+              src={sanitizedUrl}
+              className="w-full h-full absolute inset-0 border-none"
+              title="AI Tool"
+              frameBorder="0"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              loading="lazy"
+            />
+          );
+        }
+      }
+      
+      // If URL is not from allowed domain
       return (
-        <iframe
-          src={cleanCode}
-          className="w-full h-full absolute inset-0 border-none"
-          title="AI Tool"
-          frameBorder="0"
-          allowFullScreen
-        />
+        <div className="w-full h-full absolute inset-0 p-4 bg-muted overflow-auto flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-destructive font-medium mb-2">Domain Not Allowed</p>
+            <p className="text-muted-foreground text-sm">
+              This URL is from an untrusted domain. Only whitelisted domains are allowed for security.
+            </p>
+          </div>
+        </div>
       );
     }
     

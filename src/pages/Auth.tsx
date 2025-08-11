@@ -235,12 +235,13 @@ const Auth = () => {
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="Create a password"
+                      placeholder="Create a strong password (min 12 characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      minLength={6}
+                      minLength={12}
                     />
+                    <PasswordStrengthMeter password={password} />
                   </div>
                   <Button 
                     type="submit" 
