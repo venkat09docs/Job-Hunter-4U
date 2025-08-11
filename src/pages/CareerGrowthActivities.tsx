@@ -141,7 +141,12 @@ export default function CareerGrowthActivities() {
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
       setLastWeekMetrics(lastWeekMetricsData);
-      setInputValues(metrics);
+      
+      // Only update input values if they're currently empty (not being edited)
+      setInputValues(prev => {
+        const hasUserInput = Object.keys(prev).some(key => prev[key] !== '');
+        return hasUserInput ? prev : metrics;
+      });
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -153,7 +158,6 @@ export default function CareerGrowthActivities() {
   }, [selectedDate, user, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
-    console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
