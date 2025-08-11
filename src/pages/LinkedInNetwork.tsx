@@ -70,11 +70,8 @@ const LinkedInNetwork = () => {
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
-    // Only initialize input values if they're empty, don't overwrite user input
-    setInputValues(prev => {
-      const hasExistingValues = Object.keys(prev).length > 0;
-      return hasExistingValues ? prev : metrics;
-    });
+    // Always update input values with the loaded metrics for the selected date
+    setInputValues(metrics);
   }, [getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
@@ -83,20 +80,12 @@ const LinkedInNetwork = () => {
   }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
-    console.log('Input change:', activityId, value);
-    setInputValues(prev => {
-      console.log('Previous input values:', prev);
-      const newValues = { ...prev, [activityId]: value };
-      console.log('New input values:', newValues);
-      return newValues;
-    });
+    setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
   const handleInputBlur = (activityId: string) => {
-    console.log('Input blur:', activityId, inputValues[activityId]);
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    console.log('Saving value:', value, 'for date:', dateKey);
     updateMetrics(activityId, value, dateKey);
     setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
     
