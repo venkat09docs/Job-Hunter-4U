@@ -122,17 +122,8 @@ const BuildMyProfile = () => {
       description: 'Publish articles to showcase expertise',
       progress: publishedBlogsCount > 0 ? 100 : 0,
       isCompleted: publishedBlogsCount > 0,
-      action: () => navigate('/dashboard/blog'),
+      action: () => navigate('/dashboard/career-growth-activities?tab=content'),
       category: 'Content Creation'
-    },
-    {
-      id: 'network',
-      title: 'Build LinkedIn Network',
-      description: 'Connect with professionals in your field',
-      progress: 0, // networkProgress removed
-      isCompleted: false, // networkProgress removed
-      action: () => navigate('/dashboard/career-growth-activities?tab=networking'),
-      category: 'Networking'
     }
   ];
 
