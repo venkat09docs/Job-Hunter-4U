@@ -199,14 +199,14 @@ export function AppSidebar() {
                             <SidebarMenuSubItem key={item.title}>
                               <SidebarMenuSubButton asChild>
                                 <NavLink to={item.url} end className={({ isActive }) => 
-                                  `flex items-center gap-3 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                  `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
                                     isActive 
                                       ? "text-primary bg-primary/10" 
                                       : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
                                   }`
                                 }>
                                   <item.icon className="h-4 w-4 flex-shrink-0" />
-                                  <span className="text-sm">{item.title}</span>
+                                  <span className="text-xs truncate">{item.title}</span>
                                 </NavLink>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
