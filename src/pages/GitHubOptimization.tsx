@@ -319,6 +319,21 @@ ${interests}
           </div>
 
           <TabsContent value="generate" className="h-full mt-0">
+            <div className="px-6 py-4 border-b bg-muted/20">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Generate README File</h2>
+                <div className="flex items-center gap-2">
+                  <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Download README.md
+                  </Button>
+                  <Button onClick={handleSaveToLibrary} variant="outline" size="sm" className="flex items-center gap-2">
+                    <Save className="h-4 w-4" />
+                    Save to Library
+                  </Button>
+                </div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
           {/* Left Side - Input Fields */}
           <div className="p-6 border-r overflow-auto">
@@ -634,17 +649,7 @@ ${interests}
                   <Eye className="h-5 w-5" />
                   README.md Preview
                 </h2>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Live Preview</Badge>
-                  <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Download README.md
-                  </Button>
-                  <Button onClick={handleSaveToLibrary} variant="outline" size="sm" className="flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    Save to Library
-                  </Button>
-                </div>
+                <Badge variant="outline">Live Preview</Badge>
               </div>
               
               <Card>
