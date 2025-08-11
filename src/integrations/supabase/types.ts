@@ -169,6 +169,13 @@ export type Database = {
             foreignKeyName: "batches_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
+            referencedRelation: "institute_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
@@ -347,6 +354,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institute_directory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "institute_admin_assignments_institute_id_fkey"
             columns: ["institute_id"]
@@ -1300,6 +1314,13 @@ export type Database = {
             foreignKeyName: "user_assignments_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
+            referencedRelation: "institute_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assignments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
@@ -1364,7 +1385,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      institute_directory: {
+        Row: {
+          code: string | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+        }
+        Insert: {
+          code?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+        }
+        Update: {
+          code?: string | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_managed_institutes: {
