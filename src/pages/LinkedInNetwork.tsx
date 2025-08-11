@@ -26,6 +26,10 @@ interface ActivityMetrics {
   [key: string]: number;
 }
 
+interface InputValues {
+  [key: string]: string | number;
+}
+
 const DAILY_ACTIVITIES: DailyActivity[] = [
   // Engagement Activities
   { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
@@ -54,7 +58,7 @@ const LinkedInNetwork = () => {
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
   const [lastWeekMetrics, setLastWeekMetrics] = useState<ActivityMetrics>({});
-  const [inputValues, setInputValues] = useState<ActivityMetrics>({});
+  const [inputValues, setInputValues] = useState<InputValues>({});
 
   const loadData = useCallback(async (dateKey: string) => {
     const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
@@ -76,12 +80,11 @@ const LinkedInNetwork = () => {
   }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
-    const numValue = parseInt(value) || 0;
-    setInputValues(prev => ({ ...prev, [activityId]: numValue }));
+    setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
   const handleInputBlur = (activityId: string) => {
-    const value = inputValues[activityId] || 0;
+    const value = parseInt(inputValues[activityId] as string) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     updateMetrics(activityId, value, dateKey);
     setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
