@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, Users, MessageSquare, Share2, Heart, UserPlus, CheckCircle, Target, TrendingUp, Activity, ArrowLeft, User, AlertCircle, Award } from 'lucide-react';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
@@ -52,6 +53,7 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 
 const LinkedInNetwork = () => {
   const { updateMetrics, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics } = useLinkedInNetworkProgress();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -69,20 +71,20 @@ const LinkedInNetwork = () => {
     ]);
     
     console.log('Loaded metrics for', dateKey, ':', metrics);
-    console.log('Current week metrics:', currentWeekMetrics);
-    console.log('Last week metrics:', lastWeekMetricsData);
     
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
     // Always update input values with the loaded metrics for the selected date
     setInputValues(metrics);
-  }, [getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
+  }, []);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    loadData(dateKey);
-  }, [selectedDate, loadData]);
+    if (user) {
+      loadData(dateKey);
+    }
+  }, [selectedDate, user]);
 
   const handleInputChange = (activityId: string, value: string) => {
     setInputValues(prev => ({ ...prev, [activityId]: value }));
