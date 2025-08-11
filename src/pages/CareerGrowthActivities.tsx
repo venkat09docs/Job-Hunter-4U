@@ -111,7 +111,7 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 export default function CareerGrowthActivities() {
   const [activities] = useState<Activity[]>(mockActivities);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState('activities');
+  
   
   // LinkedIn Network functionality
   const { updateMetrics, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics } = useLinkedInNetworkProgress();
@@ -330,23 +330,15 @@ export default function CareerGrowthActivities() {
           </Card>
         </div>
 
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="activities">Career Activities</TabsTrigger>
+        {/* Main Tabs - Promoted from sub tabs */}
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="all">All Activities</TabsTrigger>
+            <TabsTrigger value="skill">Skills</TabsTrigger>
+            <TabsTrigger value="networking">Networking</TabsTrigger>
+            <TabsTrigger value="learning">Learning</TabsTrigger>
+            <TabsTrigger value="application">Applications</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="activities" className="space-y-6">
-            {/* Filter Tabs for Activities */}
-            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="all">All Activities</TabsTrigger>
-                <TabsTrigger value="skill">Skills</TabsTrigger>
-                <TabsTrigger value="networking">Networking</TabsTrigger>
-                <TabsTrigger value="learning">Learning</TabsTrigger>
-                <TabsTrigger value="application">Applications</TabsTrigger>
-              </TabsList>
-            </Tabs>
 
             {selectedCategory === 'networking' ? (
               // LinkedIn Network Management Content
@@ -622,7 +614,6 @@ export default function CareerGrowthActivities() {
                 )}
               </div>
             )}
-          </TabsContent>
         </Tabs>
       </div>
     </div>
