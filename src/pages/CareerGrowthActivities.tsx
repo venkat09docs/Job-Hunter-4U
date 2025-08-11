@@ -322,9 +322,8 @@ export default function CareerGrowthActivities() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="activities">Career Activities</TabsTrigger>
-            <TabsTrigger value="networking">LinkedIn Networking</TabsTrigger>
           </TabsList>
 
           <TabsContent value="activities" className="space-y-6">
@@ -339,271 +338,274 @@ export default function CareerGrowthActivities() {
               </TabsList>
             </Tabs>
 
-            {/* Activities List */}
-            <div className="space-y-4">
-              {filteredActivities.map((activity) => (
-                <Card key={activity.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-3">
-                        {getCategoryIcon(activity.category)}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-semibold">{activity.title}</h3>
-                            <Badge className={getPriorityColor(activity.priority)}>
-                              {activity.priority}
-                            </Badge>
-                            {getStatusIcon(activity.status)}
+            {selectedCategory === 'networking' ? (
+              // LinkedIn Network Management Content
+              <div className="space-y-6">
+                {/* Last Week Performance */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Award className="h-5 w-5 text-primary" />
+                      Last Week Performance
+                    </CardTitle>
+                    <CardDescription>
+                      Review your previous week's LinkedIn networking achievements
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-4 gap-4">
+                      {DAILY_ACTIVITIES.slice(0, 4).map((activity) => {
+                        const lastWeekValue = lastWeekMetrics[activity.id] || 0;
+                        const targetMet = lastWeekValue >= activity.weeklyTarget;
+                        return (
+                          <div key={activity.id} className="text-center p-4 rounded-lg border bg-card">
+                            <div className={`text-2xl font-bold ${targetMet ? 'text-green-500' : 'text-red-500'}`}>
+                              {lastWeekValue}
+                            </div>
+                            <div className="text-sm text-muted-foreground">{activity.title}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Target: {activity.weeklyTarget} {activity.unit}
+                            </div>
+                            {targetMet ? (
+                              <CheckCircle className="h-4 w-4 text-green-500 mx-auto mt-1" />
+                            ) : (
+                              <AlertCircle className="h-4 w-4 text-red-500 mx-auto mt-1" />
+                            )}
                           </div>
-                          <p className="text-muted-foreground mb-3">{activity.description}</p>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Week Calendar */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      Weekly Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-7 gap-2">
+                      {weekDates.map((date) => {
+                        const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                        const isSelected = format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                        const isFuture = date > new Date();
+                        
+                        return (
+                          <Button
+                            key={date.toISOString()}
+                            variant={isSelected ? 'default' : 'outline'}
+                            className={`flex flex-col h-16 p-2 ${isFuture ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => !isFuture && setSelectedDate(date)}
+                            disabled={isFuture}
+                          >
+                            <span className="text-xs">{format(date, 'EEE')}</span>
+                            <span className="text-lg">{format(date, 'd')}</span>
+                            {isToday && <span className="text-xs text-primary">Today</span>}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Daily Activities */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary" />
+                      Daily Activities - {format(selectedDate, 'MMMM d, yyyy')}
+                    </CardTitle>
+                    <CardDescription>
+                      Enter your daily LinkedIn networking activities
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Activity</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Daily Count</TableHead>
+                          <TableHead>Daily Target</TableHead>
+                          <TableHead>Weekly Progress</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {DAILY_ACTIVITIES.map((activity) => {
+                          const weeklyTotal = weeklyMetrics[activity.id] || 0;
+                          const status = getActivityStatus(activity.id);
                           
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <span>Category: {activity.category}</span>
-                            <span>Time: {activity.estimatedTime}</span>
-                            {activity.dueDate && (
-                              <span>Due: {new Date(activity.dueDate).toLocaleDateString()}</span>
+                          return (
+                            <TableRow key={activity.id}>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium text-sm">{activity.title}</div>
+                                  <div className="text-xs text-muted-foreground">{activity.description}</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={getNetworkingCategoryColor(activity.category)}>
+                                  {getCategoryIcon(activity.category)}
+                                  <span className="ml-1 capitalize">{activity.category}</span>
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  value={inputValues[activity.id] ?? ''}
+                                  onChange={(e) => handleInputChange(activity.id, e.target.value)}
+                                  onBlur={() => handleInputBlur(activity.id)}
+                                  className="w-20 h-8 text-sm"
+                                  min="0"
+                                  max={activity.dailyTarget * 3}
+                                  disabled={selectedDate > new Date()}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm font-medium">{activity.dailyTarget}</span>
+                                <span className="text-xs text-muted-foreground ml-1">{activity.unit}</span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  <span className="font-medium">{weeklyTotal}</span>
+                                  <span className="text-muted-foreground"> / {activity.weeklyTarget}</span>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {Math.round((weeklyTotal / activity.weeklyTarget) * 100)}% complete
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  {status === 'success' && <CheckCircle className="h-4 w-4 text-green-600" />}
+                                  {status === 'warning' && <AlertCircle className="h-4 w-4 text-yellow-600" />}
+                                  {status === 'danger' && <AlertCircle className="h-4 w-4 text-red-600" />}
+                                  <span className={`text-sm font-medium ${
+                                    status === 'success' ? 'text-green-600' :
+                                    status === 'warning' ? 'text-yellow-600' :
+                                    status === 'danger' ? 'text-red-600' : 'text-gray-600'
+                                  }`}>
+                                    {status === 'success' ? 'On Track' :
+                                     status === 'warning' ? 'Behind' :
+                                     status === 'danger' ? 'Critical' : 'Not Started'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                {/* Metrics Summary */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      Today's Metrics Summary
+                    </CardTitle>
+                    <CardDescription>
+                      Key metrics for {format(selectedDate, 'MMMM d, yyyy')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-blue-500">
+                          {todayMetrics['connection_requests'] || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Connection Requests</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-green-500">
+                          {todayMetrics['post_likes'] || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Post Likes</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-purple-500">
+                          {todayMetrics['comments'] || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Comments</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-orange-500">
+                          {todayMetrics['create_post'] || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Original Posts</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              // Regular Activities List
+              <div className="space-y-4">
+                {filteredActivities.map((activity) => (
+                  <Card key={activity.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start gap-3">
+                          {getCategoryIcon(activity.category)}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="text-lg font-semibold">{activity.title}</h3>
+                              <Badge className={getPriorityColor(activity.priority)}>
+                                {activity.priority}
+                              </Badge>
+                              {getStatusIcon(activity.status)}
+                            </div>
+                            <p className="text-muted-foreground mb-3">{activity.description}</p>
+                            
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                              <span>Category: {activity.category}</span>
+                              <span>Time: {activity.estimatedTime}</span>
+                              {activity.dueDate && (
+                                <span>Due: {new Date(activity.dueDate).toLocaleDateString()}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">{activity.progress}%</span>
+                        </div>
+                      </div>
+                      
+                      {activity.status !== 'completed' && (
+                        <div className="space-y-2">
+                          <Progress value={activity.progress} className="h-2" />
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline">
+                              Update Progress
+                            </Button>
+                            {activity.status === 'pending' && (
+                              <Button size="sm">
+                                Start Activity
+                              </Button>
                             )}
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{activity.progress}%</span>
-                      </div>
-                    </div>
-                    
-                    {activity.status !== 'completed' && (
-                      <div className="space-y-2">
-                        <Progress value={activity.progress} className="h-2" />
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            Update Progress
-                          </Button>
-                          {activity.status === 'pending' && (
-                            <Button size="sm">
-                              Start Activity
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
 
-            {filteredActivities.length === 0 && (
-              <div className="text-center py-12">
-                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No activities found</h3>
-                <p className="text-muted-foreground">No activities match your current filter criteria.</p>
+                {filteredActivities.length === 0 && (
+                  <div className="text-center py-12">
+                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No activities found</h3>
+                    <p className="text-muted-foreground">No activities match your current filter criteria.</p>
+                  </div>
+                )}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="networking" className="space-y-6">
-            {/* Last Week Performance */}
-            <Card className="shadow-elegant border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Last Week Performance
-                </CardTitle>
-                <CardDescription>
-                  Review your previous week's LinkedIn networking achievements
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
-                  {DAILY_ACTIVITIES.slice(0, 4).map((activity) => {
-                    const lastWeekValue = lastWeekMetrics[activity.id] || 0;
-                    const targetMet = lastWeekValue >= activity.weeklyTarget;
-                    return (
-                      <div key={activity.id} className="text-center p-4 rounded-lg border bg-card">
-                        <div className={`text-2xl font-bold ${targetMet ? 'text-green-500' : 'text-red-500'}`}>
-                          {lastWeekValue}
-                        </div>
-                        <div className="text-sm text-muted-foreground">{activity.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          Target: {activity.weeklyTarget} {activity.unit}
-                        </div>
-                        {targetMet ? (
-                          <CheckCircle className="h-4 w-4 text-green-500 mx-auto mt-1" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-red-500 mx-auto mt-1" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Week Calendar */}
-            <Card className="shadow-elegant border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  Weekly Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-2">
-                  {weekDates.map((date) => {
-                    const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-                    const isSelected = format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-                    const isFuture = date > new Date();
-                    
-                    return (
-                      <Button
-                        key={date.toISOString()}
-                        variant={isSelected ? 'default' : 'outline'}
-                        className={`flex flex-col h-16 p-2 ${isFuture ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => !isFuture && setSelectedDate(date)}
-                        disabled={isFuture}
-                      >
-                        <span className="text-xs">{format(date, 'EEE')}</span>
-                        <span className="text-lg">{format(date, 'd')}</span>
-                        {isToday && <span className="text-xs text-primary">Today</span>}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Daily Activities */}
-            <Card className="shadow-elegant border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-primary" />
-                  Daily Activities - {format(selectedDate, 'MMMM d, yyyy')}
-                </CardTitle>
-                <CardDescription>
-                  Enter your daily LinkedIn networking activities
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Activity</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Daily Count</TableHead>
-                      <TableHead>Daily Target</TableHead>
-                      <TableHead>Weekly Progress</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {DAILY_ACTIVITIES.map((activity) => {
-                      const weeklyTotal = weeklyMetrics[activity.id] || 0;
-                      const status = getActivityStatus(activity.id);
-                      
-                      return (
-                        <TableRow key={activity.id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium text-sm">{activity.title}</div>
-                              <div className="text-xs text-muted-foreground">{activity.description}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={getNetworkingCategoryColor(activity.category)}>
-                              {getCategoryIcon(activity.category)}
-                              <span className="ml-1 capitalize">{activity.category}</span>
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              value={inputValues[activity.id] ?? ''}
-                              onChange={(e) => handleInputChange(activity.id, e.target.value)}
-                              onBlur={() => handleInputBlur(activity.id)}
-                              className="w-20 h-8 text-sm"
-                              min="0"
-                              max={activity.dailyTarget * 3}
-                              disabled={selectedDate > new Date()}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm font-medium">{activity.dailyTarget}</span>
-                            <span className="text-xs text-muted-foreground ml-1">{activity.unit}</span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <span className="font-medium">{weeklyTotal}</span>
-                              <span className="text-muted-foreground"> / {activity.weeklyTarget}</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {Math.round((weeklyTotal / activity.weeklyTarget) * 100)}% complete
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              {status === 'success' && <CheckCircle className="h-4 w-4 text-green-600" />}
-                              {status === 'warning' && <AlertCircle className="h-4 w-4 text-yellow-600" />}
-                              {status === 'danger' && <AlertCircle className="h-4 w-4 text-red-600" />}
-                              <span className={`text-sm font-medium ${
-                                status === 'success' ? 'text-green-600' :
-                                status === 'warning' ? 'text-yellow-600' :
-                                status === 'danger' ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                                {status === 'success' ? 'On Track' :
-                                 status === 'warning' ? 'Behind' :
-                                 status === 'danger' ? 'Critical' : 'Not Started'}
-                              </span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            {/* Metrics Summary */}
-            <Card className="shadow-elegant border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  Today's Metrics Summary
-                </CardTitle>
-                <CardDescription>
-                  Key metrics for {format(selectedDate, 'MMMM d, yyyy')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 rounded-lg border bg-card">
-                    <div className="text-2xl font-bold text-blue-500">
-                      {todayMetrics['connection_requests'] || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Connection Requests</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border bg-card">
-                    <div className="text-2xl font-bold text-green-500">
-                      {todayMetrics['post_likes'] || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Post Likes</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border bg-card">
-                    <div className="text-2xl font-bold text-purple-500">
-                      {todayMetrics['comments'] || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Comments</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border bg-card">
-                    <div className="text-2xl font-bold text-orange-500">
-                      {todayMetrics['create_post'] || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Original Posts</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
