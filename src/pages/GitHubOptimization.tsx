@@ -291,21 +291,13 @@ ${interests}
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <FileText className="h-8 w-8" />
-              GitHub Profile README Generator
+              GitHub Profile
             </h1>
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground">
                 Create a professional README.md for your GitHub profile
               </p>
               <div className="flex items-center gap-2 ml-4">
-                <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  Download README.md
-                </Button>
-                <Button onClick={handleSaveToLibrary} variant="outline" size="sm" className="flex items-center gap-2">
-                  <Save className="h-4 w-4" />
-                  Save to Library
-                </Button>
                 <Button onClick={handleGoToGitHub} variant="outline" size="sm" className="flex items-center gap-2">
                   <ExternalLink className="h-4 w-4" />
                   Go to GitHub
@@ -642,7 +634,17 @@ ${interests}
                   <Eye className="h-5 w-5" />
                   README.md Preview
                 </h2>
-                <Badge variant="outline">Live Preview</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Live Preview</Badge>
+                  <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    Download README.md
+                  </Button>
+                  <Button onClick={handleSaveToLibrary} variant="outline" size="sm" className="flex items-center gap-2">
+                    <Save className="h-4 w-4" />
+                    Save to Library
+                  </Button>
+                </div>
               </div>
               
               <Card>
