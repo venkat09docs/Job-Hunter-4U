@@ -32,7 +32,7 @@ const BuildMyProfile = () => {
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
-  const { completionPercentage: networkProgress, loading: networkLoading, refreshProgress: refreshNetworkProgress } = useLinkedInNetworkProgress();
+  const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
@@ -74,7 +74,7 @@ const BuildMyProfile = () => {
 
   // Calculate overall career development score
   const getOverallCareerScore = () => {
-    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), networkProgress];
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), 0]; // networkProgress removed
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
@@ -129,8 +129,8 @@ const BuildMyProfile = () => {
       id: 'network',
       title: 'Build LinkedIn Network',
       description: 'Connect with professionals in your field',
-      progress: networkProgress,
-      isCompleted: networkProgress === 100,
+      progress: 0, // networkProgress removed
+      isCompleted: false, // networkProgress removed
       action: () => navigate('/dashboard/linkedin-network'),
       category: 'Networking'
     }

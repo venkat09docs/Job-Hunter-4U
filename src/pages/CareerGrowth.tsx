@@ -43,7 +43,7 @@ export default function CareerGrowth() {
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
-  const { completionPercentage: networkProgress } = useLinkedInNetworkProgress();
+  const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
@@ -67,7 +67,7 @@ export default function CareerGrowth() {
       generateSuggestions();
       setLoading(false);
     }
-  }, [user, resumeProgress, linkedinProgress, githubProgress, networkProgress, totalJobApplications, publishedBlogsCount]);
+  }, [user, resumeProgress, linkedinProgress, githubProgress, 0, totalJobApplications, publishedBlogsCount]); // networkProgress removed
 
   const fetchJobAndBlogData = async () => {
     if (!user) return;
@@ -108,7 +108,7 @@ export default function CareerGrowth() {
   };
 
   const getOverallScore = () => {
-    const scores = [resumeProgress, linkedinProgress, githubProgress, networkProgress];
+    const scores = [resumeProgress, linkedinProgress, githubProgress, 0]; // networkProgress removed
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
@@ -165,7 +165,7 @@ export default function CareerGrowth() {
     }
 
     // Network suggestions
-    if (networkProgress < 50) {
+    if (false) { // networkProgress removed, condition disabled
       newSuggestions.push({
         id: 'network-grow',
         category: 'Network',
@@ -375,9 +375,9 @@ export default function CareerGrowth() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <Progress value={networkProgress} className="h-2" />
+                    <Progress value={0} className="h-2" />
                     <div className="flex justify-between text-sm">
-                      <span>{networkProgress}% Active</span>
+                      <span>{0}% Active</span>
                       <span className="text-muted-foreground">Target: 70%</span>
                     </div>
                   </div>
@@ -623,12 +623,12 @@ export default function CareerGrowth() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      {networkProgress >= 70 ? (
+                      {false ? (
                         <CheckCircle className="h-5 w-5 text-green-500" />
                       ) : (
                         <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
                       )}
-                      <span className={networkProgress >= 70 ? "line-through text-muted-foreground" : ""}>
+                      <span className={false ? "line-through text-muted-foreground" : ""}>
                         Maintain active LinkedIn networking (70%+)
                       </span>
                     </div>

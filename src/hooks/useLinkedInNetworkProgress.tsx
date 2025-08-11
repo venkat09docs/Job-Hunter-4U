@@ -8,41 +8,13 @@ interface ActivityMetrics {
 
 export const useLinkedInNetworkProgress = () => {
   const { user } = useAuth();
-  const [completionPercentage, setCompletionPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const TOTAL_TASKS = 10; // Total number of LinkedIn network activities
 
   useEffect(() => {
     if (user) {
-      fetchNetworkProgress();
-    }
-  }, [user]);
-
-  const fetchNetworkProgress = async () => {
-    if (!user) return;
-    
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const { data, error } = await supabase
-        .from('linkedin_network_completions')
-        .select('task_id')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .eq('completed', true);
-
-      if (error) throw error;
-
-      const completedCount = data?.length || 0;
-      const percentage = Math.round((completedCount / TOTAL_TASKS) * 100);
-      setCompletionPercentage(percentage);
-    } catch (error) {
-      console.error('Error fetching LinkedIn network progress:', error);
-      setCompletionPercentage(0);
-    } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const updateTaskCompletion = async (taskId: string, completed: boolean, date: string) => {
     if (!user) return;
@@ -61,12 +33,6 @@ export const useLinkedInNetworkProgress = () => {
         });
 
       if (error) throw error;
-
-      // Update percentage for today's date
-      const today = new Date().toISOString().split('T')[0];
-      if (date === today) {
-        await fetchNetworkProgress();
-      }
     } catch (error) {
       console.error('Error updating task completion:', error);
     }
@@ -204,14 +170,12 @@ export const useLinkedInNetworkProgress = () => {
   };
 
   return {
-    completionPercentage,
     loading,
     updateTaskCompletion,
     updateMetrics,
     getTodayMetrics,
     getWeeklyMetrics,
     getLastWeekMetrics,
-    getCompletedTasks,
-    refreshProgress: fetchNetworkProgress
+    getCompletedTasks
   };
 };

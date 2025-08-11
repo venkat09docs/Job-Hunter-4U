@@ -36,7 +36,7 @@ const Dashboard = () => {
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
-  const { completionPercentage: networkProgress, loading: networkLoading, refreshProgress: refreshNetworkProgress } = useLinkedInNetworkProgress();
+  const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
@@ -188,7 +188,7 @@ const Dashboard = () => {
 
   // Calculate overall career development score
   const getOverallCareerScore = () => {
-    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), networkProgress];
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), 0]; // networkProgress removed
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
@@ -208,7 +208,7 @@ const Dashboard = () => {
           () => {
             // Refresh all progress data when daily snapshots are updated
             refreshLinkedInProgress();
-            refreshNetworkProgress();
+            // refreshNetworkProgress removed;
             refreshGitHubProgress();
           }
         )
@@ -231,7 +231,7 @@ const Dashboard = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, refreshLinkedInProgress, refreshNetworkProgress, refreshGitHubProgress]);
+  }, [user, refreshLinkedInProgress, refreshGitHubProgress]); // refreshNetworkProgress removed
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
