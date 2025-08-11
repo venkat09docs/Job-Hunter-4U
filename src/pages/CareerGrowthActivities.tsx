@@ -157,28 +157,38 @@ export default function CareerGrowthActivities() {
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
-  const handleInputBlur = (activityId: string) => {
+  const handleInputBlur = async (activityId: string) => {
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     console.log('Saving metrics - Activity:', activityId, 'Value:', value, 'Date:', dateKey);
     
-    updateMetrics(activityId, value, dateKey);
-    setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
-    
-    // Refresh weekly metrics after a short delay to ensure database update is complete
-    setTimeout(async () => {
-      try {
-        const updatedWeeklyMetrics = await getWeeklyMetrics();
-        setWeeklyMetrics(updatedWeeklyMetrics);
-      } catch (error) {
-        console.error('Error refreshing weekly metrics:', error);
-      }
-    }, 500);
-    
-    toast({
-      title: 'Metrics Updated',
-      description: `${activityId}: ${value} saved for ${dateKey}`,
-    });
+    try {
+      // Update the database
+      await updateMetrics(activityId, value, dateKey);
+      
+      // Update today's metrics immediately
+      setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
+      
+      // Refresh weekly metrics to reflect the change
+      const [updatedWeeklyMetrics] = await Promise.all([
+        getWeeklyMetrics()
+      ]);
+      setWeeklyMetrics(updatedWeeklyMetrics);
+      
+      console.log('Successfully updated metrics and refreshed weekly data');
+      
+      toast({
+        title: 'Metrics Updated',
+        description: `${activityId}: ${value} saved for ${dateKey}`,
+      });
+    } catch (error) {
+      console.error('Error updating metrics:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update metrics',
+        variant: 'destructive'
+      });
+    }
   };
 
   const getCategoryIcon = (category: Activity['category'] | string) => {
