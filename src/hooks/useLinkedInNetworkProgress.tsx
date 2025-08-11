@@ -122,15 +122,17 @@ export const useLinkedInNetworkProgress = () => {
 
     try {
       const today = new Date();
-      const weekAgo = new Date(today);
-      weekAgo.setDate(weekAgo.getDate() - 6);
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6); // Sunday
 
       const { data, error } = await supabase
         .from('linkedin_network_metrics')
         .select('activity_id, value')
         .eq('user_id', user.id)
-        .gte('date', weekAgo.toISOString().split('T')[0])
-        .lte('date', today.toISOString().split('T')[0]);
+        .gte('date', weekStart.toISOString().split('T')[0])
+        .lte('date', weekEnd.toISOString().split('T')[0]);
 
       if (error) throw error;
 
@@ -142,6 +144,41 @@ export const useLinkedInNetworkProgress = () => {
       return weekMetrics;
     } catch (error) {
       console.error('Error fetching weekly metrics:', error);
+      return {};
+    }
+  };
+
+  const getLastWeekMetrics = async (): Promise<ActivityMetrics> => {
+    if (!user) return {};
+
+    try {
+      const today = new Date();
+      const thisWeekStart = new Date(today);
+      thisWeekStart.setDate(today.getDate() - today.getDay() + 1); // This Monday
+      
+      const lastWeekStart = new Date(thisWeekStart);
+      lastWeekStart.setDate(thisWeekStart.getDate() - 7); // Last Monday
+      
+      const lastWeekEnd = new Date(lastWeekStart);
+      lastWeekEnd.setDate(lastWeekStart.getDate() + 6); // Last Sunday
+
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('activity_id, value')
+        .eq('user_id', user.id)
+        .gte('date', lastWeekStart.toISOString().split('T')[0])
+        .lte('date', lastWeekEnd.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      const lastWeekMetrics: ActivityMetrics = {};
+      data?.forEach(metric => {
+        lastWeekMetrics[metric.activity_id] = (lastWeekMetrics[metric.activity_id] || 0) + metric.value;
+      });
+
+      return lastWeekMetrics;
+    } catch (error) {
+      console.error('Error fetching last week metrics:', error);
       return {};
     }
   };
@@ -173,6 +210,7 @@ export const useLinkedInNetworkProgress = () => {
     updateMetrics,
     getTodayMetrics,
     getWeeklyMetrics,
+    getLastWeekMetrics,
     getCompletedTasks,
     refreshProgress: fetchNetworkProgress
   };
