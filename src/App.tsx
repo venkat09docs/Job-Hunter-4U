@@ -45,6 +45,7 @@ import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 import SuperAI from "./pages/SuperAI";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
+import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 
 const queryClient = new QueryClient();
 
@@ -268,6 +269,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DigitalPortfolio />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/career-growth-activities" 
+              element={
+                <ProtectedRoute>
+                  <CareerGrowthActivities />
                 </ProtectedRoute>
               } 
             />
