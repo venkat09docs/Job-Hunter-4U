@@ -141,16 +141,11 @@ export default function CareerGrowthActivities() {
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
       setLastWeekMetrics(lastWeekMetricsData);
-      
-      // Only update input values if they're currently empty (not being edited)
-      setInputValues(prev => {
-        const hasUserInput = Object.keys(prev).some(key => prev[key] !== '');
-        return hasUserInput ? prev : metrics;
-      });
+      setInputValues(metrics);
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  }, [user]); // Removed hook functions from dependency array
+  }, [user, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
