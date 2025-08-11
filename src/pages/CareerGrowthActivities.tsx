@@ -154,15 +154,18 @@ export default function CareerGrowthActivities() {
   };
 
   const handleInputBlur = async (activityId: string) => {
-    const value = parseInt(String(inputValues[activityId])) || 0;
+    // Get the current value from inputValues state, not from todayMetrics
+    const currentInputValue = inputValues[activityId];
+    const value = parseInt(String(currentInputValue)) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     
     console.log('=== SAVE ATTEMPT ===');
     console.log('Activity ID:', activityId);
-    console.log('New Value:', value);
+    console.log('Current Input Value:', currentInputValue);
+    console.log('Parsed Value:', value);
     console.log('Date Key:', dateKey);
     console.log('User ID:', user?.id);
-    console.log('Current todayMetrics before save:', todayMetrics);
+    console.log('Current inputValues state:', inputValues);
     
     if (!user) {
       console.error('No user found, cannot save');
