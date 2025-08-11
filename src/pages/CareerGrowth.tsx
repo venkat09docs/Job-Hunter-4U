@@ -108,7 +108,7 @@ export default function CareerGrowth() {
   };
 
   const getOverallScore = () => {
-    const scores = [resumeProgress, linkedinProgress, githubProgress, 0]; // networkProgress removed
+    const scores = [resumeProgress, linkedinProgress, githubProgress];
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
@@ -287,8 +287,8 @@ export default function CareerGrowth() {
                     <TrendingUp className="h-12 w-12 text-green-500" />
                   </div>
                   <Progress value={getOverallScore()} className="w-full max-w-sm h-3" />
-                  <p className="text-sm text-muted-foreground">
-                    Based on Resume, LinkedIn, GitHub & Network progress
+                   <p className="text-sm text-muted-foreground">
+                    Based on Resume, LinkedIn & GitHub progress
                   </p>
                 </div>
               </div>
@@ -296,17 +296,18 @@ export default function CareerGrowth() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="weekly">Weekly Trends</TabsTrigger>
-            <TabsTrigger value="daily">Daily Progress</TabsTrigger>
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="profile">Profile Status</TabsTrigger>
+            <TabsTrigger value="network">Network Status</TabsTrigger>
+            <TabsTrigger value="jobs">Job Application Status</TabsTrigger>
+            <TabsTrigger value="github">GitHub Status</TabsTrigger>
             <TabsTrigger value="suggestions">Action Items</TabsTrigger>
             <TabsTrigger value="checklist">Checklist</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent value="profile" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Resume Status */}
               <Card>
                 <CardHeader>
@@ -358,63 +359,137 @@ export default function CareerGrowth() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="text-2xl font-bold">{savedReadmeFilesCount}</div>
-                    <div className="text-sm text-muted-foreground">README files saved</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Network Growth */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    Network Growth
-                    {trends.network && <span className="text-lg">{trends.network}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                   <div className="space-y-3">
-                     <div className="text-2xl font-bold">{dailyMetrics.length > 0 ? dailyMetrics[0].networkProgress : 0}</div>
-                     <div className="text-sm text-muted-foreground">Daily Activities</div>
-                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Job Applications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-purple-500" />
-                    Job Applications
-                    {trends.jobApplications && <span className="text-lg">{trends.jobApplications}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold">{totalJobApplications}</div>
-                    <div className="text-sm text-muted-foreground">Total Applications</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Blog Posts */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500" />
-                    Content Creation
-                    {trends.blogs && <span className="text-lg">{trends.blogs}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold">{publishedBlogsCount}</div>
-                    <div className="text-sm text-muted-foreground">Published Blogs</div>
+                    <Progress value={githubProgress} className="h-2" />
+                    <div className="flex justify-between text-sm">
+                      <span>{githubProgress}% Complete</span>
+                      <span className="text-muted-foreground">Target: 80%</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="network" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  Network Growth
+                  {trends.network && <span className="text-lg">{trends.network}</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                 <div className="space-y-3">
+                   <div className="text-2xl font-bold">{dailyMetrics.length > 0 ? dailyMetrics[0].networkProgress : 0}</div>
+                   <div className="text-sm text-muted-foreground">Daily Activities</div>
+                 </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>4-Week Network Progress Trend</CardTitle>
+                <CardDescription>Track your weekly networking improvements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {weeklyMetrics.map((week, index) => (
+                    <div key={week.week} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">Week of {week.week}</h3>
+                        <Badge variant={index === 0 ? "default" : "secondary"}>
+                          {index === 0 ? "Current" : `${index + 1} week${index > 0 ? 's' : ''} ago`}
+                        </Badge>
+                      </div>
+                      <div className="grid gap-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">Network Progress</span>
+                          <div className="flex items-center gap-2">
+                            <Progress value={week.networkProgress} className="w-20 h-2" />
+                            <span className="text-sm font-medium w-12">{week.networkProgress}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="jobs" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-purple-500" />
+                  Job Applications
+                  {trends.jobApplications && <span className="text-lg">{trends.jobApplications}</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold">{totalJobApplications}</div>
+                  <div className="text-sm text-muted-foreground">Total Applications</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Job Application Progress</CardTitle>
+                <CardDescription>Your recent application activity</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {dailyMetrics.map((day, index) => (
+                    <div key={day.date} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{day.date}</p>
+                         <p className="text-sm text-muted-foreground">
+                           {day.jobApplications} applications
+                         </p>
+                      </div>
+                      <Badge variant={index === 0 ? "default" : "secondary"}>
+                        {index === 0 ? "Today" : `${index} day${index > 1 ? 's' : ''} ago`}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="github" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-gray-800" />
+                  GitHub Profile Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Profile Completion</p>
+                      <div className="space-y-2">
+                        <Progress value={githubProgress} className="h-2" />
+                        <div className="flex justify-between text-sm">
+                          <span>{githubProgress}% Complete</span>
+                          <span className="text-muted-foreground">Target: 80%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">README Files</p>
+                      <div className="text-2xl font-bold">{savedReadmeFilesCount}</div>
+                      <p className="text-sm text-muted-foreground">Saved in Library</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="weekly" className="space-y-6">
