@@ -95,38 +95,48 @@ export const useLinkedInNetworkProgress = () => {
     if (!user) return {};
 
     try {
+      // Get current date in user's timezone
       const today = new Date();
+      
+      // Find Monday of current week (week starts on Monday)
+      const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysFromMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1; // If Sunday, go back 6 days to get Monday
+      
       const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - daysFromMonday);
       
-      // Calculate Monday of current week
-      const dayOfWeek = today.getDay();
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Handle Sunday (0) as last day of week
-      weekStart.setDate(today.getDate() - daysToSubtract);
-      
+      // Sunday of current week (6 days after Monday)
       const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6); // Sunday of current week
+      weekEnd.setDate(weekStart.getDate() + 6);
 
-      console.log('Week calculation:', {
+      const startDateStr = weekStart.toISOString().split('T')[0];
+      const endDateStr = weekEnd.toISOString().split('T')[0];
+
+      console.log('Current week calculation:', {
         today: today.toISOString().split('T')[0],
-        weekStart: weekStart.toISOString().split('T')[0],
-        weekEnd: weekEnd.toISOString().split('T')[0]
+        todayDayOfWeek: currentDayOfWeek,
+        daysFromMonday,
+        weekStartMonday: startDateStr,
+        weekEndSunday: endDateStr
       });
 
       const { data, error } = await supabase
         .from('linkedin_network_metrics')
         .select('activity_id, value, date')
         .eq('user_id', user.id)
-        .gte('date', weekStart.toISOString().split('T')[0])
-        .lte('date', weekEnd.toISOString().split('T')[0]);
+        .gte('date', startDateStr)
+        .lte('date', endDateStr);
 
       if (error) throw error;
 
-      console.log('Weekly data fetched:', data);
+      console.log('Current week data (Monday to Sunday only):', data);
 
       const weekMetrics: ActivityMetrics = {};
       data?.forEach(metric => {
         weekMetrics[metric.activity_id] = (weekMetrics[metric.activity_id] || 0) + metric.value;
       });
+
+      console.log('Final weekly totals:', weekMetrics);
 
       return weekMetrics;
     } catch (error) {
