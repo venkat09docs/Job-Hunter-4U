@@ -152,16 +152,28 @@ export default function CareerGrowthActivities() {
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
-  const handleInputBlur = (activityId: string) => {
+  const handleInputBlur = async (activityId: string) => {
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    updateMetrics(activityId, value, dateKey);
-    setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
     
-    toast({
-      title: 'Metrics Updated',
-      description: `${activityId}: ${value} saved for ${dateKey}`,
-    });
+    console.log('Handling input blur:', { activityId, value, dateKey });
+    
+    try {
+      await updateMetrics(activityId, value, dateKey);
+      setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
+      
+      toast({
+        title: 'Metrics Updated',
+        description: `${activityId}: ${value} saved for ${dateKey}`,
+      });
+    } catch (error) {
+      console.error('Failed to update metrics:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save metrics. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getCategoryIcon = (category: Activity['category'] | string) => {
@@ -503,46 +515,52 @@ export default function CareerGrowthActivities() {
                   </CardContent>
                 </Card>
 
-                {/* Metrics Summary */}
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      Today's Metrics Summary
-                    </CardTitle>
-                    <CardDescription>
-                      Key metrics for {format(selectedDate, 'MMMM d, yyyy')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-blue-500">
-                          {todayMetrics['connection_requests'] || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Connection Requests</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-green-500">
-                          {todayMetrics['post_likes'] || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Post Likes</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-purple-500">
-                          {todayMetrics['comments'] || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Comments</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-orange-500">
-                          {todayMetrics['create_post'] || 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Original Posts</div>
-                      </div>
+            {/* Metrics Summary */}
+            <Card className="shadow-elegant border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  Today's Metrics Summary
+                </CardTitle>
+                <CardDescription>
+                  Key metrics for {format(selectedDate, 'MMMM d, yyyy')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-5 gap-4">
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-primary">
+                      {Object.values(todayMetrics).reduce((sum, value) => sum + (value || 0), 0)}
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="text-sm text-muted-foreground">Total Activities</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-blue-500">
+                      {todayMetrics['connection_requests'] || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Connection Requests</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-green-500">
+                      {todayMetrics['post_likes'] || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Post Likes</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-purple-500">
+                      {todayMetrics['comments'] || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Comments</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-orange-500">
+                      {todayMetrics['create_post'] || 0}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Original Posts</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
               </div>
             ) : (
               // Regular Activities List

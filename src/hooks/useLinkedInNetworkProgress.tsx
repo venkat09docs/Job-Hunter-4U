@@ -41,6 +41,8 @@ export const useLinkedInNetworkProgress = () => {
   const updateMetrics = useCallback(async (activityId: string, value: number, date: string) => {
     if (!user) return;
 
+    console.log('Updating metrics:', { activityId, value, date, userId: user.id });
+
     try {
       const { error } = await supabase
         .from('linkedin_network_metrics')
@@ -53,9 +55,15 @@ export const useLinkedInNetworkProgress = () => {
           onConflict: 'user_id,date,activity_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating metrics:', error);
+        throw error;
+      }
+      
+      console.log('Successfully updated metrics for:', activityId);
     } catch (error) {
       console.error('Error updating metrics:', error);
+      throw error; // Re-throw to handle in component
     }
   }, [user]);
 
