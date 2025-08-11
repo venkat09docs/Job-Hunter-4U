@@ -384,7 +384,7 @@ const Dashboard = () => {
                         {/* Network Growth */}
                         <div 
                           className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                          onClick={() => navigate('/dashboard/linkedin-network')}
+                          onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
                         >
                           <div className="relative w-16 h-16 mb-2">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">

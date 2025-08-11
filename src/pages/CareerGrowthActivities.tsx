@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle, Award } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -110,7 +110,13 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 
 export default function CareerGrowthActivities() {
   const [activities] = useState<Activity[]>(mockActivities);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get tab from URL params, default to 'all'
+  const urlParams = new URLSearchParams(location.search);
+  const initialTab = urlParams.get('tab') || 'all';
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   
   
   // LinkedIn Network functionality
