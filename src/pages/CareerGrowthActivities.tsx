@@ -643,7 +643,7 @@ export default function CareerGrowthActivities() {
                             Create professional blog posts to demonstrate your expertise and thought leadership in your field.
                           </p>
                           <Button 
-                            onClick={() => navigate('/dashboard/blog')}
+                            onClick={() => navigate('/dashboard/digital-profile')}
                             className="w-full"
                           >
                             Manage Blogs
@@ -692,7 +692,7 @@ export default function CareerGrowthActivities() {
                             Plan and create engaging LinkedIn posts to build your professional network and establish thought leadership.
                           </p>
                           <Button 
-                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
+                            onClick={() => navigate('/dashboard/super-ai')}
                             className="w-full"
                             variant="outline"
                           >
