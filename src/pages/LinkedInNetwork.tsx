@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Calendar, Users, MessageSquare, Share2, Heart, UserPlus, CheckCircle, Target, TrendingUp, Activity, ArrowLeft, User, AlertCircle, Award } from 'lucide-react';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useToast } from '@/hooks/use-toast';
@@ -29,98 +29,49 @@ interface ActivityMetrics {
 
 const DAILY_ACTIVITIES: DailyActivity[] = [
   // Engagement Activities
-  { id: 'post_likes', title: 'Like Posts', description: 'Like 10-15 relevant posts in your industry', category: 'engagement', dailyTarget: 15, weeklyTarget: 105, unit: 'likes' },
-  { id: 'comments', title: 'Meaningful Comments', description: 'Leave 5-8 thoughtful comments on posts', category: 'engagement', dailyTarget: 8, weeklyTarget: 56, unit: 'comments' },
-  { id: 'shares', title: 'Share Content', description: 'Share 2-3 valuable posts with your network', category: 'engagement', dailyTarget: 3, weeklyTarget: 21, unit: 'shares' },
+  { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
+  { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
+  { id: 'content', title: 'Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'shares' },
   
   // Networking Activities
-  { id: 'connection_requests', title: 'Send Connection Requests', description: 'Send 5-10 personalized connection requests', category: 'networking', dailyTarget: 10, weeklyTarget: 70, unit: 'requests' },
-  { id: 'follow_up', title: 'Follow Up Messages', description: 'Send 3-5 follow-up messages to recent connections', category: 'networking', dailyTarget: 5, weeklyTarget: 35, unit: 'messages' },
-  { id: 'industry_groups', title: 'Engage in Groups', description: 'Participate in 2-3 industry group discussions', category: 'networking', dailyTarget: 3, weeklyTarget: 21, unit: 'discussions' },
+  { id: 'connection_requests', title: 'Connection', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
+  { id: 'follow_up', title: 'Follow Up Messages', description: 'Send follow-up messages to recent connections', category: 'networking', dailyTarget: 1, weeklyTarget: 5, unit: 'messages' },
+  { id: 'industry_groups', title: 'Engage in Groups', description: 'Participate in industry group discussions', category: 'networking', dailyTarget: 1, weeklyTarget: 5, unit: 'discussions' },
   
   // Content Activities
-  { id: 'create_post', title: 'Create Original Post', description: 'Share an original post about your expertise', category: 'content', dailyTarget: 1, weeklyTarget: 7, unit: 'posts' },
-  { id: 'article_draft', title: 'Work on Article', description: 'Draft or publish LinkedIn article content', category: 'content', dailyTarget: 1, weeklyTarget: 7, unit: 'sessions' },
+  { id: 'create_post', title: 'Create Original Post', description: 'Share an original post about your expertise', category: 'content', dailyTarget: 1, weeklyTarget: 5, unit: 'posts' },
+  { id: 'article_draft', title: 'Work on Article', description: 'Draft or publish LinkedIn article content', category: 'content', dailyTarget: 1, weeklyTarget: 5, unit: 'sessions' },
   
   // Growth Activities
-  { id: 'profile_views', title: 'Profile Optimization', description: 'Review and update profile sections', category: 'growth', dailyTarget: 1, weeklyTarget: 7, unit: 'sessions' },
-  { id: 'industry_research', title: 'Industry Research', description: 'Research and follow industry leaders', category: 'growth', dailyTarget: 5, weeklyTarget: 35, unit: 'profiles' },
+  { id: 'profile_optimization', title: 'Profile Optimization', description: 'Review and update profile sections', category: 'growth', dailyTarget: 0, weeklyTarget: 1, unit: 'sessions' },
+  { id: 'industry_research', title: 'Industry Research', description: 'Research and follow industry leaders', category: 'growth', dailyTarget: 1, weeklyTarget: 5, unit: 'profiles' },
 ];
 
 const LinkedInNetwork = () => {
-  const { updateTaskCompletion, updateMetrics, getTodayMetrics, getCompletedTasks, getWeeklyMetrics, getLastWeekMetrics } = useLinkedInNetworkProgress();
+  const { updateMetrics, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics } = useLinkedInNetworkProgress();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
   const [lastWeekMetrics, setLastWeekMetrics] = useState<ActivityMetrics>({});
-  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
-  const [completionPercentage, setCompletionPercentage] = useState(0);
 
   const loadData = useCallback(async (dateKey: string) => {
-    const [metrics, tasks, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
+    const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
       getTodayMetrics(dateKey),
-      getCompletedTasks(dateKey),
       getWeeklyMetrics(),
       getLastWeekMetrics()
     ]);
     
-    // Calculate completion percentage for selected date
-    const completedCount = tasks.length;
-    const percentage = Math.round((completedCount / DAILY_ACTIVITIES.length) * 100);
-    
-    // Single state update to prevent flickering
     setTodayMetrics(metrics);
-    setCompletedTasks(new Set(tasks));
-    setCompletionPercentage(percentage);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
-  }, [getTodayMetrics, getCompletedTasks, getWeeklyMetrics, getLastWeekMetrics]);
+  }, [getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     loadData(dateKey);
   }, [selectedDate, loadData]);
-
-  const handleTaskToggle = (taskId: string, checked: boolean) => {
-    if (checked) {
-      // Find the activity to get target value
-      const activity = DAILY_ACTIVITIES.find(a => a.id === taskId);
-      if (activity?.dailyTarget) {
-        const currentMetric = todayMetrics[taskId] || 0;
-        if (currentMetric < activity.dailyTarget) {
-          toast({
-            title: 'Cannot Complete Task',
-            description: `Please enter at least ${activity.dailyTarget} ${activity.unit} to mark this task as completed`,
-            variant: 'destructive',
-          });
-          return;
-        }
-      }
-    }
-    
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    updateTaskCompletion(taskId, checked, dateKey);
-    
-    const newCompleted = new Set(completedTasks);
-    if (checked) {
-      newCompleted.add(taskId);
-    } else {
-      newCompleted.delete(taskId);
-    }
-    setCompletedTasks(newCompleted);
-    
-    // Update completion percentage immediately
-    const newCompletedCount = newCompleted.size;
-    const newPercentage = Math.round((newCompletedCount / DAILY_ACTIVITIES.length) * 100);
-    setCompletionPercentage(newPercentage);
-    
-    toast({
-      title: checked ? 'Task Completed!' : 'Task Unchecked',
-      description: `${DAILY_ACTIVITIES.find(a => a.id === taskId)?.title} ${checked ? 'marked as completed' : 'unmarked'}`,
-    });
-  };
 
   const handleMetricUpdate = (activityId: string, value: number) => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -271,35 +222,6 @@ const LinkedInNetwork = () => {
               </Card>
             </div>
 
-            {/* Current Week Progress Overview */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    Current Week Progress
-                  </CardTitle>
-                  <CardDescription>
-                    Track your daily LinkedIn networking activities and weekly targets
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Today's Progress</span>
-                        <span className="text-sm font-bold text-primary">{completionPercentage}%</span>
-                      </div>
-                      <Progress value={completionPercentage} className="h-3" />
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">{completedTasks.size}</div>
-                      <div className="text-xs text-muted-foreground">Tasks Completed Today</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Week Calendar */}
             <div className="mb-8">
@@ -337,87 +259,85 @@ const LinkedInNetwork = () => {
                     Daily Activities - {format(selectedDate, 'MMMM d, yyyy')}
                   </CardTitle>
                   <CardDescription>
-                    Complete these networking activities to grow your LinkedIn presence
+                    Enter your daily LinkedIn networking activities
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {DAILY_ACTIVITIES.map((activity) => {
-                      const weeklyTotal = weeklyMetrics[activity.id] || 0;
-                      const status = getActivityStatus(activity.id);
-                      
-                      return (
-                        <div key={activity.id} className={`border rounded-lg p-4 space-y-3 ${getStatusColor(status)}`}>
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                id={activity.id}
-                                checked={completedTasks.has(activity.id)}
-                                onCheckedChange={(checked) => handleTaskToggle(activity.id, checked as boolean)}
-                              />
-                              <div className="flex-1">
-                                <label 
-                                  htmlFor={activity.id}
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                >
-                                  {activity.title}
-                                </label>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {activity.description}
-                                </p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Activity</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Daily Count</TableHead>
+                        <TableHead>Daily Target</TableHead>
+                        <TableHead>Weekly Progress</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {DAILY_ACTIVITIES.map((activity) => {
+                        const weeklyTotal = weeklyMetrics[activity.id] || 0;
+                        const status = getActivityStatus(activity.id);
+                        
+                        return (
+                          <TableRow key={activity.id}>
+                            <TableCell>
+                              <div>
+                                <div className="font-medium text-sm">{activity.title}</div>
+                                <div className="text-xs text-muted-foreground">{activity.description}</div>
                               </div>
-                            </div>
-                            <Badge variant="outline" className={getCategoryColor(activity.category)}>
-                              {getCategoryIcon(activity.category)}
-                              <span className="ml-1 capitalize">{activity.category}</span>
-                            </Badge>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={getCategoryColor(activity.category)}>
+                                {getCategoryIcon(activity.category)}
+                                <span className="ml-1 capitalize">{activity.category}</span>
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
                               <Input
                                 type="number"
-                                placeholder={`Daily: ${activity.dailyTarget} ${activity.unit}`}
+                                placeholder="0"
                                 value={todayMetrics[activity.id] || ''}
                                 onChange={(e) => handleMetricUpdate(activity.id, parseInt(e.target.value) || 0)}
-                                className="flex-1 h-8 text-sm"
+                                className="w-20 h-8 text-sm"
                                 min="0"
-                                max={activity.dailyTarget * 2}
+                                max={activity.dailyTarget * 3}
                               />
-                              <span className="text-xs text-muted-foreground">
-                                / {activity.dailyTarget}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">
-                                Weekly: {weeklyTotal} / {activity.weeklyTarget} {activity.unit}
-                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm font-medium">{activity.dailyTarget}</span>
+                              <span className="text-xs text-muted-foreground ml-1">{activity.unit}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <span className="font-medium">{weeklyTotal}</span>
+                                <span className="text-muted-foreground"> / {activity.weeklyTarget}</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {Math.round((weeklyTotal / activity.weeklyTarget) * 100)}% complete
+                              </div>
+                            </TableCell>
+                            <TableCell>
                               <div className="flex items-center gap-1">
-                                {status === 'success' && <CheckCircle className="h-3 w-3 text-green-600" />}
-                                {status === 'warning' && <AlertCircle className="h-3 w-3 text-yellow-600" />}
-                                {status === 'danger' && <AlertCircle className="h-3 w-3 text-red-600" />}
-                                <span className={
+                                {status === 'success' && <CheckCircle className="h-4 w-4 text-green-600" />}
+                                {status === 'warning' && <AlertCircle className="h-4 w-4 text-yellow-600" />}
+                                {status === 'danger' && <AlertCircle className="h-4 w-4 text-red-600" />}
+                                <span className={`text-sm font-medium ${
                                   status === 'success' ? 'text-green-600' :
                                   status === 'warning' ? 'text-yellow-600' :
                                   status === 'danger' ? 'text-red-600' : 'text-gray-600'
-                                }>
-                                  {Math.round((weeklyTotal / activity.weeklyTarget) * 100)}%
+                                }`}>
+                                  {status === 'success' ? 'On Track' :
+                                   status === 'warning' ? 'Behind' :
+                                   status === 'danger' ? 'Critical' : 'Not Started'}
                                 </span>
                               </div>
-                            </div>
-                          </div>
-                          
-                          {completedTasks.has(activity.id) && (
-                            <div className="flex items-center gap-1 text-green-600">
-                              <CheckCircle className="h-3 w-3" />
-                              <span className="text-xs">Completed Today</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </div>
