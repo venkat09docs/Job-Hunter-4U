@@ -233,17 +233,25 @@ const LinkedInNetwork = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-7 gap-2">
-                    {weekDates.map((date) => (
-                      <Button
-                        key={date.toISOString()}
-                        variant={format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd') ? 'default' : 'outline'}
-                        className="flex flex-col h-16 p-2"
-                        onClick={() => setSelectedDate(date)}
-                      >
-                        <span className="text-xs">{format(date, 'EEE')}</span>
-                        <span className="text-lg">{format(date, 'd')}</span>
-                      </Button>
-                    ))}
+                    {weekDates.map((date) => {
+                      const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                      const isSelected = format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+                      const isFuture = date > new Date();
+                      
+                      return (
+                        <Button
+                          key={date.toISOString()}
+                          variant={isSelected ? 'default' : 'outline'}
+                          className={`flex flex-col h-16 p-2 ${isFuture ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={() => !isFuture && setSelectedDate(date)}
+                          disabled={isFuture}
+                        >
+                          <span className="text-xs">{format(date, 'EEE')}</span>
+                          <span className="text-lg">{format(date, 'd')}</span>
+                          {isToday && <span className="text-xs text-primary">Today</span>}
+                        </Button>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -292,17 +300,18 @@ const LinkedInNetwork = () => {
                                 <span className="ml-1 capitalize">{activity.category}</span>
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                value={todayMetrics[activity.id] || ''}
-                                onChange={(e) => handleMetricUpdate(activity.id, parseInt(e.target.value) || 0)}
-                                className="w-20 h-8 text-sm"
-                                min="0"
-                                max={activity.dailyTarget * 3}
-                              />
-                            </TableCell>
+                             <TableCell>
+                               <Input
+                                 type="number"
+                                 placeholder="0"
+                                 value={todayMetrics[activity.id] || ''}
+                                 onChange={(e) => handleMetricUpdate(activity.id, parseInt(e.target.value) || 0)}
+                                 className="w-20 h-8 text-sm"
+                                 min="0"
+                                 max={activity.dailyTarget * 3}
+                                 disabled={selectedDate > new Date()}
+                               />
+                             </TableCell>
                             <TableCell>
                               <span className="text-sm font-medium">{activity.dailyTarget}</span>
                               <span className="text-xs text-muted-foreground ml-1">{activity.unit}</span>
