@@ -150,7 +150,7 @@ export default function CareerGrowthActivities() {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  }, [user, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
+  }, [user]); // Removed hook functions from dependency array
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
