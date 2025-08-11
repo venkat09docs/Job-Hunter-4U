@@ -96,7 +96,7 @@ const MyProfileJourney = () => {
                     
                     <div 
                       className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                      onClick={() => navigate('/dashboard/linkedin-network')}
+                      onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
                     >
                       <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                         5

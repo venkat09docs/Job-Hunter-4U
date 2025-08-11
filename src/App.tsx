@@ -29,7 +29,7 @@ import LinkedInOptimization from "./pages/LinkedInOptimization";
 import GitHubOptimization from "./pages/GitHubOptimization";
 import GitHubActivityTracker from "./pages/GitHubActivityTracker";
 import CareerGrowth from "./pages/CareerGrowth";
-import LinkedInNetwork from "./pages/LinkedInNetwork";
+
 import FindYourNextRole from "./pages/FindYourNextRole";
 import BuildMyProfile from "./pages/BuildMyProfile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -213,14 +213,6 @@ const App = () => (
               element={
                 <PremiumProtectedRoute featureKey="page_github_activity_tracker">
                   <GitHubActivityTracker />
-                </PremiumProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/linkedin-network" 
-              element={
-                <PremiumProtectedRoute featureKey="page_linkedin_network">
-                  <LinkedInNetwork />
                 </PremiumProtectedRoute>
               } 
             />

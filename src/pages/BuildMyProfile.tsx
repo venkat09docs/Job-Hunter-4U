@@ -131,7 +131,7 @@ const BuildMyProfile = () => {
       description: 'Connect with professionals in your field',
       progress: 0, // networkProgress removed
       isCompleted: false, // networkProgress removed
-      action: () => navigate('/dashboard/linkedin-network'),
+      action: () => navigate('/dashboard/career-growth-activities?tab=networking'),
       category: 'Networking'
     }
   ];

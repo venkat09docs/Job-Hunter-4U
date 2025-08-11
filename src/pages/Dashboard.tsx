@@ -617,27 +617,27 @@ const Dashboard = () => {
                   ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/linkedin-network')}>
+                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
                         <div className="text-2xl font-bold text-blue-500">{networkMetrics.totalConnections}</div>
                         <div className="text-sm text-muted-foreground">Total Connections</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/linkedin-network')}>
+                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
                         <div className="text-2xl font-bold text-rose-500">{networkMetrics.totalLikes}</div>
                         <div className="text-sm text-muted-foreground">Posts Liked</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/linkedin-network')}>
+                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
                         <div className="text-2xl font-bold text-purple-500">{networkMetrics.totalComments}</div>
                         <div className="text-sm text-muted-foreground">Comments Made</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/linkedin-network')}>
+                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
                         <div className="text-2xl font-bold text-green-500">{networkMetrics.totalPosts}</div>
                         <div className="text-sm text-muted-foreground">Posts Created</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/linkedin-network')}>
+                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
                         <div className="text-2xl font-bold text-orange-500">{networkMetrics.weeklyProgress}</div>
                         <div className="text-sm text-muted-foreground">Weekly Activity</div>
                       </div>
