@@ -86,6 +86,7 @@ const LinkedInNetwork = () => {
   }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
+    console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
