@@ -9,11 +9,14 @@ import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb, Save } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb, Save, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 
 const GIT_LINKEDIN_TOOL_ID = 'eff64291-db9d-4bcf-8bfe-82d58bfeeebe';
 
@@ -39,6 +42,7 @@ const GitHubOptimization = () => {
   const { profile } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { updateTaskStatus } = useGitHubProgress();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
     title: '',
@@ -60,6 +64,12 @@ const GitHubOptimization = () => {
   const [savedNotes, setSavedNotes] = useState<any[]>([]);
   const [activeField, setActiveField] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [githubProgress, setGitHubProgress] = useState({
+    readme_generated: false,
+    special_repo_created: false,
+    readme_added: false,
+    repo_public: false
+  });
 
   const generateReadme = () => {
     const { name, title, bio, location, email, website, github, linkedin, skills, experience, education, projects, achievements, languages, interests } = profileData;
@@ -243,10 +253,25 @@ ${interests}
 
       if (error) throw error;
 
+      // Update GitHub progress
+      await updateTaskStatus('readme_generated', true);
+      setGitHubProgress(prev => ({ ...prev, readme_generated: true }));
+
       toast.success('README file saved to Resources Library!');
     } catch (error) {
       console.error('Error saving README file:', error);
       toast.error('Failed to save README file. Please try again.');
+    }
+  };
+
+  const handleCheckboxChange = async (taskId: string, checked: boolean) => {
+    try {
+      await updateTaskStatus(taskId, checked);
+      setGitHubProgress(prev => ({ ...prev, [taskId]: checked }));
+      toast.success(`Task ${checked ? 'completed' : 'unchecked'}!`);
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status');
     }
   };
 
@@ -293,7 +318,16 @@ ${interests}
       </header>
 
       <main className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
+        <Tabs defaultValue="generate" className="h-full">
+          <div className="px-6 pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="generate">Generate Readme File</TabsTrigger>
+              <TabsTrigger value="setup">Setup Instructions</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="generate" className="h-full mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 h-full">
           {/* Left Side - Input Fields */}
           <div className="p-6 border-r overflow-auto">
             <div className="space-y-6">
@@ -618,41 +652,159 @@ ${interests}
                   </pre>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+            </div>
+          </TabsContent>
 
+          <TabsContent value="setup" className="h-full mt-0">
+            <div className="p-6 space-y-6">
+              {/* GitHub Profile Progress Tracker */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Setup Instructions</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5" />
+                    GitHub Profile Setup Progress
+                  </CardTitle>
+                  <CardDescription>
+                    Track your progress in setting up your GitHub profile README
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">1. Create Special Repository</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Create a new repository with the same name as your GitHub username (e.g., if your username is "johndoe", create a repository named "johndoe").
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="readme_generated"
+                        checked={githubProgress.readme_generated}
+                        onCheckedChange={(checked) => handleCheckboxChange('readme_generated', checked as boolean)}
+                      />
+                      <Label htmlFor="readme_generated" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Generated "README.md" file and saved in Library
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="special_repo_created"
+                        checked={githubProgress.special_repo_created}
+                        onCheckedChange={(checked) => handleCheckboxChange('special_repo_created', checked as boolean)}
+                      />
+                      <Label htmlFor="special_repo_created" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Create Special Repository in GitHub
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="readme_added"
+                        checked={githubProgress.readme_added}
+                        onCheckedChange={(checked) => handleCheckboxChange('readme_added', checked as boolean)}
+                      />
+                      <Label htmlFor="readme_added" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Add README.md to the Repository
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="repo_public"
+                        checked={githubProgress.repo_public}
+                        onCheckedChange={(checked) => handleCheckboxChange('repo_public', checked as boolean)}
+                      />
+                      <Label htmlFor="repo_public" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Make it Public
+                      </Label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Detailed Setup Instructions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Detailed Setup Instructions</CardTitle>
+                  <CardDescription>
+                    Follow these step-by-step instructions to set up your GitHub profile README
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">1</div>
+                      <h4 className="font-semibold">Generate README.md file</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-8">
+                      Fill out your profile information in the "Generate Readme File" tab and click "Save to Library" to generate and save your README.md file.
                     </p>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">2. Add README.md</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Upload the downloaded README.md file to the root of this special repository.
+                  
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">2</div>
+                      <h4 className="font-semibold">Create Special Repository</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-8">
+                      Create a new repository with the same name as your GitHub username (e.g., if your username is "johndoe", create a repository named "johndoe"). This is a special repository that GitHub recognizes for profile READMEs.
                     </p>
+                    <div className="ml-8 p-3 bg-accent/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        💡 <strong>Tip:</strong> Go to GitHub → New Repository → Repository name should match your username exactly
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">3. Make it Public</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Ensure the repository is public so that the README appears on your GitHub profile.
+                  
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">3</div>
+                      <h4 className="font-semibold">Add README.md to Repository</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-8">
+                      Upload or create the README.md file in the root directory of your special repository. You can either upload the downloaded file or copy-paste the content directly on GitHub.
                     </p>
+                    <div className="ml-8 p-3 bg-accent/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        💡 <strong>Tip:</strong> The file must be named exactly "README.md" (case-sensitive) and placed in the root directory
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">4. Customize Further</h4>
-                    <p className="text-sm text-muted-foreground">
-                      You can add GitHub stats widgets, visitor counters, and other dynamic elements to make your profile even more engaging.
+                  
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">4</div>
+                      <h4 className="font-semibold">Make Repository Public</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-8">
+                      Ensure the repository visibility is set to "Public" so that the README appears on your GitHub profile page. Private repositories won't display the profile README.
+                    </p>
+                    <div className="ml-8 p-3 bg-accent/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        💡 <strong>Tip:</strong> Go to Repository Settings → Danger Zone → Change repository visibility → Make public
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">✓</div>
+                      <h4 className="font-semibold">Additional Customizations</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground ml-8">
+                      Once your profile README is live, you can enhance it further with GitHub stats widgets, visitor counters, dynamic content, badges, and more interactive elements to make your profile stand out.
                     </p>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
