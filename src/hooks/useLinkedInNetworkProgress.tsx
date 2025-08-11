@@ -97,18 +97,31 @@ export const useLinkedInNetworkProgress = () => {
     try {
       const today = new Date();
       const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
+      
+      // Calculate Monday of current week
+      const dayOfWeek = today.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Handle Sunday (0) as last day of week
+      weekStart.setDate(today.getDate() - daysToSubtract);
+      
       const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+      weekEnd.setDate(weekStart.getDate() + 6); // Sunday of current week
+
+      console.log('Week calculation:', {
+        today: today.toISOString().split('T')[0],
+        weekStart: weekStart.toISOString().split('T')[0],
+        weekEnd: weekEnd.toISOString().split('T')[0]
+      });
 
       const { data, error } = await supabase
         .from('linkedin_network_metrics')
-        .select('activity_id, value')
+        .select('activity_id, value, date')
         .eq('user_id', user.id)
         .gte('date', weekStart.toISOString().split('T')[0])
         .lte('date', weekEnd.toISOString().split('T')[0]);
 
       if (error) throw error;
+
+      console.log('Weekly data fetched:', data);
 
       const weekMetrics: ActivityMetrics = {};
       data?.forEach(metric => {
