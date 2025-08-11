@@ -137,7 +137,14 @@ export default function CareerGrowthActivities() {
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
       setLastWeekMetrics(lastWeekMetricsData);
-      setInputValues(metrics);
+      
+      // Only update inputValues if they are empty or for new date
+      // Don't override user's current input
+      setInputValues(prev => {
+        const hasExistingInputs = Object.keys(prev).length > 0;
+        // If user has been typing values, keep those, otherwise use database values
+        return hasExistingInputs ? prev : metrics;
+      });
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -145,6 +152,9 @@ export default function CareerGrowthActivities() {
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    console.log('Date changed, loading data for:', dateKey);
+    // Clear inputValues when date changes to force reload
+    setInputValues({});
     loadData(dateKey);
   }, [selectedDate, user, loadData]);
 
@@ -188,9 +198,8 @@ export default function CareerGrowthActivities() {
         return updated;
       });
       
-      // Refresh data to ensure consistency
-      console.log('Refreshing data...');
-      await loadData(dateKey);
+      // Don't refresh data immediately to avoid overriding user inputs
+      // The data will be refreshed when user navigates or reloads
       
       toast({
         title: 'Metrics Updated',
