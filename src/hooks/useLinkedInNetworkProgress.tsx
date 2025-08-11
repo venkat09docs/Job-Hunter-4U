@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,7 +38,7 @@ export const useLinkedInNetworkProgress = () => {
     }
   };
 
-  const updateMetrics = async (activityId: string, value: number, date: string) => {
+  const updateMetrics = useCallback(async (activityId: string, value: number, date: string) => {
     if (!user) return;
 
     try {
@@ -57,7 +57,7 @@ export const useLinkedInNetworkProgress = () => {
     } catch (error) {
       console.error('Error updating metrics:', error);
     }
-  };
+  }, [user]);
 
   const getTodayMetrics = async (date: string): Promise<ActivityMetrics> => {
     if (!user) return {};

@@ -66,24 +66,29 @@ const LinkedInNetwork = () => {
     if (!user) return;
     
     console.log('Loading data for date:', dateKey);
-    const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
-      getTodayMetrics(dateKey),
-      getWeeklyMetrics(),
-      getLastWeekMetrics()
-    ]);
     
-    console.log('Loaded metrics for', dateKey, ':', metrics);
-    
-    setTodayMetrics(metrics);
-    setWeeklyMetrics(currentWeekMetrics);
-    setLastWeekMetrics(lastWeekMetricsData);
-    setInputValues(metrics);
-  }, [user, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
+    try {
+      const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
+        getTodayMetrics(dateKey),
+        getWeeklyMetrics(), 
+        getLastWeekMetrics()
+      ]);
+      
+      console.log('Loaded metrics for', dateKey, ':', metrics);
+      
+      setTodayMetrics(metrics);
+      setWeeklyMetrics(currentWeekMetrics);
+      setLastWeekMetrics(lastWeekMetricsData);
+      setInputValues(metrics);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  }, [user]);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     loadData(dateKey);
-  }, [selectedDate, loadData]);
+  }, [selectedDate, user, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
     console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
