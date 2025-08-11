@@ -149,6 +149,7 @@ export default function CareerGrowthActivities() {
   }, [selectedDate, user, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
+    console.log('Input change:', { activityId, value, selectedDate: format(selectedDate, 'yyyy-MM-dd') });
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
@@ -156,17 +157,45 @@ export default function CareerGrowthActivities() {
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     
-    console.log('Handling input blur:', { activityId, value, dateKey });
+    console.log('=== SAVE ATTEMPT ===');
+    console.log('Activity ID:', activityId);
+    console.log('New Value:', value);
+    console.log('Date Key:', dateKey);
+    console.log('User ID:', user?.id);
+    console.log('Current todayMetrics before save:', todayMetrics);
+    
+    if (!user) {
+      console.error('No user found, cannot save');
+      toast({
+        title: 'Error',
+        description: 'User not authenticated. Please log in again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     try {
+      console.log('Calling updateMetrics...');
       await updateMetrics(activityId, value, dateKey);
-      setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
+      console.log('updateMetrics completed successfully');
+      
+      setTodayMetrics(prev => {
+        const updated = { ...prev, [activityId]: value };
+        console.log('Updated todayMetrics:', updated);
+        return updated;
+      });
+      
+      // Refresh data to ensure consistency
+      console.log('Refreshing data...');
+      await loadData(dateKey);
       
       toast({
         title: 'Metrics Updated',
         description: `${activityId}: ${value} saved for ${dateKey}`,
       });
+      console.log('=== SAVE COMPLETED ===');
     } catch (error) {
+      console.error('=== SAVE FAILED ===');
       console.error('Failed to update metrics:', error);
       toast({
         title: 'Error',
@@ -529,12 +558,6 @@ export default function CareerGrowthActivities() {
               <CardContent>
                 <div className="grid md:grid-cols-5 gap-4">
                   <div className="text-center p-4 rounded-lg border bg-card">
-                    <div className="text-2xl font-bold text-primary">
-                      {Object.values(todayMetrics).reduce((sum, value) => sum + (value || 0), 0)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Total Activities</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg border bg-card">
                     <div className="text-2xl font-bold text-blue-500">
                       {todayMetrics['connection_requests'] || 0}
                     </div>
@@ -557,6 +580,12 @@ export default function CareerGrowthActivities() {
                       {todayMetrics['create_post'] || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Original Posts</div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg border bg-card">
+                    <div className="text-2xl font-bold text-primary">
+                      {Object.values(todayMetrics).reduce((sum, value) => sum + (value || 0), 0)}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Total Activities</div>
                   </div>
                 </div>
               </CardContent>
