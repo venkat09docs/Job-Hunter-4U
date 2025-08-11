@@ -52,6 +52,7 @@ import { useRole } from "@/hooks/useRole";
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User },
+  { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Super AI", url: "/dashboard/super-ai", icon: Bot },
   { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase },
@@ -64,7 +65,6 @@ const jobHunterItems = [
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search },
-  { title: "Career Growth", url: "/dashboard/career-growth-activities", icon: TrendingUp },
 ];
 
 
