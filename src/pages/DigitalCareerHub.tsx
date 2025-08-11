@@ -14,6 +14,7 @@ import { Coins, ExternalLink, Zap, ArrowLeft, FileText, Monitor, SidebarClose, S
 import { Link, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { sanitizeUrl, isValidEmbedDomain } from '@/lib/utils';
 
 const getCategoryIcon = (categoryName: string) => {
   const name = categoryName.toLowerCase();

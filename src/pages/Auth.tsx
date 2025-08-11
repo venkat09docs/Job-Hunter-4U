@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail } from 'lucide-react';
 import ManageSubscriptionDialog from '@/components/ManageSubscriptionDialog';
+import { PasswordStrengthMeter } from '@/components/PasswordStrengthMeter';
+import { validatePasswordStrength } from '@/lib/utils';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,27 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password || !username) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate password strength
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Password too weak",
+        description: "Please choose a stronger password that meets all requirements.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
