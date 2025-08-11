@@ -61,11 +61,16 @@ const LinkedInNetwork = () => {
   const [inputValues, setInputValues] = useState<InputValues>({});
 
   const loadData = useCallback(async (dateKey: string) => {
+    console.log('Loading data for date:', dateKey);
     const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
       getTodayMetrics(dateKey),
       getWeeklyMetrics(),
       getLastWeekMetrics()
     ]);
+    
+    console.log('Loaded metrics for', dateKey, ':', metrics);
+    console.log('Current week metrics:', currentWeekMetrics);
+    console.log('Last week metrics:', lastWeekMetricsData);
     
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
@@ -86,12 +91,13 @@ const LinkedInNetwork = () => {
   const handleInputBlur = (activityId: string) => {
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    console.log('Saving metrics - Activity:', activityId, 'Value:', value, 'Date:', dateKey);
     updateMetrics(activityId, value, dateKey);
     setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
     
     toast({
       title: 'Metrics Updated',
-      description: 'Your daily metrics have been recorded!',
+      description: `${activityId}: ${value} saved for ${dateKey}`,
     });
   };
 
