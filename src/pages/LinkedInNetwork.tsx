@@ -80,12 +80,20 @@ const LinkedInNetwork = () => {
   }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
-    setInputValues(prev => ({ ...prev, [activityId]: value }));
+    console.log('Input change:', activityId, value);
+    setInputValues(prev => {
+      console.log('Previous input values:', prev);
+      const newValues = { ...prev, [activityId]: value };
+      console.log('New input values:', newValues);
+      return newValues;
+    });
   };
 
   const handleInputBlur = (activityId: string) => {
-    const value = parseInt(inputValues[activityId] as string) || 0;
+    console.log('Input blur:', activityId, inputValues[activityId]);
+    const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    console.log('Saving value:', value, 'for date:', dateKey);
     updateMetrics(activityId, value, dateKey);
     setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
     
