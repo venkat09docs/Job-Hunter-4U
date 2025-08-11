@@ -54,6 +54,7 @@ const LinkedInNetwork = () => {
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
   const [lastWeekMetrics, setLastWeekMetrics] = useState<ActivityMetrics>({});
+  const [inputValues, setInputValues] = useState<ActivityMetrics>({});
 
   const loadData = useCallback(async (dateKey: string) => {
     const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
@@ -65,6 +66,8 @@ const LinkedInNetwork = () => {
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
+    // Initialize input values with loaded metrics
+    setInputValues(metrics);
   }, [getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
@@ -72,7 +75,13 @@ const LinkedInNetwork = () => {
     loadData(dateKey);
   }, [selectedDate, loadData]);
 
-  const handleMetricUpdate = (activityId: string, value: number) => {
+  const handleInputChange = (activityId: string, value: string) => {
+    const numValue = parseInt(value) || 0;
+    setInputValues(prev => ({ ...prev, [activityId]: numValue }));
+  };
+
+  const handleInputBlur = (activityId: string) => {
+    const value = inputValues[activityId] || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     updateMetrics(activityId, value, dateKey);
     setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
@@ -304,8 +313,9 @@ const LinkedInNetwork = () => {
                                <Input
                                  type="number"
                                  placeholder="0"
-                                 value={todayMetrics[activity.id] || ''}
-                                 onChange={(e) => handleMetricUpdate(activity.id, parseInt(e.target.value) || 0)}
+                                 value={inputValues[activity.id] ?? ''}
+                                 onChange={(e) => handleInputChange(activity.id, e.target.value)}
+                                 onBlur={() => handleInputBlur(activity.id)}
                                  className="w-20 h-8 text-sm"
                                  min="0"
                                  max={activity.dailyTarget * 3}
