@@ -70,8 +70,11 @@ const LinkedInNetwork = () => {
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
-    // Initialize input values with loaded metrics
-    setInputValues(metrics);
+    // Only initialize input values if they're empty, don't overwrite user input
+    setInputValues(prev => {
+      const hasExistingValues = Object.keys(prev).length > 0;
+      return hasExistingValues ? prev : metrics;
+    });
   }, [getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
