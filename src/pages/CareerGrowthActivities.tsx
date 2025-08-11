@@ -334,8 +334,8 @@ export default function CareerGrowthActivities() {
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="all">All Activities</TabsTrigger>
+            <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
             <TabsTrigger value="skill">Skills</TabsTrigger>
-            <TabsTrigger value="networking">Networking</TabsTrigger>
             <TabsTrigger value="learning">Learning</TabsTrigger>
             <TabsTrigger value="application">Applications</TabsTrigger>
           </TabsList>
@@ -343,6 +343,32 @@ export default function CareerGrowthActivities() {
             {selectedCategory === 'networking' ? (
               // LinkedIn Network Management Content
               <div className="space-y-6">
+                {/* Current Week Status Bar */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Current Week Progress
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Activities Completed This Week</span>
+                         <span className="text-lg font-bold text-primary">
+                           {weeklyMetrics ? Object.values(weeklyMetrics).reduce((sum, val) => sum + val, 0) : 0} / {DAILY_ACTIVITIES.length * 7}
+                         </span>
+                      </div>
+                       <Progress 
+                         value={weeklyMetrics ? (Object.values(weeklyMetrics).reduce((sum, val) => sum + val, 0) / (DAILY_ACTIVITIES.length * 7)) * 100 : 0} 
+                         className="h-3"
+                       />
+                      <p className="text-xs text-muted-foreground">
+                        Complete daily LinkedIn activities to improve your network growth score
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
                 {/* Last Week Performance */}
                 <Card className="shadow-elegant border-primary/20">
                   <CardHeader>

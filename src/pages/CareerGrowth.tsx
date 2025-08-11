@@ -14,6 +14,7 @@ import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { format, startOfWeek, subWeeks } from 'date-fns';
 
@@ -44,6 +45,7 @@ export default function CareerGrowth() {
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
+  const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
@@ -379,12 +381,12 @@ export default function CareerGrowth() {
                   {trends.network && <span className="text-lg">{trends.network}</span>}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                 <div className="space-y-3">
-                   <div className="text-2xl font-bold">{dailyMetrics.length > 0 ? dailyMetrics[0].networkProgress : 0}</div>
-                   <div className="text-sm text-muted-foreground">Daily Activities</div>
-                 </div>
-              </CardContent>
+               <CardContent>
+                  <div className="space-y-3">
+                    <div className="text-2xl font-bold">{networkMetrics?.weeklyProgress || 0}</div>
+                    <div className="text-sm text-muted-foreground">Weekly Activities</div>
+                  </div>
+               </CardContent>
             </Card>
             
             <Card>
