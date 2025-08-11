@@ -153,34 +153,32 @@ export default function CareerGrowthActivities() {
   }, [selectedDate, user, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
+    console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
-  const handleInputBlur = async (activityId: string) => {
+  const handleInputBlur = (activityId: string) => {
     const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     console.log('Saving metrics - Activity:', activityId, 'Value:', value, 'Date:', dateKey);
     
-    try {
-      await updateMetrics(activityId, value, dateKey);
-      setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
-      
-      // Refresh weekly metrics to sync with updated daily values
-      const updatedWeeklyMetrics = await getWeeklyMetrics();
-      setWeeklyMetrics(updatedWeeklyMetrics);
-      
-      toast({
-        title: 'Metrics Updated',
-        description: `${activityId}: ${value} saved for ${dateKey}`,
-      });
-    } catch (error) {
-      console.error('Error updating metrics:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update metrics',
-        variant: 'destructive'
-      });
-    }
+    updateMetrics(activityId, value, dateKey);
+    setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
+    
+    // Refresh weekly metrics after a short delay to ensure database update is complete
+    setTimeout(async () => {
+      try {
+        const updatedWeeklyMetrics = await getWeeklyMetrics();
+        setWeeklyMetrics(updatedWeeklyMetrics);
+      } catch (error) {
+        console.error('Error refreshing weekly metrics:', error);
+      }
+    }, 500);
+    
+    toast({
+      title: 'Metrics Updated',
+      description: `${activityId}: ${value} saved for ${dateKey}`,
+    });
   };
 
   const getCategoryIcon = (category: Activity['category'] | string) => {
