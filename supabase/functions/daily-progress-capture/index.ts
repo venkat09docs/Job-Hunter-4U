@@ -178,16 +178,16 @@ async function captureUserProgress(supabase: any, userId: string, snapshotDate: 
 
   const githubProgress = Math.round((githubCompletedTasks || 0) * 100 / 5);
 
-  // Get network progress for today
-  const { data: networkTasks } = await supabase
-    .from('linkedin_network_completions')
-    .select('task_id')
+  // Get total network activities for today from linkedin_network_metrics
+  const { data: networkMetrics } = await supabase
+    .from('linkedin_network_metrics')
+    .select('value')
     .eq('user_id', userId)
-    .eq('completed', true)
     .eq('date', snapshotDate);
 
-  const uniqueNetworkTasks = new Set(networkTasks?.map(t => t.task_id) || []);
-  const networkProgress = Math.round(uniqueNetworkTasks.size * 100 / 10);
+  // Sum all network activities for the day
+  const totalNetworkActivities = networkMetrics?.reduce((sum, metric) => sum + metric.value, 0) || 0;
+  const networkProgress = totalNetworkActivities; // Store count instead of percentage
 
   // Get job applications count
   const { count: jobApplicationsCount } = await supabase

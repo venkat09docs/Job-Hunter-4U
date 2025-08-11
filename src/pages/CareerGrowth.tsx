@@ -374,13 +374,10 @@ export default function CareerGrowth() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <Progress value={0} className="h-2" />
-                    <div className="flex justify-between text-sm">
-                      <span>{0}% Active</span>
-                      <span className="text-muted-foreground">Target: 70%</span>
-                    </div>
-                  </div>
+                   <div className="space-y-3">
+                     <div className="text-2xl font-bold">{dailyMetrics.length > 0 ? dailyMetrics[0].networkProgress : 0}</div>
+                     <div className="text-sm text-muted-foreground">Daily Activities</div>
+                   </div>
                 </CardContent>
               </Card>
 
@@ -460,7 +457,7 @@ export default function CareerGrowth() {
                         </div>
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground mb-1">Network</div>
-                          <div className="text-lg font-semibold">{week.networkProgress}%</div>
+                          <div className="text-lg font-semibold">{week.networkProgress}</div>
                         </div>
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground mb-1">Jobs</div>
@@ -522,7 +519,7 @@ export default function CareerGrowth() {
                         </div>
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground mb-1">Network</div>
-                          <div className="text-lg font-semibold">{day.networkProgress}%</div>
+                          <div className="text-lg font-semibold">{day.networkProgress}</div>
                         </div>
                         <div className="text-center">
                           <div className="text-sm text-muted-foreground mb-1">Jobs</div>
