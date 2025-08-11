@@ -643,7 +643,7 @@ export default function CareerGrowthActivities() {
                             Create professional blog posts to demonstrate your expertise and thought leadership in your field.
                           </p>
                           <Button 
-                            onClick={() => navigate('/dashboard/digital-profile')}
+                            onClick={() => navigate('/dashboard/digital-portfolio')}
                             className="w-full"
                           >
                             Manage Blogs
