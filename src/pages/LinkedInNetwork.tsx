@@ -63,6 +63,8 @@ const LinkedInNetwork = () => {
   const [inputValues, setInputValues] = useState<InputValues>({});
 
   const loadData = useCallback(async (dateKey: string) => {
+    if (!user) return;
+    
     console.log('Loading data for date:', dateKey);
     const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
       getTodayMetrics(dateKey),
@@ -75,16 +77,13 @@ const LinkedInNetwork = () => {
     setTodayMetrics(metrics);
     setWeeklyMetrics(currentWeekMetrics);
     setLastWeekMetrics(lastWeekMetricsData);
-    // Always update input values with the loaded metrics for the selected date
     setInputValues(metrics);
-  }, []);
+  }, [user, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    if (user) {
-      loadData(dateKey);
-    }
-  }, [selectedDate, user]);
+    loadData(dateKey);
+  }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
     setInputValues(prev => ({ ...prev, [activityId]: value }));
