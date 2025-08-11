@@ -145,12 +145,12 @@ export default function CareerGrowthActivities() {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  }, [user, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics]);
+  }, [user]);
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     loadData(dateKey);
-  }, [selectedDate, user, loadData]);
+  }, [selectedDate, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
     console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
