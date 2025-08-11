@@ -127,6 +127,8 @@ export default function CareerGrowthActivities() {
   const loadData = useCallback(async (dateKey: string) => {
     if (!user) return;
     
+    console.log('Loading data for date:', dateKey);
+    
     try {
       const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
         getTodayMetrics(dateKey),
@@ -134,17 +136,12 @@ export default function CareerGrowthActivities() {
         getLastWeekMetrics()
       ]);
       
+      console.log('Loaded metrics for', dateKey, ':', metrics);
+      
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
       setLastWeekMetrics(lastWeekMetricsData);
-      
-      // Only update inputValues if they are empty or for new date
-      // Don't override user's current input
-      setInputValues(prev => {
-        const hasExistingInputs = Object.keys(prev).length > 0;
-        // If user has been typing values, keep those, otherwise use database values
-        return hasExistingInputs ? prev : metrics;
-      });
+      setInputValues(metrics);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -152,69 +149,25 @@ export default function CareerGrowthActivities() {
 
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    console.log('Date changed, loading data for:', dateKey);
-    // Clear inputValues when date changes to force reload
-    setInputValues({});
     loadData(dateKey);
   }, [selectedDate, user, loadData]);
 
   const handleInputChange = (activityId: string, value: string) => {
-    console.log('Input change:', { activityId, value, selectedDate: format(selectedDate, 'yyyy-MM-dd') });
+    console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);
     setInputValues(prev => ({ ...prev, [activityId]: value }));
   };
 
-  const handleInputBlur = async (activityId: string) => {
-    // Get the current value from inputValues state, not from todayMetrics
-    const currentInputValue = inputValues[activityId];
-    const value = parseInt(String(currentInputValue)) || 0;
+  const handleInputBlur = (activityId: string) => {
+    const value = parseInt(String(inputValues[activityId])) || 0;
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    console.log('Saving metrics - Activity:', activityId, 'Value:', value, 'Date:', dateKey);
+    updateMetrics(activityId, value, dateKey);
+    setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
     
-    console.log('=== SAVE ATTEMPT ===');
-    console.log('Activity ID:', activityId);
-    console.log('Current Input Value:', currentInputValue);
-    console.log('Parsed Value:', value);
-    console.log('Date Key:', dateKey);
-    console.log('User ID:', user?.id);
-    console.log('Current inputValues state:', inputValues);
-    
-    if (!user) {
-      console.error('No user found, cannot save');
-      toast({
-        title: 'Error',
-        description: 'User not authenticated. Please log in again.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    try {
-      console.log('Calling updateMetrics...');
-      await updateMetrics(activityId, value, dateKey);
-      console.log('updateMetrics completed successfully');
-      
-      setTodayMetrics(prev => {
-        const updated = { ...prev, [activityId]: value };
-        console.log('Updated todayMetrics:', updated);
-        return updated;
-      });
-      
-      // Don't refresh data immediately to avoid overriding user inputs
-      // The data will be refreshed when user navigates or reloads
-      
-      toast({
-        title: 'Metrics Updated',
-        description: `${activityId}: ${value} saved for ${dateKey}`,
-      });
-      console.log('=== SAVE COMPLETED ===');
-    } catch (error) {
-      console.error('=== SAVE FAILED ===');
-      console.error('Failed to update metrics:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save metrics. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'Metrics Updated',
+      description: `${activityId}: ${value} saved for ${dateKey}`,
+    });
   };
 
   const getCategoryIcon = (category: Activity['category'] | string) => {
