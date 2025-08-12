@@ -48,11 +48,16 @@ export const useGitHubProgress = () => {
   };
 
   const updateTaskStatus = async (taskId: string, completed: boolean) => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found for updateTaskStatus');
+      return;
+    }
 
     try {
+      console.log('Updating GitHub progress:', { user_id: user.id, task_id: taskId, completed });
+      
       // Update database instead of localStorage
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('github_progress')
         .upsert({
           user_id: user.id,
@@ -63,7 +68,12 @@ export const useGitHubProgress = () => {
           onConflict: 'user_id,task_id'
         });
 
-      if (error) throw error;
+      console.log('Upsert result:', { data, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
 
       // Refresh the tasks
       await fetchGitHubProgress();
