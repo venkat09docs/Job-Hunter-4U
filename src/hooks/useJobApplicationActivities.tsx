@@ -39,7 +39,10 @@ export function useJobApplicationActivities() {
 
       const dates = getWeekDatesMonToFri(baseDate);
       const startDate = format(dates[0], "yyyy-MM-dd");
-      const endDate = format(dates[dates.length - 1], "yyyy-MM-dd");
+      const lastWeekday = dates[dates.length - 1];
+      const today = new Date();
+      const queryEnd = today > lastWeekday ? today : lastWeekday;
+      const endDate = format(queryEnd, "yyyy-MM-dd");
 
       const { data, error } = await supabase
         .from("job_application_activities")

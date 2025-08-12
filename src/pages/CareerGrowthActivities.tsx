@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
 import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Activity {
   id: string;
@@ -149,6 +150,7 @@ const [inputValues, setInputValues] = useState<InputValues>({});
   // Job Applications - weekly tracker
   const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
 const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
+const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Record<string, number>>>>({});
 const jobWeekDates = getWeekDatesMonToFri(new Date());
 const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
 
@@ -187,6 +189,43 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
       setJobWeekData(data);
     })();
   }, [selectedCategory, fetchWeek]);
+
+  useEffect(() => {
+    if (selectedCategory !== 'application' || !user) return;
+    (async () => {
+      try {
+        const dates = jobWeekDates;
+        const startDate = format(dates[0], 'yyyy-MM-dd');
+        const lastWeekday = dates[dates.length - 1];
+        const today = new Date();
+        const end = today > lastWeekday ? today : lastWeekday;
+        const endDate = format(end, 'yyyy-MM-dd');
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('status, updated_at')
+          .eq('user_id', user.id)
+          .gte('updated_at', `${startDate}T00:00:00Z`)
+          .lte('updated_at', `${endDate}T23:59:59Z`);
+        if (error) {
+          console.error('Error fetching status metrics:', error);
+          return;
+        }
+        const TARGET_STATUSES = ['interviewing','negotiating','accepted','not_selected','no_response'];
+        const map: Record<string, Partial<Record<string, number>>> = {};
+        (data || []).forEach((row: any) => {
+          const key = format(new Date(row.updated_at), 'yyyy-MM-dd');
+          if (!map[key]) map[key] = {};
+          const st = row.status as string;
+          if (TARGET_STATUSES.includes(st)) {
+            map[key]![st] = ((map[key]![st] as number) || 0) + 1;
+          }
+        });
+        setStatusWeekData(map);
+      } catch (e) {
+        console.error('Failed to compute status metrics', e);
+      }
+    })();
+  }, [selectedCategory, user, jobWeekDates]);
 
   const getDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
 
@@ -516,6 +555,11 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
     .sort((a, b) => b.getTime() - a.getTime());
   const weekTotalWishlist = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['save_potential_opportunities'] ?? 0), 0);
   const weekTotalApplied = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['apply_quality_jobs'] ?? 0), 0);
+  const weekTotalInterviewing = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['interviewing'] ?? 0), 0);
+  const weekTotalNegotiating = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['negotiating'] ?? 0), 0);
+  const weekTotalAccepted = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['accepted'] ?? 0), 0);
+  const weekTotalNotSelected = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['not_selected'] ?? 0), 0);
+  const weekTotalNoResponse = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['no_response'] ?? 0), 0);
 
   return (
     <div className="space-y-4">
