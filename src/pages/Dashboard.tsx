@@ -41,7 +41,7 @@ const Dashboard = () => {
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
-  const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
+  const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
@@ -211,7 +211,6 @@ const Dashboard = () => {
           () => {
             // Refresh all progress data when daily snapshots are updated
             refreshLinkedInProgress();
-            // refreshNetworkProgress removed;
             refreshGitHubProgress();
           }
         )
@@ -228,13 +227,26 @@ const Dashboard = () => {
             fetchJobData();
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'linkedin_network_metrics',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh network metrics when LinkedIn network activities are updated
+            refreshNetworkMetrics();
+          }
+        )
         .subscribe();
 
       return () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, refreshLinkedInProgress, refreshGitHubProgress]); // refreshNetworkProgress removed
+  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics]);
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
@@ -587,27 +599,27 @@ const Dashboard = () => {
                     <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-blue-500">{networkMetrics.totalConnections}</div>
+                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalConnections}</div>
                         <div className="text-sm text-muted-foreground">Total Connections</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-rose-500">{networkMetrics.totalLikes}</div>
+                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalLikes}</div>
                         <div className="text-sm text-muted-foreground">Posts Liked</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-purple-500">{networkMetrics.totalComments}</div>
+                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalComments}</div>
                         <div className="text-sm text-muted-foreground">Comments Made</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-green-500">{networkMetrics.totalPosts}</div>
+                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalPosts}</div>
                         <div className="text-sm text-muted-foreground">Posts Created</div>
                       </div>
                       <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                            onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-orange-500">{networkMetrics.weeklyProgress}</div>
+                        <div className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</div>
                         <div className="text-sm text-muted-foreground">Weekly Activity</div>
                       </div>
                     </div>
