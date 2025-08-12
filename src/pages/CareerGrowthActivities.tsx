@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
+import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
 
 interface Activity {
   id: string;
@@ -109,6 +110,18 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
   { id: 'industry_research', title: 'Industry Research', description: 'Research and follow industry leaders', category: 'growth', dailyTarget: 1, weeklyTarget: 5, unit: 'profiles' },
 ];
 
+const JOB_APP_TASKS: { id: JobApplicationTaskId; title: string; description: string }[] = [
+  { id: 'review_new_postings', title: 'Review New Job Postings', description: 'Check 5–10 fresh job listings filtered by keywords, skills, location, and salary.' },
+  { id: 'save_potential_opportunities', title: 'Save Potential Opportunities', description: 'Mark jobs for Immediate Apply or Follow-Up Later for easy tracking.' },
+  { id: 'ats_resume_optimization', title: 'ATS Resume Optimization', description: 'Tailor resume for each job using suggestions to pass ATS filters.' },
+  { id: 'ai_generated_cover_letter', title: 'AI-Generated Cover Letter', description: 'Create a personalized cover letter for each application from templates.' },
+  { id: 'apply_quality_jobs', title: 'Apply to Quality Jobs', description: 'Submit 2–3 high-match applications daily for better success rates.' },
+  { id: 'verify_application_completeness', title: 'Verify Application Completeness', description: 'Ensure resume, cover letter, portfolio links, and references are included before sending.' },
+  { id: 'log_applications_in_tracker', title: 'Log Applications in Tracker', description: 'Record each application’s status (Applied, Interview, Rejected, Offer).' },
+  { id: 'send_follow_up_message', title: 'Send Follow-Up Message', description: 'Reach out to recruiters 3–5 days after applying.' },
+  { id: 'research_target_company', title: 'Research Target Company', description: 'Review company culture, news, and hiring patterns before applying.' },
+];
+
 export default function CareerGrowthActivities() {
   const [activities] = useState<Activity[]>(mockActivities);
   const location = useLocation();
@@ -127,7 +140,12 @@ export default function CareerGrowthActivities() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
-  const [inputValues, setInputValues] = useState<InputValues>({});
+const [inputValues, setInputValues] = useState<InputValues>({});
+
+  // Job Applications - weekly tracker
+  const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
+const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
+const jobWeekDates = getWeekDatesMonToFri(new Date());
 
   // LinkedIn Network data loading
   const loadData = useCallback(async (dateKey: string) => {
@@ -154,7 +172,39 @@ export default function CareerGrowthActivities() {
   useEffect(() => {
     const dateKey = format(selectedDate, 'yyyy-MM-dd');
     loadData(dateKey);
-  }, [selectedDate, loadData]);
+}, [selectedDate, loadData]);
+
+  // Load Job Applications week data when tab is active
+  useEffect(() => {
+    if (selectedCategory !== 'application') return;
+    (async () => {
+      const data = await fetchWeek(new Date());
+      setJobWeekData(data);
+    })();
+  }, [selectedCategory, fetchWeek]);
+
+  const getDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
+
+  const handleJobValueChange = (dateKey: string, taskId: JobApplicationTaskId, value: string) => {
+    setJobWeekData(prev => ({
+      ...prev,
+      [dateKey]: {
+        ...(prev[dateKey] || {}),
+        [taskId]: parseInt(value) || 0,
+      }
+    }));
+  };
+
+  const handleJobBlur = async (dateKey: string, taskId: JobApplicationTaskId) => {
+    const value = jobWeekData?.[dateKey]?.[taskId] || 0;
+    try {
+      await upsertActivity(dateKey, taskId, value);
+      toast({ title: 'Saved', description: `${value} saved for ${format(new Date(dateKey), 'EEE, MMM d')}` });
+    } catch (error) {
+      console.error('Failed to save job application activity', error);
+      toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
+    }
+  };
 
   const handleInputChange = (activityId: string, value: string) => {
     console.log('Input changing:', activityId, 'from', inputValues[activityId], 'to', value);

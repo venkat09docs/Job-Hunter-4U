@@ -454,6 +454,39 @@ export type Database = {
         }
         Relationships: []
       }
+      job_application_activities: {
+        Row: {
+          activity_date: string
+          created_at: string
+          id: string
+          notes: string | null
+          task_id: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          activity_date: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          task_id: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       job_results: {
         Row: {
           created_at: string
