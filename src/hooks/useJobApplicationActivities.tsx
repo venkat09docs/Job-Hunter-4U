@@ -44,6 +44,7 @@ export function useJobApplicationActivities() {
       const { data, error } = await supabase
         .from("job_application_activities")
         .select("activity_date, task_id, value")
+        .eq("user_id", user.id)
         .gte("activity_date", startDate)
         .lte("activity_date", endDate)
         .order("activity_date", { ascending: true });
