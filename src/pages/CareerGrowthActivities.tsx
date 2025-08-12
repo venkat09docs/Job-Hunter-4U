@@ -500,27 +500,60 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
                       <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                           <TrendingUp className="h-5 w-5 text-primary" />
-                          Today's Job Application Metrics
+                          Application Metrics - Current Week
                         </CardTitle>
                         <CardDescription>
-                          Auto-tracked for {format(new Date(), 'MMMM d, yyyy')}
+                          Today at top, then Yesterday, followed by earlier days of this week
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="text-center p-4 rounded-lg border bg-card">
-                            <div className="text-2xl font-bold text-primary">
-                              {jobWeekData[getDateKey(new Date())]?.['save_potential_opportunities'] ?? 0}
+                        {(() => {
+                          const today = new Date();
+                          const todayKey = format(today, 'yyyy-MM-dd');
+                          const weekDatesToShow = jobWeekDates
+                            .filter(d => format(d, 'yyyy-MM-dd') <= todayKey)
+                            .sort((a, b) => b.getTime() - a.getTime());
+                          const weekTotalWishlist = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['save_potential_opportunities'] ?? 0), 0);
+                          const weekTotalApplied = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['apply_quality_jobs'] ?? 0), 0);
+
+                          return (
+                            <div className="space-y-4">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-center">No. Jobs Added to Wishlist</TableHead>
+                                    <TableHead className="text-center">No. Jobs Applied</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {weekDatesToShow.map((date) => {
+                                    const key = format(date, 'yyyy-MM-dd');
+                                    const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
+                                    const applied = jobWeekData[key]?.['apply_quality_jobs'] ?? 0;
+                                    const label = isSameDay(date, today)
+                                      ? 'Today'
+                                      : isSameDay(date, subDays(today, 1))
+                                      ? 'Yesterday'
+                                      : format(date, 'EEE, MMM d');
+                                    return (
+                                      <TableRow key={key}>
+                                        <TableCell className="font-medium">{label}</TableCell>
+                                        <TableCell className="text-center">{wishlist}</TableCell>
+                                        <TableCell className="text-center">{applied}</TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                  <TableRow>
+                                    <TableCell className="font-semibold">Week Total (Mon–Fri)</TableCell>
+                                    <TableCell className="text-center font-semibold">{weekTotalWishlist}</TableCell>
+                                    <TableCell className="text-center font-semibold">{weekTotalApplied}</TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
                             </div>
-                            <div className="text-sm text-muted-foreground">Wishlist Added Today</div>
-                          </div>
-                          <div className="text-center p-4 rounded-lg border bg-card">
-                            <div className="text-2xl font-bold text-primary">
-                              {jobWeekData[getDateKey(new Date())]?.['apply_quality_jobs'] ?? 0}
-                            </div>
-                            <div className="text-sm text-muted-foreground">Applying/Applied Added Today</div>
-                          </div>
-                        </div>
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   </TabsContent>
