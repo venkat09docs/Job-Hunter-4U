@@ -113,7 +113,7 @@ const BuildMyProfile = () => {
       description: 'Showcase your repositories and projects',
       progress: getGitHubProgress(),
       isCompleted: getGitHubProgress() === 100,
-      action: () => navigate('/dashboard/github-optimization'),
+      action: () => navigate('/dashboard/github-optimization?tab=setup'),
       category: 'Social Presence'
     },
   ];
@@ -205,7 +205,7 @@ const BuildMyProfile = () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold mb-2">Your Profile Strength</h3>
+                      <h3 className="text-2xl font-bold mb-2">My Profile Strength</h3>
                       <p className="text-muted-foreground">
                         Complete all tasks below to achieve 100% profile completion and maximize your job search success.
                       </p>
