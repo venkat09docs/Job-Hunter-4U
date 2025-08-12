@@ -485,15 +485,15 @@ export default function CareerGrowth() {
                                   <TableCell className="font-medium">{activity.date}</TableCell>
                                   <TableCell className="text-center">{activity.post_likes}</TableCell>
                                   <TableCell className="text-center">{activity.comments}</TableCell>
-                                  <TableCell className="text-center">{activity.shares}</TableCell>
+                                  <TableCell className="text-center">{activity.content}</TableCell>
                                   <TableCell className="text-center">{activity.connection_requests}</TableCell>
                                   <TableCell className="text-center">{activity.create_post}</TableCell>
                                   <TableCell className="text-center">{activity.profile_optimization}</TableCell>
-                                   <TableCell className="text-center">{activity.content}</TableCell>
-                                   <TableCell className="text-center">{activity.follow_up_messages}</TableCell>
-                                   <TableCell className="text-center">{activity.engage_in_groups}</TableCell>
-                                   <TableCell className="text-center">{activity.work_on_article}</TableCell>
-                                   <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
+                                  <TableCell className="text-center">{activity.research}</TableCell>
+                                  <TableCell className="text-center">{activity.follow_up_messages}</TableCell>
+                                  <TableCell className="text-center">{activity.engage_in_groups}</TableCell>
+                                  <TableCell className="text-center">{activity.work_on_article}</TableCell>
+                                  <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
                                    <TableCell className="text-center">
                                      <Checkbox
                                        checked={selectedRecords.has(index.toString())}
@@ -539,7 +539,7 @@ export default function CareerGrowth() {
                                 'Date': activity.date,
                                 'Like Posts': activity.post_likes,
                                 'Comments': activity.comments,
-                                'Content': activity.shares,
+                                'Content': activity.content,
                                 'Connections': activity.connection_requests,
                                 'Posts': activity.create_post,
                                 'Profile Optimization': activity.profile_optimization,
