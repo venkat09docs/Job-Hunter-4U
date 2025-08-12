@@ -52,20 +52,21 @@ export const useProfile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (error) throw error;
 
-      if (!data) {
-        // No profile found - this is expected for new users
+      const row = data && data.length > 0 ? data[0] : null;
+
+      if (!row) {
         console.log('No profile found for user, this is normal for new users');
         setProfile(null);
         return;
       }
-      setProfile(data);
+      setProfile(row);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      // Only show toast for unexpected errors
       toast({
         title: 'Error',
         description: 'Failed to load profile data',

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
@@ -440,7 +440,7 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
                       Weekly Activities Tracker (Mon–Fri)
                     </CardTitle>
                     <CardDescription>
-                      Track each task as done per day. Only today or yesterday are editable; other days are read-only.
+                      Read-only counts auto-tracked from Job Status Tracker. No manual checking required.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -466,23 +466,44 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
                               const dateKey = getDateKey(date);
                               const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId];
                               return (
-                                <TableCell key={`${dateKey}-${task.id}`} className="w-28">
-                                  <Checkbox
-                                    checked={Boolean(val && val > 0)}
-                                    disabled={!(isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1)))}
-                                    onCheckedChange={(checked) => {
-                                      if (isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1))) {
-                                        handleJobToggle(dateKey, task.id as JobApplicationTaskId, Boolean(checked));
-                                      }
-                                    }}
-                                  />
-                                </TableCell>
+                                  <TableCell key={`${dateKey}-${task.id}`} className="w-28 text-center">
+                                    <div className="text-sm font-medium">{val ?? 0}</div>
+                                  </TableCell>
                               );
                             })}
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
+                  </CardContent>
+                </Card>
+
+                {/* Today's Job Application Metrics */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Today's Job Application Metrics
+                    </CardTitle>
+                    <CardDescription>
+                      Auto-tracked for {format(new Date(), 'MMMM d, yyyy')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-primary">
+                          {jobWeekData[getDateKey(new Date())]?.['save_potential_opportunities'] ?? 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Wishlist Added Today</div>
+                      </div>
+                      <div className="text-center p-4 rounded-lg border bg-card">
+                        <div className="text-2xl font-bold text-primary">
+                          {jobWeekData[getDateKey(new Date())]?.['apply_quality_jobs'] ?? 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Applying/Applied Added Today</div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
