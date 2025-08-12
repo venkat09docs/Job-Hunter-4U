@@ -65,8 +65,14 @@ export default function CareerGrowth() {
   const DAILY_ACTIVITIES = [
     { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
     { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
-    { id: 'content', title: 'Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'shares' },
-    { id: 'connection_requests', title: 'Connection', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
+    { id: 'shares', title: 'Shares', description: 'Share posts in your network', category: 'engagement', dailyTarget: 1, weeklyTarget: 5, unit: 'shares' },
+    { id: 'connection_requests', title: 'Connections', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
+    { id: 'create_post', title: 'Posts', description: 'Create and publish posts', category: 'content', dailyTarget: 1, weeklyTarget: 3, unit: 'posts' },
+    { id: 'profile_optimization', title: 'Profile Optimization', description: 'Update and optimize your profile', category: 'profile', dailyTarget: 1, weeklyTarget: 2, unit: 'updates' },
+    { id: 'research', title: 'Research', description: 'Research industry trends and companies', category: 'learning', dailyTarget: 1, weeklyTarget: 5, unit: 'sessions' },
+    { id: 'follow_up_messages', title: 'Follow Up Messages', description: 'Send follow-up messages to connections', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'messages' },
+    { id: 'engage_in_groups', title: 'Engage in Groups', description: 'Participate in industry groups', category: 'engagement', dailyTarget: 1, weeklyTarget: 5, unit: 'interactions' },
+    { id: 'work_on_article', title: 'Work on Article', description: 'Write and work on articles', category: 'content', dailyTarget: 1, weeklyTarget: 2, unit: 'sessions' },
   ];
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
@@ -76,6 +82,7 @@ export default function CareerGrowth() {
   const [totalJobApplications, setTotalJobApplications] = useState(0);
   const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
   const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
+  const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<{[date: string]: {[activity: string]: number}}>({});
 
   const githubProgress = getCompletionPercentage();
 
@@ -83,8 +90,50 @@ export default function CareerGrowth() {
     if (user) {
       fetchJobAndBlogData();
       fetchNetworkData();
+      fetchWeeklyDailyBreakdown();
     }
   }, [user]);
+
+  // Fetch weekly daily breakdown data
+  const fetchWeeklyDailyBreakdown = async () => {
+    if (!user) return;
+    
+    try {
+      const startDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const endDate = format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('date, activity_id, value')
+        .eq('user_id', user.id)
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      if (error) throw error;
+
+      // Group by date and activity
+      const breakdown: {[date: string]: {[activity: string]: number}} = {};
+      
+      data?.forEach(metric => {
+        if (!breakdown[metric.date]) {
+          breakdown[metric.date] = {};
+        }
+        
+        // Map database activity_ids to our interface
+        let activityKey = metric.activity_id;
+        if (metric.activity_id === 'industry_research') activityKey = 'research';
+        if (metric.activity_id === 'follow_up') activityKey = 'follow_up_messages';
+        if (metric.activity_id === 'industry_groups') activityKey = 'engage_in_groups';
+        if (metric.activity_id === 'article_draft') activityKey = 'work_on_article';
+        
+        breakdown[metric.date][activityKey] = (breakdown[metric.date][activityKey] || 0) + metric.value;
+      });
+
+      setWeeklyDailyBreakdown(breakdown);
+    } catch (error) {
+      console.error('Error fetching weekly daily breakdown:', error);
+    }
+  };
 
   // Network data fetching
   const fetchNetworkData = async () => {
@@ -647,50 +696,54 @@ export default function CareerGrowth() {
                         })}
                       </div>
 
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Day</TableHead>
-                            {DAILY_ACTIVITIES.map((activity) => (
-                              <TableHead key={activity.id} className="text-center">
-                                {activity.title}
-                              </TableHead>
-                            ))}
-                            <TableHead className="text-center">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {Array.from({ length: 7 }, (_, index) => {
-                            const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
-                            const dayName = format(date, 'EEE');
-                            const dateKey = format(date, 'yyyy-MM-dd');
-                            
-                            return (
-                              <TableRow key={dateKey}>
-                                <TableCell className="font-medium">
-                                  <div>
-                                    <div>{dayName}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                      {format(date, 'MMM d')}
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                {DAILY_ACTIVITIES.map((activity) => (
-                                  <TableCell key={activity.id} className="text-center">
-                                    <span className="text-sm">
-                                      {/* Daily breakdown would need additional data from backend */}
-                                      -
-                                    </span>
-                                  </TableCell>
-                                ))}
-                                <TableCell className="text-center font-medium">
-                                  {/* Daily total would need additional data from backend */}
-                                  -
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
+                       <Table>
+                         <TableHeader>
+                           <TableRow>
+                             <TableHead>Day</TableHead>
+                             {DAILY_ACTIVITIES.map((activity) => (
+                               <TableHead key={activity.id} className="text-center">
+                                 {activity.title}
+                               </TableHead>
+                             ))}
+                             <TableHead className="text-center">Total Activities</TableHead>
+                           </TableRow>
+                         </TableHeader>
+                         <TableBody>
+                           {Array.from({ length: 7 }, (_, index) => {
+                             const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+                             const dayName = format(date, 'EEE');
+                             const dateKey = format(date, 'yyyy-MM-dd');
+                             const dayData = weeklyDailyBreakdown[dateKey] || {};
+                             
+                             // Calculate total for this day
+                             const dayTotal = DAILY_ACTIVITIES.reduce((sum, activity) => {
+                               return sum + (dayData[activity.id] || 0);
+                             }, 0);
+                             
+                             return (
+                               <TableRow key={dateKey}>
+                                 <TableCell className="font-medium">
+                                   <div>
+                                     <div>{dayName}</div>
+                                     <div className="text-xs text-muted-foreground">
+                                       {format(date, 'MMM d')}
+                                     </div>
+                                   </div>
+                                 </TableCell>
+                                 {DAILY_ACTIVITIES.map((activity) => (
+                                   <TableCell key={activity.id} className="text-center">
+                                     <span className="text-sm">
+                                       {dayData[activity.id] || 0}
+                                     </span>
+                                   </TableCell>
+                                 ))}
+                                 <TableCell className="text-center font-medium">
+                                   {dayTotal}
+                                 </TableCell>
+                               </TableRow>
+                             );
+                           })}
+                          </TableBody>
                       </Table>
                     </div>
                   </CardContent>
