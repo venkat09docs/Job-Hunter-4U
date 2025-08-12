@@ -136,7 +136,10 @@ const ResumeBuilder = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(location.search);
-    return params.get('tab') || 'before-starting';
+    const tab = params.get('tab');
+    if (tab === 'resume') return 'resume-builder';
+    if (tab === 'cover-letter') return 'cover-letter';
+    return 'before-starting';
   });
 
   const [resumeData, setResumeData] = useState<ResumeData>({
