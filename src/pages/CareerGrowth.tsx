@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ApplicationMetricsCard from '@/components/ApplicationMetricsCard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -806,6 +807,8 @@ export default function CareerGrowth() {
                 </div>
               </CardContent>
             </Card>
+
+            <ApplicationMetricsCard />
           </TabsContent>
 
           <TabsContent value="github" className="space-y-6">

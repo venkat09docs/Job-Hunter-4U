@@ -501,9 +501,8 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
             {selectedCategory === 'application' ? (
               <div className="space-y-6">
                 <Tabs value={appTab} onValueChange={(v) => setAppTab(v as 'daily' | 'metrics')} className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-1">
                     <TabsTrigger value="daily">Daily Activities Tracker</TabsTrigger>
-                    <TabsTrigger value="metrics">Application Metrics</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="daily">
@@ -560,86 +559,6 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
                     </Card>
                   </TabsContent>
 
-                  <TabsContent value="metrics">
-                    <Card className="shadow-elegant border-primary/20">
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-primary" />
-                          Application Metrics - Current Week
-                        </CardTitle>
-                        <CardDescription>
-                          Today at top, then Yesterday, followed by earlier days of this week
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-{(() => {
-  const today = new Date();
-  const todayKey = format(today, 'yyyy-MM-dd');
-  const weekDatesToShow = jobWeekDates
-    .filter(d => format(d, 'yyyy-MM-dd') <= todayKey)
-    .sort((a, b) => b.getTime() - a.getTime());
-  const weekTotalWishlist = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['save_potential_opportunities'] ?? 0), 0);
-  const weekTotalApplied = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['apply_quality_jobs'] ?? 0), 0);
-  const weekTotalInterviewing = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['interviewing'] ?? 0), 0);
-  const weekTotalNegotiating = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['negotiating'] ?? 0), 0);
-  const weekTotalAccepted = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['accepted'] ?? 0), 0);
-  const weekTotalNotSelected = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['not_selected'] ?? 0), 0);
-  const weekTotalNoResponse = jobWeekDates.reduce((sum, d) => sum + (statusWeekData[format(d, 'yyyy-MM-dd')]?.['no_response'] ?? 0), 0);
-
-  return (
-    <div className="space-y-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead className="text-center">No. Jobs Added to Wishlist</TableHead>
-            <TableHead className="text-center">No. Jobs Applied</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow className="bg-primary/10">
-            <TableCell className="font-semibold">Week Total (Mon–Fri)</TableCell>
-            <TableCell className="text-center font-semibold">{weekTotalWishlist}</TableCell>
-            <TableCell className="text-center font-semibold">{weekTotalApplied}</TableCell>
-            <TableCell className="text-center text-muted-foreground">—</TableCell>
-          </TableRow>
-          {weekDatesToShow.map((date) => {
-            const key = format(date, 'yyyy-MM-dd');
-            const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
-            const applied = jobWeekData[key]?.['apply_quality_jobs'] ?? 0;
-            const label = isSameDay(date, today)
-              ? 'Today'
-              : isSameDay(date, subDays(today, 1))
-              ? 'Yesterday'
-              : format(date, 'EEE, MMM d');
-            const wishlistOk = wishlist >= 5;
-            const appliedOk = applied >= 3;
-            const ok = wishlistOk && appliedOk;
-            return (
-              <TableRow key={key} className={!ok ? 'bg-destructive/5' : ''}>
-                <TableCell className="font-medium">{label}</TableCell>
-                <TableCell className={`text-center ${!wishlistOk ? 'text-destructive' : ''}`}>{wishlist}</TableCell>
-                <TableCell className={`text-center ${!appliedOk ? 'text-destructive' : ''}`}>{applied}</TableCell>
-                <TableCell className="text-center">
-                  <div className="inline-flex items-center gap-1">
-                    {ok ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-destructive" />}
-                    <span className={`text-sm font-medium ${ok ? 'text-green-600' : 'text-destructive'}`}>
-                      {ok ? 'Target Met' : 'Not Met'}
-                    </span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
-  );
-})()}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
                 </Tabs>
               </div>
             ) : selectedCategory === 'networking' ? (
