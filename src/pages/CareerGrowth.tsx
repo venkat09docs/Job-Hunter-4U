@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,7 +17,7 @@ import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
-import { format, startOfWeek, subWeeks } from 'date-fns';
+import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
 
 interface WeeklyMetrics {
   week: string;
@@ -44,9 +45,21 @@ export default function CareerGrowth() {
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
-  const { loading: networkLoading } = useLinkedInNetworkProgress();
+  const { getTodayMetrics, getWeeklyMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
+  
+  // Network activities state
+  const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
+  const [networkWeeklyMetrics, setNetworkWeeklyMetrics] = useState<{[key: string]: number}>({});
+
+  // Daily activities structure
+  const DAILY_ACTIVITIES = [
+    { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
+    { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
+    { id: 'content', title: 'Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'shares' },
+    { id: 'connection_requests', title: 'Connection', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
+  ];
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
   
@@ -61,8 +74,27 @@ export default function CareerGrowth() {
   useEffect(() => {
     if (user) {
       fetchJobAndBlogData();
+      fetchNetworkData();
     }
   }, [user]);
+
+  // Network data fetching
+  const fetchNetworkData = async () => {
+    if (!user) return;
+    
+    try {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const [dailyData, weeklyData] = await Promise.all([
+        getTodayMetrics(today),
+        getWeeklyMetrics()
+      ]);
+      
+      setNetworkDailyMetrics(dailyData);
+      setNetworkWeeklyMetrics(weeklyData);
+    } catch (error) {
+      console.error('Error fetching network data:', error);
+    }
+  };
 
   useEffect(() => {
     if (user && totalJobApplications !== undefined && publishedBlogsCount !== undefined) {
@@ -380,44 +412,174 @@ export default function CareerGrowth() {
                   Network Growth
                   {trends.network && <span className="text-lg">{trends.network}</span>}
                 </CardTitle>
+                <CardDescription>Track your LinkedIn networking activities and progress</CardDescription>
               </CardHeader>
                <CardContent>
                   <div className="space-y-3">
                     <div className="text-2xl font-bold">{networkMetrics?.weeklyProgress || 0}</div>
-                    <div className="text-sm text-muted-foreground">Weekly Activities</div>
+                    <div className="text-sm text-muted-foreground">Weekly Activities Completed</div>
                   </div>
                </CardContent>
             </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>4-Week Network Progress Trend</CardTitle>
-                <CardDescription>Track your weekly networking improvements</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {weeklyMetrics.map((week, index) => (
-                    <div key={week.week} className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">Week of {week.week}</h3>
-                        <Badge variant={index === 0 ? "default" : "secondary"}>
-                          {index === 0 ? "Current" : `${index + 1} week${index > 0 ? 's' : ''} ago`}
-                        </Badge>
+
+            <Tabs defaultValue="daily" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="daily">Daily Activities</TabsTrigger>
+                <TabsTrigger value="weekly">Weekly Activities</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="daily" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Daily Network Activities</CardTitle>
+                    <CardDescription>Track your daily LinkedIn networking activities</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Activity</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Today's Count</TableHead>
+                          <TableHead>Daily Target</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {DAILY_ACTIVITIES.map((activity) => {
+                          const todayCount = networkDailyMetrics[activity.id] || 0;
+                          const isCompleted = todayCount >= activity.dailyTarget;
+                          
+                          return (
+                            <TableRow key={activity.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{activity.title}</p>
+                                  <p className="text-sm text-muted-foreground">{activity.description}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="capitalize">
+                                  {activity.category}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <span className="text-lg font-semibold">{todayCount}</span>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <span className="text-sm text-muted-foreground">
+                                  {activity.dailyTarget} {activity.unit}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                {isCompleted ? (
+                                  <Badge variant="default" className="gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Complete
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Pending
+                                  </Badge>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="weekly" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Weekly Network Activities (Monday to Sunday)</CardTitle>
+                    <CardDescription>Aggregated activities for the current week</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {DAILY_ACTIVITIES.map((activity) => {
+                          const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
+                          const progress = (weeklyCount / activity.weeklyTarget) * 100;
+                          const isCompleted = weeklyCount >= activity.weeklyTarget;
+                          
+                          return (
+                            <Card key={activity.id} className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-medium text-sm">{activity.title}</h4>
+                                  {isCompleted && <CheckCircle className="h-4 w-4 text-green-500" />}
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-2xl font-bold">{weeklyCount}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    Target: {activity.weeklyTarget} {activity.unit}
+                                  </div>
+                                  <Progress value={Math.min(progress, 100)} className="h-2" />
+                                  <div className="text-xs text-muted-foreground">
+                                    {Math.round(progress)}% complete
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })}
                       </div>
-                      <div className="grid gap-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Network Progress</span>
-                          <div className="flex items-center gap-2">
-                            <Progress value={week.networkProgress} className="w-20 h-2" />
-                            <span className="text-sm font-medium w-12">{week.networkProgress}</span>
-                          </div>
-                        </div>
-                      </div>
+
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Day</TableHead>
+                            {DAILY_ACTIVITIES.map((activity) => (
+                              <TableHead key={activity.id} className="text-center">
+                                {activity.title}
+                              </TableHead>
+                            ))}
+                            <TableHead className="text-center">Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Array.from({ length: 7 }, (_, index) => {
+                            const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+                            const dayName = format(date, 'EEE');
+                            const dateKey = format(date, 'yyyy-MM-dd');
+                            
+                            return (
+                              <TableRow key={dateKey}>
+                                <TableCell className="font-medium">
+                                  <div>
+                                    <div>{dayName}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {format(date, 'MMM d')}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                {DAILY_ACTIVITIES.map((activity) => (
+                                  <TableCell key={activity.id} className="text-center">
+                                    <span className="text-sm">
+                                      {/* Daily breakdown would need additional data from backend */}
+                                      -
+                                    </span>
+                                  </TableCell>
+                                ))}
+                                <TableCell className="text-center font-medium">
+                                  {/* Daily total would need additional data from backend */}
+                                  -
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="jobs" className="space-y-6">
