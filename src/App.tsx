@@ -46,6 +46,7 @@ import NotFound from "./pages/NotFound";
 import SuperAI from "./pages/SuperAI";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
+import SubscriptionWelcomeDialog from "./components/SubscriptionWelcomeDialog";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SubscriptionWelcomeDialog />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
