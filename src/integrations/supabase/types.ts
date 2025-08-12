@@ -124,6 +124,36 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          table_name: string
+          timestamp: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          table_name: string
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          table_name?: string
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       batches: {
         Row: {
           code: string
@@ -1448,6 +1478,10 @@ export type Database = {
       }
       is_institute_admin_for: {
         Args: { user_id_param: string; institute_id_param: string }
+        Returns: boolean
+      }
+      is_portfolio_owner: {
+        Args: { portfolio_user_id: string }
         Returns: boolean
       }
       upsert_resume_data: {
