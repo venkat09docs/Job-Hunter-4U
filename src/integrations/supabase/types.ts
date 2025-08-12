@@ -1439,6 +1439,42 @@ export type Database = {
         }
         Relationships: []
       }
+      safe_public_profiles: {
+        Row: {
+          bio: string | null
+          blog_url: string | null
+          created_at: string | null
+          custom_links: Json | null
+          full_name: string | null
+          github_url: string | null
+          linkedin_url: string | null
+          profile_image_url: string | null
+          slug: string | null
+        }
+        Insert: {
+          bio?: string | null
+          blog_url?: string | null
+          created_at?: string | null
+          custom_links?: Json | null
+          full_name?: string | null
+          github_url?: string | null
+          linkedin_url?: string | null
+          profile_image_url?: string | null
+          slug?: string | null
+        }
+        Update: {
+          bio?: string | null
+          blog_url?: string | null
+          created_at?: string | null
+          custom_links?: Json | null
+          full_name?: string | null
+          github_url?: string | null
+          linkedin_url?: string | null
+          profile_image_url?: string | null
+          slug?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_managed_institutes: {
@@ -1447,6 +1483,20 @@ export type Database = {
           institute_id: string
           institute_name: string
           institute_code: string
+        }[]
+      }
+      get_safe_public_profile: {
+        Args: { profile_slug: string }
+        Returns: {
+          slug: string
+          full_name: string
+          bio: string
+          profile_image_url: string
+          github_url: string
+          linkedin_url: string
+          blog_url: string
+          custom_links: Json
+          created_at: string
         }[]
       }
       get_subscription_days_remaining: {
@@ -1482,6 +1532,10 @@ export type Database = {
       }
       is_portfolio_owner: {
         Args: { portfolio_user_id: string }
+        Returns: boolean
+      }
+      is_reasonable_profile_access: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       upsert_resume_data: {
