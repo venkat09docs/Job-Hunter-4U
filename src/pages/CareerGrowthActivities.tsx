@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
@@ -11,7 +12,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { format, addDays, startOfWeek } from 'date-fns';
+import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
 import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
 
@@ -200,6 +201,24 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
     try {
       await upsertActivity(dateKey, taskId, value);
       toast({ title: 'Saved', description: `${value} saved for ${format(new Date(dateKey), 'EEE, MMM d')}` });
+    } catch (error) {
+      console.error('Failed to save job application activity', error);
+      toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
+    }
+  };
+
+  const handleJobToggle = async (dateKey: string, taskId: JobApplicationTaskId, checked: boolean) => {
+    const value = checked ? 1 : 0;
+    setJobWeekData(prev => ({
+      ...prev,
+      [dateKey]: {
+        ...(prev[dateKey] || {}),
+        [taskId]: value,
+      }
+    }));
+    try {
+      await upsertActivity(dateKey, taskId, value);
+      toast({ title: checked ? 'Marked done' : 'Marked undone', description: `${taskId} for ${format(new Date(dateKey), 'EEE, MMM d')}` });
     } catch (error) {
       console.error('Failed to save job application activity', error);
       toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
@@ -421,7 +440,7 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
                       Weekly Activities Tracker (Mon–Fri)
                     </CardTitle>
                     <CardDescription>
-                      Track your daily job application workflow. Enter counts for each activity per day. Changes save automatically on blur.
+                      Track each task as done per day. Only today or yesterday are editable; other days are read-only.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -448,14 +467,14 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
                               const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId];
                               return (
                                 <TableCell key={`${dateKey}-${task.id}`} className="w-28">
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    placeholder="0"
-                                    value={val ?? ''}
-                                    onChange={(e) => handleJobValueChange(dateKey, task.id as JobApplicationTaskId, e.target.value)}
-                                    onBlur={() => handleJobBlur(dateKey, task.id as JobApplicationTaskId)}
-                                    className="h-8 text-sm"
+                                  <Checkbox
+                                    checked={Boolean(val && val > 0)}
+                                    disabled={!(isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1)))}
+                                    onCheckedChange={(checked) => {
+                                      if (isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1))) {
+                                        handleJobToggle(dateKey, task.id as JobApplicationTaskId, Boolean(checked));
+                                      }
+                                    }}
                                   />
                                 </TableCell>
                               );
