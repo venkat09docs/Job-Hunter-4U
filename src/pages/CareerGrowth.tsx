@@ -65,7 +65,7 @@ export default function CareerGrowth() {
   const DAILY_ACTIVITIES = [
     { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
     { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
-    { id: 'shares', title: 'Shares', description: 'Share posts in your network', category: 'engagement', dailyTarget: 1, weeklyTarget: 5, unit: 'shares' },
+    { id: 'content', title: 'Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'content' },
     { id: 'connection_requests', title: 'Connections', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
     { id: 'create_post', title: 'Posts', description: 'Create and publish posts', category: 'content', dailyTarget: 1, weeklyTarget: 3, unit: 'posts' },
     { id: 'profile_optimization', title: 'Profile Optimization', description: 'Update and optimize your profile', category: 'profile', dailyTarget: 1, weeklyTarget: 2, unit: 'updates' },
