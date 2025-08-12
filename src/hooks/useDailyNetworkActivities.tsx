@@ -12,6 +12,10 @@ interface DailyNetworkActivity {
   create_post: number;
   profile_optimization: number;
   research: number;
+  follow_up_messages: number;
+  engage_in_groups: number;
+  work_on_article: number;
+  total_activities: number;
 }
 
 export const useDailyNetworkActivities = () => {
@@ -27,14 +31,15 @@ export const useDailyNetworkActivities = () => {
     try {
       const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
       
-      // Get total count of unique dates up to today
-      const { count } = await supabase
+      // Get unique dates count up to today
+      const { data: uniqueDateData } = await supabase
         .from('linkedin_network_metrics')
-        .select('date', { count: 'exact', head: true })
+        .select('date')
         .eq('user_id', user.id)
         .lte('date', today);
 
-      setTotalCount(count || 0);
+      const uniqueDateCount = [...new Set(uniqueDateData?.map(d => d.date) || [])].length;
+      setTotalCount(uniqueDateCount);
 
       // First, get distinct dates for pagination
       const { data: dateData, error: dateError } = await supabase
@@ -80,6 +85,10 @@ export const useDailyNetworkActivities = () => {
           create_post: 0,
           profile_optimization: 0,
           research: 0,
+          follow_up_messages: 0,
+          engage_in_groups: 0,
+          work_on_article: 0,
+          total_activities: 0,
         };
       });
 
@@ -109,8 +118,33 @@ export const useDailyNetworkActivities = () => {
             case 'research':
               groupedByDate[date].research! += metric.value;
               break;
+            case 'follow_up_messages':
+              groupedByDate[date].follow_up_messages! += metric.value;
+              break;
+            case 'engage_in_groups':
+              groupedByDate[date].engage_in_groups! += metric.value;
+              break;
+            case 'work_on_article':
+              groupedByDate[date].work_on_article! += metric.value;
+              break;
           }
         }
+      });
+
+      // Calculate total activities for each date
+      Object.keys(groupedByDate).forEach(date => {
+        const activity = groupedByDate[date];
+        activity.total_activities = 
+          (activity.post_likes || 0) +
+          (activity.comments || 0) +
+          (activity.shares || 0) +
+          (activity.connection_requests || 0) +
+          (activity.create_post || 0) +
+          (activity.profile_optimization || 0) +
+          (activity.research || 0) +
+          (activity.follow_up_messages || 0) +
+          (activity.engage_in_groups || 0) +
+          (activity.work_on_article || 0);
       });
 
       // Convert to array and maintain date order

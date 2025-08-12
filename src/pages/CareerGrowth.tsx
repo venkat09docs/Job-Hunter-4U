@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, TrendingUp, CheckCircle, AlertCircle, Target } from 'lucide-react';
+import { ArrowLeft, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -56,7 +58,8 @@ export default function CareerGrowth() {
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
   const [networkWeeklyMetrics, setNetworkWeeklyMetrics] = useState<{[key: string]: number}>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize] = useState(10);
+  const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
 
   // Daily activities structure
   const DAILY_ACTIVITIES = [
@@ -456,7 +459,23 @@ export default function CareerGrowth() {
                               <TableHead className="text-center">Connections</TableHead>
                               <TableHead className="text-center">Posts</TableHead>
                               <TableHead className="text-center">Profile Optimization</TableHead>
-                              <TableHead className="text-center">Research</TableHead>
+                             <TableHead className="text-center">Research</TableHead>
+                               <TableHead className="text-center">Follow Up Messages</TableHead>
+                               <TableHead className="text-center">Engage in Groups</TableHead>
+                               <TableHead className="text-center">Work on Article</TableHead>
+                               <TableHead className="text-center">Total Activities</TableHead>
+                               <TableHead className="text-center">
+                                 <Checkbox
+                                   checked={selectedRecords.size === dailyNetworkActivities.length}
+                                   onCheckedChange={(checked) => {
+                                     if (checked) {
+                                       setSelectedRecords(new Set(dailyNetworkActivities.map((_, index) => index.toString())));
+                                     } else {
+                                       setSelectedRecords(new Set());
+                                     }
+                                   }}
+                                 />
+                               </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -470,12 +489,30 @@ export default function CareerGrowth() {
                                   <TableCell className="text-center">{activity.connection_requests}</TableCell>
                                   <TableCell className="text-center">{activity.create_post}</TableCell>
                                   <TableCell className="text-center">{activity.profile_optimization}</TableCell>
-                                  <TableCell className="text-center">{activity.research}</TableCell>
-                                </TableRow>
+                                   <TableCell className="text-center">{activity.research}</TableCell>
+                                   <TableCell className="text-center">{activity.follow_up_messages}</TableCell>
+                                   <TableCell className="text-center">{activity.engage_in_groups}</TableCell>
+                                   <TableCell className="text-center">{activity.work_on_article}</TableCell>
+                                   <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
+                                   <TableCell className="text-center">
+                                     <Checkbox
+                                       checked={selectedRecords.has(index.toString())}
+                                       onCheckedChange={(checked) => {
+                                         const newSelected = new Set(selectedRecords);
+                                         if (checked) {
+                                           newSelected.add(index.toString());
+                                         } else {
+                                           newSelected.delete(index.toString());
+                                         }
+                                         setSelectedRecords(newSelected);
+                                       }}
+                                     />
+                                   </TableCell>
+                                 </TableRow>
                               ))
                             ) : (
                               <TableRow>
-                                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                                   No network activities recorded yet
                                 </TableCell>
                               </TableRow>
@@ -483,37 +520,84 @@ export default function CareerGrowth() {
                           </TableBody>
                         </Table>
 
-                        {/* Pagination */}
-                        {totalCount > pageSize && (
+                        {/* Download and Pagination */}
+                        <div className="flex items-center justify-between">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const selectedActivities = dailyNetworkActivities.filter((_, index) => 
+                                selectedRecords.has(index.toString())
+                              );
+                              
+                              if (selectedActivities.length === 0) {
+                                alert('Please select at least one record to download');
+                                return;
+                              }
+
+                              const excelData = selectedActivities.map(activity => ({
+                                'Date': activity.date,
+                                'Like Posts': activity.post_likes,
+                                'Comments': activity.comments,
+                                'Content': activity.shares,
+                                'Connections': activity.connection_requests,
+                                'Posts': activity.create_post,
+                                'Profile Optimization': activity.profile_optimization,
+                                'Research': activity.research,
+                                'Follow Up Messages': activity.follow_up_messages,
+                                'Engage in Groups': activity.engage_in_groups,
+                                'Work on Article': activity.work_on_article,
+                                'Total Activities': activity.total_activities,
+                              }));
+
+                              const worksheet = XLSX.utils.json_to_sheet(excelData);
+                              const workbook = XLSX.utils.book_new();
+                              XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Activities');
+                              
+                              const fileName = `daily_network_activities_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+                              XLSX.writeFile(workbook, fileName);
+                            }}
+                            disabled={selectedRecords.size === 0}
+                            className="gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            Download Excel ({selectedRecords.size} selected)
+                          </Button>
+                        </div>
+
+                        {totalCount > 0 && (
                           <div className="flex items-center justify-between">
                             <div className="text-sm text-muted-foreground">
                               Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} entries
                             </div>
                             <div className="flex items-center space-x-2">
-                              <Button
+                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
                                   const newPage = Math.max(1, currentPage - 1);
                                   setCurrentPage(newPage);
                                   fetchDailyActivities(newPage, pageSize);
+                                  setSelectedRecords(new Set());
                                 }}
                                 disabled={currentPage === 1}
                               >
                                 Previous
                               </Button>
                               <span className="text-sm">
-                                Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                                Page {currentPage} of {Math.max(1, Math.ceil(totalCount / pageSize))}
                               </span>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  const newPage = Math.min(Math.ceil(totalCount / pageSize), currentPage + 1);
+                                  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+                                  const newPage = Math.min(totalPages, currentPage + 1);
                                   setCurrentPage(newPage);
                                   fetchDailyActivities(newPage, pageSize);
+                                  setSelectedRecords(new Set());
                                 }}
-                                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+                                disabled={currentPage >= Math.max(1, Math.ceil(totalCount / pageSize))}
                               >
                                 Next
                               </Button>
