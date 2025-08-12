@@ -72,9 +72,9 @@ const BuildMyProfile = () => {
     fetchCounts();
   }, [user]);
 
-  // Calculate overall career development score
+  // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
-    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), 0]; // networkProgress removed
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress()];
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 
@@ -116,15 +116,6 @@ const BuildMyProfile = () => {
       action: () => navigate('/dashboard/github-optimization'),
       category: 'Social Presence'
     },
-    {
-      id: 'blog',
-      title: 'Write Blog Posts',
-      description: 'Publish articles to showcase expertise',
-      progress: publishedBlogsCount > 0 ? 100 : 0,
-      isCompleted: publishedBlogsCount > 0,
-      action: () => navigate('/dashboard/career-growth-activities?tab=content'),
-      category: 'Content Creation'
-    }
   ];
 
   // Group tasks by category
