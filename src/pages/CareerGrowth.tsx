@@ -17,7 +17,9 @@ import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
+import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
 import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
+import { Button as PaginationButton } from '@/components/ui/button';
 
 interface WeeklyMetrics {
   week: string;
@@ -48,10 +50,13 @@ export default function CareerGrowth() {
   const { getTodayMetrics, getWeeklyMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
+  const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, fetchDailyActivities } = useDailyNetworkActivities();
   
   // Network activities state
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
   const [networkWeeklyMetrics, setNetworkWeeklyMetrics] = useState<{[key: string]: number}>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // Daily activities structure
   const DAILY_ACTIVITIES = [
@@ -431,64 +436,92 @@ export default function CareerGrowth() {
               <TabsContent value="daily" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Daily Network Activities</CardTitle>
-                    <CardDescription>Track your daily LinkedIn networking activities</CardDescription>
+                    <CardTitle>Daily Network Activities Report</CardTitle>
+                    <CardDescription>View your daily LinkedIn networking activities with latest records at top</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Activity</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead>Today's Count</TableHead>
-                          <TableHead>Daily Target</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {DAILY_ACTIVITIES.map((activity) => {
-                          const todayCount = networkDailyMetrics[activity.id] || 0;
-                          const isCompleted = todayCount >= activity.dailyTarget;
-                          
-                          return (
-                            <TableRow key={activity.id}>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{activity.title}</p>
-                                  <p className="text-sm text-muted-foreground">{activity.description}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="capitalize">
-                                  {activity.category}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <span className="text-lg font-semibold">{todayCount}</span>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <span className="text-sm text-muted-foreground">
-                                  {activity.dailyTarget} {activity.unit}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                {isCompleted ? (
-                                  <Badge variant="default" className="gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    Complete
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="secondary" className="gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    Pending
-                                  </Badge>
-                                )}
-                              </TableCell>
+                    {dailyNetworkLoading ? (
+                      <div className="flex items-center justify-center p-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Date</TableHead>
+                              <TableHead className="text-center">Like Posts</TableHead>
+                              <TableHead className="text-center">Comments</TableHead>
+                              <TableHead className="text-center">Content</TableHead>
+                              <TableHead className="text-center">Connections</TableHead>
+                              <TableHead className="text-center">Posts</TableHead>
+                              <TableHead className="text-center">Profile Optimization</TableHead>
+                              <TableHead className="text-center">Research</TableHead>
                             </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {dailyNetworkActivities.length > 0 ? (
+                              dailyNetworkActivities.map((activity, index) => (
+                                <TableRow key={`${activity.date}-${index}`}>
+                                  <TableCell className="font-medium">{activity.date}</TableCell>
+                                  <TableCell className="text-center">{activity.post_likes}</TableCell>
+                                  <TableCell className="text-center">{activity.comments}</TableCell>
+                                  <TableCell className="text-center">{activity.shares}</TableCell>
+                                  <TableCell className="text-center">{activity.connection_requests}</TableCell>
+                                  <TableCell className="text-center">{activity.create_post}</TableCell>
+                                  <TableCell className="text-center">{activity.profile_optimization}</TableCell>
+                                  <TableCell className="text-center">{activity.research}</TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow>
+                                <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                                  No network activities recorded yet
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+
+                        {/* Pagination */}
+                        {totalCount > pageSize && (
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-muted-foreground">
+                              Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} entries
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newPage = Math.max(1, currentPage - 1);
+                                  setCurrentPage(newPage);
+                                  fetchDailyActivities(newPage, pageSize);
+                                }}
+                                disabled={currentPage === 1}
+                              >
+                                Previous
+                              </Button>
+                              <span className="text-sm">
+                                Page {currentPage} of {Math.ceil(totalCount / pageSize)}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const newPage = Math.min(Math.ceil(totalCount / pageSize), currentPage + 1);
+                                  setCurrentPage(newPage);
+                                  fetchDailyActivities(newPage, pageSize);
+                                }}
+                                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+                              >
+                                Next
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
