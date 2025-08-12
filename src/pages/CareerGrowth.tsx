@@ -141,13 +141,27 @@ export default function CareerGrowth() {
     
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const [dailyData, weeklyData] = await Promise.all([
+      const [dailyData, rawWeeklyData] = await Promise.all([
         getTodayMetrics(today),
         getWeeklyMetrics()
       ]);
       
+      // Map weekly data from database activity_ids to UI field names
+      const mappedWeeklyData: {[key: string]: number} = {};
+      Object.entries(rawWeeklyData).forEach(([dbActivityId, value]) => {
+        let uiFieldName = dbActivityId;
+        
+        // Map database activity_ids to UI field names
+        if (dbActivityId === 'industry_research') uiFieldName = 'research';
+        if (dbActivityId === 'follow_up') uiFieldName = 'follow_up_messages';
+        if (dbActivityId === 'industry_groups') uiFieldName = 'engage_in_groups';
+        if (dbActivityId === 'article_draft') uiFieldName = 'work_on_article';
+        
+        mappedWeeklyData[uiFieldName] = value;
+      });
+      
       setNetworkDailyMetrics(dailyData);
-      setNetworkWeeklyMetrics(weeklyData);
+      setNetworkWeeklyMetrics(mappedWeeklyData);
     } catch (error) {
       console.error('Error fetching network data:', error);
     }
