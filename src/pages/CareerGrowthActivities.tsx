@@ -412,7 +412,62 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
             <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
           </TabsList>
 
-            {selectedCategory === 'networking' ? (
+            {selectedCategory === 'application' ? (
+              <div className="space-y-6">
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Weekly Activities Tracker (Mon–Fri)
+                    </CardTitle>
+                    <CardDescription>
+                      Track your daily job application workflow. Enter counts for each activity per day. Changes save automatically on blur.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          {jobWeekDates.map((date) => (
+                            <TableHead key={date.toISOString()} className="text-center">
+                              {format(date, 'EEE')} <span className="text-xs text-muted-foreground">{format(date, 'd')}</span>
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {JOB_APP_TASKS.map((task) => (
+                          <TableRow key={task.id}>
+                            <TableCell>
+                              <div className="font-medium text-sm">{task.title}</div>
+                              <div className="text-xs text-muted-foreground">{task.description}</div>
+                            </TableCell>
+                            {jobWeekDates.map((date) => {
+                              const dateKey = getDateKey(date);
+                              const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId];
+                              return (
+                                <TableCell key={`${dateKey}-${task.id}`} className="w-28">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    placeholder="0"
+                                    value={val ?? ''}
+                                    onChange={(e) => handleJobValueChange(dateKey, task.id as JobApplicationTaskId, e.target.value)}
+                                    onBlur={() => handleJobBlur(dateKey, task.id as JobApplicationTaskId)}
+                                    className="h-8 text-sm"
+                                  />
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : selectedCategory === 'networking' ? (
               // LinkedIn Network Management Content
               <div className="space-y-6">
                 {/* Current Week Status Bar */}
