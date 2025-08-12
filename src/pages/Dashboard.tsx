@@ -186,9 +186,9 @@ const Dashboard = () => {
     fetchJobData();
   }, [user]);
 
-  // Calculate overall career development score
+  // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
-    const scores = [resumeProgress, linkedinProgress, getGitHubProgress(), 0]; // networkProgress removed
+    const scores = [resumeProgress, linkedinProgress, getGitHubProgress()];
     return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
   };
 

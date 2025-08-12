@@ -86,16 +86,16 @@ const BuildMyProfile = () => {
       description: 'Build your professional resume with all sections',
       progress: resumeProgress,
       isCompleted: resumeProgress === 100,
-      action: () => navigate('/dashboard/resume-builder'),
+      action: () => navigate('/dashboard/resume-builder?tab=resume'),
       category: 'Documents'
     },
     {
       id: 'cover-letter',
       title: 'Create Cover Letters',
       description: 'Save multiple cover letter templates',
-      progress: savedCoverLettersCount > 0 ? 100 : 0,
+      progress: savedCoverLettersCount,
       isCompleted: savedCoverLettersCount > 0,
-      action: () => navigate('/dashboard/library'),
+      action: () => navigate('/dashboard/resume-builder?tab=cover-letter'),
       category: 'Documents'
     },
     {
@@ -248,7 +248,7 @@ const BuildMyProfile = () => {
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium">{task.title}</h4>
                               <Badge variant={task.isCompleted ? "default" : "secondary"}>
-                                {task.progress}%
+                                {task.id === 'cover-letter' ? task.progress : `${task.progress}%`}
                               </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
@@ -257,7 +257,7 @@ const BuildMyProfile = () => {
                             <div className="w-full bg-muted rounded-full h-2">
                               <div
                                 className="bg-primary h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${task.progress}%` }}
+                                style={{ width: task.id === 'cover-letter' ? `${Math.min(task.progress * 10, 100)}%` : `${task.progress}%` }}
                               />
                             </div>
                           </div>
