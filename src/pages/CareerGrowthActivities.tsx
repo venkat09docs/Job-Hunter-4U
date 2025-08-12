@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
@@ -147,6 +148,7 @@ const [inputValues, setInputValues] = useState<InputValues>({});
   const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
 const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
 const jobWeekDates = getWeekDatesMonToFri(new Date());
+const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
 
   // LinkedIn Network data loading
   const loadData = useCallback(async (dateKey: string) => {
@@ -433,79 +435,96 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
 
             {selectedCategory === 'application' ? (
               <div className="space-y-6">
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Weekly Activities Tracker (Mon–Fri)
-                    </CardTitle>
-                    <CardDescription>
-                      Read-only counts auto-tracked from Job Status Tracker. No manual checking required.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Task</TableHead>
-                          {jobWeekDates.map((date) => (
-                            <TableHead key={date.toISOString()} className="text-center">
-                              {format(date, 'EEE')} <span className="text-xs text-muted-foreground">{format(date, 'd')}</span>
-                            </TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {JOB_APP_TASKS.map((task) => (
-                          <TableRow key={task.id}>
-                            <TableCell>
-                              <div className="font-medium text-sm">{task.title}</div>
-                              <div className="text-xs text-muted-foreground">{task.description}</div>
-                            </TableCell>
-                            {jobWeekDates.map((date) => {
-                              const dateKey = getDateKey(date);
-                              const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId];
-                              return (
-                                  <TableCell key={`${dateKey}-${task.id}`} className="w-28 text-center">
-                                    <div className="text-sm font-medium">{val ?? 0}</div>
-                                  </TableCell>
-                              );
-                            })}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+                <Tabs value={appTab} onValueChange={(v) => setAppTab(v as 'daily' | 'metrics')} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="daily">Daily Activities Tracker</TabsTrigger>
+                    <TabsTrigger value="metrics">Application Metrics</TabsTrigger>
+                  </TabsList>
 
-                {/* Today's Job Application Metrics */}
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Today's Job Application Metrics
-                    </CardTitle>
-                    <CardDescription>
-                      Auto-tracked for {format(new Date(), 'MMMM d, yyyy')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-primary">
-                          {jobWeekData[getDateKey(new Date())]?.['save_potential_opportunities'] ?? 0}
+                  <TabsContent value="daily">
+                    <Card className="shadow-elegant border-primary/20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                          Weekly Activities Tracker (Mon–Fri)
+                        </CardTitle>
+                        <CardDescription>
+                          Use checkboxes to mark completion. Only Today and Yesterday are editable; other days are read-only.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Task</TableHead>
+                              {jobWeekDates.map((date) => (
+                                <TableHead key={date.toISOString()} className="text-center">
+                                  {format(date, 'EEE')} <span className="text-xs text-muted-foreground">{format(date, 'd')}</span>
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {JOB_APP_TASKS.map((task) => (
+                              <TableRow key={task.id}>
+                                <TableCell>
+                                  <div className="font-medium text-sm">{task.title}</div>
+                                  <div className="text-xs text-muted-foreground">{task.description}</div>
+                                </TableCell>
+                                {jobWeekDates.map((date) => {
+                                  const dateKey = getDateKey(date);
+                                  const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId] ?? 0;
+                                  const isEditable = isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1));
+                                  return (
+                                    <TableCell key={`${dateKey}-${task.id}`} className="w-28 text-center">
+                                      <div className="flex items-center justify-center">
+                                        <Checkbox
+                                          checked={val > 0}
+                                          onCheckedChange={(checked) => isEditable && handleJobToggle(dateKey, task.id as JobApplicationTaskId, checked === true)}
+                                          disabled={!isEditable}
+                                        />
+                                      </div>
+                                    </TableCell>
+                                  );
+                                })}
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="metrics">
+                    <Card className="shadow-elegant border-primary/20">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                          Today's Job Application Metrics
+                        </CardTitle>
+                        <CardDescription>
+                          Auto-tracked for {format(new Date(), 'MMMM d, yyyy')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="text-center p-4 rounded-lg border bg-card">
+                            <div className="text-2xl font-bold text-primary">
+                              {jobWeekData[getDateKey(new Date())]?.['save_potential_opportunities'] ?? 0}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Wishlist Added Today</div>
+                          </div>
+                          <div className="text-center p-4 rounded-lg border bg-card">
+                            <div className="text-2xl font-bold text-primary">
+                              {jobWeekData[getDateKey(new Date())]?.['apply_quality_jobs'] ?? 0}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Applying/Applied Added Today</div>
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">Wishlist Added Today</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card">
-                        <div className="text-2xl font-bold text-primary">
-                          {jobWeekData[getDateKey(new Date())]?.['apply_quality_jobs'] ?? 0}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Applying/Applied Added Today</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : selectedCategory === 'networking' ? (
               // LinkedIn Network Management Content
