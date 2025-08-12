@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
@@ -517,43 +517,15 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
   const weekTotalWishlist = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['save_potential_opportunities'] ?? 0), 0);
   const weekTotalApplied = jobWeekDates.reduce((sum, d) => sum + (jobWeekData[format(d, 'yyyy-MM-dd')]?.['apply_quality_jobs'] ?? 0), 0);
 
-  const dailyFailures = weekDatesToShow
-    .map((date) => {
-      const key = format(date, 'yyyy-MM-dd');
-      const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
-      const applied = jobWeekData[key]?.['apply_quality_jobs'] ?? 0;
-      const label = isSameDay(date, today)
-        ? 'Today'
-        : isSameDay(date, subDays(today, 1))
-        ? 'Yesterday'
-        : format(date, 'EEE, MMM d');
-      const wishlistOk = wishlist >= 5;
-      const appliedOk = applied >= 3;
-      const messages: string[] = [];
-      if (!wishlistOk) messages.push('Wishlist < 5');
-      if (!appliedOk) messages.push('Applied < 3');
-      return messages.length ? { label, messages } : null;
-    })
-    .filter(Boolean) as { label: string; messages: string[] }[];
-
   return (
     <div className="space-y-4">
-      {dailyFailures.length > 0 && (
-        <Alert variant="destructive">
-          <AlertTitle>Targets not met</AlertTitle>
-          <AlertDescription>
-            {dailyFailures.map(({ label, messages }) => (
-              <div key={label}>{label}: {messages.join(' • ')}</div>
-            ))}
-          </AlertDescription>
-        </Alert>
-      )}
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
             <TableHead className="text-center">No. Jobs Added to Wishlist</TableHead>
             <TableHead className="text-center">No. Jobs Applied</TableHead>
+            <TableHead className="text-center">Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -561,6 +533,7 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
             <TableCell className="font-semibold">Week Total (Mon–Fri)</TableCell>
             <TableCell className="text-center font-semibold">{weekTotalWishlist}</TableCell>
             <TableCell className="text-center font-semibold">{weekTotalApplied}</TableCell>
+            <TableCell className="text-center text-muted-foreground">—</TableCell>
           </TableRow>
           {weekDatesToShow.map((date) => {
             const key = format(date, 'yyyy-MM-dd');
@@ -573,11 +546,20 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
               : format(date, 'EEE, MMM d');
             const wishlistOk = wishlist >= 5;
             const appliedOk = applied >= 3;
+            const ok = wishlistOk && appliedOk;
             return (
-              <TableRow key={key} className={(!wishlistOk || !appliedOk) ? 'bg-destructive/5' : ''}>
+              <TableRow key={key} className={!ok ? 'bg-destructive/5' : ''}>
                 <TableCell className="font-medium">{label}</TableCell>
                 <TableCell className={`text-center ${!wishlistOk ? 'text-destructive' : ''}`}>{wishlist}</TableCell>
                 <TableCell className={`text-center ${!appliedOk ? 'text-destructive' : ''}`}>{applied}</TableCell>
+                <TableCell className="text-center">
+                  <div className="inline-flex items-center gap-1">
+                    {ok ? <CheckCircle className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-destructive" />}
+                    <span className={`text-sm font-medium ${ok ? 'text-green-600' : 'text-destructive'}`}>
+                      {ok ? 'Target Met' : 'Not Met'}
+                    </span>
+                  </div>
+                </TableCell>
               </TableRow>
             );
           })}
