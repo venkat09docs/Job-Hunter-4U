@@ -11,6 +11,7 @@ interface DailyNetworkActivity {
   connection_requests: number;
   create_post: number;
   profile_optimization: number;
+  content: number;
   research: number;
   follow_up_messages: number;
   engage_in_groups: number;
@@ -84,6 +85,7 @@ export const useDailyNetworkActivities = () => {
           connection_requests: 0,
           create_post: 0,
           profile_optimization: 0,
+          content: 0,
           research: 0,
           follow_up_messages: 0,
           engage_in_groups: 0,
@@ -116,7 +118,7 @@ export const useDailyNetworkActivities = () => {
               groupedByDate[date].profile_optimization! += metric.value;
               break;
             case 'content':
-              groupedByDate[date].research! += metric.value;
+              groupedByDate[date].content! += metric.value;
               break;
             case 'industry_research':
               groupedByDate[date].research! += metric.value;
@@ -144,6 +146,7 @@ export const useDailyNetworkActivities = () => {
           (activity.connection_requests || 0) +
           (activity.create_post || 0) +
           (activity.profile_optimization || 0) +
+          (activity.content || 0) +
           (activity.research || 0) +
           (activity.follow_up_messages || 0) +
           (activity.engage_in_groups || 0) +

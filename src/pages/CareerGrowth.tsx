@@ -489,7 +489,7 @@ export default function CareerGrowth() {
                                   <TableCell className="text-center">{activity.connection_requests}</TableCell>
                                   <TableCell className="text-center">{activity.create_post}</TableCell>
                                   <TableCell className="text-center">{activity.profile_optimization}</TableCell>
-                                   <TableCell className="text-center">{activity.research}</TableCell>
+                                   <TableCell className="text-center">{activity.content}</TableCell>
                                    <TableCell className="text-center">{activity.follow_up_messages}</TableCell>
                                    <TableCell className="text-center">{activity.engage_in_groups}</TableCell>
                                    <TableCell className="text-center">{activity.work_on_article}</TableCell>
