@@ -12,6 +12,7 @@ import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek } from 'date-fns';
+import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
 
 interface Activity {
   id: string;
@@ -354,11 +355,11 @@ export default function CareerGrowthActivities() {
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="all">All Activities</TabsTrigger>
+            <TabsTrigger value="application">Job Applications</TabsTrigger>
             <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
+            <TabsTrigger value="skill">GitHub Activities</TabsTrigger>
             <TabsTrigger value="content">Content Mgmt</TabsTrigger>
-            <TabsTrigger value="skill">Skills</TabsTrigger>
-            <TabsTrigger value="learning">Learning</TabsTrigger>
-            <TabsTrigger value="application">Applications</TabsTrigger>
+            <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
           </TabsList>
 
             {selectedCategory === 'networking' ? (
@@ -721,6 +722,11 @@ export default function CareerGrowthActivities() {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            ) : selectedCategory === 'skill' ? (
+              <div className="space-y-6">
+                {/* Embedded GitHub Activity Tracker */}
+                <GitHubActivityTrackerEmbed />
               </div>
             ) : (
               // Regular Activities List
