@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { Search, MapPin, Briefcase, ExternalLink, Loader2, Building2, Heart, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useJobApplicationActivities } from "@/hooks/useJobApplicationActivities";
+
 
 interface SavedJobResult {
   id: string;
@@ -53,7 +55,9 @@ const JobSearch = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { incrementActivity } = useJobApplicationActivities();
   
+
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     date_posted: "all",
@@ -243,6 +247,13 @@ const JobSearch = () => {
 
       // Update job statuses
       await loadJobStatuses();
+
+      // Track wishlist metric in Application Metrics
+      try {
+        await incrementActivity('save_potential_opportunities');
+      } catch (e) {
+        console.warn('Failed to increment wishlist activity metric', e);
+      }
       
       toast({
         title: "Added to Wishlist",
