@@ -40,38 +40,35 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchProfile();
       fetchAnalytics();
+    } else {
+      setLoading(false);
+      setProfile(null);
     }
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user?.id) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (error) throw error;
 
-      const row = data && data.length > 0 ? data[0] : null;
-
-      if (!row) {
-        console.log('No profile found for user, this is normal for new users');
-        setProfile(null);
-        return;
-      }
-      setProfile(row);
+      setProfile(data ?? null);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load profile data',
-        variant: 'destructive'
-      });
+      // Avoid noisy toasts; set state gracefully
+      setProfile(null);
     } finally {
       setLoading(false);
     }
