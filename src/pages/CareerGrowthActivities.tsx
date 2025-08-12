@@ -6,12 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle, Award } from "lucide-react";
+import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { format, addDays, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+import { format, addDays, startOfWeek } from 'date-fns';
 
 interface Activity {
   id: string;
@@ -120,13 +120,12 @@ export default function CareerGrowthActivities() {
   
   
   // LinkedIn Network functionality
-  const { updateMetrics, getTodayMetrics, getWeeklyMetrics, getLastWeekMetrics } = useLinkedInNetworkProgress();
+  const { updateMetrics, getTodayMetrics, getWeeklyMetrics } = useLinkedInNetworkProgress();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
-  const [lastWeekMetrics, setLastWeekMetrics] = useState<ActivityMetrics>({});
   const [inputValues, setInputValues] = useState<InputValues>({});
 
   // LinkedIn Network data loading
@@ -136,17 +135,15 @@ export default function CareerGrowthActivities() {
     console.log('Loading data for date:', dateKey);
     
     try {
-      const [metrics, currentWeekMetrics, lastWeekMetricsData] = await Promise.all([
+      const [metrics, currentWeekMetrics] = await Promise.all([
         getTodayMetrics(dateKey),
-        getWeeklyMetrics(), 
-        getLastWeekMetrics()
+        getWeeklyMetrics()
       ]);
       
       console.log('Loaded metrics for', dateKey, ':', metrics);
       
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
-      setLastWeekMetrics(lastWeekMetricsData);
       setInputValues(metrics);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -390,42 +387,6 @@ export default function CareerGrowthActivities() {
                       <p className="text-xs text-muted-foreground">
                         Complete daily LinkedIn activities to improve your network growth score
                       </p>
-                    </div>
-                  </CardContent>
-                </Card>
-                {/* Last Week Performance */}
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Award className="h-5 w-5 text-primary" />
-                      Last Week Performance
-                    </CardTitle>
-                    <CardDescription>
-                      Review your previous week's LinkedIn networking achievements
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-4 gap-4">
-                      {DAILY_ACTIVITIES.slice(0, 4).map((activity) => {
-                        const lastWeekValue = lastWeekMetrics[activity.id] || 0;
-                        const targetMet = lastWeekValue >= activity.weeklyTarget;
-                        return (
-                          <div key={activity.id} className="text-center p-4 rounded-lg border bg-card">
-                            <div className={`text-2xl font-bold ${targetMet ? 'text-green-500' : 'text-red-500'}`}>
-                              {lastWeekValue}
-                            </div>
-                            <div className="text-sm text-muted-foreground">{activity.title}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Target: {activity.weeklyTarget} {activity.unit}
-                            </div>
-                            {targetMet ? (
-                              <CheckCircle className="h-4 w-4 text-green-500 mx-auto mt-1" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-red-500 mx-auto mt-1" />
-                            )}
-                          </div>
-                        );
-                      })}
                     </div>
                   </CardContent>
                 </Card>
