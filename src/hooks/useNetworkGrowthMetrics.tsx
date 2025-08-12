@@ -107,12 +107,46 @@ export const useNetworkGrowthMetrics = () => {
         }
       });
 
+      // Calculate current week metrics by activity type
+      const weeklyTotals = {
+        totalConnections: 0,
+        totalLikes: 0,
+        totalComments: 0,
+        totalShares: 0,
+        totalPosts: 0,
+      };
+
+      weeklyMetrics?.forEach(metric => {
+        switch (metric.activity_id) {
+          case 'connection_requests':
+            weeklyTotals.totalConnections += metric.value;
+            break;
+          case 'post_likes':
+            weeklyTotals.totalLikes += metric.value;
+            break;
+          case 'comments':
+            weeklyTotals.totalComments += metric.value;
+            break;
+          case 'shares':
+            weeklyTotals.totalShares += metric.value;
+            break;
+          case 'create_post':
+            weeklyTotals.totalPosts += metric.value;
+            break;
+        }
+      });
+
       // Calculate weekly and monthly totals
       const weeklyTotal = weeklyMetrics?.reduce((sum, metric) => sum + metric.value, 0) || 0;
       const monthlyTotal = monthlyMetrics?.reduce((sum, metric) => sum + metric.value, 0) || 0;
 
       setMetrics({
-        ...totals,
+        // Use current week totals instead of all-time for individual activities
+        totalConnections: weeklyTotals.totalConnections,
+        totalLikes: weeklyTotals.totalLikes,
+        totalComments: weeklyTotals.totalComments,
+        totalShares: weeklyTotals.totalShares,
+        totalPosts: weeklyTotals.totalPosts,
         weeklyProgress: weeklyTotal,
         monthlyProgress: monthlyTotal,
       });
