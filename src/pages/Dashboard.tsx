@@ -38,6 +38,9 @@ const Dashboard = () => {
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  
+  // Get the GitHub progress percentage
+  const githubProgress = getGitHubProgress();
   const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -525,14 +528,32 @@ const Dashboard = () => {
                       onClick={() => navigate('/dashboard/github-optimization')}
                     >
                       <div className="relative w-20 h-20 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">{savedReadmeFilesCount}</span>
+                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--border))"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="hsl(var(--primary))"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${githubProgress * 2.827} ${(100 - githubProgress) * 2.827}`}
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">{githubProgress}%</span>
                         </div>
                       </div>
                       <h4 className="font-medium text-center">GitHub</h4>
-                      <p className="text-sm text-muted-foreground text-center">
-                        {savedReadmeFilesCount} README files saved
-                      </p>
+                      <p className="text-sm text-muted-foreground text-center">Profile setup progress</p>
                     </div>
 
                   </div>

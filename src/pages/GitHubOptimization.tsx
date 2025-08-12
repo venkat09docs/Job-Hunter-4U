@@ -42,7 +42,7 @@ const GitHubOptimization = () => {
   const { profile } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { updateTaskStatus } = useGitHubProgress();
+  const { updateTaskStatus, tasks } = useGitHubProgress();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
     title: '',
@@ -70,6 +70,24 @@ const GitHubOptimization = () => {
     readme_added: false,
     repo_public: false
   });
+
+  // Update local GitHub progress state from database tasks
+  useEffect(() => {
+    if (tasks && tasks.length > 0) {
+      const progressUpdate = {
+        readme_generated: tasks.some(t => t.task_id === 'readme_generated' && t.completed),
+        special_repo_created: tasks.some(t => t.task_id === 'special_repo_created' && t.completed),
+        readme_added: tasks.some(t => t.task_id === 'readme_added' && t.completed),
+        repo_public: tasks.some(t => t.task_id === 'repo_public' && t.completed)
+      };
+      setGitHubProgress(progressUpdate);
+    }
+  }, [tasks]);
+
+  // Calculate GitHub progress percentage
+  const githubProgressPercent = Math.round(
+    (Object.values(githubProgress).filter(Boolean).length / Object.keys(githubProgress).length) * 100
+  );
 
   const generateReadme = () => {
     const { name, title, bio, location, email, website, github, linkedin, skills, experience, education, projects, achievements, languages, interests } = profileData;
@@ -666,6 +684,43 @@ ${interests}
 
           <TabsContent value="setup" className="h-full mt-0">
             <div className="p-6 space-y-6">
+              {/* GitHub Profile Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="relative w-12 h-12">
+                      <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 100 100">
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          stroke="hsl(var(--border))"
+                          strokeWidth="8"
+                          fill="none"
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="8"
+                          fill="none"
+                          strokeDasharray={`${(githubProgressPercent / 100) * 283} ${283 - (githubProgressPercent / 100) * 283}`}
+                          className="transition-all duration-500"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-sm font-bold text-primary">{githubProgressPercent}%</span>
+                      </div>
+                    </div>
+                    GitHub Profile Status
+                  </CardTitle>
+                  <CardDescription>
+                    Your GitHub profile setup is {githubProgressPercent}% complete
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
               {/* GitHub Profile Progress Tracker */}
               <Card>
                 <CardHeader>
