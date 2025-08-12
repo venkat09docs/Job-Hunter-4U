@@ -36,8 +36,18 @@ export const useNetworkGrowthMetrics = () => {
 
     try {
       const today = new Date();
-      const weekAgo = new Date(today);
-      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      // Calculate current week (Monday to Sunday)
+      const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const mondayOffset = currentDay === 0 ? 6 : currentDay - 1; // How many days back to Monday
+      const currentWeekStart = new Date(today);
+      currentWeekStart.setDate(today.getDate() - mondayOffset);
+      currentWeekStart.setHours(0, 0, 0, 0);
+      
+      const currentWeekEnd = new Date(currentWeekStart);
+      currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+      currentWeekEnd.setHours(23, 59, 59, 999);
+      
       const monthAgo = new Date(today);
       monthAgo.setMonth(monthAgo.getMonth() - 1);
 
@@ -49,12 +59,13 @@ export const useNetworkGrowthMetrics = () => {
 
       if (allTimeError) throw allTimeError;
 
-      // Fetch weekly metrics
+      // Fetch current week metrics (Monday to Sunday)
       const { data: weeklyMetrics, error: weeklyError } = await supabase
         .from('linkedin_network_metrics')
         .select('activity_id, value')
         .eq('user_id', user.id)
-        .gte('date', weekAgo.toISOString().split('T')[0]);
+        .gte('date', currentWeekStart.toISOString().split('T')[0])
+        .lte('date', currentWeekEnd.toISOString().split('T')[0]);
 
       if (weeklyError) throw weeklyError;
 
