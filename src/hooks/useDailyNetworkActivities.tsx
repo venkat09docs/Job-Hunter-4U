@@ -95,9 +95,7 @@ export const useDailyNetworkActivities = () => {
       });
 
       // Aggregate the actual metric values
-      console.log('Raw metrics data:', data);
       data?.forEach(metric => {
-        console.log('Processing metric:', metric);
         const date = metric.date;
         if (groupedByDate[date]) {
           switch (metric.activity_id) {
@@ -159,7 +157,6 @@ export const useDailyNetworkActivities = () => {
       const activitiesArray = paginatedDates
         .map(date => groupedByDate[date] as DailyNetworkActivity);
 
-      console.log('Final processed activities:', activitiesArray);
       setActivities(activitiesArray);
     } catch (error) {
       console.error('Error fetching daily network activities:', error);
