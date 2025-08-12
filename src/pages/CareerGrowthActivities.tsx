@@ -182,50 +182,75 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
 }, [selectedDate, loadData]);
 
   // Load Job Applications week data when tab is active
-  useEffect(() => {
+  const refreshApplicationMetrics = useCallback(async () => {
     if (selectedCategory !== 'application') return;
-    (async () => {
-      const data = await fetchWeek(new Date());
-      setJobWeekData(data);
-    })();
-  }, [selectedCategory, fetchWeek]);
+    // Fetch week activities (wishlist/applied counts)
+    const data = await fetchWeek(new Date());
+    setJobWeekData(data);
 
+    if (!user) return;
+
+    // Aggregate job_tracker statuses for requested week
+    try {
+      const dates = jobWeekDates;
+      const startDate = format(dates[0], 'yyyy-MM-dd');
+      const lastWeekday = dates[dates.length - 1];
+      const today = new Date();
+      const end = today > lastWeekday ? today : lastWeekday;
+      const endDate = format(end, 'yyyy-MM-dd');
+      const { data: statusRows, error } = await supabase
+        .from('job_tracker')
+        .select('status, updated_at, user_id')
+        .eq('user_id', user.id)
+        .gte('updated_at', `${startDate}T00:00:00Z`)
+        .lte('updated_at', `${endDate}T23:59:59Z`);
+      if (error) {
+        console.error('Error fetching status metrics:', error);
+        setStatusWeekData({});
+        return;
+      }
+      const TARGET_STATUSES = ['interviewing','negotiating','accepted','not_selected','no_response'];
+      const map: Record<string, Partial<Record<string, number>>> = {};
+      (statusRows || []).forEach((row: any) => {
+        const key = format(new Date(row.updated_at), 'yyyy-MM-dd');
+        if (!map[key]) map[key] = {};
+        const st = row.status as string;
+        if (TARGET_STATUSES.includes(st)) {
+          map[key]![st] = ((map[key]![st] as number) || 0) + 1;
+        }
+      });
+      setStatusWeekData(map);
+    } catch (e) {
+      console.error('Failed to compute status metrics', e);
+    }
+  }, [selectedCategory, fetchWeek, user, jobWeekDates]);
+
+  // Initial/whenever tab active refresh
+  useEffect(() => {
+    refreshApplicationMetrics();
+  }, [refreshApplicationMetrics]);
+
+  // Realtime sync: refresh metrics when job activities or tracker change
   useEffect(() => {
     if (selectedCategory !== 'application' || !user) return;
-    (async () => {
-      try {
-        const dates = jobWeekDates;
-        const startDate = format(dates[0], 'yyyy-MM-dd');
-        const lastWeekday = dates[dates.length - 1];
-        const today = new Date();
-        const end = today > lastWeekday ? today : lastWeekday;
-        const endDate = format(end, 'yyyy-MM-dd');
-        const { data, error } = await supabase
-          .from('job_tracker')
-          .select('status, updated_at')
-          .eq('user_id', user.id)
-          .gte('updated_at', `${startDate}T00:00:00Z`)
-          .lte('updated_at', `${endDate}T23:59:59Z`);
-        if (error) {
-          console.error('Error fetching status metrics:', error);
-          return;
-        }
-        const TARGET_STATUSES = ['interviewing','negotiating','accepted','not_selected','no_response'];
-        const map: Record<string, Partial<Record<string, number>>> = {};
-        (data || []).forEach((row: any) => {
-          const key = format(new Date(row.updated_at), 'yyyy-MM-dd');
-          if (!map[key]) map[key] = {};
-          const st = row.status as string;
-          if (TARGET_STATUSES.includes(st)) {
-            map[key]![st] = ((map[key]![st] as number) || 0) + 1;
-          }
-        });
-        setStatusWeekData(map);
-      } catch (e) {
-        console.error('Failed to compute status metrics', e);
-      }
-    })();
-  }, [selectedCategory, user, jobWeekDates]);
+    const channel = supabase
+      .channel('job-app-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_application_activities' }, (payload) => {
+        const row: any = (payload as any).new || (payload as any).old;
+        if (!row || row.user_id !== user.id) return;
+        refreshApplicationMetrics();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_tracker' }, (payload) => {
+        const row: any = (payload as any).new || (payload as any).old;
+        if (!row || row.user_id !== user.id) return;
+        refreshApplicationMetrics();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedCategory, user, refreshApplicationMetrics]);
 
   const getDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
 
