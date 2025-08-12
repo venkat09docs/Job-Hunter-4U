@@ -784,29 +784,6 @@ export default function CareerGrowth() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Daily Job Application Progress</CardTitle>
-                <CardDescription>Your recent application activity</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {dailyMetrics.map((day, index) => (
-                    <div key={day.date} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{day.date}</p>
-                         <p className="text-sm text-muted-foreground">
-                           {day.jobApplications} applications
-                         </p>
-                      </div>
-                      <Badge variant={index === 0 ? "default" : "secondary"}>
-                        {index === 0 ? "Today" : `${index} day${index > 1 ? 's' : ''} ago`}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
 
             <ApplicationMetricsCard />
           </TabsContent>
