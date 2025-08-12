@@ -53,6 +53,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp },
+  { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3 },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
   { title: "Super AI", url: "/dashboard/super-ai", icon: Bot },
   { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase },

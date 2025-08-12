@@ -535,58 +535,6 @@ const Dashboard = () => {
                       </p>
                     </div>
 
-                    {/* Blog Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/blog')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">{publishedBlogsCount}</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">No of Blog Posts</h4>
-                      <p className="text-sm text-muted-foreground text-center">Articles published</p>
-                    </div>
-
-
-
-                    {/* Enhancements Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => {
-                        console.log('Overall Progress clicked - navigating to /dashboard/career-growth');
-                        navigate('/dashboard/career-growth');
-                      }}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{getOverallCareerScore()}%</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">Overall Progress</h4>
-                      <p className="text-sm text-muted-foreground text-center">Career development score</p>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
