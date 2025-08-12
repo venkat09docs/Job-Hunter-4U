@@ -115,16 +115,19 @@ export const useDailyNetworkActivities = () => {
             case 'profile_optimization':
               groupedByDate[date].profile_optimization! += metric.value;
               break;
-            case 'research':
+            case 'content':
               groupedByDate[date].research! += metric.value;
               break;
-            case 'follow_up_messages':
+            case 'industry_research':
+              groupedByDate[date].research! += metric.value;
+              break;
+            case 'follow_up':
               groupedByDate[date].follow_up_messages! += metric.value;
               break;
-            case 'engage_in_groups':
+            case 'industry_groups':
               groupedByDate[date].engage_in_groups! += metric.value;
               break;
-            case 'work_on_article':
+            case 'article_draft':
               groupedByDate[date].work_on_article! += metric.value;
               break;
           }
