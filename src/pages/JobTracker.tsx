@@ -22,6 +22,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from 'react-router-dom';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
+import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 
 interface JobEntry {
   id: string;
@@ -52,6 +53,8 @@ const JobTracker = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobEntry | null>(null);
+
+  const { incrementActivity } = useJobApplicationActivities();
 
   const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
   const statusColors = {
@@ -138,6 +141,19 @@ const JobTracker = () => {
       if (error) throw error;
       setJobs(prev => [data, ...prev]);
       setIsAddDialogOpen(false);
+
+      // Auto-track metrics for Career Growth Activities
+      try {
+        if (data.status === 'wishlist') {
+          await incrementActivity('save_potential_opportunities');
+        }
+        if (data.status === 'applying' || data.status === 'applied') {
+          await incrementActivity('apply_quality_jobs');
+        }
+      } catch (e) {
+        console.error('Failed to increment daily job application metrics', e);
+      }
+
       toast.success('Job added successfully!');
     } catch (error: any) {
       toast.error('Failed to add job: ' + error.message);
@@ -195,6 +211,8 @@ const JobTracker = () => {
 
   const handleStatusChange = async (jobId: string, newStatus: string) => {
     try {
+      const prevStatus = jobs.find(j => j.id === jobId)?.status;
+
       const { data, error } = await supabase
         .from('job_tracker')
         .update({ status: newStatus })
@@ -204,12 +222,26 @@ const JobTracker = () => {
 
       if (error) throw error;
       setJobs(prev => prev.map(job => job.id === jobId ? data : job));
+
+      // Auto-track transitions into key stages for daily metrics
+      try {
+        if (newStatus === 'wishlist' && prevStatus !== 'wishlist') {
+          await incrementActivity('save_potential_opportunities');
+        }
+        const isApplyNew = (newStatus === 'applying' || newStatus === 'applied');
+        const wasApply = (prevStatus === 'applying' || prevStatus === 'applied');
+        if (isApplyNew && !wasApply) {
+          await incrementActivity('apply_quality_jobs');
+        }
+      } catch (e) {
+        console.error('Failed to increment daily job application metrics', e);
+      }
+
       toast.success('Status updated successfully!');
     } catch (error: any) {
       toast.error('Failed to update status: ' + error.message);
     }
   };
-
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     

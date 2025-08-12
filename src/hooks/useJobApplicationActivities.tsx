@@ -90,5 +90,44 @@ export function useJobApplicationActivities() {
     [user]
   );
 
-  return { fetchWeek, upsertActivity, getWeekDatesMonToFri };
+  // Increment helper used by Job Tracker to auto-track daily metrics
+  const incrementActivity = useCallback(
+    async (task_id: JobApplicationTaskId, delta: number = 1, date: Date = new Date()) => {
+      if (!user) throw new Error("No authenticated user");
+      const activity_date = format(date, "yyyy-MM-dd");
+
+      const { data: existing, error: selectError } = await supabase
+        .from("job_application_activities")
+        .select("id, value")
+        .eq("user_id", user.id)
+        .eq("activity_date", activity_date)
+        .eq("task_id", task_id)
+        .maybeSingle();
+
+      if (selectError) throw selectError;
+
+      if (existing?.id) {
+        const newValue = (existing.value || 0) + delta;
+        const { error: updateError } = await supabase
+          .from("job_application_activities")
+          .update({ value: newValue })
+          .eq("id", existing.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from("job_application_activities")
+          .insert({
+            user_id: user.id,
+            activity_date,
+            task_id,
+            value: delta,
+            notes: null,
+          });
+        if (insertError) throw insertError;
+      }
+    },
+    [user]
+  );
+
+  return { fetchWeek, upsertActivity, incrementActivity, getWeekDatesMonToFri };
 }
