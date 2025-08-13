@@ -14,66 +14,21 @@ const Hero = () => {
           <div className="hook-copy">
             <div className="kicker">🚀 Join 1000+ Who Got Hired</div>
             <h1 className="h1">
-              Stop Getting{" "}
-              <span className="line-through opacity-60" style={{ color: 'var(--danger)' }}>
-                Rejected
-              </span>{" "}
-              Start Getting{" "}
-              <span style={{ color: 'var(--brand)' }}>
-                Hired
-              </span>
+              Optimize your resume<br />
+              to get more interviews
             </h1>
             <p className="lead">
-              <strong>Tired of endless applications with no responses?</strong> Join the Platform where job seekers landed their dream jobs 3x faster using our AI-powered career platform. <span style={{ color: 'var(--brand)', fontWeight: '600' }}>Average salary increase: 40%</span>
+              Our platform helps you optimize your resume for any job, highlighting the key experience and skills recruiters need to see.
             </p>
-            
-            {/* Urgency alert */}
-            <div className="card mt16 p20" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03))', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
-              <p style={{ color: 'var(--danger)', fontWeight: '500', fontSize: '14px', margin: '0' }}>
-                ⚠️ Your competition is already using AI. Don't get left behind.
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div className="hook-trust">
-              <div className="row">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Users className="w-4 h-4" style={{ color: 'var(--success)' }} />
-                  <span>1000+ Got Hired</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Target className="w-4 h-4" style={{ color: 'var(--success)' }} />
-                  <span>95% Success Rate</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Search className="w-4 h-4" style={{ color: 'var(--success)' }} />
-                  <span>3x Faster Hiring</span>
-                </div>
-              </div>
-              
-              <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', border: '1px solid rgba(245, 158, 11, 0.15)' }}>
-                <p style={{ color: 'var(--warning)', fontWeight: '500', fontSize: '14px', margin: '0' }}>
-                  🕒 Limited Time: Get access for just ₹499/week (Regular price: ₹1,999)
-                </p>
-              </div>
-            </div>
 
             {/* CTA */}
-            <div className="hook-ctas">
+            <div className="hook-ctas" style={{ marginTop: '32px' }}>
               <button 
                 className="button"
                 onClick={() => navigate('/auth')}
               >
-                Build Profile - for Free
-                <ArrowRight className="w-4 h-4" />
+                Scan your resume
               </button>
-            </div>
-            
-            <div className="hook-trust">
-              <span>⭐⭐⭐⭐⭐</span>
-              <span>4.6/5 and 13 Years of Trust</span>
-              <span>•</span>
-              <span style={{ color: 'var(--success)' }}>No credit card required</span>
             </div>
           </div>
 
