@@ -1154,6 +1154,42 @@ export type Database = {
         }
         Relationships: []
       }
+      role_audit_log: {
+        Row: {
+          action: string
+          id: string
+          ip_address: unknown | null
+          new_role: Database["public"]["Enums"]["app_role"]
+          old_role: Database["public"]["Enums"]["app_role"] | null
+          target_user_id: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          id?: string
+          ip_address?: unknown | null
+          new_role: Database["public"]["Enums"]["app_role"]
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          id?: string
+          ip_address?: unknown | null
+          new_role?: Database["public"]["Enums"]["app_role"]
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          target_user_id?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_cover_letters: {
         Row: {
           content: string
@@ -1565,6 +1601,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          action_type?: string
+        }
+        Returns: boolean
+      }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
         Returns: {
