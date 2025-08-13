@@ -410,9 +410,6 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
     ? activities 
     : activities.filter(activity => activity.category === selectedCategory);
 
-  const completedCount = activities.filter(a => a.status === 'completed').length;
-  const inProgressCount = activities.filter(a => a.status === 'in-progress').length;
-  const pendingCount = activities.filter(a => a.status === 'pending').length;
   
   const weekDates = generateWeekDates();
 
@@ -439,56 +436,6 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Activities</p>
-                  <p className="text-2xl font-bold">{activities.length}</p>
-                </div>
-                <Target className="h-8 w-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{completedCount}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">In Progress</p>
-                  <p className="text-2xl font-bold text-blue-600">{inProgressCount}</p>
-                </div>
-                <Clock className="h-8 w-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-gray-600">{pendingCount}</p>
-                </div>
-                <Clock className="h-8 w-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Main Tabs - Promoted from sub tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
