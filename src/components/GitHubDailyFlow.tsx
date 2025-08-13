@@ -40,6 +40,9 @@ export default function GitHubDailyFlow() {
   const [tasksState, setTasksState] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [weeklyCompleted, setWeeklyCompleted] = useState<number>(0);
+  const [completedToday, setCompletedToday] = useState<boolean>(false);
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [weeklySessions, setWeeklySessions] = useState<{ id: string; session_date: string; completed_at: string | null }[]>([]);
 
   const allComplete = useMemo(
     () => DAILY_FLOW_TASKS.every((t) => tasksState[t.id]),
@@ -68,10 +71,9 @@ export default function GitHubDailyFlow() {
     const today = getTodayISODate();
     const { data, error } = await supabase
       .from('github_daily_flow_sessions')
-      .select('id, tasks')
+      .select('id, tasks, completed, completed_at')
       .eq('user_id', user.id)
       .eq('session_date', today)
-      .eq('completed', false)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -87,6 +89,8 @@ export default function GitHubDailyFlow() {
       if (tasksObj && typeof tasksObj === 'object') {
         setTasksState((prev) => ({ ...prev, ...tasksObj }));
       }
+      setCompletedToday((data as any).completed === true);
+      setCompletedAt((data as any).completed_at ?? null);
     }
   };
 
@@ -97,18 +101,20 @@ export default function GitHubDailyFlow() {
 
     const { data, error } = await supabase
       .from('github_daily_flow_sessions')
-      .select('id')
+      .select('id, session_date, completed_at')
       .eq('user_id', user.id)
       .eq('completed', true)
       .gte('session_date', format(weekStart, 'yyyy-MM-dd'))
-      .lte('session_date', format(weekEnd, 'yyyy-MM-dd'));
+      .lte('session_date', format(weekEnd, 'yyyy-MM-dd'))
+      .order('session_date', { ascending: true });
 
     if (error) {
-      console.error('Error loading weekly count:', error);
+      console.error('Error loading weekly sessions:', error);
       return;
     }
 
     setWeeklyCompleted(data?.length || 0);
+    setWeeklySessions(data || []);
   };
 
   const ensureSession = async (): Promise<string | null> => {
@@ -117,6 +123,34 @@ export default function GitHubDailyFlow() {
       toast.error('Please sign in to track your flow.');
       return null;
     }
+
+    // Check if a session already exists for today (completed or not)
+    const today = getTodayISODate();
+    const { data: existing, error: existingErr } = await supabase
+      .from('github_daily_flow_sessions')
+      .select('id, tasks, completed, completed_at')
+      .eq('user_id', user.id)
+      .eq('session_date', today)
+      .maybeSingle();
+
+    if (existingErr && existingErr.code !== 'PGRST116') {
+      console.error('Error checking existing session:', existingErr);
+    }
+
+    if (existing) {
+      setSessionId(existing.id);
+      const tasksObj = (existing as any).tasks as Record<string, boolean> | null;
+      if (tasksObj && typeof tasksObj === 'object') {
+        setTasksState((prev) => ({ ...prev, ...tasksObj }));
+      }
+      if ((existing as any).completed) {
+        setCompletedToday(true);
+        setCompletedAt((existing as any).completed_at ?? null);
+        toast.info("You've already completed today's session.");
+      }
+      return existing.id;
+    }
+
     setLoading(true);
     const initialTasks = DAILY_FLOW_TASKS.reduce((acc, t) => {
       acc[t.id] = false;
@@ -127,7 +161,7 @@ export default function GitHubDailyFlow() {
       .from('github_daily_flow_sessions')
       .insert({
         user_id: user.id,
-        session_date: getTodayISODate(),
+        session_date: today,
         tasks: initialTasks,
         completed: false,
       })
@@ -147,6 +181,10 @@ export default function GitHubDailyFlow() {
   };
 
   const handleToggle = async (taskId: string, checked: boolean) => {
+    if (completedToday) {
+      toast.info("Today's session is already completed.");
+      return;
+    }
     const sid = await ensureSession();
     if (!sid) return;
 
@@ -171,12 +209,18 @@ export default function GitHubDailyFlow() {
     }
 
     if (nowCompleted) {
+      setCompletedToday(true);
+      setCompletedAt(new Date().toISOString());
       toast.success('Great job! Daily flow session completed.');
       refreshWeeklyCount();
     }
   };
 
   const handleStartNewSession = async () => {
+    if (completedToday) {
+      toast.info("You've already completed today's session.");
+      return;
+    }
     const sid = await ensureSession();
     if (sid) toast.info('Session started. You can now check off tasks.');
   };
@@ -206,8 +250,13 @@ export default function GitHubDailyFlow() {
           </div>
           <Progress value={completionPct} className="h-2" />
         </div>
+        {completedToday && (
+          <div className="text-sm text-muted-foreground">
+            Completed today{completedAt ? ` at ${format(new Date(completedAt), 'p')}` : ''}. Come back tomorrow!
+          </div>
+        )}
 
-        {!sessionId && (
+        {!sessionId && !completedToday && (
           <Button onClick={handleStartNewSession} disabled={loading} variant="outline">
             {loading ? 'Starting…' : 'Start New Session'}
           </Button>
@@ -221,6 +270,7 @@ export default function GitHubDailyFlow() {
                 checked={!!tasksState[task.id]}
                 onCheckedChange={(v) => handleToggle(task.id, Boolean(v))}
                 className="mt-1"
+                disabled={completedToday}
               />
               <div className="flex-1 space-y-1">
                 <label
@@ -233,6 +283,22 @@ export default function GitHubDailyFlow() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">This Week's Completions</h4>
+          {weeklySessions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No sessions completed yet this week.</p>
+          ) : (
+            <ul className="text-sm text-muted-foreground">
+              {weeklySessions.map((s) => (
+                <li key={s.id} className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                  <span>{format(new Date(s.session_date), 'EEE, MMM d')}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </CardContent>
     </Card>
