@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,8 @@ const GitHubOptimization = () => {
   const { profile } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'setup' ? 'setup' : 'generate';
   const { updateTaskStatus, tasks } = useGitHubProgress();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
@@ -328,7 +330,7 @@ ${interests}
       </header>
 
       <main className="flex-1 overflow-auto">
-        <Tabs defaultValue="generate" className="h-full">
+        <Tabs defaultValue={initialTab} className="h-full">
           <div className="px-6 pt-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="generate">Generate Readme File</TabsTrigger>
