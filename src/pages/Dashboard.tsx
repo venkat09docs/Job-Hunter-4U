@@ -439,6 +439,11 @@ const Dashboard = () => {
               </p>
             </div>
 
+            {/* Leader Board */}
+            <div className="mb-8">
+              <LeaderBoard />
+            </div>
+
             {/* Overall Career Development Score */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
@@ -944,10 +949,6 @@ const Dashboard = () => {
               </Card>
             </div>
 
-            {/* Leader Board */}
-            <div className="mb-8">
-              <LeaderBoard />
-            </div>
 
             {/* Recent Applications */}
             <Card className="shadow-elegant">
