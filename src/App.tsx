@@ -214,7 +214,7 @@ const App = () => (
             <Route 
               path="/dashboard/career-growth" 
               element={
-                <PremiumProtectedRoute featureKey="page_career_growth">
+                <PremiumProtectedRoute featureKey="career_growth_report">
                   <CareerGrowth />
                 </PremiumProtectedRoute>
               } 
@@ -246,7 +246,7 @@ const App = () => (
             <Route 
               path="/dashboard/super-ai" 
               element={
-                <PremiumProtectedRoute featureKey="page_super_ai">
+                <PremiumProtectedRoute featureKey="super_ai">
                   <SuperAI />
                 </PremiumProtectedRoute>
               } 
@@ -254,7 +254,7 @@ const App = () => (
             <Route 
               path="/dashboard/digital-portfolio" 
               element={
-                <PremiumProtectedRoute featureKey="page_digital_portfolio">
+                <PremiumProtectedRoute featureKey="digital_portfolio">
                   <DigitalPortfolio />
                 </PremiumProtectedRoute>
               } 
