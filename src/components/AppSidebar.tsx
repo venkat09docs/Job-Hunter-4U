@@ -222,49 +222,6 @@ export function AppSidebar() {
           </>
         )}
 
-        {/* Show Public URLs only for regular users, not admins */}
-        {!isAdmin && !isInstituteAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Public URLs</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                     {userSlug ? (
-                       <a 
-                         href={`/profile/${userSlug}`}
-                         target="_blank" 
-                         rel="noopener noreferrer"
-                         className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm"
-                       >
-                         <ExternalLink className="h-5 w-5 flex-shrink-0" />
-                         <span className="font-medium text-sm">Bio Link</span>
-                       </a>
-                     ) : (
-                       <span className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium text-muted-foreground cursor-not-allowed">
-                         <ExternalLink className="h-5 w-5 flex-shrink-0" />
-                         <span className="font-medium text-sm">No Bio Link Yet</span>
-                       </span>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                     <a 
-                       href="/blogs"
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 text-secondary-foreground hover:bg-primary/10 hover:text-primary hover:shadow-sm"
-                     >
-                      <ExternalLink className="h-5 w-5 flex-shrink-0" />
-                      <span className="font-medium text-sm">Blogs</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
     </Sidebar>
   );
