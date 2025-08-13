@@ -925,6 +925,8 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
                       categories={["Repository Management"]}
                       title="GitHub Activity Tracker"
                       subtitle="Improve your repositories and profile quality"
+                      hideHeader
+                      buttonInsideProgress
                     />
                   </TabsContent>
                   <TabsContent value="engagement">

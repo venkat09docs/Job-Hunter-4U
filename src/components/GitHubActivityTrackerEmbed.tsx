@@ -30,7 +30,7 @@ const GITHUB_ACTIVITY_TASKS: GitHubTask[] = [
   { id: 'follow_developers', title: 'Follow other developers', description: 'Build your network by following interesting developers and organizations', category: 'Activity & Engagement', completed: false },
 ];
 
-export default function GitHubActivityTrackerEmbed({ categories, title, subtitle }: { categories?: string[]; title?: string; subtitle?: string }) {
+export default function GitHubActivityTrackerEmbed({ categories, title, subtitle, hideHeader, buttonInsideProgress }: { categories?: string[]; title?: string; subtitle?: string; hideHeader?: boolean; buttonInsideProgress?: boolean }) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { tasks, loading, updateTaskStatus } = useGitHubProgress();
@@ -74,22 +74,35 @@ const groupedTasks = displayedTasks.reduce((acc, task) => {
 }, {} as Record<string, GitHubTask[]>);
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Activity className="h-6 w-6" /> {title || 'GitHub Activity Tracker'}
-          </h2>
-          <p className="text-muted-foreground">{subtitle || 'Track your repository management and engagement activities'}</p>
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <Activity className="h-6 w-6" /> {title || 'GitHub Activity Tracker'}
+            </h2>
+            <p className="text-muted-foreground">{subtitle || 'Track your repository management and engagement activities'}</p>
+          </div>
+          {!buttonInsideProgress && (
+            <Button onClick={handleGoToGitHub} variant="outline">
+              <ExternalLink className="h-4 w-4 mr-2" /> View My GitHub
+            </Button>
+          )}
         </div>
-        <Button onClick={handleGoToGitHub} variant="outline">
-          <ExternalLink className="h-4 w-4 mr-2" /> View My GitHub
-        </Button>
-      </div>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>{title || 'Your GitHub Activity Progress'}</CardTitle>
-          <CardDescription>{subtitle || 'Track your repository management and engagement activities'}</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{title || 'Your GitHub Activity Progress'}</CardTitle>
+              <CardDescription>{subtitle || 'Track your repository management and engagement activities'}</CardDescription>
+            </div>
+            {buttonInsideProgress && (
+              <Button onClick={handleGoToGitHub} variant="outline">
+                <ExternalLink className="h-4 w-4 mr-2" /> View My GitHub
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
