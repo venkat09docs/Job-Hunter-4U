@@ -152,6 +152,7 @@ const [inputValues, setInputValues] = useState<InputValues>({});
 const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
 const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Record<string, number>>>>({});
 const jobWeekDates = getWeekDatesMonToFri(new Date());
+const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
 
 
   // LinkedIn Network data loading
@@ -490,11 +491,10 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
 
         {/* Main Tabs - Promoted from sub tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-<TabsList className="grid w-full grid-cols-6">
+<TabsList className="grid w-full grid-cols-5">
   <TabsTrigger value="application">Job Applications</TabsTrigger>
   <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
-  <TabsTrigger value="skill">GitHub Activity Tracker</TabsTrigger>
-  <TabsTrigger value="github-engagement">Activity & Engagement</TabsTrigger>
+  <TabsTrigger value="skill">GitHub Activities</TabsTrigger>
   <TabsTrigger value="content">Content Mgmt</TabsTrigger>
   <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
 </TabsList>
@@ -915,21 +915,26 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
               </div>
 ) : selectedCategory === 'skill' ? (
               <div className="space-y-6">
-                {/* Embedded GitHub Activity Tracker - Repository Management only */}
-                <GitHubActivityTrackerEmbed 
-                  categories={["Repository Management"]}
-                  title="GitHub Activity Tracker"
-                  subtitle="Improve your repositories and profile quality"
-                />
-              </div>
-            ) : selectedCategory === 'github-engagement' ? (
-              <div className="space-y-6">
-                {/* GitHub Activity & Engagement */}
-                <GitHubActivityTrackerEmbed 
-                  categories={["Activity & Engagement"]}
-                  title="Activity & Engagement"
-                  subtitle="Grow your GitHub presence through consistent activity and community engagement"
-                />
+                <Tabs value={gitTab} onValueChange={(v) => setGitTab(v as 'repo' | 'engagement')} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="repo">GitHub Activity Tracker</TabsTrigger>
+                    <TabsTrigger value="engagement">Activity & Engagement</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="repo">
+                    <GitHubActivityTrackerEmbed
+                      categories={["Repository Management"]}
+                      title="GitHub Activity Tracker"
+                      subtitle="Improve your repositories and profile quality"
+                    />
+                  </TabsContent>
+                  <TabsContent value="engagement">
+                    <GitHubActivityTrackerEmbed
+                      categories={["Activity & Engagement"]}
+                      title="Activity & Engagement"
+                      subtitle="Grow your GitHub presence through consistent activity and community engagement"
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               // Regular Activities List
