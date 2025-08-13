@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import ActivityFeaturesShowcase from "@/components/ActivityFeaturesShowcase";
@@ -23,12 +24,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <Hero />
-      <Features />
+      <Navigation />
+      <div id="hero">
+        <Hero />
+      </div>
+      <div id="features">
+        <Features />
+      </div>
       <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
-      <AIToolsSection />
-      <Pricing />
+      <div id="ai-tools">
+        <AIToolsSection />
+      </div>
+      <div id="pricing">
+        <Pricing />
+      </div>
       <BuildProfileCTA />
       <Footer />
     </div>
