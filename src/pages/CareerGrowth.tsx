@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ArrowRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
@@ -689,7 +689,7 @@ export default function CareerGrowth() {
                           {`${format(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 'MMM d')} – ${format(addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 6), 'MMM d')}`}
                         </Badge>
                         <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => Math.min(0, v + 1))} disabled={networkWeekOffset === 0}>
-                          Next <ArrowRight className="h-4 w-4 ml-1" />
+                          Next <ChevronRight className="h-4 w-4 ml-1" />
                         </Button>
                       </div>
                     </div>
