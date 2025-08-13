@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +10,19 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
+  const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
+
+  // Get current user's points from current week leaderboard
+  const userPoints = leaderboard.current_week.find(entry => entry.user_id === user?.id)?.total_points || 0;
 
   const handleSignOut = async () => {
     await signOut();
@@ -46,6 +52,10 @@ export function UserProfileDropdown() {
           <span className="hidden md:inline text-sm">
             {profile?.username || user?.email?.split('@')[0] || 'User'}
           </span>
+          <Badge variant="secondary" className="ml-2 gap-1">
+            <Trophy className="h-3 w-3" />
+            {userPoints}
+          </Badge>
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

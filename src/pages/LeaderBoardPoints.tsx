@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Trophy, TrendingUp, Github, Briefcase } from 'lucide-react';
+import { Trophy, TrendingUp, Github, Briefcase, ArrowLeft } from 'lucide-react';
 import { useActivityPointSettings, ActivityPointSetting } from '@/hooks/useActivityPointSettings';
 import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
@@ -154,6 +155,14 @@ const LeaderBoardPoints = () => {
             </div>
           </header>
           <main className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-4 mb-6">
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold tracking-tight">Activity Points Configuration</h2>
               <p className="text-muted-foreground">
