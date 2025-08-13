@@ -1156,19 +1156,13 @@ export default function CareerGrowth() {
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      {(() => {
-                        const totalNetworkActivities = Object.values(networkWeeklyMetrics).reduce((sum, count) => sum + count, 0);
-                        return totalNetworkActivities >= 70;
-                      })() ? (
+                      {(networkMetrics?.weeklyProgress || 0) >= 70 ? (
                         <CheckCircle className="h-5 w-5 text-green-500" />
                       ) : (
                         <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
                       )}
-                      <span className={(() => {
-                        const totalNetworkActivities = Object.values(networkWeeklyMetrics).reduce((sum, count) => sum + count, 0);
-                        return totalNetworkActivities >= 70;
-                      })() ? "line-through text-muted-foreground" : ""}>
-                        Maintain active LinkedIn networking (70+ activities)
+                      <span className={(networkMetrics?.weeklyProgress || 0) >= 70 ? "line-through text-muted-foreground" : ""}>
+                        Maintain active LinkedIn networking (70+ weekly activities)
                       </span>
                     </div>
                   </div>
