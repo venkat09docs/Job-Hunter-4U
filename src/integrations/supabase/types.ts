@@ -199,13 +199,6 @@ export type Database = {
             foreignKeyName: "batches_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
-            referencedRelation: "institute_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batches_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
@@ -417,13 +410,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institute_directory"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "institute_admin_assignments_institute_id_fkey"
             columns: ["institute_id"]
@@ -1410,13 +1396,6 @@ export type Database = {
             foreignKeyName: "user_assignments_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
-            referencedRelation: "institute_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
@@ -1481,68 +1460,19 @@ export type Database = {
       }
     }
     Views: {
-      institute_directory: {
-        Row: {
-          code: string | null
-          description: string | null
-          id: string | null
-          is_active: boolean | null
-          name: string | null
-        }
-        Insert: {
-          code?: string | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          name?: string | null
-        }
-        Update: {
-          code?: string | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          name?: string | null
-        }
-        Relationships: []
-      }
-      safe_public_profiles: {
-        Row: {
-          bio: string | null
-          blog_url: string | null
-          created_at: string | null
-          custom_links: Json | null
-          full_name: string | null
-          github_url: string | null
-          linkedin_url: string | null
-          profile_image_url: string | null
-          slug: string | null
-        }
-        Insert: {
-          bio?: string | null
-          blog_url?: string | null
-          created_at?: string | null
-          custom_links?: Json | null
-          full_name?: string | null
-          github_url?: string | null
-          linkedin_url?: string | null
-          profile_image_url?: string | null
-          slug?: string | null
-        }
-        Update: {
-          bio?: string | null
-          blog_url?: string | null
-          created_at?: string | null
-          custom_links?: Json | null
-          full_name?: string | null
-          github_url?: string | null
-          linkedin_url?: string | null
-          profile_image_url?: string | null
-          slug?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_institute_directory: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          description: string
+          code: string
+          is_active: boolean
+        }[]
+      }
       get_managed_institutes: {
         Args: { user_id_param: string }
         Returns: {
@@ -1553,6 +1483,20 @@ export type Database = {
       }
       get_safe_public_profile: {
         Args: { profile_slug: string }
+        Returns: {
+          slug: string
+          full_name: string
+          bio: string
+          profile_image_url: string
+          github_url: string
+          linkedin_url: string
+          blog_url: string
+          custom_links: Json
+          created_at: string
+        }[]
+      }
+      get_safe_public_profiles: {
+        Args: Record<PropertyKey, never>
         Returns: {
           slug: string
           full_name: string
