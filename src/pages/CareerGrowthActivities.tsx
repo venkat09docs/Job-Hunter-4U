@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
+import GitHubDailyFlow from '@/components/GitHubDailyFlow';
 import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -930,11 +931,7 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
                     />
                   </TabsContent>
                   <TabsContent value="engagement">
-                    <GitHubActivityTrackerEmbed
-                      categories={["Activity & Engagement"]}
-                      title="Activity & Engagement"
-                      subtitle="Grow your GitHub presence through consistent activity and community engagement"
-                    />
+                    <GitHubDailyFlow />
                   </TabsContent>
                 </Tabs>
               </div>
