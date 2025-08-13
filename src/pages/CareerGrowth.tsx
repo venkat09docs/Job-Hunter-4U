@@ -691,8 +691,8 @@ export default function CareerGrowth() {
                         {DAILY_ACTIVITIES.map((activity) => {
                           const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
                           const target = activity.weeklyTarget;
-                          const colorClass = (networkWeekOffset === 0)
-                            ? 'border-amber-500'
+                          const colorClass = networkWeekOffset === 0
+                            ? (weeklyCount >= target ? 'border-green-500' : 'border-amber-500')
                             : (weeklyCount >= target ? 'border-green-500' : 'border-red-500');
                           return (
                             <div key={activity.id} className="flex flex-col items-center min-w-[88px]">
