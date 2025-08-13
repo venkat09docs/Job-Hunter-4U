@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, ChevronRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download, Github } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
@@ -127,11 +127,22 @@ export default function CareerGrowth() {
     refreshWeeklyFlow();
   }, [user]);
 
+  // Calculate GitHub metrics using useMemo to prevent undefined errors
   const WEEKLY_TARGET = 3;
-  const repoCompleted = repoMetrics.completed;
-  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
-  const flowCompleted = weeklyFlowCompleted;
-  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
+  
+  const { repoCompleted, repoPending, flowCompleted, flowRemaining } = useMemo(() => {
+    const completed = repoMetrics.completed;
+    const pending = Math.max(0, repoMetrics.total - completed);
+    const flow = weeklyFlowCompleted;
+    const remaining = Math.max(0, WEEKLY_TARGET - flow);
+    
+    return {
+      repoCompleted: completed,
+      repoPending: pending,
+      flowCompleted: flow,
+      flowRemaining: remaining
+    };
+  }, [repoMetrics, weeklyFlowCompleted]);
 
   useEffect(() => {
     if (user) {
