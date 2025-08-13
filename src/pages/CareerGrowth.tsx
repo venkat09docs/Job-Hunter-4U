@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +21,7 @@ import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
-import { format, startOfWeek, subWeeks, addDays } from 'date-fns';
+import { format, startOfWeek, subWeeks, addDays, addWeeks } from 'date-fns';
 import { Button as PaginationButton } from '@/components/ui/button';
 
 interface WeeklyMetrics {
@@ -61,6 +61,7 @@ export default function CareerGrowth() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
+  const [networkWeekOffset, setNetworkWeekOffset] = useState(0);
 
   // Daily activities structure
   const DAILY_ACTIVITIES = [
@@ -93,15 +94,16 @@ export default function CareerGrowth() {
       fetchNetworkData();
       fetchWeeklyDailyBreakdown();
     }
-  }, [user]);
+  }, [user, networkWeekOffset]);
 
   // Fetch weekly daily breakdown data
   const fetchWeeklyDailyBreakdown = async () => {
     if (!user) return;
     
     try {
-      const startDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-      const endDate = format(addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 6), 'yyyy-MM-dd');
+      const baseStart = startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 });
+      const startDate = format(baseStart, 'yyyy-MM-dd');
+      const endDate = format(addDays(baseStart, 6), 'yyyy-MM-dd');
       
       const { data, error } = await supabase
         .from('linkedin_network_metrics')
@@ -503,8 +505,49 @@ export default function CareerGrowth() {
               <TabsContent value="daily" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Daily Network Activities Report</CardTitle>
-                    <CardDescription>View your daily LinkedIn networking activities with latest records at top</CardDescription>
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <CardTitle>Daily Network Activities Report</CardTitle>
+                        <CardDescription>View your daily LinkedIn networking activities with latest records at top</CardDescription>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const selectedActivities = dailyNetworkActivities.filter((_, index) => 
+                            selectedRecords.has(index.toString())
+                          );
+                          if (selectedActivities.length === 0) {
+                            alert('Please select at least one record to download');
+                            return;
+                          }
+                          const excelData = selectedActivities.map(activity => ({
+                            'Date': activity.date,
+                            'Like Posts': activity.post_likes,
+                            'Comments': activity.comments,
+                            'Content': activity.content,
+                            'Connections': activity.connection_requests,
+                            'Posts': activity.create_post,
+                            'Profile Optimization': activity.profile_optimization,
+                            'Research': activity.research,
+                            'Follow Up Messages': activity.follow_up_messages,
+                            'Engage in Groups': activity.engage_in_groups,
+                            'Work on Article': activity.work_on_article,
+                            'Total Activities': activity.total_activities,
+                          }));
+                          const worksheet = XLSX.utils.json_to_sheet(excelData);
+                          const workbook = XLSX.utils.book_new();
+                          XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Activities');
+                          const fileName = `daily_network_activities_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+                          XLSX.writeFile(workbook, fileName);
+                        }}
+                        disabled={selectedRecords.size === 0}
+                        className="gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download Excel ({selectedRecords.size} selected)
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     {dailyNetworkLoading ? (
@@ -514,34 +557,34 @@ export default function CareerGrowth() {
                     ) : (
                       <div className="space-y-4">
                         <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Date</TableHead>
-                              <TableHead className="text-center">Like Posts</TableHead>
-                              <TableHead className="text-center">Comments</TableHead>
-                              <TableHead className="text-center">Content</TableHead>
-                              <TableHead className="text-center">Connections</TableHead>
-                              <TableHead className="text-center">Posts</TableHead>
-                              <TableHead className="text-center">Profile Optimization</TableHead>
-                             <TableHead className="text-center">Research</TableHead>
-                               <TableHead className="text-center">Follow Up Messages</TableHead>
-                               <TableHead className="text-center">Engage in Groups</TableHead>
-                               <TableHead className="text-center">Work on Article</TableHead>
-                               <TableHead className="text-center">Total Activities</TableHead>
-                               <TableHead className="text-center">
-                                 <Checkbox
-                                   checked={selectedRecords.size === dailyNetworkActivities.length}
-                                   onCheckedChange={(checked) => {
-                                     if (checked) {
-                                       setSelectedRecords(new Set(dailyNetworkActivities.map((_, index) => index.toString())));
-                                     } else {
-                                       setSelectedRecords(new Set());
-                                     }
-                                   }}
-                                 />
-                               </TableHead>
-                            </TableRow>
-                          </TableHeader>
+                            <TableHeader>
+                              <TableRow className="bg-primary/10">
+                                <TableHead>Date</TableHead>
+                                <TableHead className="text-center">Like Posts</TableHead>
+                                <TableHead className="text-center">Comments</TableHead>
+                                <TableHead className="text-center">Content</TableHead>
+                                <TableHead className="text-center">Connections</TableHead>
+                                <TableHead className="text-center">Posts</TableHead>
+                                <TableHead className="text-center">Profile Optimization</TableHead>
+                               <TableHead className="text-center">Research</TableHead>
+                                 <TableHead className="text-center">Follow Up Messages</TableHead>
+                                 <TableHead className="text-center">Engage in Groups</TableHead>
+                                 <TableHead className="text-center">Work on Article</TableHead>
+                                 <TableHead className="text-center">Total Activities</TableHead>
+                                 <TableHead className="text-center">
+                                   <Checkbox
+                                     checked={selectedRecords.size === dailyNetworkActivities.length}
+                                     onCheckedChange={(checked) => {
+                                       if (checked) {
+                                         setSelectedRecords(new Set(dailyNetworkActivities.map((_, index) => index.toString())));
+                                       } else {
+                                         setSelectedRecords(new Set());
+                                       }
+                                     }}
+                                   />
+                                 </TableHead>
+                              </TableRow>
+                            </TableHeader>
                           <TableBody>
                             {dailyNetworkActivities.length > 0 ? (
                               dailyNetworkActivities.map((activity, index) => (
@@ -584,50 +627,6 @@ export default function CareerGrowth() {
                           </TableBody>
                         </Table>
 
-                        {/* Download and Pagination */}
-                        <div className="flex items-center justify-between">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const selectedActivities = dailyNetworkActivities.filter((_, index) => 
-                                selectedRecords.has(index.toString())
-                              );
-                              
-                              if (selectedActivities.length === 0) {
-                                alert('Please select at least one record to download');
-                                return;
-                              }
-
-                              const excelData = selectedActivities.map(activity => ({
-                                'Date': activity.date,
-                                'Like Posts': activity.post_likes,
-                                'Comments': activity.comments,
-                                'Content': activity.content,
-                                'Connections': activity.connection_requests,
-                                'Posts': activity.create_post,
-                                'Profile Optimization': activity.profile_optimization,
-                                'Research': activity.research,
-                                'Follow Up Messages': activity.follow_up_messages,
-                                'Engage in Groups': activity.engage_in_groups,
-                                'Work on Article': activity.work_on_article,
-                                'Total Activities': activity.total_activities,
-                              }));
-
-                              const worksheet = XLSX.utils.json_to_sheet(excelData);
-                              const workbook = XLSX.utils.book_new();
-                              XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Activities');
-                              
-                              const fileName = `daily_network_activities_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-                              XLSX.writeFile(workbook, fileName);
-                            }}
-                            disabled={selectedRecords.size === 0}
-                            className="gap-2"
-                          >
-                            <Download className="h-4 w-4" />
-                            Download Excel ({selectedRecords.size} selected)
-                          </Button>
-                        </div>
 
                         {totalCount > 0 && (
                           <div className="flex items-center justify-between">
@@ -677,55 +676,58 @@ export default function CareerGrowth() {
               <TabsContent value="weekly" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Weekly Network Activities (Monday to Sunday)</CardTitle>
-                    <CardDescription>Aggregated activities for the current week</CardDescription>
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <CardTitle>Weekly Network Activities (Monday to Sunday)</CardTitle>
+                        <CardDescription>Aggregated activities for the selected week</CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => v - 1)}>
+                          <ArrowLeft className="h-4 w-4 mr-1" /> Previous
+                        </Button>
+                        <Badge variant="secondary">
+                          {`${format(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 'MMM d')} – ${format(addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 6), 'MMM d')}`}
+                        </Badge>
+                        <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => Math.min(0, v + 1))} disabled={networkWeekOffset === 0}>
+                          Next <ArrowRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <div className="flex items-center gap-4 overflow-x-auto pb-2">
                         {DAILY_ACTIVITIES.map((activity) => {
                           const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
-                          const progress = (weeklyCount / activity.weeklyTarget) * 100;
                           const isCompleted = weeklyCount >= activity.weeklyTarget;
-                          
                           return (
-                            <Card key={activity.id} className="p-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="font-medium text-sm">{activity.title}</h4>
-                                  {isCompleted && <CheckCircle className="h-4 w-4 text-green-500" />}
-                                </div>
-                                <div className="space-y-2">
-                                  <div className="text-2xl font-bold">{weeklyCount}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    Target: {activity.weeklyTarget} {activity.unit}
-                                  </div>
-                                  <Progress value={Math.min(progress, 100)} className="h-2" />
-                                  <div className="text-xs text-muted-foreground">
-                                    {Math.round(progress)}% complete
-                                  </div>
-                                </div>
+                            <div key={activity.id} className="flex flex-col items-center min-w-[88px]">
+                              <div className={`relative h-20 w-20 rounded-full border-2 flex items-center justify-center ${isCompleted ? 'border-primary' : 'border-muted-foreground/30'} bg-primary/10`}>
+                                <span className="text-xl font-bold">{weeklyCount}</span>
                               </div>
-                            </Card>
+                              <div className="mt-2 text-xs text-center">
+                                {activity.title}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
 
                        <Table>
-                         <TableHeader>
-                           <TableRow>
-                             <TableHead>Day</TableHead>
-                             {DAILY_ACTIVITIES.map((activity) => (
-                               <TableHead key={activity.id} className="text-center">
-                                 {activity.title}
-                               </TableHead>
-                             ))}
-                             <TableHead className="text-center">Total Activities</TableHead>
-                           </TableRow>
-                         </TableHeader>
+                          <TableHeader>
+                            <TableRow className="bg-primary/10">
+                              <TableHead>Day</TableHead>
+                              {DAILY_ACTIVITIES.map((activity) => (
+                                <TableHead key={activity.id} className="text-center">
+                                  {activity.title}
+                                </TableHead>
+                              ))}
+                              <TableHead className="text-center">Total Activities</TableHead>
+                            </TableRow>
+                          </TableHeader>
                          <TableBody>
                            {Array.from({ length: 7 }, (_, index) => {
-                             const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+                             const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), index);
                              const dayName = format(date, 'EEE');
                              const dateKey = format(date, 'yyyy-MM-dd');
                              const dayData = weeklyDailyBreakdown[dateKey] || {};

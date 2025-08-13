@@ -122,9 +122,6 @@ export default function ApplicationMetricsCard() {
             <ArrowLeft className="h-4 w-4 mr-1" /> Previous Week
           </Button>
           <Badge variant="secondary">{weekRangeLabel}</Badge>
-          <Button variant="outline" size="sm" className="hover-scale" onClick={() => setWeekOffset((v) => Math.min(0, v + 1))} disabled={weekOffset === 0}>
-            Next Week <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="animate-fade-in">
