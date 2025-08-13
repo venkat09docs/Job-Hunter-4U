@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Pricing from "@/components/Pricing";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 interface AutomationSettings {
   jobTitle: string;
@@ -34,6 +36,7 @@ interface AutomationStatus {
 const LinkedInAutomation = () => {
   const { user } = useAuth();
   const { profile, hasActiveSubscription, refreshProfile, incrementAnalytics } = useProfile();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { toast } = useToast();
   
   const [settings, setSettings] = useState<AutomationSettings>({
@@ -185,6 +188,42 @@ const LinkedInAutomation = () => {
   };
 
   const isActivateDisabled = !settings.jobTitle.trim() || !settings.frequency || !hasValidSubscription || isActivating;
+
+  // Check premium access
+  if (!canAccessFeature('linkedin_automation')) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="container mx-auto p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">LinkedIn Automation</h1>
+                <p className="text-muted-foreground">
+                  Automate your LinkedIn job search with AI-powered matching
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center min-h-[400px]">
+              <SubscriptionUpgrade featureName="linkedin_automation">
+                <Card className="max-w-md">
+                  <CardHeader>
+                    <CardTitle>Premium Feature</CardTitle>
+                    <CardDescription>
+                      LinkedIn Automation is a premium feature. Upgrade your plan to access automated job search capabilities.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full">Upgrade Now</Button>
+                  </CardContent>
+                </Card>
+              </SubscriptionUpgrade>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>

@@ -14,6 +14,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Download, Github, Eye, FileText, ArrowLeft, ExternalLink, StickyNote, Lightbulb, Save, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
+import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
@@ -41,6 +43,7 @@ interface ProfileData {
 const GitHubOptimization = () => {
   const { profile } = useProfile();
   const { user } = useAuth();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') === 'setup' ? 'setup' : 'generate';
@@ -295,6 +298,51 @@ ${interests}
     }
   };
 
+
+  // Check premium access
+  if (!canAccessFeature('github_optimization')) {
+    return (
+      <div className="flex h-screen w-full flex-col overflow-hidden">
+        <header className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                <Github className="h-8 w-8" />
+                GitHub Profile
+              </h1>
+              <p className="text-muted-foreground">
+                Create a professional README.md for your GitHub profile
+              </p>
+            </div>
+          </div>
+          <UserProfileDropdown />
+        </header>
+        <main className="flex-1 overflow-auto flex items-center justify-center">
+          <SubscriptionUpgrade featureName="github_optimization">
+            <Card className="max-w-md">
+              <CardHeader>
+                <CardTitle>Premium Feature</CardTitle>
+                <CardDescription>
+                  GitHub Optimization is a premium feature. Upgrade your plan to access GitHub profile optimization tools.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full">Upgrade Now</Button>
+              </CardContent>
+            </Card>
+          </SubscriptionUpgrade>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden">

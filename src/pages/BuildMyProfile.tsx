@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
@@ -30,6 +31,7 @@ interface JobEntry {
 const BuildMyProfile = () => {
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
@@ -127,7 +129,7 @@ const BuildMyProfile = () => {
     return acc;
   }, {} as Record<string, typeof profileTasks>);
 
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading || premiumLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -137,6 +139,48 @@ const BuildMyProfile = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Check premium access
+  if (!canAccessFeature('build_my_profile')) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-hero">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <header className="border-b bg-background/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 py-4">
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger />
+                  <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Build My Profile
+                  </h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <SubscriptionStatus />
+                  <UserProfileDropdown />
+                </div>
+              </div>
+            </header>
+            <main className="flex-1 p-8 overflow-auto flex items-center justify-center">
+              <SubscriptionUpgrade featureName="build_my_profile">
+                <Card className="max-w-md">
+                  <CardHeader>
+                    <CardTitle>Premium Feature</CardTitle>
+                    <CardDescription>
+                      Build My Profile is a premium feature. Upgrade your plan to access this functionality.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button className="w-full">Upgrade Now</Button>
+                  </CardContent>
+                </Card>
+              </SubscriptionUpgrade>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 

@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +15,7 @@ import ApplicationMetricsCard from '@/components/ApplicationMetricsCard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
@@ -48,6 +50,7 @@ export default function CareerGrowth() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage, tasks: githubTasks } = useGitHubProgress();
@@ -372,12 +375,54 @@ export default function CareerGrowth() {
     }
   };
 
-  if (loading || dailyLoading) {
+  if (loading || dailyLoading || premiumLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading career growth data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check premium access
+  if (!canAccessFeature('career_growth')) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Go to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Career Growth Report</h1>
+                <p className="text-muted-foreground">Track your professional development progress</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <SubscriptionUpgrade featureName="career_growth">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>Premium Feature</CardTitle>
+                  <CardDescription>
+                    Career Growth is a premium feature. Upgrade your plan to access detailed analytics and tracking.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">Upgrade Now</Button>
+                </CardContent>
+              </Card>
+            </SubscriptionUpgrade>
+          </div>
         </div>
       </div>
     );

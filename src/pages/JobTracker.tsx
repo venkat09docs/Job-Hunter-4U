@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ interface JobEntry {
 const JobTracker = () => {
   const { user } = useAuth();
   const { profile, hasActiveSubscription } = useProfile();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -309,12 +311,54 @@ const JobTracker = () => {
     return statusOptions;
   };
 
-  if (loading) {
+  if (loading || premiumLoading) {
     return (
       <div className="min-h-screen flex w-full bg-gradient-hero">
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
         </div>
+      </div>
+    );
+  }
+
+  // Check premium access
+  if (!canAccessFeature('job_tracker')) {
+    return (
+      <div className="min-h-screen flex flex-col w-full bg-gradient-hero">
+        <header className="border-b bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Link to="/dashboard">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Go to Dashboard
+                </Button>
+              </Link>
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Job Hunter Pro
+              </h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <SubscriptionStatus />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto flex items-center justify-center">
+          <SubscriptionUpgrade featureName="job_tracker">
+            <Card className="max-w-md">
+              <CardHeader>
+                <CardTitle>Premium Feature</CardTitle>
+                <CardDescription>
+                  Job Tracker is a premium feature. Upgrade your plan to access advanced job tracking capabilities.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full">Upgrade Now</Button>
+              </CardContent>
+            </Card>
+          </SubscriptionUpgrade>
+        </main>
       </div>
     );
   }

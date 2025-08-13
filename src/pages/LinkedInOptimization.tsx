@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
+import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useToolChats } from '@/hooks/useToolChats';
 import { Linkedin, CheckCircle, Target, ExternalLink, ArrowLeft, Lightbulb, Plus, Minus, Copy, FileText } from 'lucide-react';
 
@@ -73,6 +74,7 @@ const CATEGORY_TIPS: Record<string, string[]> = {
 const LinkedInOptimization = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [tasks, setTasks] = useState<LinkedInTask[]>([]);
@@ -268,7 +270,7 @@ const LinkedInOptimization = () => {
     return acc;
   }, {} as Record<string, LinkedInTask[]>);
 
-  if (loading) {
+  if (loading || premiumLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -277,6 +279,51 @@ const LinkedInOptimization = () => {
             <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Check premium access
+  if (!canAccessFeature('linkedin_optimization')) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <header className="border-b bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Go to Dashboard
+              </Button>
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                LinkedIn Profile Optimization
+              </h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <SubscriptionStatus />
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 p-8 overflow-auto flex items-center justify-center">
+          <SubscriptionUpgrade featureName="linkedin_optimization">
+            <Card className="max-w-md">
+              <CardHeader>
+                <CardTitle>Premium Feature</CardTitle>
+                <CardDescription>
+                  LinkedIn Optimization is a premium feature. Upgrade your plan to access professional LinkedIn optimization tools.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full">Upgrade Now</Button>
+              </CardContent>
+            </Card>
+          </SubscriptionUpgrade>
+        </main>
       </div>
     );
   }

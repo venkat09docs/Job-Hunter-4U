@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +55,7 @@ interface SearchFilters {
 
 const JobSearch = () => {
   const { user } = useAuth();
+  const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { incrementActivity } = useJobApplicationActivities();
@@ -280,6 +283,51 @@ const JobSearch = () => {
       window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
     }
   };
+
+  // Check premium access
+  if (!canAccessFeature('job_search')) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+          <div className="container mx-auto px-6 py-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+          </div>
+        </header>
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Job Search History</h1>
+              <p className="text-muted-foreground">
+                View and filter all job results from your searches
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <SubscriptionUpgrade featureName="job_search">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>Premium Feature</CardTitle>
+                  <CardDescription>
+                    Job Search is a premium feature. Upgrade your plan to access job search and filtering capabilities.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">Upgrade Now</Button>
+                </CardContent>
+              </Card>
+            </SubscriptionUpgrade>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
