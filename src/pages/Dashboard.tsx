@@ -346,6 +346,19 @@ const Dashboard = () => {
             refreshWeeklyFlow();
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'github_progress',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh GitHub profile setup progress when github_progress updates
+            refreshGitHubProgress();
+          }
+        )
         .subscribe();
 
       return () => {
