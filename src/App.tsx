@@ -10,16 +10,16 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 
 import PublicProfile from "./pages/PublicProfile";
-import BlogDashboard from "./pages/BlogDashboard";
+
 import PublicBlogs from "./pages/PublicBlogs";
 import Settings from "./pages/Settings";
 import TalentScreener from "./pages/TalentScreener";
 import JobSearch from "./pages/JobSearch";
 import JobTracker from "./pages/JobTracker";
-import LinkedInAutomation from "./pages/LinkedInAutomation";
+
 import ManageCareerHub from "./pages/ManageCareerHub";
 import ManageSubscriptions from "./pages/ManageSubscriptions";
-import DigitalCareerHub from "./pages/DigitalCareerHub";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import ResumeBuilder from "./pages/ResumeBuilder";
@@ -71,14 +71,6 @@ const App = () => (
               } 
             />
             <Route 
-              path="/dashboard/blog" 
-              element={
-                <ProtectedRoute>
-                  <BlogDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
               path="/dashboard/settings" 
               element={
                 <ProtectedRoute>
@@ -111,14 +103,6 @@ const App = () => (
               } 
             />
             <Route 
-              path="/dashboard/linkedin-automation" 
-              element={
-                <PremiumProtectedRoute featureKey="page_linkedin_automation">
-                  <LinkedInAutomation />
-                </PremiumProtectedRoute>
-              } 
-            />
-            <Route 
               path="/dashboard/manage-career-hub" 
               element={
                 <PremiumProtectedRoute featureKey="page_manage_career_hub">
@@ -140,14 +124,6 @@ const App = () => (
                 <ProtectedRoute>
                   <InstituteMembershipPlans />
                 </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/digital-career-hub" 
-              element={
-                <PremiumProtectedRoute featureKey="page_digital_career_hub">
-                  <DigitalCareerHub />
-                </PremiumProtectedRoute>
               } 
             />
             <Route 
