@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isSigningOut: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -13,6 +14,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  isSigningOut: false,
   signOut: async () => {},
 });
 
@@ -28,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -38,15 +41,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth state change:', event, !!session);
         
         if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-          
-          // Handle specific auth events
           if (event === 'SIGNED_OUT') {
             setSession(null);
             setUser(null);
+            setIsSigningOut(false);
+          } else {
+            // Only update session if we're not in the process of signing out
+            if (!isSigningOut) {
+              setSession(session);
+              setUser(session?.user ?? null);
+            }
           }
+          setLoading(false);
         }
       }
     );
@@ -84,31 +90,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [isSigningOut]);
 
   const signOut = async () => {
     try {
+      setIsSigningOut(true);
       setLoading(true);
+      
+      // Clear local state immediately
+      setSession(null);
+      setUser(null);
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Signout error:', error);
-        throw error;
+        // Even if signout fails, keep local state cleared
       }
-      // Clear local state
-      setSession(null);
-      setUser(null);
     } catch (error) {
       console.error('Error during signout:', error);
-      // Force clear local state even if signout fails
-      setSession(null);
-      setUser(null);
     } finally {
       setLoading(false);
+      setIsSigningOut(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isSigningOut, signOut }}>
       {children}
     </AuthContext.Provider>
   );
