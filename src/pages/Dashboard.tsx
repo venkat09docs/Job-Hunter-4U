@@ -116,6 +116,7 @@ const Dashboard = () => {
   const WEEKLY_TARGET = 3;
   const repoCompleted = repoMetrics.completed;
   const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
+  const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
   const flowCompleted = weeklyFlowCompleted;
   const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
 
@@ -532,15 +533,15 @@ const Dashboard = () => {
                         {/* GitHub Activities */}
                         <div 
                           className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                          onClick={() => navigate('/dashboard/github-optimization?tab=setup')}
+                          onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
                         >
                           <div className="relative w-16 h-16 mb-2">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
+                              <span className="text-lg font-bold text-primary">{repoPercent}%</span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm">GitHub Activities</h4>
-                          <p className="text-xs text-muted-foreground text-center">Profile setup status</p>
+                          <h4 className="font-medium text-center text-sm">GitHub Repository Status</h4>
+                          <p className="text-xs text-muted-foreground text-center">Repository tasks status</p>
                         </div>
                       </div>
                     </div>
