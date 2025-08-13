@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
-import { formatDistanceToNow, startOfWeek, addDays, format } from 'date-fns';
+import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
 
 interface JobEntry {
@@ -38,7 +38,7 @@ const Dashboard = () => {
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
-  const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -84,6 +84,47 @@ const Dashboard = () => {
     { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
   ];
 
+  // GitHub Activities tracker metrics
+  const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
+  const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
+  const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
+
+  useEffect(() => {
+    if (!githubTasks) return;
+    const completed = githubTasks.filter(t => REPO_TASK_IDS.includes(t.task_id) && t.completed).length;
+    setRepoMetrics({ completed, total: REPO_TASK_IDS.length });
+  }, [githubTasks]);
+
+  const refreshWeeklyFlow = async () => {
+    if (!user) return;
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const { data, error } = await supabase
+      .from('github_daily_flow_sessions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('completed', true)
+      .gte('session_date', format(weekStart, 'yyyy-MM-dd'))
+      .lte('session_date', format(weekEnd, 'yyyy-MM-dd'));
+    if (!error) setWeeklyFlowCompleted(data?.length || 0);
+  };
+
+  useEffect(() => {
+    refreshWeeklyFlow();
+  }, [user]);
+
+  const WEEKLY_TARGET = 3;
+  const repoCompleted = repoMetrics.completed;
+  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
+  const flowCompleted = weeklyFlowCompleted;
+  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
+
+  const githubActivitiesData = [
+    { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
+    { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
+    { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
+    { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
+  ];
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -296,6 +337,19 @@ const Dashboard = () => {
             // Refresh network metrics when LinkedIn network activities are updated
             refreshNetworkMetrics();
             fetchWeeklyDailyBreakdown();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'github_daily_flow_sessions',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Refresh GitHub daily flow weekly completions when sessions change
+            refreshWeeklyFlow();
           }
         )
         .subscribe();
@@ -699,6 +753,39 @@ const Dashboard = () => {
                       </div>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* GitHub Activities Tracker */}
+            <div className="mb-8">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Github className="h-5 w-5 text-primary" />
+                    GitHub Activities Tracker
+                  </CardTitle>
+                  <CardDescription>
+                    Combined status from GitHub Activity Tracker and Activity & Engagement
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full" style={{ height: 320 }}>
+                    <ResponsiveContainer width="100%" height={320}>
+                      <BarChart data={githubActivitiesData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                          {githubActivitiesData.map((entry, index) => (
+                            <Cell key={`gh-cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
             </div>
