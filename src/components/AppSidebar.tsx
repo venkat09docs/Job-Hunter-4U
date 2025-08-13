@@ -23,7 +23,8 @@ import {
   Briefcase,
   ChevronDown,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Lock
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,24 +49,25 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
+import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User },
-  { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp },
-  { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3 },
-  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap },
-  { title: "Super AI", url: "/dashboard/super-ai", icon: Bot },
-  { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase },
-  { title: "Library", url: "/dashboard/library", icon: Archive },
-  { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen },
+  { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
+  { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
+  { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
+  { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: null },
+  { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "page_digital_career_hub" },
+  { title: "Super AI", url: "/dashboard/super-ai", icon: Bot, featureKey: null },
+  { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase, featureKey: null },
+  { title: "Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
+  { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
 ];
 
 const jobHunterItems = [
-  { title: "Status View", url: "/dashboard/status-view", icon: BarChart3 },
-  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
-  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
-  { title: "Job Search History", url: "/dashboard/job-search", icon: Search },
+  { title: "Status View", url: "/dashboard/status-view", icon: BarChart3, featureKey: null },
+  { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search, featureKey: "page_find_your_next_role" },
+  { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, featureKey: "page_job_tracker" },
+  { title: "Job Search History", url: "/dashboard/job-search", icon: Search, featureKey: "page_job_search" },
 ];
 
 
@@ -85,6 +87,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const { user } = useAuth();
   const { isAdmin, isInstituteAdmin } = useRole();
+  const { canAccessFeature } = usePremiumFeatures();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
 
@@ -169,16 +172,20 @@ export function AppSidebar() {
               <SidebarGroupLabel>Job Hunter Pro</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {mainItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                          <NavLink to={item.url} end className={getNavCls}>
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
-                            <span className="font-medium text-sm">{item.title}</span>
-                          </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {mainItems.map((item) => {
+                    const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                            <NavLink to={item.url} end className={getNavCls}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">{item.title}</span>
+                              {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
+                            </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
 
                   {/* Job Hunter Section */}
                   <SidebarMenuItem>
@@ -196,22 +203,26 @@ export function AppSidebar() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {jobHunterItems.map((item) => (
-                            <SidebarMenuSubItem key={item.title}>
-                              <SidebarMenuSubButton asChild>
-                                <NavLink to={item.url} end className={({ isActive }) => 
-                                  `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                                    isActive 
-                                      ? "text-primary bg-primary/10" 
-                                      : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
-                                  }`
-                                }>
-                                  <item.icon className="h-4 w-4 flex-shrink-0" />
-                                  <span className="text-xs truncate">{item.title}</span>
-                                </NavLink>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {jobHunterItems.map((item) => {
+                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                            return (
+                              <SidebarMenuSubItem key={item.title}>
+                                <SidebarMenuSubButton asChild>
+                                  <NavLink to={item.url} end className={({ isActive }) => 
+                                    `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                      isActive 
+                                        ? "text-primary bg-primary/10" 
+                                        : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
+                                    }`
+                                  }>
+                                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                                    <span className="text-xs truncate">{item.title}</span>
+                                    {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
+                                  </NavLink>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </Collapsible>
