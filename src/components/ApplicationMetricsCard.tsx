@@ -8,6 +8,8 @@ import { useJobApplicationActivities, JobApplicationTaskId } from "@/hooks/useJo
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay, subDays, addWeeks } from "date-fns";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export default function ApplicationMetricsCard() {
   const { user } = useAuth();
@@ -107,6 +109,62 @@ export default function ApplicationMetricsCard() {
 
   const weekRangeLabel = `${format(weekDates[0], 'MMM d')} – ${format(weekDates[weekDates.length - 1], 'MMM d')}`;
 
+  // Prepare chart data
+  const chartData = weekDates.map((date) => {
+    const key = format(date, 'yyyy-MM-dd');
+    const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
+    const applied = jobWeekData[key]?.['apply_quality_jobs'] ?? 0;
+    const interviewing = statusWeekData[key]?.['interviewing'] ?? 0;
+    const negotiating = statusWeekData[key]?.['negotiating'] ?? 0;
+    const accepted = statusWeekData[key]?.['accepted'] ?? 0;
+    const notSelected = statusWeekData[key]?.['not_selected'] ?? 0;
+    const noResponse = statusWeekData[key]?.['no_response'] ?? 0;
+    
+    return {
+      date: format(date, 'EEE'),
+      fullDate: format(date, 'MMM d'),
+      wishlist,
+      applied,
+      interviewing,
+      negotiating,
+      accepted,
+      notSelected,
+      noResponse,
+      total: wishlist + applied + interviewing + negotiating + accepted + notSelected + noResponse
+    };
+  });
+
+  const chartConfig = {
+    wishlist: {
+      label: "Wishlist",
+      color: "hsl(var(--chart-1))"
+    },
+    applied: {
+      label: "Applied", 
+      color: "hsl(var(--chart-2))"
+    },
+    interviewing: {
+      label: "Interviewing",
+      color: "hsl(var(--chart-3))"
+    },
+    negotiating: {
+      label: "Negotiating",
+      color: "hsl(var(--chart-4))"
+    },
+    accepted: {
+      label: "Accepted",
+      color: "hsl(var(--chart-5))"
+    },
+    notSelected: {
+      label: "Not Selected",
+      color: "hsl(var(--destructive))"
+    },
+    noResponse: {
+      label: "No Response",
+      color: "hsl(var(--muted-foreground))"
+    }
+  };
+
   return (
     <Card className="shadow-elegant border-primary/20">
       <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -179,6 +237,41 @@ export default function ApplicationMetricsCard() {
               </TableRow>
             </TableBody>
           </Table>
+          
+          <div className="mt-6">
+            <div className="text-sm font-medium mb-4">Weekly Application Status Distribution</div>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      labelFormatter={(value, payload) => {
+                        const data = payload?.[0]?.payload;
+                        return data ? `${data.fullDate}` : value;
+                      }}
+                    />} 
+                  />
+                  <Bar dataKey="wishlist" stackId="applications" fill="var(--color-wishlist)" name="Wishlist" />
+                  <Bar dataKey="applied" stackId="applications" fill="var(--color-applied)" name="Applied" />
+                  <Bar dataKey="interviewing" stackId="applications" fill="var(--color-interviewing)" name="Interviewing" />
+                  <Bar dataKey="negotiating" stackId="applications" fill="var(--color-negotiating)" name="Negotiating" />
+                  <Bar dataKey="accepted" stackId="applications" fill="var(--color-accepted)" name="Accepted" />
+                  <Bar dataKey="notSelected" stackId="applications" fill="var(--color-notSelected)" name="Not Selected" />
+                  <Bar dataKey="noResponse" stackId="applications" fill="var(--color-noResponse)" name="No Response" />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </div>
       </CardContent>
     </Card>
