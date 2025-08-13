@@ -218,9 +218,11 @@ const DigitalCareerHub = () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">AI-Powered Career Tools</h2>
-          <p className="text-muted-foreground">
+        <div className="text-center space-y-4 mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold">
+            AI-Powered Career Tools
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Access powerful AI tools to enhance your career journey. Each tool requires credits to use.
           </p>
         </div>
@@ -238,96 +240,80 @@ const DigitalCareerHub = () => {
           <div className="space-y-6">
             {/* Category Navigation */}
             <div className="relative">
-              <h3 className="text-lg font-semibold mb-4">Browse by Category</h3>
-              <Tabs defaultValue="all" className="w-full">
-                <div className="relative overflow-x-auto scrollbar-hide">
-                  <TabsList className="inline-flex h-12 items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground min-w-full w-max">
-                    <TabsTrigger 
-                      value="all" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
-                    >
-                      🔥 All Tools ({tools.length})
-                    </TabsTrigger>
-                    {categories.map((category, index) => {
-                      const categoryTools = organizedTools[category.id] || [];
-                      const categoryIcon = getCategoryIcon(category.name);
-                      return (
-                        <TabsTrigger 
-                          key={category.id} 
-                          value={category.id}
-                          className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
-                          style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                          {categoryIcon} {category.name} ({categoryTools.length})
-                        </TabsTrigger>
-                      );
-                    })}
-                    {organizedTools['uncategorized'] && (
-                      <TabsTrigger 
-                        value="uncategorized"
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm hover:bg-background/50 hover:text-foreground animate-fade-in"
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 mb-8">
+                  <TabsTrigger value="all" className="text-xs md:text-sm">
+                    All Tools
+                  </TabsTrigger>
+                  {categories.map((category) => {
+                    const IconComponent = getCategoryIcon(category.name);
+                    return (
+                      <TabsTrigger
+                        key={category.id}
+                        value={category.id}
+                        className="text-xs md:text-sm flex items-center gap-1"
                       >
-                        📂 Other ({organizedTools['uncategorized'].length})
+                        <span className="hidden sm:inline">{category.name}</span>
                       </TabsTrigger>
-                    )}
-                  </TabsList>
-                </div>
+                    );
+                  })}
+                  {organizedTools['uncategorized'] && organizedTools['uncategorized'].length > 0 && (
+                    <TabsTrigger value="uncategorized" className="text-xs md:text-sm">
+                      Other
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-                <TabsContent value="all" className="space-y-4 animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {tools.map((tool, index) => {
+                <TabsContent value="all" className="space-y-8">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tools.map((tool) => {
                       const category = categories.find(cat => cat.id === tool.category_id);
                       return (
-                        <Card key={tool.id} className="hover:shadow-lg transition-all duration-300 hover-scale animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
-                          <CardHeader>
+                        <Card 
+                          key={tool.id} 
+                          className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50"
+                        >
+                          <CardHeader className="space-y-3">
                             {tool.image_url && (
-                              <div className="mb-4">
+                              <div className="w-full h-48 bg-muted rounded-lg overflow-hidden">
                                 <img 
                                   src={tool.image_url} 
                                   alt={tool.tool_name}
-                                  className="w-full h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                   }}
                                 />
                               </div>
                             )}
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
-                                <CardDescription className="mt-1">
-                                  {tool.tool_description || 'AI-powered career tool'}
-                                </CardDescription>
-                              </div>
-                              <Badge variant="outline" className="flex items-center gap-1">
-                                <Zap className="w-3 h-3" />
-                                {tool.credit_points}
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-lg">{tool.tool_name}</CardTitle>
+                              <Badge variant="secondary" className="text-xs">
+                                {tool.credit_points} credits
                               </Badge>
                             </div>
-                            {category && (
-                              <Badge variant="secondary" className="w-fit mt-2">
-                                {getCategoryIcon(category.name)} {category.name}
-                              </Badge>
-                            )}
                           </CardHeader>
                           
-                           <CardContent>
-                             <div className="space-y-3">
-                                {hasActiveSubscription() ? (
-                                  <Button className="w-full hover-scale" onClick={() => handleToolAccess(tool)}>
+                          <CardContent>
+                            <CardDescription className="line-clamp-3 mb-4">
+                              {tool.tool_description || 'AI-powered career tool'}
+                            </CardDescription>
+                            <div className="space-y-3">
+                              {hasActiveSubscription() ? (
+                                <Button className="w-full" onClick={() => handleToolAccess(tool)}>
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  Access Tool
+                                </Button>
+                              ) : (
+                                <SubscriptionUpgrade featureName="AI tools">
+                                  <Button className="w-full" variant="outline">
                                     <ExternalLink className="w-4 h-4 mr-2" />
-                                    Access Tool
+                                    Upgrade to Access
                                   </Button>
-                                ) : (
-                                 <SubscriptionUpgrade featureName="AI tools">
-                                   <Button className="w-full" variant="outline">
-                                     <ExternalLink className="w-4 h-4 mr-2" />
-                                     Upgrade to Access
-                                   </Button>
-                                 </SubscriptionUpgrade>
-                               )}
-                             </div>
-                           </CardContent>
+                                </SubscriptionUpgrade>
+                              )}
+                            </div>
+                          </CardContent>
                         </Card>
                       );
                     })}
