@@ -23,6 +23,7 @@ import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
 import { format, startOfWeek, subWeeks, addDays, addWeeks } from 'date-fns';
 import { Button as PaginationButton } from '@/components/ui/button';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 interface WeeklyMetrics {
   week: string;
@@ -54,6 +55,7 @@ export default function CareerGrowth() {
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
   const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, fetchDailyActivities } = useDailyNetworkActivities();
+  const dailyChartData = dailyNetworkActivities.map((a) => ({ date: a.date, total: a.total_activities }));
   
   // Network activities state
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
@@ -617,6 +619,21 @@ export default function CareerGrowth() {
                             )}
                           </TableBody>
                         </Table>
+
+                        <div className="mt-6">
+                          <div className="text-sm font-medium mb-2">Date-wise Total Activities</div>
+                          <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <BarChart data={dailyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                                <YAxis stroke="hsl(var(--muted-foreground))" />
+                                <Tooltip />
+                                <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
 
 
                         {totalCount > 0 && (
