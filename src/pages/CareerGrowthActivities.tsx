@@ -616,19 +616,28 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
                                   <span className="ml-1 capitalize">{activity.category}</span>
                                 </Badge>
                               </TableCell>
-                              <TableCell>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  value={inputValues[activity.id] ?? ''}
-                                  onChange={(e) => handleInputChange(activity.id, e.target.value)}
-                                  onBlur={() => handleInputBlur(activity.id)}
-                                  className="w-20 h-8 text-sm"
-                                  min="0"
-                                  max={activity.dailyTarget * 3}
-                                  disabled={selectedDate > new Date()}
-                                />
-                              </TableCell>
+                               <TableCell>
+                                 {(() => {
+                                   const today = new Date();
+                                   const yesterday = subDays(today, 1);
+                                   const isEditableDate = isSameDay(selectedDate, today) || isSameDay(selectedDate, yesterday);
+                                   
+                                   return (
+                                     <Input
+                                       type="number"
+                                       placeholder="0"
+                                       value={inputValues[activity.id] ?? ''}
+                                       onChange={(e) => handleInputChange(activity.id, e.target.value)}
+                                       onBlur={() => handleInputBlur(activity.id)}
+                                       className="w-20 h-8 text-sm"
+                                       min="0"
+                                       max={activity.dailyTarget * 3}
+                                       disabled={!isEditableDate}
+                                       readOnly={!isEditableDate}
+                                     />
+                                   );
+                                 })()}
+                               </TableCell>
                               <TableCell>
                                 <span className="text-sm font-medium">{activity.dailyTarget}</span>
                                 <span className="text-xs text-muted-foreground ml-1">{activity.unit}</span>

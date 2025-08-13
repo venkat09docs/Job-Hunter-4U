@@ -131,9 +131,26 @@ export const useLinkedInNetworkProgress = () => {
 
       console.log('Current week data (Monday to Sunday only):', data);
 
+      // Define daily targets for each activity
+      const DAILY_TARGETS: { [key: string]: number } = {
+        'post_likes': 3,
+        'comments': 2,
+        'content': 2,
+        'connection_requests': 2,
+        'follow_up': 1,
+        'industry_groups': 1,
+        'create_post': 1,
+        'article_draft': 1,
+        'profile_optimization': 0,
+        'industry_research': 1
+      };
+
       const weekMetrics: ActivityMetrics = {};
       data?.forEach(metric => {
-        weekMetrics[metric.activity_id] = (weekMetrics[metric.activity_id] || 0) + metric.value;
+        const dailyTarget = DAILY_TARGETS[metric.activity_id] || 0;
+        // Cap daily contribution to the daily target
+        const cappedValue = Math.min(metric.value, dailyTarget);
+        weekMetrics[metric.activity_id] = (weekMetrics[metric.activity_id] || 0) + cappedValue;
       });
 
       console.log('Final weekly totals:', weekMetrics);
