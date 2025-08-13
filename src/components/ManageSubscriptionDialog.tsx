@@ -29,7 +29,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
   const plans = [
     {
       name: "One Week Plan",
-      price: 499,
+      price: 699,
       duration: "1 week",
       days: 7,
       description: "Quick access to all career tools",
@@ -49,7 +49,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     },
     {
       name: "One Month Plan",
-      price: 999,
+      price: 1499,
       duration: "1 month",
       days: 30,
       description: "Perfect for focused job searching",
@@ -65,7 +65,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     },
     {
       name: "3 Months Plan",
-      price: 2499,
+      price: 3999,
       duration: "3 months",
       days: 90,
       description: "Best value for comprehensive career growth",

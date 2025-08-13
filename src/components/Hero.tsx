@@ -55,7 +55,7 @@ const Hero = () => {
               </div>
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                 <p className="text-sm text-warning font-medium">
-                  🕒 Limited Time: Get access for just ₹499/week (Regular price: ₹1,999)
+                  🕒 Limited Time: Get access for just ₹699/week (Regular price: ₹1,999)
                 </p>
               </div>
             </div>

@@ -23,7 +23,7 @@ const PricingDialog = () => {
   const plans = [
     {
       name: "One Week Plan",
-      price: 499,
+      price: 699,
       duration: "1 week",
       description: "Quick access to all career tools",
       features: [
@@ -42,7 +42,7 @@ const PricingDialog = () => {
     },
     {
       name: "One Month Plan",
-      price: 999,
+      price: 1499,
       duration: "1 month",
       description: "Perfect for focused job searching",
       features: [
@@ -57,7 +57,7 @@ const PricingDialog = () => {
     },
     {
       name: "3 Months Plan",
-      price: 2499,
+      price: 3999,
       duration: "3 months",
       description: "Best value for comprehensive career growth",
       features: [
