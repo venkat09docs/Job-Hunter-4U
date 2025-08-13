@@ -262,9 +262,9 @@ const App = () => (
             <Route 
               path="/dashboard/career-growth-activities" 
               element={
-                <ProtectedRoute>
+                <PremiumProtectedRoute featureKey="career_growth_activities">
                   <CareerGrowthActivities />
-                </ProtectedRoute>
+                </PremiumProtectedRoute>
               } 
             />
             <Route 
