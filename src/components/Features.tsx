@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Users, 
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 
 const Features = () => {
+  const navigate = useNavigate();
   const painPoints = [
     "Sending 100+ applications with zero responses",
     "Getting rejected after multiple interview rounds", 
@@ -178,7 +180,12 @@ const Features = () => {
               </div>
             </div>
             
-            <Button variant="hero" size="lg" className="w-full animate-pulse">
+            <Button 
+              variant="hero" 
+              size="lg" 
+              className="w-full animate-pulse"
+              onClick={() => navigate('/auth')}
+            >
               Join JobHunter Pro Winners Platform Today - Just ₹699
             </Button>
           </div>
