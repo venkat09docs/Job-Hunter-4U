@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Trophy, TrendingUp, Github, Briefcase } from 'lucide-react';
 import { useActivityPointSettings, ActivityPointSetting } from '@/hooks/useActivityPointSettings';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -119,54 +119,58 @@ const LeaderBoardPoints = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex-1">
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <h1 className="text-xl font-semibold">Leader Board Points</h1>
-            <div className="ml-auto">
-              <UserProfileDropdown />
-            </div>
-          </header>
-          <main className="flex-1 space-y-4 p-4 md:p-6 lg:p-8">
-            <div className="animate-pulse space-y-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-48 bg-muted rounded-lg" />
-              ))}
-            </div>
-          </main>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <div className="flex-1">
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+              <h1 className="text-xl font-semibold">Leader Board Points</h1>
+              <div className="ml-auto">
+                <UserProfileDropdown />
+              </div>
+            </header>
+            <main className="flex-1 space-y-4 p-4 md:p-6 lg:p-8">
+              <div className="animate-pulse space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-48 bg-muted rounded-lg" />
+                ))}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full">
-      <AppSidebar />
-      <div className="flex-1">
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <h1 className="text-xl font-semibold">Leader Board Points Management</h1>
-          <div className="ml-auto">
-            <UserProfileDropdown />
-          </div>
-        </header>
-        <main className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight">Activity Points Configuration</h2>
-            <p className="text-muted-foreground">
-              Configure points for different user activities. These points will be used to calculate leaderboard rankings.
-            </p>
-          </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex-1">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <h1 className="text-xl font-semibold">Leader Board Points Management</h1>
+            <div className="ml-auto">
+              <UserProfileDropdown />
+            </div>
+          </header>
+          <main className="flex-1 space-y-6 p-4 md:p-6 lg:p-8">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold tracking-tight">Activity Points Configuration</h2>
+              <p className="text-muted-foreground">
+                Configure points for different user activities. These points will be used to calculate leaderboard rankings.
+              </p>
+            </div>
 
-          <div className="space-y-6">
-            {renderCategorySection('resume', 'Resume & Profile Building')}
-            {renderCategorySection('linkedin', 'LinkedIn Network Growth')}
-            {renderCategorySection('github', 'GitHub Activities')}
-            {renderCategorySection('job_application', 'Job Application Activities')}
-          </div>
-        </main>
+            <div className="space-y-6">
+              {renderCategorySection('resume', 'Resume & Profile Building')}
+              {renderCategorySection('linkedin', 'LinkedIn Network Growth')}
+              {renderCategorySection('github', 'GitHub Activities')}
+              {renderCategorySection('job_application', 'Job Application Activities')}
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
