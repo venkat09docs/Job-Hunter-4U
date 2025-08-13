@@ -75,9 +75,11 @@ export const useGitHubProgress = () => {
   };
 
   const getCompletionPercentage = () => {
-    const totalTasks = 4; // Total number of GitHub profile setup tasks: readme_generated, special_repo_created, readme_added, repo_public
-    const completedTasks = tasks.filter(task => task.completed).length;
-    return Math.round((completedTasks / totalTasks) * 100);
+    const profileTaskIds = ['readme_generated','special_repo_created','readme_added','repo_public'];
+    const totalTasks = profileTaskIds.length; // Only count core GitHub profile setup tasks
+    const completedTasks = tasks.filter(task => profileTaskIds.includes(task.task_id) && task.completed).length;
+    const pct = Math.round((completedTasks / totalTasks) * 100);
+    return Math.max(0, Math.min(100, pct)); // clamp to 0-100
   };
 
   return {
