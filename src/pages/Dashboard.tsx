@@ -20,7 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, startOfWeek, addDays, format } from 'date-fns';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 interface JobEntry {
   id: string;
@@ -60,6 +61,16 @@ const Dashboard = () => {
     not_selected: 0,
     no_response: 0,
     archived: 0
+  });
+
+  const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<Record<string, Record<string, number>>>({});
+
+  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+    const key = format(date, 'yyyy-MM-dd');
+    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
+    const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
+    return { label: format(date, 'EEE'), total };
   });
 
   const handleSignOut = async () => {
@@ -189,6 +200,41 @@ const Dashboard = () => {
     fetchJobData();
   }, [user]);
 
+  // Fetch current week day-wise network activity totals
+  const fetchWeeklyDailyBreakdown = async () => {
+    if (!user) return;
+    try {
+      const baseStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const startDate = format(baseStart, 'yyyy-MM-dd');
+      const endDate = format(addDays(baseStart, 6), 'yyyy-MM-dd');
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('date, activity_id, value')
+        .eq('user_id', user.id)
+        .gte('date', startDate)
+        .lte('date', endDate);
+      if (error) throw error;
+      const breakdown: Record<string, Record<string, number>> = {};
+      (data || []).forEach((metric: any) => {
+        const dateKey = metric.date;
+        if (!breakdown[dateKey]) breakdown[dateKey] = {};
+        let key = metric.activity_id as string;
+        if (key === 'industry_research') key = 'research';
+        if (key === 'follow_up') key = 'follow_up_messages';
+        if (key === 'industry_groups') key = 'engage_in_groups';
+        if (key === 'article_draft') key = 'work_on_article';
+        breakdown[dateKey][key] = (breakdown[dateKey][key] || 0) + (metric.value || 0);
+      });
+      setWeeklyDailyBreakdown(breakdown);
+    } catch (e) {
+      console.error('Error fetching weekly network breakdown:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeeklyDailyBreakdown();
+  }, [user]);
+
   // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
     const scores = [resumeProgress, linkedinProgress, getGitHubProgress()];
@@ -238,6 +284,7 @@ const Dashboard = () => {
           () => {
             // Refresh network metrics when LinkedIn network activities are updated
             refreshNetworkMetrics();
+            fetchWeeklyDailyBreakdown();
           }
         )
         .subscribe();
@@ -246,7 +293,7 @@ const Dashboard = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics]);
+  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown]);
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
@@ -596,31 +643,48 @@ const Dashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalConnections}</div>
-                        <div className="text-sm text-muted-foreground">Total Connections</div>
+                    <div className="space-y-6">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
+                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalConnections}</div>
+                          <div className="text-sm text-muted-foreground">Total Connections</div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
+                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalLikes}</div>
+                          <div className="text-sm text-muted-foreground">Posts Liked</div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
+                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalComments}</div>
+                          <div className="text-sm text-muted-foreground">Comments Made</div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
+                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalPosts}</div>
+                          <div className="text-sm text-muted-foreground">Posts Created</div>
+                        </div>
+                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
+                          <div className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</div>
+                          <div className="text-sm text-muted-foreground">Weekly Activity</div>
+                        </div>
                       </div>
-                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalLikes}</div>
-                        <div className="text-sm text-muted-foreground">Posts Liked</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalComments}</div>
-                        <div className="text-sm text-muted-foreground">Comments Made</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-primary">{networkMetrics.totalPosts}</div>
-                        <div className="text-sm text-muted-foreground">Posts Created</div>
-                      </div>
-                      <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                        <div className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</div>
-                        <div className="text-sm text-muted-foreground">Weekly Activity</div>
+
+                      <div>
+                        <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
+                        <div style={{ width: '100%', height: 300 }}>
+                          <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={weeklyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                              <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" />
+                              <YAxis stroke="hsl(var(--muted-foreground))" />
+                              <Tooltip />
+                              <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
                     </div>
                   )}
