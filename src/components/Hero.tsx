@@ -28,7 +28,7 @@ const Hero = () => {
             </p>
             
             {/* Urgency alert */}
-            <div className="card mt16 p20" style={{ background: 'linear-gradient(135deg, rgba(255, 108, 140, 0.1), rgba(255, 108, 140, 0.05))', border: '1px solid rgba(255, 108, 140, 0.2)' }}>
+            <div className="card mt16 p20" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03))', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
               <p style={{ color: 'var(--danger)', fontWeight: '500', fontSize: '14px', margin: '0' }}>
                 ⚠️ Your competition is already using AI. Don't get left behind.
               </p>
@@ -51,7 +51,7 @@ const Hero = () => {
                 </div>
               </div>
               
-              <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(255, 195, 108, 0.1), rgba(255, 195, 108, 0.05))', border: '1px solid rgba(255, 195, 108, 0.2)' }}>
+              <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', border: '1px solid rgba(245, 158, 11, 0.15)' }}>
                 <p style={{ color: 'var(--warning)', fontWeight: '500', fontSize: '14px', margin: '0' }}>
                   🕒 Limited Time: Get access for just ₹499/week (Regular price: ₹1,999)
                 </p>
@@ -89,7 +89,7 @@ const Hero = () => {
             <div className="card p16" style={{ position: 'absolute', top: '-16px', left: '-16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '12px', height: '12px', backgroundColor: 'var(--success)', borderRadius: '50%', animation: 'pulse 2s infinite' }} />
-                <span style={{ fontSize: '14px', fontWeight: '500' }}>Live Job Alerts</span>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text)' }}>Live Job Alerts</span>
               </div>
             </div>
             

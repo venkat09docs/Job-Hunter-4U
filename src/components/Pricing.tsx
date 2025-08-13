@@ -268,7 +268,7 @@ const Pricing = () => {
             <strong>Your competition is already using AI. Don't get left behind.</strong>
           </p>
           
-          <div className="card p24 mt24" style={{ maxWidth: '400px', margin: '24px auto 0', background: 'linear-gradient(135deg, rgba(108,139,255,.1), rgba(91,231,196,.05))' }}>
+          <div className="card p24 mt24" style={{ maxWidth: '400px', margin: '24px auto 0', background: 'linear-gradient(135deg, rgba(108,139,255,.05), rgba(91,231,196,.03))' }}>
             <div className="center">
               <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--brand)' }}>LIMITED TIME</div>
               <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '4px' }}>70% OFF - Ends Soon</div>
@@ -356,7 +356,7 @@ const Pricing = () => {
         </div>
 
         {/* Social Proof */}
-        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.06), rgba(91,231,196,.03))' }}>
+        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.04), rgba(91,231,196,.02))' }}>
           <h3 className="h2 center">Why JobHunter Pro Users Get Hired Faster</h3>
           
           <div className="boards mt24">
@@ -377,7 +377,7 @@ const Pricing = () => {
             </div>
           </div>
           
-          <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(255, 195, 108, 0.1), rgba(255, 195, 108, 0.05))', border: '1px solid rgba(255, 195, 108, 0.2)' }}>
+          <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02))', border: '1px solid rgba(245, 158, 11, 0.12)' }}>
             <p style={{ color: 'var(--warning)', fontWeight: '500', fontSize: '14px', margin: '0', textAlign: 'center' }}>
               🔥 Flash Sale: Next 50 customers get lifetime access to all future features at current price
             </p>

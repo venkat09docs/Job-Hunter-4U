@@ -74,14 +74,14 @@ const Features = () => {
         {/* Pain Points Grid */}
         <div className="boards mb-16">
           {painPoints.map((pain, index) => (
-            <div key={index} className="board card" style={{ background: 'linear-gradient(135deg, rgba(255, 108, 140, 0.05), rgba(255, 108, 140, 0.02))', border: '1px solid rgba(255, 108, 140, 0.1)' }}>
+            <div key={index} className="board card" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.03), rgba(239, 68, 68, 0.01))', border: '1px solid rgba(239, 68, 68, 0.08)' }}>
               <p style={{ color: 'var(--danger)', fontWeight: '500', fontSize: '14px', margin: '0' }}>❌ {pain}</p>
             </div>
           ))}
         </div>
         
         {/* Solution Header */}
-        <div className="card p32 center mb-16" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.08), rgba(91,231,196,.04))' }}>
+        <div className="card p32 center mb-16" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.05), rgba(91,231,196,.02))' }}>
           <h3 className="h2 m0">
             Here's How{" "}
             <span style={{ color: 'var(--brand)' }}>
@@ -108,7 +108,7 @@ const Features = () => {
         </div>
 
         {/* Testimonials Section */}
-        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.06), rgba(91,231,196,.03))' }}>
+        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.04), rgba(91,231,196,.02))' }}>
           <div className="testimonials">
             {/* First Testimonial */}
             <div className="testimonial">
@@ -117,7 +117,7 @@ const Features = () => {
                 "I tried every job board and networking hack, but nothing worked—until I automated my outreach. The AI agents found HR contacts, sent personalized messages, and followed up exactly when they needed to."
               </blockquote>
               <div className="author">
-                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0B0F14', fontWeight: '700' }}>
+                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '700' }}>
                   D
                 </div>
                 <div>
@@ -134,7 +134,7 @@ const Features = () => {
                 "As a recent graduate, I didn't know where to start. The platform's step-by-step automation guided me through crafting a standout LinkedIn profile, targeting the right companies."
               </blockquote>
               <div className="author">
-                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0B0F14', fontWeight: '700' }}>
+                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '700' }}>
                   K
                 </div>
                 <div>
