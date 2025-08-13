@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_point_settings: {
+        Row: {
+          activity_id: string
+          activity_name: string
+          activity_type: string
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          points: number
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          activity_name: string
+          activity_type: string
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          points?: number
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          activity_name?: string
+          activity_type?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_chat_logs: {
         Row: {
           ai_response: string
@@ -649,6 +688,39 @@ export type Database = {
           salary_range?: string | null
           status?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leaderboard_rankings: {
+        Row: {
+          calculated_at: string
+          id: string
+          period_end: string
+          period_start: string
+          period_type: string
+          rank_position: number
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          period_type: string
+          rank_position: number
+          total_points?: number
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          rank_position?: number
+          total_points?: number
           user_id?: string
         }
         Relationships: []
@@ -1319,6 +1391,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_activity_points: {
+        Row: {
+          activity_date: string
+          activity_id: string
+          activity_type: string
+          created_at: string
+          id: string
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_id: string
+          activity_type: string
+          created_at?: string
+          id?: string
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_id?: string
+          activity_type?: string
+          created_at?: string
+          id?: string
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_analytics: {
         Row: {

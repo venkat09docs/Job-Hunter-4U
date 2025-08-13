@@ -18,6 +18,7 @@ import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/comp
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
+import LeaderBoard from '@/components/LeaderBoard';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -941,6 +942,11 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Leader Board */}
+            <div className="mb-8">
+              <LeaderBoard />
             </div>
 
             {/* Recent Applications */}

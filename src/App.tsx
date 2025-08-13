@@ -39,6 +39,7 @@ import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import StudentsReport from "./pages/StudentsReport";
 import InstituteManagement from "./pages/InstituteManagement";
+import LeaderBoardPoints from "./pages/LeaderBoardPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import AIAssistantChat from "./components/AIAssistantChat";
@@ -288,6 +289,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <InstituteManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/leaderboard-points" 
+              element={
+                <ProtectedRoute>
+                  <LeaderBoardPoints />
                 </ProtectedRoute>
               } 
             />
