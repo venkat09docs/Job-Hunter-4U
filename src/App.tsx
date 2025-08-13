@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import EditProfile from "./pages/EditProfile";
+
 import PublicProfile from "./pages/PublicProfile";
 import BlogDashboard from "./pages/BlogDashboard";
 import PublicBlogs from "./pages/PublicBlogs";
@@ -66,14 +66,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/dashboard/profile" 
-              element={
-                <ProtectedRoute>
-                  <EditProfile />
                 </ProtectedRoute>
               } 
             />
