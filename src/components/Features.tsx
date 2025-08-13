@@ -55,117 +55,132 @@ const Features = () => {
   ];
 
   return (
-    <section className="section surface">
-      <div className="container">
-        {/* Section Header */}
-        <div className="section-header">
-          <div className="kicker">🔥 The Problem Everyone Faces</div>
-          <h2 className="h2">
-            Are You Stuck in This{" "}
-            <span style={{ color: 'var(--danger)' }}>
-              Job Search Hell?
-            </span>
-          </h2>
-          <p className="lead">
-            If any of these sound familiar, you're not alone. 89% of job seekers face these exact problems.
-          </p>
-        </div>
-        
-        {/* Pain Points Grid */}
-        <div className="boards mb-16">
-          {painPoints.map((pain, index) => (
-            <div key={index} className="board card" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.03), rgba(239, 68, 68, 0.01))', border: '1px solid rgba(239, 68, 68, 0.08)' }}>
-              <p style={{ color: 'var(--danger)', fontWeight: '500', fontSize: '14px', margin: '0' }}>❌ {pain}</p>
-            </div>
-          ))}
-        </div>
-        
-        {/* Solution Header */}
-        <div className="card p32 center mb-16" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.05), rgba(91,231,196,.02))' }}>
-          <h3 className="h2 m0">
-            Here's How{" "}
-            <span style={{ color: 'var(--brand)' }}>
-              JobHunter Pro
-            </span>{" "}
-            Solves Every Problem
-          </h3>
-          <p className="lead mt8">
-            Stop struggling alone. Join the platform that transformed careers with our AI-powered platform.
-          </p>
-        </div>
-
-        {/* Features Boards */}
-        <div className="boards">
-          {features.map((feature, index) => (
-            <div key={index} className="board card">
-              <div className="icon">
-                <feature.icon style={{ width: '20px', height: '20px', color: 'var(--brand)' }} />
+    <section className="py-20 bg-muted/30">
+      <div className="container px-4">
+        {/* Pain Points Section */}
+        <div className="text-center space-y-8 mb-16">
+          <div className="space-y-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-destructive">
+              Are You Stuck in This{" "}
+              <span className="bg-gradient-to-r from-destructive to-warning bg-clip-text text-transparent">
+                Job Search Hell?
+              </span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              If any of these sound familiar, you're not alone. 89% of job seekers face these exact problems.
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-w-4xl mx-auto">
+            {painPoints.map((pain, index) => (
+              <div key={index} className="bg-destructive/5 border border-destructive/20 rounded-lg p-3 md:p-4">
+                <p className="text-xs md:text-sm text-destructive font-medium">❌ {pain}</p>
               </div>
-              <h3 className="title">{feature.title}</h3>
-              <p className="desc">{feature.description}</p>
-            </div>
+            ))}
+          </div>
+          
+          <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
+            <h3 className="text-2xl font-bold mb-4">
+              Here's How{" "}
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                JobHunter Pro
+              </span>{" "}
+              Solves Every Problem
+            </h3>
+            <p className="text-muted-foreground">
+              Stop struggling alone. Join the platform who transformed their career with our AI-powered platform.
+            </p>
+          </div>
+        </div>
+
+        {/* Features grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
+          {features.map((feature, index) => (
+            <Card key={index} className="p-4 md:p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 group">
+              <div className="space-y-3 md:space-y-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                </div>
+                <h3 className="text-lg md:text-xl font-semibold">{feature.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground">{feature.description}</p>
+              </div>
+            </Card>
           ))}
         </div>
 
-        {/* Testimonials Section */}
-        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.04), rgba(91,231,196,.02))' }}>
-          <div className="testimonials">
+        {/* Testimonial section */}
+        <div className="bg-gradient-card rounded-2xl p-8 md:p-12 shadow-elegant border">
+          <div className="space-y-8">
             {/* First Testimonial */}
-            <div className="testimonial">
-              <div className="stars">⭐⭐⭐⭐⭐</div>
-              <blockquote style={{ fontSize: '16px', lineHeight: '1.6', margin: '0', fontStyle: 'italic' }}>
-                "I tried every job board and networking hack, but nothing worked—until I automated my outreach. The AI agents found HR contacts, sent personalized messages, and followed up exactly when they needed to."
+            <div className="space-y-6">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-xl md:text-2xl font-medium">
+                "I tried every job board and networking hack, but nothing worked—until I automated my outreach. The AI agents found HR contacts, sent personalized messages, and followed up exactly when they needed to. I've never felt more confident in my job search."
               </blockquote>
-              <div className="author">
-                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '700' }}>
-                  D
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-semibold">D</span>
                 </div>
                 <div>
-                  <div className="name">Deepak</div>
-                  <div className="role">Software Engineer</div>
+                  <div className="font-semibold">Deepak</div>
+                  <div className="text-muted-foreground">Software Engineer</div>
                 </div>
               </div>
             </div>
 
             {/* Second Testimonial */}
-            <div className="testimonial">
-              <div className="stars">⭐⭐⭐⭐⭐</div>
-              <blockquote style={{ fontSize: '16px', lineHeight: '1.6', margin: '0', fontStyle: 'italic' }}>
-                "As a recent graduate, I didn't know where to start. The platform's step-by-step automation guided me through crafting a standout LinkedIn profile, targeting the right companies."
+            <div className="space-y-6">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-xl md:text-2xl font-medium">
+                "As a recent graduate, I didn't know where to start. The platform's step-by-step automation guided me through crafting a standout LinkedIn profile, targeting the right companies, and even prepping for interviews. I landed a full-time position before graduation!"
               </blockquote>
-              <div className="author">
-                <div className="avatar" style={{ backgroundColor: 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF', fontWeight: '700' }}>
-                  K
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-primary-foreground font-semibold">K</span>
                 </div>
                 <div>
-                  <div className="name">Kavya</div>
-                  <div className="role">Software Engineer</div>
+                  <div className="font-semibold">Kavya</div>
+                  <div className="text-muted-foreground">Software Engineer</div>
                 </div>
               </div>
             </div>
             
-            {/* CTA Column */}
-            <div className="testimonial">
-              <div className="badge">⏰ Limited Time Offer</div>
-              <h3 style={{ fontSize: '20px', fontWeight: '700', margin: '8px 0' }}>Don't Be The Last To Know</h3>
-              <div style={{ display: 'grid', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span><strong>40% average salary boost</strong></span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span><strong>5x faster job hunting</strong></span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span><strong>87% success rate</strong></span>
-                </div>
-              </div>
-              <button className="button mt16" style={{ width: '100%' }}>
-                Join JobHunter Pro - ₹499
-              </button>
+            <div className="bg-primary/10 rounded-lg p-4 mb-4">
+              <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
+              <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
             </div>
+            
+            <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>40% average salary boost</strong> </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>5x faster job Hunting</strong> </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-success" />
+                <span><strong>Works for all levels:</strong> Students to CXOs</span>
+              </div>
+            </div>
+            
+            <Button variant="hero" size="lg" className="w-full animate-pulse">
+              Join JobHunter Pro Winners Platform Today - Just ₹499
+            </Button>
           </div>
         </div>
       </div>

@@ -252,137 +252,163 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="section">
-      <div className="container">
-        {/* Section Header */}
-        <div className="section-header">
-          <div className="badge">⚠️ Price increases to ₹1,999 after 100 more signups</div>
-          <h2 className="h2">
+    <section id="pricing" className="py-20">
+      <div className="container px-4">
+        {/* Header with FOMO */}
+        <div className="text-center space-y-6 mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-destructive/10 text-destructive text-sm font-medium">
+            ⚠️ Price increases to ₹1,999 after 100 more signups
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-bold">
             Stop Competing. Start{" "}
-            <span style={{ color: 'var(--brand)' }}>
+            <span className="bg-gradient-primary bg-clip-text text-transparent">
               Dominating
             </span>
           </h2>
-          <p className="lead">
+          
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             While others send 100+ applications and get ghosted, our users get hired with 40% salary increases. 
-            <strong>Your competition is already using AI. Don't get left behind.</strong>
+            <strong className="text-foreground">Your competition is already using AI. Don't get left behind.</strong>
           </p>
           
-          <div className="card p24 mt24" style={{ maxWidth: '400px', margin: '24px auto 0', background: 'linear-gradient(135deg, rgba(108,139,255,.05), rgba(91,231,196,.03))' }}>
-            <div className="center">
-              <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--brand)' }}>LIMITED TIME</div>
-              <div style={{ fontSize: '14px', color: 'var(--muted)', marginTop: '4px' }}>70% OFF - Ends Soon</div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
-                <span style={{ fontSize: '18px', textDecoration: 'line-through', color: 'var(--muted)' }}>₹1,999</span>
-                <span style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)' }}>₹499</span>
+          <div className="bg-gradient-card rounded-lg p-6 max-w-md mx-auto border border-primary/20">
+            <div className="text-center space-y-2">
+              <div className="text-2xl font-bold text-primary">LIMITED TIME</div>
+              <div className="text-sm text-muted-foreground">70% OFF - Ends Soon</div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg line-through text-muted-foreground">₹1,999</span>
+                <span className="text-3xl font-bold text-success">₹499</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Pricing Plans */}
-        <div className="pricing">
+        {/* Pricing cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => (
-            <div 
+            <Card 
               key={index} 
-              className={`plan card ${plan.popular ? 'popular' : ''}`}
+              className={`relative p-8 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 ${
+                plan.popular ? 'ring-2 ring-primary ring-offset-2 scale-105' : ''
+              }`}
             >
               {plan.popular && (
-                <div className="plan-badge">
-                  ⭐ Most Popular
-                </div>
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
+                  <Star className="w-3 h-3 mr-1" />
+                  Most Popular
+                </Badge>
               )}
               
-              {/* Plan Header */}
-              <div className="center">
-                <h3 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 8px 0' }}>{plan.name}</h3>
-                <p style={{ color: 'var(--muted)', fontSize: '14px', margin: '0' }}>{plan.description}</p>
-              </div>
-
-              {/* Price */}
-              <div className="center">
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--muted)' }}>₹</span>
-                  <span className="price">{plan.price.toFixed(2)}</span>
-                  <span className="period">/{plan.duration}</span>
+              <div className="space-y-6">
+                {/* Plan header */}
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-bold">{plan.name}</h3>
+                  <p className="text-muted-foreground">{plan.description}</p>
                 </div>
-              </div>
 
-              {/* Features */}
-              <ul>
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex}>{feature}</li>
-                ))}
-              </ul>
-
-              {/* Bonuses */}
-              {'bonuses' in plan && plan.bonuses && (
-                <div style={{ paddingTop: '16px', borderTop: '1px solid rgba(108,139,255,.2)' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--brand)', textAlign: 'center', marginBottom: '12px' }}>
-                    🎁 EXCLUSIVE BONUSES
+                {/* Price */}
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-sm text-muted-foreground">₹</span>
+                    <span className="text-4xl font-bold">{plan.price.toFixed(2)}</span>
+                    <span className="text-muted-foreground">/{plan.duration}</span>
                   </div>
-                  <ul style={{ listStyle: 'none', padding: '0', margin: '0', display: 'grid', gap: '8px' }}>
-                    {plan.bonuses.map((bonus, bonusIndex) => (
-                      <li key={bonusIndex} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', color: 'var(--warning)' }}>
-                        <span>⭐</span>
-                        <span style={{ fontSize: '14px', fontWeight: '500' }}>{bonus}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              )}
 
-              {/* CTA */}
-              <button 
-                className="button cta"
-                onClick={() => handlePayment(plan)}
-                disabled={loadingPlan === plan.name}
-                style={{ width: '100%', marginTop: 'auto' }}
-              >
-                {loadingPlan === plan.name ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    {plan.popular && <Zap className="w-4 h-4" />}
-                    Get Started
-                  </>
+                {/* Features */}
+                <div className="space-y-3">
+                  {plan.features.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-success flex-shrink-0" />
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bonuses (only for 1 Year Plan) */}
+                {'bonuses' in plan && plan.bonuses && (
+                  <div className="space-y-3 pt-2 border-t border-primary/20">
+                    <div className="text-sm font-medium text-primary text-center">
+                      🎁 EXCLUSIVE BONUSES
+                    </div>
+                    {plan.bonuses.map((bonus, bonusIndex) => (
+                      <div key={bonusIndex} className="flex items-center gap-3">
+                        <Star className="w-5 h-5 text-warning flex-shrink-0" />
+                        <span className="text-sm font-medium text-warning">{bonus}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </button>
-            </div>
+
+                {/* CTA button */}
+                <Button 
+                  variant={plan.variant}
+                  size="lg" 
+                  className="w-full"
+                  onClick={() => handlePayment(plan)}
+                  disabled={loadingPlan === plan.name}
+                >
+                  {loadingPlan === plan.name ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {plan.popular && <Zap className="w-4 h-4 mr-2" />}
+                      {plan.name === "Premium" && <Crown className="w-4 h-4 mr-2" />}
+                      Get Started
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Card>
           ))}
         </div>
 
-        {/* Social Proof */}
-        <div className="card p32 mt24" style={{ background: 'linear-gradient(135deg, rgba(108,139,255,.04), rgba(91,231,196,.02))' }}>
-          <h3 className="h2 center">Why JobHunter Pro Users Get Hired Faster</h3>
-          
-          <div className="boards mt24">
-            <div className="board center">
-              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--success)' }}>94%</div>
-              <div style={{ fontSize: '14px', color: 'var(--muted)' }}>Resume ATS Pass Rate</div>
-              <div style={{ fontSize: '12px', color: 'var(--muted)' }}>(vs 23% industry avg)</div>
+        {/* Social proof and urgency */}
+        <div className="mt-16 text-center space-y-8">
+          <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
+            <h3 className="text-2xl font-bold mb-6">Why JobHunter Pro Users Get Hired Faster</h3>
+            
+            <div className="grid sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-2xl md:text-3xl font-bold text-success">94%</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Resume ATS Pass Rate</div>
+                <div className="text-xs text-muted-foreground">(vs 23% industry avg)</div>
+              </div>
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-2xl md:text-3xl font-bold text-primary">20+</div>
+                <div className="text-xs md:text-sm text-muted-foreground">AI Agents</div>
+                <div className="text-xs text-muted-foreground">(5x Boost your Job Search)</div>
+              </div>
+              <div className="space-y-1 md:space-y-2 text-center">
+                <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-warning">Live Job Board</div>
+                <div className="text-xs md:text-sm text-muted-foreground">Matching to Your Profile</div>
+                <div className="text-xs text-muted-foreground">(40% above market)</div>
+              </div>
             </div>
-            <div className="board center">
-              <div style={{ fontSize: '32px', fontWeight: '800', color: 'var(--brand)' }}>20+</div>
-              <div style={{ fontSize: '14px', color: 'var(--muted)' }}>AI Agents</div>
-              <div style={{ fontSize: '12px', color: 'var(--muted)' }}>(5x Boost your Job Search)</div>
+            
+            <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mb-6">
+              <p className="text-sm text-warning font-medium">
+                🔥 Flash Sale: Next 50 customers get lifetime access to all future features at current price
+              </p>
             </div>
-            <div className="board center">
-              <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--warning)' }}>Live Job Board</div>
-              <div style={{ fontSize: '14px', color: 'var(--muted)' }}>Matching to Your Profile</div>
-              <div style={{ fontSize: '12px', color: 'var(--muted)' }}>(40% above market)</div>
+            
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Perfect for:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Students</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Fresh Graduates</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Career Switchers</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Experienced Professionals</span>
+                <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">Remote Job Seekers</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="card p16 mt16" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02))', border: '1px solid rgba(245, 158, 11, 0.12)' }}>
-            <p style={{ color: 'var(--warning)', fontWeight: '500', fontSize: '14px', margin: '0', textAlign: 'center' }}>
-              🔥 Flash Sale: Next 50 customers get lifetime access to all future features at current price
-            </p>
           </div>
         </div>
+
       </div>
     </section>
   );
