@@ -21,14 +21,14 @@ const Auth = () => {
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, loading: authLoading, isSigningOut } = useAuth();
+  const { user, loading: authLoading, isSigningOut, hasLoggedOut } = useAuth();
 
-  // Redirect authenticated users, but not if they're signing out
+  // Redirect authenticated users, but not if they're signing out or have just logged out
   useEffect(() => {
-    if (!authLoading && user && !isSigningOut) {
+    if (!authLoading && user && !isSigningOut && !hasLoggedOut) {
       navigate('/dashboard', { replace: true });
     }
-  }, [user, authLoading, isSigningOut, navigate]);
+  }, [user, authLoading, isSigningOut, hasLoggedOut, navigate]);
 
   useEffect(() => {
     // Check if user came from pricing page

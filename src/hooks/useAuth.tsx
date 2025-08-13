@@ -7,6 +7,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isSigningOut: boolean;
+  hasLoggedOut: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isSigningOut: false,
+  hasLoggedOut: false,
   signOut: async () => {},
 });
 
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [hasLoggedOut, setHasLoggedOut] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -45,9 +48,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSession(null);
             setUser(null);
             setIsSigningOut(false);
+            setHasLoggedOut(true);
+          } else if (event === 'SIGNED_IN') {
+            setHasLoggedOut(false);
+            setSession(session);
+            setUser(session?.user ?? null);
           } else {
-            // Only update session if we're not in the process of signing out
-            if (!isSigningOut) {
+            // Only update session if we're not in the process of signing out and haven't just logged out
+            if (!isSigningOut && !hasLoggedOut) {
               setSession(session);
               setUser(session?.user ?? null);
             }
@@ -68,10 +76,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSession(null);
             setUser(null);
           } else {
-            // Only set session if we're not signing out
-            if (!isSigningOut) {
+            // Only set session if we're not signing out and haven't just logged out
+            if (!isSigningOut && !hasLoggedOut) {
               setSession(session);
               setUser(session?.user ?? null);
+            } else if (hasLoggedOut) {
+              // If user has logged out, ensure session is null
+              setSession(null);
+              setUser(null);
             }
           }
           setLoading(false);
@@ -93,20 +105,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [isSigningOut]);
+  }, [isSigningOut, hasLoggedOut]);
 
   const signOut = async () => {
     try {
       setIsSigningOut(true);
       setLoading(true);
+      setHasLoggedOut(true);
       
       // Clear local state immediately
       setSession(null);
       setUser(null);
       
-      // Clear localStorage to prevent session restoration
-      localStorage.removeItem('sb-moirryvajzyriagqihbe-auth-token');
-      localStorage.removeItem('supabase.auth.token');
+      // Clear all possible storage locations
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Try to clear specific Supabase storage keys
+      const storageKeys = [
+        'sb-moirryvajzyriagqihbe-auth-token',
+        'supabase.auth.token',
+        'supabase.auth.session',
+        'sb-auth-token',
+        'sb-auth-session'
+      ];
+      
+      storageKeys.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
       
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
@@ -122,7 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isSigningOut, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isSigningOut, hasLoggedOut, signOut }}>
       {children}
     </AuthContext.Provider>
   );

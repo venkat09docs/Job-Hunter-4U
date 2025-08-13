@@ -11,15 +11,15 @@ import BuildProfileCTA from "@/components/BuildProfileCTA";
 import Footer from "@/components/Footer";
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, hasLoggedOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Don't redirect if still loading to avoid premature redirects
-    if (!loading && user) {
+    // Don't redirect if still loading, if user has just logged out, or to avoid premature redirects
+    if (!loading && user && !hasLoggedOut) {
       navigate('/dashboard');
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, hasLoggedOut, navigate]);
 
   return (
     <div className="min-h-screen">
