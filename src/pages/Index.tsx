@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import ActivityFeaturesShowcase from "@/components/ActivityFeaturesShowcase";
 import JobTrackerShowcase from "@/components/JobTrackerShowcase";
 import AIToolsSection from "@/components/AIToolsSection";
 import Pricing from "@/components/Pricing";
@@ -23,6 +24,7 @@ const Index = () => {
     <div className="min-h-screen">
       <Hero />
       <Features />
+      <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
       <AIToolsSection />
       <Pricing />

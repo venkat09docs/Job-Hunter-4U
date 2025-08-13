@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Search, Target, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-job-hunters.jpg";
+import Hero3D from "./Hero3D";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -16,6 +17,9 @@ const Hero = () => {
           {/* Text content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
             <div className="space-y-4">
+              <div className="flex items-center justify-center lg:justify-start gap-4 mb-4">
+                <Hero3D />
+              </div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Stop Getting{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent line-through opacity-60">
