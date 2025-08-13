@@ -77,9 +77,9 @@ const groupedTasks = displayedTasks.reduce((acc, task) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Activity className="h-6 w-6" /> GitHub Activity Tracker
+            <Activity className="h-6 w-6" /> {title || 'GitHub Activity Tracker'}
           </h2>
-          <p className="text-muted-foreground">Track your repository management and engagement activities</p>
+          <p className="text-muted-foreground">{subtitle || 'Track your repository management and engagement activities'}</p>
         </div>
         <Button onClick={handleGoToGitHub} variant="outline">
           <ExternalLink className="h-4 w-4 mr-2" /> View My GitHub
@@ -88,8 +88,8 @@ const groupedTasks = displayedTasks.reduce((acc, task) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your GitHub Activity Progress</CardTitle>
-          <CardDescription>Track your repository management and engagement activities</CardDescription>
+          <CardTitle>{title || 'Your GitHub Activity Progress'}</CardTitle>
+          <CardDescription>{subtitle || 'Track your repository management and engagement activities'}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

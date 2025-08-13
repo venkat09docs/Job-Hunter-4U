@@ -498,6 +498,7 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
   <TabsTrigger value="content">Content Mgmt</TabsTrigger>
   <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
 </TabsList>
+            {selectedCategory === 'application' ? (
               <div className="space-y-6">
                 <Card className="shadow-elegant border-primary/20">
                   <CardHeader>
@@ -912,10 +913,23 @@ const jobWeekDates = getWeekDatesMonToFri(new Date());
                   </CardContent>
                 </Card>
               </div>
-            ) : selectedCategory === 'skill' ? (
+) : selectedCategory === 'skill' ? (
               <div className="space-y-6">
-                {/* Embedded GitHub Activity Tracker */}
-                <GitHubActivityTrackerEmbed />
+                {/* Embedded GitHub Activity Tracker - Repository Management only */}
+                <GitHubActivityTrackerEmbed 
+                  categories={["Repository Management"]}
+                  title="GitHub Activity Tracker"
+                  subtitle="Improve your repositories and profile quality"
+                />
+              </div>
+            ) : selectedCategory === 'github-engagement' ? (
+              <div className="space-y-6">
+                {/* GitHub Activity & Engagement */}
+                <GitHubActivityTrackerEmbed 
+                  categories={["Activity & Engagement"]}
+                  title="Activity & Engagement"
+                  subtitle="Grow your GitHub presence through consistent activity and community engagement"
+                />
               </div>
             ) : (
               // Regular Activities List
