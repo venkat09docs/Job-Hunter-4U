@@ -74,14 +74,14 @@ const Dashboard = () => {
   });
 
   const jobStatusData = [
-    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--muted))' },
-    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--secondary))' },
-    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--accent))' },
-    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--primary))' },
-    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--primary) / 0.7)' },
-    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--destructive))' },
-    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--muted-foreground))' },
-    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--border))' },
+    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--chart-wishlist))' },
+    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--chart-applied))' },
+    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--chart-interviewing))' },
+    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--chart-negotiating))' },
+    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--chart-accepted))' },
+    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--chart-not-selected))' },
+    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
+    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
   ];
 
   const handleSignOut = async () => {
@@ -736,7 +736,7 @@ const Dashboard = () => {
                           <Legend />
                           <Bar dataKey="value" name="Applications" radius={[4,4,0,0]}>
                             {jobStatusData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
+                              <Cell key={`cell-${index}`} fill={entry.color} style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard/job-tracker')} />
                             ))}
                           </Bar>
                         </BarChart>
