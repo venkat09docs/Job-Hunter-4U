@@ -730,7 +730,7 @@ const Dashboard = () => {
                       <ResponsiveContainer width="100%" height={320}>
                         <BarChart data={jobStatusData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
                           <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
                           <Tooltip />
                           <Legend />
