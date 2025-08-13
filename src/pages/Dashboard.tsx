@@ -21,7 +21,7 @@ import ActivityChart from '@/components/ActivityChart';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow, startOfWeek, addDays, format } from 'date-fns';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
 
 interface JobEntry {
   id: string;
@@ -72,6 +72,17 @@ const Dashboard = () => {
     const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
     return { label: format(date, 'EEE'), total };
   });
+
+  const jobStatusData = [
+    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--muted))' },
+    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--secondary))' },
+    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--accent))' },
+    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--primary))' },
+    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--primary) / 0.7)' },
+    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--destructive))' },
+    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--muted-foreground))' },
+    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--border))' },
+  ];
 
   const handleSignOut = async () => {
     try {
@@ -715,78 +726,21 @@ const Dashboard = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 lg:gap-4">
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Clock className="h-4 lg:h-6 w-4 lg:w-6 text-orange-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-orange-500">{jobStatusCounts.wishlist}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Wishlist</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Search className="h-4 lg:h-6 w-4 lg:w-6 text-blue-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-blue-500">{jobStatusCounts.applied}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Applied</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Users className="h-4 lg:h-6 w-4 lg:w-6 text-purple-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-purple-500">{jobStatusCounts.interviewing}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Interviewing</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <DollarSign className="h-4 lg:h-6 w-4 lg:w-6 text-green-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-green-500">{jobStatusCounts.negotiating}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Negotiating</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Trophy className="h-4 lg:h-6 w-4 lg:w-6 text-emerald-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-emerald-500">{jobStatusCounts.accepted}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Accepted</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Users className="h-4 lg:h-6 w-4 lg:w-6 text-red-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-red-500">{jobStatusCounts.not_selected}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Not Selected</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <Clock className="h-4 lg:h-6 w-4 lg:w-6 text-slate-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-slate-500">{jobStatusCounts.no_response}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">No Response</div>
-                      </div>
-                      
-                      <div className="text-center p-2 lg:p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                           onClick={() => navigate('/dashboard/job-tracker')}>
-                        <div className="flex items-center justify-center mb-2">
-                          <TrendingUp className="h-4 lg:h-6 w-4 lg:w-6 text-indigo-500" />
-                        </div>
-                        <div className="text-lg lg:text-2xl font-bold text-indigo-500">{totalJobApplications}</div>
-                        <div className="text-xs lg:text-sm text-muted-foreground">Total Jobs in Pipeline</div>
-                      </div>
+                    <div className="w-full" style={{ height: 320 }}>
+                      <ResponsiveContainer width="100%" height={320}>
+                        <BarChart data={jobStatusData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
+                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="value" name="Applications" radius={[4,4,0,0]}>
+                            {jobStatusData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   )}
                 </CardContent>
