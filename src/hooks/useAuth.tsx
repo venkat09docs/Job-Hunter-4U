@@ -68,8 +68,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSession(null);
             setUser(null);
           } else {
-            setSession(session);
-            setUser(session?.user ?? null);
+            // Only set session if we're not signing out
+            if (!isSigningOut) {
+              setSession(session);
+              setUser(session?.user ?? null);
+            }
           }
           setLoading(false);
         }
@@ -101,7 +104,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       
-      const { error } = await supabase.auth.signOut();
+      // Clear localStorage to prevent session restoration
+      localStorage.removeItem('sb-moirryvajzyriagqihbe-auth-token');
+      localStorage.removeItem('supabase.auth.token');
+      
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
       if (error) {
         console.error('Signout error:', error);
         // Even if signout fails, keep local state cleared
