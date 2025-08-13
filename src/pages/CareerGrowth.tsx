@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ChevronRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Calendar, TrendingUp, CheckCircle, AlertCircle, Target, Download, Github } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,9 +21,9 @@ import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
 import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
-import { format, startOfWeek, subWeeks, addDays, addWeeks } from 'date-fns';
+import { format, startOfWeek, subWeeks, addDays, addWeeks, endOfWeek } from 'date-fns';
 import { Button as PaginationButton } from '@/components/ui/button';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 
 interface WeeklyMetrics {
   week: string;
@@ -50,7 +50,7 @@ export default function CareerGrowth() {
   const { profile } = useProfile();
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
-  const { getCompletionPercentage } = useGitHubProgress();
+  const { getCompletionPercentage, tasks: githubTasks } = useGitHubProgress();
   const { getTodayMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
@@ -97,6 +97,41 @@ export default function CareerGrowth() {
   });
 
   const githubProgress = getCompletionPercentage();
+
+  // GitHub Activities tracker metrics
+  const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
+  const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
+  const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
+
+  useEffect(() => {
+    if (!githubTasks) return;
+    const completed = githubTasks.filter(t => REPO_TASK_IDS.includes(t.task_id) && t.completed).length;
+    setRepoMetrics({ completed, total: REPO_TASK_IDS.length });
+  }, [githubTasks]);
+
+  const refreshWeeklyFlow = async () => {
+    if (!user) return;
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const { data, error } = await supabase
+      .from('github_daily_flow_sessions')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('completed', true)
+      .gte('session_date', format(weekStart, 'yyyy-MM-dd'))
+      .lte('session_date', format(weekEnd, 'yyyy-MM-dd'));
+    if (!error) setWeeklyFlowCompleted(data?.length || 0);
+  };
+
+  useEffect(() => {
+    refreshWeeklyFlow();
+  }, [user]);
+
+  const WEEKLY_TARGET = 3;
+  const repoCompleted = repoMetrics.completed;
+  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
+  const flowCompleted = weeklyFlowCompleted;
+  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
 
   useEffect(() => {
     if (user) {
@@ -825,30 +860,81 @@ export default function CareerGrowth() {
           </TabsContent>
 
           <TabsContent value="github" className="space-y-6">
-            <Card>
+            <Card className="shadow-elegant border-primary/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-gray-800" />
-                  GitHub Profile Status
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Github className="h-5 w-5 text-primary" />
+                  GitHub Activities Tracker
                 </CardTitle>
+                <CardDescription>
+                  Combined status from GitHub Activity Tracker and Activity & Engagement
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Profile Completion</p>
-                      <div className="space-y-2">
-                        <Progress value={githubProgress} className="h-2" />
-                        <div className="flex justify-between text-sm">
-                          <span>{githubProgress}% Complete</span>
-                          <span className="text-muted-foreground">Target: 80%</span>
-                        </div>
-                      </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <div className="text-sm font-medium mb-2">Repository Setup Progress</div>
+                    <div className="w-full" style={{ height: 300 }}>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                          data={[
+                            { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
+                            { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
+                          ]}
+                          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                          <Tooltip />
+                          <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                            {[
+                              { name: 'Repo Completed', color: 'hsl(var(--chart-accepted))' },
+                              { name: 'Repo Pending', color: 'hsl(var(--chart-not-selected))' },
+                            ].map((entry, index) => (
+                              <Cell
+                                key={`repo-cell-${index}`}
+                                fill={entry.color}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">README Files</p>
-                      <div className="text-2xl font-bold">{savedReadmeFilesCount}</div>
-                      <p className="text-sm text-muted-foreground">Saved in Library</p>
+                  </div>
+
+                  <div>
+                    <div className="text-sm font-medium mb-2">Weekly Flow (Mon–Sun)</div>
+                    <div className="w-full" style={{ height: 300 }}>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                          data={[
+                            { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
+                            { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
+                          ]}
+                          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                          <Tooltip />
+                          <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                            {[
+                              { name: 'Flow Completed', color: 'hsl(var(--chart-applied))' },
+                              { name: 'Flow Remaining', color: 'hsl(var(--chart-no-response))' },
+                            ].map((entry, index) => (
+                              <Cell
+                                key={`flow-cell-${index}`}
+                                fill={entry.color}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=engagement')}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>

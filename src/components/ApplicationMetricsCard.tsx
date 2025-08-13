@@ -8,7 +8,7 @@ import { useJobApplicationActivities, JobApplicationTaskId } from "@/hooks/useJo
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay, subDays, addWeeks } from "date-fns";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export default function ApplicationMetricsCard() {
@@ -109,8 +109,8 @@ export default function ApplicationMetricsCard() {
 
   const weekRangeLabel = `${format(weekDates[0], 'MMM d')} – ${format(weekDates[weekDates.length - 1], 'MMM d')}`;
 
-  // Prepare chart data
-  const chartData = weekDates.map((date) => {
+  // Prepare chart data with different colors for each day
+  const chartData = weekDates.map((date, index) => {
     const key = format(date, 'yyyy-MM-dd');
     const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
     const applied = jobWeekData[key]?.['apply_quality_jobs'] ?? 0;
@@ -130,11 +130,16 @@ export default function ApplicationMetricsCard() {
       accepted,
       notSelected,
       noResponse,
-      total: wishlist + applied + interviewing + negotiating + accepted + notSelected + noResponse
+      total: wishlist + applied + interviewing + negotiating + accepted + notSelected + noResponse,
+      dayColor: `hsl(var(--chart-${index + 1}))`
     };
   });
 
   const chartConfig = {
+    total: {
+      label: "Total Applications",
+      color: "hsl(var(--primary))"
+    },
     wishlist: {
       label: "Wishlist",
       color: "hsl(var(--chart-1))"
@@ -180,6 +185,15 @@ export default function ApplicationMetricsCard() {
             <ArrowLeft className="h-4 w-4 mr-1" /> Previous Week
           </Button>
           <Badge variant="secondary">{weekRangeLabel}</Badge>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hover-scale" 
+            onClick={() => setWeekOffset((v) => Math.min(0, v + 1))} 
+            disabled={weekOffset === 0}
+          >
+            Next Week <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="animate-fade-in">
@@ -239,7 +253,7 @@ export default function ApplicationMetricsCard() {
           </Table>
           
           <div className="mt-6">
-            <div className="text-sm font-medium mb-4">Weekly Application Status Distribution</div>
+            <div className="text-sm font-medium mb-4">Daily Application Status Distribution</div>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -261,13 +275,11 @@ export default function ApplicationMetricsCard() {
                       }}
                     />} 
                   />
-                  <Bar dataKey="wishlist" stackId="applications" fill="var(--color-wishlist)" name="Wishlist" />
-                  <Bar dataKey="applied" stackId="applications" fill="var(--color-applied)" name="Applied" />
-                  <Bar dataKey="interviewing" stackId="applications" fill="var(--color-interviewing)" name="Interviewing" />
-                  <Bar dataKey="negotiating" stackId="applications" fill="var(--color-negotiating)" name="Negotiating" />
-                  <Bar dataKey="accepted" stackId="applications" fill="var(--color-accepted)" name="Accepted" />
-                  <Bar dataKey="notSelected" stackId="applications" fill="var(--color-notSelected)" name="Not Selected" />
-                  <Bar dataKey="noResponse" stackId="applications" fill="var(--color-noResponse)" name="No Response" />
+                  <Bar dataKey="total" name="Total Applications" radius={[4,4,0,0]}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`day-cell-${index}`} fill={entry.dayColor} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
