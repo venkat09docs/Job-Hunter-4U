@@ -88,6 +88,14 @@ export default function CareerGrowth() {
   const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
   const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<{[date: string]: {[activity: string]: number}}>({});
 
+  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), index);
+    const key = format(date, 'yyyy-MM-dd');
+    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
+    const total = DAILY_ACTIVITIES.reduce((sum, a) => sum + (dayData[a.id] || 0), 0);
+    return { label: format(date, 'EEE'), total };
+  });
+
   const githubProgress = getCompletionPercentage();
 
   useEffect(() => {
@@ -774,7 +782,21 @@ export default function CareerGrowth() {
                            })}
                           </TableBody>
                       </Table>
-                    </div>
+                        <div className="mt-6">
+                          <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
+                          <div style={{ width: '100%', height: 300 }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                              <BarChart data={weeklyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                                <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" />
+                                <YAxis stroke="hsl(var(--muted-foreground))" />
+                                <Tooltip />
+                                <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      </div>
                   </CardContent>
                 </Card>
               </TabsContent>
