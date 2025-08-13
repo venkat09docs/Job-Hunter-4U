@@ -140,16 +140,6 @@ export default function ApplicationMetricsCard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="bg-primary/10">
-                <TableCell className="font-semibold">Week Total (Mon–Fri)</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalWishlist}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalApplied}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalInterviewing}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalNegotiating}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalAccepted}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalNotSelected}</TableCell>
-                <TableCell className="text-center font-semibold">{weekTotalNoResponse}</TableCell>
-              </TableRow>
               {weekDatesToShow.map((date) => {
                 const key = format(date, 'yyyy-MM-dd');
                 const wishlist = jobWeekData[key]?.['save_potential_opportunities'] ?? 0;
@@ -177,6 +167,16 @@ export default function ApplicationMetricsCard() {
                   </TableRow>
                 );
               })}
+              <TableRow className="bg-primary/10">
+                <TableCell className="font-semibold">Week Total (Mon–Fri)</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalWishlist}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalApplied}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalInterviewing}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalNegotiating}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalAccepted}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalNotSelected}</TableCell>
+                <TableCell className="text-center font-semibold">{weekTotalNoResponse}</TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </div>

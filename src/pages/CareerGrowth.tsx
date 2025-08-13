@@ -50,7 +50,7 @@ export default function CareerGrowth() {
   const { progress: resumeProgress } = useResumeProgress();
   const { completionPercentage: linkedinProgress } = useLinkedInProgress();
   const { getCompletionPercentage } = useGitHubProgress();
-  const { getTodayMetrics, getWeeklyMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
+  const { getTodayMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
   const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, fetchDailyActivities } = useDailyNetworkActivities();
@@ -133,6 +133,16 @@ export default function CareerGrowth() {
       });
 
       setWeeklyDailyBreakdown(breakdown);
+
+      // Aggregate weekly totals for selected week (for circle indicators)
+      const totals: { [key: string]: number } = {};
+      DAILY_ACTIVITIES.forEach((a) => { totals[a.id] = 0; });
+      Object.values(breakdown).forEach((day) => {
+        DAILY_ACTIVITIES.forEach((a) => {
+          totals[a.id] += (day[a.id] || 0);
+        });
+      });
+      setNetworkWeeklyMetrics(totals);
     } catch (error) {
       console.error('Error fetching weekly daily breakdown:', error);
     }
@@ -144,27 +154,8 @@ export default function CareerGrowth() {
     
     try {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const [dailyData, rawWeeklyData] = await Promise.all([
-        getTodayMetrics(today),
-        getWeeklyMetrics()
-      ]);
-      
-      // Map weekly data from database activity_ids to UI field names
-      const mappedWeeklyData: {[key: string]: number} = {};
-      Object.entries(rawWeeklyData).forEach(([dbActivityId, value]) => {
-        let uiFieldName = dbActivityId;
-        
-        // Map database activity_ids to UI field names
-        if (dbActivityId === 'industry_research') uiFieldName = 'research';
-        if (dbActivityId === 'follow_up') uiFieldName = 'follow_up_messages';
-        if (dbActivityId === 'industry_groups') uiFieldName = 'engage_in_groups';
-        if (dbActivityId === 'article_draft') uiFieldName = 'work_on_article';
-        
-        mappedWeeklyData[uiFieldName] = value;
-      });
-      
+      const dailyData = await getTodayMetrics(today);
       setNetworkDailyMetrics(dailyData);
-      setNetworkWeeklyMetrics(mappedWeeklyData);
     } catch (error) {
       console.error('Error fetching network data:', error);
     }
@@ -699,13 +690,17 @@ export default function CareerGrowth() {
                       <div className="flex items-center gap-4 overflow-x-auto pb-2">
                         {DAILY_ACTIVITIES.map((activity) => {
                           const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
-                          const isCompleted = weeklyCount >= activity.weeklyTarget;
+                          const target = activity.weeklyTarget;
+                          const colorClass = (networkWeekOffset === 0)
+                            ? 'border-amber-500'
+                            : (weeklyCount >= target ? 'border-green-500' : 'border-red-500');
                           return (
                             <div key={activity.id} className="flex flex-col items-center min-w-[88px]">
-                              <div className={`relative h-20 w-20 rounded-full border-2 flex items-center justify-center ${isCompleted ? 'border-primary' : 'border-muted-foreground/30'} bg-primary/10`}>
+                              <div className={`relative h-20 w-20 rounded-full border-2 flex items-center justify-center ${colorClass} bg-primary/10`}>
                                 <span className="text-xl font-bold">{weeklyCount}</span>
                               </div>
-                              <div className="mt-2 text-xs text-center">
+                              <div className="mt-1 text-xs text-muted-foreground">{weeklyCount}/{target}</div>
+                              <div className="mt-1 text-xs text-center">
                                 {activity.title}
                               </div>
                             </div>
