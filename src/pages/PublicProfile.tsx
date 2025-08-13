@@ -43,24 +43,36 @@ const PublicProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from('public_profiles')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_public', true)
-        .single();
+    const { data, error } = await supabase
+      .rpc('get_safe_public_profile', { profile_slug: slug });
 
-      if (error) throw error;
-      
-      // Transform the data to match our interface
-      const transformedProfile: PublicProfile = {
-        ...data,
-        custom_links: Array.isArray(data.custom_links) 
-          ? (data.custom_links as unknown as CustomLink[]) 
-          : []
-      };
-      
-      setProfile(transformedProfile);
+    if (error) throw error;
+
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      throw new Error('Profile not found');
+    }
+
+    // Transform RPC result to match component needs (omit sensitive fields)
+    const transformedProfile: PublicProfile = {
+      id: 'public',
+      user_id: 'public',
+      slug: row.slug,
+      profile_image_url: row.profile_image_url ?? null,
+      full_name: row.full_name,
+      bio: row.bio ?? null,
+      video_url: null, // intentionally not exposed publicly
+      github_url: row.github_url ?? null,
+      linkedin_url: row.linkedin_url ?? null,
+      resume_url: null, // intentionally not exposed publicly
+      blog_url: row.blog_url ?? null,
+      custom_links: Array.isArray(row.custom_links)
+        ? (row.custom_links as unknown as CustomLink[])
+        : [],
+      is_public: true,
+    };
+
+    setProfile(transformedProfile);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
       toast({
