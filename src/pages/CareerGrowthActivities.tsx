@@ -153,7 +153,8 @@ const [inputValues, setInputValues] = useState<InputValues>({});
 const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
 const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Record<string, number>>>>({});
 const jobWeekDates = getWeekDatesMonToFri(new Date());
-const [gitTab, setGitTab] = useState<'repo' | 'engagement'>('repo');
+const initialGitTab = (urlParams.get('gitTab') === 'engagement') ? 'engagement' : 'repo';
+const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
 
 
   // LinkedIn Network data loading

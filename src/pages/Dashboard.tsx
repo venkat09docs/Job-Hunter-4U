@@ -119,12 +119,6 @@ const Dashboard = () => {
   const flowCompleted = weeklyFlowCompleted;
   const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
 
-  const githubActivitiesData = [
-    { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
-    { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
-    { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
-    { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
-  ];
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -529,11 +523,11 @@ const Dashboard = () => {
                         >
                           <div className="relative w-16 h-16 mb-2">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">{getGitHubProgress()}</span>
+                              <span className="text-lg font-bold text-primary">{getGitHubProgress()}%</span>
                             </div>
                           </div>
                           <h4 className="font-medium text-center text-sm">GitHub Activities</h4>
-                          <p className="text-xs text-muted-foreground text-center">This week activities</p>
+                          <p className="text-xs text-muted-foreground text-center">Profile setup status</p>
                         </div>
                       </div>
                     </div>
@@ -770,21 +764,72 @@ const Dashboard = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="w-full" style={{ height: 320 }}>
-                    <ResponsiveContainer width="100%" height={320}>
-                      <BarChart data={githubActivitiesData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                        <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
-                          {githubActivitiesData.map((entry, index) => (
-                            <Cell key={`gh-cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <div className="text-sm font-medium mb-2">Repository Setup Progress</div>
+                      <div className="w-full" style={{ height: 300 }}>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart
+                            data={[
+                              { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
+                              { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
+                            ]}
+                            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                              {[
+                                { name: 'Repo Completed', color: 'hsl(var(--chart-accepted))' },
+                                { name: 'Repo Pending', color: 'hsl(var(--chart-not-selected))' },
+                              ].map((entry, index) => (
+                                <Cell
+                                  key={`repo-cell-${index}`}
+                                  fill={entry.color}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium mb-2">Weekly Flow (Mon–Sun)</div>
+                      <div className="w-full" style={{ height: 300 }}>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart
+                            data={[
+                              { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
+                              { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
+                            ]}
+                            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                              {[
+                                { name: 'Flow Completed', color: 'hsl(var(--chart-applied))' },
+                                { name: 'Flow Remaining', color: 'hsl(var(--chart-no-response))' },
+                              ].map((entry, index) => (
+                                <Cell
+                                  key={`flow-cell-${index}`}
+                                  fill={entry.color}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=engagement')}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
