@@ -25,7 +25,12 @@ const Navigation = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
+          <img 
+            src="/lovable-uploads/ff802ee3-a3bc-4fbe-ad11-85449bdff59e.png" 
+            alt="Rise n Shine Technologies Logo" 
+            className="h-10 w-10"
+          />
           <div className="font-bold text-xl text-primary">
             Rise n Shine Technologies
           </div>

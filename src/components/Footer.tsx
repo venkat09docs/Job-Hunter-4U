@@ -25,9 +25,16 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Company info */}
           <div className="md:col-span-1 space-y-4">
-            <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              JobHunter Pro
-            </h3>
+            <div className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/ff802ee3-a3bc-4fbe-ad11-85449bdff59e.png" 
+                alt="Rise n Shine Technologies Logo" 
+                className="h-8 w-8"
+              />
+              <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Rise n Shine Technologies
+              </h3>
+            </div>
             <p className="text-muted-foreground">
               Empowering professionals to find their dream careers through 
               innovative technology and personalized support.
