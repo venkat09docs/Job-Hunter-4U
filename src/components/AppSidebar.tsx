@@ -62,6 +62,7 @@ const mainItems = [
 ];
 
 const jobHunterItems = [
+  { title: "Status View", url: "/dashboard/status-view", icon: BarChart3 },
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search },

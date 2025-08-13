@@ -46,6 +46,7 @@ import NotFound from "./pages/NotFound";
 import SuperAI from "./pages/SuperAI";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
+import StatusView from "./pages/StatusView";
 import SubscriptionWelcomeDialog from "./components/SubscriptionWelcomeDialog";
 
 const queryClient = new QueryClient();
@@ -263,6 +264,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CareerGrowthActivities />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/status-view" 
+              element={
+                <ProtectedRoute>
+                  <StatusView />
                 </ProtectedRoute>
               } 
             />
