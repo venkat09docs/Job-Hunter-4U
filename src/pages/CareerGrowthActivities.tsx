@@ -152,7 +152,7 @@ const [inputValues, setInputValues] = useState<InputValues>({});
 const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
 const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Record<string, number>>>>({});
 const jobWeekDates = getWeekDatesMonToFri(new Date());
-const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
+
 
   // LinkedIn Network data loading
   const loadData = useCallback(async (dateKey: string) => {
@@ -490,76 +490,66 @@ const [appTab, setAppTab] = useState<'daily' | 'metrics'>('daily');
 
         {/* Main Tabs - Promoted from sub tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-<TabsList className="grid w-full grid-cols-5">
+<TabsList className="grid w-full grid-cols-6">
   <TabsTrigger value="application">Job Applications</TabsTrigger>
   <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
-  <TabsTrigger value="skill">GitHub Activities</TabsTrigger>
+  <TabsTrigger value="skill">GitHub Activity Tracker</TabsTrigger>
+  <TabsTrigger value="github-engagement">Activity & Engagement</TabsTrigger>
   <TabsTrigger value="content">Content Mgmt</TabsTrigger>
   <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
 </TabsList>
-
-            {selectedCategory === 'application' ? (
               <div className="space-y-6">
-                <Tabs value={appTab} onValueChange={(v) => setAppTab(v as 'daily' | 'metrics')} className="w-full">
-                  <TabsList className="grid w-full grid-cols-1">
-                    <TabsTrigger value="daily">Daily Activities Tracker</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="daily">
-                    <Card className="shadow-elegant border-primary/20">
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5 text-primary" />
-                          Weekly Activities Tracker (Mon–Fri)
-                        </CardTitle>
-                        <CardDescription>
-                          Use checkboxes to mark completion. Only Today and Yesterday are editable; other days are read-only.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Task</TableHead>
-                              {jobWeekDates.map((date) => (
-                                <TableHead key={date.toISOString()} className="text-center">
-                                  {format(date, 'EEE')} <span className="text-xs text-muted-foreground">{format(date, 'd')}</span>
-                                </TableHead>
-                              ))}
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {JOB_APP_TASKS.map((task) => (
-                              <TableRow key={task.id}>
-                                <TableCell>
-                                  <div className="font-medium text-sm">{task.title}</div>
-                                  <div className="text-xs text-muted-foreground">{task.description}</div>
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Weekly Activities Tracker (Mon–Fri)
+                    </CardTitle>
+                    <CardDescription>
+                      Use checkboxes to mark completion. Only Today and Yesterday are editable; other days are read-only.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Task</TableHead>
+                          {jobWeekDates.map((date) => (
+                            <TableHead key={date.toISOString()} className="text-center">
+                              {format(date, 'EEE')} <span className="text-xs text-muted-foreground">{format(date, 'd')}</span>
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {JOB_APP_TASKS.map((task) => (
+                          <TableRow key={task.id}>
+                            <TableCell>
+                              <div className="font-medium text-sm">{task.title}</div>
+                              <div className="text-xs text-muted-foreground">{task.description}</div>
+                            </TableCell>
+                            {jobWeekDates.map((date) => {
+                              const dateKey = getDateKey(date);
+                              const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId] ?? 0;
+                              const isEditable = isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1));
+                              return (
+                                <TableCell key={`${dateKey}-${task.id}`} className="w-28 text-center">
+                                  <div className="flex items-center justify-center">
+                                    <Checkbox
+                                      checked={val > 0}
+                                      onCheckedChange={(checked) => isEditable && handleJobToggle(dateKey, task.id as JobApplicationTaskId, checked === true)}
+                                      disabled={!isEditable}
+                                    />
+                                  </div>
                                 </TableCell>
-                                {jobWeekDates.map((date) => {
-                                  const dateKey = getDateKey(date);
-                                  const val = jobWeekData[dateKey]?.[task.id as JobApplicationTaskId] ?? 0;
-                                  const isEditable = isSameDay(date, new Date()) || isSameDay(date, subDays(new Date(), 1));
-                                  return (
-                                    <TableCell key={`${dateKey}-${task.id}`} className="w-28 text-center">
-                                      <div className="flex items-center justify-center">
-                                        <Checkbox
-                                          checked={val > 0}
-                                          onCheckedChange={(checked) => isEditable && handleJobToggle(dateKey, task.id as JobApplicationTaskId, checked === true)}
-                                          disabled={!isEditable}
-                                        />
-                                      </div>
-                                    </TableCell>
-                                  );
-                                })}
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                </Tabs>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
               </div>
             ) : selectedCategory === 'networking' ? (
               // LinkedIn Network Management Content

@@ -30,12 +30,11 @@ const GITHUB_ACTIVITY_TASKS: GitHubTask[] = [
   { id: 'follow_developers', title: 'Follow other developers', description: 'Build your network by following interesting developers and organizations', category: 'Activity & Engagement', completed: false },
 ];
 
-export default function GitHubActivityTrackerEmbed() {
+export default function GitHubActivityTrackerEmbed({ categories, title, subtitle }: { categories?: string[]; title?: string; subtitle?: string }) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { tasks, loading, updateTaskStatus } = useGitHubProgress();
   const [localTasks, setLocalTasks] = useState<GitHubTask[]>(GITHUB_ACTIVITY_TASKS);
-
   useEffect(() => {
     if (!loading && tasks.length > 0) {
       setLocalTasks(prev =>
@@ -63,16 +62,16 @@ export default function GitHubActivityTrackerEmbed() {
     else window.open('https://github.com', '_blank');
   };
 
-  const completedTasks = localTasks.filter(t => t.completed).length;
-  const totalTasks = localTasks.length;
-  const completionPercentage = Math.round((completedTasks / totalTasks) * 100);
+const displayedTasks = localTasks.filter(t => !categories || categories.includes(t.category));
+const completedTasks = displayedTasks.filter(t => t.completed).length;
+const totalTasks = displayedTasks.length || 1;
+const completionPercentage = Math.round((completedTasks / totalTasks) * 100);
 
-  const groupedTasks = localTasks.reduce((acc, task) => {
-    if (!acc[task.category]) acc[task.category] = [];
-    acc[task.category].push(task);
-    return acc;
-  }, {} as Record<string, GitHubTask[]>);
-
+const groupedTasks = displayedTasks.reduce((acc, task) => {
+  if (!acc[task.category]) acc[task.category] = [];
+  acc[task.category].push(task);
+  return acc;
+}, {} as Record<string, GitHubTask[]>);
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
