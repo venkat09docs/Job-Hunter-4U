@@ -773,6 +773,93 @@ export const StudentsManagement = () => {
                 Import CSV
               </Button>
             </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Import Students from CSV</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="csv-file">Select CSV File</Label>
+                  <Input
+                    id="csv-file"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSVFileChange}
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Upload a CSV file with columns: Full Name, Email, Username, Password, Batch Code
+                  </p>
+                </div>
+
+                {instituteSubscription && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm">
+                      <strong>Subscription Limit:</strong> {students.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
+                    </p>
+                    {importPreview.length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        After import: {students.length + importPreview.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {importPreview.length > 0 && (
+                  <div>
+                    <Label>Preview ({importPreview.length} students to import)</Label>
+                    <div className="max-h-40 overflow-y-auto border rounded p-2 mt-1">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Full Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Username</TableHead>
+                            <TableHead>Batch Code</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {importPreview.slice(0, 5).map((row, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{row['Full Name']}</TableCell>
+                              <TableCell>{row['Email']}</TableCell>
+                              <TableCell>{row['Username']}</TableCell>
+                              <TableCell>{row['Batch Code']}</TableCell>
+                            </TableRow>
+                          ))}
+                          {importPreview.length > 5 && (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                                ... and {importPreview.length - 5} more students
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowImportDialog(false);
+                      setCsvFile(null);
+                      setImportPreview([]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleCSVImport}
+                    disabled={importPreview.length === 0 || isImporting}
+                  >
+                    {isImporting ? 'Importing...' : `Import ${importPreview.length} Students`}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
           </Dialog>
           <Button
             variant="outline"
@@ -1200,95 +1287,6 @@ export const StudentsManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* CSV Import Dialog */}
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Import Students from CSV</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="csv-file">Select CSV File</Label>
-            <Input
-              id="csv-file"
-              type="file"
-              accept=".csv"
-              onChange={handleCSVFileChange}
-              className="mt-1"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Upload a CSV file with columns: Full Name, Email, Username, Password, Batch Code
-            </p>
-          </div>
-
-          {instituteSubscription && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm">
-                <strong>Subscription Limit:</strong> {students.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
-              </p>
-              {importPreview.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  After import: {students.length + importPreview.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
-                </p>
-              )}
-            </div>
-          )}
-
-          {importPreview.length > 0 && (
-            <div>
-              <Label>Preview ({importPreview.length} students to import)</Label>
-              <div className="max-h-40 overflow-y-auto border rounded p-2 mt-1">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Full Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Batch Code</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {importPreview.slice(0, 5).map((row, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{row['Full Name']}</TableCell>
-                        <TableCell>{row['Email']}</TableCell>
-                        <TableCell>{row['Username']}</TableCell>
-                        <TableCell>{row['Batch Code']}</TableCell>
-                      </TableRow>
-                    ))}
-                    {importPreview.length > 5 && (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
-                          ... and {importPreview.length - 5} more students
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-2">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setShowImportDialog(false);
-                setCsvFile(null);
-                setImportPreview([]);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCSVImport}
-              disabled={importPreview.length === 0 || isImporting}
-            >
-              {isImporting ? 'Importing...' : `Import ${importPreview.length} Students`}
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
 
     </div>
   );
