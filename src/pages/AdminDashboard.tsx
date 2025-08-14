@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, GraduationCap, Settings, TrendingUp } from 'lucide-react';
 
-import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManagement';
+
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { InstituteDashboard } from '@/components/admin/InstituteDashboard';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
@@ -109,7 +109,9 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="assignments">
-              <UserAssignmentManagement />
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">User Management functionality has been moved to dedicated management pages.</p>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
