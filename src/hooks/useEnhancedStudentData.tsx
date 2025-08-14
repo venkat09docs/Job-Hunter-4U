@@ -291,16 +291,10 @@ export const useEnhancedStudentData = () => {
         linkedinPosts = linkedinMetrics.find(m => m.activity_id === 'posts')?.value || 0;
       }
 
-      // Calculate profile completion
-      const profileFields = [
-        profile.full_name,
-        profile.email,
-        resumeProgress > 0,
-        linkedinProgress > 0,
-        githubCompletion > 0
-      ];
-      const completedFields = profileFields.filter(Boolean).length;
-      const profileCompletion = Math.round((completedFields / profileFields.length) * 100);
+      // Calculate profile completion using the same logic as Career Growth Report
+      // This is the "Overall Career Development Score" calculation
+      const careerDevelopmentScores = [resumeProgress, linkedinProgress, githubCompletion];
+      const profileCompletion = Math.round(careerDevelopmentScores.reduce((sum, score) => sum + score, 0) / careerDevelopmentScores.length);
 
       // Get last activity
       const { data: lastActivityData } = await supabase
