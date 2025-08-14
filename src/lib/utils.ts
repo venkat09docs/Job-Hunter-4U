@@ -32,7 +32,9 @@ export function isValidEmbedDomain(url: string): boolean {
     'miro.com',
     'airtable.com',
     'notion.so',
-    'typeform.com'
+    'typeform.com',
+    'app.formwise.ai',
+    'formwise.ai'
   ];
   
   try {
