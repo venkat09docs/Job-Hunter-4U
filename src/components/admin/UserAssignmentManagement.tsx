@@ -200,12 +200,19 @@ export const UserAssignmentManagement = () => {
     if (!user) return;
 
     try {
-      // First, get the user ID from email (simplified approach)
-      // In a real implementation, you'd use the auth admin API
-      const userData = { id: 'temp-user-id' }; // This should be replaced with actual user lookup
+      // First, get the user ID from email by looking up in profiles table
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('email', formData.user_email.trim())
+        .single();
+
+      if (userError || !userData) {
+        throw new Error('User not found with this email address. Please ensure the user has registered on the platform.');
+      }
 
       const assignmentData: any = {
-        user_id: userData.id,
+        user_id: userData.user_id,
         assignment_type: formData.assignment_type,
         assigned_by: user.id,
       };
@@ -230,7 +237,7 @@ export const UserAssignmentManagement = () => {
         const { data: existingAssignments, error: checkError } = await supabase
           .from('institute_admin_assignments')
           .select('id, institute_id')
-          .eq('user_id', userData.id)
+          .eq('user_id', userData.user_id)
           .eq('is_active', true);
 
         if (checkError) {
@@ -244,7 +251,7 @@ export const UserAssignmentManagement = () => {
         const { error: roleError } = await supabase
           .from('user_roles')
           .upsert({
-            user_id: userData.id,
+            user_id: userData.user_id,
             role: 'institute_admin',
           });
 
@@ -253,7 +260,7 @@ export const UserAssignmentManagement = () => {
         const { error: adminAssignError } = await supabase
           .from('institute_admin_assignments')
           .insert({
-            user_id: userData.id,
+            user_id: userData.user_id,
             institute_id: formData.institute_id,
             assigned_by: user.id,
           });

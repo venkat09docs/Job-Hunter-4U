@@ -152,20 +152,50 @@ export const InstituteManagement = () => {
   const fetchInstitutes = async () => {
     console.log('Fetching institutes...');
     try {
-      const { data, error } = await supabase
+      // First get all institutes
+      const { data: allInstitutes, error: institutesError } = await supabase
         .from('institutes')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (institutesError) throw institutesError;
       
-      console.log('Raw institute data:', data);
+      console.log('Raw institute data:', allInstitutes);
       
-      // For now, just set admin name as placeholder - can be enhanced later
-      const institutesWithAdmins = data?.map(institute => ({
-        ...institute,
-        admin_name: 'No Admin Assigned' // Simplified for now
-      })) || [];
+      // Then get admin assignments with user IDs
+      const { data: adminAssignments, error: adminError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id, user_id')
+        .eq('is_active', true);
+
+      if (adminError) {
+        console.error('Error fetching admin assignments:', adminError);
+      }
+
+      // Get profile names for admin users
+      const adminUserIds = adminAssignments?.map(a => a.user_id) || [];
+      let adminProfiles: any[] = [];
+      
+      if (adminUserIds.length > 0) {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', adminUserIds);
+        
+        if (!profileError) {
+          adminProfiles = profiles || [];
+        }
+      }
+
+      // Process institutes with admin names
+      const institutesWithAdmins = allInstitutes?.map(institute => {
+        const adminAssignment = adminAssignments?.find(assignment => assignment.institute_id === institute.id);
+        const adminProfile = adminProfiles.find(profile => profile.user_id === adminAssignment?.user_id);
+        return {
+          ...institute,
+          admin_name: adminProfile?.full_name || 'No Admin Assigned'
+        };
+      }) || [];
       
       console.log('Processed institutes:', institutesWithAdmins);
       setInstitutes(institutesWithAdmins);
