@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Users, Trash2, Eye, ToggleLeft, ToggleRight, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -91,6 +92,7 @@ export const InstituteManagement = () => {
   const { user } = useAuth();
   const { isAdmin, role, loading: roleLoading } = useRole();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -793,8 +795,15 @@ export const InstituteManagement = () => {
                 return institutes.map((institute) => {
                   console.log('Institute admin name for', institute.name, ':', institute.admin_name);
                   return (
-                  <TableRow key={institute.id}>
-                    <TableCell className="font-medium">{institute.name}</TableCell>
+                   <TableRow key={institute.id}>
+                     <TableCell className="font-medium">
+                       <button 
+                         onClick={() => navigate(`/admin/batch-management?institute=${institute.id}`)}
+                         className="text-primary hover:underline cursor-pointer"
+                       >
+                         {institute.name}
+                       </button>
+                     </TableCell>
                     <TableCell>{institute.code}</TableCell>
                     <TableCell>
                       <span className="font-medium">

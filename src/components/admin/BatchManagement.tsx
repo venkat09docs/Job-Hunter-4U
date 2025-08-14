@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -63,11 +64,14 @@ export const BatchManagement = () => {
   const { user } = useAuth();
   const { isAdmin, isInstituteAdmin } = useRole();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
+  const [selectedInstitute, setSelectedInstitute] = useState<Institute | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [formData, setFormData] = useState<BatchFormData>({
     name: '',
     code: '',
@@ -79,9 +83,16 @@ export const BatchManagement = () => {
 
   useEffect(() => {
     if (isAdmin || isInstituteAdmin) {
-      fetchData();
+      const instituteId = searchParams.get('institute');
+      if (instituteId && isAdmin) {
+        setIsReadOnly(true);
+        fetchInstituteData(instituteId);
+      } else {
+        setIsReadOnly(false);
+        fetchData();
+      }
     }
-  }, [isAdmin, isInstituteAdmin]);
+  }, [isAdmin, isInstituteAdmin, searchParams]);
 
   const fetchData = async () => {
     try {
@@ -114,6 +125,63 @@ export const BatchManagement = () => {
       toast({
         title: 'Error',
         description: 'Failed to fetch data',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInstituteData = async (instituteId: string) => {
+    try {
+      // Fetch the selected institute
+      const { data: instituteData, error: instituteError } = await supabase
+        .from('institutes')
+        .select('*')
+        .eq('id', instituteId)
+        .single();
+
+      if (instituteError) throw instituteError;
+      setSelectedInstitute(instituteData);
+
+      // Fetch batches for this institute with student counts
+      const { data: batchesData, error: batchesError } = await supabase
+        .from('batches')
+        .select(`
+          *,
+          institutes (
+            id,
+            name,
+            code
+          )
+        `)
+        .eq('institute_id', instituteId)
+        .order('created_at', { ascending: false });
+
+      if (batchesError) throw batchesError;
+
+      // Get student count for each batch
+      const batchesWithStudentCount = await Promise.all(
+        (batchesData || []).map(async (batch) => {
+          const { count: studentCount } = await supabase
+            .from('user_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('batch_id', batch.id)
+            .eq('assignment_type', 'batch')
+            .eq('is_active', true);
+
+          return {
+            ...batch,
+            student_count: studentCount || 0
+          };
+        })
+      );
+
+      setBatches(batchesWithStudentCount);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch institute data',
         variant: 'destructive',
       });
     } finally {
@@ -243,8 +311,18 @@ export const BatchManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Batch Management</h2>
-        <Dialog open={showForm} onOpenChange={setShowForm}>
+        <div>
+          <h2 className="text-2xl font-bold">
+            {selectedInstitute ? `Batch Management - ${selectedInstitute.name}` : 'Batch Management'}
+          </h2>
+          {selectedInstitute && (
+            <p className="text-muted-foreground">
+              Viewing batches for {selectedInstitute.name} ({selectedInstitute.code}) - Read Only
+            </p>
+          )}
+        </div>
+        {!isReadOnly && (
+          <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingBatch(null);
@@ -350,11 +428,17 @@ export const BatchManagement = () => {
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Batches ({batches.length})</CardTitle>
+          <CardTitle>
+            {selectedInstitute 
+              ? `Batches for ${selectedInstitute.name} (${batches.length})`
+              : `Batches (${batches.length})`
+            }
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -362,10 +446,11 @@ export const BatchManagement = () => {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Code</TableHead>
-                <TableHead>Institute</TableHead>
+                {!selectedInstitute && <TableHead>Institute</TableHead>}
+                {selectedInstitute && <TableHead>Students</TableHead>}
                 <TableHead>Duration</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {!isReadOnly && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -373,9 +458,19 @@ export const BatchManagement = () => {
                 <TableRow key={batch.id}>
                   <TableCell className="font-medium">{batch.name}</TableCell>
                   <TableCell>{batch.code}</TableCell>
-                  <TableCell>
-                    {batch.institutes?.name} ({batch.institutes?.code})
-                  </TableCell>
+                  {!selectedInstitute && (
+                    <TableCell>
+                      {batch.institutes?.name} ({batch.institutes?.code})
+                    </TableCell>
+                  )}
+                  {selectedInstitute && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        {(batch as any).student_count || 0}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
                     {batch.start_date && batch.end_date ? (
                       <div className="text-sm">
@@ -397,31 +492,36 @@ export const BatchManagement = () => {
                       {batch.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(batch)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(batch)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  {!isReadOnly && (
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(batch)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(batch)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
           {batches.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No batches found. Create your first batch to get started.
+              {selectedInstitute 
+                ? `No batches found for ${selectedInstitute.name}.`
+                : 'No batches found. Create your first batch to get started.'
+              }
             </div>
           )}
         </CardContent>
