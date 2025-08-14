@@ -52,6 +52,7 @@ interface Batch {
   end_date?: string;
   is_active: boolean;
   institutes?: Institute;
+  student_count?: number;
 }
 
 interface BatchFormData {
@@ -175,7 +176,25 @@ export const BatchManagement = () => {
         .order('created_at', { ascending: false });
 
       if (batchesError) throw batchesError;
-      setBatches(batchesData || []);
+
+      // Get student count for each batch (especially for institute admins)
+      const batchesWithStudentCount = await Promise.all(
+        (batchesData || []).map(async (batch) => {
+          const { count: studentCount } = await supabase
+            .from('user_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('batch_id', batch.id)
+            .eq('assignment_type', 'batch')
+            .eq('is_active', true);
+
+          return {
+            ...batch,
+            student_count: studentCount || 0
+          };
+        })
+      );
+
+      setBatches(batchesWithStudentCount);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -610,7 +629,7 @@ export const BatchManagement = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Code</TableHead>
                 {!selectedInstitute && <TableHead>Institute</TableHead>}
-                {selectedInstitute && <TableHead>Students</TableHead>}
+                {(selectedInstitute || isInstituteAdmin) && <TableHead>Students</TableHead>}
                 <TableHead>Duration</TableHead>
                 <TableHead>Status</TableHead>
                 {!isReadOnly && <TableHead className="text-right">Actions</TableHead>}
@@ -633,11 +652,11 @@ export const BatchManagement = () => {
                       {batch.institutes?.name} ({batch.institutes?.code})
                     </TableCell>
                   )}
-                  {selectedInstitute && (
+                  {(selectedInstitute || isInstituteAdmin) && (
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4" />
-                        {(batch as any).student_count || 0}
+                        {batch.student_count || 0}
                       </div>
                     </TableCell>
                   )}
