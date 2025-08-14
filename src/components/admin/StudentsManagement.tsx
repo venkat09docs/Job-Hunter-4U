@@ -105,6 +105,7 @@ export const StudentsManagement = () => {
   // Filter and pagination states
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [selectedBatch, setSelectedBatch] = useState<string>('');
+  const [searchName, setSearchName] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(10);
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
@@ -364,6 +365,14 @@ export const StudentsManagement = () => {
       filtered = filtered.filter(student => student.batch_id === selectedBatch);
     }
 
+    // Apply name search filter
+    if (searchName.trim()) {
+      filtered = filtered.filter(student => 
+        (student.full_name || '').toLowerCase().includes(searchName.toLowerCase()) ||
+        (student.username || '').toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+
     setFilteredStudents(filtered);
     setCurrentPage(1); // Reset to first page when filters change
     setSelectedStudents(new Set()); // Clear selection when filters change
@@ -514,7 +523,7 @@ export const StudentsManagement = () => {
   // Apply filters when filter type or selected batch changes
   useEffect(() => {
     applyFilters();
-  }, [filterType, selectedBatch, students]);
+  }, [filterType, selectedBatch, searchName, students]);
 
   const handleEdit = (student: Student) => {
     setEditingStudent(student);
@@ -803,11 +812,23 @@ export const StudentsManagement = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
-            Filters & Actions
+            Filter Students
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="search-name">Search by Name</Label>
+              <Input
+                id="search-name"
+                type="text"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                placeholder="Search by student name or username..."
+                className="w-full"
+              />
+            </div>
+
             <div className="flex-1 min-w-[200px]">
               <Label htmlFor="filter-type">Filter by Subscription Status</Label>
               <Select
