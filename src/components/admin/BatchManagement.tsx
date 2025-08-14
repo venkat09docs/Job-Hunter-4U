@@ -748,14 +748,17 @@ export const BatchManagement = () => {
                         }
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleManageSubscription(student)}
-                        >
-                          <CreditCard className="h-4 w-4 mr-2" />
-                          Manage
-                        </Button>
+                        {/* Only show Manage Subscription button for super admins */}
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleManageSubscription(student)}
+                          >
+                            <CreditCard className="h-4 w-4 mr-2" />
+                            Manage
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
