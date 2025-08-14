@@ -148,13 +148,13 @@ export default function InstituteManagement() {
             .eq('assignment_type', 'student')
             .eq('is_active', true);
 
-          // Get institute admin name
+          // Get institute admin name using maybeSingle to avoid errors
           const { data: adminAssignment } = await supabase
             .from('institute_admin_assignments')
             .select('user_id')
             .eq('institute_id', institute.id)
             .eq('is_active', true)
-            .single();
+            .maybeSingle();
 
           let adminName = 'Not Assigned';
           if (adminAssignment) {
@@ -162,7 +162,7 @@ export default function InstituteManagement() {
               .from('profiles')
               .select('full_name, email')
               .eq('user_id', adminAssignment.user_id)
-              .single();
+              .maybeSingle();
             
             adminName = profile?.full_name || profile?.email || 'Not Assigned';
           }
@@ -530,8 +530,12 @@ export default function InstituteManagement() {
             .eq('is_active', true);
 
           return {
-            ...batch,
-            student_count: studentCount || 0
+            id: batch.id,
+            name: batch.name,
+            code: batch.code,
+            student_count: studentCount || 0,
+            start_date: batch.start_date,
+            end_date: batch.end_date
           };
         })
       );

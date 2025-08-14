@@ -409,34 +409,46 @@ export const InstituteManagement = () => {
 
   const viewBatchDetails = async (institute: Institute) => {
     try {
-      const { data, error } = await supabase
+      const { data: batches, error } = await supabase
         .from('batches')
         .select(`
           id,
           name,
           code,
           start_date,
-          end_date,
-          user_assignments!inner(*)
+          end_date
         `)
         .eq('institute_id', institute.id)
         .eq('is_active', true);
 
       if (error) throw error;
 
-      const batchesWithStudentCount = data?.map(batch => ({
-        id: batch.id,
-        name: batch.name,
-        code: batch.code,
-        start_date: batch.start_date,
-        end_date: batch.end_date,
-        student_count: batch.user_assignments?.length || 0
-      })) || [];
+      // Get student count for each batch separately
+      const batchesWithStudentCount = await Promise.all(
+        (batches || []).map(async (batch) => {
+          const { count: studentCount } = await supabase
+            .from('user_assignments')
+            .select('*', { count: 'exact', head: true })
+            .eq('batch_id', batch.id)
+            .eq('assignment_type', 'student')
+            .eq('is_active', true);
+
+          return {
+            id: batch.id,
+            name: batch.name,
+            code: batch.code,
+            start_date: batch.start_date,
+            end_date: batch.end_date,
+            student_count: studentCount || 0
+          };
+        })
+      );
 
       setBatchDetails(batchesWithStudentCount);
       setSelectedInstitute(institute);
       setIsViewBatchDialogOpen(true);
     } catch (error: any) {
+      console.error('Error fetching batch details:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch batch details',
