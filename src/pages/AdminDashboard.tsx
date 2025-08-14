@@ -14,6 +14,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
@@ -85,22 +86,15 @@ export default function AdminDashboard() {
           {/* Top Level Menu for Institute Admin */}
           <div className="border-b bg-card">
             <div className="container mx-auto flex items-center justify-between p-4">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center space-x-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  <span>Go to Dashboard</span>
-                </Button>
-                <div className="h-6 w-px bg-border" />
-                <div>
-                  <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Manage your institute's data and settings
-                  </p>
-                </div>
+              <div>
+                <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+                <p className="text-sm text-muted-foreground">
+                  Manage your institute's data and settings
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <UserProfileDropdown />
               </div>
             </div>
           </div>
