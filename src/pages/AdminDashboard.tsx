@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRole } from '@/hooks/useRole';
 import { useAuth } from '@/hooks/useAuth';
+import { useInstituteName } from '@/hooks/useInstituteName';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,35 +19,8 @@ import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
+  const { instituteName } = useInstituteName();
   const navigate = useNavigate();
-  const [instituteName, setInstituteName] = useState<string>('');
-
-  useEffect(() => {
-    if (isInstituteAdmin && user) {
-      fetchInstituteName();
-    }
-  }, [isInstituteAdmin, user]);
-
-  const fetchInstituteName = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('institute_admin_assignments')
-        .select(`
-          institutes (
-            name
-          )
-        `)
-        .eq('user_id', user?.id)
-        .eq('is_active', true)
-        .single();
-
-      if (data?.institutes) {
-        setInstituteName(data.institutes.name);
-      }
-    } catch (error) {
-      console.error('Error fetching institute name:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -86,7 +60,9 @@ export default function AdminDashboard() {
           <div className="border-b bg-card">
             <div className="container mx-auto flex items-center justify-between p-4">
               <div>
-                <h1 className="text-xl font-semibold">{instituteName || 'Institute Dashboard'}</h1>
+                <h1 className="text-xl font-semibold">
+                  {instituteName ? `${instituteName} - Dashboard` : 'Institute Dashboard'}
+                </h1>
                 <p className="text-sm text-muted-foreground">
                   Manage your institute's batches and students
                 </p>

@@ -74,13 +74,13 @@ const jobHunterItems = [
 
 const adminItems = [
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
-  { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
-  { title: "Institute Management", url: "/admin/institute-management", icon: Building },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
+  { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
+  { title: "Institute Membership Plans", url: "/dashboard/institute-membership-plans", icon: CreditCard },
+  { title: "Institute Management", url: "/admin/institute-management", icon: Building },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Leader Board Points", url: "/leaderboard-points", icon: Target },
-  { title: "Institute Membership Plans", url: "/dashboard/institute-membership-plans", icon: CreditCard },
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
   { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
 ];
@@ -138,12 +138,12 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                   {adminItems.map((item) => {
-                    // For institute admins, show only specific items
+                    // For institute admins, show only specific items in order
                     if (isInstituteAdmin && !isAdmin && 
-                        item.title !== "Students Report" && 
-                        item.title !== "Institute Membership Plans" &&
                         item.title !== "Batch Management" &&
-                        item.title !== "Students Management") return null;
+                        item.title !== "Students Management" && 
+                        item.title !== "Students Report" && 
+                        item.title !== "Institute Membership Plans") return null;
                     // Hide Students Report for super admin (show only for institute admin)
                     if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                     // Show Institute Management only for super admins

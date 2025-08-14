@@ -27,10 +27,15 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { useInstituteName } from '@/hooks/useInstituteName';
+import { AppSidebar } from '@/components/AppSidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 export default function StudentsReport() {
   const { batches, loading, refreshData, exportToExcel } = useInstituteStudents();
   const { toast } = useToast();
+  const { instituteName } = useInstituteName();
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
@@ -125,14 +130,34 @@ export default function StudentsReport() {
   }
 
   return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Students Report</h1>
-            <p className="text-muted-foreground">
-              Monitor and track student progress across all batches
-            </p>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <div className="border-b bg-card">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <div>
+              <h1 className="text-xl font-semibold">
+                {instituteName ? `${instituteName} - Students Report` : 'Students Report'}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Monitor and track student progress across all batches
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <UserProfileDropdown />
+            </div>
           </div>
+        </div>
+        
+        <div className="container mx-auto p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Report Overview</h2>
+              <p className="text-muted-foreground">
+                Detailed analytics and insights
+              </p>
+            </div>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
             <Link to="/dashboard">
@@ -401,6 +426,8 @@ export default function StudentsReport() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

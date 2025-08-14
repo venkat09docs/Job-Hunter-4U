@@ -7,6 +7,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import { useInstituteName } from "@/hooks/useInstituteName";
+import { useRole } from "@/hooks/useRole";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 
 declare global {
   interface Window {
@@ -29,6 +34,8 @@ interface Plan {
 const InstituteMembershipPlans = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { instituteName } = useInstituteName();
+  const { isInstituteAdmin } = useRole();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -235,6 +242,36 @@ const InstituteMembershipPlans = () => {
     }
   };
 
+  if (isInstituteAdmin) {
+    return (
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <div className="border-b bg-card">
+            <div className="container mx-auto flex items-center justify-between p-4">
+              <div>
+                <h1 className="text-xl font-semibold">
+                  {instituteName ? `${instituteName} - Membership Plans` : 'Institute Membership Plans'}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Choose the perfect plan for your institute
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <UserProfileDropdown />
+              </div>
+            </div>
+          </div>
+          
+          <div className="container mx-auto p-6">
+            {renderPlansContent()}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
@@ -257,14 +294,22 @@ const InstituteMembershipPlans = () => {
 
       {/* Main Content */}
       <div className="container mx-auto py-8 px-4">
+        {renderPlansContent()}
+      </div>
+    </div>
+  );
+
+  function renderPlansContent() {
+    return (
+      <>
         <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-foreground mb-4">
-          Institute Membership Plans
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Choose the perfect plan for your institute. All plans include full access to our digital career hub 
-          with significant savings per student.
-        </p>
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Institute Membership Plans
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Choose the perfect plan for your institute. All plans include full access to our digital career hub 
+            with significant savings per student.
+          </p>
         </div>
 
         {loading ? (
@@ -275,69 +320,69 @@ const InstituteMembershipPlans = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {plans.map((plan) => (
-          <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : ''}`}>
-            {plan.popular && (
-              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
-                Most Popular
-              </Badge>
-            )}
-            
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-              <CardDescription className="text-sm">
-                Perfect for institutes with {plan.members} students
-              </CardDescription>
-              
-              <div className="mt-4">
-                <div className="flex items-center justify-center gap-1 mb-2">
-                  <IndianRupee className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-3xl font-bold text-foreground">
-                    {formatPrice(plan.price).replace('₹', '')}
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground line-through">
-                  {formatPrice(plan.originalPrice)}
-                </div>
-                <Badge variant="secondary" className="mt-2">
-                  Save ₹{plan.discount} per member
-                </Badge>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pt-0">
-              <div className="flex items-center justify-center gap-2 mb-6 p-3 bg-muted rounded-lg">
-                <Users className="h-4 w-4 text-primary" />
-                <span className="font-semibold">{plan.members} Members</span>
-                <Calendar className="h-4 w-4 text-primary ml-2" />
-                <span className="font-semibold">{plan.duration}</span>
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-foreground">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button 
-                className="w-full" 
-                variant={plan.popular ? "default" : "outline"}
-                onClick={() => handleSelectPlan(plan)}
-                disabled={loadingPlan === plan.id}
-              >
-                {loadingPlan === plan.id ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  "Select Plan"
+              <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : ''}`}>
+                {plan.popular && (
+                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
+                    Most Popular
+                  </Badge>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
+                
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+                  <CardDescription className="text-sm">
+                    Perfect for institutes with {plan.members} students
+                  </CardDescription>
+                  
+                  <div className="mt-4">
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      <IndianRupee className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-3xl font-bold text-foreground">
+                        {formatPrice(plan.price).replace('₹', '')}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground line-through">
+                      {formatPrice(plan.originalPrice)}
+                    </div>
+                    <Badge variant="secondary" className="mt-2">
+                      Save ₹{plan.discount} per member
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-center gap-2 mb-6 p-3 bg-muted rounded-lg">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span className="font-semibold">{plan.members} Members</span>
+                    <Calendar className="h-4 w-4 text-primary ml-2" />
+                    <span className="font-semibold">{plan.duration}</span>
+                  </div>
+
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Button 
+                    className="w-full" 
+                    variant={plan.popular ? "default" : "outline"}
+                    onClick={() => handleSelectPlan(plan)}
+                    disabled={loadingPlan === plan.id}
+                  >
+                    {loadingPlan === plan.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Select Plan"
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
@@ -354,9 +399,9 @@ const InstituteMembershipPlans = () => {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
-  );
+      </>
+    );
+  }
 };
 
 export default InstituteMembershipPlans;

@@ -2,8 +2,13 @@ import { BatchManagement as BatchManagementComponent } from '@/components/admin/
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { useInstituteName } from '@/hooks/useInstituteName';
+import { useRole } from '@/hooks/useRole';
 
 export default function BatchManagement() {
+  const { instituteName } = useInstituteName();
+  const { isInstituteAdmin } = useRole();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -11,9 +16,11 @@ export default function BatchManagement() {
         <div className="border-b bg-card">
           <div className="container mx-auto flex items-center justify-between p-4">
             <div>
-              <h1 className="text-xl font-semibold">Batch Management</h1>
+              <h1 className="text-xl font-semibold">
+                {isInstituteAdmin ? `${instituteName} - Batch Management` : 'Batch Management'}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Manage batches across all institutes
+                {isInstituteAdmin ? 'Manage batches for your institute' : 'Manage batches across all institutes'}
               </p>
             </div>
             
