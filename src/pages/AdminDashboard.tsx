@@ -76,69 +76,72 @@ export default function AdminDashboard() {
     );
   }
 
-  // For Institute Admin, show a simplified layout without sidebar
+  // For Institute Admin, show layout with sidebar
   if (isInstituteAdmin) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Top Level Menu for Institute Admin */}
-        <div className="border-b bg-card">
-          <div className="container mx-auto flex items-center justify-between p-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Go to Dashboard</span>
-              </Button>
-              <div className="h-6 w-px bg-border" />
-              <div>
-                <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                  Manage your institute's data and settings
-                </p>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          {/* Top Level Menu for Institute Admin */}
+          <div className="border-b bg-card">
+            <div className="container mx-auto flex items-center justify-between p-4">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Go to Dashboard</span>
+                </Button>
+                <div className="h-6 w-px bg-border" />
+                <div>
+                  <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your institute's data and settings
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="container mx-auto p-6">
-          <div className="mb-8">
-            {instituteName && (
-              <div className="mb-4">
-                <h1 className="text-4xl font-bold text-primary mb-2">
-                  {instituteName}
-                </h1>
-              </div>
-            )}
-            <p className="text-muted-foreground">
-              Manage your institute's batches and students
-            </p>
+          
+          <div className="container mx-auto p-6">
+            <div className="mb-8">
+              {instituteName && (
+                <div className="mb-4">
+                  <h1 className="text-4xl font-bold text-primary mb-2">
+                    {instituteName}
+                  </h1>
+                </div>
+              )}
+              <p className="text-muted-foreground">
+                Manage your institute's batches and students
+              </p>
+            </div>
+
+            <Tabs defaultValue="batches" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="batches" className="flex items-center space-x-2">
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Batches</span>
+                </TabsTrigger>
+                <TabsTrigger value="assignments" className="flex items-center space-x-2">
+                  <Users className="h-4 w-4" />
+                  <span>Students Management</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="batches">
+                <BatchManagement />
+              </TabsContent>
+
+              <TabsContent value="assignments">
+                <StudentsManagement />
+              </TabsContent>
+            </Tabs>
           </div>
-
-          <Tabs defaultValue="batches" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="batches" className="flex items-center space-x-2">
-                <GraduationCap className="h-4 w-4" />
-                <span>Batches</span>
-              </TabsTrigger>
-              <TabsTrigger value="assignments" className="flex items-center space-x-2">
-                <Users className="h-4 w-4" />
-                <span>Students Management</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="batches">
-              <BatchManagement />
-            </TabsContent>
-
-            <TabsContent value="assignments">
-              <StudentsManagement />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+        </SidebarInset>
+      </SidebarProvider>
     );
   }
 
