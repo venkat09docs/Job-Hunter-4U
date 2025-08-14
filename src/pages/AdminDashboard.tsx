@@ -87,9 +87,9 @@ export default function AdminDashboard() {
           <div className="border-b bg-card">
             <div className="container mx-auto flex items-center justify-between p-4">
               <div>
-                <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+                <h1 className="text-xl font-semibold">{instituteName || 'Institute Dashboard'}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Manage your institute's data and settings
+                  Manage your institute's batches and students
                 </p>
               </div>
               
@@ -100,18 +100,6 @@ export default function AdminDashboard() {
           </div>
           
           <div className="container mx-auto p-6">
-            <div className="mb-8">
-              {instituteName && (
-                <div className="mb-4">
-                  <h1 className="text-4xl font-bold text-primary mb-2">
-                    {instituteName}
-                  </h1>
-                </div>
-              )}
-              <p className="text-muted-foreground">
-                Manage your institute's batches and students
-              </p>
-            </div>
 
             <Tabs defaultValue="batches" className="space-y-6">
               <TabsList className="grid w-full grid-cols-2">
