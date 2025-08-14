@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building, Users, GraduationCap, Settings } from 'lucide-react';
-import { InstituteManagement } from '@/components/admin/InstituteManagement';
+import { Users, GraduationCap, Settings } from 'lucide-react';
+
 import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManagement';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { AppSidebar } from '@/components/AppSidebar';
@@ -119,21 +119,13 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <Tabs defaultValue="institutes" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="institutes" className="flex items-center space-x-2">
-                <Building className="h-4 w-4" />
-                <span>Institutes</span>
-              </TabsTrigger>
+          <Tabs defaultValue="assignments" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="assignments" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
                 <span>User Assignments</span>
               </TabsTrigger>
             </TabsList>
-
-            <TabsContent value="institutes">
-              <InstituteManagement />
-            </TabsContent>
 
             <TabsContent value="assignments">
               <UserAssignmentManagement />

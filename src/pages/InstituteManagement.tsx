@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,10 +33,14 @@ import {
   Settings,
   GraduationCap,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AppSidebar } from '@/components/AppSidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 interface Institute {
   id: string;
@@ -68,6 +74,9 @@ interface SubscriptionPlan {
 }
 
 export default function InstituteManagement() {
+  const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useRole();
+  const navigate = useNavigate();
   const [institutes, setInstitutes] = useState<Institute[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
@@ -558,7 +567,7 @@ export default function InstituteManagement() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  if (loading) {
+  if (roleLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -566,23 +575,57 @@ export default function InstituteManagement() {
     );
   }
 
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-96">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+              <p className="text-muted-foreground">
+                You don't have permission to access institute management.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header with Navigation */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Institute Management</h1>
-          <p className="text-muted-foreground">
-            Manage institutes and assign administrators
-          </p>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Top Navigation */}
+        <div className="border-b bg-card">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-xl font-semibold">Institute Management</h1>
+                <p className="text-sm text-muted-foreground">
+                  Manage institutes and assign administrators
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <UserProfileDropdown />
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link to="/dashboard">
-              <Home className="h-4 w-4 mr-2" />
-              Go to Dashboard
-            </Link>
-          </Button>
+
+        <div className="container mx-auto p-6 space-y-6">
+          {/* Header Actions */}
+          <div className="flex justify-end gap-2">
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -1070,7 +1113,7 @@ export default function InstituteManagement() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                   </Table>
                 </div>
               </div>
             ) : (
@@ -1092,6 +1135,7 @@ export default function InstituteManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
