@@ -8,30 +8,47 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { useState } from "react";
 
 const Navigation = () => {
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+    setIsOpen(false);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
+        <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={() => handleNavigate('/')}>
           <img 
             src="/lovable-uploads/ff802ee3-a3bc-4fbe-ad11-85449bdff59e.png" 
             alt="Rise n Shine Technologies Logo" 
-            className="h-10 w-10"
+            className="h-8 w-8 sm:h-10 sm:w-10"
           />
-          <div className="font-bold text-xl text-primary">
+          <div className="font-bold text-sm sm:text-lg lg:text-xl text-primary">
             Rise n Shine Technologies
           </div>
         </div>
@@ -74,7 +91,7 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => navigate('/courses')}
+                onClick={() => handleNavigate('/courses')}
               >
                 Courses
               </NavigationMenuLink>
@@ -82,7 +99,7 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => navigate('/auth')}
+                onClick={() => handleNavigate('/auth')}
               >
                 Login
               </NavigationMenuLink>
@@ -91,23 +108,85 @@ const Navigation = () => {
         </NavigationMenu>
 
         {/* CTA Button */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <Button 
-            onClick={() => navigate('/auth')} 
+            onClick={() => handleNavigate('/auth')} 
             className="hidden sm:inline-flex"
+            size="sm"
           >
             Build Resume for Free
           </Button>
           
-          {/* Mobile menu button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="md:hidden"
-            onClick={() => navigate('/auth')}
-          >
-            Login
-          </Button>
+          {/* Mobile menu */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden"
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetHeader>
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>
+                  Access all features and sections
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid gap-4 py-6">
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => scrollToSection('hero')}
+                >
+                  Home
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => scrollToSection('features')}
+                >
+                  Features
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => scrollToSection('ai-tools')}
+                >
+                  AI Tools
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => scrollToSection('pricing')}
+                >
+                  Pricing
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigate('/courses')}
+                >
+                  Courses
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigate('/auth')}
+                >
+                  Login
+                </Button>
+                <Button
+                  onClick={() => handleNavigate('/auth')}
+                  className="mt-4"
+                >
+                  Build Resume for Free
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

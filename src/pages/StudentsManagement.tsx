@@ -38,7 +38,7 @@ export default function StudentsManagement() {
           </div>
         </div>
         
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-4 sm:p-6">
           <StudentsManagementComponent />
         </div>
       </SidebarInset>

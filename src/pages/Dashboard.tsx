@@ -413,22 +413,24 @@ const Dashboard = () => {
           {/* Header */}
           <header className="border-b bg-background/80 backdrop-blur-sm">
             <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <SidebarTrigger />
-                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                   Job Hunter Pro
                 </h1>
               </div>
               
-              <div className="flex items-center gap-4">
-                <SubscriptionStatus />
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="hidden sm:flex">
+                  <SubscriptionStatus />
+                </div>
                 <UserProfileDropdown />
               </div>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
             {/* Welcome Section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
@@ -447,38 +449,38 @@ const Dashboard = () => {
             {/* Overall Career Development Score */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-3 gap-8 items-stretch min-h-[200px]">
-                    {/* Profile Picture Section - 1/3rd width */}
-                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-6">
-                      <Avatar className="h-32 w-32">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch min-h-[200px]">
+                    {/* Profile Picture Section - Full width on mobile, 1/3rd on desktop */}
+                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-4 sm:p-6">
+                      <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
                         <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
-                        <AvatarFallback className="text-3xl">
+                        <AvatarFallback className="text-2xl sm:text-3xl">
                           {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="text-center mt-4">
-                        <p className="font-semibold text-lg">{profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'User'}</p>
+                        <p className="font-semibold text-base sm:text-lg">{profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'User'}</p>
                         <p className="text-sm text-muted-foreground">Career Professional</p>
                       </div>
                     </div>
                     
-                    {/* Right Side - Header + 4 Boards - 2/3rd width */}
-                    <div className="col-span-2 flex flex-col justify-center space-y-6">
+                    {/* Right Side - Header + 4 Boards - Full width on mobile, 2/3rd on desktop */}
+                    <div className="lg:col-span-2 flex flex-col justify-center space-y-4 sm:space-y-6">
                       {/* Header Section */}
-                      <div className="text-left">
-                        <h3 className="text-2xl font-bold mb-2">Status Tracker</h3>
+                      <div className="text-center lg:text-left">
+                        <h3 className="text-xl sm:text-2xl font-bold mb-2">Status Tracker</h3>
                       </div>
                       
                       {/* 4 Boards Section */}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         {/* Profile Status */}
                         <div 
-                          className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
                           onClick={() => navigate('/dashboard/build-my-profile')}
                         >
-                          <div className="relative w-16 h-16 mb-2">
-                            <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
+                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
+                            <svg className="w-12 h-12 sm:w-16 sm:h-16 transform -rotate-90" viewBox="0 0 100 100">
                               <circle
                                 cx="50"
                                 cy="50"
@@ -499,55 +501,55 @@ const Dashboard = () => {
                               />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-sm font-bold text-primary">{getOverallCareerScore()}%</span>
+                              <span className="text-xs sm:text-sm font-bold text-primary">{getOverallCareerScore()}%</span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm">Profile Status</h4>
-                          <p className="text-xs text-muted-foreground text-center">Overall percentage</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm">Profile Status</h4>
+                          <p className="text-xs text-muted-foreground text-center hidden sm:block">Overall percentage</p>
                         </div>
 
                         {/* Job Application Status */}
                         <div 
-                          className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
                           onClick={() => navigate('/dashboard/job-tracker')}
                         >
-                          <div className="relative w-16 h-16 mb-2">
-                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                               <span className="text-lg font-bold text-primary">
+                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                               <span className="text-base sm:text-lg font-bold text-primary">
                                  {totalJobApplications}
                                </span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm"># Job Applications in Process</h4>
-                          <p className="text-xs text-muted-foreground text-center">In pipeline</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm">Job Applications</h4>
+                          <p className="text-xs text-muted-foreground text-center hidden sm:block">In pipeline</p>
                         </div>
 
                         {/* Network Growth */}
                         <div 
-                          className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
                         >
-                          <div className="relative w-16 h-16 mb-2">
-                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">{networkMetrics.weeklyProgress || 0}</span>
+                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-base sm:text-lg font-bold text-primary">{networkMetrics.weeklyProgress || 0}</span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm">Network Growth</h4>
-                          <p className="text-xs text-muted-foreground text-center">This week activities</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm">Network Growth</h4>
+                          <p className="text-xs text-muted-foreground text-center hidden sm:block">This week activities</p>
                         </div>
 
                         {/* GitHub Activities */}
                         <div 
-                          className="flex flex-col items-center p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
                           onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
                         >
-                          <div className="relative w-16 h-16 mb-2">
-                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">{repoPercent}%</span>
+                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-base sm:text-lg font-bold text-primary">{repoPercent}%</span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-sm">GitHub Repository Status</h4>
-                          <p className="text-xs text-muted-foreground text-center">Repository tasks status</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm">GitHub Status</h4>
+                          <p className="text-xs text-muted-foreground text-center hidden sm:block">Repository tasks</p>
                         </div>
                       </div>
                     </div>
@@ -577,7 +579,7 @@ const Dashboard = () => {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     {/* Resume Status */}
                     <div 
                       className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
