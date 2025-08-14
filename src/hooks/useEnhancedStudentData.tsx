@@ -310,10 +310,10 @@ export const useEnhancedStudentData = () => {
 
       const lastActivity = lastActivityData?.created_at || 'Never';
 
-      // Generate sample daily and weekly data (in real implementation, fetch from database)
-      const dailyActivities = generateSampleDailyData();
-      const weeklySummary = generateSampleWeeklyData();
-      const careerMetrics = generateSampleCareerMetrics();
+      // Fetch real daily activities from database
+      const dailyActivities = await fetchDailyActivities(userId);
+      const weeklySummary = await fetchWeeklySummary(userId);
+      const careerMetrics = await fetchCareerMetrics(userId);
 
       return {
         user_id: userId,
@@ -341,41 +341,155 @@ export const useEnhancedStudentData = () => {
     }
   };
 
-  const generateSampleDailyData = () => {
-    const data = [];
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      data.push({
-        date: date.toISOString().split('T')[0],
-        job_applications: Math.floor(Math.random() * 5),
-        linkedin_activities: Math.floor(Math.random() * 8),
-        github_commits: Math.floor(Math.random() * 3),
-        resume_updates: Math.floor(Math.random() * 2),
-        profile_views: Math.floor(Math.random() * 10)
-      });
+  const fetchDailyActivities = async (userId: string) => {
+    try {
+      const { data: snapshots } = await supabase
+        .from('daily_progress_snapshots')
+        .select('*')
+        .eq('user_id', userId)
+        .order('snapshot_date', { ascending: false })
+        .limit(7);
+
+      if (!snapshots?.length) {
+        return [];
+      }
+
+      return snapshots.reverse().map(snapshot => ({
+        date: snapshot.snapshot_date,
+        job_applications: snapshot.job_applications_count || 0,
+        linkedin_activities: snapshot.network_progress || 0,
+        github_commits: snapshot.github_progress || 0,
+        resume_updates: snapshot.resume_progress || 0,
+        profile_views: snapshot.published_blogs_count || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching daily activities:', error);
+      return [];
     }
-    return data;
   };
 
-  const generateSampleWeeklyData = () => {
-    return [
-      { week: 'Week 1', total_activities: 12, job_applications: 3, networking: 5, skill_development: 4 },
-      { week: 'Week 2', total_activities: 15, job_applications: 4, networking: 6, skill_development: 5 },
-      { week: 'Week 3', total_activities: 18, job_applications: 5, networking: 7, skill_development: 6 },
-      { week: 'Week 4', total_activities: 22, job_applications: 6, networking: 8, skill_development: 8 }
-    ];
+  const fetchWeeklySummary = async (userId: string) => {
+    try {
+      const { data: snapshots } = await supabase
+        .from('daily_progress_snapshots')
+        .select('*')
+        .eq('user_id', userId)
+        .gte('snapshot_date', new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('snapshot_date', { ascending: true });
+
+      if (!snapshots?.length) {
+        return [];
+      }
+
+      // Group by week
+      const weeklyData = [];
+      for (let i = 0; i < 4; i++) {
+        const weekStart = new Date(Date.now() - (4 - i) * 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+        
+        const weekSnapshots = snapshots.filter(s => {
+          const date = new Date(s.snapshot_date);
+          return date >= weekStart && date < weekEnd;
+        });
+
+        const totalActivities = weekSnapshots.reduce((sum, s) => 
+          sum + (s.job_applications_count || 0) + (s.network_progress || 0) + (s.github_progress || 0), 0
+        );
+        const jobApplications = weekSnapshots.reduce((sum, s) => sum + (s.job_applications_count || 0), 0);
+        const networking = weekSnapshots.reduce((sum, s) => sum + (s.network_progress || 0), 0);
+        const skillDevelopment = weekSnapshots.reduce((sum, s) => sum + (s.github_progress || 0), 0);
+
+        weeklyData.push({
+          week: `Week ${i + 1}`,
+          total_activities: totalActivities,
+          job_applications: jobApplications,
+          networking: networking,
+          skill_development: skillDevelopment
+        });
+      }
+
+      return weeklyData;
+    } catch (error) {
+      console.error('Error fetching weekly summary:', error);
+      return [];
+    }
   };
 
-  const generateSampleCareerMetrics = () => {
-    return {
-      total_points: Math.floor(Math.random() * 1000) + 500,
-      weekly_points: Math.floor(Math.random() * 100) + 50,
-      monthly_points: Math.floor(Math.random() * 400) + 200,
-      activity_streak: Math.floor(Math.random() * 30) + 1,
-      engagement_score: Math.floor(Math.random() * 100) + 1
-    };
+  const fetchCareerMetrics = async (userId: string) => {
+    try {
+      // Get leaderboard points
+      const { data: rankings } = await supabase
+        .from('leaderboard_rankings')
+        .select('total_points')
+        .eq('user_id', userId)
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      // Get activity streaks and engagement from daily snapshots
+      const { data: recentSnapshots } = await supabase
+        .from('daily_progress_snapshots')
+        .select('*')
+        .eq('user_id', userId)
+        .order('snapshot_date', { ascending: false })
+        .limit(30);
+
+      let activityStreak = 0;
+      let weeklyPoints = 0;
+      let monthlyPoints = 0;
+
+      if (recentSnapshots?.length) {
+        // Calculate streak
+        const today = new Date();
+        for (let i = 0; i < recentSnapshots.length; i++) {
+          const snapshotDate = new Date(recentSnapshots[i].snapshot_date);
+          const diffDays = Math.floor((today.getTime() - snapshotDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays === i) {
+            const dailyActivity = (recentSnapshots[i].job_applications_count || 0) + 
+                                 (recentSnapshots[i].network_progress || 0) + 
+                                 (recentSnapshots[i].github_progress || 0);
+            if (dailyActivity > 0) {
+              activityStreak++;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        // Calculate weekly and monthly points based on activity
+        const lastWeek = recentSnapshots.slice(0, 7);
+        weeklyPoints = lastWeek.reduce((sum, s) => 
+          sum + (s.job_applications_count || 0) * 5 + (s.network_progress || 0) * 3 + (s.github_progress || 0) * 4, 0
+        );
+
+        monthlyPoints = recentSnapshots.reduce((sum, s) => 
+          sum + (s.job_applications_count || 0) * 5 + (s.network_progress || 0) * 3 + (s.github_progress || 0) * 4, 0
+        );
+      }
+
+      const totalPoints = rankings?.total_points || 0;
+      const engagementScore = Math.min(100, Math.round((activityStreak * 10 + weeklyPoints) / 2));
+
+      return {
+        total_points: totalPoints,
+        weekly_points: weeklyPoints,
+        monthly_points: monthlyPoints,
+        activity_streak: activityStreak,
+        engagement_score: engagementScore
+      };
+    } catch (error) {
+      console.error('Error fetching career metrics:', error);
+      return {
+        total_points: 0,
+        weekly_points: 0,
+        monthly_points: 0,
+        activity_streak: 0,
+        engagement_score: 0
+      };
+    }
   };
 
   return {
