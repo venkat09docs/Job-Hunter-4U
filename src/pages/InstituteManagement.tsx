@@ -846,13 +846,18 @@ export default function InstituteManagement() {
             </TableHeader>
             <TableBody>
               {institutes.map((institute) => (
-                <TableRow key={institute.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{institute.name}</p>
-                      <p className="text-sm text-muted-foreground">{institute.description}</p>
-                    </div>
-                  </TableCell>
+                 <TableRow key={institute.id}>
+                   <TableCell>
+                     <div>
+                       <button 
+                         onClick={() => navigate(`/admin/batch-management?institute=${institute.id}`)}
+                         className="text-primary hover:underline cursor-pointer text-left"
+                       >
+                         <p className="font-medium">{institute.name}</p>
+                       </button>
+                       <p className="text-sm text-muted-foreground">{institute.description}</p>
+                     </div>
+                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{institute.code}</Badge>
                   </TableCell>
