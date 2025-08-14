@@ -179,17 +179,35 @@ export default function StudentsReport() {
     return 'bg-red-500';
   };
 
-  const getActivityStatus = (lastActivity: string) => {
-    if (lastActivity === 'Never') return { color: 'bg-gray-500', text: 'Inactive' };
-    
-    const activityDate = new Date(lastActivity);
-    const now = new Date();
-    const daysDiff = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysDiff <= 1) return { color: 'bg-green-500', text: 'Active' };
-    if (daysDiff <= 7) return { color: 'bg-yellow-500', text: 'Recent' };
-    if (daysDiff <= 30) return { color: 'bg-orange-500', text: 'Moderate' };
-    return { color: 'bg-red-500', text: 'Inactive' };
+  const getActivityStatus = (student: { last_activity: string; subscription_active: boolean; subscription_end_date: string | null }) => {
+    // First check subscription status
+    if (student.subscription_active) {
+      // If subscription is active, check if it's still valid
+      if (student.subscription_end_date) {
+        const endDate = new Date(student.subscription_end_date);
+        const now = new Date();
+        if (endDate < now) {
+          return { color: 'bg-red-500', text: 'Expired' };
+        }
+      }
+      
+      // Subscription is active and valid, now check activity
+      if (student.last_activity === 'Never') {
+        return { color: 'bg-yellow-500', text: 'Subscribed' };
+      }
+      
+      const activityDate = new Date(student.last_activity);
+      const now = new Date();
+      const daysDiff = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff <= 1) return { color: 'bg-green-500', text: 'Active' };
+      if (daysDiff <= 7) return { color: 'bg-blue-500', text: 'Recent' };
+      if (daysDiff <= 30) return { color: 'bg-yellow-500', text: 'Subscribed' };
+      return { color: 'bg-orange-500', text: 'Dormant' };
+    } else {
+      // No active subscription
+      return { color: 'bg-gray-500', text: 'Inactive' };
+    }
   };
 
   if (loading) {
@@ -434,9 +452,9 @@ export default function StudentsReport() {
                           />
                           <Badge 
                             variant="outline" 
-                            className={`${getActivityStatus(student.last_activity).color} text-white`}
+                            className={`${getActivityStatus(student).color} text-white`}
                           >
-                            {getActivityStatus(student.last_activity).text}
+                            {getActivityStatus(student).text}
                           </Badge>
                         </div>
                         
@@ -582,9 +600,9 @@ export default function StudentsReport() {
                         <TableCell>
                           <Badge 
                             variant="outline" 
-                            className={`${getActivityStatus(student.last_activity).color} text-white`}
+                            className={`${getActivityStatus(student).color} text-white`}
                           >
-                            {getActivityStatus(student.last_activity).text}
+                            {getActivityStatus(student).text}
                           </Badge>
                         </TableCell>
                         <TableCell>

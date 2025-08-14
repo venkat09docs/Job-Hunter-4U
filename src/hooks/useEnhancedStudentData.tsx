@@ -19,6 +19,9 @@ interface EnhancedStudentStats {
   total_job_applications: number;
   active_job_applications: number;
   last_activity: string;
+  subscription_active: boolean;
+  subscription_plan: string | null;
+  subscription_end_date: string | null;
   daily_activities: {
     date: string;
     job_applications: number;
@@ -212,10 +215,10 @@ export const useEnhancedStudentData = () => {
     batchName: string
   ): Promise<EnhancedStudentStats | null> => {
     try {
-      // Get basic profile info
+      // Get basic profile info including subscription details
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, email, username')
+        .select('full_name, email, username, subscription_active, subscription_plan, subscription_end_date')
         .eq('user_id', userId)
         .single();
 
@@ -331,6 +334,9 @@ export const useEnhancedStudentData = () => {
         total_job_applications: totalJobApps || 0,
         active_job_applications: activeJobApps || 0,
         last_activity: lastActivity,
+        subscription_active: profile.subscription_active || false,
+        subscription_plan: profile.subscription_plan,
+        subscription_end_date: profile.subscription_end_date,
         daily_activities: dailyActivities,
         weekly_summary: weeklySummary,
         career_metrics: careerMetrics
