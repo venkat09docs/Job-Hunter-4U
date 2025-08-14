@@ -31,6 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { useInstituteName } from '@/hooks/useInstituteName';
+import { useRole } from '@/hooks/useRole';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
@@ -71,8 +72,12 @@ export default function StudentsReport() {
   const { batches, loading, refreshData } = useEnhancedStudentData();
   const { toast } = useToast();
   const { instituteName } = useInstituteName();
+  const { isInstituteAdmin, isAdmin } = useRole();
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+
+  // For institute admin, default sidebar to closed
+  const defaultSidebarOpen = !(isInstituteAdmin && !isAdmin);
 
   const totalStudents = batches.reduce((sum, batch) => sum + batch.student_count, 0);
   const averageProfileCompletion = batches.length > 0 
@@ -219,7 +224,7 @@ export default function StudentsReport() {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar />
       <SidebarInset>
         <div className="border-b bg-card">

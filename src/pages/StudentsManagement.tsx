@@ -8,10 +8,13 @@ import { useRole } from '@/hooks/useRole';
 
 export default function StudentsManagement() {
   const { instituteName } = useInstituteName();
-  const { isInstituteAdmin } = useRole();
+  const { isInstituteAdmin, isAdmin } = useRole();
+
+  // For institute admin, default sidebar to closed
+  const defaultSidebarOpen = !(isInstituteAdmin && !isAdmin);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar />
       <SidebarInset>
         <div className="border-b bg-card">

@@ -96,12 +96,8 @@ export function AppSidebar() {
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
 
-  // Auto-minimize sidebar for institute admin on load
-  useEffect(() => {
-    if (isInstituteAdmin && !isAdmin) {
-      setOpen(false);
-    }
-  }, [isInstituteAdmin, isAdmin, setOpen]);
+  // Remove the useEffect that was causing conflicts
+  // The defaultOpen prop in SidebarProvider now handles initial state
 
   useEffect(() => {
     if (user) {
