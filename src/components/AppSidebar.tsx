@@ -73,6 +73,7 @@ const jobHunterItems = [
 
 
 const adminItems = [
+  { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
@@ -140,10 +141,15 @@ export function AppSidebar() {
                   {adminItems.map((item) => {
                     // For institute admins, show only specific items in order
                     if (isInstituteAdmin && !isAdmin && 
+                        item.title !== "Dashboard" &&
                         item.title !== "Batch Management" &&
                         item.title !== "Students Management" && 
                         item.title !== "Students Report" && 
                         item.title !== "Institute Membership Plans") return null;
+                    // Hide Admin Dashboard for institute admins (they have their own Dashboard)
+                    if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
+                    // Show Dashboard only for institute admins
+                    if (item.title === "Dashboard" && !isInstituteAdmin) return null;
                     // Hide Students Report for super admin (show only for institute admin)
                     if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                     // Show Institute Management only for super admins
