@@ -5,10 +5,12 @@ import { useInstituteName } from '@/hooks/useInstituteName';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, GraduationCap, Settings } from 'lucide-react';
+import { Users, GraduationCap, Settings, TrendingUp } from 'lucide-react';
 
 import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManagement';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
+import { InstituteDashboard } from '@/components/admin/InstituteDashboard';
+import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
           </div>
           
           <div className="container mx-auto p-6">
-            <InstituteLeaderBoard />
+            <InstituteDashboard />
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -90,20 +92,21 @@ export default function AdminDashboard() {
       <AppSidebar />
       <SidebarInset>        
         <div className="container mx-auto p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your organization's institutes, batches, and user assignments
-            </p>
-          </div>
-
-          <Tabs defaultValue="assignments" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-1">
+          <Tabs defaultValue="dashboard" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="dashboard" className="flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4" />
+                <span>Dashboard</span>
+              </TabsTrigger>
               <TabsTrigger value="assignments" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
-                <span>User Assignments</span>
+                <span>User Management</span>
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="dashboard">
+              <SuperAdminDashboard />
+            </TabsContent>
 
             <TabsContent value="assignments">
               <UserAssignmentManagement />
