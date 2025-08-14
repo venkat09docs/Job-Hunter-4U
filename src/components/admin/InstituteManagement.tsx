@@ -165,8 +165,9 @@ export const InstituteManagement = () => {
       // Then get admin assignments with user IDs
       const { data: adminAssignments, error: adminError } = await supabase
         .from('institute_admin_assignments')
-        .select('institute_id, user_id')
-        .eq('is_active', true);
+        .select('institute_id, user_id, assigned_at')
+        .eq('is_active', true)
+        .order('assigned_at', { ascending: true });
 
       if (adminError) {
         console.error('Error fetching admin assignments:', adminError);
@@ -182,18 +183,41 @@ export const InstituteManagement = () => {
           .select('user_id, full_name')
           .in('user_id', adminUserIds);
         
-        if (!profileError) {
-          adminProfiles = profiles || [];
+        if (!profileError && profiles) {
+          adminProfiles = profiles;
         }
       }
 
-      // Process institutes with admin names
+      console.log('Admin assignments:', adminAssignments);
+      console.log('Admin profiles:', adminProfiles);
+
+      // Process institutes with admin names (handle multiple admins by showing the first assigned)
       const institutesWithAdmins = allInstitutes?.map(institute => {
-        const adminAssignment = adminAssignments?.find(assignment => assignment.institute_id === institute.id);
-        const adminProfile = adminProfiles.find(profile => profile.user_id === adminAssignment?.user_id);
+        // Find all admins for this institute
+        const instituteAdmins = adminAssignments?.filter(assignment => assignment.institute_id === institute.id) || [];
+        
+        // Get the first admin (earliest assigned) or show multiple if needed
+        let adminName = 'No Admin Assigned';
+        
+        if (instituteAdmins.length > 0) {
+          // Get admin profile for the first assignment
+          const firstAssignment = instituteAdmins[0];
+          const adminProfile = adminProfiles.find(profile => profile.user_id === firstAssignment.user_id);
+          
+          if (instituteAdmins.length === 1) {
+            adminName = adminProfile?.full_name || 'Unknown Admin';
+          } else {
+            // Multiple admins - show first one with count
+            const firstAdmin = adminProfile?.full_name || 'Unknown Admin';
+            adminName = `${firstAdmin} (+${instituteAdmins.length - 1} more)`;
+          }
+        }
+        
+        console.log(`Institute ${institute.name}: Found ${instituteAdmins.length} admins, displaying: ${adminName}`);
+        
         return {
           ...institute,
-          admin_name: adminProfile?.full_name || 'No Admin Assigned'
+          admin_name: adminName
         };
       }) || [];
       
