@@ -74,11 +74,31 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       ],
       bonuses: [
         "Free Access to Career Growth Live Cohort on every Saturday",
-        "1 Mock Interview in the 3rd Month"
+        "1 Live personal Mock Interview",
+        "Free - Linux, Shell and AWS Courses"
       ],
       popular: false,
       variant: "outline" as const,
       icon: Star
+    },
+    {
+      name: "6 Months Plan",
+      price: 6999,
+      duration: "6 months",
+      days: 180,
+      description: "Extended career development package",
+      features: [
+        "Everything in 3 Months Plan +"
+      ],
+      bonuses: [
+        "Video Based Bio Links",
+        "Digital Profile",
+        "100+ Job Applications per month",
+        "Free - DevOps with AWS and Python Course"
+      ],
+      popular: true,
+      variant: "default" as const,
+      icon: Crown
     },
     {
       name: "1 Year Plan",
@@ -87,16 +107,15 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       days: 365,
       description: "Complete career transformation package",
       features: [
-        "Everything in 3 Months Plan +"
+        "Everything in 6 Months Plan +"
       ],
       bonuses: [
-        "Video Based Bio Links",
-        "Digital Profile",
-        "100+ Job Applications per month",
+        "AI Automation Bootcamp",
+        "Vibe Coding Tools [No coding required]",
         "Automated Job-Hunting Process"
       ],
-      popular: true,
-      variant: "default" as const,
+      popular: false,
+      variant: "outline" as const,
       icon: Crown
     }
   ];

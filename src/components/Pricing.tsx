@@ -63,16 +63,17 @@ const Pricing = () => {
       ],
       bonuses: [
         "Free Access to Career Growth Live Cohort on every Saturday",
-        "1 Mock Interview in the 3rd Month"
+        "1 Live personal Mock Interview",
+        "Free - Linux, Shell and AWS Courses"
       ],
       popular: true,
       variant: "hero" as const
     },
     {
-      name: "1 Year Plan",
-      price: 11999,
-      duration: "1 year",
-      description: "Complete career transformation package",
+      name: "6 Months Plan",
+      price: 6999,
+      duration: "6 months",
+      description: "Extended career development package",
       features: [
         "Everything in 3 Months Plan +"
       ],
@@ -80,6 +81,22 @@ const Pricing = () => {
         "Video Based Bio Links",
         "Digital Profile",
         "100+ Job Applications per month",
+        "Free - DevOps with AWS and Python Course"
+      ],
+      popular: false,
+      variant: "outline" as const
+    },
+    {
+      name: "1 Year Plan",
+      price: 11999,
+      duration: "1 year",
+      description: "Complete career transformation package",
+      features: [
+        "Everything in 6 Months Plan +"
+      ],
+      bonuses: [
+        "AI Automation Bootcamp",
+        "Vibe Coding Tools [No coding required]",
         "Automated Job-Hunting Process"
       ],
       popular: false,
