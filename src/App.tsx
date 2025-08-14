@@ -39,6 +39,8 @@ import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import StudentsReport from "./pages/StudentsReport";
 import InstituteManagement from "./pages/InstituteManagement";
+import BatchManagement from "./pages/BatchManagement";
+import StudentsManagement from "./pages/StudentsManagement";
 import LeaderBoardPoints from "./pages/LeaderBoardPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
@@ -292,6 +294,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <InstituteManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/batch-management" 
+              element={
+                <ProtectedRoute>
+                  <BatchManagement />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/students-management" 
+              element={
+                <ProtectedRoute>
+                  <StudentsManagement />
                 </ProtectedRoute>
               } 
             />

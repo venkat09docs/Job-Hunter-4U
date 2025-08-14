@@ -6,9 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building, Users, GraduationCap, Settings } from 'lucide-react';
 import { InstituteManagement } from '@/components/admin/InstituteManagement';
-import { BatchManagement } from '@/components/admin/BatchManagement';
 import { UserAssignmentManagement } from '@/components/admin/UserAssignmentManagement';
-import { StudentsManagement } from '@/components/admin/StudentsManagement';
+import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -100,27 +99,7 @@ export default function AdminDashboard() {
           </div>
           
           <div className="container mx-auto p-6">
-
-            <Tabs defaultValue="batches" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="batches" className="flex items-center space-x-2">
-                  <GraduationCap className="h-4 w-4" />
-                  <span>Batches</span>
-                </TabsTrigger>
-                <TabsTrigger value="assignments" className="flex items-center space-x-2">
-                  <Users className="h-4 w-4" />
-                  <span>Students Management</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="batches">
-                <BatchManagement />
-              </TabsContent>
-
-              <TabsContent value="assignments">
-                <StudentsManagement />
-              </TabsContent>
-            </Tabs>
+            <InstituteLeaderBoard />
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -141,14 +120,10 @@ export default function AdminDashboard() {
           </div>
 
           <Tabs defaultValue="institutes" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="institutes" className="flex items-center space-x-2">
                 <Building className="h-4 w-4" />
                 <span>Institutes</span>
-              </TabsTrigger>
-              <TabsTrigger value="batches" className="flex items-center space-x-2">
-                <GraduationCap className="h-4 w-4" />
-                <span>Batches</span>
               </TabsTrigger>
               <TabsTrigger value="assignments" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
@@ -158,10 +133,6 @@ export default function AdminDashboard() {
 
             <TabsContent value="institutes">
               <InstituteManagement />
-            </TabsContent>
-
-            <TabsContent value="batches">
-              <BatchManagement />
             </TabsContent>
 
             <TabsContent value="assignments">

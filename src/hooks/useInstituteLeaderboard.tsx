@@ -1,0 +1,183 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from './useAuth';
+import { useRole } from './useRole';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export interface LeaderboardEntry {
+  user_id: string;
+  full_name: string;
+  username: string;
+  profile_image_url?: string;
+  total_points: number;
+  rank_position: number;
+}
+
+export interface LeaderboardData {
+  current_week: LeaderboardEntry[];
+  last_week: LeaderboardEntry[];
+  last_30_days: LeaderboardEntry[];
+}
+
+export const useInstituteLeaderboard = () => {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardData>({
+    current_week: [],
+    last_week: [],
+    last_30_days: []
+  });
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { isInstituteAdmin } = useRole();
+
+  useEffect(() => {
+    if (isInstituteAdmin && user) {
+      fetchLeaderboard();
+    }
+  }, [isInstituteAdmin, user]);
+
+  const fetchLeaderboard = async () => {
+    try {
+      setLoading(true);
+      
+      // First get the institute admin's assigned institute
+      const { data: adminAssignment, error: adminError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', user?.id)
+        .eq('is_active', true)
+        .single();
+
+      if (adminError) throw adminError;
+
+      if (!adminAssignment?.institute_id) {
+        toast.error('No institute assignment found');
+        return;
+      }
+
+      // Get current week leaderboard
+      const currentWeekData = await getLeaderboardForPeriod('current_week', adminAssignment.institute_id);
+      const lastWeekData = await getLeaderboardForPeriod('last_week', adminAssignment.institute_id);
+      const last30DaysData = await getLeaderboardForPeriod('last_30_days', adminAssignment.institute_id);
+
+      setLeaderboard({
+        current_week: currentWeekData,
+        last_week: lastWeekData,
+        last_30_days: last30DaysData
+      });
+    } catch (error) {
+      console.error('Error fetching institute leaderboard:', error);
+      toast.error('Failed to load leaderboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getLeaderboardForPeriod = async (periodType: string, instituteId: string): Promise<LeaderboardEntry[]> => {
+    try {
+      // Calculate date ranges
+      const now = new Date();
+      let startDate: Date;
+      let endDate: Date;
+
+      if (periodType === 'current_week') {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() + mondayOffset);
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+      } else if (periodType === 'last_week') {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const lastMondayOffset = dayOfWeek === 0 ? -13 : -6 - dayOfWeek;
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() + lastMondayOffset);
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+      } else {
+        endDate = new Date();
+        startDate = new Date();
+        startDate.setDate(endDate.getDate() - 30);
+      }
+
+      // Get users assigned to this institute
+      const { data: instituteUsers, error: usersError } = await supabase
+        .from('user_assignments')
+        .select('user_id')
+        .eq('institute_id', instituteId)
+        .eq('assignment_type', 'batch')
+        .eq('is_active', true);
+
+      if (usersError) throw usersError;
+
+      if (!instituteUsers || instituteUsers.length === 0) {
+        return [];
+      }
+
+      const userIds = instituteUsers.map(u => u.user_id);
+
+      // Query user activity points for the period for institute users only
+      const { data: activityData, error: activityError } = await supabase
+        .from('user_activity_points')
+        .select(`
+          user_id,
+          points_earned,
+          activity_date
+        `)
+        .in('user_id', userIds)
+        .gte('activity_date', startDate.toISOString().split('T')[0])
+        .lte('activity_date', endDate.toISOString().split('T')[0]);
+
+      if (activityError) throw activityError;
+
+      // Group by user and sum points
+      const userPoints = new Map<string, number>();
+      activityData?.forEach(record => {
+        const current = userPoints.get(record.user_id) || 0;
+        userPoints.set(record.user_id, current + record.points_earned);
+      });
+
+      // Get user details for top 10 users
+      const topUserIds = Array.from(userPoints.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([userId]) => userId);
+
+      if (topUserIds.length === 0) {
+        return [];
+      }
+
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', topUserIds);
+
+      if (profileError) throw profileError;
+
+      // Combine user data with points and rankings
+      const leaderboardEntries: LeaderboardEntry[] = topUserIds.map((userId, index) => {
+        const profile = profileData?.find(p => p.user_id === userId);
+        return {
+          user_id: userId,
+          full_name: profile?.full_name || 'Unknown User',
+          username: profile?.username || 'unknown',
+          profile_image_url: profile?.profile_image_url,
+          total_points: userPoints.get(userId) || 0,
+          rank_position: index + 1
+        };
+      });
+
+      return leaderboardEntries;
+    } catch (error) {
+      console.error(`Error fetching ${periodType} leaderboard:`, error);
+      return [];
+    }
+  };
+
+  return {
+    leaderboard,
+    loading,
+    refreshLeaderboard: fetchLeaderboard
+  };
+};

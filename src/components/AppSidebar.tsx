@@ -24,7 +24,8 @@ import {
   ChevronDown,
   ChevronRight,
   TrendingUp,
-  Lock
+  Lock,
+  GraduationCap
 } from "lucide-react";
 import {
   Sidebar,
@@ -75,6 +76,8 @@ const adminItems = [
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
   { title: "Institute Management", url: "/admin/institute-management", icon: Building },
+  { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
+  { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "User Management", url: "/admin/users", icon: Users },
   { title: "Leader Board Points", url: "/leaderboard-points", icon: Target },
   { title: "Institute Membership Plans", url: "/dashboard/institute-membership-plans", icon: CreditCard },
@@ -134,21 +137,25 @@ export function AppSidebar() {
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminItems.map((item) => {
-                  // For institute admins, exclude Admin Dashboard and show only Students Report and Institute Membership Plans
-                  if (isInstituteAdmin && !isAdmin && 
-                      item.title !== "Students Report" && 
-                      item.title !== "Institute Membership Plans") return null;
-                  // Hide Students Report for super admin (show only for institute admin)
-                  if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
-                  // Show Institute Management only for super admins
-                  if (item.title === "Institute Management" && !isAdmin) return null;
-                   // Show User Management only for super admins
-                   if (item.title === "User Management" && !isAdmin) return null;
-                   // Show Leader Board Points only for super admins
-                   if (item.title === "Leader Board Points" && !isAdmin) return null;
-                  // Show Manage Career Hub and Subscriptions only for super admins
-                  if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
+                  {adminItems.map((item) => {
+                    // For institute admins, exclude Admin Dashboard and show only Students Report and Institute Membership Plans
+                    if (isInstituteAdmin && !isAdmin && 
+                        item.title !== "Students Report" && 
+                        item.title !== "Institute Membership Plans") return null;
+                    // Hide Students Report for super admin (show only for institute admin)
+                    if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
+                    // Show Institute Management only for super admins
+                    if (item.title === "Institute Management" && !isAdmin) return null;
+                    // Show Batch Management only for super admins
+                    if (item.title === "Batch Management" && !isAdmin) return null;
+                    // Show Students Management only for super admins
+                    if (item.title === "Students Management" && !isAdmin) return null;
+                     // Show User Management only for super admins
+                     if (item.title === "User Management" && !isAdmin) return null;
+                     // Show Leader Board Points only for super admins
+                     if (item.title === "Leader Board Points" && !isAdmin) return null;
+                    // Show Manage Career Hub and Subscriptions only for super admins
+                    if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
                   
                   return (
                     <SidebarMenuItem key={item.title}>
