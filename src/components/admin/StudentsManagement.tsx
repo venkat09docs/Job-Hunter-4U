@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { useInstituteName } from '@/hooks/useInstituteName';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Search, UserPlus, Download, Users, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, UserPlus, Download, Users, Filter, Upload, FileDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import Papa from 'papaparse';
 import {
@@ -86,6 +87,7 @@ interface StudentFormData {
 export const StudentsManagement = () => {
   const { user } = useAuth();
   const { isAdmin, isInstituteAdmin } = useRole();
+  const { instituteSubscription } = useInstituteName();
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -114,6 +116,12 @@ export const StudentsManagement = () => {
   const [showBulkBatchDialog, setShowBulkBatchDialog] = useState(false);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [bulkBatchId, setBulkBatchId] = useState<string>('');
+  
+  // CSV Import states
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<any[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
   
 
   useEffect(() => {
@@ -388,6 +396,166 @@ export const StudentsManagement = () => {
     });
   };
 
+  const downloadSampleCSV = () => {
+    const sampleData = [
+      {
+        'Full Name': 'John Doe',
+        'Email': 'john.doe@example.com',
+        'Username': 'johndoe',
+        'Password': 'password123',
+        'Batch Code': 'BATCH001'
+      },
+      {
+        'Full Name': 'Jane Smith',
+        'Email': 'jane.smith@example.com',
+        'Username': 'janesmith',
+        'Password': 'password456',
+        'Batch Code': 'BATCH001'
+      }
+    ];
+
+    const csv = Papa.unparse(sampleData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'sample_students_import.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: 'Success',
+      description: 'Sample CSV file downloaded successfully',
+    });
+  };
+
+  const handleCSVFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setCsvFile(file);
+
+    Papa.parse(file, {
+      header: true,
+      complete: (results) => {
+        const data = results.data.filter((row: any) => 
+          row['Full Name'] && row['Email'] && row['Username'] && row['Password'] && row['Batch Code']
+        );
+        setImportPreview(data);
+      },
+      error: (error) => {
+        toast({
+          title: 'Error',
+          description: 'Failed to parse CSV file',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  const validateSubscriptionLimit = () => {
+    if (!instituteSubscription) return true;
+    
+    const currentStudents = students.length;
+    const newStudents = importPreview.length;
+    const totalAfterImport = currentStudents + newStudents;
+    const maxStudents = instituteSubscription.maxStudents;
+
+    if (maxStudents && totalAfterImport > maxStudents) {
+      toast({
+        title: 'Subscription Limit Exceeded',
+        description: `Cannot import ${newStudents} students. Current: ${currentStudents}, Max allowed: ${maxStudents}. You would exceed the limit by ${totalAfterImport - maxStudents} students.`,
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCSVImport = async () => {
+    if (!importPreview.length || !instituteId) return;
+
+    if (!validateSubscriptionLimit()) return;
+
+    setIsImporting(true);
+
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      for (const row of importPreview) {
+        try {
+          // Find batch by code
+          const batch = batches.find(b => b.code === row['Batch Code']);
+          if (!batch) {
+            errors.push(`Batch not found for code: ${row['Batch Code']}`);
+            errorCount++;
+            continue;
+          }
+
+          const { data, error } = await supabase.functions.invoke('create-student', {
+            body: {
+              email: row['Email'],
+              password: row['Password'],
+              full_name: row['Full Name'],
+              username: row['Username'],
+              batch_id: batch.id,
+              institute_id: instituteId,
+            },
+          });
+
+          if (error || !data?.success) {
+            errors.push(`Failed to create ${row['Full Name']}: ${data?.error || error?.message}`);
+            errorCount++;
+          } else {
+            successCount++;
+          }
+        } catch (error: any) {
+          errors.push(`Error creating ${row['Full Name']}: ${error.message}`);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: 'Import Completed',
+          description: `Successfully imported ${successCount} students${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
+        });
+        
+        setShowImportDialog(false);
+        setCsvFile(null);
+        setImportPreview([]);
+        fetchData(instituteId);
+      }
+
+      if (errors.length > 0 && errors.length <= 5) {
+        toast({
+          title: 'Import Errors',
+          description: errors.join(', '),
+          variant: 'destructive',
+        });
+      } else if (errors.length > 5) {
+        toast({
+          title: 'Import Errors',
+          description: `${errors.length} errors occurred during import`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to import students',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   // Pagination calculations
   const totalPages = Math.ceil(filteredStudents.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
@@ -591,6 +759,21 @@ export const StudentsManagement = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Students Management</h2>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={downloadSampleCSV}
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            Sample CSV
+          </Button>
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Import CSV
+              </Button>
+            </DialogTrigger>
+          </Dialog>
           <Button
             variant="outline"
             onClick={exportToCSV}
@@ -1017,6 +1200,95 @@ export const StudentsManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* CSV Import Dialog */}
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle>Import Students from CSV</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="csv-file">Select CSV File</Label>
+            <Input
+              id="csv-file"
+              type="file"
+              accept=".csv"
+              onChange={handleCSVFileChange}
+              className="mt-1"
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              Upload a CSV file with columns: Full Name, Email, Username, Password, Batch Code
+            </p>
+          </div>
+
+          {instituteSubscription && (
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm">
+                <strong>Subscription Limit:</strong> {students.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
+              </p>
+              {importPreview.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  After import: {students.length + importPreview.length}/{instituteSubscription.maxStudents || 'Unlimited'} students
+                </p>
+              )}
+            </div>
+          )}
+
+          {importPreview.length > 0 && (
+            <div>
+              <Label>Preview ({importPreview.length} students to import)</Label>
+              <div className="max-h-40 overflow-y-auto border rounded p-2 mt-1">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Full Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Batch Code</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {importPreview.slice(0, 5).map((row, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{row['Full Name']}</TableCell>
+                        <TableCell>{row['Email']}</TableCell>
+                        <TableCell>{row['Username']}</TableCell>
+                        <TableCell>{row['Batch Code']}</TableCell>
+                      </TableRow>
+                    ))}
+                    {importPreview.length > 5 && (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                          ... and {importPreview.length - 5} more students
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowImportDialog(false);
+                setCsvFile(null);
+                setImportPreview([]);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCSVImport}
+              disabled={importPreview.length === 0 || isImporting}
+            >
+              {isImporting ? 'Importing...' : `Import ${importPreview.length} Students`}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
 
     </div>
   );
