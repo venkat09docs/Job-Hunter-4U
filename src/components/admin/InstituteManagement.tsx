@@ -430,7 +430,7 @@ export const InstituteManagement = () => {
             .from('user_assignments')
             .select('*', { count: 'exact', head: true })
             .eq('batch_id', batch.id)
-            .eq('assignment_type', 'student')
+            .eq('assignment_type', 'batch')
             .eq('is_active', true);
 
           return {

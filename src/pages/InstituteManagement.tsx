@@ -145,7 +145,7 @@ export default function InstituteManagement() {
             .from('user_assignments')
             .select('*', { count: 'exact', head: true })
             .eq('institute_id', institute.id)
-            .eq('assignment_type', 'student')
+            .eq('assignment_type', 'batch')
             .eq('is_active', true);
 
           // Get institute admin name using maybeSingle to avoid errors
@@ -526,7 +526,7 @@ export default function InstituteManagement() {
             .from('user_assignments')
             .select('*', { count: 'exact', head: true })
             .eq('batch_id', batch.id)
-            .eq('assignment_type', 'student')
+            .eq('assignment_type', 'batch')
             .eq('is_active', true);
 
           return {
