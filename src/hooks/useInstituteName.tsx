@@ -7,24 +7,32 @@ export const useInstituteName = () => {
   const { user } = useAuth();
   const { isInstituteAdmin } = useRole();
   const [instituteName, setInstituteName] = useState<string>('');
+  const [instituteSubscription, setInstituteSubscription] = useState<{
+    plan: string | null;
+    active: boolean;
+    endDate: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isInstituteAdmin && user) {
-      fetchInstituteName();
+      fetchInstituteData();
     } else {
       setLoading(false);
     }
   }, [isInstituteAdmin, user]);
 
-  const fetchInstituteName = async () => {
+  const fetchInstituteData = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('institute_admin_assignments')
         .select(`
           institutes (
-            name
+            name,
+            subscription_plan,
+            subscription_active,
+            subscription_end_date
           )
         `)
         .eq('user_id', user?.id)
@@ -33,9 +41,14 @@ export const useInstituteName = () => {
 
       if (data?.institutes) {
         setInstituteName(data.institutes.name);
+        setInstituteSubscription({
+          plan: data.institutes.subscription_plan,
+          active: data.institutes.subscription_active || false,
+          endDate: data.institutes.subscription_end_date
+        });
       }
     } catch (error) {
-      console.error('Error fetching institute name:', error);
+      console.error('Error fetching institute data:', error);
     } finally {
       setLoading(false);
     }
@@ -43,7 +56,8 @@ export const useInstituteName = () => {
 
   return {
     instituteName,
+    instituteSubscription,
     loading,
-    refetch: fetchInstituteName
+    refetch: fetchInstituteData
   };
 };

@@ -12,6 +12,7 @@ import { useRole } from "@/hooks/useRole";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { InstituteSubscriptionBadge } from "@/components/InstituteSubscriptionBadge";
 
 declare global {
   interface Window {
@@ -258,9 +259,10 @@ const InstituteMembershipPlans = () => {
                 </p>
               </div>
               
-              <div className="flex items-center gap-4">
-                <UserProfileDropdown />
-              </div>
+            <div className="flex items-center gap-4">
+              <InstituteSubscriptionBadge />
+              <UserProfileDropdown />
+            </div>
             </div>
           </div>
           
