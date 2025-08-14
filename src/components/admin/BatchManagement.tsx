@@ -120,10 +120,11 @@ export const BatchManagement = () => {
       if (instituteId && isAdmin) {
         setIsReadOnly(true);
         fetchInstituteData(instituteId);
+        fetchSubscriptionPlans(); // Add this line for super admin read-only mode
       } else {
-      setIsReadOnly(false);
-      fetchData();
-      fetchSubscriptionPlans();
+        setIsReadOnly(false);
+        fetchData();
+        fetchSubscriptionPlans();
       }
     }
   }, [isAdmin, isInstituteAdmin, searchParams]);
