@@ -578,11 +578,17 @@ export const InstituteManagement = () => {
             <TableBody>
               {(() => {
                 console.log('Rendering institutes in table:', institutes);
-                return institutes.map((institute) => (
-                <TableRow key={institute.id}>
-                  <TableCell className="font-medium">{institute.name}</TableCell>
-                  <TableCell>{institute.code}</TableCell>
-                  <TableCell>{institute.admin_name}</TableCell>
+                return institutes.map((institute) => {
+                  console.log('Institute admin name for', institute.name, ':', institute.admin_name);
+                  return (
+                  <TableRow key={institute.id}>
+                    <TableCell className="font-medium">{institute.name}</TableCell>
+                    <TableCell>{institute.code}</TableCell>
+                    <TableCell>
+                      <span className="font-medium">
+                        {institute.admin_name || 'No Admin Assigned'}
+                      </span>
+                    </TableCell>
                   <TableCell>
                     {institute.contact_email && (
                       <div>{institute.contact_email}</div>
@@ -642,8 +648,9 @@ export const InstituteManagement = () => {
                       </Button>
                     </div>
                   </TableCell>
-                </TableRow>
-                ));
+                 </TableRow>
+                  );
+                });
               })()}
             </TableBody>
           </Table>
