@@ -99,7 +99,7 @@ const DigitalCareerHub = () => {
     
     // Security: Extract URL from iframe src if it's an iframe
     if (cleanCode.includes('<iframe')) {
-      const srcMatch = cleanCode.match(/src="([^"]+)"/);
+      const srcMatch = cleanCode.match(/src\s*=\s*["']([^"']+)["']/i);
       if (srcMatch && srcMatch[1]) {
         const url = srcMatch[1];
         // Validate the URL and domain
