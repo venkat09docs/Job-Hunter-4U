@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Search, UserPlus, Download, Users, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, UserPlus, Download, Users, Filter, Settings } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import Papa from 'papaparse';
 import {
@@ -113,12 +113,37 @@ export const StudentsManagement = () => {
   const [showBulkBatchDialog, setShowBulkBatchDialog] = useState(false);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [bulkBatchId, setBulkBatchId] = useState<string>('');
+  
+  // Subscription management states
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [selectedStudentForSubscription, setSelectedStudentForSubscription] = useState<Student | null>(null);
+  const [availablePlans, setAvailablePlans] = useState<Array<{id: string, name: string, duration_days: number, description: string}>>([]);
+  const [subscriptionFormData, setSubscriptionFormData] = useState({
+    subscription_plan: '',
+    duration_days: 0,
+  });
 
   useEffect(() => {
     if (isInstituteAdmin || isAdmin) {
       fetchInstituteInfo();
+      fetchAvailablePlans();
     }
   }, [isInstituteAdmin, isAdmin, user]);
+
+  const fetchAvailablePlans = async () => {
+    try {
+      const { data: plans, error } = await supabase
+        .from('subscription_plans')
+        .select('id, name, duration_days, description')
+        .eq('is_active', true)
+        .order('duration_days', { ascending: true });
+
+      if (error) throw error;
+      setAvailablePlans(plans || []);
+    } catch (error: any) {
+      console.error('Error fetching plans:', error);
+    }
+  };
 
   const fetchInstituteInfo = async () => {
     try {
@@ -553,6 +578,75 @@ export const StudentsManagement = () => {
     }
   };
 
+  const handleManageSubscription = (student: Student) => {
+    setSelectedStudentForSubscription(student);
+    setSubscriptionFormData({
+      subscription_plan: student.subscription_plan || '',
+      duration_days: 0,
+    });
+    setShowSubscriptionDialog(true);
+  };
+
+  const handleSubscriptionSubmit = async () => {
+    if (!selectedStudentForSubscription || !subscriptionFormData.subscription_plan) return;
+
+    try {
+      const selectedPlan = availablePlans.find(plan => plan.name === subscriptionFormData.subscription_plan);
+      if (!selectedPlan) throw new Error('Selected plan not found');
+
+      const now = new Date();
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('subscription_end_date, subscription_active')
+        .eq('user_id', selectedStudentForSubscription.user_id)
+        .single();
+
+      let newEndDate: Date;
+
+      if (currentProfile?.subscription_active && currentProfile?.subscription_end_date) {
+        const existingEndDate = new Date(currentProfile.subscription_end_date);
+        if (existingEndDate > now) {
+          newEndDate = new Date(existingEndDate);
+          newEndDate.setDate(existingEndDate.getDate() + selectedPlan.duration_days);
+        } else {
+          newEndDate = new Date(now);
+          newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+        }
+      } else {
+        newEndDate = new Date(now);
+        newEndDate.setDate(now.getDate() + selectedPlan.duration_days);
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_plan: subscriptionFormData.subscription_plan,
+          subscription_start_date: now.toISOString(),
+          subscription_end_date: newEndDate.toISOString(),
+          subscription_active: true,
+        })
+        .eq('user_id', selectedStudentForSubscription.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Subscription plan assigned to ${selectedStudentForSubscription.full_name}`,
+      });
+
+      setShowSubscriptionDialog(false);
+      setSelectedStudentForSubscription(null);
+      setSubscriptionFormData({ subscription_plan: '', duration_days: 0 });
+      fetchData(instituteId);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to assign subscription plan',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!isAdmin && !isInstituteAdmin) {
     return (
       <Card>
@@ -871,6 +965,14 @@ export const StudentsManagement = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleManageSubscription(student)}
+                        title="Manage Subscription"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEdit(student)}
                       >
                         <Edit className="h-4 w-4" />
@@ -994,6 +1096,79 @@ export const StudentsManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Subscription Management Dialog */}
+      <Dialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              Manage Subscription - {selectedStudentForSubscription?.full_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="subscription-plan">Subscription Plan</Label>
+              <Select
+                value={subscriptionFormData.subscription_plan}
+                onValueChange={(value) => {
+                  const selectedPlan = availablePlans.find(plan => plan.name === value);
+                  setSubscriptionFormData({
+                    subscription_plan: value,
+                    duration_days: selectedPlan?.duration_days || 0,
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a subscription plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePlans.map((plan) => (
+                    <SelectItem key={plan.id} value={plan.name}>
+                      {plan.name} ({plan.duration_days} days)
+                      {plan.description && (
+                        <div className="text-xs text-muted-foreground">{plan.description}</div>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {subscriptionFormData.subscription_plan && (
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm">
+                  <strong>Plan:</strong> {subscriptionFormData.subscription_plan}
+                </p>
+                <p className="text-sm">
+                  <strong>Duration:</strong> {subscriptionFormData.duration_days} days
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  This will extend the current subscription or start a new one if none exists.
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowSubscriptionDialog(false);
+                  setSelectedStudentForSubscription(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubscriptionSubmit}
+                disabled={!subscriptionFormData.subscription_plan}
+              >
+                Assign Plan
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
