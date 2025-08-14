@@ -87,7 +87,7 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
@@ -95,6 +95,13 @@ export function AppSidebar() {
   const { canAccessFeature } = usePremiumFeatures();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
+
+  // Auto-minimize sidebar for institute admin on load
+  useEffect(() => {
+    if (isInstituteAdmin && !isAdmin) {
+      setOpen(false);
+    }
+  }, [isInstituteAdmin, isAdmin, setOpen]);
 
   useEffect(() => {
     if (user) {
@@ -146,6 +153,8 @@ export function AppSidebar() {
                         item.title !== "Students Management" && 
                         item.title !== "Students Report" && 
                         item.title !== "Institute Membership Plans") return null;
+                    // Hide Institute Membership Plans for super admin
+                    if (item.title === "Institute Membership Plans" && isAdmin && !isInstituteAdmin) return null;
                     // Hide Admin Dashboard for institute admins (they have their own Dashboard)
                     if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
                     // Show Dashboard only for institute admins

@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { useInstituteName } from '@/hooks/useInstituteName';
 import { AppSidebar } from '@/components/AppSidebar';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { InstituteSubscriptionBadge } from '@/components/InstituteSubscriptionBadge';
 import { StudentCareerGrowthCharts } from '@/components/StudentCareerGrowthCharts';
@@ -224,13 +224,16 @@ export default function StudentsReport() {
       <SidebarInset>
         <div className="border-b bg-card">
           <div className="container mx-auto flex items-center justify-between p-4">
-            <div>
-              <h1 className="text-xl font-semibold">
-                {instituteName ? `${instituteName} - Students Report` : 'Students Report'}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Monitor and track student progress across all batches
-              </p>
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <div>
+                <h1 className="text-xl font-semibold">
+                  {instituteName ? `${instituteName} - Students Report` : 'Students Report'}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Monitor and track student progress across all batches
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center gap-4">
@@ -249,12 +252,6 @@ export default function StudentsReport() {
               </p>
             </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/dashboard">
-              <Home className="h-4 w-4 mr-2" />
-              Go to Dashboard
-            </Link>
-          </Button>
           <Button onClick={refreshData} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh

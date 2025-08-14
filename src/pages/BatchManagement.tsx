@@ -1,6 +1,6 @@
 import { BatchManagement as BatchManagementComponent } from '@/components/admin/BatchManagement';
 import { AppSidebar } from '@/components/AppSidebar';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { InstituteSubscriptionBadge } from '@/components/InstituteSubscriptionBadge';
 import { useInstituteName } from '@/hooks/useInstituteName';
@@ -16,13 +16,16 @@ export default function BatchManagement() {
       <SidebarInset>
         <div className="border-b bg-card">
           <div className="container mx-auto flex items-center justify-between p-4">
-            <div>
-              <h1 className="text-xl font-semibold">
-                {isInstituteAdmin ? `${instituteName} - Batch Management` : 'Batch Management'}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {isInstituteAdmin ? 'Manage batches for your institute' : 'Manage batches across all institutes'}
-              </p>
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <div>
+                <h1 className="text-xl font-semibold">
+                  {isInstituteAdmin ? `${instituteName} - Batch Management` : 'Batch Management'}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {isInstituteAdmin ? 'Manage batches for your institute' : 'Manage batches across all institutes'}
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center gap-4">
