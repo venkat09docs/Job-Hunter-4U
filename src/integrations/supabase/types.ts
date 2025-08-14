@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -466,9 +466,11 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string
+          current_student_count: number | null
           description: string | null
           id: string
           is_active: boolean
+          max_students: number | null
           name: string
           subscription_active: boolean | null
           subscription_end_date: string | null
@@ -483,9 +485,11 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          current_student_count?: number | null
           description?: string | null
           id?: string
           is_active?: boolean
+          max_students?: number | null
           name: string
           subscription_active?: boolean | null
           subscription_end_date?: string | null
@@ -500,9 +504,11 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          current_student_count?: number | null
           description?: string | null
           id?: string
           is_active?: boolean
+          max_students?: number | null
           name?: string
           subscription_active?: boolean | null
           subscription_end_date?: string | null
@@ -1603,56 +1609,60 @@ export type Database = {
     Functions: {
       assign_user_role: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["app_role"]
           action_type?: string
+          new_role: Database["public"]["Enums"]["app_role"]
+          target_user_id: string
         }
         Returns: boolean
       }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          name: string
-          description: string
           code: string
+          description: string
+          id: string
           is_active: boolean
+          name: string
         }[]
+      }
+      get_institute_student_count: {
+        Args: { institute_id_param: string }
+        Returns: number
       }
       get_managed_institutes: {
         Args: { user_id_param: string }
         Returns: {
+          institute_code: string
           institute_id: string
           institute_name: string
-          institute_code: string
         }[]
       }
       get_safe_public_profile: {
         Args: { profile_slug: string }
         Returns: {
-          slug: string
-          full_name: string
           bio: string
-          profile_image_url: string
+          blog_url: string
+          created_at: string
+          custom_links: Json
+          full_name: string
           github_url: string
           linkedin_url: string
-          blog_url: string
-          custom_links: Json
-          created_at: string
+          profile_image_url: string
+          slug: string
         }[]
       }
       get_safe_public_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
-          slug: string
-          full_name: string
           bio: string
-          profile_image_url: string
+          blog_url: string
+          created_at: string
+          custom_links: Json
+          full_name: string
           github_url: string
           linkedin_url: string
-          blog_url: string
-          custom_links: Json
-          created_at: string
+          profile_image_url: string
+          slug: string
         }[]
       }
       get_subscription_days_remaining: {
@@ -1662,19 +1672,19 @@ export type Database = {
       get_user_assignments: {
         Args: { user_id_param: string }
         Returns: {
-          institute_id: string
-          institute_name: string
-          institute_code: string
+          assignment_type: string
+          batch_code: string
           batch_id: string
           batch_name: string
-          batch_code: string
-          assignment_type: string
+          institute_code: string
+          institute_id: string
+          institute_name: string
         }[]
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -1683,7 +1693,7 @@ export type Database = {
         Returns: undefined
       }
       is_institute_admin_for: {
-        Args: { user_id_param: string; institute_id_param: string }
+        Args: { institute_id_param: string; user_id_param: string }
         Returns: boolean
       }
       is_portfolio_owner: {
@@ -1696,14 +1706,14 @@ export type Database = {
       }
       upsert_resume_data: {
         Args: {
-          p_user_id: string
-          p_personal_details: Json
-          p_experience: Json
-          p_education: Json
-          p_skills_interests: Json
           p_certifications_awards: Json
+          p_education: Json
+          p_experience: Json
+          p_personal_details: Json
           p_professional_summary: string
+          p_skills_interests: Json
           p_status: string
+          p_user_id: string
         }
         Returns: string
       }

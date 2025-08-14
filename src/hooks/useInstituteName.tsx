@@ -11,6 +11,8 @@ export const useInstituteName = () => {
     plan: string | null;
     active: boolean;
     endDate: string | null;
+    maxStudents: number | null;
+    currentStudentCount: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,7 +34,9 @@ export const useInstituteName = () => {
             name,
             subscription_plan,
             subscription_active,
-            subscription_end_date
+            subscription_end_date,
+            max_students,
+            current_student_count
           )
         `)
         .eq('user_id', user?.id)
@@ -44,7 +48,9 @@ export const useInstituteName = () => {
         setInstituteSubscription({
           plan: data.institutes.subscription_plan,
           active: data.institutes.subscription_active || false,
-          endDate: data.institutes.subscription_end_date
+          endDate: data.institutes.subscription_end_date,
+          maxStudents: data.institutes.max_students,
+          currentStudentCount: data.institutes.current_student_count || 0
         });
       }
     } catch (error) {
