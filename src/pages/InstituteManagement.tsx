@@ -34,7 +34,8 @@ import {
   GraduationCap,
   ToggleLeft,
   ToggleRight,
-  ArrowLeft
+  ArrowLeft,
+  Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
@@ -51,6 +52,8 @@ interface Institute {
   subscription_active: boolean;
   subscription_start_date: string;
   subscription_end_date: string;
+  max_students?: number;
+  current_student_count?: number;
   batch_count: number;
   student_count: number;
   created_at: string;
@@ -85,6 +88,7 @@ export default function InstituteManagement() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [selectedInstitute, setSelectedInstitute] = useState<Institute | null>(null);
   const [batchDetails, setBatchDetails] = useState<any[]>([]);
   const { toast } = useToast();
@@ -562,6 +566,69 @@ export default function InstituteManagement() {
     }
   };
 
+  const manageSubscription = async (planName: string, activate: boolean) => {
+    try {
+      if (!selectedInstitute) return;
+
+      let updateData: any = {};
+
+      if (activate && planName) {
+        // Find the selected plan details
+        const selectedPlan = subscriptionPlans.find(plan => plan.name === planName);
+        if (!selectedPlan) {
+          toast({
+            title: 'Error',
+            description: 'Invalid subscription plan selected',
+            variant: 'destructive'
+          });
+          return;
+        }
+
+        const now = new Date();
+        const endDate = new Date(now);
+        endDate.setDate(endDate.getDate() + 90); // 90 days subscription
+
+        updateData = {
+          subscription_plan: planName,
+          subscription_active: true,
+          subscription_start_date: now.toISOString(),
+          subscription_end_date: endDate.toISOString(),
+          max_students: selectedPlan.member_limit,
+          is_active: true
+        };
+      } else {
+        // Deactivate subscription
+        updateData = {
+          subscription_active: false,
+          subscription_end_date: new Date().toISOString()
+        };
+      }
+
+      const { error } = await supabase
+        .from('institutes')
+        .update(updateData)
+        .eq('id', selectedInstitute.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: activate ? 'Subscription activated successfully' : 'Subscription deactivated successfully'
+      });
+
+      setSubscriptionDialogOpen(false);
+      setSelectedInstitute(null);
+      fetchInstitutes();
+    } catch (error: any) {
+      console.error('Error managing subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to manage subscription',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
@@ -935,15 +1002,27 @@ export default function InstituteManagement() {
                         >
                           {institute.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
                         </Button>
-                       <Button
-                         variant="ghost"
-                         size="sm"
-                         onClick={() => deleteInstitute(institute)}
-                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                         title="Delete Institute"
-                       >
-                         <Trash2 className="h-4 w-4" />
-                       </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedInstitute(institute);
+                            setSubscriptionDialogOpen(true);
+                          }}
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                          title="Manage Subscription"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteInstitute(institute)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          title="Delete Institute"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                      </div>
                    </TableCell>
                 </TableRow>
@@ -1136,6 +1215,83 @@ export default function InstituteManagement() {
               setBatchDetails([]);
             }}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Management Dialog */}
+      <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Manage Subscription - {selectedInstitute?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Activate, modify or deactivate the subscription plan for this institute
+            </DialogDescription>
+          </DialogHeader>
+          {selectedInstitute && (
+            <div className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">Current Plan:</span>
+                  <span>{selectedInstitute.subscription_plan || 'No Plan'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Status:</span>
+                  <Badge variant={selectedInstitute.subscription_active ? "default" : "destructive"}>
+                    {selectedInstitute.subscription_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Students:</span>
+                  <span>{selectedInstitute.student_count} assigned</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-medium">Available Actions:</h4>
+                
+                <div className="space-y-2">
+                  {subscriptionPlans.map((plan) => (
+                    <Button
+                      key={plan.id}
+                      variant="outline"
+                      className="w-full justify-between"
+                      onClick={() => manageSubscription(plan.name, true)}
+                    >
+                      <div className="flex flex-col items-start">
+                        <span>Activate {plan.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          Up to {plan.member_limit} members
+                        </span>
+                      </div>
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  ))}
+                </div>
+
+                {selectedInstitute.subscription_active && (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => manageSubscription('', false)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Deactivate Subscription
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setSubscriptionDialogOpen(false);
+              setSelectedInstitute(null);
+            }}>
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
