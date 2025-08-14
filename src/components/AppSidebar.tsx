@@ -135,9 +135,8 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => {
-                  // For institute admins, show Admin Dashboard, Students Report and Institute Membership Plans
+                  // For institute admins, exclude Admin Dashboard and show only Students Report and Institute Membership Plans
                   if (isInstituteAdmin && !isAdmin && 
-                      item.title !== "Admin Dashboard" && 
                       item.title !== "Students Report" && 
                       item.title !== "Institute Membership Plans") return null;
                   // Hide Students Report for super admin (show only for institute admin)
