@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useInstituteStudents } from '@/hooks/useInstituteStudents';
+import { useEnhancedStudentData } from '@/hooks/useEnhancedStudentData';
 import { useInstituteName } from '@/hooks/useInstituteName';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ const COLORS = [
 ];
 
 export const InstituteDashboard = () => {
-  const { batches, loading } = useInstituteStudents();
+  const { batches, loading } = useEnhancedStudentData();
   const { instituteName, instituteSubscription } = useInstituteName();
 
   // Calculate metrics
