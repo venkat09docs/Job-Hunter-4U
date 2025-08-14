@@ -49,31 +49,31 @@ export const InstituteSubscriptionBadge = () => {
   const isLimitReached = maxStudents && currentStudentCount >= maxStudents;
 
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-sm bg-secondary/10 px-3 py-2 rounded-lg border border-border">
       <div className="flex items-center gap-1">
         {isActive ? (
           isLimitReached ? (
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
           ) : (
             <CheckCircle className="h-4 w-4 text-green-600" />
           )
         ) : (
-          <XCircle className="h-4 w-4 text-red-600" />
+          <XCircle className="h-4 w-4 text-destructive" />
         )}
-        <Badge variant={getStatusColor() as any}>
+        <Badge variant={getStatusColor() as any} className="font-medium">
           {getStatusText()}
         </Badge>
       </div>
       {maxStudents && isActive && (
         <div className="flex items-center gap-1 text-muted-foreground">
           <Users className="h-3 w-3" />
-          <span className={`text-xs ${isLimitReached ? 'text-red-600 font-medium' : ''}`}>
+          <span className={`text-xs font-medium ${isLimitReached ? 'text-destructive' : currentStudentCount >= maxStudents * 0.8 ? 'text-orange-600' : 'text-foreground'}`}>
             {getStudentCountText()}
           </span>
         </div>
       )}
       {isLimitReached && (
-        <div className="text-xs text-red-600 font-medium">
+        <div className="text-xs text-destructive font-medium">
           Contact Rise n Shine to upgrade
         </div>
       )}
