@@ -42,6 +42,7 @@ import InstituteManagement from "./pages/InstituteManagement";
 import LeaderBoardPoints from "./pages/LeaderBoardPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
+import InstituteAdminRedirect from "./components/InstituteAdminRedirect";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 import SuperAI from "./pages/SuperAI";
@@ -67,7 +68,9 @@ const App = () => (
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <InstituteAdminRedirect>
+                    <Dashboard />
+                  </InstituteAdminRedirect>
                 </ProtectedRoute>
               } 
             />

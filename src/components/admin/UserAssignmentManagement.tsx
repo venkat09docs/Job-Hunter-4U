@@ -226,6 +226,21 @@ export const UserAssignmentManagement = () => {
 
       // If assigning institute_admin role, also add to institute_admin_assignments
       if (formData.assignment_type === 'institute') {
+        // Check if user is already assigned as institute admin to another institute
+        const { data: existingAssignments, error: checkError } = await supabase
+          .from('institute_admin_assignments')
+          .select('id, institute_id')
+          .eq('user_id', userData.id)
+          .eq('is_active', true);
+
+        if (checkError) {
+          throw new Error('Failed to check existing assignments');
+        }
+
+        if (existingAssignments && existingAssignments.length > 0) {
+          throw new Error('This user is already assigned as an Institute Admin to another institute. An Institute Admin can only be assigned to one institute.');
+        }
+
         const { error: roleError } = await supabase
           .from('user_roles')
           .upsert({
