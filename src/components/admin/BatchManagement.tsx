@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Settings, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import {
   Table,
   TableBody,
@@ -60,6 +63,24 @@ interface BatchFormData {
   end_date: string;
 }
 
+interface Student {
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  subscription_plan?: string;
+  subscription_active?: boolean;
+  subscription_end_date?: string;
+  assigned_at: string;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+  duration_days: number;
+}
+
 export const BatchManagement = () => {
   const { user } = useAuth();
   const { isAdmin, isInstituteAdmin } = useRole();
@@ -72,6 +93,18 @@ export const BatchManagement = () => {
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
   const [selectedInstitute, setSelectedInstitute] = useState<Institute | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
+  
+  // Student Management Dialog State
+  const [showStudentDialog, setShowStudentDialog] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [subscriptionFormData, setSubscriptionFormData] = useState({
+    subscription_plan: '',
+    duration_days: 90,
+  });
   const [formData, setFormData] = useState<BatchFormData>({
     name: '',
     code: '',
@@ -88,11 +121,32 @@ export const BatchManagement = () => {
         setIsReadOnly(true);
         fetchInstituteData(instituteId);
       } else {
-        setIsReadOnly(false);
-        fetchData();
+      setIsReadOnly(false);
+      fetchData();
+      fetchSubscriptionPlans();
       }
     }
   }, [isAdmin, isInstituteAdmin, searchParams]);
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('plan_type', 'user')
+        .eq('is_active', true)
+        .order('duration_days');
+
+      if (error) throw error;
+      setSubscriptionPlans(data || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch subscription plans',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -286,6 +340,114 @@ export const BatchManagement = () => {
     }
   };
 
+  const handleBatchStudents = async (batch: Batch) => {
+    try {
+      // Fetch students in this batch with their profile information
+      const { data: assignments, error: assignmentError } = await supabase
+        .from('user_assignments')
+        .select('id, user_id, assigned_at')
+        .eq('batch_id', batch.id)
+        .eq('assignment_type', 'batch')
+        .eq('is_active', true);
+
+      if (assignmentError) throw assignmentError;
+
+      if (!assignments || assignments.length === 0) {
+        setStudents([]);
+        setSelectedBatch(batch);
+        setShowStudentDialog(true);
+        return;
+      }
+
+      // Get user IDs
+      const userIds = assignments.map(a => a.user_id);
+
+      // Fetch profile information for these users
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email, subscription_plan, subscription_active, subscription_end_date')
+        .in('user_id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Combine assignment and profile data
+      const studentsData = assignments.map(assignment => {
+        const profile = profiles?.find(p => p.user_id === assignment.user_id);
+        return {
+          id: assignment.id,
+          user_id: assignment.user_id,
+          full_name: profile?.full_name || 'Unknown',
+          email: profile?.email || 'Unknown',
+          subscription_plan: profile?.subscription_plan,
+          subscription_active: profile?.subscription_active,
+          subscription_end_date: profile?.subscription_end_date,
+          assigned_at: assignment.assigned_at
+        };
+      });
+
+      setStudents(studentsData);
+      setSelectedBatch(batch);
+      setShowStudentDialog(true);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch batch students',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleManageSubscription = (student: Student) => {
+    setSelectedStudent(student);
+    setSubscriptionFormData({
+      subscription_plan: student.subscription_plan || '',
+      duration_days: 90,
+    });
+    setShowSubscriptionDialog(true);
+  };
+
+  const handleSubscriptionSubmit = async () => {
+    if (!selectedStudent) return;
+
+    try {
+      const now = new Date();
+      const endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + subscriptionFormData.duration_days);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_plan: subscriptionFormData.subscription_plan,
+          subscription_active: true,
+          subscription_start_date: now.toISOString(),
+          subscription_end_date: endDate.toISOString(),
+          updated_at: now.toISOString()
+        })
+        .eq('user_id', selectedStudent.user_id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Subscription updated successfully',
+      });
+
+      setShowSubscriptionDialog(false);
+      setSelectedStudent(null);
+      
+      // Refresh student list
+      if (selectedBatch) {
+        handleBatchStudents(selectedBatch);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update subscription',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!isAdmin && !isInstituteAdmin) {
     return (
       <Card>
@@ -456,7 +618,14 @@ export const BatchManagement = () => {
             <TableBody>
               {batches.map((batch) => (
                 <TableRow key={batch.id}>
-                  <TableCell className="font-medium">{batch.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <button 
+                      onClick={() => handleBatchStudents(batch)}
+                      className="text-primary hover:underline cursor-pointer text-left"
+                    >
+                      {batch.name}
+                    </button>
+                  </TableCell>
                   <TableCell>{batch.code}</TableCell>
                   {!selectedInstitute && (
                     <TableCell>
@@ -526,6 +695,147 @@ export const BatchManagement = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Student Management Dialog */}
+      <Dialog open={showStudentDialog} onOpenChange={setShowStudentDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Student Management - {selectedBatch?.name}
+            </DialogTitle>
+            <DialogDescription>
+              Manage students and their subscriptions for this batch
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {students.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Subscription Plan</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{student.full_name}</TableCell>
+                      <TableCell>{student.email}</TableCell>
+                      <TableCell>
+                        {student.subscription_plan ? (
+                          <Badge variant="secondary">{student.subscription_plan}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">No Plan</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {student.subscription_active ? (
+                          <Badge className="bg-green-500 text-white">Active</Badge>
+                        ) : (
+                          <Badge variant="destructive">Inactive</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {student.subscription_end_date 
+                          ? new Date(student.subscription_end_date).toLocaleDateString()
+                          : 'N/A'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleManageSubscription(student)}
+                        >
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Manage
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="font-medium text-lg">No Students Found</h3>
+                <p className="text-muted-foreground">This batch doesn't have any students assigned yet.</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button onClick={() => setShowStudentDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Subscription Management Dialog */}
+      <Dialog open={showSubscriptionDialog} onOpenChange={setShowSubscriptionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Manage Subscription</DialogTitle>
+            <DialogDescription>
+              Update subscription plan for {selectedStudent?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="subscription_plan">Subscription Plan</Label>
+              <Select
+                value={subscriptionFormData.subscription_plan}
+                onValueChange={(value) => setSubscriptionFormData(prev => ({ ...prev, subscription_plan: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select subscription plan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subscriptionPlans.map((plan) => (
+                    <SelectItem key={plan.id} value={plan.name}>
+                      <div className="flex flex-col">
+                        <span>{plan.name}</span>
+                        {plan.description && (
+                          <span className="text-xs text-muted-foreground">
+                            {plan.description}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label htmlFor="duration">Duration (days)</Label>
+              <Input
+                type="number"
+                value={subscriptionFormData.duration_days}
+                onChange={(e) => setSubscriptionFormData(prev => ({ ...prev, duration_days: parseInt(e.target.value) || 90 }))}
+                min="1"
+                max="365"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSubscriptionDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubscriptionSubmit}>
+              Update Subscription
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
