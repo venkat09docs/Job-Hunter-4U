@@ -213,19 +213,67 @@ export const useEnhancedStudentData = () => {
   useEffect(() => {
     if (!user) return;
 
-    // Throttle the refresh to avoid too many calls
     let refreshTimeout: NodeJS.Timeout;
-    const throttledRefresh = () => {
-      clearTimeout(refreshTimeout);
-      refreshTimeout = setTimeout(() => {
-        console.log('Real-time data refresh triggered');
-        fetchEnhancedStudentData();
-      }, 1000); // Wait 1 second before refreshing
+    let instituteStudentIds: string[] = [];
+
+    const throttledRefresh = (changedUserId?: string) => {
+      // Only refresh if the changed user belongs to our institute or we don't have the user ID
+      if (!changedUserId || instituteStudentIds.includes(changedUserId)) {
+        clearTimeout(refreshTimeout);
+        refreshTimeout = setTimeout(() => {
+          console.log('Real-time data refresh triggered for institute student:', changedUserId);
+          fetchEnhancedStudentData();
+        }, 500);
+      }
     };
 
-    // Create a single channel for all table changes
+    // Get current institute student IDs for filtering
+    const getInstituteStudents = async () => {
+      try {
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+
+        const isAdmin = userRoles?.some(role => role.role === 'admin');
+        const isInstituteAdmin = userRoles?.some(role => role.role === 'institute_admin');
+
+        if (!isAdmin && !isInstituteAdmin) return;
+
+        if (isAdmin && !isInstituteAdmin) {
+          // Super admin - listen to all students
+          return;
+        }
+
+        // Institute admin - get only their institute's students
+        const { data: assignments } = await supabase
+          .from('institute_admin_assignments')
+          .select('institute_id')
+          .eq('user_id', user.id)
+          .eq('is_active', true);
+
+        if (!assignments?.length) return;
+
+        const instituteIds = assignments.map(a => a.institute_id);
+        const { data: studentAssignments } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .in('institute_id', instituteIds)
+          .eq('assignment_type', 'batch')
+          .eq('is_active', true);
+
+        instituteStudentIds = studentAssignments?.map(a => a.user_id) || [];
+        console.log('Monitoring institute students:', instituteStudentIds.length);
+      } catch (error) {
+        console.error('Error getting institute students:', error);
+      }
+    };
+
+    getInstituteStudents();
+
+    // Create real-time subscription
     const channel = supabase
-      .channel('student-data-changes')
+      .channel('institute-student-changes')
       .on(
         'postgres_changes',
         {
@@ -235,7 +283,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('Profile updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -247,7 +296,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('Resume data updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -259,7 +309,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('LinkedIn progress updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -271,7 +322,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('GitHub progress updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -283,7 +335,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('Job tracker updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -295,7 +348,8 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('LinkedIn network metrics updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .on(
@@ -307,18 +361,31 @@ export const useEnhancedStudentData = () => {
         },
         (payload) => {
           console.log('Daily progress updated:', payload);
-          throttledRefresh();
+          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
+          throttledRefresh(userId);
         }
       )
       .subscribe((status) => {
         console.log('Realtime subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates');
+          console.log('Successfully subscribed to real-time updates for institute students');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Real-time subscription error - retrying...');
+          setTimeout(() => {
+            fetchEnhancedStudentData();
+          }, 2000);
         }
       });
 
+    // Also set up periodic refresh as backup
+    const intervalId = setInterval(() => {
+      console.log('Periodic refresh for institute student data');
+      fetchEnhancedStudentData();
+    }, 30000); // Every 30 seconds
+
     return () => {
       clearTimeout(refreshTimeout);
+      clearInterval(intervalId);
       supabase.removeChannel(channel);
     };
   }, [user, fetchEnhancedStudentData]);
