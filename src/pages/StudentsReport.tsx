@@ -251,8 +251,8 @@ export default function StudentsReport() {
       setLoadingHistory(true);
       setSelectedUser(userDetails);
       
-      // Fetch user's points history with activity details
-      const { data: pointsData, error } = await supabase
+      // Fetch user's points history
+      const { data: pointsData, error: pointsError } = await supabase
         .from('user_activity_points')
         .select(`
           id,
@@ -260,22 +260,44 @@ export default function StudentsReport() {
           activity_type,
           points_earned,
           activity_date,
-          created_at,
-          activity_point_settings (
-            activity_name,
-            description,
-            category
-          )
+          created_at
         `)
         .eq('user_id', userId)
         .order('activity_date', { ascending: false });
 
-      if (error) throw error;
+      if (pointsError) throw pointsError;
+
+      // Fetch activity settings separately
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('activity_point_settings')
+        .select(`
+          activity_id,
+          activity_name,
+          description,
+          category
+        `);
+
+      if (settingsError) throw settingsError;
+
+      // Create a map of activity settings for easy lookup
+      const settingsMap = new Map(
+        settingsData?.map(setting => [setting.activity_id, setting]) || []
+      );
+
+      // Combine points data with activity settings
+      const enrichedPointsData = pointsData?.map(record => ({
+        ...record,
+        activity_point_settings: settingsMap.get(record.activity_id) || {
+          activity_name: record.activity_type,
+          description: '',
+          category: 'Unknown'
+        }
+      })) || [];
 
       // Calculate total points
       const totalPoints = pointsData?.reduce((sum, record) => sum + record.points_earned, 0) || 0;
       
-      setPointsHistory(pointsData || []);
+      setPointsHistory(enrichedPointsData);
       setSelectedUser({ ...userDetails, totalPoints });
     } catch (error) {
       console.error('Error fetching points history:', error);
