@@ -388,9 +388,9 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
     const activity = DAILY_ACTIVITIES.find(a => a.id === activityId);
     if (!activity) return 'neutral';
     
-    const weeklyTotal = weeklyMetrics[activityId] || 0;
-    if (weeklyTotal >= activity.weeklyTarget) return 'success';
-    if (weeklyTotal >= activity.weeklyTarget * 0.7) return 'warning';
+    const dailyCount = todayMetrics[activityId] || 0;
+    if (dailyCount >= activity.dailyTarget) return 'success';
+    if (dailyCount >= activity.dailyTarget * 0.7) return 'warning';
     return 'danger';
   };
 
