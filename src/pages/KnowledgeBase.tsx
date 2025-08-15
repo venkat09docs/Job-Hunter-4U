@@ -4,10 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star, Edit, Trash2, Plus } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { useActivityPointSettings } from "@/hooks/useActivityPointSettings";
+import { useRole } from "@/hooks/useRole";
+import { toast } from "sonner";
 
 const videoCategories = [
   {
@@ -216,6 +220,24 @@ export default function KnowledgeBase() {
   const [activeVideoCategory, setActiveVideoCategory] = useState("career-development");
   const [activeDocCategory, setActiveDocCategory] = useState("getting-started");
   const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
+  const { isAdmin } = useRole();
+
+  const handleDeleteDoc = (docId: number, categoryId: string) => {
+    // In a real app, this would make an API call to delete the document
+    console.log(`Deleting document ${docId} from category ${categoryId}`);
+    toast.success("Documentation deleted successfully");
+  };
+
+  const handleEditDoc = (docId: number) => {
+    // Navigate to edit mode or open edit dialog
+    console.log(`Editing document ${docId}`);
+    // In a real implementation, this could open an edit modal or navigate to an edit page
+  };
+
+  const handleAddDoc = (categoryId: string) => {
+    console.log(`Adding new document to category ${categoryId}`);
+    toast.info("Add document feature coming soon");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -388,13 +410,28 @@ export default function KnowledgeBase() {
             {/* Step by Step Docs Section */}
             <Card className="h-fit">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Step by Step Docs
-                </CardTitle>
-                <CardDescription>
-                  Follow detailed guides and documentation for all features
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Step by Step Docs
+                    </CardTitle>
+                    <CardDescription>
+                      Follow detailed guides and documentation for all features
+                    </CardDescription>
+                  </div>
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddDoc(activeDocCategory)}
+                      className="flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Add Doc
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
@@ -415,31 +452,81 @@ export default function KnowledgeBase() {
                       <ScrollArea className="h-[500px] pr-4">
                         <div className="space-y-4">
                           {category.docs.map((doc) => (
-                            <Link key={doc.id} to={`/dashboard/knowledge-base/doc/${doc.id}`}>
-                              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                                <CardContent className="p-4">
-                                  <div className="flex gap-3">
-                                    <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                      <FileText className="h-4 w-4 text-muted-foreground" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
-                                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                        {doc.description}
-                                      </p>
-                                      <div className="flex items-center justify-between">
-                                        <Badge variant="secondary" className="text-xs">
-                                          {doc.readTime}
-                                        </Badge>
-                                        <span className="text-xs text-muted-foreground">
-                                          Updated {doc.lastUpdated}
-                                        </span>
+                            <div key={doc.id} className="group">
+                              <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
+                                <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
+                                  <CardContent className="p-4">
+                                    <div className="flex gap-3">
+                                      <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
+                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
+                                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                          {doc.description}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                          <Badge variant="secondary" className="text-xs">
+                                            {doc.readTime}
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">
+                                            Updated {doc.lastUpdated}
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
+                                  </CardContent>
+                                </Link>
+                                {isAdmin && (
+                                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEditDoc(doc.id);
+                                      }}
+                                      className="h-8 w-8 p-0 hover:bg-primary/10"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                          }}
+                                          className="h-8 w-8 p-0 hover:bg-destructive/10"
+                                        >
+                                          <Trash2 className="h-3 w-3 text-destructive" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Documentation</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete "{doc.title}"? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => handleDeleteDoc(doc.id, category.id)}
+                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                          >
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                   </div>
-                                </CardContent>
+                                )}
                               </Card>
-                            </Link>
+                            </div>
                           ))}
                         </div>
                       </ScrollArea>

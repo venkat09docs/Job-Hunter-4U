@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, Circle, Clock, User, BookOpen, Target, Settings, Users, Trophy, BarChart } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ArrowLeft, CheckCircle, Circle, Clock, User, BookOpen, Target, Settings, Users, Trophy, BarChart, Edit, Trash2, Save, X } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
+import { useRole } from "@/hooks/useRole";
+import { toast } from "sonner";
 
 const documentationContent = {
   1: {
@@ -941,8 +948,14 @@ Aim for 100% profile completion, as complete profiles receive significantly more
 
 export default function DocumentationDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAdmin } = useRole();
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const docId = parseInt(id || "1");
   const doc = documentationContent[docId as keyof typeof documentationContent];
@@ -963,6 +976,36 @@ export default function DocumentationDetail() {
     setCompletedSteps(newCompleted);
     localStorage.setItem(`doc-${docId}-progress`, JSON.stringify(newCompleted));
   };
+
+  const handleSaveEdit = () => {
+    // In a real app, this would make an API call to update the documentation
+    console.log("Saving changes:", { title: editTitle, description: editDescription });
+    toast.success("Documentation updated successfully");
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    // In a real app, this would make an API call to delete the documentation
+    console.log("Deleting documentation:", id);
+    toast.success("Documentation deleted successfully");
+    navigate("/dashboard/knowledge-base");
+  };
+
+  const handleCancelEdit = () => {
+    if (doc) {
+      setEditTitle(doc.title);
+      setEditDescription(doc.description);
+    }
+    setIsEditing(false);
+  };
+
+  // Initialize edit form with current data when doc changes
+  useEffect(() => {
+    if (doc) {
+      setEditTitle(doc.title);
+      setEditDescription(doc.description);
+    }
+  }, [doc]);
 
   const getIcon = (iconName: string) => {
     const icons = {
@@ -1019,19 +1062,91 @@ export default function DocumentationDetail() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Badge variant="secondary">{doc.category}</Badge>
-              <span>•</span>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {doc.readTime}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="secondary">{doc.category}</Badge>
+                <span>•</span>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {doc.readTime}
+                </div>
+                <span>•</span>
+                <span>Updated {doc.lastUpdated}</span>
               </div>
-              <span>•</span>
-              <span>Updated {doc.lastUpdated}</span>
+              {isAdmin && !isEditing && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <Edit className="h-3 w-3" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="flex items-center gap-1 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    Delete
+                  </Button>
+                </div>
+              )}
+              {isAdmin && isEditing && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    className="flex items-center gap-1 text-green-600 hover:text-green-600"
+                  >
+                    <Save className="h-3 w-3" />
+                    Save
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    className="flex items-center gap-1"
+                  >
+                    <X className="h-3 w-3" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
             
-            <h1 className="text-4xl font-bold text-foreground mb-4">{doc.title}</h1>
-            <p className="text-xl text-muted-foreground mb-6">{doc.description}</p>
+            {isEditing ? (
+              <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/50 mb-6">
+                <div>
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl font-bold text-foreground mb-4">{doc.title}</h1>
+                <p className="text-xl text-muted-foreground mb-6">{doc.description}</p>
+              </>
+            )}
             
             {/* Progress */}
             <Card>
@@ -1143,6 +1258,27 @@ export default function DocumentationDetail() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Documentation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{doc.title}"? This action cannot be undone and will remove all associated content and user progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Documentation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
