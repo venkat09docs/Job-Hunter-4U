@@ -78,6 +78,8 @@ export const useBatchLeaderboards = () => {
         })
       );
 
+      console.log('Batch leaderboard data fetched:', batchLeaderboardsData.length, 'batches');
+
       setBatchLeaderboards(batchLeaderboardsData);
     } catch (error) {
       console.error('Error fetching batch leaderboards:', error);

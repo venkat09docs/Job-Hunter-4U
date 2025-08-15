@@ -61,6 +61,12 @@ export const useInstituteLeaderboard = () => {
       const topPerformersData = await getLeaderboardForPeriod('top_performers', adminAssignment.institute_id);
       const last30DaysData = await getLeaderboardForPeriod('last_30_days', adminAssignment.institute_id);
 
+      console.log('Leaderboard data fetched:', {
+        current_week: currentWeekData.length,
+        top_performers: topPerformersData.length,
+        last_30_days: last30DaysData.length
+      });
+
       setLeaderboard({
         current_week: currentWeekData,
         top_performers: topPerformersData,
