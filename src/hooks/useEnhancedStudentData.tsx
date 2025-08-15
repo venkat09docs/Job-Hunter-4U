@@ -64,22 +64,37 @@ export const useEnhancedStudentData = () => {
   const { user } = useAuth();
 
   const fetchEnhancedStudentData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('No user found, skipping data fetch');
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('Starting enhanced student data fetch for user:', user.id);
 
       // First, get the user's role and institute assignments
-      const { data: userRoles } = await supabase
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id);
 
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        throw rolesError;
+      }
+
+      console.log('User roles:', userRoles);
+
       const isAdmin = userRoles?.some(role => role.role === 'admin');
       const isInstituteAdmin = userRoles?.some(role => role.role === 'institute_admin');
 
+      console.log('Role check:', { isAdmin, isInstituteAdmin });
+
       if (!isAdmin && !isInstituteAdmin) {
+        console.log('Access denied - user is not admin or institute admin');
         toast.error('Access denied');
+        setBatches([]);
         return;
       }
 
@@ -101,18 +116,29 @@ export const useEnhancedStudentData = () => {
           .eq('is_active', true);
       } else {
         // Institute admin - get only their institute's batches
-        const { data: assignments } = await supabase
+        console.log('Fetching institute admin assignments...');
+        const { data: assignments, error: assignmentError } = await supabase
           .from('institute_admin_assignments')
           .select('institute_id')
           .eq('user_id', user.id)
           .eq('is_active', true);
 
+        if (assignmentError) {
+          console.error('Error fetching institute assignments:', assignmentError);
+          throw assignmentError;
+        }
+
+        console.log('Institute assignments:', assignments);
+
         if (!assignments?.length) {
+          console.log('No institute assignments found');
           setBatches([]);
           return;
         }
 
         const instituteIds = assignments.map(a => a.institute_id);
+        console.log('Institute IDs:', instituteIds);
+        
         batchQuery = supabase
           .from('batches')
           .select(`
@@ -129,18 +155,32 @@ export const useEnhancedStudentData = () => {
       }
 
       const { data: batchesData, error: batchError } = await batchQuery;
-      if (batchError) throw batchError;
+      if (batchError) {
+        console.error('Error fetching batches:', batchError);
+        throw batchError;
+      }
+
+      console.log('Batches data:', batchesData);
 
       const enhancedBatches: BatchSummary[] = [];
 
       for (const batch of batchesData || []) {
+        console.log(`Processing batch: ${batch.name} (${batch.id})`);
+        
         // Get students in this batch
-        const { data: assignments } = await supabase
+        const { data: assignments, error: assignmentError } = await supabase
           .from('user_assignments')
           .select('user_id')
           .eq('batch_id', batch.id)
           .eq('assignment_type', 'batch')
           .eq('is_active', true);
+
+        if (assignmentError) {
+          console.error('Error fetching assignments for batch', batch.id, ':', assignmentError);
+          continue;
+        }
+
+        console.log(`Found ${assignments?.length || 0} students in batch ${batch.name}`);
 
         if (!assignments?.length) {
           enhancedBatches.push({
