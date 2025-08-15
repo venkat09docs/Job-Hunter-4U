@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -65,6 +65,12 @@ const ResourcesLibrary = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [updatingDefault, setUpdatingDefault] = useState<string | null>(null);
+  
+  // File upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -537,6 +543,139 @@ const ResourcesLibrary = () => {
     });
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please select a PDF or Word document (.pdf, .doc, .docx)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Please select a file smaller than 5MB',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setUploadTitle(file.name.replace(/\.[^/.]+$/, ''));
+  };
+
+  const handleUploadResume = async () => {
+    if (!selectedFile || !uploadTitle.trim()) {
+      toast({
+        title: 'Missing information',
+        description: 'Please select a file and enter a title',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Check limit before upload
+    if (savedResumes.length >= 5) {
+      toast({
+        title: 'Upload limit reached',
+        description: 'You have reached the maximum limit of 5 saved resumes. Please delete a resume before uploading a new one.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+
+      // Upload file to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('resumes')
+        .upload(fileName, selectedFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('resumes')
+        .getPublicUrl(fileName);
+
+      // Save to database
+      const resumeData = {
+        user_id: user?.id,
+        title: uploadTitle.trim(),
+        ...(selectedFile.type === 'application/pdf' 
+          ? { pdf_url: publicUrl }
+          : { word_url: publicUrl }
+        ),
+        resume_data: {
+          uploaded: true,
+          originalFileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          uploadedAt: new Date().toISOString()
+        },
+        is_default: savedResumes.length === 0 // Set as default if it's the first resume
+      };
+
+      const { data, error } = await supabase
+        .from('saved_resumes')
+        .insert(resumeData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setSavedResumes(prev => [data, ...prev]);
+      
+      // Reset upload state
+      setSelectedFile(null);
+      setUploadTitle('');
+      setUploadDialogOpen(false);
+
+      toast({
+        title: 'Resume uploaded successfully',
+        description: `Your resume "${uploadTitle}" has been saved to your library.`,
+      });
+
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+      toast({
+        title: 'Upload failed',
+        description: 'Failed to upload resume. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const openUploadDialog = () => {
+    if (savedResumes.length >= 5) {
+      toast({
+        title: 'Upload limit reached',
+        description: 'You have reached the maximum limit of 5 saved resumes. Please delete a resume before uploading a new one.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setUploadDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -583,11 +722,21 @@ const ResourcesLibrary = () => {
           <TabsContent value="saved-resumes" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Your Saved Resumes
-                  <Badge variant="secondary">{savedResumes.length}/5</Badge>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Your Saved Resumes
+                    <Badge variant="secondary">{savedResumes.length}/5</Badge>
+                  </CardTitle>
+                  <Button 
+                    onClick={openUploadDialog}
+                    className="flex items-center gap-2"
+                    disabled={savedResumes.length >= 5}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Resume
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {savedResumes.length === 0 ? (
@@ -595,11 +744,17 @@ const ResourcesLibrary = () => {
                     <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-foreground mb-2">No saved resumes yet</h3>
                     <p className="text-muted-foreground mb-4">
-                      Start building your resume and save final versions here
+                      Upload your existing resume or build a new one using our Resume Builder
                     </p>
-                    <Button onClick={() => window.location.href = '/dashboard/resume-builder'}>
-                      Go to Resume Builder
-                    </Button>
+                    <div className="flex gap-3 justify-center">
+                      <Button onClick={openUploadDialog} className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Upload Resume
+                      </Button>
+                      <Button variant="outline" onClick={() => window.location.href = '/dashboard/resume-builder'}>
+                        Go to Resume Builder
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -952,6 +1107,65 @@ const ResourcesLibrary = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Upload Resume Dialog */}
+        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Resume</DialogTitle>
+              <DialogDescription>
+                Upload your resume in PDF or Word format. Maximum file size: 5MB.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="resume-title">Resume Title</Label>
+                <Input
+                  id="resume-title"
+                  placeholder="Enter resume title"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="resume-file">Select File</Label>
+                <Input
+                  id="resume-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="mt-1"
+                />
+                {selectedFile && (
+                  <div className="mt-2 p-2 bg-muted rounded-lg">
+                    <p className="text-sm text-foreground">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setUploadDialogOpen(false);
+                  setSelectedFile(null);
+                  setUploadTitle('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUploadResume}
+                disabled={!selectedFile || !uploadTitle.trim() || isUploading}
+              >
+                {isUploading ? 'Uploading...' : 'Upload Resume'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         
         {/* Edit Cover Letter Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
