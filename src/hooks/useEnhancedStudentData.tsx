@@ -223,7 +223,7 @@ export const useEnhancedStudentData = () => {
         refreshTimeout = setTimeout(() => {
           console.log('Real-time data refresh triggered for institute student:', changedUserId);
           fetchEnhancedStudentData();
-        }, 500);
+        }, 2000); // Increased from 500ms to 2 seconds to reduce frequency
       }
     };
 
@@ -377,11 +377,11 @@ export const useEnhancedStudentData = () => {
         }
       });
 
-    // Also set up periodic refresh as backup
+    // Also set up periodic refresh as backup (less frequent)
     const intervalId = setInterval(() => {
       console.log('Periodic refresh for institute student data');
       fetchEnhancedStudentData();
-    }, 30000); // Every 30 seconds
+    }, 120000); // Every 2 minutes instead of 30 seconds
 
     return () => {
       clearTimeout(refreshTimeout);

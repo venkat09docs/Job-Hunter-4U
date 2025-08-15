@@ -47,14 +47,7 @@ export const InstituteDashboard = () => {
   const { batches, loading, refreshData } = useEnhancedStudentData();
   const { instituteName, instituteSubscription } = useInstituteName();
 
-  // Set up auto-refresh interval for data synchronization
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshData();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [refreshData]);
+  // Removed auto-refresh - rely on real-time subscriptions in useEnhancedStudentData
 
   // Calculate metrics
   const totalStudents = batches.reduce((sum, batch) => sum + batch.student_count, 0);

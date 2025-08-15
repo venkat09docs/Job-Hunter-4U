@@ -76,27 +76,25 @@ export default function StudentsReport() {
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
-  // Set up auto-refresh interval for real-time synchronization
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refreshData();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [refreshData]);
+  // Removed auto-refresh - user will use manual refresh button
 
   // For institute admin, default sidebar to closed
   const defaultSidebarOpen = !(isInstituteAdmin && !isAdmin);
 
   const totalStudents = batches.reduce((sum, batch) => sum + batch.student_count, 0);
-  const averageProfileCompletion = batches.length > 0 
-    ? Math.round(
-        batches.reduce((sum, batch) => 
-          sum + batch.students.reduce((batchSum, student) => 
-            batchSum + student.profile_completion, 0
-          ) / batch.students.length, 0
-        ) / batches.length
-      ) 
+  
+  // Calculate proper weighted averages based on actual student data
+  const allStudents = batches.flatMap(batch => batch.students);
+  const averageProfileCompletion = totalStudents > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.profile_completion, 0) / totalStudents)
+    : 0;
+  
+  const averageLinkedInProgress = totalStudents > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.linkedin_progress, 0) / totalStudents)
+    : 0;
+  
+  const averageGitHubProgress = totalStudents > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.github_completion, 0) / totalStudents)
     : 0;
 
   const handleBatchSelection = (batchId: string, checked: boolean) => {
@@ -282,7 +280,7 @@ export default function StudentsReport() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -304,6 +302,28 @@ export default function StudentsReport() {
           <CardContent>
             <div className="text-2xl font-bold">{averageProfileCompletion}%</div>
             <Progress value={averageProfileCompletion} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">LinkedIn Progress</CardTitle>
+            <Linkedin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{averageLinkedInProgress}%</div>
+            <Progress value={averageLinkedInProgress} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">GitHub Progress</CardTitle>
+            <Github className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{averageGitHubProgress}%</div>
+            <Progress value={averageGitHubProgress} className="mt-2" />
           </CardContent>
         </Card>
 
