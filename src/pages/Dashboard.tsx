@@ -452,10 +452,24 @@ const Dashboard = () => {
 
             {/* Leader Board */}
             <div className="mb-8">
+              {(() => {
+                console.log('Dashboard LeaderBoard condition check:', { isInstituteAdmin, isAdmin, condition: isInstituteAdmin && !isAdmin });
+                return null;
+              })()}
               {isInstituteAdmin && !isAdmin ? (
-                <InstituteLeaderBoard />
+                <>
+                  <div className="mb-2 text-sm text-green-600 font-medium">
+                    ✅ Institute Admin Detected - Loading Institute Leaderboards
+                  </div>
+                  <InstituteLeaderBoard />
+                </>
               ) : (
-                <LeaderBoard />
+                <>
+                  <div className="mb-2 text-sm text-blue-600 font-medium">
+                    ℹ️ Loading General Leaderboards (Role: {isAdmin ? 'Super Admin' : isInstituteAdmin ? 'Institute Admin (but condition failed)' : 'Regular User'})
+                  </div>
+                  <LeaderBoard />
+                </>
               )}
             </div>
 
