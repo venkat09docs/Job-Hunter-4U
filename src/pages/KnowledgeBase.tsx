@@ -93,24 +93,73 @@ const docCategories = [
     docs: [
       {
         id: 1,
-        title: "Platform Overview",
-        description: "Complete guide to navigating and using the Digital Career Hub platform.",
-        readTime: "5 min read",
-        lastUpdated: "2 days ago"
+        title: "Complete Platform Setup Guide",
+        description: "Your first steps after signing in - complete walkthrough of the Digital Career Hub platform and its core features.",
+        readTime: "10 min read",
+        lastUpdated: "1 day ago"
       },
       {
         id: 2,
-        title: "Setting Up Your Profile",
-        description: "Step-by-step instructions for creating and optimizing your profile.",
+        title: "First-Time User Onboarding",
+        description: "Essential setup checklist for new users to maximize their career growth potential from day one.",
         readTime: "8 min read",
-        lastUpdated: "1 week ago"
+        lastUpdated: "2 days ago"
       },
       {
         id: 3,
-        title: "Understanding Premium Features",
-        description: "Learn about premium features and how they can accelerate your career growth.",
+        title: "Understanding Your Dashboard",
+        description: "Navigate your personalized dashboard, understand key metrics, and access all available tools efficiently.",
         readTime: "6 min read",
         lastUpdated: "3 days ago"
+      },
+      {
+        id: 4,
+        title: "Setting Up Your Profile Foundation",
+        description: "Build a strong profile foundation with essential information that recruiters and employers look for.",
+        readTime: "12 min read",
+        lastUpdated: "1 day ago"
+      },
+      {
+        id: 5,
+        title: "Premium vs Free Features Overview",
+        description: "Understand the difference between free and premium features to make informed decisions about upgrades.",
+        readTime: "7 min read",
+        lastUpdated: "4 days ago"
+      },
+      {
+        id: 6,
+        title: "Understanding the Points & Gamification System",
+        description: "Learn how to earn points through various activities and use gamification to stay motivated in your career journey.",
+        readTime: "9 min read",
+        lastUpdated: "2 days ago"
+      },
+      {
+        id: 7,
+        title: "Quick Win Activities for New Users",
+        description: "Start earning points immediately with these simple activities that boost your profile visibility and readiness.",
+        readTime: "5 min read",
+        lastUpdated: "1 day ago"
+      },
+      {
+        id: 8,
+        title: "Setting Your Career Goals & Timeline",
+        description: "Define clear, actionable career goals and create a timeline to track your progress towards getting hired.",
+        readTime: "11 min read",
+        lastUpdated: "3 days ago"
+      },
+      {
+        id: 9,
+        title: "Connecting Your Professional Accounts",
+        description: "Link your LinkedIn, GitHub, and other professional accounts to maximize profile completeness and automation features.",
+        readTime: "8 min read",
+        lastUpdated: "2 days ago"
+      },
+      {
+        id: 10,
+        title: "Platform Navigation & Key Features Tour",
+        description: "Comprehensive tour of all major sections including Job Tracker, AI Tools, Resume Builder, and Analytics.",
+        readTime: "15 min read",
+        lastUpdated: "1 day ago"
       }
     ]
   },
