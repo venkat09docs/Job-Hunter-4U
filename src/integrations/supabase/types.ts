@@ -731,6 +731,54 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_goals: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          notes: string | null
+          priority: string
+          progress: number
+          resources: Json | null
+          skill_name: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          progress?: number
+          resources?: Json | null
+          skill_name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          notes?: string | null
+          priority?: string
+          progress?: number
+          resources?: Json | null
+          skill_name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linkedin_automations: {
         Row: {
           activated_at: string

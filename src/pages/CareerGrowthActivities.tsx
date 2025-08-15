@@ -892,6 +892,9 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
                   </TabsContent>
                 </Tabs>
               </div>
+            ) : selectedCategory === 'learning' ? (
+              // Skills/Learning Section with CRUD operations
+              <LearningGoalsSection />
             ) : (
               // Regular Activities List
               <div className="space-y-4">
