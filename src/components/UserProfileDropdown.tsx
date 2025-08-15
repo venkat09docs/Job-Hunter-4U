@@ -78,6 +78,12 @@ export function UserProfileDropdown() {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
+          <Link to="/dashboard/points-history" className="gap-2">
+            <Trophy className="h-4 w-4" />
+            Points History
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link to="/dashboard/settings" className="gap-2">
             <Settings className="h-4 w-4" />
             Settings

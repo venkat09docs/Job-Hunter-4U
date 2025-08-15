@@ -51,6 +51,7 @@ import SuperAI from "./pages/SuperAI";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import StatusView from "./pages/StatusView";
+import PointsHistory from "./pages/PointsHistory";
 import SubscriptionWelcomeDialog from "./components/SubscriptionWelcomeDialog";
 
 const queryClient = new QueryClient();
@@ -282,7 +283,15 @@ const App = () => (
               } 
             />
             <Route 
-              path="/admin/students-report" 
+              path="/dashboard/points-history" 
+              element={
+                <ProtectedRoute>
+                  <PointsHistory />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/students-report"
               element={
                 <ProtectedRoute>
                   <StudentsReport />
