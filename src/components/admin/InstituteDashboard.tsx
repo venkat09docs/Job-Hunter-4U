@@ -239,7 +239,7 @@ export const InstituteDashboard = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
         {/* Student Distribution by Batch - Pie Chart */}
         <Card className="shadow-elegant">
           <CardHeader>
@@ -250,50 +250,19 @@ export const InstituteDashboard = () => {
             <CardDescription>Number of students in each batch</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={batchDistribution}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                   label={({name, percentage}) => `${name}: ${percentage}%`}
                 >
                   {batchDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Performance Distribution - Pie Chart */}
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Student Performance Levels
-            </CardTitle>
-            <CardDescription>Distribution based on profile completion</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={performanceData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({name, value}) => `${name}: ${value}`}
-                >
-                  {performanceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip />

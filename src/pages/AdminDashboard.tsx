@@ -23,6 +23,13 @@ export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
   const { instituteName, instituteSubscription } = useInstituteName();
+
+  // Extract max students from subscription plan name
+  const getMaxStudentsFromPlan = (planName: string | null): number => {
+    if (!planName) return 0;
+    const match = planName.match(/(\d+)\s*Members?\s*Pack/i);
+    return match ? parseInt(match[1]) : 0;
+  };
   const navigate = useNavigate();
 
   if (loading) {
@@ -75,7 +82,7 @@ export default function AdminDashboard() {
               <InstituteSubscriptionBadge />
               {instituteSubscription && (
                 <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">{instituteSubscription.currentStudentCount}/{instituteSubscription.maxStudents}</span> students
+                  <span className="font-medium">{instituteSubscription.currentStudentCount}/{getMaxStudentsFromPlan(instituteSubscription.plan)}</span> students
                 </div>
               )}
               <UserProfileDropdown />
