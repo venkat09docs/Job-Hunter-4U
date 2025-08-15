@@ -152,49 +152,118 @@ export const BatchManagement = () => {
 
   const fetchData = async () => {
     try {
-      // Fetch institutes first
-      const { data: institutesData, error: institutesError } = await supabase
-        .from('institutes')
-        .select('id, name, code')
-        .eq('is_active', true)
-        .order('name');
+      if (isInstituteAdmin) {
+        // For institute admins, get their managed institutes first
+        const { data: managedInstitutes, error: managedError } = await supabase
+          .from('institute_admin_assignments')
+          .select(`
+            institute_id,
+            institutes (
+              id,
+              name,
+              code
+            )
+          `)
+          .eq('user_id', user?.id)
+          .eq('is_active', true);
 
-      if (institutesError) throw institutesError;
-      setInstitutes(institutesData || []);
+        if (managedError) throw managedError;
 
-      // Fetch batches with institute information
-      const { data: batchesData, error: batchesError } = await supabase
-        .from('batches')
-        .select(`
-          *,
-          institutes (
-            id,
-            name,
-            code
-          )
-        `)
-        .order('created_at', { ascending: false });
+        if (!managedInstitutes || managedInstitutes.length === 0) {
+          setInstitutes([]);
+          setBatches([]);
+          setLoading(false);
+          return;
+        }
 
-      if (batchesError) throw batchesError;
+        // Set institutes data
+        const institutesData = managedInstitutes.map(mi => mi.institutes).filter(Boolean);
+        setInstitutes(institutesData);
 
-      // Get student count for each batch (especially for institute admins)
-      const batchesWithStudentCount = await Promise.all(
-        (batchesData || []).map(async (batch) => {
-          const { count: studentCount } = await supabase
-            .from('user_assignments')
-            .select('*', { count: 'exact', head: true })
-            .eq('batch_id', batch.id)
-            .eq('assignment_type', 'batch')
-            .eq('is_active', true);
+        // Get institute IDs that this admin manages
+        const managedInstituteIds = managedInstitutes.map(mi => mi.institute_id);
 
-          return {
-            ...batch,
-            student_count: studentCount || 0
-          };
-        })
-      );
+        // Fetch batches only for managed institutes
+        const { data: batchesData, error: batchesError } = await supabase
+          .from('batches')
+          .select(`
+            *,
+            institutes (
+              id,
+              name,
+              code
+            )
+          `)
+          .in('institute_id', managedInstituteIds)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
-      setBatches(batchesWithStudentCount);
+        if (batchesError) throw batchesError;
+
+        // Get student count for each batch
+        const batchesWithStudentCount = await Promise.all(
+          (batchesData || []).map(async (batch) => {
+            const { count: studentCount } = await supabase
+              .from('user_assignments')
+              .select('*', { count: 'exact', head: true })
+              .eq('batch_id', batch.id)
+              .eq('assignment_type', 'batch')
+              .eq('is_active', true);
+
+            return {
+              ...batch,
+              student_count: studentCount || 0
+            };
+          })
+        );
+
+        setBatches(batchesWithStudentCount);
+      } else if (isAdmin) {
+        // For super admins, fetch all institutes
+        const { data: institutesData, error: institutesError } = await supabase
+          .from('institutes')
+          .select('id, name, code')
+          .eq('is_active', true)
+          .order('name');
+
+        if (institutesError) throw institutesError;
+        setInstitutes(institutesData || []);
+
+        // Fetch all batches with institute information
+        const { data: batchesData, error: batchesError } = await supabase
+          .from('batches')
+          .select(`
+            *,
+            institutes (
+              id,
+              name,
+              code
+            )
+          `)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (batchesError) throw batchesError;
+
+        // Get student count for each batch
+        const batchesWithStudentCount = await Promise.all(
+          (batchesData || []).map(async (batch) => {
+            const { count: studentCount } = await supabase
+              .from('user_assignments')
+              .select('*', { count: 'exact', head: true })
+              .eq('batch_id', batch.id)
+              .eq('assignment_type', 'batch')
+              .eq('is_active', true);
+
+            return {
+              ...batch,
+              student_count: studentCount || 0
+            };
+          })
+        );
+
+        setBatches(batchesWithStudentCount);
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -709,7 +778,9 @@ export const BatchManagement = () => {
             <div className="text-center py-8 text-muted-foreground">
               {selectedInstitute 
                 ? `No batches found for ${selectedInstitute.name}.`
-                : 'No batches found. Create your first batch to get started.'
+                : isInstituteAdmin 
+                  ? 'No batches are available for your institute.'
+                  : 'No batches found. Create your first batch to get started.'
               }
             </div>
           )}
