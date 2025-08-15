@@ -52,6 +52,7 @@ interface BatchSummary {
   batch_code: string;
   student_count: number;
   avg_completion: number;
+  avg_resume_progress: number;
   avg_linkedin_progress: number;
   avg_github_progress: number;
   avg_job_applications: number;
@@ -189,6 +190,7 @@ export const useEnhancedStudentData = () => {
             batch_code: batch.code,
             student_count: 0,
             avg_completion: 0,
+            avg_resume_progress: 0,
             avg_linkedin_progress: 0,
             avg_github_progress: 0,
             avg_job_applications: 0,
@@ -211,6 +213,9 @@ export const useEnhancedStudentData = () => {
         const avgCompletion = students.length > 0 
           ? Math.round(students.reduce((sum, s) => sum + s.profile_completion, 0) / students.length)
           : 0;
+        const avgResumeProgress = students.length > 0
+          ? Math.round(students.reduce((sum, s) => sum + s.resume_progress, 0) / students.length)
+          : 0;
         const avgLinkedInProgress = students.length > 0
           ? Math.round(students.reduce((sum, s) => sum + s.linkedin_progress, 0) / students.length)
           : 0;
@@ -227,6 +232,7 @@ export const useEnhancedStudentData = () => {
           batch_code: batch.code,
           student_count: students.length,
           avg_completion: avgCompletion,
+          avg_resume_progress: avgResumeProgress,
           avg_linkedin_progress: avgLinkedInProgress,
           avg_github_progress: avgGitHubProgress,
           avg_job_applications: avgJobApplications,
@@ -250,186 +256,8 @@ export const useEnhancedStudentData = () => {
     }
   }, [user, fetchEnhancedStudentData]);
 
-  // Set up real-time subscriptions for automatic synchronization
-  useEffect(() => {
-    if (!user) return;
-
-    let refreshTimeout: NodeJS.Timeout;
-    let instituteStudentIds: string[] = [];
-
-    const throttledRefresh = (changedUserId?: string) => {
-      // Only refresh if the changed user belongs to our institute or we don't have the user ID
-      if (!changedUserId || instituteStudentIds.includes(changedUserId)) {
-        clearTimeout(refreshTimeout);
-        refreshTimeout = setTimeout(() => {
-          console.log('Real-time data refresh triggered for institute student:', changedUserId);
-          fetchEnhancedStudentData();
-        }, 2000); // Increased from 500ms to 2 seconds to reduce frequency
-      }
-    };
-
-    // Get current institute student IDs for filtering
-    const getInstituteStudents = async () => {
-      try {
-        const { data: userRoles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
-
-        const isAdmin = userRoles?.some(role => role.role === 'admin');
-        const isInstituteAdmin = userRoles?.some(role => role.role === 'institute_admin');
-
-        if (!isAdmin && !isInstituteAdmin) return;
-
-        if (isAdmin && !isInstituteAdmin) {
-          // Super admin - listen to all students
-          return;
-        }
-
-        // Institute admin - get only their institute's students
-        const { data: assignments } = await supabase
-          .from('institute_admin_assignments')
-          .select('institute_id')
-          .eq('user_id', user.id)
-          .eq('is_active', true);
-
-        if (!assignments?.length) return;
-
-        const instituteIds = assignments.map(a => a.institute_id);
-        const { data: studentAssignments } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .in('institute_id', instituteIds)
-          .eq('assignment_type', 'batch')
-          .eq('is_active', true);
-
-        instituteStudentIds = studentAssignments?.map(a => a.user_id) || [];
-        console.log('Monitoring institute students:', instituteStudentIds.length);
-      } catch (error) {
-        console.error('Error getting institute students:', error);
-      }
-    };
-
-    getInstituteStudents();
-
-    // Create real-time subscription
-    const channel = supabase
-      .channel('institute-student-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        (payload) => {
-          console.log('Profile updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'resume_data'
-        },
-        (payload) => {
-          console.log('Resume data updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'linkedin_progress'
-        },
-        (payload) => {
-          console.log('LinkedIn progress updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'github_progress'
-        },
-        (payload) => {
-          console.log('GitHub progress updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'job_tracker'
-        },
-        (payload) => {
-          console.log('Job tracker updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'linkedin_network_metrics'
-        },
-        (payload) => {
-          console.log('LinkedIn network metrics updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'daily_progress_snapshots'
-        },
-        (payload) => {
-          console.log('Daily progress updated:', payload);
-          const userId = (payload.new as any)?.user_id || (payload.old as any)?.user_id;
-          throttledRefresh(userId);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates for institute students');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Real-time subscription error - retrying...');
-          setTimeout(() => {
-            fetchEnhancedStudentData();
-          }, 2000);
-        }
-      });
-
-    // Also set up periodic refresh as backup (less frequent)
-    const intervalId = setInterval(() => {
-      console.log('Periodic refresh for institute student data');
-      fetchEnhancedStudentData();
-    }, 120000); // Every 2 minutes instead of 30 seconds
-
-    return () => {
-      clearTimeout(refreshTimeout);
-      clearInterval(intervalId);
-      supabase.removeChannel(channel);
-    };
-  }, [user, fetchEnhancedStudentData]);
+  // Removed auto-refresh functionality to prevent page reloading
+  // Institute admins will use manual refresh buttons instead
 
 
   const fetchDetailedStudentStats = async (

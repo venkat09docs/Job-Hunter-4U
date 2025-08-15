@@ -102,6 +102,10 @@ export default function StudentsReport() {
   const averageGitHubProgress = totalStudents > 0 
     ? Math.round(allStudents.reduce((sum, student) => sum + student.github_completion, 0) / totalStudents)
     : 0;
+  
+  const averageResumeProgress = totalStudents > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.resume_progress, 0) / totalStudents)
+    : 0;
 
   const handleBatchSelection = (batchId: string, checked: boolean) => {
     if (checked) {
@@ -165,6 +169,7 @@ export default function StudentsReport() {
     name: batch.batch_name,
     students: batch.student_count,
     avgCompletion: batch.avg_completion,
+    avgResume: batch.avg_resume_progress,
     avgLinkedIn: batch.avg_linkedin_progress,
     avgGitHub: batch.avg_github_progress,
     avgJobApps: batch.avg_job_applications
@@ -286,7 +291,7 @@ export default function StudentsReport() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -319,6 +324,17 @@ export default function StudentsReport() {
           <CardContent>
             <div className="text-2xl font-bold">{averageLinkedInProgress}%</div>
             <Progress value={averageLinkedInProgress} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Resume Progress</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{averageResumeProgress}%</div>
+            <Progress value={averageResumeProgress} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -363,9 +379,10 @@ export default function StudentsReport() {
                       <YAxis domain={[0, 100]} />
                       <ChartTooltip content={<ChartTooltipContent />} />
                       <Legend />
-                      <Bar dataKey="avgCompletion" name="Profile %" fill={CHART_COLORS[0]} />
-                      <Bar dataKey="avgLinkedIn" name="LinkedIn %" fill={CHART_COLORS[1]} />
-                      <Bar dataKey="avgGitHub" name="GitHub %" fill={CHART_COLORS[2]} />
+                       <Bar dataKey="avgCompletion" name="Profile %" fill={CHART_COLORS[0]} />
+                       <Bar dataKey="avgResume" name="Resume %" fill={CHART_COLORS[3]} />
+                       <Bar dataKey="avgLinkedIn" name="LinkedIn %" fill={CHART_COLORS[1]} />
+                       <Bar dataKey="avgGitHub" name="GitHub %" fill={CHART_COLORS[2]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -432,10 +449,14 @@ export default function StudentsReport() {
               </CardHeader>
               <CardContent>
                 {/* Batch Stats */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-4 mb-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
                   <div className="text-center">
                     <p className="text-2xl font-bold">{batch.avg_completion}%</p>
                     <p className="text-sm text-muted-foreground">Avg Profile</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">{batch.avg_resume_progress}%</p>
+                    <p className="text-sm text-muted-foreground">Avg Resume</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold">{batch.avg_linkedin_progress}%</p>
@@ -547,15 +568,16 @@ export default function StudentsReport() {
                         }}
                       />
                     </TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Batch</TableHead>
-                    <TableHead>Profile</TableHead>
-                    <TableHead>Job Apps</TableHead>
-                    <TableHead>LinkedIn</TableHead>
-                    <TableHead>GitHub</TableHead>
-                    <TableHead>Last Activity</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                     <TableHead>Student</TableHead>
+                     <TableHead>Batch</TableHead>
+                     <TableHead>Profile</TableHead>
+                     <TableHead>Resume</TableHead>
+                     <TableHead>Job Apps</TableHead>
+                     <TableHead>LinkedIn</TableHead>
+                     <TableHead>GitHub</TableHead>
+                     <TableHead>Last Activity</TableHead>
+                     <TableHead>Status</TableHead>
+                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -577,13 +599,19 @@ export default function StudentsReport() {
                           </div>
                         </TableCell>
                         <TableCell>{student.batch_name}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={student.profile_completion} className="w-16 h-2" />
-                            <span className="text-sm">{student.profile_completion}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
+                         <TableCell>
+                           <div className="flex items-center space-x-2">
+                             <Progress value={student.profile_completion} className="w-16 h-2" />
+                             <span className="text-sm">{student.profile_completion}%</span>
+                           </div>
+                         </TableCell>
+                         <TableCell>
+                           <div className="flex items-center space-x-2">
+                             <Progress value={student.resume_progress} className="w-16 h-2" />
+                             <span className="text-sm">{student.resume_progress}%</span>
+                           </div>
+                         </TableCell>
+                         <TableCell>
                           <div className="text-center">
                             <p className="font-medium">{student.active_job_applications}</p>
                             <p className="text-xs text-muted-foreground">

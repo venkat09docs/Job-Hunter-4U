@@ -65,6 +65,10 @@ export const InstituteDashboard = () => {
     ? Math.round(allStudents.reduce((sum, student) => sum + student.profile_completion, 0) / totalStudentsCount)
     : 0;
 
+  const avgResumeProgress = totalStudentsCount > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.resume_progress, 0) / totalStudentsCount)
+    : 0;
+
   const avgLinkedInProgress = totalStudentsCount > 0 
     ? Math.round(allStudents.reduce((sum, student) => sum + student.linkedin_progress, 0) / totalStudentsCount)
     : 0;
@@ -87,6 +91,9 @@ export const InstituteDashboard = () => {
     const avgCompletion = batch.students.length > 0 
       ? batch.students.reduce((sum, student) => sum + student.profile_completion, 0) / batch.students.length 
       : 0;
+    const avgResume = batch.students.length > 0 
+      ? batch.students.reduce((sum, student) => sum + student.resume_progress, 0) / batch.students.length 
+      : 0;
     const avgGithub = batch.students.length > 0 
       ? batch.students.reduce((sum, student) => sum + student.github_completion, 0) / batch.students.length 
       : 0;
@@ -97,6 +104,7 @@ export const InstituteDashboard = () => {
     return {
       batch: batch.batch_name,
       'Profile Completion': Math.round(avgCompletion),
+      'Resume Progress': Math.round(avgResume),
       'GitHub Progress': Math.round(avgGithub),
       'LinkedIn Progress': Math.round(avgLinkedIn),
       'Students': batch.student_count
@@ -166,7 +174,7 @@ export const InstituteDashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6">
         <Card className="shadow-elegant">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -194,6 +202,19 @@ export const InstituteDashboard = () => {
             <div className="text-2xl font-bold text-success">{avgProfileCompletion}%</div>
             <p className="text-xs text-muted-foreground mt-1">
               Overall completion rate
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Resume Progress</CardTitle>
+            <Award className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-chart-4">{avgResumeProgress}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Average resume completion
             </p>
           </CardContent>
         </Card>
@@ -279,7 +300,7 @@ export const InstituteDashboard = () => {
             <TrendingUp className="h-5 w-5" />
             Progress Comparison by Batch
           </CardTitle>
-          <CardDescription>Profile completion, LinkedIn, and GitHub progress across batches</CardDescription>
+          <CardDescription>Profile completion, resume, LinkedIn, and GitHub progress across batches</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
@@ -303,6 +324,7 @@ export const InstituteDashboard = () => {
               />
               <Legend />
               <Bar dataKey="Profile Completion" fill="hsl(var(--primary))" />
+              <Bar dataKey="Resume Progress" fill="hsl(var(--chart-4))" />
               <Bar dataKey="LinkedIn Progress" fill="hsl(var(--chart-2))" />
               <Bar dataKey="GitHub Progress" fill="hsl(var(--chart-3))" />
             </BarChart>
