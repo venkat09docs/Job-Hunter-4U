@@ -14,11 +14,11 @@ export const VerifyActivitiesButton = () => {
     pointsAwarded: number;
   } | null>(null);
   const { user } = useAuth();
-  const { isAdmin } = useRole();
+  const { role, isAdmin } = useRole();
 
   const handleVerifyActivities = async () => {
-    if (!user || !isAdmin) {
-      toast.error('Admin privileges required');
+    if (!user || role !== 'admin') {
+      toast.error('Super admin privileges required');
       return;
     }
 
@@ -59,7 +59,7 @@ export const VerifyActivitiesButton = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (role !== 'admin') {
     return null;
   }
 

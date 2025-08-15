@@ -23,7 +23,7 @@ serve(async (req) => {
     // Get all users with their profiles
     const { data: profiles, error: profilesError } = await supabaseClient
       .from('profiles')
-      .select('user_id, full_name, username, email, linkedin_url, bio, profile_image_url')
+      .select('user_id, full_name, username, email, linkedin_url, profile_image_url, bio_link_url, github_url')
 
     if (profilesError) {
       throw profilesError
@@ -205,8 +205,8 @@ function calculateLinkedInProgress(profileData: any): number {
     completedFields++
   }
 
-  // Check bio/summary
-  if (profileData.bio && profileData.bio.trim().length > 0) {
+  // Check username
+  if (profileData.username && profileData.username.trim().length > 0) {
     completedFields++
   }
 
@@ -238,8 +238,8 @@ async function calculateGitHubProgress(supabaseClient: any, userId: string, prof
     completedFields++
   }
 
-  // Check bio
-  if (profileData.bio && profileData.bio.trim().length > 0) {
+  // Check username
+  if (profileData.username && profileData.username.trim().length > 0) {
     completedFields++
   }
 
