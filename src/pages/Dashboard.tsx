@@ -453,24 +453,9 @@ const Dashboard = () => {
             {/* Leader Board */}
             <div className="mb-8">
               {isInstituteAdmin && !isAdmin ? (
-                <div>
-                  <div className="mb-4 p-4 bg-info/10 border border-info/20 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Debug Info:</strong> Institute Admin detected. Loading institute leaderboards...
-                    </p>
-                  </div>
-                  <InstituteLeaderBoard />
-                </div>
+                <InstituteLeaderBoard />
               ) : (
-                <div>
-                  <div className="mb-4 p-4 bg-info/10 border border-info/20 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Debug Info:</strong> {isAdmin ? 'Super Admin' : 'Regular User'} detected. Loading general leaderboards...
-                      <br />Role details: isInstituteAdmin={String(isInstituteAdmin)}, isAdmin={String(isAdmin)}
-                    </p>
-                  </div>
-                  <LeaderBoard />
-                </div>
+                <LeaderBoard />
               )}
             </div>
 

@@ -110,6 +110,8 @@ export const useBatchLeaderboards = () => {
 
       if (usersError) throw usersError;
 
+      console.log('Batch users found for batch', batchId, ':', batchUsers?.length || 0);
+
       if (!batchUsers || batchUsers.length === 0) {
         return [];
       }
@@ -130,6 +132,8 @@ export const useBatchLeaderboards = () => {
 
       if (activityError) throw activityError;
 
+      console.log('Batch activity data found:', activityData?.length || 0);
+
       // Group by user and sum points
       const userPoints = new Map<string, number>();
       activityData?.forEach(record => {
@@ -145,6 +149,7 @@ export const useBatchLeaderboards = () => {
         .map(([userId]) => userId);
 
       if (topUserIds.length === 0) {
+        console.log('No users with points in batch:', batchId);
         return [];
       }
 
@@ -168,6 +173,7 @@ export const useBatchLeaderboards = () => {
         };
       });
 
+      console.log('Batch leaderboard entries:', leaderboardEntries.length);
       return leaderboardEntries;
     } catch (error) {
       console.error(`Error fetching batch leaderboard for batch ${batchId}:`, error);

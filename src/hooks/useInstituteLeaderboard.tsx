@@ -54,6 +54,8 @@ export const useInstituteLeaderboard = () => {
         return;
       }
 
+      console.log('Institute admin assignment found:', adminAssignment.institute_id);
+
       // Fetch leaderboards for different periods
       const currentWeekData = await getLeaderboardForPeriod('current_week', adminAssignment.institute_id);
       const topPerformersData = await getLeaderboardForPeriod('top_performers', adminAssignment.institute_id);
@@ -85,8 +87,8 @@ export const useInstituteLeaderboard = () => {
         const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
         startDate = new Date(today);
         startDate.setDate(today.getDate() + mondayOffset);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(); // Current date/time
       } else if (periodType === 'top_performers') {
         // For top performers, we want all-time data (no date filter)
         startDate = new Date('2020-01-01'); // Start from a very early date
@@ -97,7 +99,9 @@ export const useInstituteLeaderboard = () => {
         startDate.setDate(endDate.getDate() - 30);
       }
 
-      // Get users assigned to this institute
+      console.log(`Fetching ${periodType} data from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+
+      // Get users assigned to this institute (all students)
       const { data: instituteUsers, error: usersError } = await supabase
         .from('user_assignments')
         .select('user_id')
@@ -106,6 +110,8 @@ export const useInstituteLeaderboard = () => {
         .eq('is_active', true);
 
       if (usersError) throw usersError;
+
+      console.log('Institute users found:', instituteUsers?.length || 0);
 
       if (!instituteUsers || instituteUsers.length === 0) {
         return [];
@@ -127,6 +133,8 @@ export const useInstituteLeaderboard = () => {
 
       if (activityError) throw activityError;
 
+      console.log('Activity data found for period', periodType, ':', activityData?.length || 0);
+
       // Group by user and sum points
       const userPoints = new Map<string, number>();
       activityData?.forEach(record => {
@@ -134,13 +142,17 @@ export const useInstituteLeaderboard = () => {
         userPoints.set(record.user_id, current + record.points_earned);
       });
 
-      // Get user details for top 10 users
+      console.log('User points calculated:', userPoints.size, 'users with points');
+
+      // Get top users (only those with points)
       const topUserIds = Array.from(userPoints.entries())
+        .filter(([userId, points]) => points > 0) // Only users with points
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
+        .slice(0, 10) // Get top 10
         .map(([userId]) => userId);
 
       if (topUserIds.length === 0) {
+        console.log('No users with points found for period:', periodType);
         return [];
       }
 
@@ -164,9 +176,10 @@ export const useInstituteLeaderboard = () => {
         };
       });
 
+      console.log('Leaderboard entries for', periodType, ':', leaderboardEntries.length);
       return leaderboardEntries;
     } catch (error) {
-      console.error(`Error fetching ${periodType} leaderboard:`, error);
+      console.error(`Error fetching institute leaderboard for period ${periodType}:`, error);
       return [];
     }
   };
