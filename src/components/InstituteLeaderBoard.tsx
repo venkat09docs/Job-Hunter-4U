@@ -102,15 +102,15 @@ export function InstituteLeaderBoard() {
       {/* Overall Institute Leaderboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {renderLeaderboardCard(
-          "Current Week",
-          leaderboard.current_week,
+          "Top Performers",
+          leaderboard.top_performers,
           <Trophy className="h-5 w-5 text-yellow-500" />,
           loading
         )}
         {renderLeaderboardCard(
-          "Last Week",
-          leaderboard.last_week,
-          <Medal className="h-5 w-5 text-gray-400" />,
+          "Current Week",
+          leaderboard.current_week,
+          <Medal className="h-5 w-5 text-blue-500" />,
           loading
         )}
         {renderLeaderboardCard(

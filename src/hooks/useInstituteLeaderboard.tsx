@@ -15,14 +15,14 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardData {
   current_week: LeaderboardEntry[];
-  last_week: LeaderboardEntry[];
+  top_performers: LeaderboardEntry[];
   last_30_days: LeaderboardEntry[];
 }
 
 export const useInstituteLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData>({
     current_week: [],
-    last_week: [],
+    top_performers: [],
     last_30_days: []
   });
   const [loading, setLoading] = useState(true);
@@ -54,14 +54,14 @@ export const useInstituteLeaderboard = () => {
         return;
       }
 
-      // Get current week leaderboard
+      // Fetch leaderboards for different periods
       const currentWeekData = await getLeaderboardForPeriod('current_week', adminAssignment.institute_id);
-      const lastWeekData = await getLeaderboardForPeriod('last_week', adminAssignment.institute_id);
+      const topPerformersData = await getLeaderboardForPeriod('top_performers', adminAssignment.institute_id);
       const last30DaysData = await getLeaderboardForPeriod('last_30_days', adminAssignment.institute_id);
 
       setLeaderboard({
         current_week: currentWeekData,
-        last_week: lastWeekData,
+        top_performers: topPerformersData,
         last_30_days: last30DaysData
       });
     } catch (error) {
@@ -87,14 +87,10 @@ export const useInstituteLeaderboard = () => {
         startDate.setDate(today.getDate() + mondayOffset);
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
-      } else if (periodType === 'last_week') {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const lastMondayOffset = dayOfWeek === 0 ? -13 : -6 - dayOfWeek;
-        startDate = new Date(today);
-        startDate.setDate(today.getDate() + lastMondayOffset);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+      } else if (periodType === 'top_performers') {
+        // For top performers, we want all-time data (no date filter)
+        startDate = new Date('2020-01-01'); // Start from a very early date
+        endDate = new Date();
       } else {
         endDate = new Date();
         startDate = new Date();
