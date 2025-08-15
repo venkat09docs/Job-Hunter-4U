@@ -415,29 +415,31 @@ export default function KnowledgeBase() {
                       <ScrollArea className="h-[500px] pr-4">
                         <div className="space-y-4">
                           {category.docs.map((doc) => (
-                            <Card key={doc.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                              <CardContent className="p-4">
-                                <div className="flex gap-3">
-                                  <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
-                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                      {doc.description}
-                                    </p>
-                                    <div className="flex items-center justify-between">
-                                      <Badge variant="secondary" className="text-xs">
-                                        {doc.readTime}
-                                      </Badge>
-                                      <span className="text-xs text-muted-foreground">
-                                        Updated {doc.lastUpdated}
-                                      </span>
+                            <Link key={doc.id} to={`/dashboard/knowledge-base/doc/${doc.id}`}>
+                              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                                <CardContent className="p-4">
+                                  <div className="flex gap-3">
+                                    <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
+                                      <FileText className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
+                                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                        {doc.description}
+                                      </p>
+                                      <div className="flex items-center justify-between">
+                                        <Badge variant="secondary" className="text-xs">
+                                          {doc.readTime}
+                                        </Badge>
+                                        <span className="text-xs text-muted-foreground">
+                                          Updated {doc.lastUpdated}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </CardContent>
-                            </Card>
+                                </CardContent>
+                              </Card>
+                            </Link>
                           ))}
                         </div>
                       </ScrollArea>

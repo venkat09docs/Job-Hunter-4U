@@ -37,6 +37,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import DocumentationDetail from "./pages/DocumentationDetail";
 import StudentsReport from "./pages/StudentsReport";
 import InstituteManagement from "./pages/InstituteManagement";
 import BatchManagement from "./pages/BatchManagement";
@@ -246,6 +247,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <KnowledgeBase />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/knowledge-base/doc/:id" 
+              element={
+                <ProtectedRoute>
+                  <DocumentationDetail />
                 </ProtectedRoute>
               } 
             />
