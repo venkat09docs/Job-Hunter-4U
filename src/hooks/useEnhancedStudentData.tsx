@@ -475,20 +475,32 @@ export const useEnhancedStudentData = () => {
       }
 
       // Get LinkedIn progress
-      const { count: linkedinCompletedTasks } = await supabase
+      const { data: linkedinData, count: linkedinCompletedTasks, error: linkedinError } = await supabase
         .from('linkedin_progress')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('completed', true);
 
+      if (linkedinError) {
+        console.error('Error fetching LinkedIn progress for user', userId, ':', linkedinError);
+      }
+
+      console.log(`LinkedIn count for ${userId}:`, linkedinCompletedTasks);
+
       const linkedinProgress = Math.min(100, Math.round((linkedinCompletedTasks || 0) * 100 / 9));
 
       // Get GitHub progress
-      const { count: githubCompletedTasks } = await supabase
+      const { data: githubData, count: githubCompletedTasks, error: githubError } = await supabase
         .from('github_progress')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('completed', true);
+
+      if (githubError) {
+        console.error('Error fetching GitHub progress for user', userId, ':', githubError);
+      }
+
+      console.log(`GitHub count for ${userId}:`, githubCompletedTasks);
 
       const githubCompletion = Math.min(100, Math.round((githubCompletedTasks || 0) * 100 / 8));
 
