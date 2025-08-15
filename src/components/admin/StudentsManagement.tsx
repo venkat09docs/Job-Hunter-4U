@@ -866,7 +866,7 @@ export const StudentsManagement = () => {
             onClick={exportToCSV}
             disabled={filteredStudents.length === 0}
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4 mr-2" />
             Export CSV {selectedStudents.size > 0 && `(${selectedStudents.size})`}
           </Button>
           <Dialog open={showForm} onOpenChange={setShowForm}>

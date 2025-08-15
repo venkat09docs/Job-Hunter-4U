@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table';
 import { 
   Download, 
+  Upload,
   Users, 
   RefreshCw, 
   TrendingUp, 
@@ -280,11 +281,11 @@ export default function StudentsReport() {
             Refresh
           </Button>
           <Button onClick={handleExportSelected} disabled={selectedStudents.length === 0}>
-            <Download className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4 mr-2" />
             Export Selected
           </Button>
           <Button onClick={handleExportAll} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4 mr-2" />
             Export All
           </Button>
         </div>
