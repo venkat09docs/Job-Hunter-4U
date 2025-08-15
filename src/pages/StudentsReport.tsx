@@ -73,6 +73,12 @@ export default function StudentsReport() {
   const { toast } = useToast();
   const { instituteName } = useInstituteName();
   const { isInstituteAdmin, isAdmin } = useRole();
+  
+  // Debug logging
+  console.log('StudentsReport - Role data:', { isInstituteAdmin, isAdmin });
+  console.log('StudentsReport - Institute name:', instituteName);
+  console.log('StudentsReport - Batches data:', batches);
+  console.log('StudentsReport - Loading state:', loading);
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 

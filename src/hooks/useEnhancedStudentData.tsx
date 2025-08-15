@@ -399,11 +399,16 @@ export const useEnhancedStudentData = () => {
   ): Promise<EnhancedStudentStats | null> => {
     try {
       // Get basic profile info including subscription details
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('full_name, email, username, subscription_active, subscription_plan, subscription_end_date')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
+      
+      if (profileError) {
+        console.error('Error fetching profile for user', userId, ':', profileError);
+        return null;
+      }
 
       if (!profile) return null;
 
@@ -480,11 +485,13 @@ export const useEnhancedStudentData = () => {
       const profileCompletion = Math.max(0, Math.round(careerDevelopmentScores.reduce((sum, score) => sum + score, 0) / careerDevelopmentScores.length));
       
       console.log(`Student ${profile.full_name} progress:`, {
+        userId,
         resumeProgress,
         linkedinProgress: `${linkedinProgress}% (${linkedinCompletedTasks}/9 tasks)`,
         githubCompletion: `${githubCompletion}% (${githubCompletedTasks}/8 tasks)`,
         profileCompletion,
-        totalJobApps: totalJobApps || 0
+        totalJobApps: totalJobApps || 0,
+        batchName
       });
 
       // Get last activity
