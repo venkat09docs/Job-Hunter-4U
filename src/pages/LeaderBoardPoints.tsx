@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Trophy, TrendingUp, Github, Briefcase, ArrowLeft } from 'lucide-react';
 import { useActivityPointSettings, ActivityPointSetting } from '@/hooks/useActivityPointSettings';
@@ -170,12 +171,42 @@ const LeaderBoardPoints = () => {
               </p>
             </div>
 
-            <div className="space-y-6">
-              {renderCategorySection('resume', 'Resume & Profile Building')}
-              {renderCategorySection('linkedin', 'LinkedIn Network Growth')}
-              {renderCategorySection('github', 'GitHub Activities')}
-              {renderCategorySection('job_application', 'Job Application Activities')}
-            </div>
+            <Tabs defaultValue="resume" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="resume" className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  Profile Building
+                </TabsTrigger>
+                <TabsTrigger value="linkedin" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  LinkedIn Growth
+                </TabsTrigger>
+                <TabsTrigger value="github" className="flex items-center gap-2">
+                  <Github className="h-4 w-4" />
+                  GitHub Activities
+                </TabsTrigger>
+                <TabsTrigger value="job_application" className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Job Applications
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="resume">
+                {renderCategorySection('resume', 'Profile Building')}
+              </TabsContent>
+              
+              <TabsContent value="linkedin">
+                {renderCategorySection('linkedin', 'LinkedIn Network Growth')}
+              </TabsContent>
+              
+              <TabsContent value="github">
+                {renderCategorySection('github', 'GitHub Activities')}
+              </TabsContent>
+              
+              <TabsContent value="job_application">
+                {renderCategorySection('job_application', 'Job Application Activities')}
+              </TabsContent>
+            </Tabs>
           </main>
         </div>
       </div>
