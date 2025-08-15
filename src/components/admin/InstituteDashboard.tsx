@@ -35,6 +35,7 @@ import {
   Linkedin,
   RefreshCw
 } from 'lucide-react';
+import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 
 const COLORS = [
   'hsl(var(--primary))',
@@ -171,6 +172,11 @@ export const InstituteDashboard = () => {
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh Data
         </Button>
+      </div>
+
+      {/* Leader Board Section */}
+      <div className="mb-8">
+        <InstituteLeaderBoard />
       </div>
 
       {/* KPI Cards */}
