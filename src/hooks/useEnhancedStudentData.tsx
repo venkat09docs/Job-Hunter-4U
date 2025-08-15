@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -63,13 +63,7 @@ export const useEnhancedStudentData = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchEnhancedStudentData();
-    }
-  }, [user]);
-
-  const fetchEnhancedStudentData = async () => {
+  const fetchEnhancedStudentData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -207,7 +201,146 @@ export const useEnhancedStudentData = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchEnhancedStudentData();
+    }
+  }, [user, fetchEnhancedStudentData]);
+
+  // Set up real-time subscriptions for automatic synchronization
+  useEffect(() => {
+    if (!user) return;
+
+    const channels = [
+      // Subscribe to profile changes
+      supabase
+        .channel('profiles-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles'
+          },
+          (payload) => {
+            console.log('Profile updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to resume data changes
+      supabase
+        .channel('resume-data-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'resume_data'
+          },
+          (payload) => {
+            console.log('Resume data updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to LinkedIn progress changes
+      supabase
+        .channel('linkedin-progress-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'linkedin_progress'
+          },
+          (payload) => {
+            console.log('LinkedIn progress updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to GitHub progress changes
+      supabase
+        .channel('github-progress-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'github_progress'
+          },
+          (payload) => {
+            console.log('GitHub progress updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to job tracker changes
+      supabase
+        .channel('job-tracker-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'job_tracker'
+          },
+          (payload) => {
+            console.log('Job tracker updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to LinkedIn network metrics changes
+      supabase
+        .channel('linkedin-network-metrics-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'linkedin_network_metrics'
+          },
+          (payload) => {
+            console.log('LinkedIn network metrics updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe(),
+
+      // Subscribe to daily progress snapshots changes
+      supabase
+        .channel('daily-progress-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'daily_progress_snapshots'
+          },
+          (payload) => {
+            console.log('Daily progress updated:', payload);
+            fetchEnhancedStudentData();
+          }
+        )
+        .subscribe()
+    ];
+
+    return () => {
+      channels.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+    };
+  }, [user, fetchEnhancedStudentData]);
+
 
   const fetchDetailedStudentStats = async (
     userId: string, 

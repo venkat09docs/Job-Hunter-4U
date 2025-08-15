@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEnhancedStudentData } from '@/hooks/useEnhancedStudentData';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -75,6 +75,15 @@ export default function StudentsReport() {
   const { isInstituteAdmin, isAdmin } = useRole();
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+
+  // Set up auto-refresh interval for real-time synchronization
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshData();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [refreshData]);
 
   // For institute admin, default sidebar to closed
   const defaultSidebarOpen = !(isInstituteAdmin && !isAdmin);
