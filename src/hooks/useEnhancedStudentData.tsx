@@ -213,131 +213,113 @@ export const useEnhancedStudentData = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channels = [
-      // Subscribe to profile changes
-      supabase
-        .channel('profiles-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'profiles'
-          },
-          (payload) => {
-            console.log('Profile updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
+    // Throttle the refresh to avoid too many calls
+    let refreshTimeout: NodeJS.Timeout;
+    const throttledRefresh = () => {
+      clearTimeout(refreshTimeout);
+      refreshTimeout = setTimeout(() => {
+        console.log('Real-time data refresh triggered');
+        fetchEnhancedStudentData();
+      }, 1000); // Wait 1 second before refreshing
+    };
 
-      // Subscribe to resume data changes
-      supabase
-        .channel('resume-data-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'resume_data'
-          },
-          (payload) => {
-            console.log('Resume data updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
-
-      // Subscribe to LinkedIn progress changes
-      supabase
-        .channel('linkedin-progress-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'linkedin_progress'
-          },
-          (payload) => {
-            console.log('LinkedIn progress updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
-
-      // Subscribe to GitHub progress changes
-      supabase
-        .channel('github-progress-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'github_progress'
-          },
-          (payload) => {
-            console.log('GitHub progress updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
-
-      // Subscribe to job tracker changes
-      supabase
-        .channel('job-tracker-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'job_tracker'
-          },
-          (payload) => {
-            console.log('Job tracker updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
-
-      // Subscribe to LinkedIn network metrics changes
-      supabase
-        .channel('linkedin-network-metrics-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'linkedin_network_metrics'
-          },
-          (payload) => {
-            console.log('LinkedIn network metrics updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe(),
-
-      // Subscribe to daily progress snapshots changes
-      supabase
-        .channel('daily-progress-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'daily_progress_snapshots'
-          },
-          (payload) => {
-            console.log('Daily progress updated:', payload);
-            fetchEnhancedStudentData();
-          }
-        )
-        .subscribe()
-    ];
+    // Create a single channel for all table changes
+    const channel = supabase
+      .channel('student-data-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'resume_data'
+        },
+        (payload) => {
+          console.log('Resume data updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'linkedin_progress'
+        },
+        (payload) => {
+          console.log('LinkedIn progress updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'github_progress'
+        },
+        (payload) => {
+          console.log('GitHub progress updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_tracker'
+        },
+        (payload) => {
+          console.log('Job tracker updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'linkedin_network_metrics'
+        },
+        (payload) => {
+          console.log('LinkedIn network metrics updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_progress_snapshots'
+        },
+        (payload) => {
+          console.log('Daily progress updated:', payload);
+          throttledRefresh();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        }
+      });
 
     return () => {
-      channels.forEach(channel => {
-        supabase.removeChannel(channel);
-      });
+      clearTimeout(refreshTimeout);
+      supabase.removeChannel(channel);
     };
   }, [user, fetchEnhancedStudentData]);
 
