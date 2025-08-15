@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Edit, UserCheck, Trash2, User, Download, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, Edit, UserCheck, Trash2, User, Download, Filter, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trophy } from 'lucide-react';
 import * as Papa from 'papaparse';
 import {
   Dialog,
@@ -77,6 +77,15 @@ interface UserWithAssignments extends UserWithRole {
   }[];
 }
 
+interface UserActivityPoint {
+  id: string;
+  activity_id: string;
+  activity_type: string;
+  points_earned: number;
+  activity_date: string;
+  created_at: string;
+}
+
 export default function UserManagement() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
@@ -131,6 +140,12 @@ export default function UserManagement() {
   const [bulkInstitute, setBulkInstitute] = useState<string>('');
   const [bulkPlan, setBulkPlan] = useState<string>('');
   const [bulkOperationLoading, setBulkOperationLoading] = useState(false);
+  
+  // Points history states
+  const [showPointsDialog, setShowPointsDialog] = useState(false);
+  const [selectedUserPoints, setSelectedUserPoints] = useState<UserActivityPoint[]>([]);
+  const [pointsLoading, setPointsLoading] = useState(false);
+  const [userPointsData, setUserPointsData] = useState<{user: UserWithRole; totalPoints: number} | null>(null);
 
   useEffect(() => {
     if (isAdmin || isInstituteAdmin) {
@@ -435,6 +450,35 @@ export default function UserManagement() {
       });
     } finally {
       setBulkOperationLoading(false);
+    }
+  };
+
+  const fetchUserActivityPoints = async (user: UserWithRole) => {
+    try {
+      setPointsLoading(true);
+      setUserPointsData({ user, totalPoints: 0 });
+      
+      const { data: activityPoints, error } = await supabase
+        .from('user_activity_points')
+        .select('*')
+        .eq('user_id', user.user_id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const totalPoints = activityPoints?.reduce((sum, point) => sum + point.points_earned, 0) || 0;
+      
+      setSelectedUserPoints(activityPoints || []);
+      setUserPointsData({ user, totalPoints });
+      setShowPointsDialog(true);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch user points',
+        variant: 'destructive',
+      });
+    } finally {
+      setPointsLoading(false);
     }
   };
 
@@ -1310,6 +1354,14 @@ export default function UserManagement() {
                               >
                                 <UserCheck className="h-4 w-4" />
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchUserActivityPoints(user)}
+                                title="View Points History"
+                              >
+                                <Trophy className="h-4 w-4" />
+                              </Button>
                               {isAdmin && (
                                 <Button
                                   variant="outline"
@@ -1676,6 +1728,83 @@ export default function UserManagement() {
                 </Button>
                 <Button onClick={handleBulkPlanAssign} disabled={bulkOperationLoading}>
                   {bulkOperationLoading ? 'Assigning...' : 'Assign Plans'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Points History Dialog */}
+          <Dialog open={showPointsDialog} onOpenChange={setShowPointsDialog}>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" />
+                  Points History - {userPointsData?.user.full_name || 'User'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="bg-primary/10 rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-lg">Total Points Earned</h3>
+                      <p className="text-muted-foreground">
+                        {userPointsData?.user.email}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-primary">
+                        {userPointsData?.totalPoints || 0}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Total Points
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {pointsLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : selectedUserPoints.length > 0 ? (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">Activity History</h4>
+                    {selectedUserPoints.map((point) => (
+                      <div key={point.id} className="border rounded-lg p-3 bg-card">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">
+                              {point.activity_id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Type: {point.activity_type} • Date: {new Date(point.activity_date).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Awarded: {new Date(point.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="text-right ml-4">
+                            <div className="font-bold text-primary">
+                              +{point.points_earned}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              points
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>No activity points found for this user.</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setShowPointsDialog(false)}>
+                  Close
                 </Button>
               </div>
             </DialogContent>
