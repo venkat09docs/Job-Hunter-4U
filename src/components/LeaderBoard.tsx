@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -5,9 +6,13 @@ import { Trophy, Medal, Award } from 'lucide-react';
 import { useLeaderboard, LeaderboardEntry } from '@/hooks/useLeaderboard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeaderboardRefreshButton } from '@/components/LeaderboardRefreshButton';
+import { useRole } from '@/hooks/useRole';
+import { AdminPointsHistoryDialog } from '@/components/AdminPointsHistoryDialog';
 
 const LeaderBoard = () => {
   const { leaderboard, loading } = useLeaderboard();
+  const { isAdmin } = useRole();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
@@ -18,26 +23,34 @@ const LeaderBoard = () => {
     }
   };
 
-  const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => (
-    <div key={entry.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-      <div className="flex items-center justify-center w-8">
-        {getRankIcon(entry.rank_position)}
+  const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => {
+    const canViewDetails = isAdmin;
+    
+    return (
+      <div 
+        key={entry.user_id} 
+        className={`flex items-center gap-3 p-2 rounded-lg ${canViewDetails ? 'hover:bg-muted/50 cursor-pointer' : 'hover:bg-muted/50'}`}
+        onClick={() => canViewDetails ? setSelectedUserId(entry.user_id) : undefined}
+      >
+        <div className="flex items-center justify-center w-8">
+          {getRankIcon(entry.rank_position)}
+        </div>
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={entry.profile_image_url} alt={entry.full_name} />
+          <AvatarFallback className="text-xs">
+            {entry.full_name?.charAt(0) || entry.username?.charAt(0) || '?'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{entry.full_name || entry.username}</p>
+          <p className="text-xs text-muted-foreground">@{entry.username}</p>
+        </div>
+        <Badge variant="secondary" className="text-xs">
+          {entry.total_points} pts
+        </Badge>
       </div>
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={entry.profile_image_url} alt={entry.full_name} />
-        <AvatarFallback className="text-xs">
-          {entry.full_name?.charAt(0) || entry.username?.charAt(0) || '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{entry.full_name || entry.username}</p>
-        <p className="text-xs text-muted-foreground">@{entry.username}</p>
-      </div>
-      <Badge variant="secondary" className="text-xs">
-        {entry.total_points} pts
-      </Badge>
-    </div>
-  );
+    );
+  };
 
   const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon: React.ReactNode) => (
     <Card>
@@ -105,6 +118,14 @@ const LeaderBoard = () => {
           <Award className="h-4 w-4 text-amber-600" />
         )}
       </div>
+
+      {selectedUserId && (
+        <AdminPointsHistoryDialog
+          open={!!selectedUserId}
+          onOpenChange={(open) => !open && setSelectedUserId(null)}
+          userId={selectedUserId}
+        />
+      )}
     </div>
   );
 };

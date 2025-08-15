@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Medal, Award, Users, Calendar } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInstituteLeaderboard } from '@/hooks/useInstituteLeaderboard';
 import { useBatchLeaderboards } from '@/hooks/useBatchLeaderboards';
+import { useRole } from '@/hooks/useRole';
+import { AdminPointsHistoryDialog } from '@/components/AdminPointsHistoryDialog';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -27,8 +30,12 @@ const getRankIcon = (rank: number) => {
   }
 };
 
-const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => (
-  <div key={entry.user_id} className="flex items-center justify-between p-3 hover:bg-accent/50 rounded-lg transition-colors">
+const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number, canViewDetails: boolean, onUserClick: (userId: string) => void) => (
+  <div 
+    key={entry.user_id} 
+    className={`flex items-center justify-between p-3 rounded-lg transition-colors ${canViewDetails ? 'hover:bg-accent/50 cursor-pointer' : 'hover:bg-accent/50'}`}
+    onClick={() => canViewDetails ? onUserClick(entry.user_id) : undefined}
+  >
     <div className="flex items-center gap-3">
       <div className="flex items-center justify-center w-8">
         {getRankIcon(entry.rank_position)}
@@ -51,7 +58,7 @@ const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number) => (
   </div>
 );
 
-const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon: React.ReactNode, loading: boolean) => (
+const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon: React.ReactNode, loading: boolean, canViewDetails: boolean, onUserClick: (userId: string) => void) => (
   <Card>
     <CardHeader className="pb-3">
       <CardTitle className="flex items-center gap-2 text-lg">
@@ -75,7 +82,7 @@ const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon:
         </div>
       ) : entries.length > 0 ? (
         <div className="space-y-1">
-          {entries.map((entry, index) => renderLeaderboardEntry(entry, index))}
+          {entries.map((entry, index) => renderLeaderboardEntry(entry, index, canViewDetails, onUserClick))}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
@@ -89,6 +96,10 @@ const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon:
 export function InstituteLeaderBoard() {
   const { leaderboard, loading } = useInstituteLeaderboard();
   const { batchLeaderboards, loading: batchLoading } = useBatchLeaderboards();
+  const { isAdmin, isInstituteAdmin } = useRole();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  
+  const canViewDetails = isAdmin || isInstituteAdmin;
 
   if (loading) {
     return (
@@ -113,19 +124,25 @@ export function InstituteLeaderBoard() {
           "Top Performers",
           leaderboard.top_performers,
           <Trophy className="h-5 w-5 text-yellow-500" />,
-          loading
+          loading,
+          canViewDetails,
+          setSelectedUserId
         )}
         {renderLeaderboardCard(
           "Current Week",
           leaderboard.current_week,
           <Medal className="h-5 w-5 text-blue-500" />,
-          loading
+          loading,
+          canViewDetails,
+          setSelectedUserId
         )}
         {renderLeaderboardCard(
           "Last 30 Days",
           leaderboard.last_30_days,
           <Award className="h-5 w-5 text-amber-600" />,
-          loading
+          loading,
+          canViewDetails,
+          setSelectedUserId
         )}
       </div>
 
@@ -167,7 +184,7 @@ export function InstituteLeaderBoard() {
                     </div>
                   ) : batchLeaderboard.entries.length > 0 ? (
                     <div className="space-y-1">
-                      {batchLeaderboard.entries.map((entry, index) => renderLeaderboardEntry(entry, index))}
+                      {batchLeaderboard.entries.map((entry, index) => renderLeaderboardEntry(entry, index, canViewDetails, setSelectedUserId))}
                     </div>
                   ) : (
                     <div className="text-center py-6 text-muted-foreground">
@@ -180,6 +197,14 @@ export function InstituteLeaderBoard() {
             ))}
           </div>
         </div>
+      )}
+
+      {selectedUserId && (
+        <AdminPointsHistoryDialog
+          open={!!selectedUserId}
+          onOpenChange={(open) => !open && setSelectedUserId(null)}
+          userId={selectedUserId}
+        />
       )}
     </div>
   );
