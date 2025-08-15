@@ -325,7 +325,7 @@ export const useEnhancedStudentData = () => {
       const totalLinkedInTasks = linkedinTotalTasks?.points || 9; // fallback to 9
       const linkedinProgress = Math.min(100, Math.round((linkedinCompletedTasks || 0) * 100 / totalLinkedInTasks));
 
-      // Get GitHub progress
+      // Get GitHub progress using the same logic as useGitHubProgress hook
       const { data: githubData, count: githubCompletedTasks, error: githubError } = await supabase
         .from('github_progress')
         .select('*', { count: 'exact', head: true })
@@ -338,15 +338,18 @@ export const useEnhancedStudentData = () => {
 
       console.log(`GitHub count for ${userId}:`, githubCompletedTasks);
 
-      // Get total GitHub task count dynamically  
-      const { data: githubTotalTasks } = await supabase
-        .from('activity_point_settings')
-        .select('points')
-        .eq('activity_id', 'github_total_tasks')
-        .single();
+      // Use same logic as useGitHubProgress - only count profile setup tasks
+      const profileTaskIds = ['readme_generated','special_repo_created','readme_added','repo_public'];
+      const { data: profileTasks } = await supabase
+        .from('github_progress')
+        .select('task_id')
+        .eq('user_id', userId)
+        .eq('completed', true)
+        .in('task_id', profileTaskIds);
       
-      const totalGitHubTasks = githubTotalTasks?.points || 8; // fallback to 8
-      const githubCompletion = Math.min(100, Math.round((githubCompletedTasks || 0) * 100 / totalGitHubTasks));
+      const completedProfileTasks = profileTasks?.length || 0;
+      const totalProfileTasks = profileTaskIds.length; // 4 profile setup tasks
+      const githubCompletion = Math.min(100, Math.round((completedProfileTasks * 100) / totalProfileTasks));
 
       // Get job application stats
       const { count: totalJobApps } = await supabase
