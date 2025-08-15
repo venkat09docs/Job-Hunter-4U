@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Play, FileText, Clock, User, ArrowLeft } from "lucide-react";
+import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
+import { useActivityPointSettings } from "@/hooks/useActivityPointSettings";
 
 const videoCategories = [
   {
@@ -165,6 +166,7 @@ const docCategories = [
 export default function KnowledgeBase() {
   const [activeVideoCategory, setActiveVideoCategory] = useState("career-development");
   const [activeDocCategory, setActiveDocCategory] = useState("getting-started");
+  const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
 
   return (
     <div className="min-h-screen bg-background">
@@ -198,132 +200,204 @@ export default function KnowledgeBase() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Videos Section */}
-          <Card className="h-fit">
+        <div className="space-y-8">
+          {/* Reward Points Section */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Play className="h-5 w-5" />
-                Videos
+                <Star className="h-5 w-5 text-yellow-500" />
+                Reward Points
               </CardTitle>
               <CardDescription>
-                Watch expert-led tutorials and career development videos
+                Understand how you earn points for various activities in your career development journey
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs value={activeVideoCategory} onValueChange={setActiveVideoCategory}>
-                <TabsList className="grid w-full grid-cols-3">
-                  {videoCategories.map((category) => (
-                    <TabsTrigger 
-                      key={category.id} 
-                      value={category.id}
-                      className="text-xs"
-                    >
-                      {category.name}
-                    </TabsTrigger>
-                  ))}
+              <Tabs defaultValue="profile-building">
+                <TabsList className="grid w-full grid-cols-1">
+                  <TabsTrigger value="profile-building" className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Profile Building
+                  </TabsTrigger>
                 </TabsList>
                 
-                {videoCategories.map((category) => (
-                  <TabsContent key={category.id} value={category.id}>
-                    <ScrollArea className="h-[500px] pr-4">
+                <TabsContent value="profile-building">
+                  <ScrollArea className="h-[400px] pr-4">
+                    {pointsLoading ? (
+                      <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+                        ))}
+                      </div>
+                    ) : (
                       <div className="space-y-4">
-                        {category.videos.map((video) => (
-                          <Card key={video.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                        {getSettingsByCategory('resume').map((activity) => (
+                          <Card key={activity.id} className="border-l-4 border-l-primary/50">
                             <CardContent className="p-4">
-                              <div className="flex gap-3">
-                                <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
-                                  <Play className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-sm mb-1 truncate">{video.title}</h3>
-                                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                    {video.description}
-                                  </p>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="h-3 w-3" />
-                                      {video.duration}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <User className="h-3 w-3" />
-                                      {video.instructor}
-                                    </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
+                                    <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
+                                      {activity.is_active ? "Active" : "Inactive"}
+                                    </Badge>
                                   </div>
+                                  {activity.description && (
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                      {activity.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                                    {activity.points} points
+                                  </Badge>
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
                         ))}
+                        {getSettingsByCategory('resume').length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No profile building activities configured yet.</p>
+                          </div>
+                        )}
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-                ))}
+                    )}
+                  </ScrollArea>
+                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
 
-          {/* Step by Step Docs Section */}
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Step by Step Docs
-              </CardTitle>
-              <CardDescription>
-                Follow detailed guides and documentation for all features
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
-                <TabsList className="grid w-full grid-cols-3">
-                  {docCategories.map((category) => (
-                    <TabsTrigger 
-                      key={category.id} 
-                      value={category.id}
-                      className="text-xs"
-                    >
-                      {category.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                
-                {docCategories.map((category) => (
-                  <TabsContent key={category.id} value={category.id}>
-                    <ScrollArea className="h-[500px] pr-4">
-                      <div className="space-y-4">
-                        {category.docs.map((doc) => (
-                          <Card key={doc.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                            <CardContent className="p-4">
-                              <div className="flex gap-3">
-                                <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                  <FileText className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
-                                  <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                    {doc.description}
-                                  </p>
-                                  <div className="flex items-center justify-between">
-                                    <Badge variant="secondary" className="text-xs">
-                                      {doc.readTime}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground">
-                                      Updated {doc.lastUpdated}
-                                    </span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Videos Section */}
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Play className="h-5 w-5" />
+                  Videos
+                </CardTitle>
+                <CardDescription>
+                  Watch expert-led tutorials and career development videos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeVideoCategory} onValueChange={setActiveVideoCategory}>
+                  <TabsList className="grid w-full grid-cols-3">
+                    {videoCategories.map((category) => (
+                      <TabsTrigger 
+                        key={category.id} 
+                        value={category.id}
+                        className="text-xs"
+                      >
+                        {category.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  
+                  {videoCategories.map((category) => (
+                    <TabsContent key={category.id} value={category.id}>
+                      <ScrollArea className="h-[500px] pr-4">
+                        <div className="space-y-4">
+                          {category.videos.map((video) => (
+                            <Card key={video.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                              <CardContent className="p-4">
+                                <div className="flex gap-3">
+                                  <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
+                                    <Play className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-sm mb-1 truncate">{video.title}</h3>
+                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                      {video.description}
+                                    </p>
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        {video.duration}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <User className="h-3 w-3" />
+                                        {video.instructor}
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </CardContent>
-          </Card>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Step by Step Docs Section */}
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Step by Step Docs
+                </CardTitle>
+                <CardDescription>
+                  Follow detailed guides and documentation for all features
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
+                  <TabsList className="grid w-full grid-cols-3">
+                    {docCategories.map((category) => (
+                      <TabsTrigger 
+                        key={category.id} 
+                        value={category.id}
+                        className="text-xs"
+                      >
+                        {category.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  
+                  {docCategories.map((category) => (
+                    <TabsContent key={category.id} value={category.id}>
+                      <ScrollArea className="h-[500px] pr-4">
+                        <div className="space-y-4">
+                          {category.docs.map((doc) => (
+                            <Card key={doc.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                              <CardContent className="p-4">
+                                <div className="flex gap-3">
+                                  <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
+                                    <FileText className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
+                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                      {doc.description}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                      <Badge variant="secondary" className="text-xs">
+                                        {doc.readTime}
+                                      </Badge>
+                                      <span className="text-xs text-muted-foreground">
+                                        Updated {doc.lastUpdated}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
