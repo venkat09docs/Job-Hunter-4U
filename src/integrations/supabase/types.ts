@@ -1637,6 +1637,16 @@ export type Database = {
           institute_name: string
         }[]
       }
+      get_safe_institute_info: {
+        Args: { institute_id_param: string }
+        Returns: {
+          code: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
       get_safe_public_profile: {
         Args: { profile_slug: string }
         Returns: {
@@ -1669,6 +1679,16 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: number
       }
+      get_user_accessible_institutes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          code: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
       get_user_assignments: {
         Args: { user_id_param: string }
         Returns: {
@@ -1680,6 +1700,10 @@ export type Database = {
           institute_id: string
           institute_name: string
         }[]
+      }
+      has_full_institute_access: {
+        Args: { institute_id_param: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
