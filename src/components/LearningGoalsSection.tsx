@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 export function LearningGoalsSection() {
   const { goals, loading, createGoal, updateGoal, deleteGoal, getGoalStatus } = useLearningGoals();
   const [showForm, setShowForm] = useState(false);
-  const [editingGoal, setEditingGoal] = useState(null);
+  const [editingGoal, setEditingGoal] = useState<any>(null);
 
   const handleCreate = async (data: any) => {
     const success = await createGoal(data);
