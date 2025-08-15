@@ -95,8 +95,8 @@ const LeaderBoard = () => {
           <Trophy className="h-4 w-4 text-primary" />
         )}
         {renderLeaderboardCard(
-          'Last Week',
-          leaderboard.last_week,
+          'Current Week',
+          leaderboard.current_week,
           <Medal className="h-4 w-4 text-muted-foreground" />
         )}
         {renderLeaderboardCard(

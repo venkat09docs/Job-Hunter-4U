@@ -14,14 +14,14 @@ export interface LeaderboardEntry {
 
 export interface LeaderboardData {
   top_performer: LeaderboardEntry[];
-  last_week: LeaderboardEntry[];
+  current_week: LeaderboardEntry[];
   last_30_days: LeaderboardEntry[];
 }
 
 export const useLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData>({
     top_performer: [],
-    last_week: [],
+    current_week: [],
     last_30_days: []
   });
   const [loading, setLoading] = useState(true);
@@ -60,12 +60,12 @@ export const useLeaderboard = () => {
       
       // Get leaderboards for different periods
       const topPerformerData = await getLeaderboardForPeriod('top_performer');
-      const lastWeekData = await getLeaderboardForPeriod('last_week');
+      const currentWeekData = await getLeaderboardForPeriod('current_week');
       const last30DaysData = await getLeaderboardForPeriod('last_30_days');
 
       setLeaderboard({
         top_performer: topPerformerData,
-        last_week: lastWeekData,
+        current_week: currentWeekData,
         last_30_days: last30DaysData
       });
     } catch (error) {
@@ -87,21 +87,20 @@ export const useLeaderboard = () => {
         // No date filter for top performer - get all time records
         startDate = new Date('2020-01-01'); // Far back date to include all records
         endDate = new Date();
-      } else if (periodType === 'last_week') {
-        // Get last week's Monday to Sunday
+      } else if (periodType === 'current_week') {
+        // Get current week's Monday to current date/time
         const today = new Date();
         const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
         
-        // Calculate days back to last Monday
-        const daysBackToLastMonday = currentDayOfWeek === 0 ? 8 : currentDayOfWeek + 6; // If Sunday, go back 8 days, otherwise current day + 6
+        // Calculate days back to this Monday
+        const daysBackToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1; // If Sunday, go back 6 days, otherwise current day - 1
         
         startDate = new Date(today);
-        startDate.setDate(today.getDate() - daysBackToLastMonday);
+        startDate.setDate(today.getDate() - daysBackToMonday);
         startDate.setHours(0, 0, 0, 0);
         
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
+        // End date is current date/time
+        endDate = new Date();
       } else {
         // Last 30 days
         endDate = new Date();
