@@ -195,6 +195,7 @@ export const useEnhancedStudentData = () => {
       }
 
       setBatches(enhancedBatches);
+      console.log('Enhanced batches data loaded:', enhancedBatches);
     } catch (error) {
       console.error('Error fetching enhanced student data:', error);
       toast.error('Failed to load student data');

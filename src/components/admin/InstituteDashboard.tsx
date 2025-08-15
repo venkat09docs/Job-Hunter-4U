@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useEnhancedStudentData } from '@/hooks/useEnhancedStudentData';
 import { useInstituteName } from '@/hooks/useInstituteName';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -31,7 +32,8 @@ import {
   UserCheck,
   Briefcase,
   Github,
-  Linkedin
+  Linkedin,
+  RefreshCw
 } from 'lucide-react';
 
 const COLORS = [
@@ -47,27 +49,30 @@ export const InstituteDashboard = () => {
   const { batches, loading, refreshData } = useEnhancedStudentData();
   const { instituteName, instituteSubscription } = useInstituteName();
 
-  // Removed auto-refresh - rely on real-time subscriptions in useEnhancedStudentData
-
   // Calculate metrics
   const totalStudents = batches.reduce((sum, batch) => sum + batch.student_count, 0);
   const totalBatches = batches.length;
+
+  // Debug logging
+  console.log('InstituteDashboard - Batches data:', batches);
+  console.log('InstituteDashboard - Total students:', totalStudents);
   
   // Student progress metrics
-  const avgProfileCompletion = totalStudents > 0 
-    ? batches.reduce((sum, batch) => 
-        sum + batch.students.reduce((bSum, student) => bSum + student.profile_completion, 0), 0
-      ) / totalStudents 
+  const allStudents = batches.flatMap(batch => batch.students);
+  const totalStudentsCount = allStudents.length;
+  
+  const avgProfileCompletion = totalStudentsCount > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.profile_completion, 0) / totalStudentsCount)
     : 0;
 
-  const totalJobApplications = batches.reduce((sum, batch) => 
-    sum + batch.students.reduce((bSum, student) => bSum + student.total_job_applications, 0), 0
-  );
+  const avgLinkedInProgress = totalStudentsCount > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.linkedin_progress, 0) / totalStudentsCount)
+    : 0;
 
-  const avgGithubCompletion = totalStudents > 0 
-    ? batches.reduce((sum, batch) => 
-        sum + batch.students.reduce((bSum, student) => bSum + student.github_completion, 0), 0
-      ) / totalStudents 
+  const totalJobApplications = allStudents.reduce((sum, student) => sum + student.total_job_applications, 0);
+
+  const avgGithubCompletion = totalStudentsCount > 0 
+    ? Math.round(allStudents.reduce((sum, student) => sum + student.github_completion, 0) / totalStudentsCount)
     : 0;
 
   // Batch distribution data for pie chart
@@ -116,13 +121,11 @@ export const InstituteDashboard = () => {
     poor: 0       // <40% completion
   };
 
-  batches.forEach(batch => {
-    batch.students.forEach(student => {
-      if (student.profile_completion >= 80) performanceLevels.excellent++;
-      else if (student.profile_completion >= 60) performanceLevels.good++;
-      else if (student.profile_completion >= 40) performanceLevels.average++;
-      else performanceLevels.poor++;
-    });
+  allStudents.forEach(student => {
+    if (student.profile_completion >= 80) performanceLevels.excellent++;
+    else if (student.profile_completion >= 60) performanceLevels.good++;
+    else if (student.profile_completion >= 40) performanceLevels.average++;
+    else performanceLevels.poor++;
   });
 
   const performanceData = [
@@ -143,30 +146,36 @@ export const InstituteDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
-          {instituteName} Dashboard
-        </h1>
-        <p className="text-muted-foreground">
-          Overview of your institute's performance and student progress
-        </p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
+            {instituteName} Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Overview of your institute's performance and student progress
+          </p>
+        </div>
+        <Button onClick={refreshData} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh Data
+        </Button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
         <Card className="shadow-elegant">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">{totalStudents}</div>
+            <div className="text-2xl font-bold text-primary">{totalStudentsCount}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Across {totalBatches} batches
             </p>
             {instituteSubscription && (
               <Badge variant="outline" className="mt-2">
-                {totalStudents}/{instituteSubscription.maxStudents} capacity
+                {totalStudentsCount}/{instituteSubscription.maxStudents} capacity
               </Badge>
             )}
           </CardContent>
@@ -178,9 +187,35 @@ export const InstituteDashboard = () => {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{Math.round(avgProfileCompletion)}%</div>
+            <div className="text-2xl font-bold text-success">{avgProfileCompletion}%</div>
             <p className="text-xs text-muted-foreground mt-1">
               Overall completion rate
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">LinkedIn Progress</CardTitle>
+            <Linkedin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">{avgLinkedInProgress}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Average LinkedIn progress
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-elegant">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">GitHub Progress</CardTitle>
+            <Github className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-accent">{avgGithubCompletion}%</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Average completion
             </p>
           </CardContent>
         </Card>
@@ -194,19 +229,6 @@ export const InstituteDashboard = () => {
             <div className="text-2xl font-bold text-warning">{totalJobApplications}</div>
             <p className="text-xs text-muted-foreground mt-1">
               Total applications submitted
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-elegant">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">GitHub Progress</CardTitle>
-            <Github className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-accent">{Math.round(avgGithubCompletion)}%</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Average completion
             </p>
           </CardContent>
         </Card>
