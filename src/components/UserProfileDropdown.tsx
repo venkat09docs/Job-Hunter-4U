@@ -21,8 +21,8 @@ export function UserProfileDropdown() {
   const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
 
-  // Get current user's points from current week leaderboard
-  const userPoints = leaderboard.current_week.find(entry => entry.user_id === user?.id)?.total_points || 0;
+  // Get current user's points from top performer leaderboard
+  const userPoints = leaderboard.top_performer?.find(entry => entry.user_id === user?.id)?.total_points || 0;
 
   const handleSignOut = async () => {
     await signOut();
