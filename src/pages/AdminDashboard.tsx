@@ -22,7 +22,7 @@ import { InstituteSubscriptionBadge } from '@/components/InstituteSubscriptionBa
 export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
-  const { instituteName } = useInstituteName();
+  const { instituteName, instituteSubscription } = useInstituteName();
   const navigate = useNavigate();
 
   if (loading) {
@@ -73,6 +73,11 @@ export default function AdminDashboard() {
               
             <div className="flex items-center gap-4">
               <InstituteSubscriptionBadge />
+              {instituteSubscription && (
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium">{instituteSubscription.maxStudents - instituteSubscription.currentStudentCount}</span> students remaining
+                </div>
+              )}
               <UserProfileDropdown />
             </div>
             </div>

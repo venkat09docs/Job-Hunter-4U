@@ -37,6 +37,11 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 100%;
 
     /* Chart semantic tokens */
+    --chart-1: 243 75% 59%;          /* primary blue */
+    --chart-2: 221 83% 53%;          /* linkedin blue */
+    --chart-3: 142 76% 36%;          /* github green */
+    --chart-4: 271 81% 56%;          /* purple */
+    --chart-5: 43 96% 56%;           /* amber */
     --chart-wishlist: 43 96% 56%;          /* amber */
     --chart-applied: 221 83% 53%;           /* blue */
     --chart-interviewing: 271 81% 56%;      /* purple */
@@ -114,6 +119,11 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 100%;
 
     /* Chart semantic tokens (dark) */
+    --chart-1: 243 75% 59%;
+    --chart-2: 221 83% 53%;
+    --chart-3: 142 76% 36%;
+    --chart-4: 271 81% 56%;
+    --chart-5: 43 96% 56%;
     --chart-wishlist: 43 96% 56%;
     --chart-applied: 221 83% 53%;
     --chart-interviewing: 271 81% 56%;

@@ -334,8 +334,8 @@ export const InstituteDashboard = () => {
               />
               <Legend />
               <Bar dataKey="Profile Completion" fill="hsl(var(--primary))" />
-              <Bar dataKey="LinkedIn Progress" fill="hsl(var(--accent))" />
-              <Bar dataKey="GitHub Progress" fill="hsl(var(--success))" />
+              <Bar dataKey="LinkedIn Progress" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="GitHub Progress" fill="hsl(var(--chart-3))" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
