@@ -13,14 +13,14 @@ export interface LeaderboardEntry {
 }
 
 export interface LeaderboardData {
-  current_week: LeaderboardEntry[];
+  top_performer: LeaderboardEntry[];
   last_week: LeaderboardEntry[];
   last_30_days: LeaderboardEntry[];
 }
 
 export const useLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData>({
-    current_week: [],
+    top_performer: [],
     last_week: [],
     last_30_days: []
   });
@@ -58,13 +58,13 @@ export const useLeaderboard = () => {
     try {
       setLoading(true);
       
-      // Get current week leaderboard
-      const currentWeekData = await getLeaderboardForPeriod('current_week');
+      // Get leaderboards for different periods
+      const topPerformerData = await getLeaderboardForPeriod('top_performer');
       const lastWeekData = await getLeaderboardForPeriod('last_week');
       const last30DaysData = await getLeaderboardForPeriod('last_30_days');
 
       setLeaderboard({
-        current_week: currentWeekData,
+        top_performer: topPerformerData,
         last_week: lastWeekData,
         last_30_days: last30DaysData
       });
@@ -83,23 +83,27 @@ export const useLeaderboard = () => {
       let startDate: Date;
       let endDate: Date;
 
-      if (periodType === 'current_week') {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        startDate = new Date(today);
-        startDate.setDate(today.getDate() + mondayOffset);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+      if (periodType === 'top_performer') {
+        // No date filter for top performer - get all time records
+        startDate = new Date('2020-01-01'); // Far back date to include all records
+        endDate = new Date();
       } else if (periodType === 'last_week') {
+        // Get last week's Monday to Sunday
         const today = new Date();
-        const dayOfWeek = today.getDay();
-        const lastMondayOffset = dayOfWeek === 0 ? -13 : -6 - dayOfWeek;
+        const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // Calculate days back to last Monday
+        const daysBackToLastMonday = currentDayOfWeek === 0 ? 8 : currentDayOfWeek + 6; // If Sunday, go back 8 days, otherwise current day + 6
+        
         startDate = new Date(today);
-        startDate.setDate(today.getDate() + lastMondayOffset);
+        startDate.setDate(today.getDate() - daysBackToLastMonday);
+        startDate.setHours(0, 0, 0, 0);
+        
         endDate = new Date(startDate);
         endDate.setDate(startDate.getDate() + 6);
+        endDate.setHours(23, 59, 59, 999);
       } else {
+        // Last 30 days
         endDate = new Date();
         startDate = new Date();
         startDate.setDate(endDate.getDate() - 30);
@@ -108,15 +112,22 @@ export const useLeaderboard = () => {
       // Query user activity points for the period
       console.log(`Querying leaderboard for ${periodType} from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
       
-      const { data: activityData, error: activityError } = await supabase
+      let query = supabase
         .from('user_activity_points')
         .select(`
           user_id,
           points_earned,
           activity_date
-        `)
-        .gte('activity_date', startDate.toISOString().split('T')[0])
-        .lte('activity_date', endDate.toISOString().split('T')[0]);
+        `);
+      
+      // Apply date filters only if not top_performer
+      if (periodType !== 'top_performer') {
+        query = query
+          .gte('activity_date', startDate.toISOString().split('T')[0])
+          .lte('activity_date', endDate.toISOString().split('T')[0]);
+      }
+      
+      const { data: activityData, error: activityError } = await query;
 
       console.log(`Found ${activityData?.length || 0} activity records for ${periodType}`);
 

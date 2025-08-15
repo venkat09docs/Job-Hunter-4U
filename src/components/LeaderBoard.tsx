@@ -90,8 +90,8 @@ const LeaderBoard = () => {
 
       <div className="grid gap-6 md:grid-cols-3">
         {renderLeaderboardCard(
-          'Current Week',
-          leaderboard.current_week,
+          'Top Performer',
+          leaderboard.top_performer,
           <Trophy className="h-4 w-4 text-primary" />
         )}
         {renderLeaderboardCard(
