@@ -19,6 +19,7 @@ import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed'
 import GitHubDailyFlow from '@/components/GitHubDailyFlow';
 import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
 import { supabase } from '@/integrations/supabase/client';
+import { LearningGoalsSection } from '@/components/LearningGoalsSection';
 
 interface Activity {
   id: string;
