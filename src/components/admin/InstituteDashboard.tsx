@@ -178,9 +178,9 @@ export const InstituteDashboard = () => {
               Across {totalBatches} batches
             </p>
             {instituteSubscription && (
-              <Badge variant="outline" className="mt-2">
-                {totalStudentsCount}/{instituteSubscription.maxStudents} capacity
-              </Badge>
+              <div className="text-xs text-muted-foreground mt-1">
+                Capacity: {totalStudentsCount}/{instituteSubscription.maxStudents}
+              </div>
             )}
           </CardContent>
         </Card>
@@ -217,7 +217,7 @@ export const InstituteDashboard = () => {
             <Github className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-accent">{avgGithubCompletion}%</div>
+            <div className="text-2xl font-bold text-chart-3">{avgGithubCompletion}%</div>
             <p className="text-xs text-muted-foreground mt-1">
               Average completion
             </p>

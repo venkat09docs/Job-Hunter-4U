@@ -75,7 +75,7 @@ export default function AdminDashboard() {
               <InstituteSubscriptionBadge />
               {instituteSubscription && (
                 <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">{instituteSubscription.maxStudents - instituteSubscription.currentStudentCount}</span> students remaining
+                  <span className="font-medium">{instituteSubscription.currentStudentCount}/{instituteSubscription.maxStudents}</span> students
                 </div>
               )}
               <UserProfileDropdown />
