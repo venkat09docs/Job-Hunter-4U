@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ActivityChart from '@/components/ActivityChart';
 import LeaderBoard from '@/components/LeaderBoard';
+import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -439,6 +440,11 @@ const Dashboard = () => {
               <p className="text-muted-foreground">
                 Here's your personalized dashboard. Track your progress and manage your job search.
               </p>
+            </div>
+
+            {/* Activity Verification (Admin Only) */}
+            <div className="mb-8">
+              <VerifyActivitiesButton />
             </div>
 
             {/* Leader Board */}
