@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star, Edit, Trash2, Plus } from "lucide-react";
+import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star, Edit, Trash2, Plus, Upload, Eye, EyeOff } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { useActivityPointSettings } from "@/hooks/useActivityPointSettings";
@@ -24,7 +24,8 @@ const videoCategories = [
         description: "Learn how to create a strong professional brand that stands out in your industry.",
         duration: "12:45",
         instructor: "Sarah Johnson",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: true
       },
       {
         id: 2,
@@ -32,7 +33,8 @@ const videoCategories = [
         description: "Master the art of networking both online and offline to advance your career.",
         duration: "18:20",
         instructor: "Michael Chen",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: true
       },
       {
         id: 3,
@@ -40,7 +42,8 @@ const videoCategories = [
         description: "Create compelling resumes that get noticed by hiring managers and ATS systems.",
         duration: "15:30",
         instructor: "Emily Davis",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: false
       }
     ]
   },
@@ -54,7 +57,8 @@ const videoCategories = [
         description: "Prepare for behavioral interviews using the STAR method and real examples.",
         duration: "22:15",
         instructor: "David Wilson",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: true
       },
       {
         id: 5,
@@ -62,7 +66,8 @@ const videoCategories = [
         description: "Ace technical interviews with proven strategies and practice techniques.",
         duration: "28:40",
         instructor: "Alex Rodriguez",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: true
       }
     ]
   },
@@ -76,7 +81,8 @@ const videoCategories = [
         description: "Optimize your LinkedIn profile to attract recruiters and opportunities.",
         duration: "16:25",
         instructor: "Jennifer Thompson",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: true
       },
       {
         id: 7,
@@ -84,7 +90,8 @@ const videoCategories = [
         description: "Create engaging content that builds your professional network and influence.",
         duration: "20:10",
         instructor: "Mark Anderson",
-        thumbnail: "/placeholder.svg"
+        thumbnail: "/placeholder.svg",
+        isPublished: false
       }
     ]
   }
@@ -100,70 +107,80 @@ const docCategories = [
         title: "Complete Platform Setup Guide",
         description: "Your first steps after signing in - complete walkthrough of the Digital Career Hub platform and its core features.",
         readTime: "10 min read",
-        lastUpdated: "1 day ago"
+        lastUpdated: "1 day ago",
+        isPublished: true
       },
       {
         id: 2,
         title: "First-Time User Onboarding",
         description: "Essential setup checklist for new users to maximize their career growth potential from day one.",
         readTime: "8 min read",
-        lastUpdated: "2 days ago"
+        lastUpdated: "2 days ago",
+        isPublished: true
       },
       {
         id: 3,
         title: "Understanding Your Dashboard",
         description: "Navigate your personalized dashboard, understand key metrics, and access all available tools efficiently.",
         readTime: "6 min read",
-        lastUpdated: "3 days ago"
+        lastUpdated: "3 days ago",
+        isPublished: true
       },
       {
         id: 4,
         title: "Setting Up Your Profile Foundation",
         description: "Build a strong profile foundation with essential information that recruiters and employers look for.",
         readTime: "12 min read",
-        lastUpdated: "1 day ago"
+        lastUpdated: "1 day ago",
+        isPublished: false
       },
       {
         id: 5,
         title: "Premium vs Free Features Overview",
         description: "Understand the difference between free and premium features to make informed decisions about upgrades.",
         readTime: "7 min read",
-        lastUpdated: "4 days ago"
+        lastUpdated: "4 days ago",
+        isPublished: true
       },
       {
         id: 6,
         title: "Understanding the Points & Gamification System",
         description: "Learn how to earn points through various activities and use gamification to stay motivated in your career journey.",
         readTime: "9 min read",
-        lastUpdated: "2 days ago"
+        lastUpdated: "2 days ago",
+        isPublished: true
       },
       {
         id: 7,
         title: "Quick Win Activities for New Users",
         description: "Start earning points immediately with these simple activities that boost your profile visibility and readiness.",
         readTime: "5 min read",
-        lastUpdated: "1 day ago"
+        lastUpdated: "1 day ago",
+        isPublished: true
       },
       {
         id: 8,
         title: "Setting Your Career Goals & Timeline",
         description: "Define clear, actionable career goals and create a timeline to track your progress towards getting hired.",
         readTime: "11 min read",
-        lastUpdated: "3 days ago"
+        lastUpdated: "3 days ago",
+        isPublished: false
       },
       {
         id: 9,
         title: "Connecting Your Professional Accounts",
         description: "Link your LinkedIn, GitHub, and other professional accounts to maximize profile completeness and automation features.",
         readTime: "8 min read",
-        lastUpdated: "2 days ago"
+        lastUpdated: "2 days ago",
+        isPublished: true
       },
       {
         id: 10,
         title: "Platform Navigation & Key Features Tour",
         description: "Comprehensive tour of all major sections including Job Tracker, AI Tools, Resume Builder, and Analytics.",
         readTime: "15 min read",
-        lastUpdated: "1 day ago"
+        lastUpdated: "1 day ago",
+        isPublished: true
       }
     ]
   },
@@ -176,21 +193,24 @@ const docCategories = [
         title: "Using the Job Tracker",
         description: "Maximize your job search efficiency with our advanced job tracking system.",
         readTime: "10 min read",
-        lastUpdated: "5 days ago"
+        lastUpdated: "5 days ago",
+        isPublished: true
       },
       {
         id: 5,
         title: "AI-Powered Job Matching",
         description: "How our AI algorithms match you with the perfect job opportunities.",
         readTime: "7 min read",
-        lastUpdated: "1 week ago"
+        lastUpdated: "1 week ago",
+        isPublished: false
       },
       {
         id: 6,
         title: "Application Best Practices",
         description: "Proven strategies for crafting successful job applications.",
         readTime: "12 min read",
-        lastUpdated: "4 days ago"
+        lastUpdated: "4 days ago",
+        isPublished: true
       }
     ]
   },
@@ -203,14 +223,16 @@ const docCategories = [
         title: "AI Resume Builder Guide",
         description: "Create professional resumes using our AI-powered resume builder.",
         readTime: "15 min read",
-        lastUpdated: "2 days ago"
+        lastUpdated: "2 days ago",
+        isPublished: true
       },
       {
         id: 8,
         title: "AI Career Assistant",
         description: "Get personalized career advice from our AI-powered assistant.",
         readTime: "9 min read",
-        lastUpdated: "6 days ago"
+        lastUpdated: "6 days ago",
+        isPublished: true
       }
     ]
   }
@@ -231,12 +253,56 @@ export default function KnowledgeBase() {
   const handleEditDoc = (docId: number) => {
     // Navigate to edit mode or open edit dialog
     console.log(`Editing document ${docId}`);
-    // In a real implementation, this could open an edit modal or navigate to an edit page
+    toast.info("Edit document feature coming soon");
   };
 
   const handleAddDoc = (categoryId: string) => {
     console.log(`Adding new document to category ${categoryId}`);
     toast.info("Add document feature coming soon");
+  };
+
+  const handleToggleDocPublish = (docId: number, categoryId: string, currentStatus: boolean) => {
+    // In a real app, this would make an API call to toggle publish status
+    console.log(`Toggling publish status for document ${docId} to ${!currentStatus}`);
+    toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+  };
+
+  const handleDeleteVideo = (videoId: number, categoryId: string) => {
+    console.log(`Deleting video ${videoId} from category ${categoryId}`);
+    toast.success("Video deleted successfully");
+  };
+
+  const handleEditVideo = (videoId: number) => {
+    console.log(`Editing video ${videoId}`);
+    toast.info("Edit video feature coming soon");
+  };
+
+  const handleUploadVideo = (categoryId: string) => {
+    console.log(`Uploading video to category ${categoryId}`);
+    toast.info("Upload video feature coming soon");
+  };
+
+  const handleToggleVideoPublish = (videoId: number, categoryId: string, currentStatus: boolean) => {
+    console.log(`Toggling publish status for video ${videoId} to ${!currentStatus}`);
+    toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+  };
+
+  // Filter content based on user role and publish status
+  const getFilteredDocs = (docs: any[]) => {
+    if (isAdmin) return docs; // Admin sees all
+    return docs.filter(doc => doc.isPublished); // Users see only published
+  };
+
+  const getFilteredVideos = (videos: any[]) => {
+    if (isAdmin) return videos; // Admin sees all
+    return videos.filter(video => video.isPublished); // Users see only published
+  };
+
+  // Check if category has any published content
+  const hasPublishedContent = (category: any, type: 'docs' | 'videos') => {
+    if (isAdmin) return true; // Admin always sees sections
+    const content = type === 'docs' ? category.docs : category.videos;
+    return content.some((item: any) => item.isPublished);
   };
 
   return (
@@ -273,7 +339,8 @@ export default function KnowledgeBase() {
 
         <div className="space-y-8">
           {/* Reward Points Section */}
-          <Card>
+          {(isAdmin || getSettingsByCategory('resume').length > 0) && (
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500" />
@@ -341,19 +408,36 @@ export default function KnowledgeBase() {
               </Tabs>
             </CardContent>
           </Card>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Videos Section */}
-            <Card className="h-fit">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Play className="h-5 w-5" />
-                  Videos
-                </CardTitle>
-                <CardDescription>
-                  Watch expert-led tutorials and career development videos
-                </CardDescription>
-              </CardHeader>
+            {(isAdmin || videoCategories.some(cat => hasPublishedContent(cat, 'videos'))) && (
+              <Card className="h-fit">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Play className="h-5 w-5" />
+                        Videos
+                      </CardTitle>
+                      <CardDescription>
+                        Watch expert-led tutorials and career development videos
+                      </CardDescription>
+                    </div>
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUploadVideo(activeVideoCategory)}
+                        className="flex items-center gap-1"
+                      >
+                        <Upload className="h-3 w-3" />
+                        Upload Video
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
               <CardContent>
                 <Tabs value={activeVideoCategory} onValueChange={setActiveVideoCategory}>
                   <TabsList className="grid w-full grid-cols-3">
@@ -368,173 +452,294 @@ export default function KnowledgeBase() {
                     ))}
                   </TabsList>
                   
-                  {videoCategories.map((category) => (
-                    <TabsContent key={category.id} value={category.id}>
-                      <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-4">
-                          {category.videos.map((video) => (
-                            <Card key={video.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                              <CardContent className="p-4">
-                                <div className="flex gap-3">
-                                  <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
-                                    <Play className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-sm mb-1 truncate">{video.title}</h3>
-                                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                      {video.description}
-                                    </p>
-                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                      <div className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        {video.duration}
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <User className="h-3 w-3" />
-                                        {video.instructor}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </TabsContent>
-                  ))}
-                </Tabs>
-              </CardContent>
-            </Card>
-
-            {/* Step by Step Docs Section */}
-            <Card className="h-fit">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Step by Step Docs
-                    </CardTitle>
-                    <CardDescription>
-                      Follow detailed guides and documentation for all features
-                    </CardDescription>
-                  </div>
-                  {isAdmin && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddDoc(activeDocCategory)}
-                      className="flex items-center gap-1"
-                    >
-                      <Plus className="h-3 w-3" />
-                      Add Doc
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    {docCategories.map((category) => (
-                      <TabsTrigger 
-                        key={category.id} 
-                        value={category.id}
-                        className="text-xs"
-                      >
-                        {category.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  
-                  {docCategories.map((category) => (
-                    <TabsContent key={category.id} value={category.id}>
-                      <ScrollArea className="h-[500px] pr-4">
-                        <div className="space-y-4">
-                          {category.docs.map((doc) => (
-                            <div key={doc.id} className="group">
-                              <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
-                                <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
+                  {videoCategories.map((category) => {
+                    const filteredVideos = getFilteredVideos(category.videos);
+                    if (!isAdmin && filteredVideos.length === 0) return null;
+                    
+                    return (
+                      <TabsContent key={category.id} value={category.id}>
+                        <ScrollArea className="h-[500px] pr-4">
+                          <div className="space-y-4">
+                            {(isAdmin ? category.videos : filteredVideos).map((video) => (
+                              <div key={video.id} className="group">
+                                <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
                                   <CardContent className="p-4">
                                     <div className="flex gap-3">
-                                      <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                      <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
+                                        <Play className="h-4 w-4 text-muted-foreground" />
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <h3 className="font-semibold text-sm mb-1">{doc.title}</h3>
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h3 className="font-semibold text-sm truncate">{video.title}</h3>
+                                          {isAdmin && (
+                                            <Badge variant={video.isPublished ? "default" : "secondary"} className="text-xs">
+                                              {video.isPublished ? "Published" : "Draft"}
+                                            </Badge>
+                                          )}
+                                        </div>
                                         <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                          {doc.description}
+                                          {video.description}
                                         </p>
-                                        <div className="flex items-center justify-between">
-                                          <Badge variant="secondary" className="text-xs">
-                                            {doc.readTime}
-                                          </Badge>
-                                          <span className="text-xs text-muted-foreground">
-                                            Updated {doc.lastUpdated}
-                                          </span>
+                                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                          <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {video.duration}
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <User className="h-3 w-3" />
+                                            {video.instructor}
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
                                   </CardContent>
-                                </Link>
-                                {isAdmin && (
-                                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleEditDoc(doc.id);
-                                      }}
-                                      className="h-8 w-8 p-0 hover:bg-primary/10"
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
+                                  {isAdmin && (
+                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleToggleVideoPublish(video.id, category.id, video.isPublished);
+                                        }}
+                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                      >
+                                        {video.isPublished ? (
+                                          <Eye className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <EyeOff className="h-3 w-3 text-muted-foreground" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleEditVideo(video.id);
+                                        }}
+                                        className="h-8 w-8 p-0 hover:bg-primary/10"
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                            }}
+                                            className="h-8 w-8 p-0 hover:bg-destructive/10"
+                                          >
+                                            <Trash2 className="h-3 w-3 text-destructive" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Are you sure you want to delete "{video.title}"? This action cannot be undone.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => handleDeleteVideo(video.id, category.id)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Delete
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </div>
+                                  )}
+                                </Card>
+                              </div>
+                            ))}
+                            {isAdmin && category.videos.length === 0 && (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                <p>No videos in this category yet.</p>
+                              </div>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+              </CardContent>
+            </Card>
+            )}
+
+            {/* Step by Step Docs Section */}
+            {(isAdmin || docCategories.some(cat => hasPublishedContent(cat, 'docs'))) && (
+              <Card className="h-fit">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Step by Step Docs
+                      </CardTitle>
+                      <CardDescription>
+                        Follow detailed guides and documentation for all features
+                      </CardDescription>
+                    </div>
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddDoc(activeDocCategory)}
+                        className="flex items-center gap-1"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Doc
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
+                    <TabsList className="grid w-full grid-cols-3">
+                      {docCategories.map((category) => (
+                        <TabsTrigger 
+                          key={category.id} 
+                          value={category.id}
+                          className="text-xs"
+                        >
+                          {category.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    
+                    {docCategories.map((category) => {
+                      const filteredDocs = getFilteredDocs(category.docs);
+                      if (!isAdmin && filteredDocs.length === 0) return null;
+                      
+                      return (
+                        <TabsContent key={category.id} value={category.id}>
+                          <ScrollArea className="h-[500px] pr-4">
+                            <div className="space-y-4">
+                              {(isAdmin ? category.docs : filteredDocs).map((doc) => (
+                                <div key={doc.id} className="group">
+                                  <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
+                                    <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
+                                      <CardContent className="p-4">
+                                        <div className="flex gap-3">
+                                          <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <h3 className="font-semibold text-sm">{doc.title}</h3>
+                                              {isAdmin && (
+                                                <Badge variant={doc.isPublished ? "default" : "secondary"} className="text-xs">
+                                                  {doc.isPublished ? "Published" : "Draft"}
+                                                </Badge>
+                                              )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                              {doc.description}
+                                            </p>
+                                            <div className="flex items-center justify-between">
+                                              <Badge variant="secondary" className="text-xs">
+                                                {doc.readTime}
+                                              </Badge>
+                                              <span className="text-xs text-muted-foreground">
+                                                Updated {doc.lastUpdated}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </CardContent>
+                                    </Link>
+                                    {isAdmin && (
+                                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                           variant="ghost"
                                           size="sm"
                                           onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
+                                            handleToggleDocPublish(doc.id, category.id, doc.isPublished);
                                           }}
-                                          className="h-8 w-8 p-0 hover:bg-destructive/10"
+                                          className="h-8 w-8 p-0 hover:bg-primary/10"
                                         >
-                                          <Trash2 className="h-3 w-3 text-destructive" />
+                                          {doc.isPublished ? (
+                                            <Eye className="h-3 w-3 text-green-600" />
+                                          ) : (
+                                            <EyeOff className="h-3 w-3 text-muted-foreground" />
+                                          )}
                                         </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Delete Documentation</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            Are you sure you want to delete "{doc.title}"? This action cannot be undone.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => handleDeleteDoc(doc.id, category.id)}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                          >
-                                            Delete
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
-                                )}
-                              </Card>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleEditDoc(doc.id);
+                                          }}
+                                          className="h-8 w-8 p-0 hover:bg-primary/10"
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                              }}
+                                              className="h-8 w-8 p-0 hover:bg-destructive/10"
+                                            >
+                                              <Trash2 className="h-3 w-3 text-destructive" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>Delete Documentation</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                Are you sure you want to delete "{doc.title}"? This action cannot be undone.
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                              <AlertDialogAction
+                                                onClick={() => handleDeleteDoc(doc.id, category.id)}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                              >
+                                                Delete
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </div>
+                                    )}
+                                  </Card>
+                                </div>
+                              ))}
+                              {isAdmin && category.docs.length === 0 && (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>No documentation in this category yet.</p>
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </TabsContent>
-                  ))}
-                </Tabs>
-              </CardContent>
-            </Card>
+                          </ScrollArea>
+                        </TabsContent>
+                      );
+                    })}
+                  </Tabs>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
