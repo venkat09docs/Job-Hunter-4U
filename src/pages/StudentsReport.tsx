@@ -27,7 +27,8 @@ import {
   Home,
   BarChart3,
   Activity,
-  Calendar
+  Calendar,
+  Award
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
@@ -43,6 +44,14 @@ import {
   ChartTooltip, 
   ChartTooltipContent 
 } from '@/components/ui/chart';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   BarChart, 
   Bar, 
@@ -82,6 +91,9 @@ export default function StudentsReport() {
   console.log('StudentsReport - Loading state:', loading);
   const [selectedBatches, setSelectedBatches] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [pointsHistory, setPointsHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   // Removed auto-refresh - user will use manual refresh button
 
@@ -231,6 +243,49 @@ export default function StudentsReport() {
     } else {
       // No active subscription
       return { color: 'bg-gray-500', text: 'Inactive' };
+    }
+  };
+
+  const fetchUserPointsHistory = async (userId: string, userDetails: any) => {
+    try {
+      setLoadingHistory(true);
+      setSelectedUser(userDetails);
+      
+      // Fetch user's points history with activity details
+      const { data: pointsData, error } = await supabase
+        .from('user_activity_points')
+        .select(`
+          id,
+          activity_id,
+          activity_type,
+          points_earned,
+          activity_date,
+          created_at,
+          activity_point_settings (
+            activity_name,
+            description,
+            category
+          )
+        `)
+        .eq('user_id', userId)
+        .order('activity_date', { ascending: false });
+
+      if (error) throw error;
+
+      // Calculate total points
+      const totalPoints = pointsData?.reduce((sum, record) => sum + record.points_earned, 0) || 0;
+      
+      setPointsHistory(pointsData || []);
+      setSelectedUser({ ...userDetails, totalPoints });
+    } catch (error) {
+      console.error('Error fetching points history:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load points history',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingHistory(false);
     }
   };
 
@@ -647,9 +702,100 @@ export default function StudentsReport() {
                             {getActivityStatus(student).text}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <StudentCareerGrowthCharts student={student} />
-                        </TableCell>
+                         <TableCell>
+                           <div className="flex items-center gap-2">
+                             <StudentCareerGrowthCharts student={student} />
+                             <Dialog>
+                               <DialogTrigger asChild>
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   onClick={() => fetchUserPointsHistory(student.user_id, student)}
+                                   className="h-8 w-8 p-0"
+                                 >
+                                   <Award className="h-4 w-4 text-primary" />
+                                 </Button>
+                               </DialogTrigger>
+                               <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                                 <DialogHeader>
+                                   <DialogTitle className="flex items-center gap-2">
+                                     <Award className="h-5 w-5 text-primary" />
+                                     Points History - {selectedUser?.full_name}
+                                   </DialogTitle>
+                                 </DialogHeader>
+                                 <div className="space-y-4">
+                                   {selectedUser && (
+                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                                       <div className="text-center">
+                                         <p className="text-2xl font-bold text-primary">{selectedUser.totalPoints || 0}</p>
+                                         <p className="text-sm text-muted-foreground">Total Points</p>
+                                       </div>
+                                       <div className="text-center">
+                                         <p className="text-lg font-semibold">{pointsHistory.length}</p>
+                                         <p className="text-sm text-muted-foreground">Activities Completed</p>
+                                       </div>
+                                       <div className="text-center">
+                                         <p className="text-lg font-semibold">{selectedUser.batch_name}</p>
+                                         <p className="text-sm text-muted-foreground">Batch</p>
+                                       </div>
+                                     </div>
+                                   )}
+                                   
+                                   <div className="overflow-y-auto max-h-[400px]">
+                                     {loadingHistory ? (
+                                       <div className="space-y-2">
+                                         {[...Array(5)].map((_, i) => (
+                                           <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
+                                             <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
+                                             <div className="flex-1 space-y-1">
+                                               <div className="h-4 bg-muted rounded animate-pulse" />
+                                               <div className="h-3 bg-muted rounded w-3/4 animate-pulse" />
+                                             </div>
+                                             <div className="h-6 w-16 bg-muted rounded animate-pulse" />
+                                           </div>
+                                         ))}
+                                       </div>
+                                     ) : pointsHistory.length > 0 ? (
+                                       <div className="space-y-2">
+                                         {pointsHistory.map((record) => (
+                                           <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50">
+                                             <div className="flex items-center gap-3">
+                                               <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                                 <Award className="h-5 w-5 text-primary" />
+                                               </div>
+                                               <div>
+                                                 <p className="font-medium">
+                                                   {record.activity_point_settings?.activity_name || record.activity_id}
+                                                 </p>
+                                                 <p className="text-sm text-muted-foreground">
+                                                   {record.activity_point_settings?.description || record.activity_type}
+                                                 </p>
+                                                 <p className="text-xs text-muted-foreground">
+                                                   {new Date(record.activity_date).toLocaleDateString()} • {record.activity_point_settings?.category}
+                                                 </p>
+                                               </div>
+                                             </div>
+                                             <div className="text-right">
+                                               <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                                 +{record.points_earned} pts
+                                               </Badge>
+                                             </div>
+                                           </div>
+                                         ))}
+                                       </div>
+                                     ) : (
+                                       <div className="text-center py-8">
+                                         <Award className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                                         <p className="text-muted-foreground">No points earned yet</p>
+                                         <p className="text-sm text-muted-foreground">Complete activities to start earning points</p>
+                                       </div>
+                                     )}
+                                   </div>
+                                 </div>
+                               </DialogContent>
+                             </Dialog>
+                           </div>
+                         </TableCell>
                       </TableRow>
                     ))
                   )}

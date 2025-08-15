@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Medal, Award } from 'lucide-react';
+import { Trophy, Medal, Award, Users, Calendar } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useInstituteLeaderboard } from '@/hooks/useInstituteLeaderboard';
+import { useBatchLeaderboards } from '@/hooks/useBatchLeaderboards';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -87,6 +88,7 @@ const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon:
 
 export function InstituteLeaderBoard() {
   const { leaderboard, loading } = useInstituteLeaderboard();
+  const { batchLeaderboards, loading: batchLoading } = useBatchLeaderboards();
 
   return (
     <div className="space-y-6">
@@ -97,9 +99,10 @@ export function InstituteLeaderBoard() {
         </p>
       </div>
 
+      {/* Overall Institute Leaderboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {renderLeaderboardCard(
-          "Present Week",
+          "Current Week",
           leaderboard.current_week,
           <Trophy className="h-5 w-5 text-yellow-500" />,
           loading
@@ -117,6 +120,59 @@ export function InstituteLeaderBoard() {
           loading
         )}
       </div>
+
+      {/* Batch-wise Leaderboards */}
+      {batchLeaderboards.length > 0 && (
+        <div className="space-y-4">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-2">Batch Performance</h3>
+            <p className="text-muted-foreground">
+              Top 5 performers from each batch (Current Week)
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {batchLeaderboards.map((batchLeaderboard) => (
+              <Card key={batchLeaderboard.batch_id}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Users className="h-5 w-5 text-primary" />
+                    {batchLeaderboard.batch_name}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Code: {batchLeaderboard.batch_code}
+                  </p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {batchLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <Skeleton className="w-8 h-8 rounded-full" />
+                          <div className="flex-1">
+                            <Skeleton className="h-4 w-20 mb-1" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : batchLeaderboard.entries.length > 0 ? (
+                    <div className="space-y-1">
+                      {batchLeaderboard.entries.map((entry, index) => renderLeaderboardEntry(entry, index))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground/60" />
+                      <p className="text-sm">No activity this week</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
