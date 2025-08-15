@@ -17,6 +17,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { supabase } from '@/integrations/supabase/client';
+import { useResourceSavePoints } from '@/hooks/useResourceSavePoints';
 import { useAuth } from '@/hooks/useAuth';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 
@@ -48,6 +49,7 @@ const GitHubOptimization = () => {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') === 'setup' ? 'setup' : 'generate';
   const { updateTaskStatus, tasks } = useGitHubProgress();
+  const { onReadmeSaved } = useResourceSavePoints();
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.full_name || '',
     title: '',
@@ -279,6 +281,9 @@ ${interests}
       // Update GitHub progress
       await updateTaskStatus('readme_generated', true);
       setGitHubProgress(prev => ({ ...prev, readme_generated: true }));
+
+      // Award points for saving README file
+      await onReadmeSaved();
 
       toast.success('README file saved to Resources Library!');
     } catch (error) {

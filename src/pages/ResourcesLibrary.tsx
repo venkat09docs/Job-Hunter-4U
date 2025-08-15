@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useResourceSavePoints } from '@/hooks/useResourceSavePoints';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload } from 'lucide-react';
 import { format } from 'date-fns';
@@ -49,6 +50,7 @@ interface SavedReadmeFile {
 const ResourcesLibrary = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { onResumeSaved } = useResourceSavePoints();
   const location = useLocation();
   const [savedResumes, setSavedResumes] = useState<SavedResume[]>([]);
   const [savedCoverLetters, setSavedCoverLetters] = useState<SavedCoverLetter[]>([]);
@@ -641,6 +643,9 @@ const ResourcesLibrary = () => {
 
       // Update local state
       setSavedResumes(prev => [data, ...prev]);
+      
+      // Award points for saving resume
+      await onResumeSaved();
       
       // Reset upload state
       setSelectedFile(null);

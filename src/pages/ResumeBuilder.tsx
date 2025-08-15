@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useResourceSavePoints } from '@/hooks/useResourceSavePoints';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/Subscripti
 import { ResumeProgressBar } from '@/components/ResumeProgressBar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useResumeProgressPoints } from '@/hooks/useResumeProgressPoints';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +64,7 @@ const ResumeBuilder = () => {
   const { user } = useAuth();
   const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { toast } = useToast();
+  const { onResumeSaved, onCoverLetterSaved } = useResourceSavePoints();
   const navigate = useNavigate();
   const [status, setStatus] = useState<StatusType>('draft');
   const [loading, setLoading] = useState(false);
@@ -419,6 +422,9 @@ ${resumeData.personalDetails.fullName}`;
 
       if (error) throw error;
 
+      // Award points for saving cover letter
+      await onCoverLetterSaved();
+
       toast({
         title: 'Cover Letter Saved',
         description: 'Your cover letter has been saved to your library.',
@@ -579,6 +585,9 @@ ${resumeData.personalDetails.fullName}`;
 
       // Also save to resume_data table
       await saveToSupabase();
+
+      // Award points for saving resume
+      await onResumeSaved();
 
       toast({
         title: 'Final version saved!',
