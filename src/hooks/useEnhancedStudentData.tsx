@@ -562,16 +562,66 @@ export const useEnhancedStudentData = () => {
         batchName
       });
 
-      // Get last activity
-      const { data: lastActivityData } = await supabase
-        .from('daily_progress_snapshots')
-        .select('created_at')
+      // Get last activity from multiple sources to get the most recent activity
+      const { data: recentActivities } = await supabase
+        .from('profiles')
+        .select(`
+          updated_at,
+          user_id
+        `)
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        .single();
+
+      // Check for recent job applications
+      const { data: recentJobActivity } = await supabase
+        .from('job_tracker')
+        .select('updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      const lastActivity = lastActivityData?.created_at || 'Never';
+      // Check for recent LinkedIn progress
+      const { data: recentLinkedInActivity } = await supabase
+        .from('linkedin_progress')
+        .select('updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Check for recent GitHub progress
+      const { data: recentGitHubActivity } = await supabase
+        .from('github_progress')
+        .select('updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Check for recent resume updates
+      const { data: recentResumeActivity } = await supabase
+        .from('resume_data')
+        .select('updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Find the most recent activity from all sources
+      const activityDates = [
+        recentActivities?.updated_at,
+        recentJobActivity?.updated_at,
+        recentLinkedInActivity?.updated_at,
+        recentGitHubActivity?.updated_at,
+        recentResumeActivity?.updated_at
+      ].filter(Boolean);
+
+      const lastActivity = activityDates.length > 0 
+        ? activityDates.reduce((latest, current) => 
+            new Date(current) > new Date(latest) ? current : latest
+          ) 
+        : 'Never';
 
       // Fetch real daily activities from database
       const dailyActivities = await fetchDailyActivities(userId);
