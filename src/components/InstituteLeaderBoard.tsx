@@ -90,13 +90,6 @@ export function InstituteLeaderBoard() {
   const { leaderboard, loading } = useInstituteLeaderboard();
   const { batchLeaderboards, loading: batchLoading } = useBatchLeaderboards();
 
-  console.log('InstituteLeaderBoard rendering:', { 
-    leaderboard, 
-    loading, 
-    batchLeaderboards: batchLeaderboards.length, 
-    batchLoading 
-  });
-
   if (loading) {
     return (
       <div className="text-center py-8">
