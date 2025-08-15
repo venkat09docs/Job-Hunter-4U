@@ -412,7 +412,7 @@ export const useEnhancedStudentData = () => {
         .from('resume_data')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       let resumeProgress = 0;
       if (resumeData) {
@@ -436,7 +436,7 @@ export const useEnhancedStudentData = () => {
         .eq('user_id', userId)
         .eq('completed', true);
 
-      const linkedinProgress = Math.round((linkedinCompletedTasks || 0) * 100 / 9);
+      const linkedinProgress = Math.min(100, Math.round((linkedinCompletedTasks || 0) * 100 / 9));
 
       // Get GitHub progress
       const { count: githubCompletedTasks } = await supabase
@@ -445,7 +445,7 @@ export const useEnhancedStudentData = () => {
         .eq('user_id', userId)
         .eq('completed', true);
 
-      const githubCompletion = Math.round((githubCompletedTasks || 0) * 100 / 8);
+      const githubCompletion = Math.min(100, Math.round((githubCompletedTasks || 0) * 100 / 8));
 
       // Get job application stats
       const { count: totalJobApps } = await supabase
@@ -477,7 +477,15 @@ export const useEnhancedStudentData = () => {
       // Calculate profile completion using the same logic as Career Growth Report
       // This is the "Overall Career Development Score" calculation
       const careerDevelopmentScores = [resumeProgress, linkedinProgress, githubCompletion];
-      const profileCompletion = Math.round(careerDevelopmentScores.reduce((sum, score) => sum + score, 0) / careerDevelopmentScores.length);
+      const profileCompletion = Math.max(0, Math.round(careerDevelopmentScores.reduce((sum, score) => sum + score, 0) / careerDevelopmentScores.length));
+      
+      console.log(`Student ${profile.full_name} progress:`, {
+        resumeProgress,
+        linkedinProgress: `${linkedinProgress}% (${linkedinCompletedTasks}/9 tasks)`,
+        githubCompletion: `${githubCompletion}% (${githubCompletedTasks}/8 tasks)`,
+        profileCompletion,
+        totalJobApps: totalJobApps || 0
+      });
 
       // Get last activity
       const { data: lastActivityData } = await supabase
@@ -486,7 +494,7 @@ export const useEnhancedStudentData = () => {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const lastActivity = lastActivityData?.created_at || 'Never';
 
@@ -607,7 +615,7 @@ export const useEnhancedStudentData = () => {
         .eq('user_id', userId)
         .order('calculated_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       // Get activity streaks and engagement from daily snapshots
       const { data: recentSnapshots } = await supabase
