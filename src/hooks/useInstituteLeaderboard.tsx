@@ -82,12 +82,15 @@ export const useInstituteLeaderboard = () => {
 
   const getLeaderboardForPeriod = async (periodType: string, instituteId: string): Promise<LeaderboardEntry[]> => {
     try {
+      console.log(`DEBUG: Getting leaderboard for period: ${periodType}, institute: ${instituteId}`);
+      
       // Calculate date ranges
       const now = new Date();
       let startDate: Date;
       let endDate: Date;
 
       if (periodType === 'current_week') {
+        // Get Monday of current week
         const today = new Date();
         const dayOfWeek = today.getDay();
         const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -96,16 +99,17 @@ export const useInstituteLeaderboard = () => {
         startDate.setHours(0, 0, 0, 0);
         endDate = new Date(); // Current date/time
       } else if (periodType === 'top_performers') {
-        // For top performers, we want all-time data (no date filter)
-        startDate = new Date('2020-01-01'); // Start from a very early date
+        // For top performers, we want all-time data
+        startDate = new Date('2020-01-01');
         endDate = new Date();
       } else {
+        // Last 30 days
         endDate = new Date();
         startDate = new Date();
         startDate.setDate(endDate.getDate() - 30);
       }
 
-      console.log(`Fetching ${periodType} data from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+      console.log(`DEBUG: Date range for ${periodType}: ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
       // Get users assigned to this institute (all students)
       const { data: instituteUsers, error: usersError } = await supabase
@@ -115,17 +119,21 @@ export const useInstituteLeaderboard = () => {
         .eq('assignment_type', 'batch')
         .eq('is_active', true);
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('DEBUG: Error getting institute users:', usersError);
+        throw usersError;
+      }
 
-      console.log('Institute users found:', instituteUsers?.length || 0);
+      console.log('DEBUG: Institute users found:', instituteUsers?.length || 0, instituteUsers);
 
       if (!instituteUsers || instituteUsers.length === 0) {
         return [];
       }
 
       const userIds = instituteUsers.map(u => u.user_id);
+      console.log('DEBUG: User IDs to query:', userIds);
 
-      // Query user activity points for the period for institute users only
+      // Query user activity points for the period
       const { data: activityData, error: activityError } = await supabase
         .from('user_activity_points')
         .select(`
@@ -137,9 +145,12 @@ export const useInstituteLeaderboard = () => {
         .gte('activity_date', startDate.toISOString().split('T')[0])
         .lte('activity_date', endDate.toISOString().split('T')[0]);
 
-      if (activityError) throw activityError;
+      if (activityError) {
+        console.error('DEBUG: Error getting activity data:', activityError);
+        throw activityError;
+      }
 
-      console.log('Activity data found for period', periodType, ':', activityData?.length || 0);
+      console.log(`DEBUG: Activity data found for ${periodType}:`, activityData?.length || 0, activityData);
 
       // Group by user and sum points
       const userPoints = new Map<string, number>();
@@ -148,7 +159,7 @@ export const useInstituteLeaderboard = () => {
         userPoints.set(record.user_id, current + record.points_earned);
       });
 
-      console.log('User points calculated:', userPoints.size, 'users with points');
+      console.log('DEBUG: User points calculated:', Object.fromEntries(userPoints));
 
       // Get top users (only those with points)
       const topUserIds = Array.from(userPoints.entries())
@@ -157,8 +168,10 @@ export const useInstituteLeaderboard = () => {
         .slice(0, 10) // Get top 10
         .map(([userId]) => userId);
 
+      console.log('DEBUG: Top user IDs:', topUserIds);
+
       if (topUserIds.length === 0) {
-        console.log('No users with points found for period:', periodType);
+        console.log(`DEBUG: No users with points found for period: ${periodType}`);
         return [];
       }
 
@@ -167,7 +180,12 @@ export const useInstituteLeaderboard = () => {
         .select('user_id, full_name, username, profile_image_url')
         .in('user_id', topUserIds);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('DEBUG: Error getting profile data:', profileError);
+        throw profileError;
+      }
+
+      console.log('DEBUG: Profile data:', profileData);
 
       // Combine user data with points and rankings
       const leaderboardEntries: LeaderboardEntry[] = topUserIds.map((userId, index) => {
@@ -182,10 +200,10 @@ export const useInstituteLeaderboard = () => {
         };
       });
 
-      console.log('Leaderboard entries for', periodType, ':', leaderboardEntries.length);
+      console.log(`DEBUG: Final leaderboard entries for ${periodType}:`, leaderboardEntries.length, leaderboardEntries);
       return leaderboardEntries;
     } catch (error) {
-      console.error(`Error fetching institute leaderboard for period ${periodType}:`, error);
+      console.error(`DEBUG: Error in getLeaderboardForPeriod for ${periodType}:`, error);
       return [];
     }
   };
