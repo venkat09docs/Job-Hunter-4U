@@ -48,6 +48,11 @@ export const VerifyActivitiesButton = () => {
           pointsAwarded: result.pointsAwarded
         });
         toast.success(`Successfully verified activities for ${result.processedCount} users and awarded ${result.pointsAwarded} point entries!`);
+        
+        // Refresh the page to update leaderboard
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         throw new Error(result.error || 'Unknown error occurred');
       }

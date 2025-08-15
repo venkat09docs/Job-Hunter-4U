@@ -31,6 +31,29 @@ export const useLeaderboard = () => {
     fetchLeaderboard();
   }, []);
 
+  // Refresh leaderboard when user_activity_points table changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('leaderboard-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_activity_points'
+        },
+        () => {
+          console.log('User activity points updated, refreshing leaderboard...');
+          fetchLeaderboard();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
@@ -83,6 +106,8 @@ export const useLeaderboard = () => {
       }
 
       // Query user activity points for the period
+      console.log(`Querying leaderboard for ${periodType} from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+      
       const { data: activityData, error: activityError } = await supabase
         .from('user_activity_points')
         .select(`
@@ -92,6 +117,8 @@ export const useLeaderboard = () => {
         `)
         .gte('activity_date', startDate.toISOString().split('T')[0])
         .lte('activity_date', endDate.toISOString().split('T')[0]);
+
+      console.log(`Found ${activityData?.length || 0} activity records for ${periodType}`);
 
       if (activityError) throw activityError;
 

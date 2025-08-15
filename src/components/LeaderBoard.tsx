@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { useLeaderboard, LeaderboardEntry } from '@/hooks/useLeaderboard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LeaderboardRefreshButton } from '@/components/LeaderboardRefreshButton';
 
 const LeaderBoard = () => {
   const { leaderboard, loading } = useLeaderboard();
@@ -76,10 +77,15 @@ const LeaderBoard = () => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Leader Board</h2>
-        <p className="text-muted-foreground">
-          Top performers based on their activities and engagement
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Leader Board</h2>
+            <p className="text-muted-foreground">
+              Top performers based on their activities and engagement
+            </p>
+          </div>
+          <LeaderboardRefreshButton />
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
