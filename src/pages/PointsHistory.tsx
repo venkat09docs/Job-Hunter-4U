@@ -4,7 +4,7 @@ import { Trophy, Calendar, Activity, Star } from "lucide-react";
 import { useUserPointsHistory } from "@/hooks/useUserPointsHistory";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Navigation } from "@/components/Navigation";
+import Navigation from "@/components/Navigation";
 
 export default function PointsHistory() {
   const { pointsHistory, loading, totalPoints } = useUserPointsHistory();

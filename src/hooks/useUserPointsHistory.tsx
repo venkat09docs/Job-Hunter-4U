@@ -34,17 +34,10 @@ export const useUserPointsHistory = () => {
     try {
       setLoading(true);
       
-      // Fetch user's activity points with related activity settings
+      // Fetch user's activity points
       const { data: activityData, error: activityError } = await supabase
         .from('user_activity_points')
-        .select(`
-          *,
-          activity_settings:activity_point_settings(
-            activity_name,
-            description,
-            category
-          )
-        `)
+        .select('*')
         .eq('user_id', user?.id)
         .order('activity_date', { ascending: false })
         .order('created_at', { ascending: false });
@@ -56,21 +49,42 @@ export const useUserPointsHistory = () => {
 
       console.log('User activity points fetched:', activityData);
 
-      // Transform the data and calculate total points
-      const transformedData: UserActivityPoint[] = activityData?.map(item => ({
-        id: item.id,
-        user_id: item.user_id,
-        activity_id: item.activity_id,
-        activity_type: item.activity_type,
-        points_earned: item.points_earned,
-        activity_date: item.activity_date,
-        created_at: item.created_at,
-        activity_settings: item.activity_settings ? {
-          activity_name: item.activity_settings.activity_name,
-          description: item.activity_settings.description,
-          category: item.activity_settings.category
-        } : undefined
-      })) || [];
+      // If we have activity data, fetch the corresponding activity settings
+      let settingsData: any[] = [];
+      if (activityData && activityData.length > 0) {
+        const activityIds = [...new Set(activityData.map(item => item.activity_id))];
+        
+        const { data: settings, error: settingsError } = await supabase
+          .from('activity_point_settings')
+          .select('activity_id, activity_name, description, category')
+          .in('activity_id', activityIds);
+
+        if (settingsError) {
+          console.error('Error fetching activity settings:', settingsError);
+          // Don't throw here, just continue without settings data
+        } else {
+          settingsData = settings || [];
+        }
+      }
+
+      // Transform the data and combine with settings
+      const transformedData: UserActivityPoint[] = activityData?.map(item => {
+        const settings = settingsData.find(s => s.activity_id === item.activity_id);
+        return {
+          id: item.id,
+          user_id: item.user_id,
+          activity_id: item.activity_id,
+          activity_type: item.activity_type,
+          points_earned: item.points_earned,
+          activity_date: item.activity_date,
+          created_at: item.created_at,
+          activity_settings: settings ? {
+            activity_name: settings.activity_name,
+            description: settings.description,
+            category: settings.category
+          } : undefined
+        };
+      }) || [];
 
       setPointsHistory(transformedData);
 
