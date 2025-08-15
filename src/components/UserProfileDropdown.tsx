@@ -14,12 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
+  const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
 
   // Get current user's points from current week leaderboard
   const userPoints = leaderboard.current_week?.find(entry => entry.user_id === user?.id)?.total_points || 0;
@@ -40,61 +42,66 @@ export function UserProfileDropdown() {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-auto px-2 gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.profile_image_url || ""} />
-            <AvatarFallback className="text-xs">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden md:inline text-sm">
-            {profile?.username || user?.email?.split('@')[0] || 'User'}
-          </span>
-          <Badge variant="secondary" className="ml-2 gap-1">
-            <Trophy className="h-3 w-3" />
-            {userPoints}
-          </Badge>
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <div className="flex items-center justify-start gap-2 p-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.profile_image_url || ""} />
-            <AvatarFallback className="text-xs">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium text-sm">
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-10 w-auto px-2 gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.profile_image_url || ""} />
+              <AvatarFallback className="text-xs">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden md:inline text-sm">
               {profile?.username || user?.email?.split('@')[0] || 'User'}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {user?.email}
-            </p>
+            </span>
+            <Badge variant="secondary" className="ml-2 gap-1">
+              <Trophy className="h-3 w-3" />
+              {userPoints}
+            </Badge>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <div className="flex items-center justify-start gap-2 p-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={profile?.profile_image_url || ""} />
+              <AvatarFallback className="text-xs">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col space-y-1 leading-none">
+              <p className="font-medium text-sm">
+                {profile?.username || user?.email?.split('@')[0] || 'User'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {user?.email}
+              </p>
+            </div>
           </div>
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard/points-history" className="gap-2">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setPointsDialogOpen(true)} className="gap-2 cursor-pointer">
             <Trophy className="h-4 w-4" />
             Points History
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard/settings" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">
-          <LogOut className="h-4 w-4" />
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/dashboard/settings" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
+      <PointsHistoryDialog 
+        open={pointsDialogOpen} 
+        onOpenChange={setPointsDialogOpen} 
+      />
+    </>
   );
 }
