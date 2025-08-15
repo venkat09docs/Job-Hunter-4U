@@ -494,7 +494,7 @@ export default function KnowledgeBase() {
                                     </div>
                                   </CardContent>
                                   {isAdmin && (
-                                    <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -659,7 +659,7 @@ export default function KnowledgeBase() {
                                       </CardContent>
                                     </Link>
                                     {isAdmin && (
-                                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                           variant="ghost"
                                           size="sm"
