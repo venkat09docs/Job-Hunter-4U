@@ -90,11 +90,15 @@ export const InstituteDashboard = () => {
     const avgGithub = batch.students.length > 0 
       ? batch.students.reduce((sum, student) => sum + student.github_completion, 0) / batch.students.length 
       : 0;
+    const avgLinkedIn = batch.students.length > 0 
+      ? batch.students.reduce((sum, student) => sum + student.linkedin_progress, 0) / batch.students.length 
+      : 0;
     
     return {
       batch: batch.batch_name,
       'Profile Completion': Math.round(avgCompletion),
       'GitHub Progress': Math.round(avgGithub),
+      'LinkedIn Progress': Math.round(avgLinkedIn),
       'Students': batch.student_count
     };
   });
@@ -306,7 +310,7 @@ export const InstituteDashboard = () => {
             <TrendingUp className="h-5 w-5" />
             Progress Comparison by Batch
           </CardTitle>
-          <CardDescription>Profile completion and GitHub progress across batches</CardDescription>
+          <CardDescription>Profile completion, LinkedIn, and GitHub progress across batches</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
@@ -330,6 +334,7 @@ export const InstituteDashboard = () => {
               />
               <Legend />
               <Bar dataKey="Profile Completion" fill="hsl(var(--primary))" />
+              <Bar dataKey="LinkedIn Progress" fill="hsl(var(--accent))" />
               <Bar dataKey="GitHub Progress" fill="hsl(var(--success))" />
             </BarChart>
           </ResponsiveContainer>
