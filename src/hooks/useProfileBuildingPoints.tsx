@@ -31,27 +31,30 @@ export const useProfileBuildingPoints = () => {
         return false;
       }
 
-      // Check if user already received points for this activity today
-      const today = new Date().toISOString().split('T')[0];
-      const { data: existingPoints, error: checkError } = await supabase
-        .from('user_activity_points')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('activity_id', activityId)
-        .eq('activity_date', today)
-        .maybeSingle();
+      // Check if user already received points for this activity today (only for profile building activities)
+      if (activityType !== 'linkedin_growth') {
+        const today = new Date().toISOString().split('T')[0];
+        const { data: existingPoints, error: checkError } = await supabase
+          .from('user_activity_points')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('activity_id', activityId)
+          .eq('activity_date', today)
+          .maybeSingle();
 
-      if (checkError) {
-        console.error('Error checking existing points:', checkError);
-        return false;
-      }
+        if (checkError) {
+          console.error('Error checking existing points:', checkError);
+          return false;
+        }
 
-      if (existingPoints) {
-        console.log(`Points already awarded for ${activityId} today (${today})`);
-        return false;
+        if (existingPoints) {
+          console.log(`Points already awarded for ${activityId} today (${today})`);
+          return false;
+        }
       }
 
       // Award points to user
+      const today = new Date().toISOString().split('T')[0];
       const { error: insertError } = await supabase
         .from('user_activity_points')
         .insert({

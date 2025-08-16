@@ -15,8 +15,6 @@ export const useLinkedInGrowthPoints = (
 ) => {
   const { awardPoints } = useProfileBuildingPoints();
   const processingRef = useRef(false);
-  const lastProcessedRef = useRef<string>('');
-  const [processedActivities, setProcessedActivities] = useState<Set<string>>(new Set());
   const [previousStatus, setPreviousStatus] = useState<ActivityStatus>({});
 
   // Define daily activities and their targets
@@ -54,13 +52,6 @@ export const useLinkedInGrowthPoints = (
     processingRef.current = true;
 
     try {
-      // Create a unique key for this metrics state to avoid duplicate processing
-      const metricsKey = JSON.stringify(todayMetrics);
-      if (lastProcessedRef.current === metricsKey) {
-        console.log('Same metrics already processed, skipping...');
-        return;
-      }
-
       // Check each activity for status changes
       for (const [activityId, currentValue] of Object.entries(todayMetrics)) {
         if (!DAILY_ACTIVITIES[activityId]) continue;
@@ -72,31 +63,23 @@ export const useLinkedInGrowthPoints = (
         if (currentStatus !== lastStatus) {
           console.log(`Status changed for ${activityId}: ${lastStatus} -> ${currentStatus}`);
           
-          // Create a unique key for today's activity status change
-          const today = new Date().toISOString().split('T')[0];
-          const statusKey = `${activityId}-${today}-${currentStatus}`;
-          
-          if (!processedActivities.has(statusKey)) {
-            try {
-              if (currentStatus === 'success' && lastStatus !== 'success') {
-                // Award points when moving to "On Track"
-                const success = await awardPoints(activityId, 'linkedin_growth');
-                if (success) {
-                  setProcessedActivities(prev => new Set([...prev, statusKey]));
-                  console.log(`Successfully awarded points for ${activityId} (${lastStatus} -> ${currentStatus})`);
-                }
-              } else if (lastStatus === 'success' && currentStatus !== 'success') {
-                // Deduct points when moving away from "On Track"
-                // Note: We'll use negative points to deduct
-                const success = await awardPoints(`${activityId}_deduct`, 'linkedin_growth');
-                if (success) {
-                  setProcessedActivities(prev => new Set([...prev, statusKey]));
-                  console.log(`Successfully deducted points for ${activityId} (${lastStatus} -> ${currentStatus})`);
-                }
+          try {
+            if (currentStatus === 'success' && lastStatus !== 'success') {
+              // Award points when moving to "On Track"
+              const success = await awardPoints(activityId, 'linkedin_growth');
+              if (success) {
+                console.log(`Successfully awarded points for ${activityId} (${lastStatus} -> ${currentStatus})`);
               }
-            } catch (error) {
-              console.error(`Failed to process points for ${activityId}:`, error);
+            } else if (lastStatus === 'success' && currentStatus !== 'success') {
+              // Deduct points when moving away from "On Track"
+              // Note: We'll use negative points to deduct
+              const success = await awardPoints(`${activityId}_deduct`, 'linkedin_growth');
+              if (success) {
+                console.log(`Successfully deducted points for ${activityId} (${lastStatus} -> ${currentStatus})`);
+              }
             }
+          } catch (error) {
+            console.error(`Failed to process points for ${activityId}:`, error);
           }
         }
       }
@@ -109,13 +92,10 @@ export const useLinkedInGrowthPoints = (
         }
       }
       setPreviousStatus(newStatus);
-      
-      // Update the last processed key
-      lastProcessedRef.current = metricsKey;
     } finally {
       processingRef.current = false;
     }
-  }, [todayMetrics, previousStatus, awardPoints, processedActivities]);
+  }, [todayMetrics, previousStatus, awardPoints]);
 
   // Run point check whenever metrics change, but with debouncing
   useEffect(() => {
