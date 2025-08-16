@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -241,8 +242,11 @@ const docCategories = [
 export default function KnowledgeBase() {
   const [activeVideoCategory, setActiveVideoCategory] = useState("career-development");
   const [activeDocCategory, setActiveDocCategory] = useState("getting-started");
+  const [videoData, setVideoData] = useState(videoCategories);
+  const [docData, setDocData] = useState(docCategories);
   const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
   const { isAdmin } = useRole();
+  const navigate = useNavigate();
 
   const handleDeleteDoc = (docId: number, categoryId: string) => {
     // In a real app, this would make an API call to delete the document
@@ -251,9 +255,8 @@ export default function KnowledgeBase() {
   };
 
   const handleEditDoc = (docId: number) => {
-    // Navigate to edit mode or open edit dialog
-    console.log(`Editing document ${docId}`);
-    toast.info("Edit document feature coming soon");
+    // Navigate to DocumentationDetail page with edit mode
+    navigate(`/dashboard/knowledge-base/doc/${docId}?edit=true`);
   };
 
   const handleAddDoc = (categoryId: string) => {
@@ -262,8 +265,21 @@ export default function KnowledgeBase() {
   };
 
   const handleToggleDocPublish = (docId: number, categoryId: string, currentStatus: boolean) => {
-    // In a real app, this would make an API call to toggle publish status
-    console.log(`Toggling publish status for document ${docId} to ${!currentStatus}`);
+    // Update the document's publish status
+    setDocData(prevData => 
+      prevData.map(category => 
+        category.id === categoryId 
+          ? {
+              ...category,
+              docs: category.docs.map(doc => 
+                doc.id === docId 
+                  ? { ...doc, isPublished: !currentStatus }
+                  : doc
+              )
+            }
+          : category
+      )
+    );
     toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
@@ -274,7 +290,7 @@ export default function KnowledgeBase() {
 
   const handleEditVideo = (videoId: number) => {
     console.log(`Editing video ${videoId}`);
-    toast.info("Edit video feature coming soon");
+    toast.info("Video edit dialog would open here");
   };
 
   const handleUploadVideo = (categoryId: string) => {
@@ -283,7 +299,21 @@ export default function KnowledgeBase() {
   };
 
   const handleToggleVideoPublish = (videoId: number, categoryId: string, currentStatus: boolean) => {
-    console.log(`Toggling publish status for video ${videoId} to ${!currentStatus}`);
+    // Update the video's publish status
+    setVideoData(prevData => 
+      prevData.map(category => 
+        category.id === categoryId 
+          ? {
+              ...category,
+              videos: category.videos.map(video => 
+                video.id === videoId 
+                  ? { ...video, isPublished: !currentStatus }
+                  : video
+              )
+            }
+          : category
+      )
+    );
     toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
@@ -412,7 +442,7 @@ export default function KnowledgeBase() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Videos Section */}
-            {(isAdmin || videoCategories.some(cat => hasPublishedContent(cat, 'videos'))) && (
+            {(isAdmin || videoData.some(cat => hasPublishedContent(cat, 'videos'))) && (
               <Card className="h-fit">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -441,7 +471,7 @@ export default function KnowledgeBase() {
               <CardContent>
                 <Tabs value={activeVideoCategory} onValueChange={setActiveVideoCategory}>
                   <TabsList className="grid w-full grid-cols-3">
-                    {videoCategories.map((category) => (
+                    {videoData.map((category) => (
                       <TabsTrigger 
                         key={category.id} 
                         value={category.id}
@@ -452,7 +482,7 @@ export default function KnowledgeBase() {
                     ))}
                   </TabsList>
                   
-                  {videoCategories.map((category) => {
+                  {videoData.map((category) => {
                     const filteredVideos = getFilteredVideos(category.videos);
                     if (!isAdmin && filteredVideos.length === 0) return null;
                     
@@ -577,7 +607,7 @@ export default function KnowledgeBase() {
             )}
 
             {/* Step by Step Docs Section */}
-            {(isAdmin || docCategories.some(cat => hasPublishedContent(cat, 'docs'))) && (
+            {(isAdmin || docData.some(cat => hasPublishedContent(cat, 'docs'))) && (
               <Card className="h-fit">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -606,7 +636,7 @@ export default function KnowledgeBase() {
                 <CardContent>
                   <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
                     <TabsList className="grid w-full grid-cols-3">
-                      {docCategories.map((category) => (
+                      {docData.map((category) => (
                         <TabsTrigger 
                           key={category.id} 
                           value={category.id}
@@ -617,7 +647,7 @@ export default function KnowledgeBase() {
                       ))}
                     </TabsList>
                     
-                    {docCategories.map((category) => {
+                    {docData.map((category) => {
                       const filteredDocs = getFilteredDocs(category.docs);
                       if (!isAdmin && filteredDocs.length === 0) return null;
                       
@@ -659,7 +689,7 @@ export default function KnowledgeBase() {
                                       </CardContent>
                                     </Link>
                                     {isAdmin && (
-                                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                           variant="ghost"
                                           size="sm"
