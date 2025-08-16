@@ -107,6 +107,9 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
   { id: 'follow_up', title: 'Follow Up Messages', description: 'Send follow-up messages to recent connections', category: 'networking', dailyTarget: 1, weeklyTarget: 5, unit: 'messages' },
   { id: 'connections_accepted', title: 'No of Connections Accepted', description: 'Track the number of connection requests accepted by others', category: 'networking', dailyTarget: 0, weeklyTarget: 10, unit: 'connections' },
   
+  // Growth Activities
+  { id: 'profile_views', title: 'No of Profile Views', description: 'Track the number of profile views received', category: 'growth', dailyTarget: 5, weeklyTarget: 30, unit: 'views' },
+  
   // Content Activities
   { id: 'create_post', title: 'Create Original Post', description: 'Share an original post about your expertise', category: 'content', dailyTarget: 1, weeklyTarget: 5, unit: 'posts' },
   
