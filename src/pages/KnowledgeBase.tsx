@@ -12,238 +12,13 @@ import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { useActivityPointSettings } from "@/hooks/useActivityPointSettings";
 import { useRole } from "@/hooks/useRole";
+import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
 import { toast } from "sonner";
-
-const videoCategories = [
-  {
-    id: "career-development",
-    name: "Career Development",
-    videos: [
-      {
-        id: 1,
-        title: "Building Your Professional Brand",
-        description: "Learn how to create a strong professional brand that stands out in your industry.",
-        duration: "12:45",
-        instructor: "Sarah Johnson",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 2,
-        title: "Effective Networking Strategies",
-        description: "Master the art of networking both online and offline to advance your career.",
-        duration: "18:20",
-        instructor: "Michael Chen",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 3,
-        title: "Resume Writing Best Practices",
-        description: "Create compelling resumes that get noticed by hiring managers and ATS systems.",
-        duration: "15:30",
-        instructor: "Emily Davis",
-        thumbnail: "/placeholder.svg",
-        isPublished: false
-      }
-    ]
-  },
-  {
-    id: "interview-skills",
-    name: "Interview Skills",
-    videos: [
-      {
-        id: 4,
-        title: "Behavioral Interview Preparation",
-        description: "Prepare for behavioral interviews using the STAR method and real examples.",
-        duration: "22:15",
-        instructor: "David Wilson",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 5,
-        title: "Technical Interview Strategies",
-        description: "Ace technical interviews with proven strategies and practice techniques.",
-        duration: "28:40",
-        instructor: "Alex Rodriguez",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      }
-    ]
-  },
-  {
-    id: "linkedin-optimization",
-    name: "LinkedIn Optimization",
-    videos: [
-      {
-        id: 6,
-        title: "LinkedIn Profile Optimization",
-        description: "Optimize your LinkedIn profile to attract recruiters and opportunities.",
-        duration: "16:25",
-        instructor: "Jennifer Thompson",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 7,
-        title: "LinkedIn Content Strategy",
-        description: "Create engaging content that builds your professional network and influence.",
-        duration: "20:10",
-        instructor: "Mark Anderson",
-        thumbnail: "/placeholder.svg",
-        isPublished: false
-      }
-    ]
-  }
-];
-
-const docCategories = [
-  {
-    id: "getting-started",
-    name: "Getting Started",
-    docs: [
-      {
-        id: 1,
-        title: "Complete Platform Setup Guide",
-        description: "Your first steps after signing in - complete walkthrough of the Digital Career Hub platform and its core features.",
-        readTime: "10 min read",
-        lastUpdated: "1 day ago",
-        isPublished: true
-      },
-      {
-        id: 2,
-        title: "First-Time User Onboarding",
-        description: "Essential setup checklist for new users to maximize their career growth potential from day one.",
-        readTime: "8 min read",
-        lastUpdated: "2 days ago",
-        isPublished: true
-      },
-      {
-        id: 3,
-        title: "Understanding Your Dashboard",
-        description: "Navigate your personalized dashboard, understand key metrics, and access all available tools efficiently.",
-        readTime: "6 min read",
-        lastUpdated: "3 days ago",
-        isPublished: true
-      },
-      {
-        id: 4,
-        title: "Setting Up Your Profile Foundation",
-        description: "Build a strong profile foundation with essential information that recruiters and employers look for.",
-        readTime: "12 min read",
-        lastUpdated: "1 day ago",
-        isPublished: false
-      },
-      {
-        id: 5,
-        title: "Premium vs Free Features Overview",
-        description: "Understand the difference between free and premium features to make informed decisions about upgrades.",
-        readTime: "7 min read",
-        lastUpdated: "4 days ago",
-        isPublished: true
-      },
-      {
-        id: 6,
-        title: "Understanding the Points & Gamification System",
-        description: "Learn how to earn points through various activities and use gamification to stay motivated in your career journey.",
-        readTime: "9 min read",
-        lastUpdated: "2 days ago",
-        isPublished: true
-      },
-      {
-        id: 7,
-        title: "Quick Win Activities for New Users",
-        description: "Start earning points immediately with these simple activities that boost your profile visibility and readiness.",
-        readTime: "5 min read",
-        lastUpdated: "1 day ago",
-        isPublished: true
-      },
-      {
-        id: 8,
-        title: "Setting Your Career Goals & Timeline",
-        description: "Define clear, actionable career goals and create a timeline to track your progress towards getting hired.",
-        readTime: "11 min read",
-        lastUpdated: "3 days ago",
-        isPublished: false
-      },
-      {
-        id: 9,
-        title: "Connecting Your Professional Accounts",
-        description: "Link your LinkedIn, GitHub, and other professional accounts to maximize profile completeness and automation features.",
-        readTime: "8 min read",
-        lastUpdated: "2 days ago",
-        isPublished: true
-      },
-      {
-        id: 10,
-        title: "Platform Navigation & Key Features Tour",
-        description: "Comprehensive tour of all major sections including Job Tracker, AI Tools, Resume Builder, and Analytics.",
-        readTime: "15 min read",
-        lastUpdated: "1 day ago",
-        isPublished: true
-      }
-    ]
-  },
-  {
-    id: "job-search",
-    name: "Job Search",
-    docs: [
-      {
-        id: 4,
-        title: "Using the Job Tracker",
-        description: "Maximize your job search efficiency with our advanced job tracking system.",
-        readTime: "10 min read",
-        lastUpdated: "5 days ago",
-        isPublished: true
-      },
-      {
-        id: 5,
-        title: "AI-Powered Job Matching",
-        description: "How our AI algorithms match you with the perfect job opportunities.",
-        readTime: "7 min read",
-        lastUpdated: "1 week ago",
-        isPublished: false
-      },
-      {
-        id: 6,
-        title: "Application Best Practices",
-        description: "Proven strategies for crafting successful job applications.",
-        readTime: "12 min read",
-        lastUpdated: "4 days ago",
-        isPublished: true
-      }
-    ]
-  },
-  {
-    id: "ai-tools",
-    name: "AI Tools",
-    docs: [
-      {
-        id: 7,
-        title: "AI Resume Builder Guide",
-        description: "Create professional resumes using our AI-powered resume builder.",
-        readTime: "15 min read",
-        lastUpdated: "2 days ago",
-        isPublished: true
-      },
-      {
-        id: 8,
-        title: "AI Career Assistant",
-        description: "Get personalized career advice from our AI-powered assistant.",
-        readTime: "9 min read",
-        lastUpdated: "6 days ago",
-        isPublished: true
-      }
-    ]
-  }
-];
 
 export default function KnowledgeBase() {
   const [activeVideoCategory, setActiveVideoCategory] = useState("career-development");
   const [activeDocCategory, setActiveDocCategory] = useState("getting-started");
-  const [videoData, setVideoData] = useState(videoCategories);
-  const [docData, setDocData] = useState(docCategories);
+  const { videoData, docData, toggleVideoPublishStatus, toggleDocPublishStatus } = useKnowledgeBase();
   const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
   const { isAdmin, role } = useRole();
   const navigate = useNavigate();
@@ -278,23 +53,7 @@ export default function KnowledgeBase() {
   };
 
   const handleToggleDocPublish = (docId: number, categoryId: string, currentStatus: boolean) => {
-    // Update the document's publish status
-    setDocData(prevData => {
-      const newData = prevData.map(category => 
-        category.id === categoryId 
-          ? {
-              ...category,
-              docs: category.docs.map(doc => 
-                doc.id === docId 
-                  ? { ...doc, isPublished: !currentStatus }
-                  : doc
-              )
-            }
-          : category
-      );
-      console.log('Updated doc data:', newData);
-      return newData;
-    });
+    toggleDocPublishStatus(docId, categoryId);
     toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
@@ -314,23 +73,7 @@ export default function KnowledgeBase() {
   };
 
   const handleToggleVideoPublish = (videoId: number, categoryId: string, currentStatus: boolean) => {
-    // Update the video's publish status
-    setVideoData(prevData => {
-      const newData = prevData.map(category => 
-        category.id === categoryId 
-          ? {
-              ...category,
-              videos: category.videos.map(video => 
-                video.id === videoId 
-                  ? { ...video, isPublished: !currentStatus }
-                  : video
-              )
-            }
-          : category
-      );
-      console.log('Updated video data:', newData);
-      return newData;
-    });
+    toggleVideoPublishStatus(videoId, categoryId);
     toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
