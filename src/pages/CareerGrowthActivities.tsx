@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
+import { useLinkedInGrowthPoints } from '@/hooks/useLinkedInGrowthPoints';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
@@ -148,7 +149,11 @@ const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
+  const [previousTodayMetrics, setPreviousTodayMetrics] = useState<ActivityMetrics>({});
 const [inputValues, setInputValues] = useState<InputValues>({});
+
+  // Initialize LinkedIn Growth Points hook
+  useLinkedInGrowthPoints(todayMetrics, previousTodayMetrics);
 
   // Job Applications - weekly tracker
   const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
@@ -173,6 +178,8 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
       
       console.log('Loaded metrics for', dateKey, ':', metrics);
       
+      // Store previous metrics before updating
+      setPreviousTodayMetrics(todayMetrics);
       setTodayMetrics(metrics);
       setWeeklyMetrics(currentWeekMetrics);
       setInputValues(metrics);
@@ -311,6 +318,9 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
     try {
       // Update the database
       await updateMetrics(activityId, value, dateKey);
+      
+      // Store previous metrics before updating for points comparison
+      setPreviousTodayMetrics(todayMetrics);
       
       // Update today's metrics immediately
       setTodayMetrics(prev => ({ ...prev, [activityId]: value }));
