@@ -154,6 +154,12 @@ export const useLeaderboard = () => {
         .select('user_id, full_name, username, profile_image_url')
         .in('user_id', topUserIds);
 
+      console.log(`Profile query for ${periodType}:`, {
+        topUserIds,
+        profileData,
+        profileError
+      });
+
       if (profileError) throw profileError;
 
       // Combine user data with points and rankings
