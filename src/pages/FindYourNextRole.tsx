@@ -1136,10 +1136,10 @@ const FindYourNextRole = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="Full-time">Full-time</SelectItem>
-                            <SelectItem value="Part-time">Part-time</SelectItem>
-                            <SelectItem value="Contract">Contract</SelectItem>
-                            <SelectItem value="Internship">Internship</SelectItem>
+                            <SelectItem value="full-time">Full-time</SelectItem>
+                            <SelectItem value="part-time">Part-time</SelectItem>
+                            <SelectItem value="contract">Contract</SelectItem>
+                            <SelectItem value="internship">Internship</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1155,10 +1155,10 @@ const FindYourNextRole = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Levels</SelectItem>
-                            <SelectItem value="Entry Level">Entry Level</SelectItem>
-                            <SelectItem value="Mid Level">Mid Level</SelectItem>
-                            <SelectItem value="Senior Level">Senior Level</SelectItem>
-                            <SelectItem value="Executive">Executive</SelectItem>
+                            <SelectItem value="entry">Entry Level</SelectItem>
+                            <SelectItem value="mid">Mid Level</SelectItem>
+                            <SelectItem value="senior">Senior Level</SelectItem>
+                            <SelectItem value="lead">Lead/Principal</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
