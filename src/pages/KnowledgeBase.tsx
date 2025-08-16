@@ -207,7 +207,7 @@ export default function KnowledgeBase() {
 
         <div className="space-y-8">
           {/* Reward Points Section */}
-          {(isAdmin || getSettingsByCategory('profile_building').length > 0 || getSettingsByCategory('linkedin_growth').length > 0) && (
+          {(isAdmin || getSettingsByCategory('completion_milestone').length > 0 || getSettingsByCategory('resource_save').length > 0 || getSettingsByCategory('linkedin_growth').length > 0) && (
             <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export default function KnowledgeBase() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {getSettingsByCategory('profile_building').map((activity) => (
+                        {[...getSettingsByCategory('completion_milestone'), ...getSettingsByCategory('resource_save')].map((activity) => (
                           <Card key={activity.id} className="border-l-4 border-l-blue-500/50">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
@@ -267,7 +267,7 @@ export default function KnowledgeBase() {
                             </CardContent>
                           </Card>
                         ))}
-                        {getSettingsByCategory('profile_building').length === 0 && (
+                        {(getSettingsByCategory('completion_milestone').length === 0 && getSettingsByCategory('resource_save').length === 0) && (
                           <div className="text-center py-8 text-muted-foreground">
                             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p>No profile building activities configured yet.</p>
