@@ -156,15 +156,16 @@ export const useBatchLeaderboards = () => {
       }
 
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, username, profile_image_url')
-        .in('user_id', topUserIds);
+        .rpc('get_safe_leaderboard_profiles');
 
       if (profileError) throw profileError;
 
+      // Filter profiles to only include users in our leaderboard
+      const filteredProfiles = profileData?.filter(p => topUserIds.includes(p.user_id)) || [];
+
       // Combine user data with points and rankings
       const leaderboardEntries: LeaderboardEntry[] = topUserIds.map((userId, index) => {
-        const profile = profileData?.find(p => p.user_id === userId);
+        const profile = filteredProfiles?.find(p => p.user_id === userId);
         return {
           user_id: userId,
           full_name: profile?.full_name || 'Unknown User',
