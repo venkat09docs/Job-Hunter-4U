@@ -11,8 +11,7 @@ export type JobApplicationTaskId =
   | "apply_quality_jobs"
   | "verify_application_completeness"
   | "log_applications_in_tracker"
-  | "send_follow_up_message"
-  | "research_target_company";
+  | "send_follow_up_message";
 
 export interface JobApplicationActivityRecord {
   id?: string;

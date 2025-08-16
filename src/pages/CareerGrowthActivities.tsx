@@ -115,15 +115,14 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
 ];
 
 const JOB_APP_TASKS: { id: JobApplicationTaskId; title: string; description: string }[] = [
-  { id: 'review_new_postings', title: 'Review New Job Postings', description: 'Check 5–10 fresh job listings filtered by keywords, skills, location, and salary.' },
-  { id: 'save_potential_opportunities', title: 'Save Potential Opportunities', description: 'Mark jobs for Immediate Apply or Follow-Up Later for easy tracking.' },
+  { id: 'review_new_postings', title: 'Search New Job Postings', description: 'Check 5–10 fresh job listings filtered by keywords, skills, location, and salary.' },
+  { id: 'save_potential_opportunities', title: 'Add Jobs to the Wishlist', description: 'Mark jobs for Immediate Apply or Follow-Up Later for easy tracking.' },
   { id: 'ats_resume_optimization', title: 'ATS Resume Optimization', description: 'Tailor resume for each job using suggestions to pass ATS filters.' },
   { id: 'ai_generated_cover_letter', title: 'AI-Generated Cover Letter', description: 'Create a personalized cover letter for each application from templates.' },
-  { id: 'apply_quality_jobs', title: 'Apply to Quality Jobs', description: 'Submit 2–3 high-match applications daily for better success rates.' },
+  { id: 'apply_quality_jobs', title: 'Apply to matched Jobs', description: 'Submit 2–3 high-match applications daily for better success rates.' },
   { id: 'verify_application_completeness', title: 'Verify Application Completeness', description: 'Ensure resume, cover letter, portfolio links, and references are included before sending.' },
-  { id: 'log_applications_in_tracker', title: 'Log Applications in Tracker', description: 'Record each application’s status (Applied, Interview, Rejected, Offer).' },
+  { id: 'log_applications_in_tracker', title: 'Update status of Application in Tracker', description: 'Record each application’s status (Applied, Interview, Rejected, Offer).' },
   { id: 'send_follow_up_message', title: 'Send Follow-Up Message', description: 'Reach out to recruiters 3–5 days after applying.' },
-  { id: 'research_target_company', title: 'Research Target Company', description: 'Review company culture, news, and hiring patterns before applying.' },
 ];
 
 export default function CareerGrowthActivities() {
