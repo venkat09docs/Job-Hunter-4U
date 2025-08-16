@@ -41,6 +41,8 @@ const statusOptions = [
 ];
 
 export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFormProps) => {
+  const isEditing = !!initialData; // Check if we're in edit mode
+  
   const [formData, setFormData] = useState({
     company_name: initialData?.company_name || '',
     job_title: initialData?.job_title || '',
@@ -88,8 +90,9 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.company_name}
             onChange={(e) => updateFormData('company_name', e.target.value)}
             required
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
 
@@ -100,15 +103,20 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.job_title}
             onChange={(e) => updateFormData('job_title', e.target.value)}
             required
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
-          <Select value={formData.status} onValueChange={(value) => updateFormData('status', value)}>
-            <SelectTrigger className="bg-background">
+          <Select 
+            value={formData.status} 
+            onValueChange={(value) => updateFormData('status', value)}
+            disabled={isEditing}
+          >
+            <SelectTrigger className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border border-border">
@@ -127,21 +135,24 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal bg-background"
+                disabled={isEditing}
+                className={`w-full justify-start text-left font-normal ${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {applicationDate ? format(applicationDate, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-background border border-border">
-              <Calendar
-                mode="single"
-                selected={applicationDate}
-                onSelect={setApplicationDate}
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
+            {!isEditing && (
+              <PopoverContent className="w-auto p-0 bg-background border border-border">
+                <Calendar
+                  mode="single"
+                  selected={applicationDate}
+                  onSelect={setApplicationDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            )}
           </Popover>
         </div>
 
@@ -151,8 +162,9 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             id="location"
             value={formData.location}
             onChange={(e) => updateFormData('location', e.target.value)}
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
 
@@ -163,8 +175,9 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.salary_range}
             onChange={(e) => updateFormData('salary_range', e.target.value)}
             placeholder="e.g., $80k - $120k"
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
 
@@ -174,8 +187,9 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             id="contact_person"
             value={formData.contact_person}
             onChange={(e) => updateFormData('contact_person', e.target.value)}
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
 
@@ -186,8 +200,9 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             type="email"
             value={formData.contact_email}
             onChange={(e) => updateFormData('contact_email', e.target.value)}
+            readOnly={isEditing}
             autoComplete="off"
-            className="bg-background"
+            className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
           />
         </div>
       </div>
@@ -200,13 +215,14 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
           value={formData.job_url}
           onChange={(e) => updateFormData('job_url', e.target.value)}
           placeholder="https://..."
+          readOnly={isEditing}
           autoComplete="off"
-          className="bg-background"
+          className={`${isEditing ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-background'}`}
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Next Follow-up Date</Label>
+        <Label>Next Follow-up Date {isEditing && <span className="text-green-600">(Editable)</span>}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -230,7 +246,7 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="notes">Notes {isEditing && <span className="text-green-600">(Editable)</span>}</Label>
         <Textarea
           id="notes"
           value={formData.notes}
