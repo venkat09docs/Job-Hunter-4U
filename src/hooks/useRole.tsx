@@ -21,6 +21,7 @@ export const useRole = () => {
   }, [user]);
 
   const fetchUserRole = async () => {
+    console.log('📡 Fetching user role for user ID:', user?.id);
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -28,18 +29,22 @@ export const useRole = () => {
         .eq('user_id', user?.id)
         .single();
 
+      console.log('🔍 Role query result:', { data, error });
+
       if (error) {
         if (error.code === 'PGRST116') {
           // No role found - default to user role
-          console.log('No role found for user, defaulting to user role');
+          console.log('❌ No role found for user, defaulting to user role');
           setRole('user');
           return;
         }
         throw error;
       }
-      setRole(data?.role || 'user');
+      const detectedRole = data?.role || 'user';
+      console.log('✅ Role detected:', detectedRole);
+      setRole(detectedRole);
     } catch (error: any) {
-      console.error('Error fetching user role:', error);
+      console.error('❌ Error fetching user role:', error);
       // Only show toast for unexpected errors, not for missing roles
       if (error.code !== 'PGRST116') {
         toast({
@@ -48,6 +53,7 @@ export const useRole = () => {
           variant: 'destructive'
         });
       }
+      console.log('⚠️ Defaulting to user role due to error');
       setRole('user'); // Default to user role
     } finally {
       setLoading(false);
@@ -57,6 +63,9 @@ export const useRole = () => {
   const isAdmin = role === 'admin';
   const isUser = role === 'user';
   const isInstituteAdmin = role === 'institute_admin';
+
+  // Debug logging for role state
+  console.log('🎭 Role Hook State:', { role, isAdmin, isUser, isInstituteAdmin, loading });
 
   return {
     role,

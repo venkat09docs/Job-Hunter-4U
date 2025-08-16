@@ -248,10 +248,16 @@ export default function KnowledgeBase() {
   const { isAdmin, role } = useRole();
   const navigate = useNavigate();
 
+  // 🧪 TEMPORARY: Force test as regular user (REMOVE IN PRODUCTION)
+  const [forceRegularUser, setForceRegularUser] = useState(false);
+  const effectiveIsAdmin = forceRegularUser ? false : isAdmin;
+  const effectiveRole = forceRegularUser ? 'user' : role;
+
   // Debug role and filtering
   console.log('🔍 KnowledgeBase Debug Info:');
-  console.log('User role:', role);
-  console.log('Is admin:', isAdmin);
+  console.log('Actual role:', role, 'isAdmin:', isAdmin);
+  console.log('Effective role:', effectiveRole, 'effectiveIsAdmin:', effectiveIsAdmin);
+  console.log('Force regular user mode:', forceRegularUser);
   console.log('Video data sample:', videoData[0]?.videos.map(v => ({ id: v.id, title: v.title, isPublished: v.isPublished })));
   console.log('Doc data sample:', docData[0]?.docs.map(d => ({ id: d.id, title: d.title, isPublished: d.isPublished })));
 
@@ -331,9 +337,9 @@ export default function KnowledgeBase() {
   // Filter content based on user role and publish status
   const getFilteredDocs = (docs: any[]) => {
     console.log('🔍 getFilteredDocs called with:', docs.length, 'docs');
-    console.log('🔍 User role check - isAdmin:', isAdmin, 'role:', role);
+    console.log('🔍 Role check - effectiveIsAdmin:', effectiveIsAdmin, 'effectiveRole:', effectiveRole);
     
-    if (isAdmin) {
+    if (effectiveIsAdmin) {
       console.log('✅ Admin user: showing all', docs.length, 'docs');
       return docs; // Admin sees all
     }
@@ -351,9 +357,9 @@ export default function KnowledgeBase() {
 
   const getFilteredVideos = (videos: any[]) => {
     console.log('🔍 getFilteredVideos called with:', videos.length, 'videos');
-    console.log('🔍 User role check - isAdmin:', isAdmin, 'role:', role);
+    console.log('🔍 Role check - effectiveIsAdmin:', effectiveIsAdmin, 'effectiveRole:', effectiveRole);
     
-    if (isAdmin) {
+    if (effectiveIsAdmin) {
       console.log('✅ Admin user: showing all', videos.length, 'videos');
       return videos; // Admin sees all
     }
@@ -371,7 +377,7 @@ export default function KnowledgeBase() {
 
   // Check if category has any published content
   const hasPublishedContent = (category: any, type: 'docs' | 'videos') => {
-    if (isAdmin) return true; // Admin always sees sections
+    if (effectiveIsAdmin) return true; // Admin always sees sections
     const content = type === 'docs' ? category.docs : category.videos;
     return content.some((item: any) => item.isPublished);
   };
@@ -483,7 +489,7 @@ export default function KnowledgeBase() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Videos Section */}
-            {(isAdmin || videoData.some(cat => hasPublishedContent(cat, 'videos'))) && (
+            {(effectiveIsAdmin || videoData.some(cat => hasPublishedContent(cat, 'videos'))) && (
               <Card className="h-fit">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -496,7 +502,7 @@ export default function KnowledgeBase() {
                         Watch expert-led tutorials and career development videos
                       </CardDescription>
                     </div>
-                    {isAdmin && (
+                    {effectiveIsAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -533,7 +539,7 @@ export default function KnowledgeBase() {
                           <div className="space-y-4">
                              {filteredVideos.map((video) => {
                                // Double-check filtering for non-admin users
-                               if (!isAdmin && !video.isPublished) {
+                               if (!effectiveIsAdmin && !video.isPublished) {
                                  console.log(`Skipping unpublished video ${video.id} for non-admin user`);
                                  return null;
                                }
@@ -549,7 +555,7 @@ export default function KnowledgeBase() {
                                        <div className="flex-1 min-w-0">
                                          <div className="flex items-center gap-2 mb-1">
                                            <h3 className="font-semibold text-sm truncate">{video.title}</h3>
-                                           {isAdmin && (
+                                              {effectiveIsAdmin && (
                                              <Badge variant={video.isPublished ? "default" : "secondary"} className="text-xs">
                                                {video.isPublished ? "Published" : "Draft"}
                                              </Badge>
@@ -571,7 +577,7 @@ export default function KnowledgeBase() {
                                        </div>
                                      </div>
                                    </CardContent>
-                                   {isAdmin && (
+                                   {effectiveIsAdmin && (
                                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                        <Button
                                          variant="ghost"
@@ -656,7 +662,7 @@ export default function KnowledgeBase() {
             )}
 
             {/* Step by Step Docs Section */}
-            {(isAdmin || docData.some(cat => hasPublishedContent(cat, 'docs'))) && (
+            {(effectiveIsAdmin || docData.some(cat => hasPublishedContent(cat, 'docs'))) && (
               <Card className="h-fit">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -669,7 +675,7 @@ export default function KnowledgeBase() {
                         Follow detailed guides and documentation for all features
                       </CardDescription>
                     </div>
-                    {isAdmin && (
+                    {effectiveIsAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -706,7 +712,7 @@ export default function KnowledgeBase() {
                             <div className="space-y-4">
                               {filteredDocs.map((doc) => {
                                 // Double-check filtering for non-admin users
-                                if (!isAdmin && !doc.isPublished) {
+                                if (!effectiveIsAdmin && !doc.isPublished) {
                                   console.log(`Skipping unpublished doc ${doc.id} for non-admin user`);
                                   return null;
                                 }
@@ -723,7 +729,7 @@ export default function KnowledgeBase() {
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
                                               <h3 className="font-semibold text-sm">{doc.title}</h3>
-                                              {isAdmin && (
+                                            {effectiveIsAdmin && (
                                                 <Badge variant={doc.isPublished ? "default" : "secondary"} className="text-xs">
                                                   {doc.isPublished ? "Published" : "Draft"}
                                                 </Badge>
@@ -744,7 +750,7 @@ export default function KnowledgeBase() {
                                         </div>
                                       </CardContent>
                                     </Link>
-                                    {isAdmin && (
+                                    {effectiveIsAdmin && (
                                       <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                           variant="ghost"
