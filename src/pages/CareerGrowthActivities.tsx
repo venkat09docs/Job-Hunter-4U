@@ -152,8 +152,9 @@ const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   const [previousTodayMetrics, setPreviousTodayMetrics] = useState<ActivityMetrics>({});
 const [inputValues, setInputValues] = useState<InputValues>({});
 
-  // Initialize LinkedIn Growth Points hook
-  useLinkedInGrowthPoints(todayMetrics, previousTodayMetrics);
+  // Initialize LinkedIn Growth Points hook - now tracking weekly progress
+  const [previousWeeklyMetrics, setPreviousWeeklyMetrics] = useState<ActivityMetrics>({});
+  useLinkedInGrowthPoints(weeklyMetrics, previousWeeklyMetrics);
 
   // Job Applications - weekly tracker
   const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
@@ -329,6 +330,9 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
       const [updatedWeeklyMetrics] = await Promise.all([
         getWeeklyMetrics()
       ]);
+      
+      // Store previous weekly metrics before updating for points comparison
+      setPreviousWeeklyMetrics(weeklyMetrics);
       setWeeklyMetrics(updatedWeeklyMetrics);
       
       console.log('Successfully updated metrics and refreshed weekly data');

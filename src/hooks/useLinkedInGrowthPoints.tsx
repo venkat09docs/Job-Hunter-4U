@@ -10,39 +10,29 @@ interface ActivityStatus {
 }
 
 export const useLinkedInGrowthPoints = (
-  todayMetrics: ActivityMetrics, 
-  previousMetrics: ActivityMetrics = {}
+  currentWeeklyMetrics: ActivityMetrics, 
+  previousWeeklyMetrics: ActivityMetrics = {}
 ) => {
   const { awardPoints } = useProfileBuildingPoints();
   const processingRef = useRef(false);
-  const [previousStatus, setPreviousStatus] = useState<ActivityStatus>({});
+  const [previousWeeklyValues, setPreviousWeeklyValues] = useState<ActivityMetrics>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Define daily activities and their targets
-  const DAILY_ACTIVITIES = {
-    'comments': { dailyTarget: 2, points: 10 },
-    'post_likes': { dailyTarget: 3, points: 10 },
-    'content': { dailyTarget: 2, points: 15 },
-    'connection_requests': { dailyTarget: 2, points: 15 },
-    'follow_up': { dailyTarget: 1, points: 20 },
-    'industry_research': { dailyTarget: 1, points: 15 },
-    'create_post': { dailyTarget: 1, points: 25 },
-    'profile_optimization': { dailyTarget: 1, points: 30 },
-    'profile_views': { dailyTarget: 5, points: 10 },
-    'connections_accepted': { dailyTarget: 1, points: 10 },
+  // Define activities and their points (from Leader Board Points Management -> LinkedIn Growth)
+  const LINKEDIN_ACTIVITIES = {
+    'comments': { points: 10 },
+    'post_likes': { points: 10 },
+    'content': { points: 15 },
+    'connection_requests': { points: 15 },
+    'follow_up': { points: 20 },
+    'industry_research': { points: 15 },
+    'create_post': { points: 25 },
+    'profile_optimization': { points: 30 },
+    'profile_views': { points: 10 },
+    'connections_accepted': { points: 10 },
   };
 
-  // Calculate activity status based on daily count vs target
-  const getActivityStatus = (activityId: string, dailyCount: number) => {
-    const activity = DAILY_ACTIVITIES[activityId];
-    if (!activity) return 'neutral';
-    
-    if (dailyCount >= activity.dailyTarget) return 'success';
-    if (dailyCount >= activity.dailyTarget * 0.7) return 'warning';
-    return 'danger';
-  };
-
-  // Award or deduct points when status changes
+  // Award or deduct points based on weekly progress changes
   const checkAndAwardPoints = useCallback(async () => {
     // Prevent concurrent execution
     if (processingRef.current) {
@@ -52,14 +42,8 @@ export const useLinkedInGrowthPoints = (
     
     // Don't process points on initial load - only after we have established a baseline
     if (!isInitialized) {
-      console.log('Initializing baseline status, not processing points');
-      const newStatus: ActivityStatus = {};
-      for (const [activityId, value] of Object.entries(todayMetrics)) {
-        if (DAILY_ACTIVITIES[activityId]) {
-          newStatus[activityId] = getActivityStatus(activityId, value);
-        }
-      }
-      setPreviousStatus(newStatus);
+      console.log('Initializing baseline weekly values, not processing points');
+      setPreviousWeeklyValues(currentWeeklyMetrics);
       setIsInitialized(true);
       return;
     }
@@ -67,30 +51,32 @@ export const useLinkedInGrowthPoints = (
     processingRef.current = true;
 
     try {
-      // Check each activity for status changes
-      for (const [activityId, currentValue] of Object.entries(todayMetrics)) {
-        if (!DAILY_ACTIVITIES[activityId]) continue;
+      // Check each activity for weekly progress changes
+      for (const [activityId, currentWeeklyValue] of Object.entries(currentWeeklyMetrics)) {
+        if (!LINKEDIN_ACTIVITIES[activityId]) continue;
 
-        const currentStatus = getActivityStatus(activityId, currentValue);
-        const lastStatus = previousStatus[activityId] || 'neutral';
+        const previousWeeklyValue = previousWeeklyValues[activityId] || 0;
+        const progressDifference = currentWeeklyValue - previousWeeklyValue;
         
-        // Only process if status actually changed and we have a valid previous status
-        if (currentStatus !== lastStatus && lastStatus !== 'neutral') {
-          console.log(`Status changed for ${activityId}: ${lastStatus} -> ${currentStatus}`);
+        // Only process if there's a meaningful change
+        if (progressDifference !== 0) {
+          console.log(`Weekly progress changed for ${activityId}: ${previousWeeklyValue} -> ${currentWeeklyValue} (difference: ${progressDifference})`);
           
           try {
-            if (currentStatus === 'success' && lastStatus !== 'success') {
-              // Award points when moving to "On Track"
+            const activity = LINKEDIN_ACTIVITIES[activityId];
+            const pointsToAward = Math.abs(progressDifference) * activity.points;
+            
+            if (progressDifference > 0) {
+              // Award points when weekly progress increases
               const success = await awardPoints(activityId, 'linkedin_growth');
               if (success) {
-                console.log(`Successfully awarded points for ${activityId} (${lastStatus} -> ${currentStatus})`);
+                console.log(`Successfully awarded ${pointsToAward} points for ${activityId} (increase by ${progressDifference})`);
               }
-            } else if (lastStatus === 'success' && currentStatus !== 'success') {
-              // Deduct points when moving away from "On Track"
-              // Use the same activity ID but with negative points
+            } else if (progressDifference < 0) {
+              // Deduct points when weekly progress decreases
               const success = await awardPoints(activityId, 'linkedin_growth', true); // Pass true for deduction
               if (success) {
-                console.log(`Successfully deducted points for ${activityId} (${lastStatus} -> ${currentStatus})`);
+                console.log(`Successfully deducted ${pointsToAward} points for ${activityId} (decrease by ${Math.abs(progressDifference)})`);
               }
             }
           } catch (error) {
@@ -99,22 +85,16 @@ export const useLinkedInGrowthPoints = (
         }
       }
       
-      // Update previous status for next check
-      const newStatus: ActivityStatus = {};
-      for (const [activityId, value] of Object.entries(todayMetrics)) {
-        if (DAILY_ACTIVITIES[activityId]) {
-          newStatus[activityId] = getActivityStatus(activityId, value);
-        }
-      }
-      setPreviousStatus(newStatus);
+      // Update previous weekly values for next check
+      setPreviousWeeklyValues(currentWeeklyMetrics);
     } finally {
       processingRef.current = false;
     }
-  }, [todayMetrics, previousStatus, awardPoints, isInitialized]);
+  }, [currentWeeklyMetrics, previousWeeklyValues, awardPoints, isInitialized]);
 
-  // Run point check whenever metrics change, but with debouncing
+  // Run point check whenever weekly metrics change, but with debouncing
   useEffect(() => {
-    if (Object.keys(todayMetrics).length > 0) {
+    if (Object.keys(currentWeeklyMetrics).length > 0) {
       // Add a small delay to prevent rapid successive calls
       const timeoutId = setTimeout(() => {
         checkAndAwardPoints();
