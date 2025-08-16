@@ -154,18 +154,12 @@ export const useLeaderboard = () => {
         .select('user_id, full_name, username, profile_image_url')
         .in('user_id', topUserIds);
 
-      console.log(`Profile query for ${periodType}:`, {
-        topUserIds,
-        profileData,
-        profileError
-      });
-
       if (profileError) throw profileError;
 
       // Combine user data with points and rankings
       const leaderboardEntries: LeaderboardEntry[] = topUserIds.map((userId, index) => {
         const profile = profileData?.find(p => p.user_id === userId);
-        const entry = {
+        return {
           user_id: userId,
           full_name: profile?.full_name || 'Unknown User',
           username: profile?.username || 'unknown',
@@ -173,8 +167,6 @@ export const useLeaderboard = () => {
           total_points: userPoints.get(userId) || 0,
           rank_position: index + 1
         };
-        console.log(`Leaderboard entry for ${periodType}:`, entry);
-        return entry;
       });
 
       return leaderboardEntries;
