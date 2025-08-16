@@ -1117,6 +1117,42 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_audit_log: {
+        Row: {
+          action: string
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          payment_id: string
+          performed_by_role: string
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          payment_id: string
+          performed_by_role: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          payment_id?: string
+          performed_by_role?: string
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -1963,6 +1999,15 @@ export type Database = {
           institute_code: string
           institute_id: string
           institute_name: string
+        }[]
+      }
+      get_user_payment_summary: {
+        Args: { target_user_id?: string }
+        Returns: {
+          active_subscriptions: number
+          last_payment_date: string
+          payment_count: number
+          total_amount_spent: number
         }[]
       }
       has_full_institute_access: {
