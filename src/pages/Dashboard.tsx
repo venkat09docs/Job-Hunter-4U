@@ -490,7 +490,7 @@ const Dashboard = () => {
                       <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         {/* Profile Status */}
                         <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-gradient-primary hover:bg-primary/90 cursor-pointer transition-colors text-white"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-900 dark:hover:to-blue-800 cursor-pointer transition-all duration-300"
                           onClick={() => navigate('/dashboard/build-my-profile')}
                         >
                           <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
@@ -515,55 +515,55 @@ const Dashboard = () => {
                               />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-xs sm:text-sm font-bold text-white">{getOverallCareerScore()}%</span>
+                              <span className="text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300">{getOverallCareerScore()}%</span>
                             </div>
                           </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-white">Profile Status</h4>
-                          <p className="text-xs text-white/80 text-center hidden sm:block">Overall percentage</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm text-blue-700 dark:text-blue-300">Profile Status</h4>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 text-center hidden sm:block">Overall percentage</p>
                         </div>
 
                         {/* Job Application Status */}
                         <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-[hsl(var(--chart-applied))] hover:bg-[hsl(var(--chart-applied))]/90 cursor-pointer transition-colors text-white"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-900 dark:hover:to-orange-800 cursor-pointer transition-all duration-300"
                           onClick={() => navigate('/dashboard/job-tracker')}
                         >
                           <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 flex items-center justify-center">
-                                <span className="text-base sm:text-lg font-bold text-white">
+                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-orange-200/50 dark:bg-orange-800/50 flex items-center justify-center">
+                                <span className="text-base sm:text-lg font-bold text-orange-700 dark:text-orange-300">
                                   {totalJobApplications}
                                 </span>
                              </div>
                           </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-white">Job Applications</h4>
-                          <p className="text-xs text-white/80 text-center hidden sm:block">In pipeline</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm text-orange-700 dark:text-orange-300">Job Applications</h4>
+                          <p className="text-xs text-orange-600 dark:text-orange-400 text-center hidden sm:block">In pipeline</p>
                         </div>
 
                         {/* Network Growth */}
                         <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-success hover:bg-success/90 cursor-pointer transition-colors text-white"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 hover:from-green-100 hover:to-green-200 dark:hover:from-green-900 dark:hover:to-green-800 cursor-pointer transition-all duration-300"
                           onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
                         >
                           <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 flex items-center justify-center">
-                               <span className="text-base sm:text-lg font-bold text-white">{networkMetrics.weeklyProgress || 0}</span>
+                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-200/50 dark:bg-green-800/50 flex items-center justify-center">
+                               <span className="text-base sm:text-lg font-bold text-green-700 dark:text-green-300">{networkMetrics.weeklyProgress || 0}</span>
                              </div>
                           </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-white">Network Growth</h4>
-                          <p className="text-xs text-white/80 text-center hidden sm:block">This week activities</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm text-green-700 dark:text-green-300">Network Growth</h4>
+                          <p className="text-xs text-green-600 dark:text-green-400 text-center hidden sm:block">This week activities</p>
                         </div>
 
                         {/* GitHub Activities */}
                         <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg border bg-[hsl(var(--chart-interviewing))] hover:bg-[hsl(var(--chart-interviewing))]/90 cursor-pointer transition-colors text-white"
+                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-900 dark:hover:to-purple-800 cursor-pointer transition-all duration-300"
                           onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
                         >
                           <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/20 flex items-center justify-center">
-                               <span className="text-base sm:text-lg font-bold text-white">{repoPercent}%</span>
+                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-200/50 dark:bg-purple-800/50 flex items-center justify-center">
+                               <span className="text-base sm:text-lg font-bold text-purple-700 dark:text-purple-300">{repoPercent}%</span>
                              </div>
                           </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-white">GitHub Status</h4>
-                          <p className="text-xs text-white/80 text-center hidden sm:block">Repository tasks</p>
+                          <h4 className="font-medium text-center text-xs sm:text-sm text-purple-700 dark:text-purple-300">GitHub Status</h4>
+                          <p className="text-xs text-purple-600 dark:text-purple-400 text-center hidden sm:block">Repository tasks</p>
                         </div>
                       </div>
                     </div>
