@@ -22,6 +22,7 @@ import ActivityChart from '@/components/ActivityChart';
 import LeaderBoard from '@/components/LeaderBoard';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
+import BadgeProgressionMap from '@/components/BadgeProgressionMap';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -448,6 +449,20 @@ const Dashboard = () => {
             {/* Activity Verification (Admin Only) */}
             <div className="mb-8">
               <VerifyActivitiesButton />
+            </div>
+
+            {/* Badge Progression Map */}
+            <div className="mb-8">
+              <BadgeProgressionMap 
+                resumeProgress={resumeProgress}
+                linkedinProgress={linkedinProgress}
+                githubProgress={githubProgress}
+                jobApplicationsCount={totalJobApplications}
+                networkConnections={networkMetrics?.totalConnections || 0}
+                profileViews={0} // Profile views not available in current metrics
+                githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
+                githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
+              />
             </div>
 
             {/* Leader Board */}
