@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { useInternalJobs, type InternalJob } from "@/hooks/useInternalJobs";
 
 interface JobResult {
   job_id: string;
@@ -59,6 +60,7 @@ interface LinkedInJobSearchForm {
 const FindYourNextRole = () => {
   const { user } = useAuth();
   const { incrementAnalytics } = useProfile();
+  const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
     num_pages: "1",
@@ -507,9 +509,10 @@ const FindYourNextRole = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="regular-search">Find Your Next Role</TabsTrigger>
               <TabsTrigger value="linkedin-jobs">LinkedIn - 24 Hrs Jobs</TabsTrigger>
+              <TabsTrigger value="internal-jobs">Internal Jobs</TabsTrigger>
             </TabsList>
             
             <TabsContent value="regular-search" className="space-y-6">
@@ -1061,6 +1064,214 @@ const FindYourNextRole = () => {
                   </div>
                 </div>
               ) : !loading && activeTab === "linkedin-jobs" && (
+                <Card>
+                  <CardContent className="p-6">
+                    {renderNoResultsMessage()}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="internal-jobs" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Internal Job Opportunities</CardTitle>
+                  <CardDescription>
+                    Browse job opportunities posted within our platform
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="search">Search Jobs</Label>
+                      <Input
+                        id="search"
+                        value={internalFilters.search}
+                        onChange={(e) => updateFilter('search', e.target.value)}
+                        placeholder="Search by title, company, or description"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="location">Location</Label>
+                      <Input
+                        id="location"
+                        value={internalFilters.location}
+                        onChange={(e) => updateFilter('location', e.target.value)}
+                        placeholder="Enter location"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="job_type">Job Type</Label>
+                      <Select value={internalFilters.job_type} onValueChange={(value) => updateFilter('job_type', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select job type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Types</SelectItem>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Contract">Contract</SelectItem>
+                          <SelectItem value="Internship">Internship</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="experience_level">Experience Level</Label>
+                      <Select value={internalFilters.experience_level} onValueChange={(value) => updateFilter('experience_level', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select experience level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Levels</SelectItem>
+                          <SelectItem value="Entry Level">Entry Level</SelectItem>
+                          <SelectItem value="Mid Level">Mid Level</SelectItem>
+                          <SelectItem value="Senior Level">Senior Level</SelectItem>
+                          <SelectItem value="Executive">Executive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="salary_min">Min Salary</Label>
+                      <Input
+                        id="salary_min"
+                        type="number"
+                        value={internalFilters.salary_min}
+                        onChange={(e) => updateFilter('salary_min', e.target.value)}
+                        placeholder="Minimum salary"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="salary_max">Max Salary</Label>
+                      <Input
+                        id="salary_max"
+                        type="number"
+                        value={internalFilters.salary_max}
+                        onChange={(e) => updateFilter('salary_max', e.target.value)}
+                        placeholder="Maximum salary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button variant="outline" onClick={clearFilters}>
+                      Clear Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Internal Job Results */}
+              {internalJobsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <span className="ml-2">Loading internal jobs...</span>
+                </div>
+              ) : internalJobs.length > 0 ? (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-4">
+                    Internal Job Opportunities ({internalJobs.length} found)
+                  </h2>
+                  <div className="space-y-4">
+                    {internalJobs.map((job) => (
+                      <Card key={job.id} className="hover:shadow-lg transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-xl font-semibold text-foreground mb-2">
+                                {job.title}
+                              </h3>
+                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                <div className="flex items-center gap-1">
+                                  <Building className="h-4 w-4" />
+                                  {job.company}
+                                </div>
+                                {job.location && (
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    {job.location}
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {new Date(job.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {job.job_type && (
+                              <span className="inline-block bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
+                                {job.job_type}
+                              </span>
+                            )}
+                            {job.experience_level && (
+                              <span className="inline-block bg-secondary/50 text-secondary-foreground px-2 py-1 rounded-full text-xs font-medium">
+                                {job.experience_level}
+                              </span>
+                            )}
+                            {job.application_deadline && (
+                              <span className="inline-block bg-destructive/10 text-destructive px-2 py-1 rounded-full text-xs font-medium">
+                                Deadline: {new Date(job.application_deadline).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {(job.salary_min || job.salary_max) && (
+                            <div className="mb-3">
+                              <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                {job.salary_min && job.salary_max 
+                                  ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
+                                  : job.salary_min 
+                                  ? `$${job.salary_min.toLocaleString()}+`
+                                  : `Up to $${job.salary_max?.toLocaleString()}`
+                                }
+                              </span>
+                            </div>
+                          )}
+                          
+                          <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
+                            {job.description}
+                          </p>
+
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm"
+                              onClick={() => handleAddToWishlist({
+                                job_id: job.id,
+                                job_title: job.title,
+                                employer_name: job.company,
+                                job_location: job.location || '',
+                                job_posted_at: new Date(job.created_at).toISOString(),
+                                job_apply_link: '',
+                                job_description: job.description,
+                                job_min_salary: job.salary_min,
+                                job_max_salary: job.salary_max,
+                                job_salary_period: 'year'
+                              })}
+                              disabled={addingToWishlist === job.id || wishlistedJobs.has(job.id)}
+                            >
+                              {addingToWishlist === job.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : wishlistedJobs.has(job.id) ? (
+                                <Heart className="h-4 w-4 mr-2 fill-current" />
+                              ) : (
+                                <Heart className="h-4 w-4 mr-2" />
+                              )}
+                              {wishlistedJobs.has(job.id) ? 'In Wishlist' : 'Add to Wishlist'}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ) : (
                 <Card>
                   <CardContent className="p-6">
                     {renderNoResultsMessage()}
