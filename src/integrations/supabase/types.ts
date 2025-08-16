@@ -698,6 +698,63 @@ export type Database = {
         }
         Relationships: []
       }
+      jobs: {
+        Row: {
+          application_deadline: string | null
+          benefits: string | null
+          company: string
+          created_at: string
+          description: string
+          experience_level: string | null
+          id: string
+          is_active: boolean
+          job_type: string | null
+          location: string | null
+          posted_by: string
+          requirements: string
+          salary_max: number | null
+          salary_min: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          application_deadline?: string | null
+          benefits?: string | null
+          company: string
+          created_at?: string
+          description: string
+          experience_level?: string | null
+          id?: string
+          is_active?: boolean
+          job_type?: string | null
+          location?: string | null
+          posted_by: string
+          requirements: string
+          salary_max?: number | null
+          salary_min?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          application_deadline?: string | null
+          benefits?: string | null
+          company?: string
+          created_at?: string
+          description?: string
+          experience_level?: string | null
+          id?: string
+          is_active?: boolean
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string
+          requirements?: string
+          salary_max?: number | null
+          salary_min?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       knowledge_base_categories: {
         Row: {
           category_type: string
@@ -1017,6 +1074,39 @@ export type Database = {
           id?: string
           task_id?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_id?: string | null
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
