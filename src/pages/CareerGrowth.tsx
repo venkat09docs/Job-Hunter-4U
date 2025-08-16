@@ -58,14 +58,12 @@ export default function CareerGrowth() {
   const { getTodayMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
-  const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, fetchDailyActivities } = useDailyNetworkActivities();
+  const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, refreshActivities } = useDailyNetworkActivities();
   const dailyChartData = dailyNetworkActivities.map((a) => ({ date: a.date, total: a.total_activities }));
   
   // Network activities state
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
   const [networkWeeklyMetrics, setNetworkWeeklyMetrics] = useState<{[key: string]: number}>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
   const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
   const [networkWeekOffset, setNetworkWeekOffset] = useState(0);
 
@@ -584,8 +582,8 @@ export default function CareerGrowth() {
                   <CardHeader>
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <CardTitle>Daily Network Activities Report</CardTitle>
-                        <CardDescription>View your daily LinkedIn networking activities with latest records at top</CardDescription>
+                        <CardTitle>Current Week's Network Activities</CardTitle>
+                        <CardDescription>View your daily LinkedIn networking activities for this week (Monday to Sunday)</CardDescription>
                       </div>
                       <Button
                         variant="outline"
@@ -681,68 +679,43 @@ export default function CareerGrowth() {
                             ) : (
                                <TableRow>
                                  <TableCell colSpan={DAILY_ACTIVITIES.length + 3} className="text-center text-muted-foreground py-8">
-                                   No network activities recorded yet
+                                   No network activities recorded for this week
                                  </TableCell>
                                </TableRow>
                             )}
-                          </TableBody>
-                        </Table>
+                           </TableBody>
+                         </Table>
 
-                        <div className="mt-6">
-                          <div className="text-sm font-medium mb-2">Date-wise Total Activities</div>
-                          <div style={{ width: '100%', height: 300 }}>
-                            <ResponsiveContainer width="100%" height={300}>
-                              <BarChart data={dailyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                                <YAxis stroke="hsl(var(--muted-foreground))" />
-                                <Tooltip />
-                                <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-                        </div>
+                         <div className="mt-6">
+                           <div className="text-sm font-medium mb-2">Current Week's Daily Activities Chart</div>
+                           <div style={{ width: '100%', height: 300 }}>
+                             <ResponsiveContainer width="100%" height={300}>
+                               <BarChart data={dailyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                                 <Tooltip />
+                                 <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                               </BarChart>
+                             </ResponsiveContainer>
+                           </div>
+                         </div>
 
-
-                        {totalCount > 0 && (
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm text-muted-foreground">
-                              Showing {Math.min((currentPage - 1) * pageSize + 1, totalCount)} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} entries
-                            </div>
-                            <div className="flex items-center space-x-2">
-                               <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const newPage = Math.max(1, currentPage - 1);
-                                  setCurrentPage(newPage);
-                                  fetchDailyActivities(newPage, pageSize);
-                                  setSelectedRecords(new Set());
-                                }}
-                                disabled={currentPage === 1}
-                              >
-                                Previous
-                              </Button>
-                              <span className="text-sm">
-                                Page {currentPage} of {Math.max(1, Math.ceil(totalCount / pageSize))}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-                                  const newPage = Math.min(totalPages, currentPage + 1);
-                                  setCurrentPage(newPage);
-                                  fetchDailyActivities(newPage, pageSize);
-                                  setSelectedRecords(new Set());
-                                }}
-                                disabled={currentPage >= Math.max(1, Math.ceil(totalCount / pageSize))}
-                              >
-                                Next
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                         <div className="mt-4 flex items-center justify-between">
+                           <div className="text-sm text-muted-foreground">
+                             Showing current week's activities ({totalCount} days)
+                           </div>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => {
+                               refreshActivities();
+                               setSelectedRecords(new Set());
+                             }}
+                           >
+                             Refresh
+                           </Button>
+                         </div>
                       </div>
                     )}
                   </CardContent>

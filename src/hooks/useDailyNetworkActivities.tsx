@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO, startOfDay } from 'date-fns';
+import { format, parseISO, startOfDay, startOfWeek, endOfWeek, addDays } from 'date-fns';
 
 interface DailyNetworkActivity {
   date: string;
@@ -25,49 +25,35 @@ export const useDailyNetworkActivities = () => {
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchDailyActivities = useCallback(async (page: number = 1, pageSize: number = 10) => {
+  const fetchDailyActivities = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
+      // Get current week's date range (Monday to Sunday)
+      const today = new Date();
+      const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+      const weekEnd = endOfWeek(today, { weekStartsOn: 1 }); // Sunday
       
-      // Get unique dates count up to today
-      const { data: uniqueDateData } = await supabase
-        .from('linkedin_network_metrics')
-        .select('date')
-        .eq('user_id', user.id)
-        .lte('date', today);
-
-      const uniqueDateCount = [...new Set(uniqueDateData?.map(d => d.date) || [])].length;
-      setTotalCount(uniqueDateCount);
-
-      // First, get distinct dates for pagination
-      const { data: dateData, error: dateError } = await supabase
-        .from('linkedin_network_metrics')
-        .select('date')
-        .eq('user_id', user.id)
-        .lte('date', today)
-        .order('date', { ascending: false });
-
-      if (dateError) throw dateError;
-
-      // Get unique dates and apply pagination
-      const uniqueDates = [...new Set(dateData?.map(d => d.date) || [])];
-      const offset = (page - 1) * pageSize;
-      const paginatedDates = uniqueDates.slice(offset, offset + pageSize);
-
-      if (paginatedDates.length === 0) {
-        setActivities([]);
-        return;
+      const startDate = format(weekStart, 'yyyy-MM-dd');
+      const endDate = format(weekEnd, 'yyyy-MM-dd');
+      
+      // Generate all dates in current week
+      const currentWeekDates: string[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = addDays(weekStart, i);
+        currentWeekDates.push(format(date, 'yyyy-MM-dd'));
       }
+      
+      setTotalCount(currentWeekDates.length);
 
-      // Fetch all metrics for the paginated dates
+      // Fetch all metrics for the current week
       const { data, error } = await supabase
         .from('linkedin_network_metrics')
         .select('date, activity_id, value')
         .eq('user_id', user.id)
-        .in('date', paginatedDates)
+        .gte('date', startDate)
+        .lte('date', endDate)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -75,8 +61,8 @@ export const useDailyNetworkActivities = () => {
       // Group by date and aggregate activities
       const groupedByDate: { [key: string]: Partial<DailyNetworkActivity> } = {};
 
-      // Initialize all paginated dates with zero values
-      paginatedDates.forEach(date => {
+      // Initialize all current week dates with zero values
+      currentWeekDates.forEach(date => {
         groupedByDate[date] = {
           date: format(parseISO(date), 'MMM dd, yyyy'),
           post_likes: 0,
@@ -153,8 +139,9 @@ export const useDailyNetworkActivities = () => {
           (activity.work_on_article || 0);
       });
 
-      // Convert to array and maintain date order
-      const activitiesArray = paginatedDates
+      // Convert to array and maintain date order (most recent first)
+      const activitiesArray = currentWeekDates
+        .reverse() // Show most recent date first
         .map(date => groupedByDate[date] as DailyNetworkActivity);
 
       setActivities(activitiesArray);
