@@ -83,8 +83,10 @@ const FindYourNextRole = () => {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
+  const [addingInternalToWishlist, setAddingInternalToWishlist] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobResult | null>(null);
   const [wishlistedJobs, setWishlistedJobs] = useState<Set<string>>(new Set());
+  const [wishlistedInternalJobs, setWishlistedInternalJobs] = useState<Set<string>>(new Set());
   const [savedSearches, setSavedSearches] = useState<SavedJobSearch[]>([]);
   const [loadingSavedSearches, setLoadingSavedSearches] = useState(false);
   const [savingSearch, setSavingSearch] = useState(false);
@@ -347,6 +349,84 @@ const FindYourNextRole = () => {
     // Then open the apply link
     if (job.job_apply_link) {
       window.open(job.job_apply_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleAddInternalJobToWishlist = async (job: InternalJob) => {
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to add jobs to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAddingInternalToWishlist(job.id);
+    
+    try {
+      const { error } = await supabase
+        .from('job_tracker')
+        .insert({
+          user_id: user.id,
+          company_name: job.company || 'Unknown Company',
+          job_title: job.title || 'Unknown Position',
+          status: 'wishlist',
+          application_date: new Date().toISOString().split('T')[0],
+          job_url: job.job_url || '',
+          salary_range: job.salary_min && job.salary_max 
+            ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
+            : job.salary_min 
+            ? `$${job.salary_min.toLocaleString()}+`
+            : job.salary_max
+            ? `Up to $${job.salary_max.toLocaleString()}`
+            : '',
+          location: job.location || '',
+          notes: job.description ? job.description.substring(0, 500) + (job.description.length > 500 ? '...' : '') : '',
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      // Add to wishlist state
+      setWishlistedInternalJobs(prev => new Set([...prev, job.id]));
+      
+      toast({
+        title: "Added to Wishlist",
+        description: `${job.title} at ${job.company} has been added to your job tracker.`,
+      });
+    } catch (error) {
+      console.error('Error adding internal job to wishlist:', error);
+      toast({
+        title: "Error adding to wishlist",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingInternalToWishlist(null);
+    }
+  };
+
+  const handleApplyInternalJob = (job: InternalJob) => {
+    if (job.job_url) {
+      window.open(job.job_url, '_blank', 'noopener,noreferrer');
+    } else {
+      toast({
+        title: "No application link",
+        description: "This job doesn't have an application link available.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleApplyAndWishlistInternal = async (job: InternalJob) => {
+    // Add to wishlist first
+    await handleAddInternalJobToWishlist(job);
+    
+    // Then open the apply link
+    if (job.job_url) {
+      window.open(job.job_url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -1241,11 +1321,33 @@ const FindYourNextRole = () => {
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Button variant="outline" size="sm">
-                                  <Heart className="h-4 w-4" />
-                                  Wishlist
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddInternalJobToWishlist(job);
+                                  }}
+                                  disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
+                                >
+                                  {addingInternalToWishlist === job.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : wishlistedInternalJobs.has(job.id) ? (
+                                    <Heart className="h-4 w-4 fill-current" />
+                                  ) : (
+                                    <Heart className="h-4 w-4" />
+                                  )}
+                                  {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
                                 </Button>
-                                <Button variant="default" size="sm">
+                                <Button 
+                                  variant="default" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleApplyInternalJob(job);
+                                  }}
+                                  disabled={!job.job_url}
+                                >
                                   Apply Now
                                 </Button>
                               </div>

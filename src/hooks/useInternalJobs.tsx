@@ -15,6 +15,7 @@ export interface InternalJob {
   salary_min?: number;
   salary_max?: number;
   application_deadline?: string;
+  job_url?: string;
   created_at: string;
   posted_by: string;
   is_active: boolean;
