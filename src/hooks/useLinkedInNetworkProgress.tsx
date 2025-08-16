@@ -142,7 +142,9 @@ export const useLinkedInNetworkProgress = () => {
         'create_post': 1,
         'article_draft': 1,
         'profile_optimization': 0,
-        'industry_research': 1
+        'industry_research': 1,
+        'connections_accepted': 1, // Allow tracking of connections accepted
+        'profile_views': 5 // Allow tracking of profile views
       };
 
       const weekMetrics: ActivityMetrics = {};
