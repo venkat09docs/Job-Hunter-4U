@@ -79,7 +79,9 @@ export default function CareerGrowth() {
   const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<{[date: string]: {[activity: string]: number}}>({});
 
   const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), index);
+    // Reverse the index to show latest date first, matching the table order
+    const reversedIndex = 6 - index;
+    const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), reversedIndex);
     const key = format(date, 'yyyy-MM-dd');
     const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
     const total = DAILY_ACTIVITIES.reduce((sum, a) => sum + (dayData[a.id] || 0), 0);
@@ -778,42 +780,44 @@ export default function CareerGrowth() {
                               <TableHead className="text-center">Total Activities</TableHead>
                             </TableRow>
                           </TableHeader>
-                         <TableBody>
-                           {Array.from({ length: 7 }, (_, index) => {
-                             const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), index);
-                             const dayName = format(date, 'EEE');
-                             const dateKey = format(date, 'yyyy-MM-dd');
-                             const dayData = weeklyDailyBreakdown[dateKey] || {};
-                             
-                             // Calculate total for this day
-                             const dayTotal = DAILY_ACTIVITIES.reduce((sum, activity) => {
-                               return sum + (dayData[activity.id] || 0);
-                             }, 0);
-                             
-                             return (
-                               <TableRow key={dateKey}>
-                                 <TableCell className="font-medium">
-                                   <div>
-                                     <div>{dayName}</div>
-                                     <div className="text-xs text-muted-foreground">
-                                       {format(date, 'MMM d')}
-                                     </div>
-                                   </div>
-                                 </TableCell>
-                                 {DAILY_ACTIVITIES.map((activity) => (
-                                   <TableCell key={activity.id} className="text-center">
-                                     <span className="text-sm">
-                                       {dayData[activity.id] || 0}
-                                     </span>
-                                   </TableCell>
-                                 ))}
-                                 <TableCell className="text-center font-medium">
-                                   {dayTotal}
-                                 </TableCell>
-                               </TableRow>
-                             );
-                           })}
-                          </TableBody>
+                          <TableBody>
+                            {Array.from({ length: 7 }, (_, index) => {
+                              // Reverse the index to show latest date first (Sunday to Monday)
+                              const reversedIndex = 6 - index;
+                              const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), reversedIndex);
+                              const dayName = format(date, 'EEE');
+                              const dateKey = format(date, 'yyyy-MM-dd');
+                              const dayData = weeklyDailyBreakdown[dateKey] || {};
+                              
+                              // Calculate total for this day
+                              const dayTotal = DAILY_ACTIVITIES.reduce((sum, activity) => {
+                                return sum + (dayData[activity.id] || 0);
+                              }, 0);
+                              
+                              return (
+                                <TableRow key={dateKey}>
+                                  <TableCell className="font-medium">
+                                    <div>
+                                      <div>{dayName}</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {format(date, 'MMM d')}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  {DAILY_ACTIVITIES.map((activity) => (
+                                    <TableCell key={activity.id} className="text-center">
+                                      <span className="text-sm">
+                                        {dayData[activity.id] || 0}
+                                      </span>
+                                    </TableCell>
+                                  ))}
+                                  <TableCell className="text-center font-medium">
+                                    {dayTotal}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                           </TableBody>
                       </Table>
                         <div className="mt-6">
                           <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
