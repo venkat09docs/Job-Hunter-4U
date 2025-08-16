@@ -698,6 +698,107 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_base_categories: {
+        Row: {
+          category_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      knowledge_base_items: {
+        Row: {
+          category_id: string
+          content: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          duration: string | null
+          id: string
+          instructor: string | null
+          is_published: boolean
+          last_updated_by: string | null
+          read_time: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          category_id: string
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          id?: string
+          instructor?: string | null
+          is_published?: boolean
+          last_updated_by?: string | null
+          read_time?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          category_id?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          id?: string
+          instructor?: string | null
+          is_published?: boolean
+          last_updated_by?: string | null
+          read_time?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_base_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard_rankings: {
         Row: {
           calculated_at: string
