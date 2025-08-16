@@ -88,6 +88,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.company_name}
             onChange={(e) => updateFormData('company_name', e.target.value)}
             required
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
 
@@ -98,16 +100,18 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.job_title}
             onChange={(e) => updateFormData('job_title', e.target.value)}
             required
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select value={formData.status} onValueChange={(value) => updateFormData('status', value)}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-background">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border border-border">
               {statusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -123,18 +127,19 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-left font-normal"
+                className="w-full justify-start text-left font-normal bg-background"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {applicationDate ? format(applicationDate, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 bg-background border border-border">
               <Calendar
                 mode="single"
                 selected={applicationDate}
                 onSelect={setApplicationDate}
                 initialFocus
+                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
@@ -146,6 +151,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             id="location"
             value={formData.location}
             onChange={(e) => updateFormData('location', e.target.value)}
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
 
@@ -156,6 +163,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             value={formData.salary_range}
             onChange={(e) => updateFormData('salary_range', e.target.value)}
             placeholder="e.g., $80k - $120k"
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
 
@@ -165,6 +174,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             id="contact_person"
             value={formData.contact_person}
             onChange={(e) => updateFormData('contact_person', e.target.value)}
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
 
@@ -175,6 +186,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
             type="email"
             value={formData.contact_email}
             onChange={(e) => updateFormData('contact_email', e.target.value)}
+            autoComplete="off"
+            className="bg-background"
           />
         </div>
       </div>
@@ -187,6 +200,8 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
           value={formData.job_url}
           onChange={(e) => updateFormData('job_url', e.target.value)}
           placeholder="https://..."
+          autoComplete="off"
+          className="bg-background"
         />
       </div>
 
@@ -196,18 +211,19 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
+              className="w-full justify-start text-left font-normal bg-background"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {followUpDate ? format(followUpDate, "PPP") : "Pick a date (optional)"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent className="w-auto p-0 bg-background border border-border">
             <Calendar
               mode="single"
               selected={followUpDate}
               onSelect={setFollowUpDate}
               initialFocus
+              className="pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -221,6 +237,7 @@ export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFo
           onChange={(e) => updateFormData('notes', e.target.value)}
           rows={3}
           placeholder="Add any notes about this application..."
+          className="bg-background"
         />
       </div>
 
