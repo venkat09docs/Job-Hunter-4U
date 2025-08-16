@@ -960,6 +960,8 @@ export default function DocumentationDetail() {
   const [editingStepId, setEditingStepId] = useState<number | null>(null);
   const [editStepTitle, setEditStepTitle] = useState("");
   const [editStepContent, setEditStepContent] = useState("");
+  const [showDeleteStepDialog, setShowDeleteStepDialog] = useState(false);
+  const [stepToDelete, setStepToDelete] = useState<number | null>(null);
 
   const docId = parseInt(id || "1");
   const doc = documentationContent[docId as keyof typeof documentationContent];
@@ -1013,6 +1015,19 @@ export default function DocumentationDetail() {
     setEditingStepId(null);
     setEditStepTitle("");
     setEditStepContent("");
+  };
+
+  const handleDeleteStep = (stepId: number) => {
+    setStepToDelete(stepId);
+    setShowDeleteStepDialog(true);
+  };
+
+  const confirmDeleteStep = () => {
+    // In a real app, this would make an API call to delete the step
+    console.log("Deleting step:", stepToDelete);
+    toast.success("Step deleted successfully");
+    setShowDeleteStepDialog(false);
+    setStepToDelete(null);
   };
 
   const handleDelete = () => {
@@ -1332,6 +1347,27 @@ export default function DocumentationDetail() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete Documentation
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Step Confirmation Dialog */}
+      <AlertDialog open={showDeleteStepDialog} onOpenChange={setShowDeleteStepDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Step</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this step? This action cannot be undone and will remove the step permanently.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteStep}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Step
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
