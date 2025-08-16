@@ -1109,7 +1109,7 @@ const FindYourNextRole = () => {
                           <SelectValue placeholder="Select job type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Types</SelectItem>
+                          <SelectItem value="all">All Types</SelectItem>
                           <SelectItem value="Full-time">Full-time</SelectItem>
                           <SelectItem value="Part-time">Part-time</SelectItem>
                           <SelectItem value="Contract">Contract</SelectItem>
@@ -1125,7 +1125,7 @@ const FindYourNextRole = () => {
                           <SelectValue placeholder="Select experience level" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Levels</SelectItem>
+                          <SelectItem value="all">All Levels</SelectItem>
                           <SelectItem value="Entry Level">Entry Level</SelectItem>
                           <SelectItem value="Mid Level">Mid Level</SelectItem>
                           <SelectItem value="Senior Level">Senior Level</SelectItem>

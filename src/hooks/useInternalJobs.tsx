@@ -36,8 +36,8 @@ export const useInternalJobs = () => {
   const [filters, setFilters] = useState<InternalJobFilters>({
     search: "",
     location: "",
-    job_type: "",
-    experience_level: "",
+    job_type: "all",
+    experience_level: "all",
     salary_min: "",
     salary_max: "",
   });
@@ -62,11 +62,11 @@ export const useInternalJobs = () => {
         query = query.ilike('location', `%${filters.location}%`);
       }
       
-      if (filters.job_type) {
+      if (filters.job_type && filters.job_type !== 'all') {
         query = query.eq('job_type', filters.job_type);
       }
       
-      if (filters.experience_level) {
+      if (filters.experience_level && filters.experience_level !== 'all') {
         query = query.eq('experience_level', filters.experience_level);
       }
       
@@ -101,8 +101,8 @@ export const useInternalJobs = () => {
     setFilters({
       search: "",
       location: "",
-      job_type: "",
-      experience_level: "",
+      job_type: "all",
+      experience_level: "all",
       salary_min: "",
       salary_max: "",
     });
