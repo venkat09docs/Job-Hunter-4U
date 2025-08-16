@@ -7,7 +7,7 @@ export const useProfileBuildingPoints = () => {
   const { user } = useAuth();
   const [isAwarding, setIsAwarding] = useState(false);
 
-  const awardPoints = async (activityId: string, activityType: string = 'completion_milestone', isDeduction: boolean = false) => {
+  const awardPoints = async (activityId: string, activityType: string = 'completion_milestone', isDeduction: boolean = false, customPoints?: number) => {
     if (!user) return false;
     
     // Prevent concurrent calls for the same activity
@@ -35,8 +35,9 @@ export const useProfileBuildingPoints = () => {
 
       // For LinkedIn Growth activities, use UPSERT to handle dynamic point changes
       if (activityType === 'linkedin_growth') {
-        // Use negative points for deduction, positive for award
-        const pointsToAward = isDeduction ? -Math.abs(activitySetting.points) : activitySetting.points;
+        // Use custom points if provided, otherwise use configured points
+        const basePoints = customPoints || activitySetting.points;
+        const pointsToAward = isDeduction ? -Math.abs(basePoints) : basePoints;
         
         const { error: upsertError } = await supabase
           .from('user_activity_points')

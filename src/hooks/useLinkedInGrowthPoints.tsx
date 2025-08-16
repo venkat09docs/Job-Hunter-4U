@@ -68,13 +68,13 @@ export const useLinkedInGrowthPoints = (
             
             if (progressDifference > 0) {
               // Award points when weekly progress increases
-              const success = await awardPoints(activityId, 'linkedin_growth');
+              const success = await awardPoints(activityId, 'linkedin_growth', false, pointsToAward);
               if (success) {
                 console.log(`Successfully awarded ${pointsToAward} points for ${activityId} (increase by ${progressDifference})`);
               }
             } else if (progressDifference < 0) {
               // Deduct points when weekly progress decreases
-              const success = await awardPoints(activityId, 'linkedin_growth', true); // Pass true for deduction
+              const success = await awardPoints(activityId, 'linkedin_growth', true, pointsToAward);
               if (success) {
                 console.log(`Successfully deducted ${pointsToAward} points for ${activityId} (decrease by ${Math.abs(progressDifference)})`);
               }
