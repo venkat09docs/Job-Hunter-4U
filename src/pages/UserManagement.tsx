@@ -47,7 +47,7 @@ interface UserProfile {
 }
 
 interface UserRole {
-  role: 'admin' | 'institute_admin' | 'user';
+  role: 'admin' | 'institute_admin' | 'user' | 'recruiter';
 }
 
 interface UserWithRole extends UserProfile {
@@ -318,7 +318,7 @@ export default function UserManagement() {
           .from('user_roles')
           .insert({
             user_id: userId,
-            role: bulkRole as 'admin' | 'institute_admin' | 'user'
+            role: bulkRole as 'admin' | 'institute_admin' | 'user' | 'recruiter'
           });
 
         // If assigning institute_admin role, also create institute assignment
@@ -674,7 +674,7 @@ export default function UserManagement() {
         .from('user_roles')
         .insert({
           user_id: selectedUser.user_id,
-          role: newRole as 'admin' | 'institute_admin' | 'user'
+          role: newRole as 'admin' | 'institute_admin' | 'user' | 'recruiter'
         });
 
       if (roleError) throw roleError;
@@ -1456,11 +1456,12 @@ export default function UserManagement() {
                        <SelectTrigger>
                          <SelectValue placeholder="Select a role" />
                        </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="user">User</SelectItem>
-                         {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
-                         {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
-                       </SelectContent>
+                        <SelectContent>
+                          <SelectItem value="user">User</SelectItem>
+                          {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
+                          {isAdmin && <SelectItem value="recruiter">Recruiter</SelectItem>}
+                          {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
+                        </SelectContent>
                      </Select>
                 </div>
                 
@@ -1656,11 +1657,12 @@ export default function UserManagement() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
-                      {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
-                    </SelectContent>
+                     <SelectContent>
+                       <SelectItem value="user">User</SelectItem>
+                       {isAdmin && <SelectItem value="institute_admin">Institute Admin</SelectItem>}
+                       {isAdmin && <SelectItem value="recruiter">Recruiter</SelectItem>}
+                       {isAdmin && <SelectItem value="admin">Super Admin</SelectItem>}
+                     </SelectContent>
                   </Select>
                 </div>
                 

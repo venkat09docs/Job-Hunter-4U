@@ -53,6 +53,8 @@ import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import StatusView from "./pages/StatusView";
 import LevelUp from "./pages/LevelUp";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+import PostJob from "./pages/PostJob";
 import SubscriptionWelcomeDialog from "./components/SubscriptionWelcomeDialog";
 
 const queryClient = new QueryClient();
@@ -332,7 +334,23 @@ const App = () => (
               } 
             />
             <Route 
-              path="/leaderboard-points" 
+              path="/recruiter" 
+              element={
+                <ProtectedRoute>
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/recruiter/post-job" 
+              element={
+                <ProtectedRoute>
+                  <PostJob />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/leaderboard-points"
               element={
                 <ProtectedRoute>
                   <LeaderBoardPoints />

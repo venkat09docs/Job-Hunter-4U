@@ -74,6 +74,11 @@ const jobHunterItems = [
 ];
 
 
+const recruiterItems = [
+  { title: "Dashboard", url: "/recruiter", icon: Home },
+  { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
+];
+
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
@@ -86,6 +91,8 @@ const adminItems = [
   { title: "Leader Board Points", url: "/leaderboard-points", icon: Target },
   { title: "Manage Career Hub", url: "/dashboard/manage-career-hub", icon: Wrench },
   { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
+  { title: "Recruiter Dashboard", url: "/recruiter", icon: Home },
+  { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
 ];
 
 export function AppSidebar() {
@@ -93,7 +100,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
-  const { isAdmin, isInstituteAdmin } = useRole();
+  const { isAdmin, isInstituteAdmin, isRecruiter } = useRole();
   const { canAccessFeature } = usePremiumFeatures();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
@@ -138,12 +145,26 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
 
-        {(isAdmin || isInstituteAdmin) && (
+        {(isAdmin || isInstituteAdmin || isRecruiter) && (
           <SidebarGroup>
             <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                  {adminItems.map((item) => {
+                  {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : adminItems).map((item) => {
+                    // For recruiters, show only their items
+                    if (isRecruiter && !isAdmin && !isInstituteAdmin) {
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild>
+                            <NavLink to={item.url} end className={getNavCls}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">{item.title}</span>
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    }
+                    
                     // For institute admins, show only specific items in order
                     if (isInstituteAdmin && !isAdmin && 
                         item.title !== "Dashboard" &&
@@ -156,7 +177,7 @@ export function AppSidebar() {
                     // Hide Admin Dashboard for institute admins (they have their own Dashboard)
                     if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
                     // Show Dashboard only for institute admins
-                    if (item.title === "Dashboard" && !isInstituteAdmin) return null;
+                    if (item.title === "Dashboard" && !isInstituteAdmin && !isRecruiter) return null;
                     // Hide Students Report for super admin (show only for institute admin)
                     if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                     // Show Institute Management only for super admins
@@ -171,6 +192,8 @@ export function AppSidebar() {
                      if (item.title === "Leader Board Points" && !isAdmin) return null;
                     // Show Manage Career Hub and Subscriptions only for super admins
                     if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
+                    // Show Recruiter items only for super admins
+                    if ((item.title === "Recruiter Dashboard" || item.title === "Post Job") && !isAdmin) return null;
                   
                   return (
                     <SidebarMenuItem key={item.title}>
@@ -189,8 +212,8 @@ export function AppSidebar() {
         )}
 
 
-        {/* Hide other main items for institute admins */}
-        {!isInstituteAdmin && (
+        {/* Hide other main items for institute admins and recruiters */}
+        {!isInstituteAdmin && !isRecruiter && (
           <>
             <SidebarGroup>
               <SidebarGroupLabel>Job Hunter Pro</SidebarGroupLabel>

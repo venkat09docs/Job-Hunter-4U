@@ -3,7 +3,7 @@ import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
-type UserRole = 'admin' | 'user' | 'institute_admin' | null;
+type UserRole = 'admin' | 'user' | 'institute_admin' | 'recruiter' | null;
 
 export const useRole = () => {
   const { user } = useAuth();
@@ -63,15 +63,17 @@ export const useRole = () => {
   const isAdmin = role === 'admin';
   const isUser = role === 'user';
   const isInstituteAdmin = role === 'institute_admin';
+  const isRecruiter = role === 'recruiter';
 
   // Debug logging for role state
-  console.log('🎭 Role Hook State:', { role, isAdmin, isUser, isInstituteAdmin, loading });
+  console.log('🎭 Role Hook State:', { role, isAdmin, isUser, isInstituteAdmin, isRecruiter, loading });
 
   return {
     role,
     isAdmin,
     isUser,
     isInstituteAdmin,
+    isRecruiter,
     loading,
     refreshRole: fetchUserRole
   };
