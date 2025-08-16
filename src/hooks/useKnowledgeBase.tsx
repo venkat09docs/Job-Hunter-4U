@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface KnowledgeBaseItem {
-  id: number;
+  id: string;
   title: string;
   description: string;
   duration?: string;
@@ -10,231 +12,197 @@ export interface KnowledgeBaseItem {
   lastUpdated?: string;
   thumbnail?: string;
   isPublished: boolean;
+  categoryId: string;
+  content?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  displayOrder?: number;
 }
 
 export interface KnowledgeBaseCategory {
   id: string;
   name: string;
+  description?: string;
+  categoryType: 'video' | 'documentation';
   videos?: KnowledgeBaseItem[];
   docs?: KnowledgeBaseItem[];
+  displayOrder?: number;
+  isActive?: boolean;
 }
 
-// Temporary static data - will be replaced with database integration later
-const videoCategories: KnowledgeBaseCategory[] = [
-  {
-    id: "career-development",
-    name: "Career Development",
-    videos: [
-      {
-        id: 1,
-        title: "Building Your Professional Brand",
-        description: "Learn how to create a strong professional brand that stands out in your industry.",
-        duration: "12:45",
-        instructor: "Sarah Johnson",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 2,
-        title: "Effective Networking Strategies",
-        description: "Master the art of professional networking and build meaningful connections.",
-        duration: "15:30",
-        instructor: "Michael Chen",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 3,
-        title: "Resume Writing Best Practices",
-        description: "Create compelling resumes that get noticed by recruiters and hiring managers.",
-        duration: "18:20",
-        instructor: "Lisa Rodriguez",
-        thumbnail: "/placeholder.svg",
-        isPublished: false
-      }
-    ]
-  },
-  {
-    id: "interview-preparation",
-    name: "Interview Preparation",
-    videos: [
-      {
-        id: 4,
-        title: "Behavioral Interview Preparation",
-        description: "Master behavioral interviews with the STAR method and common question types.",
-        duration: "22:15",
-        instructor: "David Park",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 5,
-        title: "Technical Interview Strategies",
-        description: "Prepare for technical interviews across various industries and roles.",
-        duration: "28:45",
-        instructor: "Jennifer Kim",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      }
-    ]
-  },
-  {
-    id: "linkedin-optimization",
-    name: "LinkedIn Optimization",
-    videos: [
-      {
-        id: 6,
-        title: "LinkedIn Profile Optimization",
-        description: "Optimize your LinkedIn profile to attract recruiters and opportunities.",
-        duration: "16:30",
-        instructor: "Alex Turner",
-        thumbnail: "/placeholder.svg",
-        isPublished: true
-      },
-      {
-        id: 7,
-        title: "LinkedIn Content Strategy",
-        description: "Build your personal brand through strategic LinkedIn content creation.",
-        duration: "20:45",
-        instructor: "Maria Garcia",
-        thumbnail: "/placeholder.svg",
-        isPublished: false
-      }
-    ]
-  }
-];
-
-const docCategories: KnowledgeBaseCategory[] = [
-  {
-    id: "getting-started",
-    name: "Getting Started",
-    docs: [
-      {
-        id: 1,
-        title: "Complete Platform Setup Guide",
-        description: "Everything you need to know to get started with your career growth journey.",
-        readTime: "8 min read",
-        lastUpdated: "2024-01-15",
-        isPublished: true
-      },
-      {
-        id: 2,
-        title: "First-Time User Onboarding",
-        description: "Step-by-step guide for new users to navigate the platform effectively.",
-        readTime: "5 min read",
-        lastUpdated: "2024-01-10",
-        isPublished: true
-      },
-      {
-        id: 3,
-        title: "Understanding Your Dashboard",
-        description: "Learn about all the features and metrics available on your main dashboard.",
-        readTime: "6 min read",
-        lastUpdated: "2024-01-08",
-        isPublished: true
-      },
-      {
-        id: 4,
-        title: "Setting Up Your Profile Foundation",
-        description: "Build a strong foundation for your professional profile from day one.",
-        readTime: "12 min read",
-        lastUpdated: "2024-01-05",
-        isPublished: false
-      },
-      {
-        id: 5,
-        title: "Premium vs Free Features Overview",
-        description: "Understand the difference between free and premium features to make informed decisions.",
-        readTime: "4 min read",
-        lastUpdated: "2024-01-12",
-        isPublished: true
-      },
-      {
-        id: 6,
-        title: "Understanding the Points & Gamification System",
-        description: "Learn how our points system works and how to maximize your progress.",
-        readTime: "7 min read",
-        lastUpdated: "2024-01-14",
-        isPublished: true
-      },
-      {
-        id: 7,
-        title: "Quick Win Activities for New Users",
-        description: "Get started with these easy activities that provide immediate value.",
-        readTime: "10 min read",
-        lastUpdated: "2024-01-11",
-        isPublished: true
-      },
-      {
-        id: 8,
-        title: "Setting Your Career Goals & Timeline",
-        description: "Define clear, achievable career goals and create a timeline for success.",
-        readTime: "15 min read",
-        lastUpdated: "2024-01-06",
-        isPublished: false
-      },
-      {
-        id: 9,
-        title: "Connecting Your Professional Accounts",
-        description: "Link your LinkedIn, GitHub, and other professional accounts for better tracking.",
-        readTime: "6 min read",
-        lastUpdated: "2024-01-09",
-        isPublished: true
-      },
-      {
-        id: 10,
-        title: "Platform Navigation & Key Features Tour",
-        description: "A comprehensive tour of all platform features and how to use them effectively.",
-        readTime: "12 min read",
-        lastUpdated: "2024-01-13",
-        isPublished: true
-      }
-    ]
-  }
-];
-
 export const useKnowledgeBase = () => {
-  const [videoData, setVideoData] = useState(videoCategories);
-  const [docData, setDocData] = useState(docCategories);
+  const [videoData, setVideoData] = useState<KnowledgeBaseCategory[]>([]);
+  const [docData, setDocData] = useState<KnowledgeBaseCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleVideoPublishStatus = (videoId: number, categoryId: string) => {
-    setVideoData(prev => prev.map(category => {
-      if (category.id === categoryId) {
-        return {
-          ...category,
-          videos: category.videos?.map(video => 
-            video.id === videoId 
-              ? { ...video, isPublished: !video.isPublished }
-              : video
-          )
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch categories
+      const { data: categories, error: categoriesError } = await supabase
+        .from('knowledge_base_categories' as any)
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+
+      if (categoriesError) throw categoriesError;
+
+      // Fetch items
+      const { data: items, error: itemsError } = await supabase
+        .from('knowledge_base_items' as any)
+        .select('*')
+        .order('display_order');
+
+      if (itemsError) throw itemsError;
+
+      // Transform and group data
+      const videoCategories: KnowledgeBaseCategory[] = [];
+      const docCategories: KnowledgeBaseCategory[] = [];
+
+      categories?.forEach((category: any) => {
+        const categoryItems = items
+          ?.filter((item: any) => item.category_id === category.id)
+          .map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            duration: item.duration || undefined,
+            instructor: item.instructor || undefined,
+            readTime: item.read_time || undefined,
+            thumbnail: item.thumbnail_url || '/placeholder.svg',
+            thumbnailUrl: item.thumbnail_url || '/placeholder.svg',
+            isPublished: item.is_published,
+            categoryId: item.category_id,
+            content: item.content || undefined,
+            videoUrl: item.video_url || undefined,
+            displayOrder: item.display_order || 0
+          })) || [];
+
+        const transformedCategory: KnowledgeBaseCategory = {
+          id: category.id,
+          name: category.name,
+          description: category.description || undefined,
+          categoryType: category.category_type as 'video' | 'documentation',
+          displayOrder: category.display_order || 0,
+          isActive: category.is_active
         };
-      }
-      return category;
-    }));
+
+        if (category.category_type === 'video') {
+          transformedCategory.videos = categoryItems;
+          videoCategories.push(transformedCategory);
+        } else {
+          transformedCategory.docs = categoryItems;
+          docCategories.push(transformedCategory);
+        }
+      });
+
+      setVideoData(videoCategories);
+      setDocData(docCategories);
+    } catch (err) {
+      console.error('Error fetching knowledge base data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      toast.error('Failed to load knowledge base content');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleDocPublishStatus = (docId: number, categoryId: string) => {
-    setDocData(prev => prev.map(category => {
-      if (category.id === categoryId) {
-        return {
-          ...category,
-          docs: category.docs?.map(doc => 
-            doc.id === docId 
-              ? { ...doc, isPublished: !doc.isPublished }
-              : doc
-          )
-        };
-      }
-      return category;
-    }));
+  const toggleVideoPublishStatus = async (videoId: string, categoryId: string) => {
+    try {
+      // Find current status
+      const currentItem = videoData
+        .find(cat => cat.id === categoryId)
+        ?.videos?.find(video => video.id === videoId);
+      
+      if (!currentItem) return;
+
+      const newStatus = !currentItem.isPublished;
+
+      // Update in database
+      const { error } = await supabase
+        .from('knowledge_base_items' as any)
+        .update({ is_published: newStatus })
+        .eq('id', videoId);
+
+      if (error) throw error;
+
+      // Update local state
+      setVideoData(prev => prev.map(category => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            videos: category.videos?.map(video => 
+              video.id === videoId 
+                ? { ...video, isPublished: newStatus }
+                : video
+            )
+          };
+        }
+        return category;
+      }));
+
+      toast.success(`Video ${newStatus ? 'published' : 'unpublished'} successfully`);
+    } catch (err) {
+      console.error('Error toggling video publish status:', err);
+      toast.error('Failed to update video status');
+    }
   };
+
+  const toggleDocPublishStatus = async (docId: string, categoryId: string) => {
+    try {
+      // Find current status
+      const currentItem = docData
+        .find(cat => cat.id === categoryId)
+        ?.docs?.find(doc => doc.id === docId);
+      
+      if (!currentItem) return;
+
+      const newStatus = !currentItem.isPublished;
+
+      // Update in database
+      const { error } = await supabase
+        .from('knowledge_base_items' as any)
+        .update({ is_published: newStatus })
+        .eq('id', docId);
+
+      if (error) throw error;
+
+      // Update local state
+      setDocData(prev => prev.map(category => {
+        if (category.id === categoryId) {
+          return {
+            ...category,
+            docs: category.docs?.map(doc => 
+              doc.id === docId 
+                ? { ...doc, isPublished: newStatus }
+                : doc
+            )
+          };
+        }
+        return category;
+      }));
+
+      toast.success(`Documentation ${newStatus ? 'published' : 'unpublished'} successfully`);
+    } catch (err) {
+      console.error('Error toggling doc publish status:', err);
+      toast.error('Failed to update documentation status');
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return {
     videoData,
     docData,
     toggleVideoPublishStatus,
     toggleDocPublishStatus,
-    loading: false,
-    error: null
+    loading,
+    error,
+    refetch: fetchData
   };
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +16,22 @@ import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
 import { toast } from "sonner";
 
 export default function KnowledgeBase() {
-  const [activeVideoCategory, setActiveVideoCategory] = useState("career-development");
-  const [activeDocCategory, setActiveDocCategory] = useState("getting-started");
-  const { videoData, docData, toggleVideoPublishStatus, toggleDocPublishStatus } = useKnowledgeBase();
+  const { videoData, docData, toggleVideoPublishStatus, toggleDocPublishStatus, loading } = useKnowledgeBase();
+  const [activeVideoCategory, setActiveVideoCategory] = useState<string>("");
+  const [activeDocCategory, setActiveDocCategory] = useState<string>("");
   const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
   const { isAdmin, role } = useRole();
   const navigate = useNavigate();
+
+  // Set default active categories when data loads
+  useEffect(() => {
+    if (videoData.length > 0 && !activeVideoCategory) {
+      setActiveVideoCategory(videoData[0].id);
+    }
+    if (docData.length > 0 && !activeDocCategory) {
+      setActiveDocCategory(docData[0].id);
+    }
+  }, [videoData, docData, activeVideoCategory, activeDocCategory]);
 
   // 🧪 TEMPORARY: Force test as regular user (REMOVE IN PRODUCTION)
   const [forceRegularUser, setForceRegularUser] = useState(false);
@@ -36,13 +46,13 @@ export default function KnowledgeBase() {
   console.log('Video data sample:', videoData[0]?.videos.map(v => ({ id: v.id, title: v.title, isPublished: v.isPublished })));
   console.log('Doc data sample:', docData[0]?.docs.map(d => ({ id: d.id, title: d.title, isPublished: d.isPublished })));
 
-  const handleDeleteDoc = (docId: number, categoryId: string) => {
+  const handleDeleteDoc = (docId: string, categoryId: string) => {
     // In a real app, this would make an API call to delete the document
     console.log(`Deleting document ${docId} from category ${categoryId}`);
     toast.success("Documentation deleted successfully");
   };
 
-  const handleEditDoc = (docId: number) => {
+  const handleEditDoc = (docId: string) => {
     // Navigate to DocumentationDetail page with edit mode
     navigate(`/dashboard/knowledge-base/doc/${docId}?edit=true`);
   };
@@ -52,17 +62,17 @@ export default function KnowledgeBase() {
     toast.info("Add document feature coming soon");
   };
 
-  const handleToggleDocPublish = (docId: number, categoryId: string, currentStatus: boolean) => {
+  const handleToggleDocPublish = (docId: string, categoryId: string, currentStatus: boolean) => {
     toggleDocPublishStatus(docId, categoryId);
     toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
-  const handleDeleteVideo = (videoId: number, categoryId: string) => {
+  const handleDeleteVideo = (videoId: string, categoryId: string) => {
     console.log(`Deleting video ${videoId} from category ${categoryId}`);
     toast.success("Video deleted successfully");
   };
 
-  const handleEditVideo = (videoId: number) => {
+  const handleEditVideo = (videoId: string) => {
     console.log(`Editing video ${videoId}`);
     toast.info("Video edit dialog would open here");
   };
@@ -72,7 +82,7 @@ export default function KnowledgeBase() {
     toast.info("Upload video feature coming soon");
   };
 
-  const handleToggleVideoPublish = (videoId: number, categoryId: string, currentStatus: boolean) => {
+  const handleToggleVideoPublish = (videoId: string, categoryId: string, currentStatus: boolean) => {
     toggleVideoPublishStatus(videoId, categoryId);
     toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
@@ -124,6 +134,44 @@ export default function KnowledgeBase() {
     const content = type === 'docs' ? category.docs : category.videos;
     return content.some((item: any) => item.isPublished);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Top Navigation */}
+        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <Link 
+                to="/dashboard"
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="font-medium">Go to Dashboard</span>
+              </Link>
+              <div className="flex items-center gap-4">
+                <SubscriptionStatus />
+                <UserProfileDropdown />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Loading Content */}
+        <div className="container mx-auto py-8 px-4">
+          <div className="text-center mb-8">
+            <div className="h-8 bg-muted rounded w-1/3 mx-auto mb-4 animate-pulse" />
+            <div className="h-4 bg-muted rounded w-2/3 mx-auto animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-96 bg-muted rounded animate-pulse" />
+            <div className="h-96 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
