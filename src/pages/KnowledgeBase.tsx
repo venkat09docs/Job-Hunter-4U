@@ -266,8 +266,8 @@ export default function KnowledgeBase() {
 
   const handleToggleDocPublish = (docId: number, categoryId: string, currentStatus: boolean) => {
     // Update the document's publish status
-    setDocData(prevData => 
-      prevData.map(category => 
+    setDocData(prevData => {
+      const newData = prevData.map(category => 
         category.id === categoryId 
           ? {
               ...category,
@@ -278,8 +278,10 @@ export default function KnowledgeBase() {
               )
             }
           : category
-      )
-    );
+      );
+      console.log('Updated doc data:', newData);
+      return newData;
+    });
     toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
@@ -300,8 +302,8 @@ export default function KnowledgeBase() {
 
   const handleToggleVideoPublish = (videoId: number, categoryId: string, currentStatus: boolean) => {
     // Update the video's publish status
-    setVideoData(prevData => 
-      prevData.map(category => 
+    setVideoData(prevData => {
+      const newData = prevData.map(category => 
         category.id === categoryId 
           ? {
               ...category,
@@ -312,20 +314,24 @@ export default function KnowledgeBase() {
               )
             }
           : category
-      )
-    );
+      );
+      console.log('Updated video data:', newData);
+      return newData;
+    });
     toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
   // Filter content based on user role and publish status
   const getFilteredDocs = (docs: any[]) => {
-    if (isAdmin) return docs; // Admin sees all
-    return docs.filter(doc => doc.isPublished); // Users see only published
+    const filtered = docs.filter(doc => doc.isPublished);
+    console.log('Filtering docs:', docs.length, 'filtered to:', filtered.length, 'for admin:', isAdmin);
+    return isAdmin ? docs : filtered; // Admin sees all, users see only published
   };
 
   const getFilteredVideos = (videos: any[]) => {
-    if (isAdmin) return videos; // Admin sees all
-    return videos.filter(video => video.isPublished); // Users see only published
+    const filtered = videos.filter(video => video.isPublished);
+    console.log('Filtering videos:', videos.length, 'filtered to:', filtered.length, 'for admin:', isAdmin);
+    return isAdmin ? videos : filtered; // Admin sees all, users see only published
   };
 
   // Check if category has any published content
@@ -490,7 +496,7 @@ export default function KnowledgeBase() {
                       <TabsContent key={category.id} value={category.id}>
                         <ScrollArea className="h-[500px] pr-4">
                           <div className="space-y-4">
-                            {(isAdmin ? category.videos : filteredVideos).map((video) => (
+                            {filteredVideos.map((video) => (
                               <div key={video.id} className="group">
                                 <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
                                   <CardContent className="p-4">
@@ -655,7 +661,7 @@ export default function KnowledgeBase() {
                         <TabsContent key={category.id} value={category.id}>
                           <ScrollArea className="h-[500px] pr-4">
                             <div className="space-y-4">
-                              {(isAdmin ? category.docs : filteredDocs).map((doc) => (
+                              {filteredDocs.map((doc) => (
                                 <div key={doc.id} className="group">
                                   <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
                                     <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
