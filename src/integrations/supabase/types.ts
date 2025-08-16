@@ -1796,6 +1796,15 @@ export type Database = {
           name: string
         }[]
       }
+      get_safe_leaderboard_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          full_name: string
+          profile_image_url: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_safe_public_profile: {
         Args: { profile_slug: string }
         Returns: {
