@@ -22,7 +22,6 @@ import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
-import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
 import { format, startOfWeek, subWeeks, addDays, addWeeks, endOfWeek } from 'date-fns';
 import { Button as PaginationButton } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
@@ -58,13 +57,10 @@ export default function CareerGrowth() {
   const { getTodayMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
-  const { activities: dailyNetworkActivities, loading: dailyNetworkLoading, totalCount, refreshActivities } = useDailyNetworkActivities();
-  const dailyChartData = dailyNetworkActivities.map((a) => ({ date: a.date, total: a.total_activities }));
   
   // Network activities state
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
   const [networkWeeklyMetrics, setNetworkWeeklyMetrics] = useState<{[key: string]: number}>({});
-  const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
   const [networkWeekOffset, setNetworkWeekOffset] = useState(0);
 
   // Daily activities structure is now imported from constants
@@ -458,386 +454,206 @@ export default function CareerGrowth() {
               </div>
               
               {/* Right Side - Header + Statistics */}
-              <div className="flex flex-col justify-center space-y-6">
+              <div className="flex flex-col">
                 {/* Header Section */}
-                <div className="text-left">
-                  <h3 className="text-2xl font-bold mb-2">Overall Career Development Score</h3>
-                  <p className="text-muted-foreground">Your comprehensive career readiness assessment</p>
-                </div>
-                
-                {/* Statistics Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="text-6xl font-bold text-primary">{getOverallScore()}%</div>
-                    <TrendingUp className="h-12 w-12 text-green-500" />
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold">Overall Career Score</h2>
+                    <Badge variant="default" className="text-lg px-3 py-1">
+                      {getOverallScore()}%
+                    </Badge>
                   </div>
-                  <Progress value={getOverallScore()} className="w-full max-w-sm h-3" />
-                   <p className="text-sm text-muted-foreground">
-                    Based on Resume, LinkedIn & GitHub progress
+                  <p className="text-muted-foreground">
+                    Your comprehensive career development progress across all key areas
                   </p>
+                </div>
+
+                {/* Statistics Grid */}
+                <div className="grid grid-cols-2 gap-4 flex-1">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{resumeProgress}%</div>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">Resume Complete</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-700 dark:text-green-300">{linkedinProgress}%</div>
+                    <div className="text-sm text-green-600 dark:text-green-400">LinkedIn Optimized</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{githubProgress}%</div>
+                    <div className="text-sm text-purple-600 dark:text-purple-400">GitHub Setup</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{totalJobApplications}</div>
+                    <div className="text-sm text-orange-600 dark:text-orange-400">Job Applications</div>
+                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="profile" className="space-y-6">
+        <Tabs defaultValue="resume" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="profile">Profile Status</TabsTrigger>
+            <TabsTrigger value="resume">Resume</TabsTrigger>
+            <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
             <TabsTrigger value="network">Network Status</TabsTrigger>
-            <TabsTrigger value="jobs">Job Application Status</TabsTrigger>
-            <TabsTrigger value="github">GitHub Status</TabsTrigger>
-            <TabsTrigger value="suggestions">Action Items</TabsTrigger>
-            <TabsTrigger value="checklist">Checklist</TabsTrigger>
+            <TabsTrigger value="jobs">Jobs</TabsTrigger>
+            <TabsTrigger value="github">GitHub</TabsTrigger>
+            <TabsTrigger value="weekly">Weekly</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Resume Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    Resume
-                    {trends.resume && <span className="text-lg">{trends.resume}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Progress value={resumeProgress} className="h-2" />
-                    <div className="flex justify-between text-sm">
-                      <span>{resumeProgress}% Complete</span>
-                      <span className="text-muted-foreground">Target: 90%</span>
-                    </div>
+          <TabsContent value="resume" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  Resume Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold">{resumeProgress}%</div>
+                  <Progress value={resumeProgress} className="w-full" />
+                  <div className="text-sm text-muted-foreground">
+                    Complete your resume to improve your job search success rate
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              {/* LinkedIn Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-600" />
-                    LinkedIn Profile
-                    {trends.linkedin && <span className="text-lg">{trends.linkedin}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Progress value={linkedinProgress} className="h-2" />
-                    <div className="flex justify-between text-sm">
-                      <span>{linkedinProgress}% Complete</span>
-                      <span className="text-muted-foreground">Target: 95%</span>
-                    </div>
+          <TabsContent value="linkedin" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  LinkedIn Optimization
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-2xl font-bold">{linkedinProgress}%</div>
+                  <Progress value={linkedinProgress} className="w-full" />
+                  <div className="text-sm text-muted-foreground">
+                    Optimize your LinkedIn profile to increase visibility to recruiters
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* GitHub Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-gray-800" />
-                    GitHub Profile
-                    {trends.github && <span className="text-lg">{trends.github}</span>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <Progress value={githubProgress} className="h-2" />
-                    <div className="flex justify-between text-sm">
-                      <span>{githubProgress}% Complete</span>
-                      <span className="text-muted-foreground">Target: 80%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="network" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  Network Growth
-                  {trends.network && <span className="text-lg">{trends.network}</span>}
-                </CardTitle>
-                <CardDescription>Track your LinkedIn networking activities and progress</CardDescription>
-              </CardHeader>
-               <CardContent>
-                  <div className="space-y-3">
-                    <div className="text-2xl font-bold">{networkMetrics?.weeklyProgress || 0}</div>
-                    <div className="text-sm text-muted-foreground">Weekly Activities Completed</div>
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <CardTitle>Weekly Network Activities (Monday to Sunday)</CardTitle>
+                    <CardDescription>Aggregated activities for the selected week</CardDescription>
                   </div>
-               </CardContent>
-            </Card>
-
-            <Tabs defaultValue="daily" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="daily">Daily Activities</TabsTrigger>
-                <TabsTrigger value="weekly">Weekly Activities</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="daily" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <CardTitle>Current Week's Network Activities</CardTitle>
-                        <CardDescription>View your daily LinkedIn networking activities for this week (Monday to Sunday)</CardDescription>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const selectedActivities = dailyNetworkActivities.filter((_, index) => 
-                            selectedRecords.has(index.toString())
-                          );
-                          if (selectedActivities.length === 0) {
-                            alert('Please select at least one record to download');
-                            return;
-                          }
-                          const excelData = selectedActivities.map(activity => {
-                            const row: any = { 'Date': activity.date };
-                            DAILY_ACTIVITIES.forEach(activityDef => {
-                              row[activityDef.title] = (activity as any)[activityDef.id] || 0;
-                            });
-                            row['Total Activities'] = activity.total_activities;
-                            return row;
-                          });
-                          const worksheet = XLSX.utils.json_to_sheet(excelData);
-                          const workbook = XLSX.utils.book_new();
-                          XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Activities');
-                          const fileName = `daily_network_activities_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-                          XLSX.writeFile(workbook, fileName);
-                        }}
-                        disabled={selectedRecords.size === 0}
-                        className="gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download Excel ({selectedRecords.size} selected)
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {dailyNetworkLoading ? (
-                      <div className="flex items-center justify-center p-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <Table>
-                             <TableHeader>
-                               <TableRow className="bg-primary/10">
-                                 <TableHead>Date</TableHead>
-                                 {DAILY_ACTIVITIES.map((activity) => (
-                                   <TableHead key={activity.id} className="text-center">
-                                     {activity.title}
-                                   </TableHead>
-                                 ))}
-                                 <TableHead className="text-center">Total Activities</TableHead>
-                                 <TableHead className="text-center">
-                                   <Checkbox
-                                     checked={selectedRecords.size === dailyNetworkActivities.length}
-                                     onCheckedChange={(checked) => {
-                                       if (checked) {
-                                         setSelectedRecords(new Set(dailyNetworkActivities.map((_, index) => index.toString())));
-                                       } else {
-                                         setSelectedRecords(new Set());
-                                       }
-                                     }}
-                                   />
-                                 </TableHead>
-                               </TableRow>
-                             </TableHeader>
-                          <TableBody>
-                            {dailyNetworkActivities.length > 0 ? (
-                               dailyNetworkActivities.map((activity, index) => (
-                                 <TableRow key={`${activity.date}-${index}`}>
-                                   <TableCell className="font-medium">{activity.date}</TableCell>
-                                   {DAILY_ACTIVITIES.map((activityDef) => (
-                                     <TableCell key={activityDef.id} className="text-center">
-                                       {(activity as any)[activityDef.id] || 0}
-                                     </TableCell>
-                                   ))}
-                                   <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
-                                   <TableCell className="text-center">
-                                     <Checkbox
-                                       checked={selectedRecords.has(index.toString())}
-                                       onCheckedChange={(checked) => {
-                                         const newSelected = new Set(selectedRecords);
-                                         if (checked) {
-                                           newSelected.add(index.toString());
-                                         } else {
-                                           newSelected.delete(index.toString());
-                                         }
-                                         setSelectedRecords(newSelected);
-                                       }}
-                                     />
-                                   </TableCell>
-                                 </TableRow>
-                               ))
-                            ) : (
-                               <TableRow>
-                                 <TableCell colSpan={DAILY_ACTIVITIES.length + 3} className="text-center text-muted-foreground py-8">
-                                   No network activities recorded for this week
-                                 </TableCell>
-                               </TableRow>
-                            )}
-                           </TableBody>
-                         </Table>
-
-                         <div className="mt-6">
-                           <div className="text-sm font-medium mb-2">Current Week's Daily Activities Chart</div>
-                           <div style={{ width: '100%', height: 300 }}>
-                             <ResponsiveContainer width="100%" height={300}>
-                               <BarChart data={dailyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
-                                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                                 <Tooltip />
-                                 <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                               </BarChart>
-                             </ResponsiveContainer>
-                           </div>
-                         </div>
-
-                         <div className="mt-4 flex items-center justify-between">
-                           <div className="text-sm text-muted-foreground">
-                             Showing current week's activities ({totalCount} days)
-                           </div>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => {
-                               refreshActivities();
-                               setSelectedRecords(new Set());
-                             }}
-                           >
-                             Refresh
-                           </Button>
-                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="weekly" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <CardTitle>Weekly Network Activities (Monday to Sunday)</CardTitle>
-                        <CardDescription>Aggregated activities for the selected week</CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => v - 1)}>
-                          <ArrowLeft className="h-4 w-4 mr-1" /> Previous
-                        </Button>
-                        <Badge variant="secondary">
-                          {`${format(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 'MMM d')} – ${format(addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 6), 'MMM d')}`}
-                        </Badge>
-                        <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => Math.min(0, v + 1))} disabled={networkWeekOffset === 0}>
-                          Next <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4 overflow-x-auto pb-2">
-                        {DAILY_ACTIVITIES.map((activity) => {
-                          const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
-                          const target = activity.weeklyTarget;
-                          const colorClass = networkWeekOffset === 0
-                            ? (weeklyCount >= target ? 'border-green-500' : 'border-amber-500')
-                            : (weeklyCount >= target ? 'border-green-500' : 'border-red-500');
-                          return (
-                            <div key={activity.id} className="flex flex-col items-center min-w-[88px]">
-                              <div className={`relative h-20 w-20 rounded-full border-2 flex items-center justify-center ${colorClass} bg-primary/10`}>
-                                <span className="text-xl font-bold">{weeklyCount}</span>
-                              </div>
-                              <div className="mt-1 text-xs text-muted-foreground">{weeklyCount}/{target}</div>
-                              <div className="mt-1 text-xs text-center">
-                                {activity.title}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                       <Table>
-                          <TableHeader>
-                            <TableRow className="bg-primary/10">
-                              <TableHead>Day</TableHead>
-                              {DAILY_ACTIVITIES.map((activity) => (
-                                <TableHead key={activity.id} className="text-center">
-                                  {activity.title}
-                                </TableHead>
-                              ))}
-                              <TableHead className="text-center">Total Activities</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {Array.from({ length: 7 }, (_, index) => {
-                              // Reverse the index to show latest date first (Sunday to Monday)
-                              const reversedIndex = 6 - index;
-                              const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), reversedIndex);
-                              const dayName = format(date, 'EEE');
-                              const dateKey = format(date, 'yyyy-MM-dd');
-                              const dayData = weeklyDailyBreakdown[dateKey] || {};
-                              
-                              // Calculate total for this day
-                              const dayTotal = DAILY_ACTIVITIES.reduce((sum, activity) => {
-                                return sum + (dayData[activity.id] || 0);
-                              }, 0);
-                              
-                              return (
-                                <TableRow key={dateKey}>
-                                  <TableCell className="font-medium">
-                                    <div>
-                                      <div>{dayName}</div>
-                                      <div className="text-xs text-muted-foreground">
-                                        {format(date, 'MMM d')}
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                  {DAILY_ACTIVITIES.map((activity) => (
-                                    <TableCell key={activity.id} className="text-center">
-                                      <span className="text-sm">
-                                        {dayData[activity.id] || 0}
-                                      </span>
-                                    </TableCell>
-                                  ))}
-                                  <TableCell className="text-center font-medium">
-                                    {dayTotal}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                           </TableBody>
-                      </Table>
-                        <div className="mt-6">
-                          <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
-                          <div style={{ width: '100%', height: 300 }}>
-                            <ResponsiveContainer width="100%" height={300}>
-                              <BarChart data={weeklyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                                <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" />
-                                <YAxis stroke="hsl(var(--muted-foreground))" />
-                                <Tooltip />
-                                <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                              </BarChart>
-                            </ResponsiveContainer>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => v - 1)}>
+                      <ArrowLeft className="h-4 w-4 mr-1" /> Previous
+                    </Button>
+                    <Badge variant="secondary">
+                      {`${format(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 'MMM d')} – ${format(addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), 6), 'MMM d')}`}
+                    </Badge>
+                    <Button variant="outline" size="sm" onClick={() => setNetworkWeekOffset((v) => Math.min(0, v + 1))} disabled={networkWeekOffset === 0}>
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 overflow-x-auto pb-2">
+                    {DAILY_ACTIVITIES.map((activity) => {
+                      const weeklyCount = networkWeeklyMetrics[activity.id] || 0;
+                      const target = activity.weeklyTarget;
+                      const colorClass = networkWeekOffset === 0
+                        ? (weeklyCount >= target ? 'border-green-500' : 'border-amber-500')
+                        : (weeklyCount >= target ? 'border-green-500' : 'border-red-500');
+                      return (
+                        <div key={activity.id} className="flex flex-col items-center min-w-[88px]">
+                          <div className={`relative h-20 w-20 rounded-full border-2 flex items-center justify-center ${colorClass} bg-primary/10`}>
+                            <span className="text-xl font-bold">{weeklyCount}</span>
+                          </div>
+                          <div className="mt-1 text-xs text-muted-foreground">{weeklyCount}/{target}</div>
+                          <div className="mt-1 text-xs text-center">
+                            {activity.title}
                           </div>
                         </div>
+                      );
+                    })}
+                  </div>
+
+                   <Table>
+                      <TableHeader>
+                        <TableRow className="bg-primary/10">
+                          <TableHead>Day</TableHead>
+                          {DAILY_ACTIVITIES.map((activity) => (
+                            <TableHead key={activity.id} className="text-center">
+                              {activity.title}
+                            </TableHead>
+                          ))}
+                          <TableHead className="text-center">Total Activities</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                     <TableBody>
+                       {Array.from({ length: 7 }, (_, index) => {
+                         // Reverse the index to show latest date first (Sunday to Monday)
+                         const reversedIndex = 6 - index;
+                         const date = addDays(startOfWeek(addWeeks(new Date(), networkWeekOffset), { weekStartsOn: 1 }), reversedIndex);
+                         const dayName = format(date, 'EEE');
+                         const dateKey = format(date, 'yyyy-MM-dd');
+                         const dayData = weeklyDailyBreakdown[dateKey] || {};
+                         
+                         // Calculate total for this day
+                         const dayTotal = DAILY_ACTIVITIES.reduce((sum, activity) => {
+                           return sum + (dayData[activity.id] || 0);
+                         }, 0);
+                         
+                         return (
+                           <TableRow key={dateKey}>
+                             <TableCell className="font-medium">
+                               <div>
+                                 <div>{dayName}</div>
+                                 <div className="text-xs text-muted-foreground">
+                                   {format(date, 'MMM d')}
+                                 </div>
+                               </div>
+                             </TableCell>
+                             {DAILY_ACTIVITIES.map((activity) => (
+                               <TableCell key={activity.id} className="text-center">
+                                 <span className="text-sm">
+                                   {dayData[activity.id] || 0}
+                                 </span>
+                               </TableCell>
+                             ))}
+                             <TableCell className="text-center font-medium">
+                               {dayTotal}
+                             </TableCell>
+                           </TableRow>
+                         );
+                       })}
+                      </TableBody>
+                  </Table>
+                    <div className="mt-6">
+                      <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
+                      <div style={{ width: '100%', height: 300 }}>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={weeklyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" />
+                            <YAxis stroke="hsl(var(--muted-foreground))" />
+                            <Tooltip />
+                            <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    </div>
+                  </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="jobs" className="space-y-6">
@@ -1000,166 +816,6 @@ export default function CareerGrowth() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="daily" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Daily Progress (Last 7 Days)</CardTitle>
-                    <CardDescription>See your day-to-day progress patterns</CardDescription>
-                  </div>
-                  <Button 
-                    onClick={handleUpdateProgress}
-                    disabled={isUpdatingProgress}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <TrendingUp className="h-4 w-4" />
-                    {isUpdatingProgress ? 'Updating...' : 'Update Today\'s Progress'}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {dailyMetrics.map((day, index) => (
-                    <div key={day.date} className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">{day.date}</h3>
-                        <Badge variant={index === 0 ? "default" : "outline"}>
-                          {index === 0 ? "Today" : `${index + 1} day${index > 0 ? 's' : ''} ago`}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Resume</div>
-                          <div className="text-lg font-semibold">{day.resumeProgress}%</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">LinkedIn</div>
-                          <div className="text-lg font-semibold">{day.linkedinProgress}%</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">GitHub</div>
-                          <div className="text-lg font-semibold">{day.githubProgress}%</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Network</div>
-                          <div className="text-lg font-semibold">{day.networkProgress}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Jobs</div>
-                          <div className="text-lg font-semibold">{day.jobApplications}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm text-muted-foreground mb-1">Blogs</div>
-                          <div className="text-lg font-semibold">{day.blogPosts}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="suggestions" className="space-y-6">
-            <div className="grid gap-4">
-              {suggestions.map((suggestion) => (
-                <Card key={suggestion.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getPriorityColor(suggestion.priority)}>
-                            {suggestion.priority} priority
-                          </Badge>
-                          <Badge variant="outline">{suggestion.category}</Badge>
-                        </div>
-                        <h3 className="font-semibold">{suggestion.title}</h3>
-                        <p className="text-sm text-muted-foreground">{suggestion.description}</p>
-                      </div>
-                      {suggestion.priority === 'high' && (
-                        <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-1" />
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="checklist" className="space-y-6">
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Career Development Checklist
-                  </CardTitle>
-                  <CardDescription>Complete these items to maximize your career potential</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      {resumeProgress >= 90 ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                      )}
-                      <span className={resumeProgress >= 90 ? "line-through text-muted-foreground" : ""}>
-                        Complete resume with all sections (90%+)
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      {linkedinProgress >= 95 ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                      )}
-                      <span className={linkedinProgress >= 95 ? "line-through text-muted-foreground" : ""}>
-                        Optimize LinkedIn profile (95%+)
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      {githubProgress >= 80 ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                      )}
-                      <span className={githubProgress >= 80 ? "line-through text-muted-foreground" : ""}>
-                        Set up professional GitHub profile (80%+)
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      {totalJobApplications >= 10 ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                      )}
-                      <span className={totalJobApplications >= 10 ? "line-through text-muted-foreground" : ""}>
-                        Apply to at least 10 positions
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      {(networkMetrics?.weeklyProgress || 0) >= 70 ? (
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <div className="h-5 w-5 rounded-full border-2 border-muted-foreground" />
-                      )}
-                      <span className={(networkMetrics?.weeklyProgress || 0) >= 70 ? "line-through text-muted-foreground" : ""}>
-                        Maintain active LinkedIn networking (70+ weekly activities)
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>
