@@ -288,36 +288,82 @@ export default function KnowledgeBase() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {getSettingsByCategory('linkedin').map((activity) => (
-                          <Card key={activity.id} className="border-l-4 border-l-primary/50">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
-                                    <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
-                                      {activity.is_active ? "Active" : "Inactive"}
-                                    </Badge>
+                        {/* Profile Building Activities */}
+                        {getSettingsByCategory('resume').length > 0 && (
+                          <>
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-medium text-sm text-muted-foreground">Profile Building</h4>
+                              <div className="flex-1 h-px bg-border" />
+                            </div>
+                            {getSettingsByCategory('resume').map((activity) => (
+                              <Card key={activity.id} className="border-l-4 border-l-blue-500/50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
+                                        <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
+                                          {activity.is_active ? "Active" : "Inactive"}
+                                        </Badge>
+                                      </div>
+                                      {activity.description && (
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                          {activity.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                                        {activity.points} points
+                                      </Badge>
+                                    </div>
                                   </div>
-                                  {activity.description && (
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                      {activity.description}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                                    {activity.points} points
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        {getSettingsByCategory('linkedin').length === 0 && (
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </>
+                        )}
+
+                        {/* LinkedIn Growth Activities */}
+                        {getSettingsByCategory('linkedin').length > 0 && (
+                          <>
+                            <div className="flex items-center gap-2 mb-2 mt-6">
+                              <h4 className="font-medium text-sm text-muted-foreground">LinkedIn Growth</h4>
+                              <div className="flex-1 h-px bg-border" />
+                            </div>
+                            {getSettingsByCategory('linkedin').map((activity) => (
+                              <Card key={activity.id} className="border-l-4 border-l-primary/50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
+                                        <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
+                                          {activity.is_active ? "Active" : "Inactive"}
+                                        </Badge>
+                                      </div>
+                                      {activity.description && (
+                                        <p className="text-xs text-muted-foreground mb-2">
+                                          {activity.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                                        {activity.points} points
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </>
+                        )}
+
+                        {getSettingsByCategory('resume').length === 0 && getSettingsByCategory('linkedin').length === 0 && (
                           <div className="text-center py-8 text-muted-foreground">
                             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No LinkedIn growth activities configured yet.</p>
+                            <p>No activities configured yet.</p>
                           </div>
                         )}
                       </div>
