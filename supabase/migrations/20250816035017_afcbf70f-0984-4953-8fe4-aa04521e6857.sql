@@ -1,0 +1,12 @@
+-- Add negative point activities for LinkedIn Growth deductions
+INSERT INTO activity_point_settings (activity_id, activity_name, category, activity_type, points, description, is_active) VALUES
+('comments_deduct', 'Comments Deduction', 'LinkedIn Growth', 'linkedin_growth', -10, 'Points deducted when Comments activity status changes from On Track to Critical/Behind', true),
+('post_likes_deduct', 'Post Likes Deduction', 'LinkedIn Growth', 'linkedin_growth', -10, 'Points deducted when Post Likes activity status changes from On Track to Critical/Behind', true),
+('content_deduct', 'Content Sharing Deduction', 'LinkedIn Growth', 'linkedin_growth', -15, 'Points deducted when Content Sharing activity status changes from On Track to Critical/Behind', true),
+('connection_requests_deduct', 'Connection Requests Deduction', 'LinkedIn Growth', 'linkedin_growth', -15, 'Points deducted when Connection Requests activity status changes from On Track to Critical/Behind', true),
+('follow_up_deduct', 'Follow-up Messages Deduction', 'LinkedIn Growth', 'linkedin_growth', -20, 'Points deducted when Follow-up Messages activity status changes from On Track to Critical/Behind', true),
+('industry_research_deduct', 'Industry Research Deduction', 'LinkedIn Growth', 'linkedin_growth', -15, 'Points deducted when Industry Research activity status changes from On Track to Critical/Behind', true),
+('create_post_deduct', 'Create Post Deduction', 'LinkedIn Growth', 'linkedin_growth', -25, 'Points deducted when Create Post activity status changes from On Track to Critical/Behind', true),
+('profile_optimization_deduct', 'Profile Optimization Deduction', 'LinkedIn Growth', 'linkedin_growth', -30, 'Points deducted when Profile Optimization activity status changes from On Track to Critical/Behind', true),
+('profile_views_deduct', 'Profile Views Deduction', 'LinkedIn Growth', 'linkedin_growth', -10, 'Points deducted when Profile Views activity status changes from On Track to Critical/Behind', true),
+('connections_accepted_deduct', 'Connections Accepted Deduction', 'LinkedIn Growth', 'linkedin_growth', -10, 'Points deducted when Connections Accepted activity status changes from On Track to Critical/Behind', true);
