@@ -1849,7 +1849,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_leaderboard_profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          profile_image_url: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          profile_image_url?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          profile_image_url?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_user_role: {
