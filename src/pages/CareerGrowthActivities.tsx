@@ -21,6 +21,7 @@ import GitHubDailyFlow from '@/components/GitHubDailyFlow';
 import { useJobApplicationActivities, JobApplicationTaskId } from '@/hooks/useJobApplicationActivities';
 import { supabase } from '@/integrations/supabase/client';
 import { LearningGoalsSection } from '@/components/LearningGoalsSection';
+import { DAILY_ACTIVITIES, type DailyActivity } from '@/constants/dailyActivities';
 
 interface Activity {
   id: string;
@@ -34,15 +35,7 @@ interface Activity {
   estimatedTime: string;
 }
 
-interface DailyActivity {
-  id: string;
-  title: string;
-  description: string;
-  category: 'engagement' | 'networking' | 'content' | 'growth';
-  dailyTarget: number;
-  weeklyTarget: number;
-  unit: string;
-}
+// DailyActivity interface is now imported from constants
 
 interface ActivityMetrics {
   [key: string]: number;
@@ -97,27 +90,7 @@ const mockActivities: Activity[] = [
   }
 ];
 
-const DAILY_ACTIVITIES: DailyActivity[] = [
-  // Engagement Activities
-  { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
-  { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
-  { id: 'content', title: 'Share Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'shares' },
-  
-  // Networking Activities
-  { id: 'connection_requests', title: 'Connection', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
-  { id: 'follow_up', title: 'Follow Up Messages', description: 'Send follow-up messages to recent connections', category: 'networking', dailyTarget: 1, weeklyTarget: 5, unit: 'messages' },
-  { id: 'connections_accepted', title: 'No of Connections Accepted', description: 'Track the number of connection requests accepted by others', category: 'networking', dailyTarget: 0, weeklyTarget: 10, unit: 'connections' },
-  
-  // Growth Activities
-  { id: 'profile_views', title: 'No of Profile Views', description: 'Track the number of profile views received', category: 'growth', dailyTarget: 5, weeklyTarget: 30, unit: 'views' },
-  
-  // Content Activities
-  { id: 'create_post', title: 'Create Original Post', description: 'Share an original post about your expertise', category: 'content', dailyTarget: 1, weeklyTarget: 5, unit: 'posts' },
-  
-  // Growth Activities
-  { id: 'profile_optimization', title: 'Profile Optimization', description: 'Review and update profile sections', category: 'growth', dailyTarget: 0, weeklyTarget: 1, unit: 'sessions' },
-  { id: 'industry_research', title: 'Industry Research', description: 'Research and follow industry leaders', category: 'growth', dailyTarget: 1, weeklyTarget: 5, unit: 'profiles' },
-];
+// DAILY_ACTIVITIES is now imported from constants
 
 const JOB_APP_TASKS: { id: JobApplicationTaskId; title: string; description: string }[] = [
   { id: 'review_new_postings', title: 'Search New Job Postings', description: 'Check 5–10 fresh job listings filtered by keywords, skills, location, and salary.' },

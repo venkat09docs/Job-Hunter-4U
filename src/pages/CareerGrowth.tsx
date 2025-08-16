@@ -26,6 +26,7 @@ import { useDailyNetworkActivities } from '@/hooks/useDailyNetworkActivities';
 import { format, startOfWeek, subWeeks, addDays, addWeeks, endOfWeek } from 'date-fns';
 import { Button as PaginationButton } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { DAILY_ACTIVITIES, DATABASE_FIELD_MAPPING } from '@/constants/dailyActivities';
 
 interface WeeklyMetrics {
   week: string;
@@ -68,19 +69,7 @@ export default function CareerGrowth() {
   const [selectedRecords, setSelectedRecords] = useState<Set<string>>(new Set());
   const [networkWeekOffset, setNetworkWeekOffset] = useState(0);
 
-  // Daily activities structure
-  const DAILY_ACTIVITIES = [
-    { id: 'post_likes', title: 'Like Posts', description: 'Like relevant posts in your industry', category: 'engagement', dailyTarget: 3, weeklyTarget: 15, unit: 'likes' },
-    { id: 'comments', title: 'Comments', description: 'Leave thoughtful comments on posts', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'comments' },
-    { id: 'content', title: 'Content', description: 'Share valuable content with your network', category: 'engagement', dailyTarget: 2, weeklyTarget: 10, unit: 'content' },
-    { id: 'connection_requests', title: 'Connections', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
-    { id: 'create_post', title: 'Posts', description: 'Create and publish posts', category: 'content', dailyTarget: 1, weeklyTarget: 3, unit: 'posts' },
-    { id: 'profile_optimization', title: 'Profile Optimization', description: 'Update and optimize your profile', category: 'profile', dailyTarget: 1, weeklyTarget: 2, unit: 'updates' },
-    { id: 'research', title: 'Research', description: 'Research industry trends and companies', category: 'learning', dailyTarget: 1, weeklyTarget: 5, unit: 'sessions' },
-    { id: 'follow_up_messages', title: 'Follow Up Messages', description: 'Send follow-up messages to connections', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'messages' },
-    { id: 'engage_in_groups', title: 'Engage in Groups', description: 'Participate in industry groups', category: 'engagement', dailyTarget: 1, weeklyTarget: 5, unit: 'interactions' },
-    { id: 'work_on_article', title: 'Work on Article', description: 'Write and work on articles', category: 'content', dailyTarget: 1, weeklyTarget: 2, unit: 'sessions' },
-  ];
+  // Daily activities structure is now imported from constants
   
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
   
@@ -181,12 +170,8 @@ export default function CareerGrowth() {
           breakdown[metric.date] = {};
         }
         
-        // Map database activity_ids to our interface
-        let activityKey = metric.activity_id;
-        if (metric.activity_id === 'industry_research') activityKey = 'research';
-        if (metric.activity_id === 'follow_up') activityKey = 'follow_up_messages';
-        if (metric.activity_id === 'industry_groups') activityKey = 'engage_in_groups';
-        if (metric.activity_id === 'article_draft') activityKey = 'work_on_article';
+        // Use the activity_id directly since we're now using consistent naming
+        const activityKey = metric.activity_id;
         
         breakdown[metric.date][activityKey] = (breakdown[metric.date][activityKey] || 0) + metric.value;
       });
@@ -613,20 +598,14 @@ export default function CareerGrowth() {
                             alert('Please select at least one record to download');
                             return;
                           }
-                          const excelData = selectedActivities.map(activity => ({
-                            'Date': activity.date,
-                            'Like Posts': activity.post_likes,
-                            'Comments': activity.comments,
-                            'Content': activity.content,
-                            'Connections': activity.connection_requests,
-                            'Posts': activity.create_post,
-                            'Profile Optimization': activity.profile_optimization,
-                            'Research': activity.research,
-                            'Follow Up Messages': activity.follow_up_messages,
-                            'Engage in Groups': activity.engage_in_groups,
-                            'Work on Article': activity.work_on_article,
-                            'Total Activities': activity.total_activities,
-                          }));
+                          const excelData = selectedActivities.map(activity => {
+                            const row: any = { 'Date': activity.date };
+                            DAILY_ACTIVITIES.forEach(activityDef => {
+                              row[activityDef.title] = (activity as any)[activityDef.id] || 0;
+                            });
+                            row['Total Activities'] = activity.total_activities;
+                            return row;
+                          });
                           const worksheet = XLSX.utils.json_to_sheet(excelData);
                           const workbook = XLSX.utils.book_new();
                           XLSX.utils.book_append_sheet(workbook, worksheet, 'Daily Activities');
@@ -649,19 +628,14 @@ export default function CareerGrowth() {
                     ) : (
                       <div className="space-y-4">
                         <Table>
-                            <TableHeader>
-                              <TableRow className="bg-primary/10">
-                                <TableHead>Date</TableHead>
-                                <TableHead className="text-center">Like Posts</TableHead>
-                                <TableHead className="text-center">Comments</TableHead>
-                                <TableHead className="text-center">Content</TableHead>
-                                <TableHead className="text-center">Connections</TableHead>
-                                <TableHead className="text-center">Posts</TableHead>
-                                <TableHead className="text-center">Profile Optimization</TableHead>
-                               <TableHead className="text-center">Research</TableHead>
-                                 <TableHead className="text-center">Follow Up Messages</TableHead>
-                                 <TableHead className="text-center">Engage in Groups</TableHead>
-                                 <TableHead className="text-center">Work on Article</TableHead>
+                             <TableHeader>
+                               <TableRow className="bg-primary/10">
+                                 <TableHead>Date</TableHead>
+                                 {DAILY_ACTIVITIES.map((activity) => (
+                                   <TableHead key={activity.id} className="text-center">
+                                     {activity.title}
+                                   </TableHead>
+                                 ))}
                                  <TableHead className="text-center">Total Activities</TableHead>
                                  <TableHead className="text-center">
                                    <Checkbox
@@ -675,24 +649,19 @@ export default function CareerGrowth() {
                                      }}
                                    />
                                  </TableHead>
-                              </TableRow>
-                            </TableHeader>
+                               </TableRow>
+                             </TableHeader>
                           <TableBody>
                             {dailyNetworkActivities.length > 0 ? (
-                              dailyNetworkActivities.map((activity, index) => (
-                                <TableRow key={`${activity.date}-${index}`}>
-                                  <TableCell className="font-medium">{activity.date}</TableCell>
-                                  <TableCell className="text-center">{activity.post_likes}</TableCell>
-                                  <TableCell className="text-center">{activity.comments}</TableCell>
-                                  <TableCell className="text-center">{activity.content}</TableCell>
-                                  <TableCell className="text-center">{activity.connection_requests}</TableCell>
-                                  <TableCell className="text-center">{activity.create_post}</TableCell>
-                                  <TableCell className="text-center">{activity.profile_optimization}</TableCell>
-                                  <TableCell className="text-center">{activity.research}</TableCell>
-                                  <TableCell className="text-center">{activity.follow_up_messages}</TableCell>
-                                  <TableCell className="text-center">{activity.engage_in_groups}</TableCell>
-                                  <TableCell className="text-center">{activity.work_on_article}</TableCell>
-                                  <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
+                               dailyNetworkActivities.map((activity, index) => (
+                                 <TableRow key={`${activity.date}-${index}`}>
+                                   <TableCell className="font-medium">{activity.date}</TableCell>
+                                   {DAILY_ACTIVITIES.map((activityDef) => (
+                                     <TableCell key={activityDef.id} className="text-center">
+                                       {(activity as any)[activityDef.id] || 0}
+                                     </TableCell>
+                                   ))}
+                                   <TableCell className="text-center font-medium">{activity.total_activities}</TableCell>
                                    <TableCell className="text-center">
                                      <Checkbox
                                        checked={selectedRecords.has(index.toString())}
@@ -708,13 +677,13 @@ export default function CareerGrowth() {
                                      />
                                    </TableCell>
                                  </TableRow>
-                              ))
+                               ))
                             ) : (
-                              <TableRow>
-                                <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
-                                  No network activities recorded yet
-                                </TableCell>
-                              </TableRow>
+                               <TableRow>
+                                 <TableCell colSpan={DAILY_ACTIVITIES.length + 3} className="text-center text-muted-foreground py-8">
+                                   No network activities recorded yet
+                                 </TableCell>
+                               </TableRow>
                             )}
                           </TableBody>
                         </Table>
