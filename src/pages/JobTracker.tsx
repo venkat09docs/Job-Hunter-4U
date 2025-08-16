@@ -144,6 +144,25 @@ const JobTracker = () => {
       setJobs(prev => [data, ...prev]);
       setIsAddDialogOpen(false);
 
+      // Create follow-up reminder notification if date is set
+      if (jobData.next_follow_up) {
+        try {
+          const { error: notificationError } = await supabase.rpc('create_follow_up_reminder', {
+            p_user_id: user.id,
+            p_job_id: data.id,
+            p_company_name: data.company_name,
+            p_job_title: data.job_title,
+            p_follow_up_date: jobData.next_follow_up
+          });
+          
+          if (notificationError) {
+            console.error('Failed to create follow-up reminder:', notificationError);
+          }
+        } catch (notificationError) {
+          console.error('Failed to create follow-up reminder:', notificationError);
+        }
+      }
+
       // Auto-track metrics for Career Growth Activities
       try {
         if (data.status === 'wishlist') {
@@ -173,6 +192,26 @@ const JobTracker = () => {
         .single();
 
       if (error) throw error;
+      
+      // Create follow-up reminder notification if date is set
+      if (jobData.next_follow_up) {
+        try {
+          const { error: notificationError } = await supabase.rpc('create_follow_up_reminder', {
+            p_user_id: user?.id,
+            p_job_id: editingJob.id,
+            p_company_name: data.company_name,
+            p_job_title: data.job_title,
+            p_follow_up_date: jobData.next_follow_up
+          });
+          
+          if (notificationError) {
+            console.error('Failed to create follow-up reminder:', notificationError);
+          }
+        } catch (notificationError) {
+          console.error('Failed to create follow-up reminder:', notificationError);
+        }
+      }
+      
       setJobs(prev => prev.map(job => job.id === editingJob.id ? data : job));
       setEditingJob(null);
       toast.success('Job updated successfully!');

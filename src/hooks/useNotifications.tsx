@@ -10,6 +10,7 @@ interface Notification {
   related_id: string | null;
   is_read: boolean;
   created_at: string;
+  scheduled_for: string | null;
 }
 
 export function useNotifications() {
@@ -22,10 +23,13 @@ export function useNotifications() {
     if (!user) return;
 
     try {
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
+        .or(`scheduled_for.is.null,scheduled_for.lte.${today}`)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -97,8 +101,13 @@ export function useNotifications() {
         },
         (payload) => {
           const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
+          const today = new Date().toISOString().split('T')[0];
+          
+          // Only show notification if it's not scheduled or if the scheduled date has arrived
+          if (!newNotification.scheduled_for || newNotification.scheduled_for <= today) {
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+          }
         }
       )
       .subscribe();

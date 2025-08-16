@@ -1088,6 +1088,7 @@ export type Database = {
           is_read: boolean
           message: string
           related_id: string | null
+          scheduled_for: string | null
           title: string
           type: string
           user_id: string
@@ -1098,8 +1099,9 @@ export type Database = {
           is_read?: boolean
           message: string
           related_id?: string | null
+          scheduled_for?: string | null
           title: string
-          type?: string
+          type: string
           user_id: string
         }
         Update: {
@@ -1108,6 +1110,7 @@ export type Database = {
           is_read?: boolean
           message?: string
           related_id?: string | null
+          scheduled_for?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -1856,6 +1859,16 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      create_follow_up_reminder: {
+        Args: {
+          p_company_name: string
+          p_follow_up_date: string
+          p_job_id: string
+          p_job_title: string
+          p_user_id: string
+        }
+        Returns: string
       }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
