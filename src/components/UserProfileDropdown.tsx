@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -43,7 +44,9 @@ export function UserProfileDropdown() {
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-auto px-2 gap-2">
             <Avatar className="h-8 w-8">
@@ -96,7 +99,8 @@ export function UserProfileDropdown() {
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
-      </DropdownMenu>
+        </DropdownMenu>
+      </div>
       
       <PointsHistoryDialog 
         open={pointsDialogOpen} 

@@ -8,10 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function PostJob() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -33,19 +36,68 @@ export default function PostJob() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to post a job.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     
     try {
-      // Here you would typically save to database
+      const jobData = {
+        title: formData.title,
+        company: formData.company,
+        location: formData.location,
+        job_type: formData.jobType,
+        experience_level: formData.experienceLevel,
+        salary_min: formData.salaryMin ? parseInt(formData.salaryMin) : null,
+        salary_max: formData.salaryMax ? parseInt(formData.salaryMax) : null,
+        description: formData.description,
+        requirements: formData.requirements,
+        benefits: formData.benefits,
+        application_deadline: formData.applicationDeadline || null,
+        posted_by: user.id,
+      };
+
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert([jobData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
         title: "Success",
-        description: "Job posted successfully!",
+        description: "Job posted successfully! All institute users will be notified.",
       });
+      
+      // Reset form
+      setFormData({
+        title: "",
+        company: "",
+        location: "",
+        jobType: "",
+        experienceLevel: "",
+        salaryMin: "",
+        salaryMax: "",
+        description: "",
+        requirements: "",
+        benefits: "",
+        applicationDeadline: "",
+      });
+      
       navigate('/recruiter');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error posting job:', error);
       toast({
         title: "Error",
-        description: "Failed to post job. Please try again.",
+        description: error.message || "Failed to post job. Please try again.",
         variant: "destructive",
       });
     } finally {
