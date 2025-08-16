@@ -1242,20 +1242,80 @@ export default function DocumentationDetail() {
                       </div>
                       
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            {getIcon(step.icon)}
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              {getIcon(step.icon)}
+                            </div>
+                            <div>
+                              {editingStepId === step.id ? (
+                                <Input
+                                  value={editStepTitle}
+                                  onChange={(e) => setEditStepTitle(e.target.value)}
+                                  className="text-lg font-semibold mb-2"
+                                  placeholder="Step title"
+                                />
+                              ) : (
+                                <CardTitle className="text-lg">
+                                  Step {index + 1}: {step.title}
+                                </CardTitle>
+                              )}
+                              {isCompleted && (
+                                <Badge variant="outline" className="text-green-600 border-green-600">
+                                  Completed
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <CardTitle className="text-lg">
-                              Step {index + 1}: {step.title}
-                            </CardTitle>
-                            {isCompleted && (
-                              <Badge variant="outline" className="text-green-600 border-green-600">
-                                Completed
-                              </Badge>
-                            )}
-                          </div>
+                          
+                          {/* Step Admin Controls */}
+                          {isAdmin && (
+                            <div className="flex items-center gap-2">
+                              {editingStepId === step.id ? (
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleSaveStepEdit}
+                                    className="flex items-center gap-1 text-green-600 hover:text-green-600"
+                                  >
+                                    <Save className="h-3 w-3" />
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCancelStepEdit}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditStep(step)}
+                                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                                    title="Edit Step"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteStep(step.id)}
+                                    className="h-8 w-8 p-0 hover:bg-destructive/10 text-destructive hover:text-destructive"
+                                    title="Delete Step"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
