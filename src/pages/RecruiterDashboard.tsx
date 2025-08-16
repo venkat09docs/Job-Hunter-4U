@@ -1,11 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Users, Eye, LayoutDashboard } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, LayoutDashboard, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
+import { useRecruiterStats } from "@/hooks/useRecruiterStats";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RecruiterDashboard() {
   const navigate = useNavigate();
+  const { stats, loading, error } = useRecruiterStats();
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,7 +49,11 @@ export default function RecruiterDashboard() {
               <Briefcase className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              {loading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.activeJobs}</div>
+              )}
               <p className="text-xs text-muted-foreground">Currently active job postings</p>
             </CardContent>
           </Card>
@@ -55,7 +64,11 @@ export default function RecruiterDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              {loading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.totalApplications}</div>
+              )}
               <p className="text-xs text-muted-foreground">Applications received</p>
             </CardContent>
           </Card>
@@ -66,7 +79,11 @@ export default function RecruiterDashboard() {
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              {loading ? (
+                <Skeleton className="h-8 w-12" />
+              ) : (
+                <div className="text-2xl font-bold">{stats.profileViews}</div>
+              )}
               <p className="text-xs text-muted-foreground">Job posting views</p>
             </CardContent>
           </Card>
@@ -78,17 +95,52 @@ export default function RecruiterDashboard() {
               <CardTitle>Recent Job Postings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No job postings yet</p>
-                <Button 
-                  onClick={() => navigate('/recruiter/post-job')} 
-                  variant="outline" 
-                  className="mt-4"
-                >
-                  Post Your First Job
-                </Button>
-              </div>
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center space-x-4">
+                      <Skeleton className="h-12 w-12 rounded" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-[200px]" />
+                        <Skeleton className="h-4 w-[150px]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : stats.recentJobs.length > 0 ? (
+                <div className="space-y-4">
+                  {stats.recentJobs.map((job) => (
+                    <div key={job.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{job.title}</h4>
+                        <p className="text-sm text-muted-foreground">{job.company}</p>
+                        <p className="text-xs text-muted-foreground">{job.location}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={job.is_active ? "default" : "secondary"}>
+                          {job.is_active ? "Active" : "Inactive"}
+                        </Badge>
+                        <div className="text-xs text-muted-foreground flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {format(new Date(job.created_at), "MMM dd")}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No job postings yet</p>
+                  <Button 
+                    onClick={() => navigate('/recruiter/post-job')} 
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    Post Your First Job
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
