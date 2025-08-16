@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -949,6 +949,7 @@ Aim for 100% profile completion, as complete profiles receive significantly more
 export default function DocumentationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isAdmin } = useRole();
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
@@ -956,6 +957,9 @@ export default function DocumentationDetail() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingStepId, setEditingStepId] = useState<number | null>(null);
+  const [editStepTitle, setEditStepTitle] = useState("");
+  const [editStepContent, setEditStepContent] = useState("");
 
   const docId = parseInt(id || "1");
   const doc = documentationContent[docId as keyof typeof documentationContent];
@@ -982,6 +986,33 @@ export default function DocumentationDetail() {
     console.log("Saving changes:", { title: editTitle, description: editDescription });
     toast.success("Documentation updated successfully");
     setIsEditing(false);
+    // Remove edit parameter from URL
+    navigate(`/dashboard/knowledge-base/doc/${id}`, { replace: true });
+  };
+
+  const handleSaveStepEdit = () => {
+    // In a real app, this would make an API call to update the step
+    console.log("Saving step changes:", { 
+      stepId: editingStepId, 
+      title: editStepTitle, 
+      content: editStepContent 
+    });
+    toast.success("Step updated successfully");
+    setEditingStepId(null);
+    setEditStepTitle("");
+    setEditStepContent("");
+  };
+
+  const handleEditStep = (step: any) => {
+    setEditingStepId(step.id);
+    setEditStepTitle(step.title);
+    setEditStepContent(step.content);
+  };
+
+  const handleCancelStepEdit = () => {
+    setEditingStepId(null);
+    setEditStepTitle("");
+    setEditStepContent("");
   };
 
   const handleDelete = () => {
@@ -997,15 +1028,23 @@ export default function DocumentationDetail() {
       setEditDescription(doc.description);
     }
     setIsEditing(false);
+    // Remove edit parameter from URL
+    navigate(`/dashboard/knowledge-base/doc/${id}`, { replace: true });
   };
 
-  // Initialize edit form with current data when doc changes
+  // Initialize edit form with current data when doc changes and check URL params
   useEffect(() => {
     if (doc) {
       setEditTitle(doc.title);
       setEditDescription(doc.description);
+      
+      // Check if edit mode is requested via URL parameter
+      const editMode = searchParams.get('edit');
+      if (editMode === 'true' && isAdmin) {
+        setIsEditing(true);
+      }
     }
-  }, [doc]);
+  }, [doc, searchParams, isAdmin]);
 
   const getIcon = (iconName: string) => {
     const icons = {
@@ -1208,30 +1247,48 @@ export default function DocumentationDetail() {
                   </CardHeader>
                   
                   <CardContent>
-                    <div className="prose prose-sm max-w-none">
-                      {step.content.split('\n\n').map((paragraph, idx) => (
-                        <p key={idx} className="mb-4 whitespace-pre-line text-muted-foreground leading-relaxed">
-                          {paragraph}
-                        </p>
-                      ))}
-                    </div>
+                    {editingStepId === step.id ? (
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor={`step-content-${step.id}`}>Step Content</Label>
+                          <Textarea
+                            id={`step-content-${step.id}`}
+                            value={editStepContent}
+                            onChange={(e) => setEditStepContent(e.target.value)}
+                            rows={15}
+                            className="font-mono text-sm"
+                            placeholder="Enter step content..."
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="prose prose-sm max-w-none">
+                        {step.content.split('\n\n').map((paragraph, idx) => (
+                          <p key={idx} className="mb-4 whitespace-pre-line text-muted-foreground leading-relaxed">
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                     
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        variant={isCompleted ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => toggleStepComplete(step.id)}
-                      >
-                        {isCompleted ? "Mark as Incomplete" : "Mark as Complete"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCurrentStep(step.id)}
-                      >
-                        Focus on this step
-                      </Button>
-                    </div>
+                    {editingStepId !== step.id && (
+                      <div className="flex gap-2 mt-4">
+                        <Button
+                          variant={isCompleted ? "outline" : "default"}
+                          size="sm"
+                          onClick={() => toggleStepComplete(step.id)}
+                        >
+                          {isCompleted ? "Mark as Incomplete" : "Mark as Complete"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCurrentStep(step.id)}
+                        >
+                          Focus on this step
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
