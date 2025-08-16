@@ -7,7 +7,7 @@ export const useProfileBuildingPoints = () => {
   const { user } = useAuth();
   const [isAwarding, setIsAwarding] = useState(false);
 
-  const awardPoints = async (activityId: string, activityType: string = 'completion_milestone') => {
+  const awardPoints = async (activityId: string, activityType: string = 'completion_milestone', isDeduction: boolean = false) => {
     if (!user) return false;
     
     // Prevent concurrent calls for the same activity
@@ -35,13 +35,16 @@ export const useProfileBuildingPoints = () => {
 
       // For LinkedIn Growth activities, use UPSERT to handle dynamic point changes
       if (activityType === 'linkedin_growth') {
+        // Use negative points for deduction, positive for award
+        const pointsToAward = isDeduction ? -Math.abs(activitySetting.points) : activitySetting.points;
+        
         const { error: upsertError } = await supabase
           .from('user_activity_points')
           .upsert({
             user_id: user.id,
             activity_type: activityType,
-            activity_id: activityId,
-            points_earned: activitySetting.points,
+            activity_id: isDeduction ? `${activityId}_deduct` : activityId,
+            points_earned: pointsToAward,
             activity_date: today
           }, {
             onConflict: 'user_id,activity_type,activity_id,activity_date'
@@ -53,7 +56,8 @@ export const useProfileBuildingPoints = () => {
           return false;
         }
 
-        toast.success(`🎉 Updated ${activitySetting.points} points for ${activitySetting.activity_name}!`);
+        const action = isDeduction ? 'deducted' : 'awarded';
+        toast.success(`🎉 ${action.charAt(0).toUpperCase() + action.slice(1)} ${Math.abs(pointsToAward)} points for ${activitySetting.activity_name}!`);
         return true;
       }
 

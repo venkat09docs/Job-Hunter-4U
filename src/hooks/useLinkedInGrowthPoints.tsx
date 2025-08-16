@@ -16,6 +16,7 @@ export const useLinkedInGrowthPoints = (
   const { awardPoints } = useProfileBuildingPoints();
   const processingRef = useRef(false);
   const [previousStatus, setPreviousStatus] = useState<ActivityStatus>({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Define daily activities and their targets
   const DAILY_ACTIVITIES = {
@@ -49,6 +50,20 @@ export const useLinkedInGrowthPoints = (
       return;
     }
     
+    // Don't process points on initial load - only after we have established a baseline
+    if (!isInitialized) {
+      console.log('Initializing baseline status, not processing points');
+      const newStatus: ActivityStatus = {};
+      for (const [activityId, value] of Object.entries(todayMetrics)) {
+        if (DAILY_ACTIVITIES[activityId]) {
+          newStatus[activityId] = getActivityStatus(activityId, value);
+        }
+      }
+      setPreviousStatus(newStatus);
+      setIsInitialized(true);
+      return;
+    }
+    
     processingRef.current = true;
 
     try {
@@ -59,8 +74,8 @@ export const useLinkedInGrowthPoints = (
         const currentStatus = getActivityStatus(activityId, currentValue);
         const lastStatus = previousStatus[activityId] || 'neutral';
         
-        // Only process if status actually changed
-        if (currentStatus !== lastStatus) {
+        // Only process if status actually changed and we have a valid previous status
+        if (currentStatus !== lastStatus && lastStatus !== 'neutral') {
           console.log(`Status changed for ${activityId}: ${lastStatus} -> ${currentStatus}`);
           
           try {
@@ -72,8 +87,8 @@ export const useLinkedInGrowthPoints = (
               }
             } else if (lastStatus === 'success' && currentStatus !== 'success') {
               // Deduct points when moving away from "On Track"
-              // Note: We'll use negative points to deduct
-              const success = await awardPoints(`${activityId}_deduct`, 'linkedin_growth');
+              // Use the same activity ID but with negative points
+              const success = await awardPoints(activityId, 'linkedin_growth', true); // Pass true for deduction
               if (success) {
                 console.log(`Successfully deducted points for ${activityId} (${lastStatus} -> ${currentStatus})`);
               }
@@ -95,7 +110,7 @@ export const useLinkedInGrowthPoints = (
     } finally {
       processingRef.current = false;
     }
-  }, [todayMetrics, previousStatus, awardPoints]);
+  }, [todayMetrics, previousStatus, awardPoints, isInitialized]);
 
   // Run point check whenever metrics change, but with debouncing
   useEffect(() => {
