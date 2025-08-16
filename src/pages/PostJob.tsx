@@ -28,6 +28,7 @@ export default function PostJob() {
     requirements: "",
     benefits: "",
     applicationDeadline: "",
+    jobUrl: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -61,6 +62,7 @@ export default function PostJob() {
         requirements: formData.requirements,
         benefits: formData.benefits,
         application_deadline: formData.applicationDeadline || null,
+        job_url: formData.jobUrl || null,
         posted_by: user.id,
       };
 
@@ -90,6 +92,7 @@ export default function PostJob() {
         requirements: "",
         benefits: "",
         applicationDeadline: "",
+        jobUrl: "",
       });
       
       navigate('/recruiter');
@@ -253,6 +256,17 @@ export default function PostJob() {
                 type="date"
                 value={formData.applicationDeadline}
                 onChange={(e) => handleInputChange('applicationDeadline', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jobUrl">Job Application URL</Label>
+              <Input
+                id="jobUrl"
+                type="url"
+                value={formData.jobUrl}
+                onChange={(e) => handleInputChange('jobUrl', e.target.value)}
+                placeholder="e.g. https://company.com/careers/apply/job-123"
               />
             </div>
 

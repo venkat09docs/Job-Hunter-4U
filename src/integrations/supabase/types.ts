@@ -709,6 +709,7 @@ export type Database = {
           id: string
           is_active: boolean
           job_type: string | null
+          job_url: string | null
           location: string | null
           posted_by: string
           requirements: string
@@ -727,6 +728,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           job_type?: string | null
+          job_url?: string | null
           location?: string | null
           posted_by: string
           requirements: string
@@ -745,6 +747,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           job_type?: string | null
+          job_url?: string | null
           location?: string | null
           posted_by?: string
           requirements?: string
