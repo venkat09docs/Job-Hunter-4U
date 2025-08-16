@@ -105,6 +105,7 @@ const DAILY_ACTIVITIES: DailyActivity[] = [
   // Networking Activities
   { id: 'connection_requests', title: 'Connection', description: 'Send personalized connection requests', category: 'networking', dailyTarget: 2, weeklyTarget: 10, unit: 'requests' },
   { id: 'follow_up', title: 'Follow Up Messages', description: 'Send follow-up messages to recent connections', category: 'networking', dailyTarget: 1, weeklyTarget: 5, unit: 'messages' },
+  { id: 'connections_accepted', title: 'No of Connections Accepted', description: 'Track the number of connection requests accepted by others', category: 'networking', dailyTarget: 0, weeklyTarget: 10, unit: 'connections' },
   
   // Content Activities
   { id: 'create_post', title: 'Create Original Post', description: 'Share an original post about your expertise', category: 'content', dailyTarget: 1, weeklyTarget: 5, unit: 'posts' },
