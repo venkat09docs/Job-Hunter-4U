@@ -207,7 +207,7 @@ export default function KnowledgeBase() {
 
         <div className="space-y-8">
           {/* Reward Points Section */}
-          {(isAdmin || getSettingsByCategory('resume').length > 0) && (
+          {(isAdmin || getSettingsByCategory('resume').length > 0 || getSettingsByCategory('linkedin').length > 0) && (
             <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -220,10 +220,14 @@ export default function KnowledgeBase() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="profile-building">
-                <TabsList className="grid w-full grid-cols-1">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="profile-building" className="flex items-center gap-2">
                     <Trophy className="h-4 w-4" />
                     Profile Building
+                  </TabsTrigger>
+                  <TabsTrigger value="linkedin-growth" className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    LinkedIn Growth
                   </TabsTrigger>
                 </TabsList>
                 
@@ -267,6 +271,53 @@ export default function KnowledgeBase() {
                           <div className="text-center py-8 text-muted-foreground">
                             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
                             <p>No profile building activities configured yet.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </TabsContent>
+                
+                <TabsContent value="linkedin-growth">
+                  <ScrollArea className="h-[400px] pr-4">
+                    {pointsLoading ? (
+                      <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {getSettingsByCategory('linkedin').map((activity) => (
+                          <Card key={activity.id} className="border-l-4 border-l-primary/50">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
+                                    <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
+                                      {activity.is_active ? "Active" : "Inactive"}
+                                    </Badge>
+                                  </div>
+                                  {activity.description && (
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                      {activity.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                                    {activity.points} points
+                                  </Badge>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        {getSettingsByCategory('linkedin').length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No LinkedIn growth activities configured yet.</p>
                           </div>
                         )}
                       </div>
