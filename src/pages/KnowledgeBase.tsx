@@ -323,15 +323,31 @@ export default function KnowledgeBase() {
 
   // Filter content based on user role and publish status
   const getFilteredDocs = (docs: any[]) => {
-    const filtered = docs.filter(doc => doc.isPublished);
-    console.log('Filtering docs:', docs.length, 'filtered to:', filtered.length, 'for admin:', isAdmin);
-    return isAdmin ? docs : filtered; // Admin sees all, users see only published
+    console.log('User role - isAdmin:', isAdmin, 'role from hook');
+    if (isAdmin) {
+      console.log('Admin: Showing all docs:', docs.length);
+      return docs; // Admin sees all
+    }
+    const filtered = docs.filter(doc => {
+      console.log(`Doc ${doc.id}: isPublished=${doc.isPublished}`);
+      return doc.isPublished;
+    });
+    console.log('Non-admin: Filtered docs from', docs.length, 'to', filtered.length);
+    return filtered; // Users see only published
   };
 
   const getFilteredVideos = (videos: any[]) => {
-    const filtered = videos.filter(video => video.isPublished);
-    console.log('Filtering videos:', videos.length, 'filtered to:', filtered.length, 'for admin:', isAdmin);
-    return isAdmin ? videos : filtered; // Admin sees all, users see only published
+    console.log('User role - isAdmin:', isAdmin, 'role from hook');
+    if (isAdmin) {
+      console.log('Admin: Showing all videos:', videos.length);
+      return videos; // Admin sees all
+    }
+    const filtered = videos.filter(video => {
+      console.log(`Video ${video.id}: isPublished=${video.isPublished}`);
+      return video.isPublished;
+    });
+    console.log('Non-admin: Filtered videos from', videos.length, 'to', filtered.length);
+    return filtered; // Users see only published
   };
 
   // Check if category has any published content
@@ -496,107 +512,115 @@ export default function KnowledgeBase() {
                       <TabsContent key={category.id} value={category.id}>
                         <ScrollArea className="h-[500px] pr-4">
                           <div className="space-y-4">
-                            {filteredVideos.map((video) => (
-                              <div key={video.id} className="group">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
-                                  <CardContent className="p-4">
-                                    <div className="flex gap-3">
-                                      <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
-                                        <Play className="h-4 w-4 text-muted-foreground" />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <h3 className="font-semibold text-sm truncate">{video.title}</h3>
-                                          {isAdmin && (
-                                            <Badge variant={video.isPublished ? "default" : "secondary"} className="text-xs">
-                                              {video.isPublished ? "Published" : "Draft"}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                          {video.description}
-                                        </p>
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                          <div className="flex items-center gap-1">
-                                            <Clock className="h-3 w-3" />
-                                            {video.duration}
-                                          </div>
-                                          <div className="flex items-center gap-1">
-                                            <User className="h-3 w-3" />
-                                            {video.instructor}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                  {isAdmin && (
-                                    <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          handleToggleVideoPublish(video.id, category.id, video.isPublished);
-                                        }}
-                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                      >
-                                        {video.isPublished ? (
-                                          <Eye className="h-3 w-3 text-green-600" />
-                                        ) : (
-                                          <EyeOff className="h-3 w-3 text-muted-foreground" />
-                                        )}
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          handleEditVideo(video.id);
-                                        }}
-                                        className="h-8 w-8 p-0 hover:bg-primary/10"
-                                      >
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              e.stopPropagation();
-                                            }}
-                                            className="h-8 w-8 p-0 hover:bg-destructive/10"
-                                          >
-                                            <Trash2 className="h-3 w-3 text-destructive" />
-                                          </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>Delete Video</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              Are you sure you want to delete "{video.title}"? This action cannot be undone.
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                              onClick={() => handleDeleteVideo(video.id, category.id)}
-                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                            >
-                                              Delete
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    </div>
-                                  )}
-                                </Card>
-                              </div>
-                            ))}
-                            {isAdmin && category.videos.length === 0 && (
+                             {filteredVideos.map((video) => {
+                               // Double-check filtering for non-admin users
+                               if (!isAdmin && !video.isPublished) {
+                                 console.log(`Skipping unpublished video ${video.id} for non-admin user`);
+                                 return null;
+                               }
+                               
+                               return (
+                               <div key={video.id} className="group">
+                                 <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
+                                   <CardContent className="p-4">
+                                     <div className="flex gap-3">
+                                       <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
+                                         <Play className="h-4 w-4 text-muted-foreground" />
+                                       </div>
+                                       <div className="flex-1 min-w-0">
+                                         <div className="flex items-center gap-2 mb-1">
+                                           <h3 className="font-semibold text-sm truncate">{video.title}</h3>
+                                           {isAdmin && (
+                                             <Badge variant={video.isPublished ? "default" : "secondary"} className="text-xs">
+                                               {video.isPublished ? "Published" : "Draft"}
+                                             </Badge>
+                                           )}
+                                         </div>
+                                         <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                                           {video.description}
+                                         </p>
+                                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                           <div className="flex items-center gap-1">
+                                             <Clock className="h-3 w-3" />
+                                             {video.duration}
+                                           </div>
+                                           <div className="flex items-center gap-1">
+                                             <User className="h-3 w-3" />
+                                             {video.instructor}
+                                           </div>
+                                         </div>
+                                       </div>
+                                     </div>
+                                   </CardContent>
+                                   {isAdmin && (
+                                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={(e) => {
+                                           e.preventDefault();
+                                           e.stopPropagation();
+                                           handleToggleVideoPublish(video.id, category.id, video.isPublished);
+                                         }}
+                                         className="h-8 w-8 p-0 hover:bg-primary/10"
+                                       >
+                                         {video.isPublished ? (
+                                           <Eye className="h-3 w-3 text-green-600" />
+                                         ) : (
+                                           <EyeOff className="h-3 w-3 text-muted-foreground" />
+                                         )}
+                                       </Button>
+                                       <Button
+                                         variant="ghost"
+                                         size="sm"
+                                         onClick={(e) => {
+                                           e.preventDefault();
+                                           e.stopPropagation();
+                                           handleEditVideo(video.id);
+                                         }}
+                                         className="h-8 w-8 p-0 hover:bg-primary/10"
+                                       >
+                                         <Edit className="h-3 w-3" />
+                                       </Button>
+                                       <AlertDialog>
+                                         <AlertDialogTrigger asChild>
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             onClick={(e) => {
+                                               e.preventDefault();
+                                               e.stopPropagation();
+                                             }}
+                                             className="h-8 w-8 p-0 hover:bg-destructive/10"
+                                           >
+                                             <Trash2 className="h-3 w-3 text-destructive" />
+                                           </Button>
+                                         </AlertDialogTrigger>
+                                         <AlertDialogContent>
+                                           <AlertDialogHeader>
+                                             <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                                             <AlertDialogDescription>
+                                               Are you sure you want to delete "{video.title}"? This action cannot be undone.
+                                             </AlertDialogDescription>
+                                           </AlertDialogHeader>
+                                           <AlertDialogFooter>
+                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                             <AlertDialogAction
+                                               onClick={() => handleDeleteVideo(video.id, category.id)}
+                                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                             >
+                                               Delete
+                                             </AlertDialogAction>
+                                           </AlertDialogFooter>
+                                         </AlertDialogContent>
+                                       </AlertDialog>
+                                     </div>
+                                   )}
+                                 </Card>
+                               </div>
+                               );
+                             }).filter(Boolean)}
+                            {filteredVideos.length === 0 && (
                               <div className="text-center py-8 text-muted-foreground">
                                 <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
                                 <p>No videos in this category yet.</p>
@@ -661,7 +685,14 @@ export default function KnowledgeBase() {
                         <TabsContent key={category.id} value={category.id}>
                           <ScrollArea className="h-[500px] pr-4">
                             <div className="space-y-4">
-                              {filteredDocs.map((doc) => (
+                              {filteredDocs.map((doc) => {
+                                // Double-check filtering for non-admin users
+                                if (!isAdmin && !doc.isPublished) {
+                                  console.log(`Skipping unpublished doc ${doc.id} for non-admin user`);
+                                  return null;
+                                }
+                                
+                                return (
                                 <div key={doc.id} className="group">
                                   <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
                                     <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
@@ -758,10 +789,11 @@ export default function KnowledgeBase() {
                                         </AlertDialog>
                                       </div>
                                     )}
-                                  </Card>
+                                </Card>
                                 </div>
-                              ))}
-                              {isAdmin && category.docs.length === 0 && (
+                                );
+                              }).filter(Boolean)}
+                              {filteredDocs.length === 0 && (
                                 <div className="text-center py-8 text-muted-foreground">
                                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                                   <p>No documentation in this category yet.</p>
