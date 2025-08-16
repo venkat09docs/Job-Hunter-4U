@@ -79,7 +79,7 @@ const FindYourNextRole = () => {
     external_apply: false,
     directapply: false
   });
-  const [activeTab, setActiveTab] = useState("regular-search");
+  const [searchType, setSearchType] = useState("regular-search");
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [addingToWishlist, setAddingToWishlist] = useState<string | null>(null);
@@ -508,778 +508,780 @@ const FindYourNextRole = () => {
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="regular-search">Find Your Next Role</TabsTrigger>
-              <TabsTrigger value="linkedin-jobs">LinkedIn - 24 Hrs Jobs</TabsTrigger>
-              <TabsTrigger value="internal-jobs">Internal Jobs</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="regular-search" className="space-y-6">
-              <Card>
-          <CardHeader>
-            <CardTitle>Job Search Parameters</CardTitle>
-            <CardDescription>
-              Enter your search criteria to find relevant job opportunities
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="query">Search Query</Label>
-                <Input
-                  id="query"
-                  value={formData.query}
-                  onChange={(e) => handleInputChange('query', e.target.value)}
-                  placeholder="e.g., developer jobs in chicago"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date_posted">Date Posted</Label>
-                <Select value={formData.date_posted} onValueChange={(value) => handleInputChange('date_posted', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All time</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="3days">Last 3 days</SelectItem>
-                    <SelectItem value="week">This week</SelectItem>
-                    <SelectItem value="month">This month</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="job_requirements">Job Requirements</Label>
-                <Select value={formData.job_requirements} onValueChange={(value) => handleInputChange('job_requirements', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="under_3_years_experience">Under 3 years experience</SelectItem>
-                    <SelectItem value="more_than_3_years_experience">More than 3 years experience</SelectItem>
-                    <SelectItem value="no_experience">No experience</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="us">United States</SelectItem>
-                    <SelectItem value="ca">Canada</SelectItem>
-                    <SelectItem value="uk">United Kingdom</SelectItem>
-                    <SelectItem value="ie">Ireland</SelectItem>
-                    <SelectItem value="de">Germany</SelectItem>
-                    <SelectItem value="fr">France</SelectItem>
-                    <SelectItem value="au">Australia</SelectItem>
-                    <SelectItem value="in">India</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={formData.language} onValueChange={(value) => handleInputChange('language', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                    <SelectItem value="it">Italian</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="num_pages">Number of Records (Ex: 1 = 10, 2 = 20)</Label>
-                <Input
-                  id="num_pages"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.num_pages}
-                  onChange={(e) => handleInputChange('num_pages', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3 pt-4">
-              <Button 
-                onClick={handleSubmit} 
-                disabled={loading}
-                className="flex-1 md:flex-none"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  "Find Your Next Role"
-                )}
-              </Button>
-
-              <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex-1 md:flex-none">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Search
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Save Search Criteria</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="search-name">Search Name</Label>
-                      <Input
-                        id="search-name"
-                        value={saveSearchName}
-                        onChange={(e) => setSaveSearchName(e.target.value)}
-                        placeholder="e.g., Frontend Developer Jobs"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleSaveSearch}
-                        disabled={savingSearch || !saveSearchName.trim()}
-                        className="flex-1"
-                      >
-                        {savingSearch ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          "Save"
-                        )}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setShowSaveDialog(false);
-                          setSaveSearchName("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              <Dialog open={showLoadDialog} onOpenChange={(open) => {
-                setShowLoadDialog(open);
-                if (open) fetchSavedSearches();
-              }}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex-1 md:flex-none">
-                    <FolderOpen className="mr-2 h-4 w-4" />
-                    Load Search
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Load Saved Search</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {loadingSavedSearches ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                        <span className="ml-2">Loading saved searches...</span>
-                      </div>
-                    ) : savedSearches.length === 0 ? (
-                      <div className="text-center py-4 text-muted-foreground">
-                        No saved searches found. Save your current search criteria first.
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {savedSearches.map((savedSearch) => (
-                          <div 
-                            key={savedSearch.id}
-                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                          >
-                            <div className="flex-1">
-                              <h4 className="font-medium">{savedSearch.name}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Query: {savedSearch.search_criteria.query}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Saved: {new Date(savedSearch.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleLoadSearch(savedSearch)}
-                              >
-                                Load
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteSavedSearch(savedSearch.id, savedSearch.name)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+          <div className="space-y-6">
+            {/* Search Type Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Job Search Type</CardTitle>
+                <CardDescription>
+                  Select the type of job search you want to perform
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="search-type">Search Type</Label>
+                  <Select value={searchType} onValueChange={setSearchType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select search type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular-search">Find Your Next Role</SelectItem>
+                      <SelectItem value="linkedin-jobs">LinkedIn - 24 Hrs Jobs</SelectItem>
+                      <SelectItem value="internal-jobs">Internal Jobs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
 
-            {jobs.length > 0 ? (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">
-                    Job Results ({jobs.length} found)
-                  </h2>
-                  <div className="space-y-4">
-                    {jobs.map((job, index) => (
-                      <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                        <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-xl font-semibold text-foreground mb-2">
-                                {job.job_title}
-                              </h3>
-                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                <div className="flex items-center gap-1">
-                                  <Building className="h-4 w-4" />
-                                  {job.employer_name}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {job.job_location}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {job.job_posted_at}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleAddToWishlist(job)}
-                                disabled={addingToWishlist === job.job_id}
-                                className="flex items-center gap-2"
-                              >
-                                {addingToWishlist === job.job_id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
-                                )}
-                                Wishlist
-                        </Button>
-                        {job.job_apply_link && (
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleApplyAndWishlist(job)}
-                            disabled={addingToWishlist === job.job_id}
-                            className="flex items-center gap-2"
-                          >
-                            {addingToWishlist === job.job_id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <ExternalLink className="h-4 w-4" />
-                            )}
-                            Apply & Add to Tracker
-                          </Button>
+            {/* Regular Job Search */}
+            {searchType === "regular-search" && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Job Search Parameters</CardTitle>
+                    <CardDescription>
+                      Enter your search criteria to find relevant job opportunities
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="query">Search Query</Label>
+                        <Input
+                          id="query"
+                          value={formData.query}
+                          onChange={(e) => handleInputChange('query', e.target.value)}
+                          placeholder="e.g., developer jobs in chicago"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="date_posted">Date Posted</Label>
+                        <Select value={formData.date_posted} onValueChange={(value) => handleInputChange('date_posted', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All time</SelectItem>
+                            <SelectItem value="today">Today</SelectItem>
+                            <SelectItem value="3days">Last 3 days</SelectItem>
+                            <SelectItem value="week">This week</SelectItem>
+                            <SelectItem value="month">This month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="job_requirements">Job Requirements</Label>
+                        <Select value={formData.job_requirements} onValueChange={(value) => handleInputChange('job_requirements', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="under_3_years_experience">Under 3 years experience</SelectItem>
+                            <SelectItem value="more_than_3_years_experience">More than 3 years experience</SelectItem>
+                            <SelectItem value="no_experience">No experience</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="us">United States</SelectItem>
+                            <SelectItem value="ca">Canada</SelectItem>
+                            <SelectItem value="uk">United Kingdom</SelectItem>
+                            <SelectItem value="ie">Ireland</SelectItem>
+                            <SelectItem value="de">Germany</SelectItem>
+                            <SelectItem value="fr">France</SelectItem>
+                            <SelectItem value="au">Australia</SelectItem>
+                            <SelectItem value="in">India</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="language">Language</Label>
+                        <Select value={formData.language} onValueChange={(value) => handleInputChange('language', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="fr">French</SelectItem>
+                            <SelectItem value="de">German</SelectItem>
+                            <SelectItem value="it">Italian</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="num_pages">Number of Records (Ex: 1 = 10, 2 = 20)</Label>
+                        <Input
+                          id="num_pages"
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={formData.num_pages}
+                          onChange={(e) => handleInputChange('num_pages', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3 pt-4">
+                      <Button 
+                        onClick={handleSubmit} 
+                        disabled={loading}
+                        className="flex-1 md:flex-none"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Searching...
+                          </>
+                        ) : (
+                          "Find Your Next Role"
                         )}
+                      </Button>
+
+                      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="flex-1 md:flex-none">
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Search
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Save Search Criteria</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="search-name">Search Name</Label>
+                              <Input
+                                id="search-name"
+                                value={saveSearchName}
+                                onChange={(e) => setSaveSearchName(e.target.value)}
+                                placeholder="e.g., Frontend Developer Jobs"
+                              />
                             </div>
-                          </div>
-                          
-                          {(job.job_min_salary || job.job_max_salary) && (
-                            <div className="mb-3">
-                              <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                                {job.job_min_salary && job.job_max_salary 
-                                  ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : job.job_min_salary 
-                                  ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                }
-                              </span>
-                            </div>
-                          )}
-                          
-                          {job.job_description && (
-                            <p className="text-muted-foreground text-sm line-clamp-3">
-                              {job.job_description}
-                            </p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-              </div>
-            ) : !loading && activeTab === "regular-search" && (
-                <Card>
-                  <CardContent className="p-6">
-                    {renderNoResultsMessage()}
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="linkedin-jobs" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>LinkedIn 24 Hours Jobs Search</CardTitle>
-                  <CardDescription>
-                    Search for recent LinkedIn job postings with advanced filtering options
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-title">Job Title *</Label>
-                      <Input
-                        id="linkedin-title"
-                        value={linkedInFormData.title}
-                        onChange={(e) => handleLinkedInInputChange('title', e.target.value)}
-                        placeholder="Ex: Data Engineer"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-location">Location</Label>
-                      <Input
-                        id="linkedin-location"
-                        value={linkedInFormData.location}
-                        onChange={(e) => handleLinkedInInputChange('location', e.target.value)}
-                        placeholder='"United States" OR "United Kingdom"'
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-type">Employment Type</Label>
-                      <Select value={linkedInFormData.type} onValueChange={(value) => handleLinkedInInputChange('type', value)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="CONTRACTOR">Contractor</SelectItem>
-                          <SelectItem value="FULL_TIME">Full Time</SelectItem>
-                          <SelectItem value="INTERN">Intern</SelectItem>
-                          <SelectItem value="OTHER">Other</SelectItem>
-                          <SelectItem value="PART_TIME">Part Time</SelectItem>
-                          <SelectItem value="TEMPORARY">Temporary</SelectItem>
-                          <SelectItem value="VOLUNTEER">Volunteer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-industry">Industry</Label>
-                      <Input
-                        id="linkedin-industry"
-                        value={linkedInFormData.industry}
-                        onChange={(e) => handleLinkedInInputChange('industry', e.target.value)}
-                        placeholder="Ex: Accounting, Staffing and Recruiting"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-seniority">Seniority Level</Label>
-                      <Select value={linkedInFormData.seniority} onValueChange={(value) => handleLinkedInInputChange('seniority', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select seniority level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Associate">Associate</SelectItem>
-                          <SelectItem value="Director">Director</SelectItem>
-                          <SelectItem value="Executive">Executive</SelectItem>
-                          <SelectItem value="Mid-Senior level">Mid-Senior level</SelectItem>
-                          <SelectItem value="Entry level">Entry level</SelectItem>
-                          <SelectItem value="Not Applicable">Not Applicable</SelectItem>
-                          <SelectItem value="Internship">Internship</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-remote">Remote Work</Label>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="linkedin-remote"
-                          checked={linkedInFormData.remote}
-                          onCheckedChange={(checked) => handleLinkedInInputChange('remote', checked)}
-                        />
-                        <Label htmlFor="linkedin-remote" className="text-sm">
-                          {linkedInFormData.remote ? 'Remote' : 'On-site'}
-                        </Label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-external-apply">External Apply</Label>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="linkedin-external-apply"
-                          checked={linkedInFormData.external_apply}
-                          onCheckedChange={(checked) => handleLinkedInInputChange('external_apply', checked)}
-                        />
-                        <Label htmlFor="linkedin-external-apply" className="text-sm">
-                          {linkedInFormData.external_apply ? 'Enabled' : 'Disabled'}
-                        </Label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin-directapply">Direct Apply</Label>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="linkedin-directapply"
-                          checked={linkedInFormData.directapply}
-                          onCheckedChange={(checked) => handleLinkedInInputChange('directapply', checked)}
-                        />
-                        <Label htmlFor="linkedin-directapply" className="text-sm">
-                          {linkedInFormData.directapply ? 'Enabled' : 'Disabled'}
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  <div className="flex gap-3 pt-4">
-                    <Button 
-                      onClick={handleLinkedInSubmit}
-                      disabled={!linkedInFormData.title || !linkedInFormData.location || loading}
-                      className="flex-1 md:flex-none"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Searching LinkedIn...
-                        </>
-                      ) : (
-                        "Search LinkedIn Jobs"
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* LinkedIn Job Results */}
-              {jobs.length > 0 ? (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">
-                    LinkedIn Job Results ({jobs.length} found)
-                  </h2>
-                  <div className="space-y-4">
-                    {jobs.map((job, index) => (
-                      <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                        <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-xl font-semibold text-foreground mb-2">
-                                {job.job_title}
-                              </h3>
-                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                <div className="flex items-center gap-1">
-                                  <Building className="h-4 w-4" />
-                                  {job.employer_name}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {job.job_location}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {job.job_posted_at}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={handleSaveSearch}
+                                disabled={savingSearch || !saveSearchName.trim()}
+                                className="flex-1"
+                              >
+                                {savingSearch ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Saving...
+                                  </>
+                                ) : (
+                                  "Save"
+                                )}
+                              </Button>
                               <Button 
                                 variant="outline" 
-                                size="sm"
-                                onClick={() => handleAddToWishlist(job)}
-                                disabled={addingToWishlist === job.job_id}
-                                className="flex items-center gap-2"
+                                onClick={() => {
+                                  setShowSaveDialog(false);
+                                  setSaveSearchName("");
+                                }}
                               >
-                                {addingToWishlist === job.job_id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
-                                )}
-                                Wishlist
-                              </Button>
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleApply(job)}
-                                className="flex items-center gap-2"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                                Apply Now
+                                Cancel
                               </Button>
                             </div>
                           </div>
+                        </DialogContent>
+                      </Dialog>
 
-                          {/* Salary Information */}
-                          {(job.job_min_salary || job.job_max_salary) && (
-                            <div className="mb-3">
-                              <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                                {job.job_min_salary && job.job_max_salary 
-                                  ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : job.job_min_salary 
-                                  ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  : `Up to $${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                }
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Job Description Preview */}
-                          {job.job_description && (
-                            <div className="text-sm text-muted-foreground">
-                              <p className="line-clamp-3">
-                                {job.job_description}
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ) : !loading && activeTab === "linkedin-jobs" && (
-                <Card>
-                  <CardContent className="p-6">
-                    {renderNoResultsMessage()}
+                      <Dialog open={showLoadDialog} onOpenChange={(open) => {
+                        setShowLoadDialog(open);
+                        if (open) fetchSavedSearches();
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="flex-1 md:flex-none">
+                            <FolderOpen className="mr-2 h-4 w-4" />
+                            Load Search
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Load Saved Search</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            {loadingSavedSearches ? (
+                              <div className="flex items-center justify-center py-4">
+                                <Loader2 className="h-6 w-6 animate-spin" />
+                                <span className="ml-2">Loading saved searches...</span>
+                              </div>
+                            ) : savedSearches.length === 0 ? (
+                              <div className="text-center py-4 text-muted-foreground">
+                                No saved searches found. Save your current search criteria first.
+                              </div>
+                            ) : (
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                {savedSearches.map((savedSearch) => (
+                                  <div 
+                                    key={savedSearch.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                                  >
+                                    <div className="flex-1">
+                                      <h4 className="font-medium">{savedSearch.name}</h4>
+                                      <p className="text-sm text-muted-foreground">
+                                        Query: {savedSearch.search_criteria.query}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Saved: {new Date(savedSearch.created_at).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleLoadSearch(savedSearch)}
+                                      >
+                                        Load
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleDeleteSavedSearch(savedSearch.id, savedSearch.name)}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
-            </TabsContent>
 
-            <TabsContent value="internal-jobs" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Internal Job Opportunities</CardTitle>
-                  <CardDescription>
-                    Browse job opportunities posted within our platform
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="search">Search Jobs</Label>
-                      <Input
-                        id="search"
-                        value={internalFilters.search}
-                        onChange={(e) => updateFilter('search', e.target.value)}
-                        placeholder="Search by title, company, or description"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={internalFilters.location}
-                        onChange={(e) => updateFilter('location', e.target.value)}
-                        placeholder="Enter location"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="job_type">Job Type</Label>
-                      <Select value={internalFilters.job_type} onValueChange={(value) => updateFilter('job_type', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select job type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Types</SelectItem>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Contract">Contract</SelectItem>
-                          <SelectItem value="Internship">Internship</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="experience_level">Experience Level</Label>
-                      <Select value={internalFilters.experience_level} onValueChange={(value) => updateFilter('experience_level', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select experience level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Levels</SelectItem>
-                          <SelectItem value="Entry Level">Entry Level</SelectItem>
-                          <SelectItem value="Mid Level">Mid Level</SelectItem>
-                          <SelectItem value="Senior Level">Senior Level</SelectItem>
-                          <SelectItem value="Executive">Executive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="salary_min">Min Salary</Label>
-                      <Input
-                        id="salary_min"
-                        type="number"
-                        value={internalFilters.salary_min}
-                        onChange={(e) => updateFilter('salary_min', e.target.value)}
-                        placeholder="Minimum salary"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="salary_max">Max Salary</Label>
-                      <Input
-                        id="salary_max"
-                        type="number"
-                        value={internalFilters.salary_max}
-                        onChange={(e) => updateFilter('salary_max', e.target.value)}
-                        placeholder="Maximum salary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button variant="outline" onClick={clearFilters}>
-                      Clear Filters
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Internal Job Results */}
-              {internalJobsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin" />
-                  <span className="ml-2">Loading internal jobs...</span>
-                </div>
-              ) : internalJobs.length > 0 ? (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-4">
-                    Internal Job Opportunities ({internalJobs.length} found)
-                  </h2>
-                  <div className="space-y-4">
-                    {internalJobs.map((job) => (
-                      <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-xl font-semibold text-foreground mb-2">
-                                {job.title}
-                              </h3>
-                              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                <div className="flex items-center gap-1">
-                                  <Building className="h-4 w-4" />
-                                  {job.company}
-                                </div>
-                                {job.location && (
+                {jobs.length > 0 ? (
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      Job Results ({jobs.length} found)
+                    </h2>
+                    <div className="space-y-4">
+                      {jobs.map((job, index) => (
+                        <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
+                          <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-semibold text-foreground mb-2">
+                                  {job.job_title}
+                                </h3>
+                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Building className="h-4 w-4" />
+                                    {job.employer_name}
+                                  </div>
                                   <div className="flex items-center gap-1">
                                     <MapPin className="h-4 w-4" />
-                                    {job.location}
+                                    {job.job_location}
                                   </div>
-                                )}
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {new Date(job.created_at).toLocaleDateString()}
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {job.job_posted_at}
+                                  </div>
                                 </div>
                               </div>
+                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleAddToWishlist(job)}
+                                  disabled={addingToWishlist === job.job_id}
+                                  className="flex items-center gap-2"
+                                >
+                                  {addingToWishlist === job.job_id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                  )}
+                                  Wishlist
+                                </Button>
+                                {job.job_apply_link && (
+                                  <Button 
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleApplyAndWishlist(job)}
+                                    disabled={addingToWishlist === job.job_id}
+                                    className="flex items-center gap-2"
+                                  >
+                                    {addingToWishlist === job.job_id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <ExternalLink className="h-4 w-4" />
+                                    )}
+                                    Apply & Add to Tracker
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {job.job_type && (
-                              <span className="inline-block bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
-                                {job.job_type}
-                              </span>
+                            
+                            {(job.job_min_salary || job.job_max_salary) && (
+                              <div className="mb-3">
+                                <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                  {job.job_min_salary && job.job_max_salary 
+                                    ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    : job.job_min_salary 
+                                    ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  }
+                                </span>
+                              </div>
                             )}
-                            {job.experience_level && (
-                              <span className="inline-block bg-secondary/50 text-secondary-foreground px-2 py-1 rounded-full text-xs font-medium">
-                                {job.experience_level}
-                              </span>
+                            
+                            {job.job_description && (
+                              <p className="text-muted-foreground text-sm line-clamp-3">
+                                {job.job_description}
+                              </p>
                             )}
-                            {job.application_deadline && (
-                              <span className="inline-block bg-destructive/10 text-destructive px-2 py-1 rounded-full text-xs font-medium">
-                                Deadline: {new Date(job.application_deadline).toLocaleDateString()}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {(job.salary_min || job.salary_max) && (
-                            <div className="mb-3">
-                              <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                                {job.salary_min && job.salary_max 
-                                  ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                                  : job.salary_min 
-                                  ? `$${job.salary_min.toLocaleString()}+`
-                                  : `Up to $${job.salary_max?.toLocaleString()}`
-                                }
-                              </span>
-                            </div>
-                          )}
-                          
-                          <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
-                            {job.description}
-                          </p>
-
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm"
-                              onClick={() => handleAddToWishlist({
-                                job_id: job.id,
-                                job_title: job.title,
-                                employer_name: job.company,
-                                job_location: job.location || '',
-                                job_posted_at: new Date(job.created_at).toISOString(),
-                                job_apply_link: '',
-                                job_description: job.description,
-                                job_min_salary: job.salary_min,
-                                job_max_salary: job.salary_max,
-                                job_salary_period: 'year'
-                              })}
-                              disabled={addingToWishlist === job.id || wishlistedJobs.has(job.id)}
-                            >
-                              {addingToWishlist === job.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              ) : wishlistedJobs.has(job.id) ? (
-                                <Heart className="h-4 w-4 mr-2 fill-current" />
-                              ) : (
-                                <Heart className="h-4 w-4 mr-2" />
-                              )}
-                              {wishlistedJobs.has(job.id) ? 'In Wishlist' : 'Add to Wishlist'}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
+                ) : !loading && searchType === "regular-search" && (
+                  <Card>
+                    <CardContent className="p-6">
+                      {renderNoResultsMessage()}
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {/* LinkedIn Jobs Search */}
+            {searchType === "linkedin-jobs" && (
+              <>
                 <Card>
-                  <CardContent className="p-6">
-                    {renderNoResultsMessage()}
+                  <CardHeader>
+                    <CardTitle>LinkedIn 24 Hours Jobs Search</CardTitle>
+                    <CardDescription>
+                      Search for recent LinkedIn job postings with advanced filtering options
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-title">Job Title *</Label>
+                        <Input
+                          id="linkedin-title"
+                          value={linkedInFormData.title}
+                          onChange={(e) => handleLinkedInInputChange('title', e.target.value)}
+                          placeholder="Ex: Data Engineer"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-location">Location</Label>
+                        <Input
+                          id="linkedin-location"
+                          value={linkedInFormData.location}
+                          onChange={(e) => handleLinkedInInputChange('location', e.target.value)}
+                          placeholder='"United States" OR "United Kingdom"'
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-type">Employment Type</Label>
+                        <Select value={linkedInFormData.type} onValueChange={(value) => handleLinkedInInputChange('type', value)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                            <SelectItem value="FULL_TIME">Full Time</SelectItem>
+                            <SelectItem value="INTERN">Intern</SelectItem>
+                            <SelectItem value="OTHER">Other</SelectItem>
+                            <SelectItem value="PART_TIME">Part Time</SelectItem>
+                            <SelectItem value="TEMPORARY">Temporary</SelectItem>
+                            <SelectItem value="VOLUNTEER">Volunteer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-industry">Industry</Label>
+                        <Input
+                          id="linkedin-industry"
+                          value={linkedInFormData.industry}
+                          onChange={(e) => handleLinkedInInputChange('industry', e.target.value)}
+                          placeholder="Ex: Accounting, Staffing and Recruiting"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-seniority">Seniority Level</Label>
+                        <Select value={linkedInFormData.seniority} onValueChange={(value) => handleLinkedInInputChange('seniority', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select seniority level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Associate">Associate</SelectItem>
+                            <SelectItem value="Director">Director</SelectItem>
+                            <SelectItem value="Executive">Executive</SelectItem>
+                            <SelectItem value="Mid-Senior level">Mid-Senior level</SelectItem>
+                            <SelectItem value="Entry level">Entry level</SelectItem>
+                            <SelectItem value="Not Applicable">Not Applicable</SelectItem>
+                            <SelectItem value="Internship">Internship</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-remote">Remote Work</Label>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="linkedin-remote"
+                            checked={linkedInFormData.remote}
+                            onCheckedChange={(checked) => handleLinkedInInputChange('remote', checked)}
+                          />
+                          <Label htmlFor="linkedin-remote" className="text-sm">
+                            {linkedInFormData.remote ? 'Remote' : 'On-site'}
+                          </Label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-external-apply">External Apply</Label>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="linkedin-external-apply"
+                            checked={linkedInFormData.external_apply}
+                            onCheckedChange={(checked) => handleLinkedInInputChange('external_apply', checked)}
+                          />
+                          <Label htmlFor="linkedin-external-apply" className="text-sm">
+                            {linkedInFormData.external_apply ? 'Enabled' : 'Disabled'}
+                          </Label>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin-directapply">Direct Apply</Label>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="linkedin-directapply"
+                            checked={linkedInFormData.directapply}
+                            onCheckedChange={(checked) => handleLinkedInInputChange('directapply', checked)}
+                          />
+                          <Label htmlFor="linkedin-directapply" className="text-sm">
+                            {linkedInFormData.directapply ? 'Enabled' : 'Disabled'}
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button 
+                        onClick={handleLinkedInSubmit}
+                        disabled={!linkedInFormData.title || !linkedInFormData.location || loading}
+                        className="flex-1 md:flex-none"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Searching LinkedIn...
+                          </>
+                        ) : (
+                          "Search LinkedIn Jobs"
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
-              )}
-            </TabsContent>
-          </Tabs>
+
+                {jobs.length > 0 ? (
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      LinkedIn Job Results ({jobs.length} found)
+                    </h2>
+                    <div className="space-y-4">
+                      {jobs.map((job, index) => (
+                        <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
+                          <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-semibold text-foreground mb-2">
+                                  {job.job_title}
+                                </h3>
+                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Building className="h-4 w-4" />
+                                    {job.employer_name}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    {job.job_location}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {job.job_posted_at}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleAddToWishlist(job)}
+                                  disabled={addingToWishlist === job.job_id}
+                                  className="flex items-center gap-2"
+                                >
+                                  {addingToWishlist === job.job_id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                  )}
+                                  Wishlist
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleApply(job)}
+                                  className="flex items-center gap-2"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  Apply Now
+                                </Button>
+                              </div>
+                            </div>
+
+                            {(job.job_min_salary || job.job_max_salary) && (
+                              <div className="mb-3">
+                                <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                  {job.job_min_salary && job.job_max_salary 
+                                    ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    : job.job_min_salary 
+                                    ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    : `Up to $${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                  }
+                                </span>
+                              </div>
+                            )}
+
+                            {job.job_description && (
+                              <div className="text-sm text-muted-foreground">
+                                <p className="line-clamp-3">
+                                  {job.job_description}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ) : !loading && searchType === "linkedin-jobs" && (
+                  <Card>
+                    <CardContent className="p-6">
+                      {renderNoResultsMessage()}
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+
+            {/* Internal Jobs Search */}
+            {searchType === "internal-jobs" && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Internal Job Opportunities</CardTitle>
+                    <CardDescription>
+                      Browse job opportunities posted within the platform
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-search">Search</Label>
+                        <Input
+                          id="internal-search"
+                          placeholder="Search by title, company..."
+                          value={internalFilters.search}
+                          onChange={(e) => updateFilter('search', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-location">Location</Label>
+                        <Input
+                          id="internal-location"
+                          placeholder="Location"
+                          value={internalFilters.location}
+                          onChange={(e) => updateFilter('location', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-job-type">Job Type</Label>
+                        <Select 
+                          value={internalFilters.job_type} 
+                          onValueChange={(value) => updateFilter('job_type', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select job type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="Full-time">Full-time</SelectItem>
+                            <SelectItem value="Part-time">Part-time</SelectItem>
+                            <SelectItem value="Contract">Contract</SelectItem>
+                            <SelectItem value="Internship">Internship</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-experience">Experience Level</Label>
+                        <Select 
+                          value={internalFilters.experience_level} 
+                          onValueChange={(value) => updateFilter('experience_level', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select experience level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Levels</SelectItem>
+                            <SelectItem value="Entry Level">Entry Level</SelectItem>
+                            <SelectItem value="Mid Level">Mid Level</SelectItem>
+                            <SelectItem value="Senior Level">Senior Level</SelectItem>
+                            <SelectItem value="Executive">Executive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-salary-min">Min Salary</Label>
+                        <Input
+                          id="internal-salary-min"
+                          type="number"
+                          placeholder="Min salary"
+                          value={internalFilters.salary_min}
+                          onChange={(e) => updateFilter('salary_min', e.target.value)}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="internal-salary-max">Max Salary</Label>
+                        <Input
+                          id="internal-salary-max"
+                          type="number"
+                          placeholder="Max salary"
+                          value={internalFilters.salary_max}
+                          onChange={(e) => updateFilter('salary_max', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button variant="outline" onClick={clearFilters}>
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {internalJobsLoading ? (
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                        <span className="ml-2">Loading internal jobs...</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : internalJobs.length > 0 ? (
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground mb-4">
+                      Internal Job Opportunities ({internalJobs.length} found)
+                    </h2>
+                    <div className="space-y-4">
+                      {internalJobs.map((job: InternalJob) => (
+                        <Card key={job.id} className="hover:shadow-lg transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-semibold text-foreground mb-2">
+                                  {job.title}
+                                </h3>
+                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Building className="h-4 w-4" />
+                                    {job.company}
+                                  </div>
+                                  {job.location && (
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4" />
+                                      {job.location}
+                                    </div>
+                                  )}
+                                  {job.job_type && (
+                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                      {job.job_type}
+                                    </span>
+                                  )}
+                                  {job.experience_level && (
+                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                      {job.experience_level}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm">
+                                  <Heart className="h-4 w-4" />
+                                  Wishlist
+                                </Button>
+                                <Button variant="default" size="sm">
+                                  Apply Now
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {(job.salary_min || job.salary_max) && (
+                              <div className="mb-3">
+                                <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                  {job.salary_min && job.salary_max 
+                                    ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
+                                    : job.salary_min 
+                                    ? `$${job.salary_min.toLocaleString()}+`
+                                    : `Up to $${job.salary_max?.toLocaleString()}`
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            
+                            <p className="text-muted-foreground text-sm line-clamp-3">
+                              {job.description}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ) : !internalJobsLoading && searchType === "internal-jobs" && (
+                  <Card>
+                    <CardContent className="p-6">
+                      {renderNoResultsMessage()}
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Job Details Modal */}
               <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
