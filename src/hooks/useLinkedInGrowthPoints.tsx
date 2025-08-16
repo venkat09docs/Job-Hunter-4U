@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useProfileBuildingPoints } from './useProfileBuildingPoints';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityMetrics {
   [key: string]: number;
@@ -18,18 +19,26 @@ export const useLinkedInGrowthPoints = (
   const [previousWeeklyValues, setPreviousWeeklyValues] = useState<ActivityMetrics>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Define activities and their points (from Leader Board Points Management -> LinkedIn Growth)
-  const LINKEDIN_ACTIVITIES = {
-    'comments': { points: 10 },
-    'post_likes': { points: 10 },
-    'content': { points: 15 },
-    'connection_requests': { points: 15 },
-    'follow_up': { points: 20 },
-    'industry_research': { points: 15 },
-    'create_post': { points: 25 },
-    'profile_optimization': { points: 30 },
-    'profile_views': { points: 10 },
-    'connections_accepted': { points: 10 },
+  // Fetch actual configured points from database instead of hardcoded values
+  const fetchActivityPoints = async (activityId: string): Promise<number> => {
+    try {
+      const { data, error } = await supabase
+        .from('activity_point_settings')
+        .select('points')
+        .eq('activity_id', activityId)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) {
+        console.error(`Failed to fetch points for ${activityId}:`, error);
+        return 0;
+      }
+
+      return data.points;
+    } catch (error) {
+      console.error(`Error fetching points for ${activityId}:`, error);
+      return 0;
+    }
   };
 
   // Award or deduct points based on weekly progress changes
@@ -53,8 +62,6 @@ export const useLinkedInGrowthPoints = (
     try {
       // Check each activity for weekly progress changes
       for (const [activityId, currentWeeklyValue] of Object.entries(currentWeeklyMetrics)) {
-        if (!LINKEDIN_ACTIVITIES[activityId]) continue;
-
         const previousWeeklyValue = previousWeeklyValues[activityId] || 0;
         const progressDifference = currentWeeklyValue - previousWeeklyValue;
         
@@ -63,8 +70,14 @@ export const useLinkedInGrowthPoints = (
           console.log(`Weekly progress changed for ${activityId}: ${previousWeeklyValue} -> ${currentWeeklyValue} (difference: ${progressDifference})`);
           
           try {
-            const activity = LINKEDIN_ACTIVITIES[activityId];
-            const pointsToAward = Math.abs(progressDifference) * activity.points;
+            // Fetch actual configured points from database
+            const configuredPoints = await fetchActivityPoints(activityId);
+            if (configuredPoints === 0) {
+              console.log(`No configured points found for ${activityId}, skipping...`);
+              continue;
+            }
+            
+            const pointsToAward = Math.abs(progressDifference) * configuredPoints;
             
             if (progressDifference > 0) {
               // Award points when weekly progress increases
