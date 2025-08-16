@@ -245,8 +245,15 @@ export default function KnowledgeBase() {
   const [videoData, setVideoData] = useState(videoCategories);
   const [docData, setDocData] = useState(docCategories);
   const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
-  const { isAdmin } = useRole();
+  const { isAdmin, role } = useRole();
   const navigate = useNavigate();
+
+  // Debug role and filtering
+  console.log('🔍 KnowledgeBase Debug Info:');
+  console.log('User role:', role);
+  console.log('Is admin:', isAdmin);
+  console.log('Video data sample:', videoData[0]?.videos.map(v => ({ id: v.id, title: v.title, isPublished: v.isPublished })));
+  console.log('Doc data sample:', docData[0]?.docs.map(d => ({ id: d.id, title: d.title, isPublished: d.isPublished })));
 
   const handleDeleteDoc = (docId: number, categoryId: string) => {
     // In a real app, this would make an API call to delete the document
@@ -323,31 +330,43 @@ export default function KnowledgeBase() {
 
   // Filter content based on user role and publish status
   const getFilteredDocs = (docs: any[]) => {
-    console.log('User role - isAdmin:', isAdmin, 'role from hook');
+    console.log('🔍 getFilteredDocs called with:', docs.length, 'docs');
+    console.log('🔍 User role check - isAdmin:', isAdmin, 'role:', role);
+    
     if (isAdmin) {
-      console.log('Admin: Showing all docs:', docs.length);
+      console.log('✅ Admin user: showing all', docs.length, 'docs');
       return docs; // Admin sees all
     }
-    const filtered = docs.filter(doc => {
-      console.log(`Doc ${doc.id}: isPublished=${doc.isPublished}`);
+    
+    const publishedDocs = docs.filter(doc => {
+      console.log(`📄 Doc "${doc.title}" (ID: ${doc.id}): isPublished = ${doc.isPublished}`);
       return doc.isPublished;
     });
-    console.log('Non-admin: Filtered docs from', docs.length, 'to', filtered.length);
-    return filtered; // Users see only published
+    
+    console.log('🔒 Non-admin user: filtered from', docs.length, 'to', publishedDocs.length, 'published docs');
+    console.log('📋 Published docs:', publishedDocs.map(d => d.title));
+    
+    return publishedDocs;
   };
 
   const getFilteredVideos = (videos: any[]) => {
-    console.log('User role - isAdmin:', isAdmin, 'role from hook');
+    console.log('🔍 getFilteredVideos called with:', videos.length, 'videos');
+    console.log('🔍 User role check - isAdmin:', isAdmin, 'role:', role);
+    
     if (isAdmin) {
-      console.log('Admin: Showing all videos:', videos.length);
+      console.log('✅ Admin user: showing all', videos.length, 'videos');
       return videos; // Admin sees all
     }
-    const filtered = videos.filter(video => {
-      console.log(`Video ${video.id}: isPublished=${video.isPublished}`);
+    
+    const publishedVideos = videos.filter(video => {
+      console.log(`🎥 Video "${video.title}" (ID: ${video.id}): isPublished = ${video.isPublished}`);
       return video.isPublished;
     });
-    console.log('Non-admin: Filtered videos from', videos.length, 'to', filtered.length);
-    return filtered; // Users see only published
+    
+    console.log('🔒 Non-admin user: filtered from', videos.length, 'to', publishedVideos.length, 'published videos');
+    console.log('📋 Published videos:', publishedVideos.map(v => v.title));
+    
+    return publishedVideos;
   };
 
   // Check if category has any published content
