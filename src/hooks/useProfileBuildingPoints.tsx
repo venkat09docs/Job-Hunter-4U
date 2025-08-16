@@ -9,6 +9,12 @@ export const useProfileBuildingPoints = () => {
 
   const awardPoints = async (activityId: string, activityType: string = 'completion_milestone') => {
     if (!user) return false;
+    
+    // Prevent concurrent calls for the same activity
+    if (isAwarding) {
+      console.log('Points awarding already in progress, skipping...');
+      return false;
+    }
 
     setIsAwarding(true);
     try {
@@ -41,7 +47,7 @@ export const useProfileBuildingPoints = () => {
       }
 
       if (existingPoints) {
-        console.log('Points already awarded for this activity today');
+        console.log(`Points already awarded for ${activityId} today (${today})`);
         return false;
       }
 
