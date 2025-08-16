@@ -600,21 +600,11 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                         {DAILY_ACTIVITIES.map((activity) => {
-                           const weeklyTotal = weeklyMetrics[activity.id] || 0;
-                           const status = getActivityStatus(activity.id);
-                           
-                           // Debug logging for Like Posts specifically
-                           if (activity.id === 'post_likes') {
-                             console.log('Like Posts Debug:', {
-                               activityId: activity.id,
-                               weeklyTotal,
-                               weeklyMetrics,
-                               rawWeeklyData: weeklyMetrics
-                             });
-                           }
-                           
-                           return (
+                          {DAILY_ACTIVITIES.map((activity) => {
+                            const weeklyTotal = weeklyMetrics[activity.id] || 0;
+                            const status = getActivityStatus(activity.id);
+                            
+                            return (
                             <TableRow key={activity.id}>
                               <TableCell>
                                 <div>
