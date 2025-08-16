@@ -5,6 +5,10 @@ interface ActivityMetrics {
   [key: string]: number;
 }
 
+interface ActivityStatus {
+  [key: string]: 'success' | 'warning' | 'danger' | 'neutral';
+}
+
 export const useLinkedInGrowthPoints = (
   todayMetrics: ActivityMetrics, 
   previousMetrics: ActivityMetrics = {}
@@ -13,8 +17,33 @@ export const useLinkedInGrowthPoints = (
   const processingRef = useRef(false);
   const lastProcessedRef = useRef<string>('');
   const [processedActivities, setProcessedActivities] = useState<Set<string>>(new Set());
+  const [previousStatus, setPreviousStatus] = useState<ActivityStatus>({});
 
-  // Award points when activities are completed or targets are met
+  // Define daily activities and their targets
+  const DAILY_ACTIVITIES = {
+    'comments': { dailyTarget: 2, points: 10 },
+    'post_likes': { dailyTarget: 3, points: 10 },
+    'content': { dailyTarget: 2, points: 15 },
+    'connection_requests': { dailyTarget: 2, points: 15 },
+    'follow_up': { dailyTarget: 1, points: 20 },
+    'industry_research': { dailyTarget: 1, points: 15 },
+    'create_post': { dailyTarget: 1, points: 25 },
+    'profile_optimization': { dailyTarget: 1, points: 30 },
+    'profile_views': { dailyTarget: 5, points: 10 },
+    'connections_accepted': { dailyTarget: 1, points: 10 },
+  };
+
+  // Calculate activity status based on daily count vs target
+  const getActivityStatus = (activityId: string, dailyCount: number) => {
+    const activity = DAILY_ACTIVITIES[activityId];
+    if (!activity) return 'neutral';
+    
+    if (dailyCount >= activity.dailyTarget) return 'success';
+    if (dailyCount >= activity.dailyTarget * 0.7) return 'warning';
+    return 'danger';
+  };
+
+  // Award or deduct points when status changes
   const checkAndAwardPoints = useCallback(async () => {
     // Prevent concurrent execution
     if (processingRef.current) {
@@ -23,24 +52,6 @@ export const useLinkedInGrowthPoints = (
     }
     
     processingRef.current = true;
-    // Define point-worthy thresholds for each activity
-    const POINT_THRESHOLDS = {
-      // Content creation activities - award once when created
-      'create_post': 1, // Award when user creates 1+ posts
-      'profile_optimization': 1, // Award when profile is optimized
-      
-      // Daily target-based activities - award when daily target is met
-      'comments': 2, // Award when 2+ comments made (daily target)
-      'post_likes': 3, // Award when 3+ likes given (daily target)
-      'content': 2, // Award when 2+ content shared (daily target)
-      'connection_requests': 2, // Award when 2+ connection requests sent
-      'follow_up': 1, // Award when 1+ follow-up messages sent
-      'industry_research': 1, // Award when 1+ industry research done
-      
-      // Growth metrics - award based on achievement
-      'profile_views': 5, // Award when 5+ profile views received
-      'connections_accepted': 1, // Award when 1+ connections accepted
-    };
 
     try {
       // Create a unique key for this metrics state to avoid duplicate processing
@@ -50,41 +61,61 @@ export const useLinkedInGrowthPoints = (
         return;
       }
 
-      // Check each activity for point eligibility
+      // Check each activity for status changes
       for (const [activityId, currentValue] of Object.entries(todayMetrics)) {
-        const threshold = POINT_THRESHOLDS[activityId];
-        const previousValue = previousMetrics[activityId] || 0;
+        if (!DAILY_ACTIVITIES[activityId]) continue;
+
+        const currentStatus = getActivityStatus(activityId, currentValue);
+        const lastStatus = previousStatus[activityId] || 'neutral';
         
-        // Create a unique key for today's activity to prevent duplicate processing
-        const today = new Date().toISOString().split('T')[0];
-        const activityKey = `${activityId}-${today}`;
-        
-        if (threshold && 
-            currentValue >= threshold && 
-            previousValue < threshold &&
-            !processedActivities.has(activityKey)) {
+        // Only process if status actually changed
+        if (currentStatus !== lastStatus) {
+          console.log(`Status changed for ${activityId}: ${lastStatus} -> ${currentStatus}`);
           
-          console.log(`Attempting to award points for ${activityId}: ${currentValue} >= ${threshold}`);
+          // Create a unique key for today's activity status change
+          const today = new Date().toISOString().split('T')[0];
+          const statusKey = `${activityId}-${today}-${currentStatus}`;
           
-          try {
-            const success = await awardPoints(activityId, 'linkedin_growth');
-            if (success) {
-              // Mark this activity as processed for today
-              setProcessedActivities(prev => new Set([...prev, activityKey]));
-              console.log(`Successfully awarded points for ${activityId}`);
+          if (!processedActivities.has(statusKey)) {
+            try {
+              if (currentStatus === 'success' && lastStatus !== 'success') {
+                // Award points when moving to "On Track"
+                const success = await awardPoints(activityId, 'linkedin_growth');
+                if (success) {
+                  setProcessedActivities(prev => new Set([...prev, statusKey]));
+                  console.log(`Successfully awarded points for ${activityId} (${lastStatus} -> ${currentStatus})`);
+                }
+              } else if (lastStatus === 'success' && currentStatus !== 'success') {
+                // Deduct points when moving away from "On Track"
+                // Note: We'll use negative points to deduct
+                const success = await awardPoints(`${activityId}_deduct`, 'linkedin_growth');
+                if (success) {
+                  setProcessedActivities(prev => new Set([...prev, statusKey]));
+                  console.log(`Successfully deducted points for ${activityId} (${lastStatus} -> ${currentStatus})`);
+                }
+              }
+            } catch (error) {
+              console.error(`Failed to process points for ${activityId}:`, error);
             }
-          } catch (error) {
-            console.error(`Failed to award points for ${activityId}:`, error);
           }
         }
       }
+      
+      // Update previous status for next check
+      const newStatus: ActivityStatus = {};
+      for (const [activityId, value] of Object.entries(todayMetrics)) {
+        if (DAILY_ACTIVITIES[activityId]) {
+          newStatus[activityId] = getActivityStatus(activityId, value);
+        }
+      }
+      setPreviousStatus(newStatus);
       
       // Update the last processed key
       lastProcessedRef.current = metricsKey;
     } finally {
       processingRef.current = false;
     }
-  }, [todayMetrics, previousMetrics, awardPoints, processedActivities]);
+  }, [todayMetrics, previousStatus, awardPoints, processedActivities]);
 
   // Run point check whenever metrics change, but with debouncing
   useEffect(() => {
