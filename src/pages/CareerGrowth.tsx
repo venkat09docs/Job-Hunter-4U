@@ -506,7 +506,7 @@ export default function CareerGrowth() {
           <TabsList className={`grid w-full ${isIT() ? 'grid-cols-6' : 'grid-cols-5'}`}>
             <TabsTrigger value="resume">Resume</TabsTrigger>
             <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
-            <TabsTrigger value="network">Network Status</TabsTrigger>
+            <TabsTrigger value="network">LinkedIn Activities Status</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
             {isIT() && <TabsTrigger value="github">GitHub</TabsTrigger>}
             <TabsTrigger value="weekly">Weekly</TabsTrigger>
