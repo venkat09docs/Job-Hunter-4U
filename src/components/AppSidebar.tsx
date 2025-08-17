@@ -27,7 +27,8 @@ import {
   Lock,
   GraduationCap,
   Trophy,
-  Bell
+  Bell,
+  Github
 } from "lucide-react";
 import {
   Sidebar,
@@ -53,6 +54,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
+import { useUserIndustry } from "@/hooks/useUserIndustry";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
@@ -72,6 +74,11 @@ const jobHunterItems = [
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search, featureKey: "page_find_your_next_role" },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, featureKey: "page_job_tracker" },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search, featureKey: "page_job_search" },
+];
+
+const githubItems = [
+  { title: "GitHub Optimization", url: "/dashboard/github-optimization", icon: Github, featureKey: "page_github_optimization" },
+  { title: "GitHub Activity Tracker", url: "/dashboard/github-activity-tracker", icon: BarChart3, featureKey: "page_github_activity_tracker" },
 ];
 
 
@@ -101,10 +108,12 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useAuth();
-  const { isAdmin, isInstituteAdmin, isRecruiter } = useRole();
+  const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
   const { canAccessFeature } = usePremiumFeatures();
+  const { isIT } = useUserIndustry();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
+  const [githubOpen, setGitHubOpen] = useState(false);
 
   // Remove the useEffect that was causing conflicts
   // The defaultOpen prop in SidebarProvider now handles initial state
@@ -134,6 +143,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const isExpanded = mainItems.some((i) => isActive(i.url));
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
+  const isGitHubActive = githubItems.some((i) => isActive(i.url));
   
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -275,6 +285,49 @@ export function AppSidebar() {
                       </CollapsibleContent>
                     </Collapsible>
                   </SidebarMenuItem>
+
+                  {/* GitHub Section - Only for IT industry users */}
+                  {isIT() && (
+                    <SidebarMenuItem>
+                      <Collapsible open={githubOpen} onOpenChange={setGitHubOpen}>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className={`${isGitHubActive ? 'text-primary' : 'text-secondary-foreground'} hover:bg-primary/10 hover:text-primary`}>
+                            <Github className="h-5 w-5 flex-shrink-0" />
+                            <span className="font-medium text-sm">GitHub Tools</span>
+                            {githubOpen ? (
+                              <ChevronDown className="h-4 w-4 ml-auto" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 ml-auto" />
+                            )}
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {githubItems.map((item) => {
+                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                              return (
+                                <SidebarMenuSubItem key={item.title}>
+                                  <SidebarMenuSubButton asChild>
+                                    <NavLink to={item.url} end className={({ isActive }) => 
+                                      `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                        isActive 
+                                          ? "text-primary bg-primary/10" 
+                                          : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
+                                      }`
+                                    }>
+                                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                                      <span className="text-xs truncate">{item.title}</span>
+                                      {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
+                                    </NavLink>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

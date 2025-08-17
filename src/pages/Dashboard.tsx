@@ -6,6 +6,7 @@ import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useRole } from '@/hooks/useRole';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,9 +45,10 @@ const Dashboard = () => {
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { isIT } = useUserIndustry();
   
-  // Get the GitHub progress percentage
-  const githubProgress = getGitHubProgress();
+  // Get the GitHub progress percentage only for IT users
+  const githubProgress = isIT() ? getGitHubProgress() : 0;
   const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -289,8 +291,14 @@ const Dashboard = () => {
 
   // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
-    const scores = [resumeProgress, linkedinProgress, getGitHubProgress()];
-    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
+    // For IT users, include GitHub progress; for Non-IT users, exclude it
+    const scores = isIT() 
+      ? [resumeProgress, linkedinProgress, getGitHubProgress()]
+      : [resumeProgress, linkedinProgress];
+    
+    return scores.length > 0 
+      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+      : 0;
   };
 
   // Listen for real-time updates from Career Growth page and Job Tracker
@@ -552,19 +560,21 @@ const Dashboard = () => {
                           <p className="text-xs text-green-600 dark:text-green-400 text-center hidden sm:block">This week activities</p>
                         </div>
 
-                        {/* GitHub Activities */}
-                        <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-900 dark:hover:to-purple-800 cursor-pointer transition-all duration-300"
-                          onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
-                        >
-                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-200/50 dark:bg-purple-800/50 flex items-center justify-center">
-                               <span className="text-base sm:text-lg font-bold text-purple-700 dark:text-purple-300">{repoPercent}%</span>
-                             </div>
+                        {/* GitHub Activities - Only for IT users */}
+                        {isIT() && (
+                          <div 
+                            className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-900 dark:hover:to-purple-800 cursor-pointer transition-all duration-300"
+                            onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
+                          >
+                            <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
+                               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-200/50 dark:bg-purple-800/50 flex items-center justify-center">
+                                 <span className="text-base sm:text-lg font-bold text-purple-700 dark:text-purple-300">{repoPercent}%</span>
+                               </div>
+                            </div>
+                            <h4 className="font-medium text-center text-xs sm:text-sm text-purple-700 dark:text-purple-300">GitHub Status</h4>
+                            <p className="text-xs text-purple-600 dark:text-purple-400 text-center hidden sm:block">Repository tasks</p>
                           </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-purple-700 dark:text-purple-300">GitHub Status</h4>
-                          <p className="text-xs text-purple-600 dark:text-purple-400 text-center hidden sm:block">Repository tasks</p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -676,39 +686,41 @@ const Dashboard = () => {
                       <p className="text-sm text-muted-foreground text-center">Profile optimization</p>
                     </div>
 
-                    {/* GitHub Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/github-optimization')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--border))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${githubProgress * 2.827} ${(100 - githubProgress) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{githubProgress}%</span>
+                    {/* GitHub Status - Only for IT users */}
+                    {isIT() && (
+                      <div 
+                        className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                        onClick={() => navigate('/dashboard/github-optimization')}
+                      >
+                        <div className="relative w-20 h-20 mb-4">
+                          <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="45"
+                              stroke="hsl(var(--border))"
+                              strokeWidth="8"
+                              fill="none"
+                            />
+                            <circle
+                              cx="50"
+                              cy="50"
+                              r="45"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="8"
+                              fill="none"
+                              strokeDasharray={`${githubProgress * 2.827} ${(100 - githubProgress) * 2.827}`}
+                              className="transition-all duration-500"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-lg font-bold text-primary">{githubProgress}%</span>
+                          </div>
                         </div>
+                        <h4 className="font-medium text-center">GitHub</h4>
+                        <p className="text-sm text-muted-foreground text-center">Profile setup progress</p>
                       </div>
-                      <h4 className="font-medium text-center">GitHub</h4>
-                      <p className="text-sm text-muted-foreground text-center">Profile setup progress</p>
-                    </div>
+                    )}
 
                   </div>
                 </CardContent>
