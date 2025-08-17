@@ -16,6 +16,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useInternalJobs, type InternalJob } from "@/hooks/useInternalJobs";
+import { useJobMatching } from "@/hooks/useJobMatching";
+import { Progress } from "@/components/ui/progress";
 
 interface JobResult {
   job_id: string;
@@ -61,6 +63,7 @@ const FindYourNextRole = () => {
   const { user } = useAuth();
   const { incrementAnalytics } = useProfile();
   const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
+  const { calculateJobMatch, loading: profileLoading } = useJobMatching();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
     num_pages: "1",
@@ -847,89 +850,207 @@ const FindYourNextRole = () => {
                 </Card>
 
                 {jobs.length > 0 ? (
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Job Results ({jobs.length} found)
-                    </h2>
-                    <div className="space-y-4">
-                      {jobs.map((job, index) => (
-                        <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                          <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold text-foreground mb-2">
-                                  {job.job_title}
-                                </h3>
-                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <Building className="h-4 w-4" />
-                                    {job.employer_name}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    {job.job_location}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="h-4 w-4" />
-                                    {job.job_posted_at}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Jobs List */}
+                    <div className="lg:col-span-2">
+                      <h2 className="text-2xl font-bold text-foreground mb-4">
+                        Job Results ({jobs.length} found)
+                      </h2>
+                      <div className="space-y-4">
+                        {jobs.map((job, index) => (
+                          <Card 
+                            key={job.job_id || index} 
+                            className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                              selectedJob?.job_id === job.job_id ? 'ring-2 ring-primary' : ''
+                            }`}
+                          >
+                            <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                                    {job.job_title}
+                                  </h3>
+                                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                    <div className="flex items-center gap-1">
+                                      <Building className="h-4 w-4" />
+                                      {job.employer_name}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4" />
+                                      {job.job_location}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4" />
+                                      {job.job_posted_at}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleAddToWishlist(job)}
-                                  disabled={addingToWishlist === job.job_id}
-                                  className="flex items-center gap-2"
-                                >
-                                  {addingToWishlist === job.job_id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
-                                  )}
-                                  Wishlist
-                                </Button>
-                                {job.job_apply_link && (
+                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                                   <Button 
-                                    variant="default"
+                                    variant="outline" 
                                     size="sm"
-                                    onClick={() => handleApplyAndWishlist(job)}
+                                    onClick={() => handleAddToWishlist(job)}
                                     disabled={addingToWishlist === job.job_id}
                                     className="flex items-center gap-2"
                                   >
                                     {addingToWishlist === job.job_id ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
-                                      <ExternalLink className="h-4 w-4" />
+                                      <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
                                     )}
-                                    Apply & Add to Tracker
+                                    Wishlist
                                   </Button>
-                                )}
+                                  {job.job_apply_link && (
+                                    <Button 
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleApplyAndWishlist(job)}
+                                      disabled={addingToWishlist === job.job_id}
+                                      className="flex items-center gap-2"
+                                    >
+                                      {addingToWishlist === job.job_id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <ExternalLink className="h-4 w-4" />
+                                      )}
+                                      Apply & Add to Tracker
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            
-                            {(job.job_min_salary || job.job_max_salary) && (
-                              <div className="mb-3">
-                                <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                                  {job.job_min_salary && job.job_max_salary 
-                                    ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                    : job.job_min_salary 
-                                    ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                    : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  }
-                                </span>
-                              </div>
-                            )}
-                            
-                            {job.job_description && (
-                              <p className="text-muted-foreground text-sm line-clamp-3">
-                                {job.job_description}
-                              </p>
-                            )}
+                              
+                              {(job.job_min_salary || job.job_max_salary) && (
+                                <div className="mb-3">
+                                  <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                    {job.job_min_salary && job.job_max_salary 
+                                      ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                      : job.job_min_salary 
+                                      ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                      : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {job.job_description && (
+                                <p className="text-muted-foreground text-sm line-clamp-3">
+                                  {job.job_description}
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Profile Matching Column */}
+                    <div className="lg:col-span-1">
+                      {selectedJob ? (
+                        <div className="sticky top-4">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center gap-2">
+                                <Search className="h-5 w-5" />
+                                Profile Match Analysis
+                              </CardTitle>
+                              <CardDescription>
+                                How well does your profile match this job?
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {(() => {
+                                const matchResult = calculateJobMatch(
+                                  selectedJob.job_title,
+                                  selectedJob.job_description || '',
+                                  selectedJob.employer_name
+                                );
+                                
+                                return (
+                                  <>
+                                    {/* Match Percentage */}
+                                    <div className="text-center">
+                                      <div className="text-3xl font-bold text-primary mb-2">
+                                        {matchResult.matchPercentage}%
+                                      </div>
+                                      <Progress value={matchResult.matchPercentage} className="h-3 mb-2" />
+                                      <p className="text-sm text-muted-foreground">
+                                        {matchResult.matchPercentage >= 80 ? 'Excellent match!' : 
+                                         matchResult.matchPercentage >= 60 ? 'Good match' : 
+                                         'Needs improvement'}
+                                      </p>
+                                    </div>
+
+                                    {/* Strengths */}
+                                    {matchResult.strengths.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Strengths</h4>
+                                        <ul className="space-y-1">
+                                          {matchResult.strengths.map((strength, index) => (
+                                            <li key={index} className="text-sm flex items-start gap-2">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                              {strength}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* Suggestions */}
+                                    <div>
+                                      <h4 className="font-semibold text-orange-600 mb-2">
+                                        {matchResult.matchPercentage >= 80 ? 'Additional Tips' : 'Improvement Suggestions'}
+                                      </h4>
+                                      <ul className="space-y-1">
+                                        {matchResult.suggestions.map((suggestion, index) => (
+                                          <li key={index} className="text-sm flex items-start gap-2">
+                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                                            {suggestion}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+
+                                    {/* Missing Skills */}
+                                    {matchResult.missingSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-red-600 mb-2">Skills to Develop</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.missingSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Matched Skills */}
+                                    {matchResult.matchedSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Matching Skills</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.matchedSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-6 text-center text-muted-foreground">
+                            <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>Click on a job to see how well your profile matches</p>
                           </CardContent>
                         </Card>
-                      ))}
+                      )}
                     </div>
                   </div>
                 ) : !loading && searchType === "regular-search" && (
@@ -1083,84 +1204,207 @@ const FindYourNextRole = () => {
                 </Card>
 
                 {jobs.length > 0 ? (
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      LinkedIn Job Results ({jobs.length} found)
-                    </h2>
-                    <div className="space-y-4">
-                      {jobs.map((job, index) => (
-                        <Card key={job.job_id || index} className="hover:shadow-lg transition-shadow cursor-pointer">
-                          <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold text-foreground mb-2">
-                                  {job.job_title}
-                                </h3>
-                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <Building className="h-4 w-4" />
-                                    {job.employer_name}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    {job.job_location}
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="h-4 w-4" />
-                                    {job.job_posted_at}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Jobs List */}
+                    <div className="lg:col-span-2">
+                      <h2 className="text-2xl font-bold text-foreground mb-4">
+                        LinkedIn Job Results ({jobs.length} found)
+                      </h2>
+                      <div className="space-y-4">
+                        {jobs.map((job, index) => (
+                          <Card 
+                            key={job.job_id || index} 
+                            className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                              selectedJob?.job_id === job.job_id ? 'ring-2 ring-primary' : ''
+                            }`}
+                          >
+                            <CardContent className="p-6" onClick={() => setSelectedJob(job)}>
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                                    {job.job_title}
+                                  </h3>
+                                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                                    <div className="flex items-center gap-1">
+                                      <Building className="h-4 w-4" />
+                                      {job.employer_name}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="h-4 w-4" />
+                                      {job.job_location}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-4 w-4" />
+                                      {job.job_posted_at}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleAddToWishlist(job)}
-                                  disabled={addingToWishlist === job.job_id}
-                                  className="flex items-center gap-2"
-                                >
-                                  {addingToWishlist === job.job_id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleAddToWishlist(job)}
+                                    disabled={addingToWishlist === job.job_id}
+                                    className="flex items-center gap-2"
+                                  >
+                                    {addingToWishlist === job.job_id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
+                                    )}
+                                    Wishlist
+                                  </Button>
+                                  {job.job_apply_link && (
+                                    <Button 
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleApplyAndWishlist(job)}
+                                      disabled={addingToWishlist === job.job_id}
+                                      className="flex items-center gap-2"
+                                    >
+                                      {addingToWishlist === job.job_id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <ExternalLink className="h-4 w-4" />
+                                      )}
+                                      Apply & Add to Tracker
+                                    </Button>
                                   )}
-                                  Wishlist
-                                </Button>
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={() => handleApply(job)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <ExternalLink className="h-4 w-4" />
-                                  Apply Now
-                                </Button>
+                                </div>
                               </div>
-                            </div>
-
-                            {(job.job_min_salary || job.job_max_salary) && (
-                              <div className="mb-3">
-                                <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                                  {job.job_min_salary && job.job_max_salary 
-                                    ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                    : job.job_min_salary 
-                                    ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                    : `Up to $${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
-                                  }
-                                </span>
-                              </div>
-                            )}
-
-                            {job.job_description && (
-                              <div className="text-sm text-muted-foreground">
-                                <p className="line-clamp-3">
+                              
+                              {(job.job_min_salary || job.job_max_salary) && (
+                                <div className="mb-3">
+                                  <span className="inline-block bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                                    {job.job_min_salary && job.job_max_salary 
+                                      ? `$${job.job_min_salary.toLocaleString()} - $${job.job_max_salary.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                      : job.job_min_salary 
+                                      ? `$${job.job_min_salary.toLocaleString()}+${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                      : `$${job.job_max_salary?.toLocaleString()}${job.job_salary_period ? ` / ${job.job_salary_period.toLowerCase()}` : ''}`
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              
+                              {job.job_description && (
+                                <p className="text-muted-foreground text-sm line-clamp-3">
                                   {job.job_description}
                                 </p>
-                              </div>
-                            )}
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Profile Matching Column */}
+                    <div className="lg:col-span-1">
+                      {selectedJob ? (
+                        <div className="sticky top-4">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center gap-2">
+                                <Search className="h-5 w-5" />
+                                Profile Match Analysis
+                              </CardTitle>
+                              <CardDescription>
+                                How well does your profile match this job?
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {(() => {
+                                const matchResult = calculateJobMatch(
+                                  selectedJob.job_title,
+                                  selectedJob.job_description || '',
+                                  selectedJob.employer_name
+                                );
+                                
+                                return (
+                                  <>
+                                    {/* Match Percentage */}
+                                    <div className="text-center">
+                                      <div className="text-3xl font-bold text-primary mb-2">
+                                        {matchResult.matchPercentage}%
+                                      </div>
+                                      <Progress value={matchResult.matchPercentage} className="h-3 mb-2" />
+                                      <p className="text-sm text-muted-foreground">
+                                        {matchResult.matchPercentage >= 80 ? 'Excellent match!' : 
+                                         matchResult.matchPercentage >= 60 ? 'Good match' : 
+                                         'Needs improvement'}
+                                      </p>
+                                    </div>
+
+                                    {/* Strengths */}
+                                    {matchResult.strengths.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Strengths</h4>
+                                        <ul className="space-y-1">
+                                          {matchResult.strengths.map((strength, index) => (
+                                            <li key={index} className="text-sm flex items-start gap-2">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                              {strength}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* Suggestions */}
+                                    <div>
+                                      <h4 className="font-semibold text-orange-600 mb-2">
+                                        {matchResult.matchPercentage >= 80 ? 'Additional Tips' : 'Improvement Suggestions'}
+                                      </h4>
+                                      <ul className="space-y-1">
+                                        {matchResult.suggestions.map((suggestion, index) => (
+                                          <li key={index} className="text-sm flex items-start gap-2">
+                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                                            {suggestion}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+
+                                    {/* Missing Skills */}
+                                    {matchResult.missingSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-red-600 mb-2">Skills to Develop</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.missingSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Matched Skills */}
+                                    {matchResult.matchedSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Matching Skills</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.matchedSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-6 text-center text-muted-foreground">
+                            <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>Click on a job to see how well your profile matches</p>
                           </CardContent>
                         </Card>
-                      ))}
+                      )}
                     </div>
                   </div>
                 ) : !loading && searchType === "linkedin-jobs" && (
