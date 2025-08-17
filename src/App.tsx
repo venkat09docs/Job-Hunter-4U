@@ -69,6 +69,7 @@ const AppContent = () => {
   const { industry, loading: industryLoading } = useUserIndustry();
   const [showIndustryDialog, setShowIndustryDialog] = useState(false);
   const [industryCheckComplete, setIndustryCheckComplete] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     console.log('🚪 Industry dialog logic:', { 
@@ -77,23 +78,30 @@ const AppContent = () => {
       user: user?.id, 
       industry,
       showIndustryDialog,
-      industryCheckComplete
+      industryCheckComplete,
+      initialLoadComplete
     });
     
     // Only proceed if auth and industry loading are complete
-    if (!authLoading && !industryLoading) {
+    if (!authLoading && !industryLoading && user) {
       setIndustryCheckComplete(true);
       
-      // Show industry selection dialog for authenticated users without industry
-      if (user && !industry) {
-        console.log('🚪 Showing industry dialog - user has no industry set');
-        setShowIndustryDialog(true);
-      } else {
-        console.log('🚪 Not showing industry dialog - user has industry or not authenticated');
-        setShowIndustryDialog(false);
-      }
+      // Add a small delay to ensure all data is properly loaded
+      setTimeout(() => {
+        setInitialLoadComplete(true);
+        
+        // Show industry selection dialog only for authenticated users without industry
+        if (user && !industry) {
+          console.log('🚪 Showing industry dialog - user has no industry set');
+          setShowIndustryDialog(true);
+        } else {
+          console.log('🚪 Not showing industry dialog - user has industry or not authenticated');
+          setShowIndustryDialog(false);
+        }
+      }, 100); // Small delay to prevent race conditions
     } else {
       console.log('🚪 Still loading - auth or industry data not ready');
+      setInitialLoadComplete(false);
     }
   }, [user, industry, authLoading, industryLoading]);
 
@@ -418,7 +426,7 @@ const AppContent = () => {
       </BrowserRouter>
       
       <IndustrySelectionDialog
-        open={showIndustryDialog}
+        open={showIndustryDialog && initialLoadComplete}
         onOpenChange={setShowIndustryDialog}
       />
     </>
