@@ -18,8 +18,53 @@ export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
 
-  const handleNotificationClick = (notificationId: string) => {
-    markAsRead(notificationId);
+  const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    
+    // Navigate based on notification type
+    switch (notification.type) {
+      case 'profile_completion_reminder':
+      case 'resume_progress_update':
+        navigate('/dashboard/build-my-profile');
+        break;
+      case 'linkedin_progress_update':
+        navigate('/dashboard/linkedin-optimization');
+        break;
+      case 'github_activity_reminder':
+        navigate('/dashboard/github-activity-tracker');
+        break;
+      case 'job_search_results':
+      case 'job_application_reminder':
+      case 'new_job_posted':
+      case 'job_match_found':
+        navigate('/dashboard/job-search');
+        break;
+      case 'follow_up_reminder':
+        navigate('/dashboard/job-tracker');
+        break;
+      case 'interview_preparation':
+        navigate('/dashboard/career-growth');
+        break;
+      case 'learning_goal_reminder':
+      case 'skill_assessment_due':
+        navigate('/dashboard/level-up');
+        break;
+      case 'achievement_unlocked':
+      case 'milestone_reached':
+      case 'leaderboard_position':
+        navigate('/dashboard/leaderboard-points');
+        break;
+      case 'weekly_progress_summary':
+      case 'monthly_progress_report':
+        navigate('/dashboard');
+        break;
+      case 'system_maintenance':
+      case 'feature_announcement':
+        navigate('/dashboard');
+        break;
+      default:
+        navigate('/dashboard');
+    }
   };
 
   const handleViewAllClick = () => {
@@ -68,7 +113,7 @@ export function NotificationBell() {
               <DropdownMenuItem
                 key={notification.id}
                 className="p-3 cursor-pointer focus:bg-muted"
-                onClick={() => handleNotificationClick(notification.id)}
+                onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex flex-col gap-1 w-full">
                   <div className="flex items-start justify-between gap-2">
