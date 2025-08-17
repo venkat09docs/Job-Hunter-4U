@@ -38,6 +38,11 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
+  const handleExternalLink = (url: string) => {
+    window.open(url, '_blank');
+    setIsOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -94,6 +99,22 @@ const Navigation = () => {
                 onClick={() => handleNavigate('/courses')}
               >
                 Courses
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
+                onClick={() => handleNavigate('/auth')}
+              >
+                Recruiter
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
+                onClick={() => handleExternalLink('https://members.risenshinetechnologies.com/communities/groups/job-hunting-pro/home')}
+              >
+                Community
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -170,6 +191,20 @@ const Navigation = () => {
                   onClick={() => handleNavigate('/courses')}
                 >
                   Courses
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigate('/auth')}
+                >
+                  Recruiter
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleExternalLink('https://members.risenshinetechnologies.com/communities/groups/job-hunting-pro/home')}
+                >
+                  Community
                 </Button>
                 <Button
                   variant="ghost"
