@@ -144,6 +144,13 @@ const LevelUp = () => {
             </div>
           </header>
 
+          {/* My Job Hunter Heading */}
+          <div className="py-6 text-center border-b">
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              My Job Hunter
+            </h1>
+          </div>
+
           {/* Main Content */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
             {/* Welcome Section */}
