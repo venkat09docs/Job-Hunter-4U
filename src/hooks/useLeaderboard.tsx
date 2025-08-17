@@ -16,13 +16,23 @@ export interface LeaderboardData {
   top_performer: LeaderboardEntry[];
   current_week: LeaderboardEntry[];
   last_30_days: LeaderboardEntry[];
+  current_user_points: {
+    current_week: number;
+    last_30_days: number;
+    all_time: number;
+  };
 }
 
 export const useLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData>({
     top_performer: [],
     current_week: [],
-    last_30_days: []
+    last_30_days: [],
+    current_user_points: {
+      current_week: 0,
+      last_30_days: 0,
+      all_time: 0
+    }
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -58,6 +68,9 @@ export const useLeaderboard = () => {
     try {
       setLoading(true);
       
+      // Calculate current user's points for all periods first
+      const currentUserPoints = await getCurrentUserPoints();
+      
       // Get leaderboards for different periods
       const topPerformerData = await getLeaderboardForPeriod('top_performer');
       const currentWeekData = await getLeaderboardForPeriod('current_week');
@@ -66,13 +79,74 @@ export const useLeaderboard = () => {
       setLeaderboard({
         top_performer: topPerformerData,
         current_week: currentWeekData,
-        last_30_days: last30DaysData
+        last_30_days: last30DaysData,
+        current_user_points: currentUserPoints
       });
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       toast.error('Failed to load leaderboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getCurrentUserPoints = async () => {
+    if (!user) {
+      return { current_week: 0, last_30_days: 0, all_time: 0 };
+    }
+
+    try {
+      // Get current week points
+      const today = new Date();
+      const currentDayOfWeek = today.getDay();
+      const daysBackToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+      
+      const weekStartDate = new Date(today);
+      weekStartDate.setDate(today.getDate() - daysBackToMonday);
+      weekStartDate.setHours(0, 0, 0, 0);
+
+      const { data: currentWeekData } = await supabase
+        .from('user_activity_points')
+        .select('points_earned')
+        .eq('user_id', user.id)
+        .gte('activity_date', weekStartDate.toISOString().split('T')[0])
+        .lte('activity_date', new Date().toISOString().split('T')[0]);
+
+      // Get last 30 days points
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data: last30DaysData } = await supabase
+        .from('user_activity_points')
+        .select('points_earned')
+        .eq('user_id', user.id)
+        .gte('activity_date', thirtyDaysAgo.toISOString().split('T')[0])
+        .lte('activity_date', new Date().toISOString().split('T')[0]);
+
+      // Get all time points
+      const { data: allTimeData } = await supabase
+        .from('user_activity_points')
+        .select('points_earned')
+        .eq('user_id', user.id);
+
+      const currentWeekPoints = currentWeekData?.reduce((sum, record) => sum + record.points_earned, 0) || 0;
+      const last30DaysPoints = last30DaysData?.reduce((sum, record) => sum + record.points_earned, 0) || 0;
+      const allTimePoints = allTimeData?.reduce((sum, record) => sum + record.points_earned, 0) || 0;
+
+      console.log('Current user points calculated:', { 
+        current_week: currentWeekPoints, 
+        last_30_days: last30DaysPoints, 
+        all_time: allTimePoints 
+      });
+
+      return {
+        current_week: currentWeekPoints,
+        last_30_days: last30DaysPoints,
+        all_time: allTimePoints
+      };
+    } catch (error) {
+      console.error('Error calculating current user points:', error);
+      return { current_week: 0, last_30_days: 0, all_time: 0 };
     }
   };
 
