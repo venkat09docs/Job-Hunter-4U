@@ -64,7 +64,7 @@ const mainItems = [
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Super AI", url: "/dashboard/super-ai", icon: Bot, featureKey: "super_ai" },
-  { title: "Digital Portfolio", url: "/dashboard/digital-portfolio", icon: Briefcase, featureKey: "digital_portfolio" },
+  
   { title: "Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
 ];

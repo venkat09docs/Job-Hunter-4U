@@ -9,6 +9,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,7 @@ const BuildMyProfile = () => {
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { isIT } = useUserIndustry();
   
   // Integrate profile building points hooks for automatic point awarding
   const { linkedInProgress: linkedInProgressPoints } = useLinkedInProgressPoints(profile);
@@ -96,7 +98,16 @@ const BuildMyProfile = () => {
   };
 
   // Profile building tasks with progress tracking
-  const profileTasks = [
+  const allProfileTasks = [
+    {
+      id: 'digital-portfolio',
+      title: 'Digital Portfolio',
+      description: 'Create your comprehensive digital portfolio',
+      progress: profile?.full_name ? 50 : 0, // Basic progress based on profile completion
+      isCompleted: profile?.full_name && profile?.bio_link_url,
+      action: () => navigate('/dashboard/digital-portfolio'),
+      category: 'Digital Profile'
+    },
     {
       id: 'resume',
       title: 'Complete Resume',
@@ -134,6 +145,14 @@ const BuildMyProfile = () => {
       category: 'Social Presence'
     },
   ];
+
+  // Filter tasks based on user industry - hide GitHub for Non-IT users
+  const profileTasks = allProfileTasks.filter(task => {
+    if (task.id === 'github' && !isIT()) {
+      return false;
+    }
+    return true;
+  });
 
   // Group tasks by category
   const tasksByCategory = profileTasks.reduce((acc, task) => {
