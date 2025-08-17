@@ -145,6 +145,11 @@ export const useLeaderboard = () => {
         .slice(0, 10)
         .map(([userId]) => userId);
 
+      // Always include current user if they have points but aren't in top 10
+      if (user && userPoints.has(user.id) && !topUserIds.includes(user.id)) {
+        topUserIds.push(user.id);
+      }
+
       if (topUserIds.length === 0) {
         return [];
       }
@@ -157,8 +162,8 @@ export const useLeaderboard = () => {
       // Filter profiles to only include users in our leaderboard
       const filteredProfiles = profileData?.filter(p => topUserIds.includes(p.user_id)) || [];
 
-      // Combine user data with points and rankings
-      const leaderboardEntries: LeaderboardEntry[] = topUserIds.map((userId, index) => {
+      // Combine user data with points and rankings for top 10
+      const topTenEntries: LeaderboardEntry[] = topUserIds.slice(0, 10).map((userId, index) => {
         const profile = filteredProfiles?.find(p => p.user_id === userId);
         return {
           user_id: userId,
@@ -169,6 +174,23 @@ export const useLeaderboard = () => {
           rank_position: index + 1
         };
       });
+
+      // If current user is not in top 10, add them separately for points display
+      let leaderboardEntries = topTenEntries;
+      if (user && userPoints.has(user.id) && !topTenEntries.some(entry => entry.user_id === user.id)) {
+        const profile = filteredProfiles?.find(p => p.user_id === user.id);
+        const userEntry: LeaderboardEntry = {
+          user_id: user.id,
+          full_name: profile?.full_name || 'Unknown User',
+          username: profile?.username || 'unknown',
+          profile_image_url: profile?.profile_image_url,
+          total_points: userPoints.get(user.id) || 0,
+          rank_position: Array.from(userPoints.entries())
+            .sort((a, b) => b[1] - a[1])
+            .findIndex(([userId]) => userId === user.id) + 1
+        };
+        leaderboardEntries = [...topTenEntries, userEntry];
+      }
 
       return leaderboardEntries;
     } catch (error) {
