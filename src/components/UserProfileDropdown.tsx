@@ -24,9 +24,8 @@ export function UserProfileDropdown() {
   const [open, setOpen] = useState(false);
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
 
-  // Get current user's points - prioritize from current_user_points, fallback to finding in current_week array
-  const userPoints = leaderboard.current_user_points?.current_week || 
-                    leaderboard.current_week?.find(entry => entry.user_id === user?.id)?.total_points || 0;
+  // Get current user's total points earned so far (all time)
+  const userPoints = leaderboard.current_user_points?.all_time || 0;
 
   const handleSignOut = async () => {
     await signOut();
