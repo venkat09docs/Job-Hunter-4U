@@ -14,9 +14,9 @@ export default function DigitalPortfolio() {
   const [showPricing, setShowPricing] = useState(false);
 
   const handleOpenPortfolio = () => {
-    // Check if user has '1 Year' subscription
+    // Check if user has at least 6 months subscription (6 Months or 1 Year)
     const hasRequiredSubscription = profile?.subscription_active && 
-      profile?.subscription_plan === '1 Year';
+      (profile?.subscription_plan === '6 Months' || profile?.subscription_plan === '1 Year');
     
     if (hasRequiredSubscription) {
       window.open("https://app.funnelshubpro.com/", "_blank", "noopener,noreferrer");
@@ -79,10 +79,16 @@ export default function DigitalPortfolio() {
       {showPricing && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-background rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="mb-6 text-center">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Subscription Required</h2>
+              <p className="text-muted-foreground">
+                Access to Digital Portfolio requires at least a 6 months subscription plan. Please upgrade your plan to continue.
+              </p>
+            </div>
             <PricingDialog />
             <button
               onClick={() => setShowPricing(false)}
-              className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80"
+              className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80 w-full"
             >
               Close
             </button>

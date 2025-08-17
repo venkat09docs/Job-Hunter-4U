@@ -91,28 +91,6 @@ const BuildMyProfile = () => {
     fetchCounts();
   }, [user]);
 
-  // Calculate digital portfolio progress based on profile completeness
-  const calculateDigitalPortfolioProgress = () => {
-    if (!profile) return 0;
-    
-    let progress = 0;
-    const fields = [
-      { field: profile.full_name, weight: 25 }, // Basic info
-      { field: profile.profile_image_url, weight: 20 }, // Profile image
-      { field: profile.bio_link_url, weight: 15 }, // Bio description
-      { field: profile.linkedin_url, weight: 15 }, // LinkedIn URL
-      { field: profile.github_url, weight: 15 }, // GitHub URL
-      { field: profile.digital_profile_url, weight: 10 }, // Digital profile URL
-    ];
-    
-    fields.forEach(({ field, weight }) => {
-      if (field && field.trim() !== '') {
-        progress += weight;
-      }
-    });
-    
-    return Math.min(progress, 100);
-  };
 
   // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
@@ -125,11 +103,16 @@ const BuildMyProfile = () => {
     {
       id: 'digital-portfolio',
       title: 'Digital Portfolio',
-      description: 'Create your comprehensive digital portfolio',
-      progress: calculateDigitalPortfolioProgress(),
-      isCompleted: calculateDigitalPortfolioProgress() >= 80, // Consider 80%+ as completed
+      description: 'Build a professional online presence with a custom digital portfolio and bio link page. Essential for showcasing your skills, projects, and achievements to potential employers and clients.',
+      progress: 0, // No progress calculation needed
+      isCompleted: false, // Always shows as action item
       action: () => navigate('/dashboard/digital-portfolio'),
-      category: 'Digital Profile'
+      category: 'Digital Profile',
+      isEducational: true,
+      sampleLinks: [
+        { label: 'Digital Profile Example', url: 'https://venkatgollamudi.com/' },
+        { label: 'Bio Link Example', url: 'https://venkatgollamudi.com/bio' }
+      ]
     },
     {
       id: 'resume',
@@ -348,19 +331,43 @@ const BuildMyProfile = () => {
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium">{task.title}</h4>
-                              <Badge variant={task.isCompleted ? "default" : "secondary"}>
-                                {task.id === 'cover-letter' ? task.progress : `${task.progress}%`}
-                              </Badge>
+                              {!task.isEducational && (
+                                <Badge variant={task.isCompleted ? "default" : "secondary"}>
+                                  {task.id === 'cover-letter' ? task.progress : `${task.progress}%`}
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
                             
-                            {/* Progress Bar */}
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div
-                                className="bg-primary h-2 rounded-full transition-all duration-500"
-                                style={{ width: task.id === 'cover-letter' ? `${Math.min(task.progress * 10, 100)}%` : `${task.progress}%` }}
-                              />
-                            </div>
+                            {/* Sample Links for Educational Cards */}
+                            {task.sampleLinks && (
+                              <div className="flex gap-2 mb-2">
+                                {task.sampleLinks.map((link, index) => (
+                                  <Button
+                                    key={index}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.open(link.url, '_blank');
+                                    }}
+                                  >
+                                    {link.label}
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Progress Bar - only for non-educational cards */}
+                            {!task.isEducational && (
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <div
+                                  className="bg-primary h-2 rounded-full transition-all duration-500"
+                                  style={{ width: task.id === 'cover-letter' ? `${Math.min(task.progress * 10, 100)}%` : `${task.progress}%` }}
+                                />
+                              </div>
+                            )}
                           </div>
                           
                           <Button variant="ghost" size="sm">
