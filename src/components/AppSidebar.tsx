@@ -212,22 +212,6 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* Settings Section - Available to all users */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/dashboard/settings" end className={getNavCls}>
-                    <Settings className="h-5 w-5 flex-shrink-0" />
-                    <span className="font-medium text-sm">Account Settings</span>
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* Hide other main items for institute admins and recruiters */}
         {!isInstituteAdmin && !isRecruiter && (

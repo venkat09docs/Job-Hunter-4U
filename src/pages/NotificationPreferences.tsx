@@ -2,11 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Settings, ToggleLeft, ToggleRight } from "lucide-react";
+import { Bell, Settings, ToggleLeft, ToggleRight, ArrowLeft } from "lucide-react";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useRole } from "@/hooks/useRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 export default function NotificationPreferences() {
   const { role, loading: roleLoading } = useRole();
@@ -73,6 +74,14 @@ export default function NotificationPreferences() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Go to Dashboard
+              </Link>
+            </Button>
+          </div>
           <div className="flex items-center gap-3">
             <Bell className="h-8 w-8 text-primary" />
             <div>
