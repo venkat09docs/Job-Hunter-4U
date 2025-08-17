@@ -403,12 +403,16 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
   };
 
   const handleLinkedInPostsClick = () => {
+    console.log('handleLinkedInPostsClick called', { hasActiveSubscription: hasActiveSubscription() });
     if (hasActiveSubscription()) {
       window.open('https://mysuperaiapp.com/login', '_blank');
     } else {
       setShowPricingDialog(true);
     }
   };
+
+  // Debug log to ensure function is defined
+  console.log('handleLinkedInPostsClick function defined:', typeof handleLinkedInPostsClick);
 
   const filteredActivities = selectedCategory === 'all'
     ? activities 
