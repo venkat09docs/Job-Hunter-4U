@@ -1315,6 +1315,7 @@ export type Database = {
           full_name: string | null
           github_url: string | null
           id: string
+          industry: string | null
           leetcode_url: string | null
           linkedin_url: string | null
           profile_image_url: string | null
@@ -1337,6 +1338,7 @@ export type Database = {
           full_name?: string | null
           github_url?: string | null
           id?: string
+          industry?: string | null
           leetcode_url?: string | null
           linkedin_url?: string | null
           profile_image_url?: string | null
@@ -1359,6 +1361,7 @@ export type Database = {
           full_name?: string | null
           github_url?: string | null
           id?: string
+          industry?: string | null
           leetcode_url?: string | null
           linkedin_url?: string | null
           profile_image_url?: string | null

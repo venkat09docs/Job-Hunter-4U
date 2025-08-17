@@ -142,6 +142,7 @@ Deno.serve(async (req) => {
       email: userData.email,
       full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email?.split('@')[0],
       username: userData.username || userData.raw_user_meta_data?.username || userData.email?.split('@')[0],
+      industry: userData.industry || userData.raw_user_meta_data?.industry || 'IT',
       created_at: userData.created_at,
       updated_at: userData.updated_at || new Date().toISOString(),
       email_verified: userData.email_confirmed_at ? true : false,
