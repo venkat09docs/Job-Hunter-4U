@@ -43,10 +43,13 @@ const Index = () => {
       <Navigation />
       
       {/* My Job Hunter Heading */}
-      <div className="py-8 text-center bg-gradient-to-r from-background to-background/95">
-        <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          My Job Hunter
-        </h1>
+      <div className="py-12 text-center bg-gradient-hero">
+        <div className="space-y-2">
+          <p className="text-lg font-medium text-muted-foreground">Welcome to</p>
+          <h1 className="text-8xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            My Job Hunter
+          </h1>
+        </div>
       </div>
       
       <div id="hero">
