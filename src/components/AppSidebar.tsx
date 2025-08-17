@@ -225,14 +225,6 @@ export function AppSidebar() {
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink to="/dashboard/notification-preferences" end className={getNavCls}>
-                    <Bell className="h-5 w-5 flex-shrink-0" />
-                    <span className="font-medium text-sm">Notifications</span>
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

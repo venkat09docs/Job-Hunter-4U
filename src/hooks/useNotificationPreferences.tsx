@@ -37,6 +37,13 @@ export function useNotificationPreferences() {
 
       if (error) throw error;
 
+      // If no preferences found, initialize them
+      if (!data || data.length === 0) {
+        console.log('No notification preferences found, initializing...');
+        await initializePreferences();
+        return;
+      }
+
       setPreferences(data || []);
     } catch (error) {
       console.error('Error fetching notification preferences:', error);
@@ -46,6 +53,28 @@ export function useNotificationPreferences() {
         variant: 'destructive'
       });
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const initializePreferences = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('initialize-user-notifications', {
+        body: { userId: user.id }
+      });
+
+      if (error) throw error;
+
+      // Refetch preferences after initialization
+      await fetchPreferences();
+    } catch (error) {
+      console.error('Error initializing notification preferences:', error);
+      toast({
+        title: 'Info',
+        description: 'Setting up your notification preferences...',
+      });
       setLoading(false);
     }
   };

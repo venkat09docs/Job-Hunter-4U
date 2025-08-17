@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown, Trophy } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,6 +91,12 @@ export function UserProfileDropdown() {
             <Link to="/dashboard/settings" className="gap-2">
               <Settings className="h-4 w-4" />
               Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/dashboard/notification-preferences" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Notifications
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
