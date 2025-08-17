@@ -14,6 +14,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useLinkedInGrowthPoints } from '@/hooks/useLinkedInGrowthPoints';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useToast } from '@/hooks/use-toast';
 import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
@@ -118,6 +119,7 @@ const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   // LinkedIn Network functionality
   const { updateMetrics, getTodayMetrics, getWeeklyMetrics } = useLinkedInNetworkProgress();
   const { user } = useAuth();
+  const { isIT } = useUserIndustry();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
@@ -429,10 +431,10 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
 
         {/* Main Tabs - Promoted from sub tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-<TabsList className="grid w-full grid-cols-5">
+<TabsList className={`grid w-full ${isIT() ? 'grid-cols-5' : 'grid-cols-4'}`}>
   <TabsTrigger value="application">Job Applications</TabsTrigger>
   <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
-  <TabsTrigger value="skill">GitHub Activities</TabsTrigger>
+  {isIT() && <TabsTrigger value="skill">GitHub Activities</TabsTrigger>}
   <TabsTrigger value="content">Content Mgmt</TabsTrigger>
   <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
 </TabsList>

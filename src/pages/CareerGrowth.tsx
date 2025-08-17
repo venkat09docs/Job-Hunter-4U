@@ -19,6 +19,7 @@ import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useDailyProgress } from '@/hooks/useDailyProgress';
@@ -57,6 +58,7 @@ export default function CareerGrowth() {
   const { getTodayMetrics, loading: networkLoading } = useLinkedInNetworkProgress();
   const { metrics: networkMetrics } = useNetworkGrowthMetrics();
   const { formatWeeklyMetrics, formatDailyMetrics, getDailyTrends, loading: dailyLoading, createTodaySnapshot, refreshProgress } = useDailyProgress();
+  const { isIT } = useUserIndustry();
   
   // Network activities state
   const [networkDailyMetrics, setNetworkDailyMetrics] = useState<{[key: string]: number}>({});
@@ -247,8 +249,14 @@ export default function CareerGrowth() {
   };
 
   const getOverallScore = () => {
-    const scores = [resumeProgress, linkedinProgress, githubProgress];
-    return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
+    // For IT users, include GitHub progress; for Non-IT users, exclude it
+    const scores = isIT() 
+      ? [resumeProgress, linkedinProgress, githubProgress]
+      : [resumeProgress, linkedinProgress];
+    
+    return scores.length > 0 
+      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+      : 0;
   };
 
   const getPriorityColor = (priority: string) => {
@@ -478,10 +486,12 @@ export default function CareerGrowth() {
                     <div className="text-2xl font-bold text-green-700 dark:text-green-300">{linkedinProgress}%</div>
                     <div className="text-sm text-green-600 dark:text-green-400">LinkedIn Optimized</div>
                   </div>
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{githubProgress}%</div>
-                    <div className="text-sm text-purple-600 dark:text-purple-400">GitHub Setup</div>
-                  </div>
+                  {isIT() && (
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 p-4 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{githubProgress}%</div>
+                      <div className="text-sm text-purple-600 dark:text-purple-400">GitHub Setup</div>
+                    </div>
+                  )}
                   <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{totalJobApplications}</div>
                     <div className="text-sm text-orange-600 dark:text-orange-400">Job Applications</div>
@@ -493,12 +503,12 @@ export default function CareerGrowth() {
         </Card>
 
         <Tabs defaultValue="resume" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className={`grid w-full ${isIT() ? 'grid-cols-6' : 'grid-cols-5'}`}>
             <TabsTrigger value="resume">Resume</TabsTrigger>
             <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
             <TabsTrigger value="network">Network Status</TabsTrigger>
             <TabsTrigger value="jobs">Jobs</TabsTrigger>
-            <TabsTrigger value="github">GitHub</TabsTrigger>
+            {isIT() && <TabsTrigger value="github">GitHub</TabsTrigger>}
             <TabsTrigger value="weekly">Weekly</TabsTrigger>
           </TabsList>
 
@@ -677,88 +687,90 @@ export default function CareerGrowth() {
             <ApplicationMetricsCard />
           </TabsContent>
 
-          <TabsContent value="github" className="space-y-6">
-            <Card className="shadow-elegant border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Github className="h-5 w-5 text-primary" />
-                  GitHub Activities Tracker
-                </CardTitle>
-                <CardDescription>
-                  Combined status from GitHub Activity Tracker and Activity & Engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <div className="text-sm font-medium mb-2">Repository Setup Progress</div>
-                    <div className="w-full" style={{ height: 300 }}>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                          data={[
-                            { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
-                            { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
-                          ]}
-                          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                          <Tooltip />
-                          <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
-                            {[
-                              { name: 'Repo Completed', color: 'hsl(var(--chart-accepted))' },
-                              { name: 'Repo Pending', color: 'hsl(var(--chart-not-selected))' },
-                            ].map((entry, index) => (
-                              <Cell
-                                key={`repo-cell-${index}`}
-                                fill={entry.color}
-                                style={{ cursor: 'pointer' }}
-                                onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+          {isIT() && (
+            <TabsContent value="github" className="space-y-6">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Github className="h-5 w-5 text-primary" />
+                    GitHub Activities Tracker
+                  </CardTitle>
+                  <CardDescription>
+                    Combined status from GitHub Activity Tracker and Activity & Engagement
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <div className="text-sm font-medium mb-2">Repository Setup Progress</div>
+                      <div className="w-full" style={{ height: 300 }}>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart
+                            data={[
+                              { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
+                              { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
+                            ]}
+                            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                              {[
+                                { name: 'Repo Completed', color: 'hsl(var(--chart-accepted))' },
+                                { name: 'Repo Pending', color: 'hsl(var(--chart-not-selected))' },
+                              ].map((entry, index) => (
+                                <Cell
+                                  key={`repo-cell-${index}`}
+                                  fill={entry.color}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <div className="text-sm font-medium mb-2">Weekly Flow (Mon–Sun)</div>
-                    <div className="w-full" style={{ height: 300 }}>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart
-                          data={[
-                            { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
-                            { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
-                          ]}
-                          margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                          <Tooltip />
-                          <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
-                            {[
-                              { name: 'Flow Completed', color: 'hsl(var(--chart-applied))' },
-                              { name: 'Flow Remaining', color: 'hsl(var(--chart-no-response))' },
-                            ].map((entry, index) => (
-                              <Cell
-                                key={`flow-cell-${index}`}
-                                fill={entry.color}
-                                style={{ cursor: 'pointer' }}
-                                onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=engagement')}
-                              />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+                    <div>
+                      <div className="text-sm font-medium mb-2">Weekly Flow (Mon–Sun)</div>
+                      <div className="w-full" style={{ height: 300 }}>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart
+                            data={[
+                              { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
+                              { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
+                            ]}
+                            margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
+                            <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
+                              {[
+                                { name: 'Flow Completed', color: 'hsl(var(--chart-applied))' },
+                                { name: 'Flow Remaining', color: 'hsl(var(--chart-no-response))' },
+                              ].map((entry, index) => (
+                                <Cell
+                                  key={`flow-cell-${index}`}
+                                  fill={entry.color}
+                                  style={{ cursor: 'pointer' }}
+                                  onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=engagement')}
+                                />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="weekly" className="space-y-6">
             <Card>
