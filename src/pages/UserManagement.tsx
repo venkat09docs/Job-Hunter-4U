@@ -162,6 +162,7 @@ export default function UserManagement() {
         .from('subscription_plans')
         .select('id, name, duration_days, description')
         .eq('is_active', true)
+        .eq('plan_type', 'user')
         .order('duration_days', { ascending: true });
 
       if (error) throw error;
