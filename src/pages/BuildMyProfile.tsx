@@ -91,6 +91,29 @@ const BuildMyProfile = () => {
     fetchCounts();
   }, [user]);
 
+  // Calculate digital portfolio progress based on profile completeness
+  const calculateDigitalPortfolioProgress = () => {
+    if (!profile) return 0;
+    
+    let progress = 0;
+    const fields = [
+      { field: profile.full_name, weight: 25 }, // Basic info
+      { field: profile.profile_image_url, weight: 20 }, // Profile image
+      { field: profile.bio_link_url, weight: 15 }, // Bio description
+      { field: profile.linkedin_url, weight: 15 }, // LinkedIn URL
+      { field: profile.github_url, weight: 15 }, // GitHub URL
+      { field: profile.digital_profile_url, weight: 10 }, // Digital profile URL
+    ];
+    
+    fields.forEach(({ field, weight }) => {
+      if (field && field.trim() !== '') {
+        progress += weight;
+      }
+    });
+    
+    return Math.min(progress, 100);
+  };
+
   // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
     const scores = [resumeProgress, linkedinProgress, getGitHubProgress()];
@@ -103,8 +126,8 @@ const BuildMyProfile = () => {
       id: 'digital-portfolio',
       title: 'Digital Portfolio',
       description: 'Create your comprehensive digital portfolio',
-      progress: profile?.full_name ? 50 : 0, // Basic progress based on profile completion
-      isCompleted: profile?.full_name && profile?.bio_link_url,
+      progress: calculateDigitalPortfolioProgress(),
+      isCompleted: calculateDigitalPortfolioProgress() >= 80, // Consider 80%+ as completed
       action: () => navigate('/dashboard/digital-portfolio'),
       category: 'Digital Profile'
     },
