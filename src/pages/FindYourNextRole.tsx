@@ -1528,94 +1528,216 @@ const FindYourNextRole = () => {
                     </CardContent>
                   </Card>
                 ) : internalJobs.length > 0 ? (
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Internal Job Opportunities ({internalJobs.length} found)
-                    </h2>
-                    <div className="space-y-4">
-                      {internalJobs.map((job: InternalJob) => (
-                        <Card key={job.id} className="hover:shadow-lg transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-xl font-semibold text-foreground mb-2">
-                                  {job.title}
-                                </h3>
-                                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                                  <div className="flex items-center gap-1">
-                                    <Building className="h-4 w-4" />
-                                    {job.company}
-                                  </div>
-                                  {job.location && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Jobs List */}
+                    <div className="lg:col-span-2">
+                      <h2 className="text-2xl font-bold text-foreground mb-4">
+                        Internal Job Opportunities ({internalJobs.length} found)
+                      </h2>
+                      <div className="space-y-4">
+                        {internalJobs.map((job: InternalJob) => (
+                          <Card 
+                            key={job.id} 
+                            className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                              selectedJob?.job_id === job.id ? 'ring-2 ring-primary' : ''
+                            }`}
+                          >
+                            <CardContent className="p-6" onClick={() => setSelectedJob({
+                              job_id: job.id,
+                              job_title: job.title,
+                              employer_name: job.company || 'Unknown Company',
+                              job_location: job.location || '',
+                              job_posted_at: new Date(job.created_at).toLocaleDateString(),
+                              job_apply_link: job.job_url || '',
+                              job_description: job.description || '',
+                              job_min_salary: job.salary_min,
+                              job_max_salary: job.salary_max
+                            })}>
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                                    {job.title}
+                                  </h3>
+                                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
                                     <div className="flex items-center gap-1">
-                                      <MapPin className="h-4 w-4" />
-                                      {job.location}
+                                      <Building className="h-4 w-4" />
+                                      {job.company}
                                     </div>
-                                  )}
-                                  {job.job_type && (
-                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
-                                      {job.job_type}
-                                    </span>
-                                  )}
-                                  {job.experience_level && (
-                                    <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
-                                      {job.experience_level}
-                                    </span>
-                                  )}
+                                    {job.location && (
+                                      <div className="flex items-center gap-1">
+                                        <MapPin className="h-4 w-4" />
+                                        {job.location}
+                                      </div>
+                                    )}
+                                    {job.job_type && (
+                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                        {job.job_type}
+                                      </span>
+                                    )}
+                                    {job.experience_level && (
+                                      <span className="bg-secondary text-secondary-foreground px-2 py-1 rounded text-xs">
+                                        {job.experience_level}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleAddInternalJobToWishlist(job)}
+                                    disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
+                                  >
+                                    {addingInternalToWishlist === job.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : wishlistedInternalJobs.has(job.id) ? (
+                                      <Heart className="h-4 w-4 fill-current" />
+                                    ) : (
+                                      <Heart className="h-4 w-4" />
+                                    )}
+                                    {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
+                                  </Button>
+                                  <Button 
+                                    variant="default" 
+                                    size="sm"
+                                    onClick={() => handleApplyInternalJob(job)}
+                                    disabled={!job.job_url}
+                                  >
+                                    Apply Now
+                                  </Button>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAddInternalJobToWishlist(job);
-                                  }}
-                                  disabled={addingInternalToWishlist === job.id || wishlistedInternalJobs.has(job.id)}
-                                >
-                                  {addingInternalToWishlist === job.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : wishlistedInternalJobs.has(job.id) ? (
-                                    <Heart className="h-4 w-4 fill-current" />
-                                  ) : (
-                                    <Heart className="h-4 w-4" />
-                                  )}
-                                  {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
-                                </Button>
-                                <Button 
-                                  variant="default" 
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleApplyInternalJob(job);
-                                  }}
-                                  disabled={!job.job_url}
-                                >
-                                  Apply Now
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {(job.salary_min || job.salary_max) && (
-                              <div className="mb-3">
-                                <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                                  {job.salary_min && job.salary_max 
-                                    ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
-                                    : job.salary_min 
-                                    ? `$${job.salary_min.toLocaleString()}+`
-                                    : `Up to $${job.salary_max?.toLocaleString()}`
-                                  }
-                                </span>
-                              </div>
-                            )}
-                            
-                            <p className="text-muted-foreground text-sm line-clamp-3">
-                              {job.description}
-                            </p>
+                              
+                              {(job.salary_min || job.salary_max) && (
+                                <div className="mb-3">
+                                  <span className="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                                    {job.salary_min && job.salary_max 
+                                      ? `$${job.salary_min.toLocaleString()} - $${job.salary_max.toLocaleString()}`
+                                      : job.salary_min 
+                                      ? `$${job.salary_min.toLocaleString()}+`
+                                      : `Up to $${job.salary_max?.toLocaleString()}`
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              
+                              <p className="text-muted-foreground text-sm line-clamp-3">
+                                {job.description}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Profile Matching Column */}
+                    <div className="lg:col-span-1">
+                      {selectedJob ? (
+                        <div className="sticky top-4">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg flex items-center gap-2">
+                                <Search className="h-5 w-5" />
+                                Profile Match Analysis
+                              </CardTitle>
+                              <CardDescription>
+                                How well does your profile match this job?
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {(() => {
+                                const matchResult = calculateJobMatch(
+                                  selectedJob.job_title,
+                                  selectedJob.job_description || '',
+                                  selectedJob.employer_name
+                                );
+                                
+                                return (
+                                  <>
+                                    {/* Match Percentage */}
+                                    <div className="text-center">
+                                      <div className="text-3xl font-bold text-primary mb-2">
+                                        {matchResult.matchPercentage}%
+                                      </div>
+                                      <Progress value={matchResult.matchPercentage} className="h-3 mb-2" />
+                                      <p className="text-sm text-muted-foreground">
+                                        {matchResult.matchPercentage >= 80 ? 'Excellent match!' : 
+                                         matchResult.matchPercentage >= 60 ? 'Good match' : 
+                                         'Needs improvement'}
+                                      </p>
+                                    </div>
+
+                                    {/* Strengths */}
+                                    {matchResult.strengths.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Strengths</h4>
+                                        <ul className="space-y-1">
+                                          {matchResult.strengths.map((strength, index) => (
+                                            <li key={index} className="text-sm flex items-start gap-2">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                              {strength}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+
+                                    {/* Suggestions */}
+                                    <div>
+                                      <h4 className="font-semibold text-orange-600 mb-2">
+                                        {matchResult.matchPercentage >= 80 ? 'Additional Tips' : 'Improvement Suggestions'}
+                                      </h4>
+                                      <ul className="space-y-1">
+                                        {matchResult.suggestions.map((suggestion, index) => (
+                                          <li key={index} className="text-sm flex items-start gap-2">
+                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                                            {suggestion}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+
+                                    {/* Missing Skills */}
+                                    {matchResult.missingSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-red-600 mb-2">Skills to Develop</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.missingSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Matched Skills */}
+                                    {matchResult.matchedSkills.length > 0 && (
+                                      <div>
+                                        <h4 className="font-semibold text-green-600 mb-2">Your Matching Skills</h4>
+                                        <div className="flex flex-wrap gap-1">
+                                          {matchResult.matchedSkills.slice(0, 6).map((skill, index) => (
+                                            <span key={index} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                              {skill}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-6 text-center text-muted-foreground">
+                            <Search className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>Click on a job to see how well your profile matches</p>
                           </CardContent>
                         </Card>
-                      ))}
+                      )}
                     </div>
                   </div>
                 ) : !internalJobsLoading && searchType === "internal-jobs" && (
