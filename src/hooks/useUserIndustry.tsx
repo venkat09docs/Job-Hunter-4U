@@ -8,18 +8,27 @@ export const useUserIndustry = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (user?.id && industry === null) {
       console.log('🏭 Fetching industry for user:', user.id);
       fetchUserIndustry();
-    } else {
+    } else if (!user) {
       console.log('🏭 No user found, setting industry to null');
       setIndustry(null);
       setLoading(false);
+    } else if (user?.id && industry !== null) {
+      console.log('🏭 User has industry already, skipping fetch:', industry);
+      setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchUserIndustry = async () => {
     if (!user) return;
+    
+    // Prevent multiple fetches if already loading or has industry
+    if (loading || industry !== null) {
+      console.log('🏭 Skipping fetch - already loading or has industry:', { loading, industry });
+      return;
+    }
 
     try {
       setLoading(true);
