@@ -42,16 +42,6 @@ const Index = () => {
     <div className="min-h-screen">
       <Navigation />
       
-      {/* My Job Hunter Heading */}
-      <div className="py-12 text-center bg-gradient-hero">
-        <div className="space-y-2">
-          <p className="text-lg font-medium text-muted-foreground">Welcome to</p>
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            My Job Hunter
-          </h1>
-        </div>
-      </div>
-      
       <div id="hero">
         <Hero />
       </div>
