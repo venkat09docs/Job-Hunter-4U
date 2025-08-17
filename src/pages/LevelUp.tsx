@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
@@ -15,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const LevelUp = () => {
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const { profile, loading } = useProfile();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
@@ -58,6 +60,51 @@ const LevelUp = () => {
   useEffect(() => {
     fetchJobData();
   }, [user]);
+
+  // Show coming soon for non-admin users
+  if (!isAdmin) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-hero">
+          <AppSidebar />
+          
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <header className="border-b bg-background/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 py-4">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <SidebarTrigger />
+                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                    Level Up
+                  </h1>
+                </div>
+                
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div className="hidden sm:flex">
+                    <SubscriptionStatus />
+                  </div>
+                  <UserProfileDropdown />
+                </div>
+              </div>
+            </header>
+
+            {/* Coming Soon Content */}
+            <main className="flex-1 flex items-center justify-center p-4">
+              <div className="text-center space-y-4">
+                <div className="text-6xl">🚀</div>
+                <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Coming Soon...
+                </h2>
+                <p className="text-muted-foreground text-lg max-w-md">
+                  We're working hard to bring you an amazing Level Up experience. Stay tuned!
+                </p>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
     return (
