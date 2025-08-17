@@ -751,7 +751,7 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
                               <BookOpen className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-lg">Blog Management</h3>
+                              <h3 className="font-semibold text-lg">Blog Management Content</h3>
                               <p className="text-sm text-muted-foreground">Write and publish blog posts</p>
                             </div>
                           </div>
@@ -775,7 +775,7 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
                               <Activity className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-lg">1 Minute Portfolio Video</h3>
+                              <h3 className="font-semibold text-lg">Create 1 Minute Portfolio Video</h3>
                               <p className="text-sm text-muted-foreground">Create compelling video intro</p>
                             </div>
                           </div>
@@ -800,7 +800,7 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
                               <Share2 className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-lg">LinkedIn Posts</h3>
+                              <h3 className="font-semibold text-lg">Generate LinkedIn Posts Content</h3>
                               <p className="text-sm text-muted-foreground">Create engaging posts</p>
                             </div>
                           </div>
