@@ -23,6 +23,7 @@ import ActivityChart from '@/components/ActivityChart';
 import LeaderBoard from '@/components/LeaderBoard';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
+import { BadgeLeadersSlider } from '@/components/BadgeLeadersSlider';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -458,6 +459,11 @@ const Dashboard = () => {
               <VerifyActivitiesButton />
             </div>
 
+
+            {/* Badge Leaders Slider */}
+            <div className="mb-8">
+              <BadgeLeadersSlider />
+            </div>
 
             {/* Leader Board */}
             <div className="mb-8">
