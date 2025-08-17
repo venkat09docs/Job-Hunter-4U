@@ -11,8 +11,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail } from 'lucide-react';
 import ManageSubscriptionDialog from '@/components/ManageSubscriptionDialog';
+import { IndustrySelectionDialog } from '@/components/IndustrySelectionDialog';
 import { PasswordStrengthMeter } from '@/components/PasswordStrengthMeter';
 import { validatePasswordStrength } from '@/lib/utils';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
