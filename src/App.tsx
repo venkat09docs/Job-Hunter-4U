@@ -56,6 +56,7 @@ import LevelUp from "./pages/LevelUp";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import PostJob from "./pages/PostJob";
 import SubscriptionWelcomeDialog from "./components/SubscriptionWelcomeDialog";
+import NotificationPreferences from "./pages/NotificationPreferences";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/notification-preferences" 
+              element={
+                <ProtectedRoute>
+                  <NotificationPreferences />
                 </ProtectedRoute>
               } 
             />

@@ -1081,6 +1081,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_enabled: boolean
+          notification_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notification_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          notification_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -2025,6 +2055,13 @@ export type Database = {
         Args: { action_type: string }
         Returns: undefined
       }
+      initialize_notification_preferences: {
+        Args: {
+          target_user_id: string
+          user_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
       is_institute_admin_for: {
         Args: { institute_id_param: string; user_id_param: string }
         Returns: boolean
@@ -2035,6 +2072,10 @@ export type Database = {
       }
       is_reasonable_profile_access: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      should_send_notification: {
+        Args: { notif_type: string; target_user_id: string }
         Returns: boolean
       }
       upsert_resume_data: {
