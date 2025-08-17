@@ -16,6 +16,8 @@ import { useLinkedInGrowthPoints } from '@/hooks/useLinkedInGrowthPoints';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useToast } from '@/hooks/use-toast';
+import { useProfile } from '@/hooks/useProfile';
+import PricingDialog from '@/components/PricingDialog';
 import { format, addDays, startOfWeek, isSameDay, subDays } from 'date-fns';
 import GitHubActivityTrackerEmbed from '@/components/GitHubActivityTrackerEmbed';
 import GitHubDailyFlow from '@/components/GitHubDailyFlow';
@@ -121,6 +123,7 @@ const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   const { user } = useAuth();
   const { isIT } = useUserIndustry();
   const { toast } = useToast();
+  const { hasActiveSubscription } = useProfile();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todayMetrics, setTodayMetrics] = useState<ActivityMetrics>({});
   const [weeklyMetrics, setWeeklyMetrics] = useState<ActivityMetrics>({});
@@ -138,6 +141,7 @@ const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Reco
 const jobWeekDates = getWeekDatesMonToFri(new Date());
 const initialGitTab = (urlParams.get('gitTab') === 'engagement') ? 'engagement' : 'repo';
 const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
+const [showPricingDialog, setShowPricingDialog] = useState(false);
 
 
   // LinkedIn Network data loading
@@ -398,7 +402,15 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
     }
   };
 
-  const filteredActivities = selectedCategory === 'all' 
+  const handleLinkedInPostsClick = () => {
+    if (hasActiveSubscription()) {
+      window.open('https://mysuperaiapp.com/login', '_blank');
+    } else {
+      setShowPricingDialog(true);
+    }
+  };
+
+  const filteredActivities = selectedCategory === 'all'
     ? activities 
     : activities.filter(activity => activity.category === selectedCategory);
 
@@ -783,7 +795,7 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
                             Plan and create engaging LinkedIn posts to build your professional network and establish thought leadership.
                           </p>
                           <Button 
-                            onClick={() => navigate('/dashboard/super-ai')}
+                            onClick={handleLinkedInPostsClick}
                             className="w-full"
                             variant="outline"
                           >
@@ -940,6 +952,20 @@ const [gitTab, setGitTab] = useState<'repo' | 'engagement'>(initialGitTab);
             )}
         </Tabs>
       </div>
+
+      {showPricingDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <PricingDialog />
+            <button
+              onClick={() => setShowPricingDialog(false)}
+              className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
