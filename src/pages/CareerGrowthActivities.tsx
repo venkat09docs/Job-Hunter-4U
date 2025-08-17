@@ -411,6 +411,15 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
     }
   };
 
+  const handlePortfolioVideoClick = () => {
+    console.log('handlePortfolioVideoClick called', { hasActiveSubscription: hasActiveSubscription() });
+    if (hasActiveSubscription()) {
+      window.open('https://mysuperaiapp.com/login', '_blank');
+    } else {
+      setShowPricingDialog(true);
+    }
+  };
+
   // Debug log to ensure function is defined
   console.log('handleLinkedInPostsClick function defined:', typeof handleLinkedInPostsClick);
 
@@ -758,27 +767,27 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
                         </CardContent>
                       </Card>
 
-                      {/* Cover Letters */}
+                      {/* 1 Minute Portfolio Video */}
                       <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
                         <CardContent className="p-6">
                           <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 bg-primary/10 rounded-lg">
-                              <TrendingUp className="h-6 w-6 text-primary" />
+                              <Activity className="h-6 w-6 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-lg">Cover Letters</h3>
-                              <p className="text-sm text-muted-foreground">Create tailored cover letters</p>
+                              <h3 className="font-semibold text-lg">1 Minute Portfolio Video</h3>
+                              <p className="text-sm text-muted-foreground">Create compelling video intro</p>
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Build and save multiple cover letter templates for different job applications and industries.
+                            Create a professional 1-minute portfolio video to showcase your skills, experience, and personality to potential employers.
                           </p>
                           <Button 
-                            onClick={() => navigate('/dashboard/library')}
+                            onClick={handlePortfolioVideoClick}
                             className="w-full"
                             variant="outline"
                           >
-                            Manage Templates
+                            Create Video Portfolio
                           </Button>
                         </CardContent>
                       </Card>
