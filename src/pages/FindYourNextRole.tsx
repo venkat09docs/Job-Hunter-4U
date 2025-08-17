@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search } from "lucide-react";
+import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -96,6 +96,8 @@ const FindYourNextRole = () => {
   const [saveSearchName, setSaveSearchName] = useState("");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [showProfileMatchDialog, setShowProfileMatchDialog] = useState(false);
+  const [profileMatchJob, setProfileMatchJob] = useState<JobResult | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -547,6 +549,27 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleProfileMatch = (job: JobResult) => {
+    setProfileMatchJob(job);
+    setShowProfileMatchDialog(true);
+  };
+
+  const handleInternalProfileMatch = (job: InternalJob) => {
+    const jobResult: JobResult = {
+      job_id: job.id,
+      job_title: job.title,
+      employer_name: job.company || 'Unknown Company',
+      job_location: job.location || '',
+      job_posted_at: new Date(job.created_at).toLocaleDateString(),
+      job_apply_link: job.job_url || '',
+      job_description: job.description || '',
+      job_min_salary: job.salary_min,
+      job_max_salary: job.salary_max
+    };
+    setProfileMatchJob(jobResult);
+    setShowProfileMatchDialog(true);
+  };
+
   const renderNoResultsMessage = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <Search className="h-16 w-16 text-muted-foreground mb-4" />
@@ -899,6 +922,15 @@ const FindYourNextRole = () => {
                                       <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
                                     )}
                                     Wishlist
+                                  </Button>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    onClick={() => handleProfileMatch(job)}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <BarChart3 className="h-4 w-4" />
+                                    Profile Match
                                   </Button>
                                   {job.job_apply_link && (
                                     <Button 
@@ -1254,6 +1286,15 @@ const FindYourNextRole = () => {
                                     )}
                                     Wishlist
                                   </Button>
+                                  <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    onClick={() => handleProfileMatch(job)}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <BarChart3 className="h-4 w-4" />
+                                    Profile Match
+                                  </Button>
                                   {job.job_apply_link && (
                                     <Button 
                                       variant="default"
@@ -1598,6 +1639,15 @@ const FindYourNextRole = () => {
                                     {wishlistedInternalJobs.has(job.id) ? 'Wishlisted' : 'Wishlist'}
                                   </Button>
                                   <Button 
+                                    variant="secondary" 
+                                    size="sm"
+                                    onClick={() => handleInternalProfileMatch(job)}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <BarChart3 className="h-4 w-4" />
+                                    Profile Match
+                                  </Button>
+                                  <Button 
                                     variant="default" 
                                     size="sm"
                                     onClick={() => handleApplyInternalJob(job)}
@@ -1750,6 +1800,110 @@ const FindYourNextRole = () => {
               </>
             )}
           </div>
+
+          {/* Profile Match Dialog */}
+          <Dialog open={showProfileMatchDialog} onOpenChange={setShowProfileMatchDialog}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  <BarChart3 className="h-6 w-6" />
+                  Profile Match Analysis
+                </DialogTitle>
+              </DialogHeader>
+              
+              {profileMatchJob && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <h3 className="text-xl font-semibold mb-2">{profileMatchJob.job_title}</h3>
+                    <p className="text-muted-foreground">{profileMatchJob.employer_name}</p>
+                  </div>
+
+                  {(() => {
+                    const matchResult = calculateJobMatch(
+                      profileMatchJob.job_title,
+                      profileMatchJob.job_description || '',
+                      profileMatchJob.employer_name
+                    );
+                    
+                    return (
+                      <>
+                        {/* Match Percentage */}
+                        <div className="text-center">
+                          <div className="text-4xl font-bold text-primary mb-3">
+                            {matchResult.matchPercentage}%
+                          </div>
+                          <Progress value={matchResult.matchPercentage} className="h-4 mb-3" />
+                          <p className="text-lg font-medium">
+                            {matchResult.matchPercentage >= 80 ? 'Excellent match!' : 
+                             matchResult.matchPercentage >= 60 ? 'Good match' : 
+                             'Needs improvement'}
+                          </p>
+                        </div>
+
+                        {/* Strengths */}
+                        {matchResult.strengths.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-green-600 mb-3 text-lg">Your Strengths</h4>
+                            <ul className="space-y-2">
+                              {matchResult.strengths.map((strength, index) => (
+                                <li key={index} className="flex items-start gap-3">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                                  <span className="text-foreground">{strength}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Suggestions */}
+                        <div>
+                          <h4 className="font-semibold text-orange-600 mb-3 text-lg">
+                            {matchResult.matchPercentage >= 80 ? 'Additional Tips' : 'Improvement Suggestions'}
+                          </h4>
+                          <ul className="space-y-2">
+                            {matchResult.suggestions.map((suggestion, index) => (
+                              <li key={index} className="flex items-start gap-3">
+                                <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-foreground">{suggestion}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Missing Skills */}
+                        {matchResult.missingSkills.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-red-600 mb-3 text-lg">Skills to Develop</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {matchResult.missingSkills.slice(0, 10).map((skill, index) => (
+                                <span key={index} className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded-full">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Matched Skills */}
+                        {matchResult.matchedSkills.length > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-green-600 mb-3 text-lg">Your Matching Skills</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {matchResult.matchedSkills.slice(0, 10).map((skill, index) => (
+                                <span key={index} className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
 
           {/* Job Details Modal */}
               <Dialog open={!!selectedJob} onOpenChange={() => setSelectedJob(null)}>
