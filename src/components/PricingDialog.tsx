@@ -14,7 +14,11 @@ declare global {
   }
 }
 
-const PricingDialog = () => {
+interface PricingDialogProps {
+  eligiblePlans?: string[];
+}
+
+const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { refreshProfile, refreshAnalytics } = useProfile();
@@ -304,7 +308,9 @@ const PricingDialog = () => {
 
       {/* Pricing cards - Compact grid for dialog */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-        {plans.map((plan, index) => {
+        {plans
+          .filter(plan => !eligiblePlans || eligiblePlans.includes(plan.name))
+          .map((plan, index) => {
           const IconComponent = plan.icon;
           return (
             <Card 
