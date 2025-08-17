@@ -5,33 +5,27 @@ import { supabase } from '@/integrations/supabase/client';
 export const useUserIndustry = () => {
   const [industry, setIndustry] = useState<'IT' | 'Non-IT' | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchAttempted, setFetchAttempted] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user?.id && industry === null) {
+    if (user?.id && !fetchAttempted) {
       console.log('🏭 Fetching industry for user:', user.id);
       fetchUserIndustry();
     } else if (!user) {
       console.log('🏭 No user found, setting industry to null');
       setIndustry(null);
       setLoading(false);
-    } else if (user?.id && industry !== null) {
-      console.log('🏭 User has industry already, skipping fetch:', industry);
-      setLoading(false);
+      setFetchAttempted(false);
     }
-  }, [user?.id]);
+  }, [user?.id, fetchAttempted]);
 
   const fetchUserIndustry = async () => {
-    if (!user) return;
+    if (!user || fetchAttempted) return;
     
-    // Prevent multiple fetches if already loading or has industry
-    if (loading || industry !== null) {
-      console.log('🏭 Skipping fetch - already loading or has industry:', { loading, industry });
-      return;
-    }
-
     try {
       setLoading(true);
+      setFetchAttempted(true);
       console.log('🏭 Fetching industry for user:', user.id);
       
       const { data, error } = await supabase
@@ -44,15 +38,15 @@ export const useUserIndustry = () => {
 
       if (error) {
         console.error('Error fetching user industry:', error);
-        setIndustry('IT'); // Default to IT if error
+        setIndustry(null); // Set to null if error, so dialog can show
       } else {
-        const userIndustry = data?.industry as 'IT' | 'Non-IT';
-        console.log('🏭 Setting industry to:', userIndustry || 'IT');
-        setIndustry(userIndustry || 'IT');
+        const userIndustry = data?.industry as 'IT' | 'Non-IT' | null;
+        console.log('🏭 Setting industry to:', userIndustry);
+        setIndustry(userIndustry);
       }
     } catch (error) {
       console.error('Error fetching user industry:', error);
-      setIndustry('IT'); // Default to IT if error
+      setIndustry(null); // Set to null if error, so dialog can show
     } finally {
       setLoading(false);
     }
@@ -92,6 +86,7 @@ export const useUserIndustry = () => {
     isIT,
     isNonIT,
     updateIndustry,
-    refreshIndustry: fetchUserIndustry
+    refreshIndustry: fetchUserIndustry,
+    fetchAttempted
   };
 };

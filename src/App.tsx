@@ -66,10 +66,8 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user, loading: authLoading } = useAuth();
-  const { industry, loading: industryLoading } = useUserIndustry();
+  const { industry, loading: industryLoading, fetchAttempted } = useUserIndustry();
   const [showIndustryDialog, setShowIndustryDialog] = useState(false);
-  const [industryCheckComplete, setIndustryCheckComplete] = useState(false);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     console.log('🚪 Industry dialog logic:', { 
@@ -77,33 +75,24 @@ const AppContent = () => {
       industryLoading, 
       user: user?.id, 
       industry,
-      showIndustryDialog,
-      industryCheckComplete,
-      initialLoadComplete
+      fetchAttempted,
+      showIndustryDialog
     });
     
-    // Only proceed if auth and industry loading are complete
-    if (!authLoading && !industryLoading && user) {
-      setIndustryCheckComplete(true);
-      
-      // Add a small delay to ensure all data is properly loaded
-      setTimeout(() => {
-        setInitialLoadComplete(true);
-        
-        // Show industry selection dialog only for authenticated users without industry
-        if (user && !industry) {
-          console.log('🚪 Showing industry dialog - user has no industry set');
-          setShowIndustryDialog(true);
-        } else {
-          console.log('🚪 Not showing industry dialog - user has industry or not authenticated');
-          setShowIndustryDialog(false);
-        }
-      }, 100); // Small delay to prevent race conditions
+    // Only show dialog after everything is loaded and we confirm user has no industry
+    if (!authLoading && !industryLoading && fetchAttempted && user) {
+      if (industry === null) {
+        console.log('🚪 Showing industry dialog - user has no industry set');
+        setShowIndustryDialog(true);
+      } else {
+        console.log('🚪 Not showing industry dialog - user has industry:', industry);
+        setShowIndustryDialog(false);
+      }
     } else {
-      console.log('🚪 Still loading - auth or industry data not ready');
-      setInitialLoadComplete(false);
+      console.log('🚪 Still loading or not ready to show dialog');
+      setShowIndustryDialog(false);
     }
-  }, [user, industry, authLoading, industryLoading]);
+  }, [user, industry, authLoading, industryLoading, fetchAttempted]);
 
   // Close dialog when industry is set
   useEffect(() => {
@@ -426,7 +415,7 @@ const AppContent = () => {
       </BrowserRouter>
       
       <IndustrySelectionDialog
-        open={showIndustryDialog && initialLoadComplete}
+        open={showIndustryDialog}
         onOpenChange={setShowIndustryDialog}
       />
     </>
