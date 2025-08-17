@@ -68,13 +68,42 @@ const AppContent = () => {
   const { user, loading: authLoading } = useAuth();
   const { industry, loading: industryLoading } = useUserIndustry();
   const [showIndustryDialog, setShowIndustryDialog] = useState(false);
+  const [industryCheckComplete, setIndustryCheckComplete] = useState(false);
 
   useEffect(() => {
-    // Show industry selection dialog for authenticated users without industry
-    if (!authLoading && !industryLoading && user && !industry) {
-      setShowIndustryDialog(true);
+    console.log('🚪 Industry dialog logic:', { 
+      authLoading, 
+      industryLoading, 
+      user: user?.id, 
+      industry,
+      showIndustryDialog,
+      industryCheckComplete
+    });
+    
+    // Only proceed if auth and industry loading are complete
+    if (!authLoading && !industryLoading) {
+      setIndustryCheckComplete(true);
+      
+      // Show industry selection dialog for authenticated users without industry
+      if (user && !industry) {
+        console.log('🚪 Showing industry dialog - user has no industry set');
+        setShowIndustryDialog(true);
+      } else {
+        console.log('🚪 Not showing industry dialog - user has industry or not authenticated');
+        setShowIndustryDialog(false);
+      }
+    } else {
+      console.log('🚪 Still loading - auth or industry data not ready');
     }
   }, [user, industry, authLoading, industryLoading]);
+
+  // Close dialog when industry is set
+  useEffect(() => {
+    if (industry && showIndustryDialog) {
+      console.log('🚪 Closing industry dialog - industry is now set:', industry);
+      setShowIndustryDialog(false);
+    }
+  }, [industry, showIndustryDialog]);
 
   return (
     <>

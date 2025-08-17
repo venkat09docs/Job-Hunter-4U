@@ -20,16 +20,19 @@ export const IndustrySelectionDialog = ({ open, onOpenChange }: IndustrySelectio
   const handleSelection = async () => {
     if (!selectedIndustry) return;
 
+    console.log('🏭 IndustryDialog: Updating industry to:', selectedIndustry);
     setLoading(true);
     try {
       const success = await updateIndustry(selectedIndustry);
       if (success) {
+        console.log('🏭 IndustryDialog: Industry updated successfully');
         toast({
           title: "Industry Updated",
           description: `Your industry has been set to ${selectedIndustry}`,
         });
         onOpenChange(false);
       } else {
+        console.log('🏭 IndustryDialog: Industry update failed');
         toast({
           title: "Update Failed",
           description: "Failed to update your industry. Please try again.",
@@ -37,6 +40,7 @@ export const IndustrySelectionDialog = ({ open, onOpenChange }: IndustrySelectio
         });
       }
     } catch (error) {
+      console.error('🏭 IndustryDialog: Error updating industry:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",

@@ -9,8 +9,10 @@ export const useUserIndustry = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('🏭 Fetching industry for user:', user.id);
       fetchUserIndustry();
     } else {
+      console.log('🏭 No user found, setting industry to null');
       setIndustry(null);
       setLoading(false);
     }
@@ -21,17 +23,22 @@ export const useUserIndustry = () => {
 
     try {
       setLoading(true);
+      console.log('🏭 Fetching industry for user:', user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('industry')
         .eq('user_id', user.id)
         .single();
 
+      console.log('🏭 Industry fetch result:', { data, error });
+
       if (error) {
         console.error('Error fetching user industry:', error);
         setIndustry('IT'); // Default to IT if error
       } else {
         const userIndustry = data?.industry as 'IT' | 'Non-IT';
+        console.log('🏭 Setting industry to:', userIndustry || 'IT');
         setIndustry(userIndustry || 'IT');
       }
     } catch (error) {
@@ -46,6 +53,8 @@ export const useUserIndustry = () => {
     if (!user) return false;
 
     try {
+      console.log('🏭 Updating industry in database:', { userId: user.id, newIndustry });
+      
       const { error } = await supabase
         .from('profiles')
         .update({ industry: newIndustry })
@@ -56,6 +65,7 @@ export const useUserIndustry = () => {
         return false;
       }
 
+      console.log('🏭 Industry updated in database, setting local state');
       setIndustry(newIndustry);
       return true;
     } catch (error) {
