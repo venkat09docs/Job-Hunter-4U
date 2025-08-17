@@ -52,7 +52,6 @@ import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import InstituteAdminRedirect from "./components/InstituteAdminRedirect";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
-import SuperAI from "./pages/SuperAI";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import StatusView from "./pages/StatusView";
@@ -305,14 +304,6 @@ const AppContent = () => {
               <ProtectedRoute>
                 <DocumentationDetail />
               </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/super-ai" 
-            element={
-              <PremiumProtectedRoute featureKey="super_ai">
-                <SuperAI />
-              </PremiumProtectedRoute>
             } 
           />
           <Route 
