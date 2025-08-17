@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, username, batch_id, institute_id } = await req.json()
+    const { email, password, full_name, username, batch_id, institute_id, industry } = await req.json()
 
     // Create admin client
     const supabaseAdmin = createClient(
@@ -74,6 +74,7 @@ serve(async (req) => {
       user_metadata: {
         full_name,
         username,
+        industry: industry || 'IT',
       },
       email_confirm: true, // Auto-confirm email
     })
@@ -104,6 +105,7 @@ serve(async (req) => {
         full_name,
         username,
         email,
+        industry: industry || 'IT',
       })
       .eq('user_id', authData.user.id)
       .select()

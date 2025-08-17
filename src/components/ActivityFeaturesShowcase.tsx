@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { 
   FileText, 
   Linkedin, 
@@ -15,8 +16,9 @@ import {
 
 const ActivityFeaturesShowcase = () => {
   const navigate = useNavigate();
+  const { isIT } = useUserIndustry();
 
-  const features = [
+  const allFeatures = [
     {
       icon: <FileText className="w-6 h-6" />,
       title: "Resume Builder & Tracker",
@@ -50,6 +52,9 @@ const ActivityFeaturesShowcase = () => {
       route: "/github-activity-tracker"
     }
   ];
+
+  // Filter features based on user industry
+  const features = isIT() ? allFeatures : allFeatures.filter(feature => feature.route !== "/github-activity-tracker");
 
   const handleFeatureClick = (route: string) => {
     navigate('/auth');

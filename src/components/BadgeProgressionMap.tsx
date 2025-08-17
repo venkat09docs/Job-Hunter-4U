@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
+import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
+import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal } from 'lucide-react';
 
 interface BadgeData {
@@ -46,6 +50,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   githubRepos = 0,
 }) => {
   const navigate = useNavigate();
+  const { isIT } = useUserIndustry();
 
   // Calculate progress for each badge
   const calculateProfileProgress = (tier: string) => {
@@ -84,7 +89,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
     }
   };
 
-  const categories: BadgeCategory[] = [
+  const allCategories: BadgeCategory[] = [
     {
       id: 'profile',
       title: 'Profile Build',
@@ -196,7 +201,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         }
       ]
     },
-    {
+    // Only show GitHub category for IT users
+    ...(isIT() ? [{
       id: 'github',
       title: 'GitHub Repository',
       icon: Github,
@@ -205,7 +211,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           id: 'github-bronze',
           title: 'Commit Cadet',
           description: 'Start your coding journey',
-          tier: 'bronze',
+          tier: 'bronze' as const,
           progress: calculateGithubProgress('bronze'),
           criteria: 'First repo + 5 commits',
           nextAction: 'Start Coding',
@@ -215,7 +221,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           id: 'github-silver',
           title: 'Project Maintainer',
           description: 'Maintain quality repositories',
-          tier: 'silver',
+          tier: 'silver' as const,
           progress: calculateGithubProgress('silver'),
           criteria: 'Repo with README + 30 commits',
           nextAction: 'Improve Projects',
@@ -225,15 +231,18 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           id: 'github-gold',
           title: 'Open Source Ally',
           description: 'Contribute to the community',
-          tier: 'gold',
+          tier: 'gold' as const,
           progress: calculateGithubProgress('gold'),
           criteria: 'Contribute to public projects',
           nextAction: 'Go Open Source',
           link: '/dashboard/github-activity-tracker'
         }
       ]
-    }
+    }] : [])
   ];
+
+  // Filter categories based on user industry
+  const categories = allCategories;
 
   const getTierColor = (tier: string) => {
     switch (tier) {

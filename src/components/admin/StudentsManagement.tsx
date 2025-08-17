@@ -82,6 +82,7 @@ interface StudentFormData {
   username: string;
   batch_id: string;
   password: string;
+  industry: string;
 }
 
 export const StudentsManagement = () => {
@@ -101,6 +102,7 @@ export const StudentsManagement = () => {
     username: '',
     batch_id: '',
     password: '',
+    industry: 'IT',
   });
   const [instituteId, setInstituteId] = useState<string>('');
   
@@ -300,6 +302,7 @@ export const StudentsManagement = () => {
             username: formData.username,
             batch_id: formData.batch_id,
             institute_id: instituteId,
+            industry: formData.industry,
           },
         });
 
@@ -322,6 +325,7 @@ export const StudentsManagement = () => {
         username: '',
         batch_id: '',
         password: '',
+        industry: 'IT',
       });
       fetchData(instituteId);
     } catch (error: any) {
@@ -403,14 +407,16 @@ export const StudentsManagement = () => {
         'Email': 'john.doe@example.com',
         'Username': 'johndoe',
         'Password': 'password123',
-        'Batch Code': 'BATCH001'
+        'Batch Code': 'BATCH001',
+        'Industry': 'IT'
       },
       {
         'Full Name': 'Jane Smith',
         'Email': 'jane.smith@example.com',
         'Username': 'janesmith',
         'Password': 'password456',
-        'Batch Code': 'BATCH001'
+        'Batch Code': 'BATCH001',  
+        'Industry': 'Non-IT'
       }
     ];
 
@@ -441,7 +447,7 @@ export const StudentsManagement = () => {
       header: true,
       complete: (results) => {
         const data = results.data.filter((row: any) => 
-          row['Full Name'] && row['Email'] && row['Username'] && row['Password'] && row['Batch Code']
+          row['Full Name'] && row['Email'] && row['Username'] && row['Password'] && row['Batch Code'] && row['Industry']
         );
         setImportPreview(data);
       },
@@ -505,6 +511,7 @@ export const StudentsManagement = () => {
               username: row['Username'],
               batch_id: batch.id,
               institute_id: instituteId,
+              industry: row['Industry'] || 'IT',
             },
           });
 
@@ -677,6 +684,7 @@ export const StudentsManagement = () => {
       username: '', // Don't populate username for editing for now
       batch_id: student.batch_id || '',
       password: '', // Don't populate password for editing
+      industry: 'IT', // Default industry for existing students
     });
     setShowForm(true);
   };
@@ -788,7 +796,7 @@ export const StudentsManagement = () => {
                     className="mt-1"
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Upload a CSV file with columns: Full Name, Email, Username, Password, Batch Code
+                    Upload a CSV file with columns: Full Name, Email, Username, Password, Batch Code, Industry
                   </p>
                 </div>
 
@@ -816,6 +824,7 @@ export const StudentsManagement = () => {
                             <TableHead>Email</TableHead>
                             <TableHead>Username</TableHead>
                             <TableHead>Batch Code</TableHead>
+                            <TableHead>Industry</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -825,11 +834,12 @@ export const StudentsManagement = () => {
                               <TableCell>{row['Email']}</TableCell>
                               <TableCell>{row['Username']}</TableCell>
                               <TableCell>{row['Batch Code']}</TableCell>
+                              <TableCell>{row['Industry'] || 'IT'}</TableCell>
                             </TableRow>
                           ))}
                           {importPreview.length > 5 && (
                             <TableRow>
-                              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                              <TableCell colSpan={5} className="text-center text-muted-foreground">
                                 ... and {importPreview.length - 5} more students
                               </TableCell>
                             </TableRow>
@@ -879,6 +889,7 @@ export const StudentsManagement = () => {
                   username: '',
                   batch_id: '',
                   password: '',
+                  industry: 'IT',
                 });
               }}>
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -954,12 +965,29 @@ export const StudentsManagement = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select a batch" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border border-border z-50">
                     {batches.map((batch) => (
                       <SelectItem key={batch.id} value={batch.id}>
                         {batch.name} ({batch.code})
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="industry">Industry *</Label>
+                <Select
+                  value={formData.industry}
+                  onValueChange={(value: 'IT' | 'Non-IT') => setFormData({ ...formData, industry: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select industry" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border border-border z-50">
+                    <SelectItem value="IT">IT (Information Technology)</SelectItem>
+                    <SelectItem value="Non-IT">Non-IT (Other Industries)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
