@@ -57,7 +57,7 @@ const Navigation = () => {
             <div className="font-bold text-xs sm:text-sm lg:text-lg xl:text-xl text-primary truncate">
               Job Hunter 4U
             </div>
-            <div className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal truncate">
+            <div className="text-[10px] sm:text-xs text-primary/90 font-semibold truncate">
               AI-Powered Careers 4U
             </div>
           </div>
