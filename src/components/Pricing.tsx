@@ -80,7 +80,7 @@ const Pricing = () => {
       bonuses: [
         "Video Based Bio Links",
         "Digital Profile",
-        "100+ Job Applications per month",
+        "the AI-Powered Super AI Tools access",
         "Free - DevOps with AWS and Python Course"
       ],
       popular: false,
@@ -97,6 +97,7 @@ const Pricing = () => {
       bonuses: [
         "AI Automation Bootcamp",
         "Vibe Coding Tools [No coding required]",
+        "Reverse Engineering Strategy to land Dream job as fast as",
         "Automated Job-Hunting Process"
       ],
       popular: false,
