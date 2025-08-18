@@ -422,18 +422,18 @@ const Dashboard = () => {
       <div className="min-h-screen flex w-full bg-gradient-hero">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-2 sm:gap-4">
+          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
                 <SidebarTrigger />
-                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
                   Job Hunter Pro
                 </h1>
               </div>
               
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
                 <div className="hidden sm:flex">
                   <SubscriptionStatus />
                 </div>
@@ -443,7 +443,7 @@ const Dashboard = () => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
             {/* Welcome Section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
@@ -1045,10 +1045,10 @@ const Dashboard = () => {
                     </Button>
                   </div>
                 )}
-              </CardContent>
+               </CardContent>
             </Card>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </SidebarProvider>
   );

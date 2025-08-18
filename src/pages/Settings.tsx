@@ -16,8 +16,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
-import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
+import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -220,27 +220,34 @@ const Settings = () => {
       <div className="min-h-screen flex w-full bg-gradient-hero">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
+          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
                 <SidebarTrigger />
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => navigate('/dashboard')}
-                  className="gap-2"
+                  className="gap-2 hidden sm:flex"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to Dashboard
                 </Button>
               </div>
+              
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+                <div className="hidden sm:flex">
+                  <SubscriptionStatus />
+                </div>
+                <UserProfileDropdown />
+              </div>
             </div>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
             <div className="max-w-2xl mx-auto space-y-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Settings</h1>
@@ -488,8 +495,8 @@ const Settings = () => {
                 </CardContent>
               </Card>
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </SidebarProvider>
   );

@@ -45,27 +45,27 @@ const Navigation = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={() => handleNavigate('/')}>
+        <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
           <img 
             src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
             alt="Job Hunter 4U Logo" 
-            className="h-8 w-8 sm:h-10 sm:w-10"
+            className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 flex-shrink-0"
           />
-          <div className="flex flex-col">
-            <div className="font-bold text-sm sm:text-lg lg:text-xl text-primary">
+          <div className="flex flex-col min-w-0">
+            <div className="font-bold text-xs sm:text-sm lg:text-lg xl:text-xl text-primary truncate">
               Job Hunter 4U
             </div>
-            <div className="text-xs text-muted-foreground/80 font-normal">
+            <div className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal truncate">
               Powered by Rise n Shine Technologies
             </div>
           </div>
         </div>
 
         {/* Navigation Menu */}
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
+        <NavigationMenu className="hidden lg:flex">
+          <NavigationMenuList className="space-x-1">
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
@@ -169,10 +169,10 @@ const Navigation = () => {
         </NavigationMenu>
 
         {/* CTA Button */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
           <Button 
             onClick={() => handleNavigate('/auth')} 
-            className="hidden sm:inline-flex"
+            className="hidden xl:inline-flex"
             size="sm"
           >
             Build Resume for Free
@@ -184,7 +184,7 @@ const Navigation = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="md:hidden"
+                className="lg:hidden"
               >
                 <Menu className="h-4 w-4" />
               </Button>
