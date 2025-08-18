@@ -55,10 +55,10 @@ const AIToolsSection = () => {
 
       if (categoriesError) throw categoriesError;
 
-      // Fetch tools
+      // Fetch tools - SECURITY: Only select safe fields, exclude embed_code
       const { data: toolsData, error: toolsError } = await supabase
         .from('ai_tools')
-        .select('*')
+        .select('id, tool_name, tool_description, image_url, credit_points, category_id, is_active, created_at, updated_at')
         .eq('is_active', true)
         .order('created_at');
 
