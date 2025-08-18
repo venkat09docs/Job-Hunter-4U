@@ -2179,6 +2179,10 @@ export type Database = {
         }
         Returns: string
       }
+      validate_user_metadata: {
+        Args: { metadata: Json }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "institute_admin" | "recruiter"
