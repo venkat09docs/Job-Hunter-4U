@@ -50,11 +50,16 @@ const Navigation = () => {
         <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={() => handleNavigate('/')}>
           <img 
             src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
-            alt="Rise n Shine Technologies Logo" 
+            alt="Job Hunter 4U Logo" 
             className="h-8 w-8 sm:h-10 sm:w-10"
           />
-          <div className="font-bold text-sm sm:text-lg lg:text-xl text-primary">
-            Rise n Shine Technologies
+          <div className="flex flex-col">
+            <div className="font-bold text-sm sm:text-lg lg:text-xl text-primary">
+              Job Hunter 4U
+            </div>
+            <div className="text-xs sm:text-sm text-muted-foreground font-medium">
+              Smart Job Hunting, Just 4U
+            </div>
           </div>
         </div>
 
