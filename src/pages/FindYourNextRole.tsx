@@ -68,7 +68,7 @@ const FindYourNextRole = () => {
     date_posted: "all",
     country: "in",
     job_requirements: "under_3_years_experience",
-    employment_type: "FULLTIME"
+    employment_type: "ALL"
   });
   const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
     title: "",
@@ -233,7 +233,7 @@ const FindYourNextRole = () => {
           date_posted: formData.date_posted,
           country: formData.country,
           job_requirements: formData.job_requirements,
-          employment_type: formData.employment_type
+          employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type
         })
       });
 
@@ -398,7 +398,7 @@ const FindYourNextRole = () => {
           date_posted: formData.date_posted,
           country: formData.country,
           job_requirements: formData.job_requirements,
-          employment_type: formData.employment_type
+          employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type
         })
       });
 
@@ -677,7 +677,7 @@ const FindYourNextRole = () => {
   const handleLoadSearch = (savedSearch: SavedJobSearch) => {
     setFormData({
       ...savedSearch.search_criteria,
-      employment_type: savedSearch.search_criteria.employment_type || 'FULLTIME'
+      employment_type: savedSearch.search_criteria.employment_type || 'ALL'
     });
     setShowLoadDialog(false);
     toast({
@@ -884,6 +884,7 @@ const FindYourNextRole = () => {
                             <SelectValue placeholder="Select employment type" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="ALL">All</SelectItem>
                             <SelectItem value="FULLTIME">Full-time</SelectItem>
                             <SelectItem value="CONTRACTOR">Contractor</SelectItem>
                             <SelectItem value="PARTTIME">Part-time</SelectItem>
