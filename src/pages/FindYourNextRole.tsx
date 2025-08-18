@@ -250,36 +250,99 @@ const FindYourNextRole = () => {
       let jobsArray = [];
       
       if (data && Array.isArray(data)) {
-        // If response is directly an array of jobs
-        jobsArray = data;
+        // If response is directly an array of jobs, map each job to our format
+        jobsArray = data.map(jobItem => ({
+          job_id: jobItem.job_id || jobItem.id,
+          job_title: jobItem.job_title || jobItem.title,
+          employer_name: jobItem.employer_name || jobItem.company,
+          job_location: jobItem.job_location || jobItem.location || 'Remote',
+          job_description: jobItem.job_description || jobItem.description,
+          job_employment_type: jobItem.job_employment_type || 'Full-time',
+          job_apply_link: jobItem.job_apply_link || jobItem.job_url,
+          job_posted_at: jobItem.job_posted_at || 'Recently',
+          job_min_salary: jobItem.job_min_salary || jobItem.salary_min,
+          job_max_salary: jobItem.job_max_salary || jobItem.salary_max,
+          job_salary_period: jobItem.job_salary_period,
+          job_benefits: jobItem.job_benefits || jobItem.benefits,
+          job_is_remote: jobItem.job_is_remote,
+          employer_logo: jobItem.employer_logo,
+          employer_website: jobItem.employer_website
+        }));
       } else if (data && data.jobs && Array.isArray(data.jobs)) {
-        // If response has jobs at root level
-        jobsArray = data.jobs;
+        // If response has jobs at root level, map each job
+        jobsArray = data.jobs.map(jobItem => ({
+          job_id: jobItem.job_id || jobItem.id,
+          job_title: jobItem.job_title || jobItem.title,
+          employer_name: jobItem.employer_name || jobItem.company,
+          job_location: jobItem.job_location || jobItem.location || 'Remote',
+          job_description: jobItem.job_description || jobItem.description,
+          job_employment_type: jobItem.job_employment_type || 'Full-time',
+          job_apply_link: jobItem.job_apply_link || jobItem.job_url,
+          job_posted_at: jobItem.job_posted_at || 'Recently',
+          job_min_salary: jobItem.job_min_salary || jobItem.salary_min,
+          job_max_salary: jobItem.job_max_salary || jobItem.salary_max,
+          job_salary_period: jobItem.job_salary_period,
+          job_benefits: jobItem.job_benefits || jobItem.benefits,
+          job_is_remote: jobItem.job_is_remote,
+          employer_logo: jobItem.employer_logo,
+          employer_website: jobItem.employer_website
+        }));
       } else if (data && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
-        // If response has nested structure
-        jobsArray = data.data.jobs;
+        // If response has nested structure, map each job
+        jobsArray = data.data.jobs.map(jobItem => ({
+          job_id: jobItem.job_id || jobItem.id,
+          job_title: jobItem.job_title || jobItem.title,
+          employer_name: jobItem.employer_name || jobItem.company,
+          job_location: jobItem.job_location || jobItem.location || 'Remote',
+          job_description: jobItem.job_description || jobItem.description,
+          job_employment_type: jobItem.job_employment_type || 'Full-time',
+          job_apply_link: jobItem.job_apply_link || jobItem.job_url,
+          job_posted_at: jobItem.job_posted_at || 'Recently',
+          job_min_salary: jobItem.job_min_salary || jobItem.salary_min,
+          job_max_salary: jobItem.job_max_salary || jobItem.salary_max,
+          job_salary_period: jobItem.job_salary_period,
+          job_benefits: jobItem.job_benefits || jobItem.benefits,
+          job_is_remote: jobItem.job_is_remote,
+          employer_logo: jobItem.employer_logo,
+          employer_website: jobItem.employer_website
+        }));
       } else if (data && data.success && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
-        // If response has success flag with nested structure
-        jobsArray = data.data.jobs;
+        // If response has success flag with nested structure, map each job
+        jobsArray = data.data.jobs.map(jobItem => ({
+          job_id: jobItem.job_id || jobItem.id,
+          job_title: jobItem.job_title || jobItem.title,
+          employer_name: jobItem.employer_name || jobItem.company,
+          job_location: jobItem.job_location || jobItem.location || 'Remote',
+          job_description: jobItem.job_description || jobItem.description,
+          job_employment_type: jobItem.job_employment_type || 'Full-time',
+          job_apply_link: jobItem.job_apply_link || jobItem.job_url,
+          job_posted_at: jobItem.job_posted_at || 'Recently',
+          job_min_salary: jobItem.job_min_salary || jobItem.salary_min,
+          job_max_salary: jobItem.job_max_salary || jobItem.salary_max,
+          job_salary_period: jobItem.job_salary_period,
+          job_benefits: jobItem.job_benefits || jobItem.benefits,
+          job_is_remote: jobItem.job_is_remote,
+          employer_logo: jobItem.employer_logo,
+          employer_website: jobItem.employer_website
+        }));
       } else if (data && data.job_id && data.job_title) {
         // If response is a single job object, wrap it in an array
         jobsArray = [{
-          id: data.job_id,
-          title: data.job_title,
-          company: data.employer_name,
-          location: data.job_location || 'Remote',
-          description: data.job_description,
-          requirements: data.job_description,
-          job_type: data.job_employment_type || 'Full-time',
-          experience_level: 'mid',
-          application_deadline: null,
-          job_url: data.job_apply_link,
-          salary_min: data.job_min_salary,
-          salary_max: data.job_max_salary,
-          benefits: data.job_benefits,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          job_id: data.job_id,
+          job_title: data.job_title,
+          employer_name: data.employer_name,
+          job_location: data.job_location || 'Remote',
+          job_description: data.job_description,
+          job_employment_type: data.job_employment_type || 'Full-time',
+          job_apply_link: data.job_apply_link,
+          job_posted_at: data.job_posted_at || 'Recently',
+          job_min_salary: data.job_min_salary,
+          job_max_salary: data.job_max_salary,
+          job_salary_period: data.job_salary_period,
+          job_benefits: data.job_benefits,
+          job_is_remote: data.job_is_remote,
+          employer_logo: data.employer_logo,
+          employer_website: data.employer_website
         }];
       }
       
@@ -287,6 +350,7 @@ const FindYourNextRole = () => {
       
       if (jobsArray && jobsArray.length > 0) {
         setJobs(jobsArray);
+        setSearchType("regular-search"); // Ensure we're showing the right section
         
         // Save job results to database
         await saveJobResultsToDatabase(jobsArray, formData);
