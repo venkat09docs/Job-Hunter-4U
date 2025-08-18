@@ -64,9 +64,9 @@ const FindYourNextRole = () => {
   const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
   const { calculateJobMatch, loading: profileLoading } = useJobMatching();
   const [formData, setFormData] = useState<JobSearchForm>({
-    query: "developer jobs in chicago",
+    query: "developer jobs in Hyderabad",
     date_posted: "all",
-    country: "us",
+    country: "in",
     job_requirements: "under_3_years_experience",
     employment_type: "FULLTIME"
   });
