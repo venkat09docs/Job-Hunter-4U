@@ -1961,6 +1961,25 @@ export type Database = {
           institute_name: string
         }[]
       }
+      get_safe_admin_profiles: {
+        Args: { user_ids?: string[] }
+        Returns: {
+          created_at: string
+          full_name: string
+          industry: string
+          profile_image_url: string
+          subscription_active: boolean
+          subscription_end_date: string
+          subscription_plan: string
+          subscription_start_date: string
+          total_ai_queries: number
+          total_job_searches: number
+          total_resume_opens: number
+          updated_at: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_safe_institute_info: {
         Args: { institute_id_param: string }
         Returns: {
@@ -1969,6 +1988,22 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+        }[]
+      }
+      get_safe_institute_profiles: {
+        Args: { institute_id_param: string }
+        Returns: {
+          created_at: string
+          full_name: string
+          industry: string
+          profile_image_url: string
+          subscription_active: boolean
+          subscription_plan: string
+          total_ai_queries: number
+          total_job_searches: number
+          total_resume_opens: number
+          user_id: string
+          username: string
         }[]
       }
       get_safe_leaderboard_profiles: {
