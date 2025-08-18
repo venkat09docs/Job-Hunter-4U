@@ -241,20 +241,6 @@ export type Database = {
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "batches_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_public_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batches_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_safe_view"
-            referencedColumns: ["id"]
-          },
         ]
       }
       blogs: {
@@ -468,20 +454,6 @@ export type Database = {
             columns: ["institute_id"]
             isOneToOne: false
             referencedRelation: "institutes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_public_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_safe_view"
             referencedColumns: ["id"]
           },
         ]
@@ -1885,20 +1857,6 @@ export type Database = {
             referencedRelation: "institutes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_public_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_assignments_institute_id_fkey"
-            columns: ["institute_id"]
-            isOneToOne: false
-            referencedRelation: "institutes_safe_view"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -1960,102 +1918,7 @@ export type Database = {
       }
     }
     Views: {
-      institutes_public_view: {
-        Row: {
-          code: string | null
-          created_at: string | null
-          current_student_count: number | null
-          description: string | null
-          id: string | null
-          is_active: boolean | null
-          max_students: number | null
-          name: string | null
-          subscription_active: boolean | null
-          subscription_end_date: string | null
-          subscription_plan: string | null
-          subscription_start_date: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          code?: string | null
-          created_at?: string | null
-          current_student_count?: number | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          max_students?: number | null
-          name?: string | null
-          subscription_active?: boolean | null
-          subscription_end_date?: string | null
-          subscription_plan?: string | null
-          subscription_start_date?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          code?: string | null
-          created_at?: string | null
-          current_student_count?: number | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          max_students?: number | null
-          name?: string | null
-          subscription_active?: boolean | null
-          subscription_end_date?: string | null
-          subscription_plan?: string | null
-          subscription_start_date?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      institutes_safe_view: {
-        Row: {
-          code: string | null
-          created_at: string | null
-          current_student_count: number | null
-          description: string | null
-          id: string | null
-          is_active: boolean | null
-          max_students: number | null
-          name: string | null
-          subscription_active: boolean | null
-          subscription_end_date: string | null
-          subscription_plan: string | null
-          subscription_start_date: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          code?: string | null
-          created_at?: string | null
-          current_student_count?: number | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          max_students?: number | null
-          name?: string | null
-          subscription_active?: boolean | null
-          subscription_end_date?: string | null
-          subscription_plan?: string | null
-          subscription_start_date?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          code?: string | null
-          created_at?: string | null
-          current_student_count?: number | null
-          description?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          max_students?: number | null
-          name?: string | null
-          subscription_active?: boolean | null
-          subscription_end_date?: string | null
-          subscription_plan?: string | null
-          subscription_start_date?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_user_role: {
@@ -2089,6 +1952,28 @@ export type Database = {
       get_institute_student_count: {
         Args: { institute_id_param: string }
         Returns: number
+      }
+      get_institutes_admin_access: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          address: string
+          code: string
+          contact_email: string
+          contact_phone: string
+          created_at: string
+          created_by: string
+          current_student_count: number
+          description: string
+          id: string
+          is_active: boolean
+          max_students: number
+          name: string
+          subscription_active: boolean
+          subscription_end_date: string
+          subscription_plan: string
+          subscription_start_date: string
+          updated_at: string
+        }[]
       }
       get_managed_institutes: {
         Args: { user_id_param: string }
@@ -2202,6 +2087,24 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+        }[]
+      }
+      get_user_accessible_institutes_safe: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          code: string
+          created_at: string
+          current_student_count: number
+          description: string
+          id: string
+          is_active: boolean
+          max_students: number
+          name: string
+          subscription_active: boolean
+          subscription_end_date: string
+          subscription_plan: string
+          subscription_start_date: string
+          updated_at: string
         }[]
       }
       get_user_assignments: {
