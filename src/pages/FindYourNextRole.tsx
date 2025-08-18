@@ -214,6 +214,50 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleTestWebhook = async () => {
+    setLoading(true);
+    setJobs([]);
+
+    try {
+      // Call the test n8n webhook
+      const response = await fetch('https://rnstech.app.n8n.cloud/webhook-test/jsearch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: formData.query,
+          date_posted: formData.date_posted,
+          country: formData.country,
+          job_requirements: formData.job_requirements
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      toast({
+        title: "Test Webhook Success",
+        description: "Test webhook called successfully. Check console for response.",
+      });
+
+      console.log('Test webhook response:', data);
+
+    } catch (error) {
+      console.error('Error testing webhook:', error);
+      toast({
+        title: "Test Webhook Error",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setJobs([]);
@@ -722,6 +766,22 @@ const FindYourNextRole = () => {
                           </>
                         ) : (
                           "Find Your Next Role"
+                        )}
+                      </Button>
+
+                      <Button 
+                        onClick={handleTestWebhook} 
+                        disabled={loading}
+                        variant="outline"
+                        className="flex-1 md:flex-none"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Testing...
+                          </>
+                        ) : (
+                          "Test Webhook"
                         )}
                       </Button>
 
