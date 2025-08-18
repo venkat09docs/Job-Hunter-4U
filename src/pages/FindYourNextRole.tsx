@@ -483,6 +483,7 @@ const FindYourNextRole = () => {
       if (jobsArray && jobsArray.length > 0) {
         setJobs(jobsArray);
         setSearchType("regular-search"); // Ensure we're showing the right section
+        setLoading(false); // Set loading to false immediately when jobs are found
         
         // Save job results to database
         await saveJobResultsToDatabase(jobsArray, formData);
@@ -493,6 +494,7 @@ const FindYourNextRole = () => {
         });
       } else {
         setJobs([]);
+        setLoading(false); // Set loading to false even when no jobs found
         toast({
           title: "Test Webhook Success",
           description: "Test webhook called successfully but no jobs returned. Check console for response structure.",
