@@ -58,7 +58,7 @@ const Navigation = () => {
               Job Hunter 4U
             </div>
             <div className="text-[10px] sm:text-xs text-primary/90 font-semibold truncate">
-              AI-Powered Careers 4U
+              Smarter Job Hunting with AI
             </div>
           </div>
         </div>
