@@ -27,7 +27,7 @@ const Footer = () => {
           <div className="md:col-span-1 space-y-4">
             <div className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
+                src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
                 alt="Job Hunter 4U Logo" 
                 className="h-8 w-8"
               />

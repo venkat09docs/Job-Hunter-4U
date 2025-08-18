@@ -49,7 +49,7 @@ const Navigation = () => {
         {/* Logo */}
         <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
           <img 
-            src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
+            src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
             alt="Job Hunter 4U Logo" 
             className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 flex-shrink-0"
           />
