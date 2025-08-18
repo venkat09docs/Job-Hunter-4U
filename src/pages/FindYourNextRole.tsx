@@ -261,6 +261,26 @@ const FindYourNextRole = () => {
       } else if (data && data.success && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
         // If response has success flag with nested structure
         jobsArray = data.data.jobs;
+      } else if (data && data.job_id && data.job_title) {
+        // If response is a single job object, wrap it in an array
+        jobsArray = [{
+          id: data.job_id,
+          title: data.job_title,
+          company: data.employer_name,
+          location: data.job_location || 'Remote',
+          description: data.job_description,
+          requirements: data.job_description,
+          job_type: data.job_employment_type || 'Full-time',
+          experience_level: 'mid',
+          application_deadline: null,
+          job_url: data.job_apply_link,
+          salary_min: data.job_min_salary,
+          salary_max: data.job_max_salary,
+          benefits: data.job_benefits,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }];
       }
       
       console.log('Jobs array found:', jobsArray);
