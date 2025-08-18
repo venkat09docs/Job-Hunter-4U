@@ -49,7 +49,7 @@ const Navigation = () => {
         {/* Logo */}
         <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onClick={() => handleNavigate('/')}>
           <img 
-            src="/lovable-uploads/ff802ee3-a3bc-4fbe-ad11-85449bdff59e.png" 
+            src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
             alt="Rise n Shine Technologies Logo" 
             className="h-8 w-8 sm:h-10 sm:w-10"
           />
