@@ -24,18 +24,18 @@ const Footer = () => {
         {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Company info */}
-          <div className="md:col-span-1 space-y-4">
-            <div className="flex items-center space-x-3">
+          <div className="md:col-span-1 space-y-6">
+            <div className="flex items-center space-x-4">
               <img 
                 src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
                 alt="Job Hunter 4U Logo" 
-                className="h-8 w-8"
+                className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0"
               />
-              <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Job Hunter 4U
               </h3>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Smart Job Hunting, Just 4U — Powered by Rise n Shine Technologies
             </p>
             <div className="space-y-2">

@@ -45,19 +45,19 @@ const Navigation = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between gap-4">
+      <div className="container flex h-20 items-center justify-between gap-4 px-4">
         {/* Logo */}
-        <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
+        <div className="flex items-center space-x-3 sm:space-x-4 cursor-pointer min-w-0 flex-shrink-0" onClick={() => handleNavigate('/')}>
           <img 
             src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
             alt="Job Hunter 4U Logo" 
-            className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 flex-shrink-0"
+            className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 xl:h-16 xl:w-16 flex-shrink-0"
           />
           <div className="flex flex-col min-w-0">
-            <div className="font-bold text-xs sm:text-sm lg:text-lg xl:text-xl text-primary truncate">
+            <div className="font-bold text-sm sm:text-base lg:text-xl xl:text-2xl text-primary truncate">
               Job Hunter 4U
             </div>
-            <div className="text-[10px] sm:text-xs text-primary/90 font-semibold truncate">
+            <div className="text-xs sm:text-sm lg:text-base text-primary/90 font-semibold truncate">
               Smarter Job Hunting with AI
             </div>
           </div>
