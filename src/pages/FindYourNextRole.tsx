@@ -34,10 +34,8 @@ interface JobResult {
 
 interface JobSearchForm {
   query: string;
-  num_pages: string;
   date_posted: string;
   country: string;
-  language: string;
   job_requirements: string;
 }
 
@@ -66,10 +64,8 @@ const FindYourNextRole = () => {
   const { calculateJobMatch, loading: profileLoading } = useJobMatching();
   const [formData, setFormData] = useState<JobSearchForm>({
     query: "developer jobs in chicago",
-    num_pages: "1",
     date_posted: "all",
     country: "us",
-    language: "en",
     job_requirements: "under_3_years_experience"
   });
   const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
@@ -146,10 +142,8 @@ const FindYourNextRole = () => {
           // Save all job results to database
           await saveJobResultsToDatabase(data.data.jobs, {
             query: `LinkedIn: ${linkedInFormData.title}`,
-            num_pages: "1",
             date_posted: "24hrs",
             country: linkedInFormData.location,
-            language: "en",
             job_requirements: linkedInFormData.seniority || "any"
           });
           
@@ -197,10 +191,8 @@ const FindYourNextRole = () => {
         job_employment_type: '', // Add this if available in the job data
         search_query: {
           query: searchForm.query,
-          num_pages: searchForm.num_pages,
           date_posted: searchForm.date_posted,
           country: searchForm.country,
-          language: searchForm.language,
           job_requirements: searchForm.job_requirements
         }
       }));
@@ -230,20 +222,25 @@ const FindYourNextRole = () => {
       // Track job search analytics
       await incrementAnalytics('job_search');
 
-      const { data, error } = await supabase.functions.invoke('job-search', {
-        body: {
+      // Call the n8n webhook
+      const response = await fetch('https://rnstech.app.n8n.cloud/webhook/jsearch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           query: formData.query,
-          num_pages: parseInt(formData.num_pages),
           date_posted: formData.date_posted,
           country: formData.country,
-          language: formData.language,
           job_requirements: formData.job_requirements
-        }
+        })
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
 
       if (data && data.success && data.data && data.data.jobs) {
         if (data.data.jobs.length === 0) {
@@ -709,34 +706,6 @@ const FindYourNextRole = () => {
                             <SelectItem value="in">India</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="language">Language</Label>
-                        <Select value={formData.language} onValueChange={(value) => handleInputChange('language', value)}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
-                            <SelectItem value="it">Italian</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="num_pages">Number of Records (Ex: 1 = 10, 2 = 20)</Label>
-                        <Input
-                          id="num_pages"
-                          type="number"
-                          min="1"
-                          max="10"
-                          value={formData.num_pages}
-                          onChange={(e) => handleInputChange('num_pages', e.target.value)}
-                        />
                       </div>
                     </div>
 
