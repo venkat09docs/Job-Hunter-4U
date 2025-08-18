@@ -45,21 +45,51 @@ export const useJobMatching = () => {
       
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('resume_data')
+        // First try to get the default saved resume from Resources Library
+        const { data: savedResumeData, error: savedResumeError } = await supabase
+          .from('saved_resumes')
           .select('*')
           .eq('user_id', user.id)
+          .eq('is_default', true)
           .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') {
-          throw error;
+        let resumeData = null;
+
+        // If no default resume found, try to get the first saved resume
+        if (!savedResumeData && (!savedResumeError || savedResumeError.code === 'PGRST116')) {
+          const { data: firstResumeData, error: firstResumeError } = await supabase
+            .from('saved_resumes')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (firstResumeData && !firstResumeError) {
+            resumeData = firstResumeData.resume_data;
+          }
+        } else if (savedResumeData && !savedResumeError) {
+          resumeData = savedResumeData.resume_data;
         }
 
-        if (data) {
-          const personalDetails = data.personal_details as any || {};
-          const experience = Array.isArray(data.experience) ? (data.experience as unknown as UserProfile['experience']) : [];
-          const education = Array.isArray(data.education) ? (data.education as unknown as UserProfile['education']) : [];
-          const skillsInterests = data.skills_interests as any || {};
+        // If no saved resume found, fallback to the old resume_data table
+        if (!resumeData) {
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('resume_data')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (fallbackData && (!fallbackError || fallbackError.code === 'PGRST116')) {
+            resumeData = fallbackData;
+          }
+        }
+
+        if (resumeData) {
+          const personalDetails = resumeData.personal_details as any || {};
+          const experience = Array.isArray(resumeData.experience) ? (resumeData.experience as unknown as UserProfile['experience']) : [];
+          const education = Array.isArray(resumeData.education) ? (resumeData.education as unknown as UserProfile['education']) : [];
+          const skillsInterests = resumeData.skills_interests as any || {};
 
           setUserProfile({
             personalDetails: {
@@ -73,11 +103,11 @@ export const useJobMatching = () => {
             experience: experience,
             education: education,
             skills: Array.isArray(skillsInterests.skills) ? (skillsInterests.skills as string[]) : [],
-            professionalSummary: data.professional_summary || ''
+            professionalSummary: resumeData.professional_summary || ''
           });
         }
       } catch (error) {
-        console.error('Error fetching user profile:', error);
+        console.error('Error fetching user profile from saved resumes:', error);
       } finally {
         setLoading(false);
       }
@@ -92,7 +122,7 @@ export const useJobMatching = () => {
         matchPercentage: 0,
         matchedSkills: [],
         missingSkills: [],
-        suggestions: ['Complete your profile to see job matching results'],
+        suggestions: ['Save a default resume in Resources Library → Saved Resumes tab to see job matching analysis'],
         strengths: []
       };
     }
@@ -159,17 +189,20 @@ export const useJobMatching = () => {
       suggestions.push(`Learn key skills: ${missingSkills.slice(0, 3).join(', ')}`);
     }
     if (!userProfile.professionalSummary || userProfile.professionalSummary.trim() === '') {
-      suggestions.push('Add a compelling professional summary');
+      suggestions.push('Create a resume in Resources Library with a compelling professional summary');
     }
     if (userProfile.experience.length === 0) {
-      suggestions.push('Add relevant work experience');
+      suggestions.push('Update your saved resume in Resources Library with relevant work experience');
     }
     if (userProfile.skills.length < 5) {
-      suggestions.push('Add more relevant technical skills');
+      suggestions.push('Add more technical skills to your resume in Resources Library');
     }
     if (matchPercentage < 80) {
       suggestions.push('Consider gaining experience in the missing skill areas');
-      suggestions.push('Highlight transferable skills in your summary');
+      suggestions.push('Update your Resources Library resume to highlight transferable skills');
+    }
+    if (!userProfile) {
+      suggestions.push('Save a default resume in Resources Library → Saved Resumes tab for job matching analysis');
     }
 
     // Generate strengths
