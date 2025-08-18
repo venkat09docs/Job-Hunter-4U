@@ -112,16 +112,18 @@ export const useJobMatching = () => {
       jobText.includes(skill.toLowerCase())
     );
 
-    const userSkills = userProfile.skills.map(skill => skill.toLowerCase());
+    const userSkills = userProfile.skills
+      .filter(skill => skill && typeof skill === 'string')
+      .map(skill => skill.toLowerCase());
     const matchedSkills = requiredSkills.filter(skill => 
-      userSkills.some(userSkill => 
-        userSkill.includes(skill.toLowerCase()) || skill.toLowerCase().includes(userSkill)
+      skill && userSkills.some(userSkill => 
+        userSkill && (userSkill.includes(skill.toLowerCase()) || skill.toLowerCase().includes(userSkill))
       )
     );
 
     const missingSkills = requiredSkills.filter(skill => 
-      !userSkills.some(userSkill => 
-        userSkill.includes(skill.toLowerCase()) || skill.toLowerCase().includes(userSkill)
+      skill && !userSkills.some(userSkill => 
+        userSkill && (userSkill.includes(skill.toLowerCase()) || skill.toLowerCase().includes(userSkill))
       )
     );
 
@@ -131,18 +133,22 @@ export const useJobMatching = () => {
 
     // Bonus points for experience relevance
     const experienceBonus = userProfile.experience.some(exp => 
-      exp.role.toLowerCase().includes(jobTitle.toLowerCase().split(' ')[0]) ||
-      jobTitle.toLowerCase().includes(exp.role.toLowerCase().split(' ')[0])
+      exp.role && jobTitle && (
+        exp.role.toLowerCase().includes(jobTitle.toLowerCase().split(' ')[0]) ||
+        jobTitle.toLowerCase().includes(exp.role.toLowerCase().split(' ')[0])
+      )
     ) ? 15 : 0;
 
     // Bonus for having professional summary
-    const summaryBonus = userProfile.professionalSummary.trim() !== '' ? 10 : 0;
+    const summaryBonus = userProfile.professionalSummary && userProfile.professionalSummary.trim() !== '' ? 10 : 0;
 
     // Bonus for education relevance
     const educationBonus = userProfile.education.some(edu => 
-      edu.degree.toLowerCase().includes('computer') ||
-      edu.degree.toLowerCase().includes('engineering') ||
-      edu.degree.toLowerCase().includes('science')
+      edu.degree && (
+        edu.degree.toLowerCase().includes('computer') ||
+        edu.degree.toLowerCase().includes('engineering') ||
+        edu.degree.toLowerCase().includes('science')
+      )
     ) ? 5 : 0;
 
     matchPercentage = Math.min(matchPercentage + experienceBonus + summaryBonus + educationBonus, 100);
@@ -152,7 +158,7 @@ export const useJobMatching = () => {
     if (missingSkills.length > 0) {
       suggestions.push(`Learn key skills: ${missingSkills.slice(0, 3).join(', ')}`);
     }
-    if (userProfile.professionalSummary.trim() === '') {
+    if (!userProfile.professionalSummary || userProfile.professionalSummary.trim() === '') {
       suggestions.push('Add a compelling professional summary');
     }
     if (userProfile.experience.length === 0) {
@@ -174,7 +180,7 @@ export const useJobMatching = () => {
     if (experienceBonus > 0) {
       strengths.push('Relevant work experience');
     }
-    if (userProfile.professionalSummary.trim() !== '') {
+    if (userProfile.professionalSummary && userProfile.professionalSummary.trim() !== '') {
       strengths.push('Complete professional summary');
     }
     if (userProfile.education.length > 0) {
