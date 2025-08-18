@@ -243,10 +243,24 @@ const FindYourNextRole = () => {
 
       const data = await response.json();
       
-      toast({
-        title: "Test Webhook Success",
-        description: "Test webhook called successfully. Check console for response.",
-      });
+      // Check if we have jobs data
+      if (data && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
+        setJobs(data.data.jobs);
+        
+        // Save job results to database
+        await saveJobResultsToDatabase(data.data.jobs, formData);
+        
+        toast({
+          title: "Test Webhook Success", 
+          description: `Found ${data.data.jobs.length} jobs from test webhook`,
+        });
+      } else {
+        setJobs([]);
+        toast({
+          title: "Test Webhook Success",
+          description: "Test webhook called successfully but no jobs returned",
+        });
+      }
 
       console.log('Test webhook response:', data);
 
