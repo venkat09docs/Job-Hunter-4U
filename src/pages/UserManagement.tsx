@@ -488,20 +488,9 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        // Admin can see all users from profiles table, excluding those assigned to institutes
+        // Admin can see safe user data (emails are protected for security)
         const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select(`
-            user_id,
-            full_name,
-            username,
-            email,
-            subscription_active,
-            subscription_plan,
-            subscription_end_date,
-            created_at
-          `)
-          .order('created_at', { ascending: false });
+          .rpc('get_safe_admin_profiles');
 
         if (profilesError) throw profilesError;
 
@@ -526,11 +515,12 @@ export default function UserManagement() {
 
         if (rolesError) throw rolesError;
 
-        // Combine profiles with roles
+        // Combine profiles with roles and add masked email for security
         const usersWithRoles = unassignedProfiles.map(profile => {
           const userRole = roles?.find(r => r.user_id === profile.user_id);
           return {
             ...profile,
+            email: `${profile.username || 'user'}@protected.com`, // Masked for security
             current_role: userRole?.role || 'user'
           };
         });
@@ -556,21 +546,9 @@ export default function UserManagement() {
           return;
         }
 
-        // Get profiles for these users
+        // Get safe profiles for these users (using secure function)
         const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select(`
-            user_id,
-            full_name,
-            username,
-            email,
-            subscription_active,
-            subscription_plan,
-            subscription_end_date,
-            created_at
-          `)
-          .in('user_id', userIds)
-          .order('created_at', { ascending: false });
+          .rpc('get_safe_admin_profiles', { user_ids: userIds });
 
         if (profilesError) throw profilesError;
 
@@ -582,11 +560,12 @@ export default function UserManagement() {
 
         if (rolesError) throw rolesError;
 
-        // Combine profiles with roles
+        // Combine institute profiles with roles and add masked email for security
         const usersWithRoles = profiles?.map(profile => {
           const userRole = roles?.find(r => r.user_id === profile.user_id);
           return {
             ...profile,
+            email: `${profile.username || 'user'}@protected.com`, // Masked for security
             current_role: userRole?.role || 'user'
           };
         }) || [];

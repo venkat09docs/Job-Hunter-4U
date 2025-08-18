@@ -197,15 +197,13 @@ export const InstituteManagement = () => {
         console.error('Error fetching admin assignments:', adminError);
       }
 
-      // Get profile names for admin users
+      // Get safe profile names for admin users (using secure function)
       const adminUserIds = adminAssignments?.map(a => a.user_id) || [];
       let adminProfiles: any[] = [];
       
       if (adminUserIds.length > 0) {
         const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', adminUserIds);
+          .rpc('get_safe_admin_profiles', { user_ids: adminUserIds });
         
         if (!profileError && profiles) {
           adminProfiles = profiles;

@@ -220,18 +220,16 @@ export default function InstituteManagement() {
       // Get user IDs
       const userIds = userRoles.map(role => role.user_id);
 
-      // Fetch profile information for these users
+      // Fetch safe profile information for these users (no email exposure)
       const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email, username')
-        .in('user_id', userIds);
+        .rpc('get_safe_admin_profiles', { user_ids: userIds });
 
       if (profilesError) throw profilesError;
 
       // Transform the data to match the expected User interface
       const instituteAdmins = profiles?.map(profile => ({
         id: profile.user_id,
-        email: profile.email,
+        email: `${profile.username || 'user'}@protected.com`, // Masked email for security
         raw_user_meta_data: {
           full_name: profile.full_name
         }
