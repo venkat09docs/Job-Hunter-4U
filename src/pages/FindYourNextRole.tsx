@@ -243,26 +243,45 @@ const FindYourNextRole = () => {
 
       const data = await response.json();
       
-      // Check if we have jobs data
-      if (data && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
-        setJobs(data.data.jobs);
+      console.log('Test webhook response structure:', data);
+      console.log('Data keys:', Object.keys(data || {}));
+      
+      // Check different possible response structures
+      let jobsArray = [];
+      
+      if (data && Array.isArray(data)) {
+        // If response is directly an array of jobs
+        jobsArray = data;
+      } else if (data && data.jobs && Array.isArray(data.jobs)) {
+        // If response has jobs at root level
+        jobsArray = data.jobs;
+      } else if (data && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
+        // If response has nested structure
+        jobsArray = data.data.jobs;
+      } else if (data && data.success && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
+        // If response has success flag with nested structure
+        jobsArray = data.data.jobs;
+      }
+      
+      console.log('Jobs array found:', jobsArray);
+      
+      if (jobsArray && jobsArray.length > 0) {
+        setJobs(jobsArray);
         
         // Save job results to database
-        await saveJobResultsToDatabase(data.data.jobs, formData);
+        await saveJobResultsToDatabase(jobsArray, formData);
         
         toast({
           title: "Test Webhook Success", 
-          description: `Found ${data.data.jobs.length} jobs from test webhook`,
+          description: `Found ${jobsArray.length} jobs from test webhook`,
         });
       } else {
         setJobs([]);
         toast({
           title: "Test Webhook Success",
-          description: "Test webhook called successfully but no jobs returned",
+          description: "Test webhook called successfully but no jobs returned. Check console for response structure.",
         });
       }
-
-      console.log('Test webhook response:', data);
 
     } catch (error) {
       console.error('Error testing webhook:', error);
