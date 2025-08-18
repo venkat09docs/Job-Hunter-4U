@@ -58,7 +58,7 @@ const Navigation = () => {
               Job Hunter 4U
             </div>
             <div className="text-[10px] sm:text-xs text-muted-foreground/80 font-normal truncate">
-              Powered by Rise n Shine Technologies
+              AI-Powered Careers 4U
             </div>
           </div>
         </div>
