@@ -2162,6 +2162,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      log_suspicious_activity: {
+        Args: {
+          activity_type: string
+          description: string
+          user_id_param?: string
+        }
+        Returns: undefined
+      }
       should_send_notification: {
         Args: { notif_type: string; target_user_id: string }
         Returns: boolean
