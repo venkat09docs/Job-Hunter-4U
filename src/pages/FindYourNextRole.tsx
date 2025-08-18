@@ -262,7 +262,7 @@ const FindYourNextRole = () => {
       let jobsArray = [];
       
       if (data && Array.isArray(data)) {
-        console.log('Processing as array of jobs');
+        console.log('Processing as array of jobs - length:', data.length);
         // If response is directly an array of jobs, map each job to our format
         jobsArray = data.map(jobItem => ({
           job_id: jobItem.job_id || jobItem.id,
@@ -282,7 +282,7 @@ const FindYourNextRole = () => {
           employer_website: jobItem.employer_website
         }));
       } else if (data && data.jobs && Array.isArray(data.jobs)) {
-        console.log('Processing as jobs array at root level');
+        console.log('Processing as jobs array at root level - length:', data.jobs.length);
         // If response has jobs at root level, map each job
         jobsArray = data.jobs.map(jobItem => ({
           job_id: jobItem.job_id || jobItem.id,
@@ -302,7 +302,7 @@ const FindYourNextRole = () => {
           employer_website: jobItem.employer_website
         }));
       } else if (data && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
-        console.log('Processing as nested data.jobs array');
+        console.log('Processing as nested data.jobs array - length:', data.data.jobs.length);
         // If response has nested structure, map each job
         jobsArray = data.data.jobs.map(jobItem => ({
           job_id: jobItem.job_id || jobItem.id,
@@ -322,7 +322,7 @@ const FindYourNextRole = () => {
           employer_website: jobItem.employer_website
         }));
       } else if (data && data.success && data.data && data.data.jobs && Array.isArray(data.data.jobs)) {
-        console.log('Processing as success response with nested data.jobs array');
+        console.log('Processing as success response with nested data.jobs array - length:', data.data.jobs.length);
         // If response has success flag with nested structure, map each job
         jobsArray = data.data.jobs.map(jobItem => ({
           job_id: jobItem.job_id || jobItem.id,
