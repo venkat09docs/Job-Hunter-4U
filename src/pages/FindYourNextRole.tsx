@@ -37,6 +37,7 @@ interface JobSearchForm {
   date_posted: string;
   country: string;
   job_requirements: string;
+  employment_type: string;
 }
 
 interface SavedJobSearch {
@@ -66,7 +67,8 @@ const FindYourNextRole = () => {
     query: "developer jobs in chicago",
     date_posted: "all",
     country: "us",
-    job_requirements: "under_3_years_experience"
+    job_requirements: "under_3_years_experience",
+    employment_type: "FULLTIME"
   });
   const [linkedInFormData, setLinkedInFormData] = useState<LinkedInJobSearchForm>({
     title: "",
@@ -144,7 +146,8 @@ const FindYourNextRole = () => {
             query: `LinkedIn: ${linkedInFormData.title}`,
             date_posted: "24hrs",
             country: linkedInFormData.location,
-            job_requirements: linkedInFormData.seniority || "any"
+            job_requirements: linkedInFormData.seniority || "any",
+            employment_type: "FULLTIME"
           });
           
           toast({
@@ -229,7 +232,8 @@ const FindYourNextRole = () => {
           query: formData.query,
           date_posted: formData.date_posted,
           country: formData.country,
-          job_requirements: formData.job_requirements
+          job_requirements: formData.job_requirements,
+          employment_type: formData.employment_type
         })
       });
 
@@ -276,7 +280,8 @@ const FindYourNextRole = () => {
           query: formData.query,
           date_posted: formData.date_posted,
           country: formData.country,
-          job_requirements: formData.job_requirements
+          job_requirements: formData.job_requirements,
+          employment_type: formData.employment_type
         })
       });
 
@@ -553,7 +558,10 @@ const FindYourNextRole = () => {
   };
 
   const handleLoadSearch = (savedSearch: SavedJobSearch) => {
-    setFormData(savedSearch.search_criteria);
+    setFormData({
+      ...savedSearch.search_criteria,
+      employment_type: savedSearch.search_criteria.employment_type || 'FULLTIME'
+    });
     setShowLoadDialog(false);
     toast({
       title: "Search loaded",
@@ -748,6 +756,21 @@ const FindYourNextRole = () => {
                             <SelectItem value="fr">France</SelectItem>
                             <SelectItem value="au">Australia</SelectItem>
                             <SelectItem value="in">India</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="employment_type">Employment Type</Label>
+                        <Select value={formData.employment_type} onValueChange={(value) => handleInputChange('employment_type', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select employment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="FULLTIME">Full-time</SelectItem>
+                            <SelectItem value="CONTRACTOR">Contractor</SelectItem>
+                            <SelectItem value="PARTTIME">Part-time</SelectItem>
+                            <SelectItem value="INTERN">Intern</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
