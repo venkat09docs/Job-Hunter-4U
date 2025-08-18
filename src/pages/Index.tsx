@@ -5,6 +5,7 @@ import { useUserIndustry } from '@/hooks/useUserIndustry';
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import About from "@/components/About";
 import ActivityFeaturesShowcase from "@/components/ActivityFeaturesShowcase";
 import JobTrackerShowcase from "@/components/JobTrackerShowcase";
 import AIToolsSection from "@/components/AIToolsSection";
@@ -48,6 +49,7 @@ const Index = () => {
       <div id="features">
         <Features />
       </div>
+      <About />
       <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
       <div id="ai-tools">

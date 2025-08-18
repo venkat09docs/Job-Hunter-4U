@@ -27,17 +27,16 @@ const Footer = () => {
           <div className="md:col-span-1 space-y-4">
             <div className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/ff802ee3-a3bc-4fbe-ad11-85449bdff59e.png" 
-                alt="Rise n Shine Technologies Logo" 
+                src="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" 
+                alt="Job Hunter 4U Logo" 
                 className="h-8 w-8"
               />
               <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Rise n Shine Technologies
+                Job Hunter 4U
               </h3>
             </div>
             <p className="text-muted-foreground">
-              Empowering professionals to find their dream careers through 
-              innovative technology and personalized support.
+              Smart Job Hunting, Just 4U — Powered by Rise n Shine Technologies
             </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -95,7 +94,7 @@ const Footer = () => {
         {/* Bottom footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 Rise n Shine. All rights reserved.
+            © 2025 Job Hunter 4U. A product by Rise n Shine Technologies. All Rights Reserved.
           </p>
           
           {/* Social links */}
