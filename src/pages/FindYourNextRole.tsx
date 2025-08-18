@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,16 @@ const FindYourNextRole = () => {
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showProfileMatchDialog, setShowProfileMatchDialog] = useState(false);
   const [profileMatchJob, setProfileMatchJob] = useState<JobResult | null>(null);
+
+  // Debug effect to track jobs state changes
+  useEffect(() => {
+    console.log('Jobs state changed:', {
+      jobsLength: jobs.length,
+      loading: loading,
+      searchType: searchType,
+      jobs: jobs.slice(0, 2) // Show first 2 jobs for debugging
+    });
+  }, [jobs, loading, searchType]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -1027,6 +1037,7 @@ const FindYourNextRole = () => {
             {/* Regular Job Search */}
             {searchType === "regular-search" && (
               <>
+                {console.log('Regular search section - jobs.length:', jobs.length, 'loading:', loading, 'searchType:', searchType)}
                 <Card>
                   <CardHeader>
                     <CardTitle>Job Search Parameters</CardTitle>
