@@ -245,6 +245,13 @@ export type Database = {
             foreignKeyName: "batches_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
+            referencedRelation: "institutes_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "batches_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
             referencedRelation: "institutes_safe_view"
             referencedColumns: ["id"]
           },
@@ -461,6 +468,13 @@ export type Database = {
             columns: ["institute_id"]
             isOneToOne: false
             referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "institute_admin_assignments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes_public_view"
             referencedColumns: ["id"]
           },
           {
@@ -1875,6 +1889,13 @@ export type Database = {
             foreignKeyName: "user_assignments_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
+            referencedRelation: "institutes_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assignments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
             referencedRelation: "institutes_safe_view"
             referencedColumns: ["id"]
           },
@@ -1939,6 +1960,54 @@ export type Database = {
       }
     }
     Views: {
+      institutes_public_view: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          current_student_count: number | null
+          description: string | null
+          id: string | null
+          is_active: boolean | null
+          max_students: number | null
+          name: string | null
+          subscription_active: boolean | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          current_student_count?: number | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          max_students?: number | null
+          name?: string | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          current_student_count?: number | null
+          description?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          max_students?: number | null
+          name?: string | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       institutes_safe_view: {
         Row: {
           code: string | null
