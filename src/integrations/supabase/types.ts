@@ -282,7 +282,9 @@ export type Database = {
           created_at: string
           due_date: string
           id: string
+          period: string | null
           points_earned: number | null
+          score_awarded: number | null
           status: string
           submitted_at: string | null
           template_id: string
@@ -296,7 +298,9 @@ export type Database = {
           created_at?: string
           due_date: string
           id?: string
+          period?: string | null
           points_earned?: number | null
+          score_awarded?: number | null
           status?: string
           submitted_at?: string | null
           template_id: string
@@ -310,7 +314,9 @@ export type Database = {
           created_at?: string
           due_date?: string
           id?: string
+          period?: string | null
           points_earned?: number | null
+          score_awarded?: number | null
           status?: string
           submitted_at?: string | null
           template_id?: string
@@ -333,12 +339,16 @@ export type Database = {
         Row: {
           assignment_id: string
           created_at: string
+          email_meta: Json | null
           evidence_data: Json
           evidence_type: string
           file_urls: string[] | null
           id: string
+          kind: Database["public"]["Enums"]["evidence_kind"] | null
+          parsed_json: Json | null
           submitted_at: string
           updated_at: string
+          url: string | null
           verification_notes: string | null
           verification_status: string
           verified_at: string | null
@@ -347,12 +357,16 @@ export type Database = {
         Insert: {
           assignment_id: string
           created_at?: string
+          email_meta?: Json | null
           evidence_data: Json
           evidence_type: string
           file_urls?: string[] | null
           id?: string
+          kind?: Database["public"]["Enums"]["evidence_kind"] | null
+          parsed_json?: Json | null
           submitted_at?: string
           updated_at?: string
+          url?: string | null
           verification_notes?: string | null
           verification_status?: string
           verified_at?: string | null
@@ -361,12 +375,16 @@ export type Database = {
         Update: {
           assignment_id?: string
           created_at?: string
+          email_meta?: Json | null
           evidence_data?: Json
           evidence_type?: string
           file_urls?: string[] | null
           id?: string
+          kind?: Database["public"]["Enums"]["evidence_kind"] | null
+          parsed_json?: Json | null
           submitted_at?: string
           updated_at?: string
+          url?: string | null
           verification_notes?: string | null
           verification_status?: string
           verified_at?: string | null
@@ -384,7 +402,10 @@ export type Database = {
       }
       career_task_templates: {
         Row: {
+          bonus_rules: Json | null
+          cadence: string | null
           category: string
+          code: string | null
           created_at: string
           description: string
           difficulty: string
@@ -393,13 +414,17 @@ export type Database = {
           id: string
           instructions: Json
           is_active: boolean
+          module: Database["public"]["Enums"]["module_code"] | null
           points_reward: number
           title: string
           updated_at: string
           verification_criteria: Json
         }
         Insert: {
+          bonus_rules?: Json | null
+          cadence?: string | null
           category: string
+          code?: string | null
           created_at?: string
           description: string
           difficulty: string
@@ -408,13 +433,17 @@ export type Database = {
           id?: string
           instructions: Json
           is_active?: boolean
+          module?: Database["public"]["Enums"]["module_code"] | null
           points_reward?: number
           title: string
           updated_at?: string
           verification_criteria: Json
         }
         Update: {
+          bonus_rules?: Json | null
+          cadence?: string | null
           category?: string
+          code?: string | null
           created_at?: string
           description?: string
           difficulty?: string
@@ -423,6 +452,7 @@ export type Database = {
           id?: string
           instructions?: Json
           is_active?: boolean
+          module?: Database["public"]["Enums"]["module_code"] | null
           points_reward?: number
           title?: string
           updated_at?: string
@@ -1928,6 +1958,56 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_checks: {
+        Row: {
+          created_at: string | null
+          evidence_id: string | null
+          has_email: boolean | null
+          has_links: boolean | null
+          has_phone: boolean | null
+          id: string
+          keyword_match_ratio: number | null
+          last_checked_at: string | null
+          pages: number | null
+          user_id: string
+          words: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          evidence_id?: string | null
+          has_email?: boolean | null
+          has_links?: boolean | null
+          has_phone?: boolean | null
+          id?: string
+          keyword_match_ratio?: number | null
+          last_checked_at?: string | null
+          pages?: number | null
+          user_id: string
+          words?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          evidence_id?: string | null
+          has_email?: boolean | null
+          has_links?: boolean | null
+          has_phone?: boolean | null
+          id?: string
+          keyword_match_ratio?: number | null
+          last_checked_at?: string | null
+          pages?: number | null
+          user_id?: string
+          words?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_checks_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "career_task_evidence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resume_data: {
         Row: {
           certifications_awards: Json | null
@@ -2120,6 +2200,42 @@ export type Database = {
           updated_at?: string
           user_id?: string
           word_url?: string | null
+        }
+        Relationships: []
+      }
+      signals: {
+        Row: {
+          actor: string | null
+          created_at: string | null
+          happened_at: string
+          id: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link: string | null
+          raw_meta: Json | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at: string
+          id?: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          subject?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2354,6 +2470,62 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_badges: {
+        Row: {
+          awarded_at: string | null
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_inputs: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          user_id: string
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          user_id: string
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -2696,6 +2868,7 @@ export type Database = {
         | "EMAIL_PROOF_OK"
         | "SCREENSHOT_OK"
         | "DATA_EXPORT_OK"
+      module_code: "RESUME" | "LINKEDIN" | "GITHUB"
       signal_kind:
         | "COMMENTED"
         | "REACTED"
@@ -2843,6 +3016,7 @@ export const Constants = {
         "SCREENSHOT_OK",
         "DATA_EXPORT_OK",
       ],
+      module_code: ["RESUME", "LINKEDIN", "GITHUB"],
       signal_kind: [
         "COMMENTED",
         "REACTED",
