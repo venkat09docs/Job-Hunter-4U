@@ -488,25 +488,39 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
+        console.log('🔍 Fetching users as admin...');
+        
         // Admin can see ALL users directly from profiles table
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('user_id, full_name, username, email, profile_image_url, subscription_plan, subscription_active, subscription_start_date, subscription_end_date, total_resume_opens, total_job_searches, total_ai_queries, industry, created_at, updated_at');
 
-        if (profilesError) throw profilesError;
+        console.log('📊 Profiles query result:', { profiles: profiles?.length || 0, error: profilesError });
+        
+        if (profilesError) {
+          console.error('❌ Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
 
         if (!profiles) {
+          console.log('⚠️ No profiles returned from query');
           setUsers([]);
           setFilteredUsers([]);
           return;
         }
 
+        console.log('✅ Found profiles:', profiles.length);
+
         // Get user roles for all users
         const userIds = profiles.map(p => p.user_id);
+        console.log('🔍 Fetching roles for users:', userIds.length);
+        
         const { data: roles, error: rolesError } = await supabase
           .from('user_roles')
           .select('user_id, role')
           .in('user_id', userIds);
+
+        console.log('📊 Roles query result:', { roles: roles?.length || 0, error: rolesError });
 
         if (rolesError) throw rolesError;
 
