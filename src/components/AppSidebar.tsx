@@ -282,79 +282,39 @@ export function AppSidebar() {
             <SidebarGroup>
               {!isCollapsed && (
                 <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                  Job Hunter Pro
+                  Job Unter 4U
                 </SidebarGroupLabel>
               )}
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {/* Main Menu Section */}
-                  {!isCollapsed ? (
-                    <SidebarMenuItem>
-                      <Collapsible open={mainMenuOpen} onOpenChange={setMainMenuOpen}>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isMainMenuActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
-                            <Home className="h-5 w-5 flex-shrink-0" />
-                            <span className="font-medium text-sm">Dashboard & Tools</span>
-                            {mainMenuOpen ? (
-                              <ChevronDown className="h-4 w-4 ml-auto" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 ml-auto" />
-                            )}
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pb-1">
-                          <SidebarMenuSub>
-                            {mainItems.map((item) => {
-                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                              return (
-                                <SidebarMenuSubItem key={item.title}>
-                                  <SidebarMenuSubButton asChild>
-                                    <NavLink to={item.url} end className={({ isActive }) => 
-                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                        isActive 
-                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
-                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
-                                      }`
-                                    }>
-                                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                                      <span className="text-sm truncate">{item.title}</span>
-                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              );
-                            })}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </SidebarMenuItem>
-                  ) : (
-                    // When collapsed, show individual icons for main items
-                    <>
-                      {mainItems.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild>
-                            <NavLink to={item.url} end className={({ isActive }) => 
-                              `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                                isActive 
-                                  ? "bg-primary text-primary-foreground shadow-md" 
-                                  : "text-foreground hover:bg-accent hover:text-accent-foreground"
-                              }`
-                            } title={item.title}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </>
-                  )}
+                  {/* Main Menu Section - Always Visible */}
+                  {mainItems.map((item) => {
+                    const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild>
+                          <NavLink to={item.url} end className={({ isActive }) => 
+                            `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                              isActive 
+                                ? "text-primary" 
+                                : "text-foreground hover:text-accent-foreground"
+                            }`
+                          }>
+                            <item.icon className="h-5 w-5 flex-shrink-0" />
+                            {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
+                            {!isCollapsed && isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
 
                   {/* Career Assignments Section */}
                   {!isCollapsed ? (
                     <SidebarMenuItem>
                       <Collapsible open={careerAssignmentsOpen} onOpenChange={setCareerAssignmentsOpen}>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isCareerAssignmentsActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
+                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isCareerAssignmentsActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'}`}>
                             <ClipboardList className="h-5 w-5 flex-shrink-0" />
                             <span className="font-medium text-sm">Career Assignments</span>
                             {careerAssignmentsOpen ? (
@@ -374,8 +334,8 @@ export function AppSidebar() {
                                     <NavLink to={item.url} end className={({ isActive }) => 
                                       `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
                                         isActive 
-                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
-                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                                          ? "text-primary border-l-2 border-primary" 
+                                          : "text-foreground hover:text-accent-foreground"
                                       }`
                                     }>
                                       <item.icon className="h-4 w-4 flex-shrink-0" />
@@ -410,7 +370,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                       <Collapsible open={jobHunterOpen} onOpenChange={setJobHunterOpen}>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isJobHunterActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
+                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isJobHunterActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'}`}>
                             <Target className="h-5 w-5 flex-shrink-0" />
                             <span className="font-medium text-sm">Job Hunter</span>
                             {jobHunterOpen ? (
@@ -430,8 +390,8 @@ export function AppSidebar() {
                                     <NavLink to={item.url} end className={({ isActive }) => 
                                       `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
                                         isActive 
-                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
-                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                                          ? "text-primary border-l-2 border-primary" 
+                                          : "text-foreground hover:text-accent-foreground"
                                       }`
                                     }>
                                       <item.icon className="h-4 w-4 flex-shrink-0" />
