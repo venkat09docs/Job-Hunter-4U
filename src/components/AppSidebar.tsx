@@ -142,6 +142,15 @@ export function AppSidebar() {
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
   const isCareerAssignmentsActive = careerAssignmentItems.some((i) => isActive(i.url));
 
+  const calculateUserPoints = () => {
+    if (!profile) return 0;
+    // Calculate points based on user activities
+    const resumePoints = (profile.total_resume_opens || 0) * 5;
+    const jobSearchPoints = (profile.total_job_searches || 0) * 10;
+    const aiQueryPoints = (profile.total_ai_queries || 0) * 3;
+    return resumePoints + jobSearchPoints + aiQueryPoints;
+  };
+
   const getInitials = () => {
     if (profile?.username) {
       return profile.username.substring(0, 2).toUpperCase();
@@ -188,21 +197,24 @@ export function AppSidebar() {
     )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
-        <div className="flex items-center justify-center p-4 border-b flex-shrink-0">
-          <div className="flex flex-col items-center gap-3">
-            <Avatar className="h-14 w-14">
+        <div className="flex items-center p-4 border-b flex-shrink-0">
+          <div className="flex items-center gap-3 w-full">
+            <Avatar className="h-14 w-14 flex-shrink-0">
               <AvatarImage src={profile?.profile_image_url || ""} />
               <AvatarFallback className="text-lg font-semibold">
                 {getInitials()}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
-              <div className="flex flex-col items-center text-center min-w-0">
+              <div className="flex flex-col min-w-0 flex-1">
                 <p className="font-semibold text-lg truncate">
                   {profile?.username || user?.email?.split('@')[0] || 'User'}
                 </p>
                 <p className="text-sm text-muted-foreground truncate">
                   {profile?.industry || 'Professional'}
+                </p>
+                <p className="text-xs text-primary font-medium mt-1">
+                  🏆 {calculateUserPoints()} Points
                 </p>
               </div>
             )}
