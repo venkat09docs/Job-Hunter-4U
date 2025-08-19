@@ -208,10 +208,10 @@ export function AppSidebar() {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 flex-1">
                 <p className="font-semibold text-lg truncate">
-                  {profile?.username || user?.email?.split('@')[0] || 'User'}
-                </p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {profile?.industry || 'Professional'}
+                  {profile?.username || user?.email?.split('@')[0] || 'User'} 
+                  <span className="font-normal text-muted-foreground ml-1">
+                    ({profile?.industry || 'Professional'})
+                  </span>
                 </p>
                 <p className="text-xs text-primary font-medium mt-1">
                   🏆 {calculateUserPoints()} Points
