@@ -185,41 +185,33 @@ export function AppSidebar() {
       isCollapsed ? "w-16" : "w-64"
     )}>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          {!isCollapsed && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-lg">JOB HUNTER</span>
-            </div>
-          )}
+        {/* Header with Toggle */}
+        <div className="flex items-center justify-end p-3 border-b">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setOpen(!open)}
-            className="p-1.5 hover:bg-accent"
+            className="p-2 hover:bg-accent"
           >
-            {isCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
           </Button>
         </div>
 
         {/* User Profile */}
         <div className="p-4 border-b">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14">
               <AvatarImage src={profile?.profile_image_url || ""} />
-              <AvatarFallback className="text-sm font-medium">
+              <AvatarFallback className="text-lg font-semibold">
                 {getInitials()}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 flex-1">
-                <p className="font-medium text-sm truncate">
+                <p className="font-semibold text-lg truncate">
                   {profile?.username || user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-sm text-muted-foreground truncate">
                   {profile?.industry || 'Professional'}
                 </p>
               </div>
@@ -297,12 +289,18 @@ export function AppSidebar() {
               )}
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {mainItems.map((item) => {
+                {mainItems.map((item) => {
                     const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                     return (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
-                          <NavLink to={item.url} end className={getNavCls}>
+                          <NavLink to={item.url} end className={({ isActive }) => 
+                            `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                              isActive 
+                                ? "bg-primary text-primary-foreground shadow-md" 
+                                : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                            }`
+                          }>
                             <item.icon className="h-5 w-5 flex-shrink-0" />
                             {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
                             {!isCollapsed && isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
