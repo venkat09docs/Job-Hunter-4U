@@ -53,7 +53,7 @@ import InstituteAdminRedirect from "./components/InstituteAdminRedirect";
 import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
-import CareerGrowthActivities from "./pages/CareerGrowthActivities";
+import CareerActivitiesNew from "./pages/CareerActivitiesNew";
 import StatusView from "./pages/StatusView";
 import LevelUp from "./pages/LevelUp";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
@@ -315,10 +315,10 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/dashboard/career-growth-activities" 
+            path="/dashboard/career-activities-new" 
             element={
               <PremiumProtectedRoute featureKey="career_growth_activities">
-                <CareerGrowthActivities />
+                <CareerActivitiesNew />
               </PremiumProtectedRoute>
             } 
           />
