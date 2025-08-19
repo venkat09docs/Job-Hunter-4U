@@ -232,7 +232,7 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/career-assignments" 
+            path="/dashboard/career-assignments" 
             element={
               <ProtectedRoute>
                 <CareerAssignments />
