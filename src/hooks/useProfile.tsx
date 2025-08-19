@@ -65,10 +65,32 @@ export const useProfile = () => {
 
       if (error) throw error;
 
-      setProfile(data ?? null);
+      // If no profile exists, create one
+      if (!data) {
+        console.log('No profile found, creating one...');
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: user.id,
+            username: user.email?.split('@')[0] || 'user',
+            full_name: user.email?.split('@')[0] || 'User',
+            email: user.email,
+            industry: 'IT'
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          setProfile(null);
+        } else {
+          setProfile(newProfile);
+        }
+      } else {
+        setProfile(data);
+      }
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      // Avoid noisy toasts; set state gracefully
       setProfile(null);
     } finally {
       setLoading(false);
