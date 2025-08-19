@@ -62,6 +62,7 @@ import CareerActivities from "./pages/CareerActivities";
 import CareerAssignments from "./pages/CareerAssignments";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
+import GitHubWeekly from "./pages/GitHubWeekly";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -356,6 +357,14 @@ const AppContent = () => {
               <PremiumProtectedRoute featureKey="job_hunting_assignments">
                 <JobHuntingAssignments />
               </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/github-weekly" 
+            element={
+              <ProtectedRoute>
+                <GitHubWeekly />
+              </ProtectedRoute>
             } 
           />
           <Route 
