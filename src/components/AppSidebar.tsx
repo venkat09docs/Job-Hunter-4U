@@ -210,7 +210,7 @@ export function AppSidebar() {
         </div>
 
         {/* Menu Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
+        <div className="flex-1 overflow-auto px-2 py-4 space-y-6 min-w-0">
           {/* Admin Section */}
           {(isAdmin || isInstituteAdmin || isRecruiter) && (
             <div>
