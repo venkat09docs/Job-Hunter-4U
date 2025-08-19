@@ -418,7 +418,7 @@ const Dashboard = () => {
 
   return (
     <ResizableLayout>
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="h-full flex flex-col min-w-0">
         {/* Header */}
         <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
@@ -438,7 +438,7 @@ const Dashboard = () => {
         </header>
 
           {/* Main Content */}
-          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto min-h-0">
             {/* Welcome Section */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold mb-2">
