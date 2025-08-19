@@ -56,6 +56,7 @@ const Settings = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [savingProfessionalDetails, setSavingProfessionalDetails] = useState(false);
   const [savingUsername, setSavingUsername] = useState(false);
+  const [originalUsername, setOriginalUsername] = useState('');
 
   const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(passwordResetSchema),
@@ -92,8 +93,10 @@ const Settings = () => {
         github_url: profile.github_url || '',
         leetcode_url: profile.leetcode_url || '',
       });
+      const currentUsername = profile.username || '';
+      setOriginalUsername(currentUsername);
       usernameForm.reset({
-        username: profile.username || '',
+        username: currentUsername,
       });
     }
   }, [profile, professionalForm, usernameForm]);
@@ -228,6 +231,7 @@ const Settings = () => {
 
       if (error) throw error;
 
+      setOriginalUsername(data.username);
       toast({
         title: 'Username updated',
         description: 'Your username has been successfully updated.',
@@ -401,7 +405,7 @@ const Settings = () => {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Current Username</FormLabel>
                             <FormControl>
                               <Input 
                                 placeholder="Enter your username" 
@@ -415,7 +419,11 @@ const Settings = () => {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" disabled={savingUsername} className="gap-2">
+                      <Button 
+                        type="submit" 
+                        disabled={savingUsername || usernameForm.watch('username') === originalUsername} 
+                        className="gap-2"
+                      >
                         <User className="h-4 w-4" />
                         {savingUsername ? 'Saving...' : 'Update Username'}
                       </Button>
