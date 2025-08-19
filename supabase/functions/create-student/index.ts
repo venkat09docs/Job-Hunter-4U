@@ -13,47 +13,79 @@ serve(async (req) => {
   }
 
   try {
-    const { email, password, full_name, username, batch_id, institute_id, industry } = await req.json()
+    console.log('🚀 Starting create-student function')
+    
+    const requestBody = await req.json()
+    const { email, password, full_name, username, batch_id, institute_id, industry } = requestBody
+    
+    console.log('📝 Request data:', { email, full_name, username, batch_id, institute_id, industry })
+
+    // Validate required fields
+    if (!email || !password || !full_name || !username || !batch_id || !institute_id) {
+      throw new Error('Missing required fields: email, password, full_name, username, batch_id, institute_id')
+    }
 
     // Create admin client
+    console.log('🔐 Creating admin client')
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     // Get the current user making the request
-    const authHeader = req.headers.get('Authorization')!
+    console.log('👤 Getting current user from auth header')
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('Missing Authorization header')
+    }
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    const { data: { user: currentUser } } = await supabase.auth.getUser(
+    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
 
-    if (!currentUser) {
-      throw new Error('Unauthorized')
+    if (userError) {
+      console.error('❌ User auth error:', userError)
+      throw new Error(`Authentication failed: ${userError.message}`)
     }
 
+    if (!currentUser) {
+      throw new Error('Unauthorized - no user found')
+    }
+
+    console.log('✅ Current user verified:', currentUser.id)
+
     // Check if user has admin or institute_admin role
+    console.log('🔍 Checking user role')
     const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', currentUser.id)
       .maybeSingle()
 
-    if (roleError || !roleData) {
-      throw new Error('Unable to verify user permissions')
+    if (roleError) {
+      console.error('❌ Role query error:', roleError)
+      throw new Error(`Unable to verify user permissions: ${roleError.message}`)
+    }
+
+    if (!roleData) {
+      throw new Error('No role found for user')
     }
 
     const userRole = roleData.role
+    console.log('👑 User role:', userRole)
+    
     if (userRole !== 'admin' && userRole !== 'institute_admin') {
       throw new Error('Insufficient permissions. Only admins and institute admins can create students.')
     }
 
     // For institute admins, verify they can manage the target institute
     if (userRole === 'institute_admin') {
+      console.log('🏫 Verifying institute admin permissions for institute:', institute_id)
       const { data: adminAssignment, error: assignmentError } = await supabaseAdmin
         .from('institute_admin_assignments')
         .select('institute_id')
@@ -62,12 +94,20 @@ serve(async (req) => {
         .eq('is_active', true)
         .maybeSingle()
 
-      if (assignmentError || !adminAssignment) {
+      if (assignmentError) {
+        console.error('❌ Institute assignment error:', assignmentError)
+        throw new Error(`Failed to verify institute permissions: ${assignmentError.message}`)
+      }
+
+      if (!adminAssignment) {
         throw new Error('You are not authorized to manage students in this institute.')
       }
+      
+      console.log('✅ Institute admin permissions verified')
     }
 
     // Create user account using admin client (won't affect current session)
+    console.log('👥 Creating user account')
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -79,11 +119,19 @@ serve(async (req) => {
       email_confirm: true, // Auto-confirm email
     })
 
-    if (authError) throw authError
+    if (authError) {
+      console.error('❌ User creation error:', authError)
+      throw new Error(`Failed to create user account: ${authError.message}`)
+    }
 
-    if (!authData.user) throw new Error('Failed to create user account')
+    if (!authData.user) {
+      throw new Error('Failed to create user account - no user data returned')
+    }
+
+    console.log('✅ User created successfully:', authData.user.id)
 
     // Create user assignment
+    console.log('📋 Creating user assignment')
     const { error: assignmentError } = await supabaseAdmin
       .from('user_assignments')
       .insert({
@@ -94,10 +142,15 @@ serve(async (req) => {
         assigned_by: currentUser.id,
       })
 
-    if (assignmentError) throw assignmentError
+    if (assignmentError) {
+      console.error('❌ Assignment creation error:', assignmentError)
+      throw new Error(`Failed to create user assignment: ${assignmentError.message}`)
+    }
+
+    console.log('✅ User assignment created successfully')
 
     // Insert or update the profile with email, full_name and username (since we need it for management)
-    console.log('Attempting to upsert profile for user:', authData.user.id, 'with data:', { full_name, username, email })
+    console.log('👤 Upserting profile for user:', authData.user.id, 'with data:', { full_name, username, email })
     
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -113,11 +166,27 @@ serve(async (req) => {
       .select()
 
     if (profileError) {
-      console.error('Profile update error:', profileError)
-      throw new Error(`Failed to update profile: ${profileError.message}`)
+      console.error('❌ Profile upsert error:', profileError)
+      throw new Error(`Failed to upsert profile: ${profileError.message}`)
     }
     
-    console.log('Profile updated successfully:', profileData)
+    console.log('✅ Profile upserted successfully:', profileData)
+
+    // Add default user role
+    console.log('🎭 Adding default user role')
+    const { error: roleInsertError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({
+        user_id: authData.user.id,
+        role: 'user'
+      })
+
+    if (roleInsertError) {
+      console.error('⚠️ Role creation error (non-fatal):', roleInsertError)
+      // Don't fail the entire operation for this
+    } else {
+      console.log('✅ User role added successfully')
+    }
 
     return new Response(
       JSON.stringify({ 
