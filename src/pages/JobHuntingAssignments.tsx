@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JobHuntingAssignmentCard } from '@/components/JobHuntingAssignmentCard';
 import { JobPipelineKanban } from '@/components/JobPipelineKanban';
-import { PremiumProtectedRoute } from '@/components/PremiumProtectedRoute';
+import PremiumProtectedRoute from '@/components/PremiumProtectedRoute';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Link } from 'react-router-dom';
 import { 
