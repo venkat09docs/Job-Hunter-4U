@@ -485,6 +485,7 @@ export default function UserManagement() {
 
   const syncMissingProfiles = async () => {
     try {
+      setLoadingUsers(true);
       const { data, error } = await supabase.functions.invoke('sync-user-profiles');
       
       if (error) throw error;
@@ -499,10 +500,12 @@ export default function UserManagement() {
     } catch (error: any) {
       console.error('Sync failed:', error);
       toast({
-        title: "Error",
-        description: "Failed to sync user profiles",
+        title: "Error", 
+        description: `Failed to sync user profiles: ${error.message}`,
         variant: "destructive"
       });
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
