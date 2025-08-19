@@ -27,15 +27,17 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
         
         <ResizableHandle 
           withHandle
-          className="w-1 bg-transparent hover:bg-primary/20 transition-all duration-200 cursor-col-resize"
+          className="w-0 bg-transparent"
         />
         
         <ResizablePanel
           defaultSize={75}
           minSize={50}
-          className="flex flex-col min-w-0"
+          className="flex flex-col min-w-0 overflow-hidden"
         >
-          {children}
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            {children}
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
