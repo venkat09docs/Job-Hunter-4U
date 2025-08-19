@@ -213,10 +213,10 @@ export const jobHunterTranslations = {
       en: 'Export All My Data',
       te: 'నా మొత్తం డేటాను ఎగుమతి చేయండి'
     },
-    deleteData: {
-      en: 'Delete All My Data',
-      te: 'నా మొత్తం డేటాను తొలగించండి'
-    }
+    uploadFiles: {
+      en: 'Upload Files',
+      te: 'ఫైల్‌లను అప్‌లోడ్ చేయండి'
+    },
   },
 
   // Evidence types
@@ -264,11 +264,31 @@ export const jobHunterTranslations = {
     addressCopied: {
       en: 'Forwarding address copied to clipboard!',
       te: 'ఫార్వార్డింగ్ చిరునామా క్లిప్‌బోర్డ్‌కు కాపీ చేయబడింది!'
+    },
+    provideEvidence: {
+      en: 'Please provide evidence for your submission',
+      te: 'దయచేసి మీ సమర్పణకు సాక్ష్యం అందించండి'
+    },
+    submissionFailed: {
+      en: 'Failed to submit evidence. Please try again.',
+      te: 'సాక్ష్యం సమర్పణ విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి.'
+    },
+    pipelineMoveFailed: {
+      en: 'Failed to move job in pipeline',
+      te: 'పైప్‌లైన్‌లో ఉద్యోగాన్ని తరలించడంలో విఫలమైంది'
     }
   },
 
   // File validation messages
   fileValidation: {
+    hasErrors: {
+      en: 'Some files have validation errors',
+      te: 'కొన్ని ఫైల్‌లలో ధృవీకరణ లోపాలు ఉన్నాయి'
+    },
+    fixErrors: {
+      en: 'Please fix file validation errors before submitting',
+      te: 'సమర్పించడానికి ముందు ఫైల్ ధృవీకరణ లోపాలను పరిష్కరించండి'
+    },
     typeNotAllowed: {
       en: 'File type not allowed. Supported formats:',
       te: 'ఫైల్ రకం అనుమతించబడలేదు. మద్దతిచ్చే ఫార్మాట్లు:'

@@ -12,6 +12,8 @@ import { JobHunterHistory } from '@/components/JobHunterHistory';
 import { JobHunterSettings } from '@/components/JobHunterSettings';
 import PremiumProtectedRoute from '@/components/PremiumProtectedRoute';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { AssignmentCardSkeleton } from '@/components/SkeletonLoaders';
+import { useTranslation } from '@/i18n';
 import { Link } from 'react-router-dom';
 import { 
   ArrowLeft,
@@ -34,6 +36,7 @@ import { toast } from 'sonner';
 
 export const JobHuntingAssignments: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { 
     assignments, 
@@ -73,11 +76,36 @@ export const JobHuntingAssignments: React.FC = () => {
 
   if (loading || premiumLoading) {
     return (
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <PremiumProtectedRoute featureKey="job_hunting_assignments">
+        <div className="min-h-screen flex flex-col w-full bg-gradient-hero">
+          <header className="border-b bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-4">
+                <div className="h-8 w-24 bg-muted rounded animate-pulse"></div>
+                <div className="space-y-2">
+                  <div className="h-7 w-80 bg-muted rounded animate-pulse"></div>
+                  <div className="h-4 w-64 bg-muted rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="h-8 w-8 bg-muted rounded-full animate-pulse"></div>
+            </div>
+          </header>
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-32 bg-muted rounded-lg animate-pulse"></div>
+                ))}
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <AssignmentCardSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          </main>
         </div>
-      </div>
+      </PremiumProtectedRoute>
     );
   }
 

@@ -18,11 +18,15 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Calendar
+  Calendar,
+  AlertTriangle
 } from 'lucide-react';
 import { JobHuntingAssignment, useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { validateEvidenceFiles } from '@/utils/fileValidation';
+import { retryWithBackoff } from '@/utils/retryWithBackoff';
+import { useTranslation } from '@/i18n';
 
 interface JobHuntingAssignmentCardProps {
   assignment: JobHuntingAssignment;
@@ -32,12 +36,14 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   assignment
 }) => {
   const { submitEvidence, updateAssignmentStatus } = useJobHuntingAssignments();
+  const { t } = useTranslation();
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [evidenceType, setEvidenceType] = useState<string>('');
   const [evidenceText, setEvidenceText] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fileValidationErrors, setFileValidationErrors] = useState<string[]>([]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,9 +88,35 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     await updateAssignmentStatus(assignment.id, 'in_progress');
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = event.target.files;
+    if (!selectedFiles) return;
+
+    const validation = validateEvidenceFiles(Array.from(selectedFiles), evidenceType);
+    
+    if (validation.invalid.length > 0) {
+      const errors = validation.invalid.map(v => `${v.file.name}: ${v.error}`);
+      setFileValidationErrors(errors);
+      toast.error(t('fileValidation.hasErrors'));
+    } else {
+      setFileValidationErrors([]);
+    }
+
+    if (validation.valid.length > 0) {
+      const dt = new DataTransfer();
+      validation.valid.forEach(file => dt.items.add(file));
+      setFiles(dt.files);
+    }
+  };
+
   const handleSubmitEvidence = async () => {
     if (!evidenceType || (!evidenceText && !evidenceUrl && !files)) {
-      toast.error('Please provide evidence for your submission');
+      toast.error(t('messages.provideEvidence'));
+      return;
+    }
+
+    if (fileValidationErrors.length > 0) {
+      toast.error(t('fileValidation.fixErrors'));
       return;
     }
 
@@ -98,15 +130,20 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
       };
 
       const filesArray = files ? Array.from(files) : undefined;
-      await submitEvidence(assignment.id, evidenceType, evidenceData, filesArray);
+      
+      await retryWithBackoff(async () => {
+        await submitEvidence(assignment.id, evidenceType, evidenceData, filesArray);
+      });
       
       setIsSubmissionOpen(false);
       setEvidenceType('');
       setEvidenceText('');
       setEvidenceUrl('');
       setFiles(null);
+      setFileValidationErrors([]);
     } catch (error) {
       console.error('Submission error:', error);
+      toast.error(t('messages.submissionFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -254,14 +291,24 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
 
                   {(evidenceType === 'file' || evidenceType === 'screenshot') && (
                     <div>
-                      <Label htmlFor="files">Upload Files</Label>
+                      <Label htmlFor="files">{t('actions.uploadFiles')}</Label>
                       <Input
                         id="files"
                         type="file"
                         multiple
                         accept={evidenceType === 'screenshot' ? 'image/*' : '*'}
-                        onChange={(e) => setFiles(e.target.files)}
+                        onChange={handleFileChange}
                       />
+                      {fileValidationErrors.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {fileValidationErrors.map((error, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm text-red-600">
+                              <AlertTriangle className="h-4 w-4" />
+                              {error}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 

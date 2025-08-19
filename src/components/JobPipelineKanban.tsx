@@ -23,8 +23,12 @@ import {
 } from 'lucide-react';
 import { useJobHuntingPipeline, JobPipelineItem } from '@/hooks/useJobHuntingPipeline';
 import { toast } from 'sonner';
+import { optimisticUpdates } from '@/utils/optimisticUpdates';
+import { retryWithBackoff } from '@/utils/retryWithBackoff';
+import { useTranslation } from '@/i18n';
 
 export const JobPipelineKanban: React.FC = () => {
+  const { t } = useTranslation();
   const { 
     pipelineItems, 
     loading, 
@@ -86,7 +90,15 @@ export const JobPipelineKanban: React.FC = () => {
       return;
     }
     
-    await movePipelineStage(jobId, newStage);
+    // Apply optimistic update with retry
+    try {
+      await retryWithBackoff(async () => {
+        await movePipelineStage(jobId, newStage);
+      });
+    } catch (error) {
+      console.error('Failed to move job:', error);
+      toast.error(t('messages.pipelineMoveFailed'));
+    }
   };
 
   const stageCounts = getStageCounts();
