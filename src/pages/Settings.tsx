@@ -10,13 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard, Link } from 'lucide-react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
-import { 
-  ResizablePanelGroup, 
-  ResizablePanel, 
-  ResizableHandle 
-} from '@/components/ui/resizable';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import { ResizableLayout } from '@/components/ResizableLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
@@ -288,53 +283,32 @@ const Settings = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-hero">
-        <ResizablePanelGroup direction="horizontal" className="min-h-screen">
-          <ResizablePanel
-            defaultSize={20}
-            minSize={12}
-            maxSize={40}
-            className="relative"
-          >
-            <AppSidebar />
-          </ResizablePanel>
-          
-          <ResizableHandle 
-            withHandle
-            className="w-2 bg-border/50 hover:bg-primary/30 transition-all duration-200 active:bg-primary/50 cursor-col-resize"
-          />
-          
-          <ResizablePanel
-            defaultSize={80}
-            minSize={60}
-            className="flex flex-col min-w-0"
-          >
-            <main className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                <SidebarTrigger />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate('/dashboard')}
-                  className="gap-2 hidden sm:flex"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
-                <div className="hidden sm:flex">
-                  <SubscriptionStatus />
-                </div>
-                <UserProfileDropdown />
-              </div>
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+          <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+              <SidebarTrigger />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+                className="gap-2 hidden sm:flex"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
             </div>
-          </header>
+            
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+              <div className="hidden sm:flex">
+                <SubscriptionStatus />
+              </div>
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
 
           {/* Main Content */}
           <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
@@ -632,11 +606,8 @@ const Settings = () => {
               </Card>
             </div>
           </div>
-            </main>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </SidebarProvider>
+      </main>
+    </ResizableLayout>
   );
 };
 
