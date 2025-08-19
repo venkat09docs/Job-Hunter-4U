@@ -32,6 +32,7 @@ interface TaskAssignment {
   points_earned: number;
   created_at: string;
   updated_at: string;
+  assigned_at: string;
   career_task_templates: TaskTemplate;
 }
 
@@ -94,7 +95,12 @@ export const useCareerAssignments = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAssignments(data || []);
+      // Add assigned_at to match interface
+      const assignmentsWithAssignedAt = (data || []).map(assignment => ({
+        ...assignment,
+        assigned_at: assignment.created_at
+      }));
+      setAssignments(assignmentsWithAssignedAt);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to load assignments');

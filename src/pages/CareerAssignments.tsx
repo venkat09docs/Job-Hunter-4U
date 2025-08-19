@@ -169,8 +169,7 @@ const CareerAssignments = () => {
                           key={assignment.id}
                           assignment={{
                             ...assignment,
-                            assigned_at: assignment.created_at,
-                            template: assignment.career_task_templates
+                            assigned_at: assignment.created_at
                           }}
                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
                           onSubmitEvidence={submitEvidence}

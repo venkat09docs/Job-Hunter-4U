@@ -26,7 +26,6 @@ interface CareerTaskAssignment {
   points_earned: number;
   due_date?: string;
   assigned_at: string;
-  template: any;
   career_task_templates: {
     code: string;
     title: string;

@@ -38,7 +38,7 @@ const CareerActivitiesNew = () => {
   // Filter assignments by category
   const filteredAssignments = selectedCategory === 'all' 
     ? assignments 
-    : assignments.filter(assignment => assignment.template.category === selectedCategory);
+    : assignments.filter(assignment => assignment.career_task_templates.category === selectedCategory);
 
   // Get week dates for display
   const getWeekDates = () => {
@@ -75,7 +75,7 @@ const CareerActivitiesNew = () => {
   const getCategoryStats = (category: string) => {
     const categoryAssignments = category === 'all' 
       ? assignments 
-      : assignments.filter(a => a.template.category === category);
+      : assignments.filter(a => a.career_task_templates.category === category);
     
     const completed = categoryAssignments.filter(a => a.status === 'verified').length;
     const total = categoryAssignments.length;
@@ -243,7 +243,13 @@ const CareerActivitiesNew = () => {
             {!loading && filteredAssignments.length > 0 && (
               <div className="grid gap-6">
                 {filteredAssignments.map((assignment) => (
-                  <CareerTaskCard key={assignment.id} assignment={assignment} />
+                  <CareerTaskCard 
+                    key={assignment.id} 
+                    assignment={assignment}
+                    evidence={assignment.evidence || []}
+                    onSubmitEvidence={() => {}}
+                    isSubmitting={false}
+                  />
                 ))}
               </div>
             )}

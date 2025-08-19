@@ -6,6 +6,7 @@ import { format, startOfWeek } from 'date-fns';
 
 export interface CareerTaskTemplate {
   id: string;
+  code: string;
   title: string;
   description: string;
   category: string;
@@ -29,7 +30,7 @@ export interface CareerTaskAssignment {
   submitted_at?: string;
   verified_at?: string;
   points_earned: number;
-  template: CareerTaskTemplate;
+  career_task_templates: CareerTaskTemplate;
   evidence?: CareerTaskEvidence[];
 }
 
@@ -82,7 +83,7 @@ export const useCareerTasks = () => {
         .from('career_task_assignments')
         .select(`
           *,
-          template:career_task_templates(*),
+          career_task_templates(*),
           evidence:career_task_evidence(*)
         `)
         .eq('user_id', user.id)
