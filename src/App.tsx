@@ -5,10 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { IndustrySelectionDialog } from "@/components/IndustrySelectionDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserIndustry } from "@/hooks/useUserIndustry";
-import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -69,42 +66,6 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { user, loading: authLoading } = useAuth();
-  const { industry, loading: industryLoading, fetchAttempted } = useUserIndustry();
-  const [showIndustryDialog, setShowIndustryDialog] = useState(false);
-
-  useEffect(() => {
-    console.log('🚪 Industry dialog logic:', { 
-      authLoading, 
-      industryLoading, 
-      user: user?.id, 
-      industry,
-      fetchAttempted,
-      showIndustryDialog
-    });
-    
-    // Only show dialog after everything is loaded and we confirm user has no industry
-    if (!authLoading && !industryLoading && fetchAttempted && user) {
-      if (industry === null) {
-        console.log('🚪 Showing industry dialog - user has no industry set');
-        setShowIndustryDialog(true);
-      } else {
-        console.log('🚪 Not showing industry dialog - user has industry:', industry);
-        setShowIndustryDialog(false);
-      }
-    } else {
-      console.log('🚪 Still loading or not ready to show dialog');
-      setShowIndustryDialog(false);
-    }
-  }, [user, industry, authLoading, industryLoading, fetchAttempted]);
-
-  // Close dialog when industry is set
-  useEffect(() => {
-    if (industry && showIndustryDialog) {
-      console.log('🚪 Closing industry dialog - industry is now set:', industry);
-      setShowIndustryDialog(false);
-    }
-  }, [industry, showIndustryDialog]);
 
   return (
     <>
@@ -449,11 +410,6 @@ const AppContent = () => {
         </Routes>
         <AIAssistantChat />
       </BrowserRouter>
-      
-      <IndustrySelectionDialog
-        open={showIndustryDialog}
-        onOpenChange={setShowIndustryDialog}
-      />
     </>
   );
 };

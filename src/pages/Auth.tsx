@@ -4,23 +4,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import ManageSubscriptionDialog from '@/components/ManageSubscriptionDialog';
-import { IndustrySelectionDialog } from '@/components/IndustrySelectionDialog';
 import { PasswordStrengthMeter } from '@/components/PasswordStrengthMeter';
 import { validatePasswordStrength } from '@/lib/utils';
-import { useUserIndustry } from '@/hooks/useUserIndustry';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [industry, setIndustry] = useState<'IT' | 'Non-IT' | ''>('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !username) {
+    if (!email || !password || !username || !industry) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields",
@@ -78,7 +78,8 @@ const Auth = () => {
           data: {
             username: username,
             full_name: username,
-            'Display Name': username
+            'Display Name': username,
+            industry: industry
           }
         }
       });
@@ -258,16 +259,44 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="signup-industry">Industry</Label>
+                    <Select value={industry} onValueChange={(value: 'IT' | 'Non-IT') => setIndustry(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your industry" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="IT">Information Technology</SelectItem>
+                        <SelectItem value="Non-IT">Non-IT Industries</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a strong password (min 12 characters)"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={12}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a strong password (min 12 characters)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={12}
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
                     <PasswordStrengthMeter password={password} />
                   </div>
                   <Button 
