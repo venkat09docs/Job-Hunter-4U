@@ -51,7 +51,6 @@ import AIAssistantChat from "./components/AIAssistantChat";
 import NotFound from "./pages/NotFound";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerActivitiesNew from "./pages/CareerActivitiesNew";
-import StatusView from "./pages/StatusView";
 import LevelUp from "./pages/LevelUp";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import PostJob from "./pages/PostJob";
@@ -325,14 +324,6 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <GitHubWeekly />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/status-view" 
-            element={
-              <ProtectedRoute>
-                <StatusView />
               </ProtectedRoute>
             } 
           />

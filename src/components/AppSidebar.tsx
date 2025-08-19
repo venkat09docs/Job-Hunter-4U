@@ -69,7 +69,6 @@ const mainItems = [
 ];
 
 const jobHunterItems = [
-  { title: "Status View", url: "/dashboard/status-view", icon: BarChart3, featureKey: null },
   { title: "Find Your Next Role", url: "/dashboard/find-your-next-role", icon: Search, featureKey: "page_find_your_next_role" },
   { title: "Job Tracker", url: "/dashboard/job-tracker", icon: FileText, featureKey: "page_job_tracker" },
   { title: "Job Search History", url: "/dashboard/job-search", icon: Search, featureKey: "page_job_search" },
@@ -271,7 +270,7 @@ export function AppSidebar() {
                       <CollapsibleContent>
                         <SidebarMenuSub>
                           {careerAssignmentItems.map((item) => {
-                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                            const isPremium = item.featureKey ? !canAccessFeature(item.featureKey) : !canAccessFeature("career_assignments");
                             return (
                               <SidebarMenuSubItem key={item.title}>
                                 <SidebarMenuSubButton asChild>
