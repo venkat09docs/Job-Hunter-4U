@@ -21,6 +21,7 @@ interface Profile {
   linkedin_url?: string | null;
   github_url?: string | null;
   leetcode_url?: string | null;
+  industry?: string | null;
   created_at: string;
   updated_at: string;
 }

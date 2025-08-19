@@ -57,6 +57,7 @@ export function UserProfileDropdown() {
             </Avatar>
             <span className="hidden md:inline text-sm">
               {profile?.username || user?.email?.split('@')[0] || 'User'}
+              {profile?.industry && ` (${profile.industry})`}
             </span>
             <Badge variant="secondary" className="ml-2 gap-1">
               <Trophy className="h-3 w-3" />
@@ -76,6 +77,7 @@ export function UserProfileDropdown() {
             <div className="flex flex-col space-y-1 leading-none">
               <p className="font-medium text-sm">
                 {profile?.username || user?.email?.split('@')[0] || 'User'}
+                {profile?.industry && ` (${profile.industry})`}
               </p>
               <p className="text-xs text-muted-foreground">
                 {user?.email}
