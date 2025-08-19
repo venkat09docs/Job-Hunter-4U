@@ -159,14 +159,11 @@ async function verifyUrlEvidence(evidenceData: any, template: any): Promise<bool
     return url.includes('linkedin.com');
   }
 
-  // For Supabase/n8n tasks, check for relevant domains
-  if (template.category === 'supabase_practice') {
-    return url.includes('supabase.co') || url.includes('github.com') || isDeploymentUrl(url);
-  }
-
-  if (template.category === 'n8n_practice') {
-    return url.includes('n8n.io') || url.includes('n8n.cloud') || isValidDemoUrl(url);
-  }
+    // For networking and content tasks, allow various professional domains
+    if (template.category === 'networking' || template.category === 'content_creation') {
+      return url.includes('linkedin.com') || url.includes('twitter.com') || url.includes('medium.com') || 
+             url.includes('github.com') || isValidDemoUrl(url);
+    }
 
   return true; // Other categories pass basic URL validation
 }
@@ -242,11 +239,9 @@ function isValidDemoUrl(url: string): boolean {
 
 function getRelevantKeywords(category: string): string[] {
   const keywordMap: Record<string, string[]> = {
-    'linkedin_growth': ['linkedin', 'connection', 'post', 'engagement', 'network'],
-    'supabase_practice': ['supabase', 'database', 'rls', 'authentication', 'postgres'],
-    'n8n_practice': ['n8n', 'workflow', 'automation', 'trigger', 'webhook'],
-    'networking': ['network', 'professional', 'industry', 'colleague'],
-    'content_creation': ['content', 'article', 'post', 'blog', 'video']
+    'linkedin_growth': ['linkedin', 'connection', 'post', 'engagement', 'network', 'professional'],
+    'networking': ['network', 'professional', 'industry', 'colleague', 'meeting', 'conference'],
+    'content_creation': ['content', 'article', 'post', 'blog', 'video', 'creative', 'writing']
   };
   
   return keywordMap[category] || [];

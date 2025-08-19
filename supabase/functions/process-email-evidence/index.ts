@@ -241,17 +241,17 @@ async function attemptAutoVerification(evidence: any, template: any): Promise<{ 
       }
     }
 
-    if (template.category === 'supabase_practice') {
-      const hasSupabaseKeywords = /supabase|database|sql|rls|auth/i.test(evidenceData.body);
-      if (hasSupabaseKeywords || evidence.file_urls?.length > 0) {
-        return { verified: true, reason: 'Contains Supabase-related content or attachments' };
+    if (template.category === 'networking') {
+      const hasNetworkingKeywords = /network|professional|meeting|conference|colleague|industry/i.test(evidenceData.body);
+      if (hasNetworkingKeywords && evidenceData.body.length > 50) {
+        return { verified: true, reason: 'Contains networking-related content and sufficient detail' };
       }
     }
 
-    if (template.category === 'n8n_practice') {
-      const hasN8nKeywords = /n8n|workflow|automation|webhook|trigger/i.test(evidenceData.body);
-      if (hasN8nKeywords || evidence.file_urls?.length > 0) {
-        return { verified: true, reason: 'Contains n8n-related content or attachments' };
+    if (template.category === 'content_creation') {
+      const hasContentKeywords = /content|article|post|blog|video|creative|writing|publish/i.test(evidenceData.body);
+      if (hasContentKeywords || evidence.file_urls?.length > 0) {
+        return { verified: true, reason: 'Contains content creation-related material or attachments' };
       }
     }
 

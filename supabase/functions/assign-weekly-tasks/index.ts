@@ -175,22 +175,14 @@ function selectTasksForUser(templates: any[], profile: any) {
     }
   }
 
-  // Add 1 practice task based on subscription level
-  const practiceTasks = templates.filter(t => 
-    t.category === 'supabase_practice' || t.category === 'n8n_practice'
+  // Add networking or content creation tasks occasionally
+  const additionalTasks = templates.filter(t => 
+    t.category === 'networking' || t.category === 'content_creation'
   );
 
-  if (practiceTasks.length > 0) {
-    // Premium users get more advanced tasks
-    const isPremium = profile?.subscription_plan === 'premium' || profile?.subscription_plan === 'pro';
-    const availablePractice = isPremium 
-      ? practiceTasks 
-      : practiceTasks.filter(t => t.difficulty !== 'advanced');
-    
-    if (availablePractice.length > 0) {
-      const randomPractice = availablePractice[Math.floor(Math.random() * availablePractice.length)];
-      selectedTasks.push(randomPractice);
-    }
+  if (additionalTasks.length > 0 && Math.random() > 0.3) { // 70% chance to add additional task
+    const randomAdditional = additionalTasks[Math.floor(Math.random() * additionalTasks.length)];
+    selectedTasks.push(randomAdditional);
   }
 
   // Limit total tasks to 3-4 per week to avoid overwhelming users

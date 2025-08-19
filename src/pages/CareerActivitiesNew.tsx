@@ -12,8 +12,6 @@ import {
   RefreshCw, 
   TrendingUp,
   Users,
-  Code2,
-  Workflow,
   MessageSquare,
   Clock,
   CheckCircle,
@@ -68,8 +66,6 @@ const CareerActivitiesNew = () => {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'linkedin_growth': return <Users className="w-4 h-4" />;
-      case 'supabase_practice': return <Code2 className="w-4 h-4" />;
-      case 'n8n_practice': return <Workflow className="w-4 h-4" />;
       case 'networking': return <MessageSquare className="w-4 h-4" />;
       case 'content_creation': return <TrendingUp className="w-4 h-4" />;
       default: return <Target className="w-4 h-4" />;
@@ -159,22 +155,14 @@ const CareerActivitiesNew = () => {
 
         {/* Category Tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="all" className="flex items-center gap-2">
               <Target className="w-4 h-4" />
               All Tasks
             </TabsTrigger>
             <TabsTrigger value="linkedin_growth" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              LinkedIn
-            </TabsTrigger>
-            <TabsTrigger value="supabase_practice" className="flex items-center gap-2">
-              <Code2 className="w-4 h-4" />
-              Supabase
-            </TabsTrigger>
-            <TabsTrigger value="n8n_practice" className="flex items-center gap-2">
-              <Workflow className="w-4 h-4" />
-              n8n
+              LinkedIn Growth
             </TabsTrigger>
             <TabsTrigger value="networking" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
@@ -182,13 +170,13 @@ const CareerActivitiesNew = () => {
             </TabsTrigger>
             <TabsTrigger value="content_creation" className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Content
+              Content Creation
             </TabsTrigger>
           </TabsList>
 
           {/* Category Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-            {['linkedin_growth', 'supabase_practice', 'n8n_practice', 'networking', 'content_creation'].map(category => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {['linkedin_growth', 'networking', 'content_creation'].map(category => {
               const stats = getCategoryStats(category);
               return (
                 <Card 
