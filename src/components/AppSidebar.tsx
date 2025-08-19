@@ -27,7 +27,8 @@ import {
   GraduationCap,
   Trophy,
   Bell,
-  Github
+  Github,
+  ClipboardList
 } from "lucide-react";
 import {
   Sidebar,
@@ -59,6 +60,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { title: "Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
+  { title: "Career Assignments", url: "/dashboard/career-assignments", icon: ClipboardList, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
