@@ -64,7 +64,7 @@ const LevelUp = () => {
   if (!isAdmin) {
     return (
       <ResizableLayout>
-        <main className="flex-1 flex flex-col">
+        <main className="h-full flex flex-col">
           {/* Header */}
           <header className="border-b bg-background/80 backdrop-blur-sm">
             <div className="flex items-center justify-between px-4 py-4">
@@ -115,7 +115,7 @@ const LevelUp = () => {
 
   return (
     <ResizableLayout>
-      <main className="flex-1 flex flex-col">
+      <main className="h-full flex flex-col">
         {/* Header */}
         <header className="border-b bg-background/80 backdrop-blur-sm">
           <div className="flex items-center justify-between px-4 py-4">
@@ -135,7 +135,7 @@ const LevelUp = () => {
         </header>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-h-0">
           {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2">

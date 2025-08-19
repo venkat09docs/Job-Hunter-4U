@@ -185,7 +185,7 @@ const BuildMyProfile = () => {
   if (!canAccessFeature('build_my_profile')) {
     return (
       <ResizableLayout>
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="h-full flex flex-col min-w-0">
           <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
               <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
@@ -201,7 +201,7 @@ const BuildMyProfile = () => {
               </div>
             </div>
           </header>
-          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto flex items-center justify-center">
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto min-h-0 flex items-center justify-center">
             <SubscriptionUpgrade featureName="build_my_profile">
               <Card className="max-w-md">
                 <CardHeader>
@@ -223,7 +223,7 @@ const BuildMyProfile = () => {
 
   return (
     <ResizableLayout>
-      <main className="flex-1 flex flex-col min-w-0">{/* ... keep existing code ... */}
+      <main className="h-full flex flex-col min-w-0">{/* ... keep existing code ... */}
           <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
               <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
@@ -242,7 +242,7 @@ const BuildMyProfile = () => {
           </header>
 
           {/* Main Content */}
-          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto min-h-0">
             {/* Overall Progress */}
             <div className="mb-8">
               <Card className="shadow-elegant border-primary/20">

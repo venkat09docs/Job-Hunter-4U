@@ -205,7 +205,7 @@ const EditProfile = () => {
 
   return (
     <ResizableLayout>
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="h-full flex flex-col min-w-0">
         <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
@@ -246,7 +246,7 @@ const EditProfile = () => {
         </header>
 
           {/* Main Content */}
-          <div className="flex-1 p-8 overflow-auto">
+          <div className="flex-1 p-8 overflow-auto min-h-0">
             <div className="max-w-2xl mx-auto space-y-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Edit Public Profile</h1>
