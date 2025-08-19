@@ -60,7 +60,8 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { title: "Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Build My Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
-  { title: "Career Assignments", url: "/dashboard/career-assignments", icon: ClipboardList, featureKey: null },
+  { title: "Profile Assignments", url: "/dashboard/career-assignments", icon: ClipboardList, featureKey: null },
+  { title: "Career Activities", url: "/career-activities", icon: TrendingUp, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
@@ -90,7 +91,6 @@ const recruiterItems = [
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
-  { title: "Career Activities", url: "/career-activities", icon: TrendingUp },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
@@ -194,8 +194,6 @@ export function AppSidebar() {
                     if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                     // Show Institute Management only for super admins
                     if (item.title === "Institute Management" && !isAdmin) return null;
-                    // Show Career Activities only for super admins
-                    if (item.title === "Career Activities" && !isAdmin) return null;
                     // Show Batch Management only for institute admins
                     if (item.title === "Batch Management" && !isInstituteAdmin) return null;
                     // Show Students Management only for institute admins
