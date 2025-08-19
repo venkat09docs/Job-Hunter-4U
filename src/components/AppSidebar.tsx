@@ -55,7 +55,7 @@ const mainItems = [
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
-  { title: "Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
+  { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
 ];
 
