@@ -188,8 +188,8 @@ export function AppSidebar() {
     )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center p-4 border-b flex-shrink-0">
+          <div className="flex flex-col items-center gap-3">
             <Avatar className="h-14 w-14">
               <AvatarImage src={profile?.profile_image_url || ""} />
               <AvatarFallback className="text-lg font-semibold">
@@ -197,7 +197,7 @@ export function AppSidebar() {
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
-              <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex flex-col items-center text-center min-w-0">
                 <p className="font-semibold text-lg truncate">
                   {profile?.username || user?.email?.split('@')[0] || 'User'}
                 </p>
@@ -255,7 +255,7 @@ export function AppSidebar() {
             <div>
               {!isCollapsed && (
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                  Job Unter 4U
+                  JOB HUNTER 4U
                 </h3>
               )}
               <div className="space-y-1">
