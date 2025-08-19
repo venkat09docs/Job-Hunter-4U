@@ -219,10 +219,13 @@ export const StudentsManagement = () => {
       }
 
       // Get user profiles with email, full_name, username and subscription info
+      console.log('🔍 Fetching profiles for user IDs:', userIds);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, email, username, subscription_active, subscription_plan, subscription_end_date')
         .in('user_id', userIds);
+
+      console.log('📋 Profiles query result:', { profiles, profilesError });
 
       if (profilesError) throw profilesError;
 
