@@ -22,14 +22,17 @@ import {
   Shield,
   Activity,
   TrendingUp,
-  Home
+  Home,
+  Lock
 } from 'lucide-react';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useUserInputs } from '@/hooks/useUserInputs';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { CareerTaskCard } from '@/components/CareerTaskCard';
 import { toast } from 'sonner';
 
 const CareerAssignments = () => {
+  const { canAccessFeature } = usePremiumFeatures();
   const {
     assignments,
     templates,
@@ -103,16 +106,42 @@ const CareerAssignments = () => {
             </div>
           </div>
           <div className="flex gap-3">
-            <Button onClick={handleVerify} variant="outline">
+            <Button 
+              onClick={handleVerify} 
+              variant="outline"
+              disabled={!canAccessFeature("career_assignments")}
+            >
               <RefreshCw className="w-4 h-4 mr-2" />
               Verify Tasks
+              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
             </Button>
-            <Button onClick={handleInitialize}>
+            <Button 
+              onClick={handleInitialize}
+              disabled={!canAccessFeature("career_assignments")}
+            >
               <Target className="w-4 h-4 mr-2" />
               Initialize Tasks
+              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
             </Button>
           </div>
         </div>
+
+        {/* Premium Feature Notice */}
+        {!canAccessFeature("career_assignments") && (
+          <Card className="mb-8 border-orange-200 bg-orange-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Lock className="h-6 w-6 text-orange-600" />
+                <div>
+                  <h3 className="font-semibold text-orange-800">Premium Feature</h3>
+                  <p className="text-sm text-orange-700 mt-1">
+                    Career Assignments is available for premium subscribers. You can view the interface but cannot modify or submit tasks.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Overall Progress */}
         <Card className="mb-8">
@@ -174,24 +203,29 @@ const CareerAssignments = () => {
                     </AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-4">
                       {resumeTasks.map(assignment => (
-                        <CareerTaskCard
-                          key={assignment.id}
-                          assignment={{
-                            ...assignment,
-                            assigned_at: assignment.created_at
-                          }}
-                          evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={submitEvidence}
-                          isSubmitting={submittingEvidence}
-                        />
+                      <CareerTaskCard
+                        key={assignment.id}
+                        assignment={{
+                          ...assignment,
+                          assigned_at: assignment.created_at
+                        }}
+                        evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                        onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                        isSubmitting={submittingEvidence}
+                      />
                       ))}
                       {resumeTasks.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground">
                           <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                           <p>No resume tasks assigned yet</p>
-                          <Button onClick={handleInitialize} className="mt-3">
-                            Initialize Tasks
-                          </Button>
+                        <Button 
+                          onClick={handleInitialize} 
+                          className="mt-3"
+                          disabled={!canAccessFeature("career_assignments")}
+                        >
+                          Initialize Tasks
+                          {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                        </Button>
                         </div>
                       )}
                     </AccordionContent>
@@ -212,7 +246,7 @@ const CareerAssignments = () => {
                           key={assignment.id}
                           assignment={assignment}
                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={submitEvidence}
+                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
                           isSubmitting={submittingEvidence}
                         />
                       ))}
@@ -220,8 +254,13 @@ const CareerAssignments = () => {
                         <div className="text-center py-8 text-muted-foreground">
                           <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
                           <p>No LinkedIn tasks assigned yet</p>
-                          <Button onClick={handleInitialize} className="mt-3">
+                          <Button 
+                            onClick={handleInitialize} 
+                            className="mt-3"
+                            disabled={!canAccessFeature("career_assignments")}
+                          >
                             Initialize Tasks
+                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
                           </Button>
                         </div>
                       )}
@@ -243,7 +282,7 @@ const CareerAssignments = () => {
                           key={assignment.id}
                           assignment={assignment}
                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={submitEvidence}
+                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
                           isSubmitting={submittingEvidence}
                         />
                       ))}
@@ -251,8 +290,13 @@ const CareerAssignments = () => {
                         <div className="text-center py-8 text-muted-foreground">
                           <Github className="w-12 h-12 mx-auto mb-3 opacity-50" />
                           <p>No GitHub tasks assigned yet</p>
-                          <Button onClick={handleInitialize} className="mt-3">
+                          <Button 
+                            onClick={handleInitialize} 
+                            className="mt-3"
+                            disabled={!canAccessFeature("career_assignments")}
+                          >
                             Initialize Tasks
+                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
                           </Button>
                         </div>
                       )}

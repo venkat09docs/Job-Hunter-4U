@@ -29,7 +29,8 @@ import {
   Clock,
   AlertTriangle,
   Filter,
-  BarChart3
+  BarChart3,
+  Lock
 } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -138,6 +139,23 @@ export const JobHuntingAssignments: React.FC = () => {
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto space-y-6">
             
+            {/* Premium Feature Notice */}
+            {!canAccessFeature("job_hunting_assignments") && (
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <Lock className="h-6 w-6 text-orange-600" />
+                    <div>
+                      <h3 className="font-semibold text-orange-800">Premium Feature</h3>
+                      <p className="text-sm text-orange-700 mt-1">
+                        Job Hunter Assignments & Tracking is available for premium subscribers. You can view the interface but cannot modify or submit tasks.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* Progress Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
@@ -212,9 +230,11 @@ export const JobHuntingAssignments: React.FC = () => {
                         variant="outline"
                         className="mt-2 h-7 text-xs"
                         onClick={initializeUserWeek}
+                        disabled={!canAccessFeature("job_hunting_assignments")}
                       >
                         <RefreshCw className="h-3 w-3 mr-1" />
                         Generate Tasks
+                        {!canAccessFeature("job_hunting_assignments") && <Lock className="h-3 w-3 ml-1" />}
                       </Button>
                     </div>
                   </div>
@@ -235,7 +255,7 @@ export const JobHuntingAssignments: React.FC = () => {
                 <JobHunterAssignments 
                   weekProgress={weekProgress}
                   assignments={filteredAssignments}
-                  initializeUserWeek={initializeUserWeek}
+                  initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
                 />
               </TabsContent>
 

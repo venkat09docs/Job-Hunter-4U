@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
+import { Link } from 'react-router-dom';
 import { 
   Github, 
   Calendar, 
@@ -23,8 +25,8 @@ import {
   Circle, 
   AlertCircle, 
   Upload, 
-  Link, 
-  Camera, 
+  LinkIcon, 
+  Camera,
   FileText,
   Webhook,
   Settings,
@@ -39,13 +41,16 @@ import {
   Bug,
   Rocket,
   BookOpen,
-  Target
+  Target,
+  Home,
+  Lock
 } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 
 const GitHubWeekly = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { canAccessFeature } = usePremiumFeatures();
   const [activeTab, setActiveTab] = useState('assignments');
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const [evidenceDialog, setEvidenceDialog] = useState({ open: false, taskId: null as string | null });
@@ -147,7 +152,7 @@ const GitHubWeekly = () => {
               <SelectContent>
                 <SelectItem value="URL">
                   <div className="flex items-center gap-2">
-                    <Link className="h-4 w-4" />
+                    <LinkIcon className="h-4 w-4" />
                     URL Link
                   </div>
                 </SelectItem>
@@ -272,9 +277,14 @@ const GitHubWeekly = () => {
               onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
             >
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={!canAccessFeature("github_weekly")}
+                >
                   <Upload className="h-4 w-4 mr-1" />
                   Submit Evidence
+                  {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-1" />}
                 </Button>
               </DialogTrigger>
               <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
@@ -303,13 +313,38 @@ const GitHubWeekly = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Github className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">GitHub Weekly</h1>
-          <p className="text-muted-foreground">Track your GitHub activity and showcase your repositories</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard">
+            <Button variant="outline">
+              <Home className="w-4 h-4 mr-2" />
+              Go to Dashboard
+            </Button>
+          </Link>
+          <Github className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">GitHub Weekly</h1>
+            <p className="text-muted-foreground">Track your GitHub activity and showcase your repositories</p>
+          </div>
         </div>
       </div>
+
+      {/* Premium Feature Notice */}
+      {!canAccessFeature("github_weekly") && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <Lock className="h-6 w-6 text-orange-600" />
+              <div>
+                <h3 className="font-semibold text-orange-800">Premium Feature</h3>
+                <p className="text-sm text-orange-700 mt-1">
+                  GitHub Weekly is available for premium subscribers. You can view the interface but cannot modify or submit tasks.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
@@ -346,9 +381,13 @@ const GitHubWeekly = () => {
                     Complete weekly GitHub activities to earn points and maintain streaks
                   </CardDescription>
                 </div>
-                <Button onClick={() => instantiateWeek()}>
+                <Button 
+                  onClick={() => instantiateWeek()}
+                  disabled={!canAccessFeature("github_weekly")}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Generate Week
+                  {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                 </Button>
               </div>
             </CardHeader>
@@ -418,9 +457,13 @@ const GitHubWeekly = () => {
                   value={newRepoName}
                   onChange={(e) => setNewRepoName(e.target.value)}
                 />
-                <Button onClick={handleAddRepo} disabled={!newRepoName.trim()}>
+                <Button 
+                  onClick={handleAddRepo} 
+                  disabled={!newRepoName.trim() || !canAccessFeature("github_weekly")}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Repository
+                  {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                 </Button>
               </div>
 

@@ -25,14 +25,19 @@ import {
   Clock,
   Star,
   Shield,
-  ExternalLink
+  ExternalLink,
+  Home,
+  Lock
 } from 'lucide-react';
 import { useLinkedInTasks } from '@/hooks/useLinkedInTasks';
 import { LinkedInTaskCard } from '@/components/LinkedInTaskCard';
+import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { format, addDays, startOfWeek } from 'date-fns';
 
 const CareerActivities = () => {
+  const { canAccessFeature } = usePremiumFeatures();
   const {
     userTasks,
     evidence,
@@ -83,6 +88,12 @@ const CareerActivities = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
+            <Link to="/dashboard">
+              <Button variant="outline" className="mr-4">
+                <Home className="w-4 h-4 mr-2" />
+                Go to Dashboard
+              </Button>
+            </Link>
             <Users className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-4xl font-bold text-foreground">LinkedIn Growth Activities</h1>
@@ -92,19 +103,21 @@ const CareerActivities = () => {
           <div className="flex gap-3">
             <Button 
               onClick={handleVerifyTasks} 
-              disabled={isVerifying}
+              disabled={isVerifying || !canAccessFeature("linkedin_growth_activities")}
               variant="outline"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${isVerifying ? 'animate-spin' : ''}`} />
               {isVerifying ? 'Verifying...' : 'Verify Tasks'}
+              {!canAccessFeature("linkedin_growth_activities") && <Lock className="w-4 h-4 ml-2" />}
             </Button>
             <Button 
               onClick={handleInitializeWeek} 
-              disabled={isInitializing || tasksLoading}
+              disabled={isInitializing || tasksLoading || !canAccessFeature("linkedin_growth_activities")}
               className="flex items-center gap-2"
             >
               <Target className={`w-5 h-5 ${isInitializing ? 'animate-spin' : ''}`} />
               {isInitializing ? 'Initializing...' : 'Initialize Week'}
+              {!canAccessFeature("linkedin_growth_activities") && <Lock className="w-4 h-4 ml-2" />}
             </Button>
           </div>
         </div>
@@ -182,6 +195,23 @@ const CareerActivities = () => {
           </Card>
         </div>
 
+        {/* Premium Feature Notice */}
+        {!canAccessFeature("linkedin_growth_activities") && (
+          <Card className="mb-8 border-orange-200 bg-orange-50">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <Lock className="h-6 w-6 text-orange-600" />
+                <div>
+                  <h3 className="font-semibold text-orange-800">Premium Feature</h3>
+                  <p className="text-sm text-orange-700 mt-1">
+                    LinkedIn Growth Activities is available for premium subscribers. You can view the interface but cannot modify or submit tasks.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Main Tabs */}
         <Tabs defaultValue="this-week" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 h-12">
@@ -231,7 +261,11 @@ const CareerActivities = () => {
                             Initialize your weekly tasks to begin earning points and growing your network.
                           </p>
                         </div>
-                        <Button onClick={handleInitializeWeek} disabled={isInitializing} size="lg">
+                        <Button 
+                          onClick={handleInitializeWeek} 
+                          disabled={isInitializing || !canAccessFeature("linkedin_growth_activities")} 
+                          size="lg"
+                        >
                           {isInitializing ? (
                             <>
                               <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
@@ -241,6 +275,7 @@ const CareerActivities = () => {
                             <>
                               <Target className="w-5 h-5 mr-2" />
                               Start This Week's Tasks
+                              {!canAccessFeature("linkedin_growth_activities") && <Lock className="w-5 h-5 ml-2" />}
                             </>
                           )}
                         </Button>
@@ -256,7 +291,7 @@ const CareerActivities = () => {
                         key={task.id}
                         task={task}
                         evidence={evidence.filter(e => e.user_task_id === task.id)}
-                        onSubmitEvidence={submitEvidence}
+                        onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
                         isSubmitting={isSubmittingEvidence}
                       />
                     ))}
