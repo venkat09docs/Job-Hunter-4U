@@ -27,7 +27,7 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
         
         <ResizableHandle 
           withHandle
-          className="w-2 bg-border/50 hover:bg-primary/30 transition-all duration-200 active:bg-primary/50 cursor-col-resize group relative"
+          className="w-1 bg-transparent hover:bg-primary/20 transition-all duration-200 cursor-col-resize"
         />
         
         <ResizablePanel
