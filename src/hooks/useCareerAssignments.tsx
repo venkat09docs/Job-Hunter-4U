@@ -130,21 +130,42 @@ export const useCareerAssignments = () => {
   };
 
   const initializeUserWeek = async (period?: string) => {
-    if (!user) return;
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
 
     try {
       setLoading(true);
       
+      // Ensure templates are loaded first
+      if (templates.length === 0) {
+        console.log('Templates not loaded, fetching...');
+        await fetchTemplates();
+      }
+      
+      // Check if templates loaded successfully
+      if (templates.length === 0) {
+        throw new Error('No task templates available');
+      }
+      
+      console.log('Available templates:', templates);
+      
       // Get current ISO week if period not provided
       const currentPeriod = period || getISOWeek(new Date());
+      console.log('Initializing for period:', currentPeriod);
       
       // Get weekly templates
       const weeklyTemplates = templates.filter(t => t.cadence === 'weekly');
       const oneoffTemplates = templates.filter(t => t.cadence === 'oneoff');
       
+      console.log('Weekly templates:', weeklyTemplates.length);
+      console.log('One-off templates:', oneoffTemplates.length);
+      
       // Create assignments for weekly tasks
       for (const template of weeklyTemplates) {
-        await supabase
+        console.log('Creating weekly assignment for template:', template.title);
+        const { error } = await supabase
           .from('career_task_assignments')
           .upsert({
             user_id: user.id,
@@ -152,34 +173,45 @@ export const useCareerAssignments = () => {
             period: currentPeriod,
             due_date: getWeekEndDate(currentPeriod),
             week_start_date: getWeekStartDate(currentPeriod),
-            status: 'NOT_STARTED',
+            status: 'assigned',
             points_earned: 0
           }, {
             onConflict: 'user_id,template_id,period'
           });
+        
+        if (error) {
+          console.error('Error creating weekly assignment:', error);
+          throw error;
+        }
       }
 
       // Create assignments for oneoff tasks (if not already created)
       for (const template of oneoffTemplates) {
-        await supabase
+        console.log('Creating one-off assignment for template:', template.title);
+        const { error } = await supabase
           .from('career_task_assignments')
           .upsert({
             user_id: user.id,
             template_id: template.id,
             due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-            week_start_date: new Date().toISOString(),
-            status: 'NOT_STARTED',
+            week_start_date: new Date().toISOString().split('T')[0], // Today's date
+            status: 'assigned',
             points_earned: 0
           }, {
             onConflict: 'user_id,template_id'
           });
+        
+        if (error) {
+          console.error('Error creating one-off assignment:', error);
+          throw error;
+        }
       }
 
       await fetchAssignments();
-      toast.success('Tasks initialized successfully!');
+      toast.success(`Tasks initialized successfully! Created ${weeklyTemplates.length + oneoffTemplates.length} assignments.`);
     } catch (error) {
       console.error('Error initializing user week:', error);
-      toast.error('Failed to initialize tasks');
+      toast.error(`Failed to initialize tasks: ${error.message}`);
     } finally {
       setLoading(false);
     }

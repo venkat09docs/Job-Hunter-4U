@@ -21,7 +21,8 @@ import {
   Mail,
   Shield,
   Activity,
-  TrendingUp
+  TrendingUp,
+  Home
 } from 'lucide-react';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useUserInputs } from '@/hooks/useUserInputs';
@@ -87,6 +88,14 @@ const CareerAssignments = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/dashboard'}
+              className="mr-4"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Go to Dashboard
+            </Button>
             <Target className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-4xl font-bold">Career Assignments</h1>
