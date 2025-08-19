@@ -55,6 +55,10 @@ const CareerActivities = () => {
     initializeWeek();
   };
 
+  const handleVerifyTasks = () => {
+    verifyTasks();
+  };
+
   const getTaskStats = () => {
     const completed = userTasks.filter(task => task.status === 'VERIFIED').length;
     const submitted = userTasks.filter(task => task.status === 'SUBMITTED' || task.status === 'PARTIALLY_VERIFIED').length;
@@ -87,7 +91,7 @@ const CareerActivities = () => {
           </div>
           <div className="flex gap-3">
             <Button 
-              onClick={verifyTasks} 
+              onClick={handleVerifyTasks} 
               disabled={isVerifying}
               variant="outline"
             >
