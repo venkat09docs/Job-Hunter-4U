@@ -31,9 +31,7 @@ import {
   ClipboardList,
   Moon,
   Sun,
-  LogOut,
-  Menu,
-  X
+  LogOut
 } from "lucide-react";
 import {
   Sidebar,
@@ -486,14 +484,7 @@ export function AppSidebar() {
               />
               {!isCollapsed && <span className="text-sm text-muted-foreground">Dark Mode</span>}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setOpen(!open)}
-              className="p-2 hover:bg-accent"
-            >
-              {isCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
-            </Button>
+            <SidebarTrigger />
           </div>
         </div>
       </div>
