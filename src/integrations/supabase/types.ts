@@ -583,6 +583,33 @@ export type Database = {
         }
         Relationships: []
       }
+      github_badges: {
+        Row: {
+          code: string
+          created_at: string | null
+          criteria: Json
+          icon: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          criteria: Json
+          icon?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          criteria?: Json
+          icon?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       github_daily_flow_sessions: {
         Row: {
           completed: boolean
@@ -616,6 +643,44 @@ export type Database = {
         }
         Relationships: []
       }
+      github_evidence: {
+        Row: {
+          created_at: string | null
+          file_key: string | null
+          id: string
+          kind: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json: Json | null
+          url: string | null
+          user_task_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_key?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json?: Json | null
+          url?: string | null
+          user_task_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_key?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json?: Json | null
+          url?: string | null
+          user_task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_evidence_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "github_user_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       github_progress: {
         Row: {
           completed: boolean
@@ -645,6 +710,332 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      github_repos: {
+        Row: {
+          created_at: string | null
+          default_branch: string | null
+          full_name: string
+          html_url: string
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          default_branch?: string | null
+          full_name: string
+          html_url: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          default_branch?: string | null
+          full_name?: string
+          html_url?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_repos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      github_scores: {
+        Row: {
+          breakdown: Json | null
+          created_at: string | null
+          id: string
+          period: string
+          points_total: number
+          user_id: string
+        }
+        Insert: {
+          breakdown?: Json | null
+          created_at?: string | null
+          id?: string
+          period: string
+          points_total?: number
+          user_id: string
+        }
+        Update: {
+          breakdown?: Json | null
+          created_at?: string | null
+          id?: string
+          period?: string
+          points_total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      github_signals: {
+        Row: {
+          actor: string | null
+          created_at: string | null
+          happened_at: string
+          id: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link: string | null
+          raw_meta: Json | null
+          repo_id: string | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at: string
+          id?: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          repo_id?: string | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          repo_id?: string | null
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_signals_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "github_repos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_signals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      github_snapshots: {
+        Row: {
+          created_at: string | null
+          has_pages: boolean | null
+          id: string
+          last_release_at: string | null
+          last_workflow_pass: string | null
+          readme_updated_at: string | null
+          repo_id: string | null
+          stars: number | null
+          topics: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          has_pages?: boolean | null
+          id?: string
+          last_release_at?: string | null
+          last_workflow_pass?: string | null
+          readme_updated_at?: string | null
+          repo_id?: string | null
+          stars?: number | null
+          topics?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          has_pages?: boolean | null
+          id?: string
+          last_release_at?: string | null
+          last_workflow_pass?: string | null
+          readme_updated_at?: string | null
+          repo_id?: string | null
+          stars?: number | null
+          topics?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_snapshots_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "github_repos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      github_tasks: {
+        Row: {
+          active: boolean | null
+          bonus_rules: Json | null
+          cadence: string | null
+          code: string
+          created_at: string | null
+          description: string | null
+          evidence_types: Database["public"]["Enums"]["evidence_type"][]
+          id: string
+          points_base: number
+          scope: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          bonus_rules?: Json | null
+          cadence?: string | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          evidence_types: Database["public"]["Enums"]["evidence_type"][]
+          id?: string
+          points_base?: number
+          scope: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          bonus_rules?: Json | null
+          cadence?: string | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          evidence_types?: Database["public"]["Enums"]["evidence_type"][]
+          id?: string
+          points_base?: number
+          scope?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      github_user_badges: {
+        Row: {
+          awarded_at: string | null
+          badge_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          badge_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          badge_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "github_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      github_user_tasks: {
+        Row: {
+          created_at: string | null
+          due_at: string | null
+          id: string
+          period: string | null
+          repo_id: string | null
+          score_awarded: number | null
+          status: Database["public"]["Enums"]["verify_status"] | null
+          task_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          period?: string | null
+          repo_id?: string | null
+          score_awarded?: number | null
+          status?: Database["public"]["Enums"]["verify_status"] | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          period?: string | null
+          repo_id?: string | null
+          score_awarded?: number | null
+          status?: Database["public"]["Enums"]["verify_status"] | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_user_tasks_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "github_repos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_user_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "github_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_user_tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       institute_admin_assignments: {
         Row: {
