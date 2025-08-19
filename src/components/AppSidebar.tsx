@@ -109,9 +109,9 @@ export function AppSidebar() {
   const { isIT } = useUserIndustry();
   const { theme, setTheme } = useTheme();
   const [userSlug, setUserSlug] = useState<string | null>(null);
-  const [jobHunterOpen, setJobHunterOpen] = useState(true);
+  const [jobHunterOpen, setJobHunterOpen] = useState(false);
   const [githubOpen, setGitHubOpen] = useState(false);
-  const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(true);
+  const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(false);
 
   const isCollapsed = !isOpen;
 
