@@ -77,13 +77,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create profiles for missing users
+    // Create profiles for missing users with unique usernames
     const profilesToCreate = usersWithoutProfiles.map(user => {
       const metadata = user.user_metadata || {};
+      let baseUsername = metadata.username || user.email?.split('@')[0] || 'user';
+      
+      // Remove non-alphanumeric characters and make lowercase
+      baseUsername = baseUsername.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+      if (!baseUsername) baseUsername = 'user';
+      
       return {
         user_id: user.id,
         full_name: metadata.full_name || metadata['Display Name'] || user.email?.split('@')[0] || 'User',
-        username: metadata.username || user.email?.split('@')[0] || 'user',
+        username: `${baseUsername}_${Date.now()}_${Math.random().toString(36).substring(7)}`, // Ensure uniqueness
         email: user.email || null,
         industry: metadata.industry || 'IT'
       };
