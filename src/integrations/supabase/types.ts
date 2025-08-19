@@ -3562,6 +3562,13 @@ export type Database = {
         Args: { notif_type: string; target_user_id: string }
         Returns: boolean
       }
+      sync_missing_user_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          message: string
+          synced_count: number
+        }[]
+      }
       upsert_resume_data: {
         Args: {
           p_certifications_awards: Json
