@@ -55,7 +55,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
 import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
 import { useUserIndustry } from "@/hooks/useUserIndustry";
-import { cn } from "@/lib/utils";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
@@ -162,14 +161,12 @@ export function AppSidebar() {
     }`;
 
   return (
-    <Sidebar className="w-full h-full border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <SidebarContent className="overflow-y-auto">
+    <Sidebar>
+      <SidebarContent>
 
         {(isAdmin || isInstituteAdmin || isRecruiter) && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
-              Administration
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                   {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : adminItems).map((item) => {
@@ -179,8 +176,8 @@ export function AppSidebar() {
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton asChild>
                             <NavLink to={item.url} end className={getNavCls}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
-                              <span className="font-medium text-sm truncate">{item.title}</span>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">{item.title}</span>
                             </NavLink>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -221,8 +218,8 @@ export function AppSidebar() {
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton asChild>
                             <NavLink to={item.url} end className={getNavCls}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
-                              <span className="font-medium text-sm truncate">{item.title}</span>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">{item.title}</span>
                             </NavLink>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -238,9 +235,7 @@ export function AppSidebar() {
         {!isInstituteAdmin && !isRecruiter && (
           <>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
-                Job Hunter Pro
-              </SidebarGroupLabel>
+              <SidebarGroupLabel>Job Hunter Pro</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {mainItems.map((item) => {
@@ -249,9 +244,9 @@ export function AppSidebar() {
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
                             <NavLink to={item.url} end className={getNavCls}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
-                              <span className="font-medium text-sm truncate">{item.title}</span>
-                              {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">{item.title}</span>
+                              {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
                             </NavLink>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -263,12 +258,12 @@ export function AppSidebar() {
                     <Collapsible open={careerAssignmentsOpen} onOpenChange={setCareerAssignmentsOpen}>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton className={`${isCareerAssignmentsActive ? 'text-primary' : 'text-secondary-foreground'} hover:bg-primary/10 hover:text-primary`}>
-                          <ClipboardList className="h-4 w-4 flex-shrink-0" />
-                          <span className="font-medium text-sm truncate">Career Assignments</span>
+                          <ClipboardList className="h-5 w-5 flex-shrink-0" />
+                          <span className="font-medium text-sm">Career Assignments</span>
                           {careerAssignmentsOpen ? (
-                            <ChevronDown className="h-3 w-3 ml-auto flex-shrink-0" />
+                            <ChevronDown className="h-4 w-4 ml-auto" />
                           ) : (
-                            <ChevronRight className="h-3 w-3 ml-auto flex-shrink-0" />
+                            <ChevronRight className="h-4 w-4 ml-auto" />
                           )}
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
