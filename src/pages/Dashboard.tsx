@@ -10,8 +10,8 @@ import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { ResizableLayout } from '@/components/ResizableLayout';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -418,29 +418,26 @@ const Dashboard = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <main className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                <SidebarTrigger />
-                <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                  Job Hunter Pro
-                </h1>
-              </div>
-              
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
-                <div className="hidden sm:flex">
-                  <SubscriptionStatus />
-                </div>
-                <UserProfileDropdown />
-              </div>
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+          <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+              <SidebarTrigger />
+              <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                Job Hunter Pro
+              </h1>
             </div>
-          </header>
+            
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+              <div className="hidden sm:flex">
+                <SubscriptionStatus />
+              </div>
+              <UserProfileDropdown />
+            </div>
+          </div>
+        </header>
 
           {/* Main Content */}
           <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
@@ -1047,10 +1044,9 @@ const Dashboard = () => {
                 )}
                </CardContent>
             </Card>
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+        </div>
+      </main>
+    </ResizableLayout>
   );
 };
 

@@ -207,14 +207,6 @@ export function AppSidebar() {
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setOpen(!open)}
-            className="p-2 hover:bg-accent"
-          >
-            {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
-          </Button>
         </div>
 
         <SidebarContent className="flex-1 overflow-y-auto px-2 py-4">
@@ -484,39 +476,25 @@ export function AppSidebar() {
           )}
         </SidebarContent>
 
-        {/* Footer with Dark Mode Toggle and Logout */}
-        <div className="p-4 border-t space-y-2">
-          {/* Dark Mode Toggle */}
-          <div className="flex items-center gap-3">
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5 flex-shrink-0" />
-            ) : (
-              <Moon className="h-5 w-5 flex-shrink-0" />
-            )}
-            {!isCollapsed && (
-              <div className="flex items-center justify-between flex-1">
-                <span className="text-sm font-medium">Dark Mode</span>
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                />
-              </div>
-            )}
+        {/* Footer with Toggle Button */}
+        <div className="p-4 border-t mt-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Switch 
+                checked={theme === 'dark'} 
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+              />
+              {!isCollapsed && <span className="text-sm text-muted-foreground">Dark Mode</span>}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOpen(!open)}
+              className="p-2 hover:bg-accent"
+            >
+              {isCollapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            </Button>
           </div>
-
-          {/* Logout Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => signOut()}
-            className={cn(
-              "w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10",
-              isCollapsed ? "px-2" : "px-3"
-            )}
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            {!isCollapsed && <span className="ml-3">Logout</span>}
-          </Button>
         </div>
       </div>
     </Sidebar>
