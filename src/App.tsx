@@ -60,6 +60,7 @@ import RecruiterDashboard from "./pages/RecruiterDashboard";
 import PostJob from "./pages/PostJob";
 import CareerActivities from "./pages/CareerActivities";
 import CareerAssignments from "./pages/CareerAssignments";
+import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -337,6 +338,14 @@ const AppContent = () => {
             element={
               <PremiumProtectedRoute featureKey="career_growth_activities">
                 <CareerActivitiesNew />
+              </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-growth-activities" 
+            element={
+              <PremiumProtectedRoute featureKey="career_growth_activities">
+                <CareerGrowthActivities />
               </PremiumProtectedRoute>
             } 
           />
