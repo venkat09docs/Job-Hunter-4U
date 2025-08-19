@@ -992,6 +992,7 @@ export type Database = {
       }
       job_hunting_task_templates: {
         Row: {
+          bonus_rules: Json | null
           cadence: string
           category: string
           created_at: string
@@ -1008,6 +1009,7 @@ export type Database = {
           verification_criteria: Json
         }
         Insert: {
+          bonus_rules?: Json | null
           cadence?: string
           category: string
           created_at?: string
@@ -1024,6 +1026,7 @@ export type Database = {
           verification_criteria?: Json
         }
         Update: {
+          bonus_rules?: Json | null
           cadence?: string
           category?: string
           created_at?: string
