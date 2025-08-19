@@ -184,7 +184,7 @@ export function AppSidebar() {
   return (
     <Sidebar className={cn(
       "border-r bg-card/50 backdrop-blur-sm transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
+      isCollapsed ? "w-16" : "w-80"
     )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}

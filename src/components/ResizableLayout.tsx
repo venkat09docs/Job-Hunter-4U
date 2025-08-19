@@ -19,9 +19,9 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
       <div className={cn("min-h-screen w-full bg-gradient-hero", className)}>
         <ResizablePanelGroup direction="horizontal" className="min-h-screen">
           <ResizablePanel
-            defaultSize={20}
-            minSize={12}
-            maxSize={40}
+            defaultSize={25}
+            minSize={15}
+            maxSize={50}
             className="relative"
           >
             <div className="h-full w-full">
@@ -35,8 +35,8 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
           />
           
           <ResizablePanel
-            defaultSize={80}
-            minSize={60}
+            defaultSize={75}
+            minSize={50}
             className="flex flex-col min-w-0"
           >
             {children}
