@@ -33,7 +33,7 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
         <ResizablePanel
           defaultSize={75}
           minSize={50}
-          className="h-full flex flex-col"
+          className="h-full flex flex-col overflow-hidden"
         >
           {children}
         </ResizablePanel>
