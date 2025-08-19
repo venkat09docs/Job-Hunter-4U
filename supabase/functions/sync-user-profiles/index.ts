@@ -77,23 +77,47 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create profiles for missing users with unique usernames
-    const profilesToCreate = usersWithoutProfiles.map(user => {
+    // Create profiles for missing users with clean usernames
+    const profilesToCreate = [];
+    
+    for (const user of usersWithoutProfiles) {
       const metadata = user.user_metadata || {};
-      let baseUsername = metadata.username || user.email?.split('@')[0] || 'user';
+      
+      // Generate clean username from metadata or email
+      let username = metadata.username || metadata.full_name || metadata['Display Name'] || user.email?.split('@')[0] || 'user';
       
       // Remove non-alphanumeric characters and make lowercase
-      baseUsername = baseUsername.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-      if (!baseUsername) baseUsername = 'user';
+      username = username.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+      if (!username) username = 'user';
       
-      return {
+      // Check if username already exists and find a unique one
+      let finalUsername = username;
+      let counter = 1;
+      let usernameExists = true;
+      
+      while (usernameExists) {
+        const { data: existingUser } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('username', finalUsername)
+          .maybeSingle();
+          
+        if (!existingUser) {
+          usernameExists = false;
+        } else {
+          finalUsername = `${username}${counter}`;
+          counter++;
+        }
+      }
+      
+      profilesToCreate.push({
         user_id: user.id,
         full_name: metadata.full_name || metadata['Display Name'] || user.email?.split('@')[0] || 'User',
-        username: `${baseUsername}_${Date.now()}_${Math.random().toString(36).substring(7)}`, // Ensure uniqueness
+        username: finalUsername, // Use clean username without random suffixes
         email: user.email || null,
         industry: metadata.industry || 'IT'
-      };
-    });
+      });
+    }
 
     console.log('📝 Creating profiles:', profilesToCreate.length);
 
