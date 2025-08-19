@@ -509,6 +509,32 @@ export default function UserManagement() {
     }
   };
 
+  const cleanupUglyUsernames = async () => {
+    try {
+      setLoadingUsers(true);
+      const { data, error } = await supabase.functions.invoke('cleanup-ugly-usernames');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `${data.message}. Refreshing user list...`
+      });
+      
+      // Refresh the user list
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Cleanup failed:', error);
+      toast({
+        title: "Error", 
+        description: `Failed to cleanup usernames: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
@@ -1086,20 +1112,27 @@ export default function UserManagement() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Users ({filteredUsers.length})</span>
-                   <div className="flex items-center space-x-2">
-                     <Button
-                       onClick={syncMissingProfiles}
-                       variant="outline"
-                       size="sm"
-                     >
-                       Sync Missing Users
-                     </Button>
-                     <Button
-                       onClick={exportToCSV}
-                       variant="outline"
-                       disabled={filteredUsers.length === 0}
-                     >
+                   <span>Users ({filteredUsers.length})</span>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={syncMissingProfiles}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Sync Missing Users
+                      </Button>
+                      <Button
+                        onClick={cleanupUglyUsernames}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Clean Usernames
+                      </Button>
+                      <Button
+                        onClick={exportToCSV}
+                        variant="outline"
+                        disabled={filteredUsers.length === 0}
+                      >
                        <Download className="h-4 w-4 mr-2" />
                        Export CSV
                      </Button>
