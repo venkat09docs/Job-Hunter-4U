@@ -31,8 +31,13 @@ const professionalDetailsSchema = z.object({
   leetcode_url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
+const usernameSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username must be less than 30 characters').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+});
+
 type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
 type ProfessionalDetailsFormData = z.infer<typeof professionalDetailsSchema>;
+type UsernameFormData = z.infer<typeof usernameSchema>;
 
 const Settings = () => {
   const { user } = useAuth();
@@ -50,6 +55,7 @@ const Settings = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [savingProfessionalDetails, setSavingProfessionalDetails] = useState(false);
+  const [savingUsername, setSavingUsername] = useState(false);
 
   const form = useForm<PasswordResetFormData>({
     resolver: zodResolver(passwordResetSchema),
@@ -69,7 +75,14 @@ const Settings = () => {
     },
   });
 
-  // Update professional form when profile data loads
+  const usernameForm = useForm<UsernameFormData>({
+    resolver: zodResolver(usernameSchema),
+    defaultValues: {
+      username: profile?.username || '',
+    },
+  });
+
+  // Update forms when profile data loads
   useEffect(() => {
     if (profile) {
       professionalForm.reset({
@@ -79,8 +92,11 @@ const Settings = () => {
         github_url: profile.github_url || '',
         leetcode_url: profile.leetcode_url || '',
       });
+      usernameForm.reset({
+        username: profile.username || '',
+      });
     }
-  }, [profile, professionalForm]);
+  }, [profile, professionalForm, usernameForm]);
 
   const onSubmit = async (data: PasswordResetFormData) => {
     setLoading(true);
@@ -178,6 +194,53 @@ const Settings = () => {
       });
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const onUsernameSubmit = async (data: UsernameFormData) => {
+    if (!user) return;
+
+    setSavingUsername(true);
+    try {
+      // Check if username already exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('username', data.username)
+        .neq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') throw checkError;
+      
+      if (existingUser) {
+        toast({
+          title: 'Username unavailable',
+          description: 'This username is already taken. Please choose another one.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username: data.username } as any)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Username updated',
+        description: 'Your username has been successfully updated.',
+      });
+    } catch (error: any) {
+      console.error('Error updating username:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update username.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingUsername(false);
     }
   };
 
@@ -316,6 +379,48 @@ const Settings = () => {
                     className="hidden"
                     disabled={uploadingImage}
                   />
+                </CardContent>
+              </Card>
+
+              {/* Username */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Username
+                  </CardTitle>
+                  <CardDescription>
+                    Change your unique username
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...usernameForm}>
+                    <form onSubmit={usernameForm.handleSubmit(onUsernameSubmit)} className="space-y-4">
+                      <FormField
+                        control={usernameForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your username" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              Username can only contain letters, numbers, and underscores
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" disabled={savingUsername} className="gap-2">
+                        <User className="h-4 w-4" />
+                        {savingUsername ? 'Saving...' : 'Update Username'}
+                      </Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
 
