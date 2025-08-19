@@ -6,8 +6,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { ResizableLayout } from '@/components/ResizableLayout';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import BadgeProgressionMap from '@/components/BadgeProgressionMap';
@@ -64,45 +63,40 @@ const LevelUp = () => {
   // Show coming soon for non-admin users
   if (!isAdmin) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-hero">
-          <AppSidebar />
-          
-          <div className="flex-1 flex flex-col">
-            {/* Header */}
-            <header className="border-b bg-background/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between px-4 py-4">
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <SidebarTrigger />
-                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                    Level Up
-                  </h1>
-                </div>
-                
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="hidden sm:flex">
-                    <SubscriptionStatus />
-                  </div>
-                  <UserProfileDropdown />
-                </div>
+      <ResizableLayout>
+        <main className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="border-b bg-background/80 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Level Up
+                </h1>
               </div>
-            </header>
+              
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="hidden sm:flex">
+                  <SubscriptionStatus />
+                </div>
+                <UserProfileDropdown />
+              </div>
+            </div>
+          </header>
 
-            {/* Coming Soon Content */}
-            <main className="flex-1 flex items-center justify-center p-4">
-              <div className="text-center space-y-4">
-                <div className="text-6xl">🚀</div>
-                <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Coming Soon...
-                </h2>
-                <p className="text-muted-foreground text-lg max-w-md">
-                  We're working hard to bring you an amazing Level Up experience. Stay tuned!
-                </p>
-              </div>
-            </main>
+          {/* Coming Soon Content */}
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="text-center space-y-4">
+              <div className="text-6xl">🚀</div>
+              <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Coming Soon...
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-md">
+                We're working hard to bring you an amazing Level Up experience. Stay tuned!
+              </p>
+            </div>
           </div>
-        </div>
-      </SidebarProvider>
+        </main>
+      </ResizableLayout>
     );
   }
 
@@ -120,59 +114,54 @@ const LevelUp = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <SidebarTrigger />
-                <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Level Up
-                </h1>
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="border-b bg-background/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Level Up
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden sm:flex">
+                <SubscriptionStatus />
               </div>
-              
-              <div className="flex items-center gap-2 sm:gap-4">
-                <div className="hidden sm:flex">
-                  <SubscriptionStatus />
-                </div>
-                <UserProfileDropdown />
-              </div>
+              <UserProfileDropdown />
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
-            {/* Welcome Section */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold mb-2">
-                Level Up Your Career
-              </h2>
-              <p className="text-muted-foreground">
-                Track your progress and unlock achievements as you advance your career journey.
-              </p>
-            </div>
+        {/* Main Content */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold mb-2">
+              Level Up Your Career
+            </h2>
+            <p className="text-muted-foreground">
+              Track your progress and unlock achievements as you advance your career journey.
+            </p>
+          </div>
 
-            {/* Badge Progression Map */}
-            <div className="mb-8">
-              <BadgeProgressionMap 
-                resumeProgress={resumeProgress}
-                linkedinProgress={linkedinProgress}
-                githubProgress={githubProgress}
-                jobApplicationsCount={totalJobApplications}
-                networkConnections={networkMetrics?.totalConnections || 0}
-                profileViews={0} // Profile views not available in current metrics
-                githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
-                githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
-              />
-            </div>
-          </main>
+          {/* Badge Progression Map */}
+          <div className="mb-8">
+            <BadgeProgressionMap 
+              resumeProgress={resumeProgress}
+              linkedinProgress={linkedinProgress}
+              githubProgress={githubProgress}
+              jobApplicationsCount={totalJobApplications}
+              networkConnections={networkMetrics?.totalConnections || 0}
+              profileViews={0} // Profile views not available in current metrics
+              githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
+              githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
+            />
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </ResizableLayout>
   );
 };
 

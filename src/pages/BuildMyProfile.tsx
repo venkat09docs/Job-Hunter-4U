@@ -10,11 +10,10 @@ import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
+import { ResizableLayout } from '@/components/ResizableLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, ExternalLink, CheckCircle, Circle } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
@@ -185,58 +184,49 @@ const BuildMyProfile = () => {
   // Check premium access
   if (!canAccessFeature('build_my_profile')) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-gradient-hero">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col min-w-0">
-            <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
-              <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-                <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                  <SidebarTrigger />
-                  <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                    Build My Profile
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
-                  <div className="hidden sm:flex">
-                    <SubscriptionStatus />
-                  </div>
-                  <UserProfileDropdown />
-                </div>
+      <ResizableLayout>
+        <main className="flex-1 flex flex-col min-w-0">
+          <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+            <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+                <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
+                  Build My Profile
+                </h1>
               </div>
-            </header>
-            <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto flex items-center justify-center">
-              <SubscriptionUpgrade featureName="build_my_profile">
-                <Card className="max-w-md">
-                  <CardHeader>
-                    <CardTitle>Premium Feature</CardTitle>
-                    <CardDescription>
-                      Build My Profile is a premium feature. Upgrade your plan to access this functionality.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full">Upgrade Now</Button>
-                  </CardContent>
-                </Card>
-              </SubscriptionUpgrade>
+              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+                <div className="hidden sm:flex">
+                  <SubscriptionStatus />
+                </div>
+                <UserProfileDropdown />
+              </div>
             </div>
-          </main>
-        </div>
-      </SidebarProvider>
+          </header>
+          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto flex items-center justify-center">
+            <SubscriptionUpgrade featureName="build_my_profile">
+              <Card className="max-w-md">
+                <CardHeader>
+                  <CardTitle>Premium Feature</CardTitle>
+                  <CardDescription>
+                    Build My Profile is a premium feature. Upgrade your plan to access this functionality.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">Upgrade Now</Button>
+                </CardContent>
+              </Card>
+            </SubscriptionUpgrade>
+          </div>
+        </main>
+      </ResizableLayout>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <main className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col min-w-0">{/* ... keep existing code ... */}
           <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
               <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-                <SidebarTrigger />
                 <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
                   Build My Profile
                 </h1>
@@ -431,8 +421,7 @@ const BuildMyProfile = () => {
             </div>
           </div>
         </main>
-      </div>
-    </SidebarProvider>
+    </ResizableLayout>
   );
 };
 

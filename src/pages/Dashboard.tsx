@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ResizableLayout } from '@/components/ResizableLayout';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -424,7 +423,6 @@ const Dashboard = () => {
         <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
-              <SidebarTrigger />
               <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
                 Job Hunter Pro
               </h1>

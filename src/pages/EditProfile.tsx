@@ -14,8 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2, Eye } from 'lucide-react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { ResizableLayout } from '@/components/ResizableLayout';
 
 const customLinkSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -205,53 +204,49 @@ const EditProfile = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="border-b bg-background/80 backdrop-blur-sm">
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate('/dashboard')}
-                  className="gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm"
-                  onClick={viewProfile}
-                  disabled={!form.getValues('slug')}
-                  className="gap-2"
-                >
-                  <Eye className="h-4 w-4" />
-                  Preview
-                </Button>
-                <Button 
-                  onClick={form.handleSubmit(onSubmit)} 
-                  disabled={saving}
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save Profile'}
-                </Button>
-              </div>
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
+          <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate('/dashboard')}
+                className="gap-2 hidden sm:flex"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
             </div>
-          </header>
+            
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={viewProfile}
+                disabled={!form.getValues('slug')}
+                className="gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Preview
+              </Button>
+              <Button 
+                onClick={form.handleSubmit(onSubmit)} 
+                disabled={saving}
+                size="sm"
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? 'Saving...' : 'Save Profile'}
+              </Button>
+            </div>
+          </div>
+        </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto">
+          <div className="flex-1 p-8 overflow-auto">
             <div className="max-w-2xl mx-auto space-y-8">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Edit Public Profile</h1>
@@ -576,10 +571,9 @@ const EditProfile = () => {
                 </form>
               </Form>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+          </div>
+        </main>
+    </ResizableLayout>
   );
 };
 
