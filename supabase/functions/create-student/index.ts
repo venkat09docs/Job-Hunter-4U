@@ -96,18 +96,20 @@ serve(async (req) => {
 
     if (assignmentError) throw assignmentError
 
-    // Update the profile with email, full_name and username (since we need it for management)
-    console.log('Attempting to update profile for user:', authData.user.id, 'with data:', { full_name, username, email })
+    // Insert or update the profile with email, full_name and username (since we need it for management)
+    console.log('Attempting to upsert profile for user:', authData.user.id, 'with data:', { full_name, username, email })
     
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({
+      .upsert({
+        user_id: authData.user.id,
         full_name,
         username,
         email,
         industry: industry || 'IT',
+      }, {
+        onConflict: 'user_id'
       })
-      .eq('user_id', authData.user.id)
       .select()
 
     if (profileError) {
