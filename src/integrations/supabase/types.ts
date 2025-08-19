@@ -1181,6 +1181,74 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_badges: {
+        Row: {
+          code: string
+          created_at: string | null
+          criteria: Json
+          icon: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          criteria: Json
+          icon?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          criteria?: Json
+          icon?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      linkedin_evidence: {
+        Row: {
+          created_at: string | null
+          email_meta: Json | null
+          file_key: string | null
+          id: string
+          kind: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json: Json | null
+          url: string | null
+          user_task_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_meta?: Json | null
+          file_key?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json?: Json | null
+          url?: string | null
+          user_task_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_meta?: Json | null
+          file_key?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["evidence_kind"]
+          parsed_json?: Json | null
+          url?: string | null
+          user_task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_evidence_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_user_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       linkedin_network_completions: {
         Row: {
           completed: boolean
@@ -1271,6 +1339,241 @@ export type Database = {
           task_id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      linkedin_scores: {
+        Row: {
+          breakdown: Json | null
+          created_at: string | null
+          id: string
+          period: string
+          points_total: number
+          user_id: string | null
+        }
+        Insert: {
+          breakdown?: Json | null
+          created_at?: string | null
+          id?: string
+          period: string
+          points_total?: number
+          user_id?: string | null
+        }
+        Update: {
+          breakdown?: Json | null
+          created_at?: string | null
+          id?: string
+          period?: string
+          points_total?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_signals: {
+        Row: {
+          actor: string | null
+          created_at: string | null
+          happened_at: string
+          id: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link: string | null
+          raw_meta: Json | null
+          subject: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at: string
+          id?: string
+          kind: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actor?: string | null
+          created_at?: string | null
+          happened_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["signal_kind"]
+          link?: string | null
+          raw_meta?: Json | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_signals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_tasks: {
+        Row: {
+          active: boolean | null
+          bonus_rules: Json | null
+          cadence: string | null
+          code: string
+          created_at: string | null
+          description: string | null
+          evidence_types: Database["public"]["Enums"]["evidence_type"][]
+          id: string
+          points_base: number
+          title: string
+        }
+        Insert: {
+          active?: boolean | null
+          bonus_rules?: Json | null
+          cadence?: string | null
+          code: string
+          created_at?: string | null
+          description?: string | null
+          evidence_types: Database["public"]["Enums"]["evidence_type"][]
+          id?: string
+          points_base?: number
+          title: string
+        }
+        Update: {
+          active?: boolean | null
+          bonus_rules?: Json | null
+          cadence?: string | null
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          evidence_types?: Database["public"]["Enums"]["evidence_type"][]
+          id?: string
+          points_base?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      linkedin_user_badges: {
+        Row: {
+          awarded_at: string | null
+          badge_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          awarded_at?: string | null
+          badge_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          awarded_at?: string | null
+          badge_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linkedin_user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_user_tasks: {
+        Row: {
+          created_at: string | null
+          due_at: string | null
+          id: string
+          period: string
+          score_awarded: number | null
+          status: Database["public"]["Enums"]["verify_status"] | null
+          task_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          period: string
+          score_awarded?: number | null
+          status?: Database["public"]["Enums"]["verify_status"] | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          period?: string
+          score_awarded?: number | null
+          status?: Database["public"]["Enums"]["verify_status"] | null
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_user_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linkedin_user_tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkedin_users: {
+        Row: {
+          auth_uid: string
+          auto_forward_address: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          linkedin_urn: string | null
+          name: string | null
+        }
+        Insert: {
+          auth_uid: string
+          auto_forward_address?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          linkedin_urn?: string | null
+          name?: string | null
+        }
+        Update: {
+          auth_uid?: string
+          auto_forward_address?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          linkedin_urn?: string | null
+          name?: string | null
         }
         Relationships: []
       }
@@ -2387,6 +2690,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "institute_admin" | "recruiter"
+      evidence_kind: "URL" | "EMAIL" | "SCREENSHOT" | "DATA_EXPORT"
+      evidence_type:
+        | "URL_REQUIRED"
+        | "EMAIL_PROOF_OK"
+        | "SCREENSHOT_OK"
+        | "DATA_EXPORT_OK"
+      signal_kind:
+        | "COMMENTED"
+        | "REACTED"
+        | "MENTIONED"
+        | "INVITE_ACCEPTED"
+        | "POST_PUBLISHED"
+        | "PROFILE_UPDATED"
+      verify_status:
+        | "NOT_STARTED"
+        | "SUBMITTED"
+        | "PARTIALLY_VERIFIED"
+        | "VERIFIED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2515,6 +2836,27 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "institute_admin", "recruiter"],
+      evidence_kind: ["URL", "EMAIL", "SCREENSHOT", "DATA_EXPORT"],
+      evidence_type: [
+        "URL_REQUIRED",
+        "EMAIL_PROOF_OK",
+        "SCREENSHOT_OK",
+        "DATA_EXPORT_OK",
+      ],
+      signal_kind: [
+        "COMMENTED",
+        "REACTED",
+        "MENTIONED",
+        "INVITE_ACCEPTED",
+        "POST_PUBLISHED",
+        "PROFILE_UPDATED",
+      ],
+      verify_status: [
+        "NOT_STARTED",
+        "SUBMITTED",
+        "PARTIALLY_VERIFIED",
+        "VERIFIED",
+      ],
     },
   },
 } as const
