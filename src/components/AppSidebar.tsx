@@ -45,6 +45,7 @@ import { useRole } from "@/hooks/useRole";
 import { usePremiumFeatures } from "@/hooks/usePremiumFeatures";
 import { useUserIndustry } from "@/hooks/useUserIndustry";
 import { useProfile } from "@/hooks/useProfile";
+import { useUserPoints } from "@/hooks/useUserPoints";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
@@ -108,6 +109,7 @@ export function AppSidebar() {
   const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
   const { canAccessFeature } = usePremiumFeatures();
   const { isIT } = useUserIndustry();
+  const { totalPoints } = useUserPoints();
   const { theme, setTheme } = useTheme();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
@@ -142,15 +144,6 @@ export function AppSidebar() {
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
   const isCareerAssignmentsActive = careerAssignmentItems.some((i) => isActive(i.url));
-
-  const calculateUserPoints = () => {
-    if (!profile) return 0;
-    // Calculate points based on user activities
-    const resumePoints = (profile.total_resume_opens || 0) * 5;
-    const jobSearchPoints = (profile.total_job_searches || 0) * 10;
-    const aiQueryPoints = (profile.total_ai_queries || 0) * 3;
-    return resumePoints + jobSearchPoints + aiQueryPoints;
-  };
 
   const getInitials = () => {
     if (profile?.username) {
@@ -233,7 +226,7 @@ export function AppSidebar() {
                   </span>
                 </p>
                 <p className="text-xs text-primary font-medium mt-1">
-                  🏆 {calculateUserPoints()} Points
+                  🏆 {totalPoints} Points
                 </p>
               </div>
             )}
