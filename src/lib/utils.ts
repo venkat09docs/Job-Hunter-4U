@@ -55,8 +55,8 @@ export function validatePasswordStrength(password: string): {
 } {
   const errors: string[] = [];
   
-  if (password.length < 12) {
-    errors.push('Password must be at least 12 characters long');
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
   }
   
   if (!/[a-z]/.test(password)) {
@@ -78,10 +78,10 @@ export function validatePasswordStrength(password: string): {
   const isValid = errors.length === 0;
   
   let strength: 'weak' | 'medium' | 'strong' = 'weak';
-  if (password.length >= 12 && errors.length <= 1) {
+  if (password.length >= 8 && errors.length <= 1) {
     strength = 'medium';
   }
-  if (password.length >= 16 && errors.length === 0) {
+  if (password.length >= 12 && errors.length === 0) {
     strength = 'strong';
   }
   

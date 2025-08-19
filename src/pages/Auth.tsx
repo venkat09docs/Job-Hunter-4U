@@ -276,11 +276,11 @@ const Auth = () => {
                       <Input
                         id="signup-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Create a strong password (min 12 characters)"
+                        placeholder="Create a strong password (min 8 characters)"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        minLength={12}
+                        minLength={8}
                         className="pr-10"
                       />
                       <Button
