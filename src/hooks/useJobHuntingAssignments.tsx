@@ -153,15 +153,25 @@ export const useJobHuntingAssignments = () => {
 
   const initializeUserWeek = async () => {
     try {
-      const { error } = await supabase.functions.invoke('initialize-job-hunting-week', {
-        body: { user_id: user?.id }
+      setLoading(true);
+      
+      // Call the instantiate-week edge function
+      const { data, error } = await supabase.functions.invoke('instantiate-week', {
+        body: { userId: user?.id }
       });
-
+      
       if (error) throw error;
-      await fetchAssignments();
-      toast.success('Weekly assignments initialized!');
+      
+      console.log('Week initialization response:', data);
+      toast.success('Weekly tasks generated successfully!');
+      
+      // Refresh assignments
+      await fetchData();
     } catch (error: any) {
-      toast.error('Failed to initialize week: ' + error.message);
+      console.error('Error initializing week:', error);
+      toast.error(error.message || 'Failed to generate weekly tasks');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -274,6 +284,50 @@ export const useJobHuntingAssignments = () => {
     return assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
   };
 
+  // Function to instantiate per-job tasks
+  const instantiateJobTasks = async (jobId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('instantiate-job-tasks', {
+        body: { userId: user?.id, jobId }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Job tasks instantiation response:', data);
+      toast.success(`Tasks created for job: ${data.jobTitle}`);
+      
+      // Refresh assignments
+      await fetchData();
+      return data;
+    } catch (error: any) {
+      console.error('Error instantiating job tasks:', error);
+      toast.error(error.message || 'Failed to create job tasks');
+      throw error;
+    }
+  };
+
+  // Function to verify job hunter activities
+  const verifyJobHunter = async (period?: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-jobhunter', {
+        body: { userId: user?.id, period }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Verification response:', data);
+      toast.success(`Verified ${data.tasksVerified} tasks and awarded ${data.totalPointsAwarded} points!`);
+      
+      // Refresh assignments
+      await fetchData();
+      return data;
+    } catch (error: any) {
+      console.error('Error verifying activities:', error);
+      toast.error(error.message || 'Failed to verify activities');
+      throw error;
+    }
+  };
+
   return {
     assignments,
     templates,
@@ -281,6 +335,8 @@ export const useJobHuntingAssignments = () => {
     streaks,
     loading,
     initializeUserWeek,
+    instantiateJobTasks,
+    verifyJobHunter,
     submitEvidence,
     updateAssignmentStatus,
     getWeekProgress,
