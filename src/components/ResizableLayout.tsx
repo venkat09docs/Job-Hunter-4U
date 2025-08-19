@@ -14,30 +14,28 @@ interface ResizableLayoutProps {
 
 export function ResizableLayout({ children, className }: ResizableLayoutProps) {
   return (
-    <div className={cn("min-h-screen w-full bg-gradient-hero", className)}>
-      <ResizablePanelGroup direction="horizontal" className="min-h-screen">
+    <div className={cn("min-h-screen w-full bg-gradient-hero flex", className)}>
+      <ResizablePanelGroup direction="horizontal" className="min-h-screen w-full">
         <ResizablePanel
           defaultSize={25}
           minSize={15}
           maxSize={50}
-          className="relative"
+          className="relative h-screen sticky top-0"
         >
           <AppSidebar />
         </ResizablePanel>
         
         <ResizableHandle 
           withHandle
-          className="w-0 bg-transparent"
+          className="w-1 bg-border/20 hover:bg-border/40 transition-colors cursor-col-resize"
         />
         
         <ResizablePanel
           defaultSize={75}
           minSize={50}
-          className="flex flex-col min-w-0 overflow-hidden"
+          className="min-h-screen"
         >
-          <div className="flex-1 flex flex-col min-w-0 min-h-0">
-            {children}
-          </div>
+          {children}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
