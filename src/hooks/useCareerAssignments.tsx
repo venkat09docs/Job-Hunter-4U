@@ -1,0 +1,324 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface TaskTemplate {
+  id: string;
+  code: string;
+  module: 'RESUME' | 'LINKEDIN' | 'GITHUB';
+  title: string;
+  description: string;
+  category: string;
+  evidence_types: string[];
+  points_reward: number;
+  cadence: string;
+  difficulty: string;
+  estimated_duration: number;
+  instructions: any;
+  verification_criteria: any;
+  bonus_rules: any;
+}
+
+interface TaskAssignment {
+  id: string;
+  user_id: string;
+  template_id: string;
+  period?: string;
+  due_date: string;
+  week_start_date: string;
+  status: string;
+  score_awarded: number;
+  points_earned: number;
+  created_at: string;
+  updated_at: string;
+  career_task_templates: TaskTemplate;
+}
+
+interface TaskEvidence {
+  id: string;
+  assignment_id: string;
+  kind: 'URL' | 'EMAIL' | 'SCREENSHOT' | 'DATA_EXPORT';
+  url?: string;
+  file_urls?: string[];
+  evidence_data: any;
+  verification_status: string;
+  created_at: string;
+}
+
+export const useCareerAssignments = () => {
+  const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
+  const [templates, setTemplates] = useState<TaskTemplate[]>([]);
+  const [evidence, setEvidence] = useState<TaskEvidence[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submittingEvidence, setSubmittingEvidence] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      Promise.all([
+        fetchTemplates(),
+        fetchAssignments(),
+        fetchEvidence()
+      ]).finally(() => setLoading(false));
+    }
+  }, [user]);
+
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('career_task_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('module', { ascending: true });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      toast.error('Failed to load task templates');
+    }
+  };
+
+  const fetchAssignments = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('career_task_assignments')
+        .select(`
+          *,
+          career_task_templates (*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssignments(data || []);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      toast.error('Failed to load assignments');
+    }
+  };
+
+  const fetchEvidence = async () => {
+    if (!user) return;
+
+    try {
+      // Get evidence through assignments
+      const { data, error } = await supabase
+        .from('career_task_evidence')
+        .select(`
+          *,
+          career_task_assignments!inner (user_id)
+        `)
+        .eq('career_task_assignments.user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setEvidence(data || []);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+      toast.error('Failed to load evidence');
+    }
+  };
+
+  const initializeUserWeek = async (period?: string) => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      
+      // Get current ISO week if period not provided
+      const currentPeriod = period || getISOWeek(new Date());
+      
+      // Get weekly templates
+      const weeklyTemplates = templates.filter(t => t.cadence === 'weekly');
+      const oneoffTemplates = templates.filter(t => t.cadence === 'oneoff');
+      
+      // Create assignments for weekly tasks
+      for (const template of weeklyTemplates) {
+        await supabase
+          .from('career_task_assignments')
+          .upsert({
+            user_id: user.id,
+            template_id: template.id,
+            period: currentPeriod,
+            due_date: getWeekEndDate(currentPeriod),
+            week_start_date: getWeekStartDate(currentPeriod),
+            status: 'NOT_STARTED',
+            points_earned: 0
+          }, {
+            onConflict: 'user_id,template_id,period'
+          });
+      }
+
+      // Create assignments for oneoff tasks (if not already created)
+      for (const template of oneoffTemplates) {
+        await supabase
+          .from('career_task_assignments')
+          .upsert({
+            user_id: user.id,
+            template_id: template.id,
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+            week_start_date: new Date().toISOString(),
+            status: 'NOT_STARTED',
+            points_earned: 0
+          }, {
+            onConflict: 'user_id,template_id'
+          });
+      }
+
+      await fetchAssignments();
+      toast.success('Tasks initialized successfully!');
+    } catch (error) {
+      console.error('Error initializing user week:', error);
+      toast.error('Failed to initialize tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitEvidence = async (
+    assignmentId: string,
+    evidenceType: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT',
+    evidenceData: any,
+    file?: File
+  ) => {
+    if (!user) return;
+
+    try {
+      setSubmittingEvidence(true);
+
+      let fileUrls: string[] = [];
+      
+      if (file) {
+        // Upload file to Supabase storage
+        const fileName = `${user.id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('career-evidence')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('career-evidence')
+          .getPublicUrl(fileName);
+        
+        fileUrls = [publicUrl];
+      }
+
+      // Insert evidence
+      const { error } = await supabase
+        .from('career_task_evidence')
+        .insert({
+          assignment_id: assignmentId,
+          evidence_type: evidenceType.toLowerCase(),
+          kind: evidenceType,
+          url: evidenceData.url,
+          file_urls: fileUrls.length > 0 ? fileUrls : null,
+          evidence_data: evidenceData,
+          verification_status: 'pending'
+        });
+
+      if (error) throw error;
+
+      // Update assignment status
+      await supabase
+        .from('career_task_assignments')
+        .update({
+          status: 'SUBMITTED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', assignmentId);
+
+      await Promise.all([fetchAssignments(), fetchEvidence()]);
+      toast.success('Evidence submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting evidence:', error);
+      toast.error('Failed to submit evidence');
+    } finally {
+      setSubmittingEvidence(false);
+    }
+  };
+
+  const verifyAssignments = async () => {
+    if (!user) return;
+
+    try {
+      // Call the verification edge function
+      const { data, error } = await supabase.functions.invoke('verify-all-assignments', {
+        body: { userId: user.id }
+      });
+
+      if (error) throw error;
+
+      await fetchAssignments();
+      toast.success(`Verification complete! ${data.verified} tasks verified.`);
+    } catch (error) {
+      console.error('Error verifying assignments:', error);
+      toast.error('Failed to verify assignments');
+    }
+  };
+
+  const getTasksByModule = (module: 'RESUME' | 'LINKEDIN' | 'GITHUB') => {
+    return assignments.filter(a => a.career_task_templates?.module === module);
+  };
+
+  const getModuleProgress = (module: 'RESUME' | 'LINKEDIN' | 'GITHUB') => {
+    const moduleTasks = getTasksByModule(module);
+    if (moduleTasks.length === 0) return 0;
+    
+    const completedTasks = moduleTasks.filter(t => t.status === 'VERIFIED').length;
+    return Math.round((completedTasks / moduleTasks.length) * 100);
+  };
+
+  const getTotalPoints = () => {
+    return assignments.reduce((sum, assignment) => sum + (assignment.points_earned || 0), 0);
+  };
+
+  const getMaxPoints = () => {
+    return assignments.reduce((sum, assignment) => 
+      sum + assignment.career_task_templates?.points_reward || 0, 0);
+  };
+
+  return {
+    assignments,
+    templates,
+    evidence,
+    loading,
+    submittingEvidence,
+    initializeUserWeek,
+    submitEvidence,
+    verifyAssignments,
+    getTasksByModule,
+    getModuleProgress,
+    getTotalPoints,
+    getMaxPoints,
+    refreshData: () => Promise.all([fetchAssignments(), fetchEvidence()])
+  };
+};
+
+// Helper functions
+function getISOWeek(date: Date): string {
+  const year = date.getFullYear();
+  const start = new Date(year, 0, 1);
+  const diff = date.getTime() - start.getTime();
+  const week = Math.ceil(diff / (7 * 24 * 60 * 60 * 1000));
+  return `${year}-W${week.toString().padStart(2, '0')}`;
+}
+
+function getWeekStartDate(period: string): string {
+  const [year, week] = period.split('-W');
+  const startOfYear = new Date(parseInt(year), 0, 1);
+  const weekStart = new Date(startOfYear.getTime() + (parseInt(week) - 1) * 7 * 24 * 60 * 60 * 1000);
+  return weekStart.toISOString();
+}
+
+function getWeekEndDate(period: string): string {
+  const [year, week] = period.split('-W');
+  const startOfYear = new Date(parseInt(year), 0, 1);
+  const weekStart = new Date(startOfYear.getTime() + (parseInt(week) - 1) * 7 * 24 * 60 * 60 * 1000);
+  const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+  return weekEnd.toISOString();
+}

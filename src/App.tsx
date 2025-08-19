@@ -59,6 +59,7 @@ import LevelUp from "./pages/LevelUp";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import PostJob from "./pages/PostJob";
 import CareerActivities from "./pages/CareerActivities";
+import CareerAssignments from "./pages/CareerAssignments";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -227,6 +228,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CareerActivities />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/career-assignments" 
+            element={
+              <ProtectedRoute>
+                <CareerAssignments />
               </ProtectedRoute>
             } 
           />
