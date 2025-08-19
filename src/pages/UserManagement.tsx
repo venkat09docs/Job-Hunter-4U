@@ -483,6 +483,29 @@ export default function UserManagement() {
     }
   };
 
+  const syncMissingProfiles = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-user-profiles');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `${data.message}. Refreshing user list...`
+      });
+      
+      // Refresh the user list
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Sync failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sync user profiles",
+        variant: "destructive"
+      });
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       setLoadingUsers(true);
@@ -1049,15 +1072,22 @@ export default function UserManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Users ({filteredUsers.length})</span>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={exportToCSV}
-                      variant="outline"
-                      disabled={filteredUsers.length === 0}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export CSV
-                    </Button>
+                   <div className="flex items-center space-x-2">
+                     <Button
+                       onClick={syncMissingProfiles}
+                       variant="outline"
+                       size="sm"
+                     >
+                       Sync Missing Users
+                     </Button>
+                     <Button
+                       onClick={exportToCSV}
+                       variant="outline"
+                       disabled={filteredUsers.length === 0}
+                     >
+                       <Download className="h-4 w-4 mr-2" />
+                       Export CSV
+                     </Button>
                     {isAdmin && (
                       <Button onClick={() => setShowAddUserDialog(true)}>
                         <User className="h-4 w-4 mr-2" />
