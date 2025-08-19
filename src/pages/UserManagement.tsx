@@ -514,30 +514,28 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        console.log('🔍 Fetching users as admin...');
+        console.log('🔍 Fetching ALL users as super admin (including institute students)...');
         
-        // Admin can see ALL users directly from profiles table
+        // Super admin should see ALL users including institute students
+        // Use the secure admin function that handles all user types
         const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, username, email, profile_image_url, subscription_plan, subscription_active, subscription_start_date, subscription_end_date, total_resume_opens, total_job_searches, total_ai_queries, industry, created_at, updated_at')
-          .limit(1000)
-          .order('created_at', { ascending: false });
+          .rpc('get_all_users_for_admin');
 
-        console.log('📊 Profiles query result:', { profiles: profiles?.length || 0, error: profilesError });
+        console.log('📊 Admin profiles query result:', { profiles: profiles?.length || 0, error: profilesError });
         
         if (profilesError) {
-          console.error('❌ Error fetching profiles:', profilesError);
+          console.error('❌ Error fetching admin profiles:', profilesError);
           throw profilesError;
         }
 
         if (!profiles) {
-          console.log('⚠️ No profiles returned from query');
+          console.log('⚠️ No profiles returned from admin query');
           setUsers([]);
           setFilteredUsers([]);
           return;
         }
 
-        console.log('✅ Found profiles:', profiles.length);
+        console.log('✅ Found admin profiles:', profiles.length);
 
         // Get user roles for all users
         const userIds = profiles.map(p => p.user_id);
