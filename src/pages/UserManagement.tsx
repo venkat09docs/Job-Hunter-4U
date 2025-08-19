@@ -488,26 +488,21 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        // Admin can see safe user data (emails are protected for security)
+        // Admin can see ALL users directly from profiles table
         const { data: profiles, error: profilesError } = await supabase
-          .rpc('get_safe_admin_profiles');
+          .from('profiles')
+          .select('user_id, full_name, username, email, profile_image_url, subscription_plan, subscription_active, subscription_start_date, subscription_end_date, total_resume_opens, total_job_searches, total_ai_queries, industry, created_at, updated_at');
 
         if (profilesError) throw profilesError;
 
-        // Get users who are assigned to institutes (students)
-        const { data: assignedUsers, error: assignedError } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .eq('is_active', true);
+        if (!profiles) {
+          setUsers([]);
+          setFilteredUsers([]);
+          return;
+        }
 
-        if (assignedError) throw assignedError;
-
-        // Filter out assigned users (students) from the main user management
-        const assignedUserIds = new Set(assignedUsers?.map(a => a.user_id) || []);
-        const unassignedProfiles = profiles?.filter(p => !assignedUserIds.has(p.user_id)) || [];
-
-        // Get user roles for unassigned users only
-        const userIds = unassignedProfiles.map(p => p.user_id);
+        // Get user roles for all users
+        const userIds = profiles.map(p => p.user_id);
         const { data: roles, error: rolesError } = await supabase
           .from('user_roles')
           .select('user_id, role')
@@ -515,12 +510,11 @@ export default function UserManagement() {
 
         if (rolesError) throw rolesError;
 
-        // Combine profiles with roles and add masked email for security
-        const usersWithRoles = unassignedProfiles.map(profile => {
+        // Combine profiles with roles
+        const usersWithRoles = profiles.map(profile => {
           const userRole = roles?.find(r => r.user_id === profile.user_id);
           return {
             ...profile,
-            email: `${profile.username || 'user'}@protected.com`, // Masked for security
             current_role: userRole?.role || 'user'
           };
         });

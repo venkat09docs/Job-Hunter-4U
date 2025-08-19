@@ -3307,6 +3307,26 @@ export type Database = {
         }
         Returns: string
       }
+      get_all_users_for_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          industry: string
+          profile_image_url: string
+          subscription_active: boolean
+          subscription_end_date: string
+          subscription_plan: string
+          subscription_start_date: string
+          total_ai_queries: number
+          total_job_searches: number
+          total_resume_opens: number
+          updated_at: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
         Returns: {
