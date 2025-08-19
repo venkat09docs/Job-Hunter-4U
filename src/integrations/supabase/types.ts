@@ -774,6 +774,312 @@ export type Database = {
         }
         Relationships: []
       }
+      job_hunting_assignments: {
+        Row: {
+          assigned_at: string
+          created_at: string
+          due_date: string
+          id: string
+          points_earned: number | null
+          score_awarded: number | null
+          status: string
+          submitted_at: string | null
+          template_id: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+          week_start_date: string
+        }
+        Insert: {
+          assigned_at?: string
+          created_at?: string
+          due_date: string
+          id?: string
+          points_earned?: number | null
+          score_awarded?: number | null
+          status?: string
+          submitted_at?: string | null
+          template_id: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+          week_start_date: string
+        }
+        Update: {
+          assigned_at?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          points_earned?: number | null
+          score_awarded?: number | null
+          status?: string
+          submitted_at?: string | null
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_hunting_assignments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "job_hunting_task_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_hunting_evidence: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          evidence_data: Json
+          evidence_type: string
+          file_urls: string[] | null
+          id: string
+          submitted_at: string
+          updated_at: string
+          verification_notes: string | null
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          evidence_data: Json
+          evidence_type: string
+          file_urls?: string[] | null
+          id?: string
+          submitted_at?: string
+          updated_at?: string
+          verification_notes?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          evidence_data?: Json
+          evidence_type?: string
+          file_urls?: string[] | null
+          id?: string
+          submitted_at?: string
+          updated_at?: string
+          verification_notes?: string | null
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_hunting_evidence_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "job_hunting_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_hunting_pipeline: {
+        Row: {
+          application_date: string | null
+          company_name: string
+          created_at: string
+          id: string
+          interview_dates: Json | null
+          job_title: string
+          job_tracker_id: string | null
+          job_url: string | null
+          notes: Json | null
+          offer_details: Json | null
+          pipeline_stage: string
+          points_earned: number | null
+          priority: string
+          rejection_reason: string | null
+          source: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_date?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          interview_dates?: Json | null
+          job_title: string
+          job_tracker_id?: string | null
+          job_url?: string | null
+          notes?: Json | null
+          offer_details?: Json | null
+          pipeline_stage?: string
+          points_earned?: number | null
+          priority?: string
+          rejection_reason?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_date?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          interview_dates?: Json | null
+          job_title?: string
+          job_tracker_id?: string | null
+          job_url?: string | null
+          notes?: Json | null
+          offer_details?: Json | null
+          pipeline_stage?: string
+          points_earned?: number | null
+          priority?: string
+          rejection_reason?: string | null
+          source?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_hunting_pipeline_job_tracker_id_fkey"
+            columns: ["job_tracker_id"]
+            isOneToOne: false
+            referencedRelation: "job_tracker"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_hunting_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          streak_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          streak_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          streak_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      job_hunting_task_templates: {
+        Row: {
+          cadence: string
+          category: string
+          created_at: string
+          description: string
+          difficulty: string
+          estimated_duration: number
+          evidence_types: string[]
+          id: string
+          instructions: Json
+          is_active: boolean
+          points_reward: number
+          title: string
+          updated_at: string
+          verification_criteria: Json
+        }
+        Insert: {
+          cadence?: string
+          category: string
+          created_at?: string
+          description: string
+          difficulty?: string
+          estimated_duration?: number
+          evidence_types?: string[]
+          id?: string
+          instructions?: Json
+          is_active?: boolean
+          points_reward?: number
+          title: string
+          updated_at?: string
+          verification_criteria?: Json
+        }
+        Update: {
+          cadence?: string
+          category?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          estimated_duration?: number
+          evidence_types?: string[]
+          id?: string
+          instructions?: Json
+          is_active?: boolean
+          points_reward?: number
+          title?: string
+          updated_at?: string
+          verification_criteria?: Json
+        }
+        Relationships: []
+      }
+      job_hunting_weekly_schedules: {
+        Row: {
+          created_at: string
+          id: string
+          points_earned: number
+          schedule_generated_at: string
+          tasks_completed: number
+          total_points_possible: number
+          total_tasks_assigned: number
+          updated_at: string
+          user_id: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_earned?: number
+          schedule_generated_at?: string
+          tasks_completed?: number
+          total_points_possible?: number
+          total_tasks_assigned?: number
+          updated_at?: string
+          user_id: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_earned?: number
+          schedule_generated_at?: string
+          tasks_completed?: number
+          total_points_possible?: number
+          total_tasks_assigned?: number
+          updated_at?: string
+          user_id?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       job_results: {
         Row: {
           created_at: string

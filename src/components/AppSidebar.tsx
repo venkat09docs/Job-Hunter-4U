@@ -83,6 +83,7 @@ const githubItems = [
 const careerAssignmentItems = [
   { title: "Profile Assignments", url: "/dashboard/career-assignments", icon: ClipboardList, featureKey: null },
   { title: "LinkedIn Growth Assignments", url: "/career-activities", icon: Linkedin, featureKey: null },
+  { title: "Job Hunter – Assignments & Tracking", url: "/dashboard/job-hunting-assignments", icon: Target, featureKey: "job_hunting_assignments" },
 ];
 
 

@@ -61,6 +61,7 @@ import PostJob from "./pages/PostJob";
 import CareerActivities from "./pages/CareerActivities";
 import CareerAssignments from "./pages/CareerAssignments";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
+import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -346,6 +347,14 @@ const AppContent = () => {
             element={
               <PremiumProtectedRoute featureKey="career_growth_activities">
                 <CareerGrowthActivities />
+              </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/job-hunting-assignments" 
+            element={
+              <PremiumProtectedRoute featureKey="job_hunting_assignments">
+                <JobHuntingAssignments />
               </PremiumProtectedRoute>
             } 
           />

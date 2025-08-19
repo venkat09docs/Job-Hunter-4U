@@ -1,0 +1,291 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { toast } from 'sonner';
+
+export interface JobHuntingTaskTemplate {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  points_reward: number;
+  estimated_duration: number;
+  instructions: any;
+  verification_criteria: any;
+  evidence_types: string[];
+  cadence: string;
+  is_active: boolean;
+}
+
+export interface JobHuntingAssignment {
+  id: string;
+  user_id: string;
+  template_id: string;
+  week_start_date: string;
+  status: string;
+  assigned_at: string;
+  submitted_at?: string;
+  verified_at?: string;
+  verified_by?: string;
+  points_earned: number;
+  score_awarded: number;
+  due_date: string;
+  template?: JobHuntingTaskTemplate;
+}
+
+export interface JobHuntingEvidence {
+  id: string;
+  assignment_id: string;
+  evidence_type: string;
+  evidence_data: any;
+  file_urls?: string[];
+  verification_status: string;
+  verification_notes?: string;
+  verified_by?: string;
+  verified_at?: string;
+  submitted_at: string;
+}
+
+export interface JobHuntingStreak {
+  id: string;
+  user_id: string;
+  streak_type: string;
+  current_streak: number;
+  longest_streak: number;
+  last_activity_date?: string;
+}
+
+export const useJobHuntingAssignments = () => {
+  const { user } = useAuth();
+  const [assignments, setAssignments] = useState<JobHuntingAssignment[]>([]);
+  const [templates, setTemplates] = useState<JobHuntingTaskTemplate[]>([]);
+  const [evidence, setEvidence] = useState<JobHuntingEvidence[]>([]);
+  const [streaks, setStreaks] = useState<JobHuntingStreak[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchTemplates(),
+        fetchAssignments(),
+        fetchEvidence(),
+        fetchStreaks()
+      ]);
+    } catch (error) {
+      console.error('Error fetching job hunting data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_hunting_task_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('category, difficulty, points_reward');
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_hunting_assignments')
+        .select(`
+          *,
+          template:job_hunting_task_templates(*)
+        `)
+        .eq('user_id', user?.id)
+        .order('due_date', { ascending: true });
+
+      if (error) throw error;
+      setAssignments(data || []);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
+  };
+
+  const fetchEvidence = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_hunting_evidence')
+        .select(`
+          *,
+          assignment:job_hunting_assignments!inner(user_id)
+        `)
+        .eq('assignment.user_id', user?.id)
+        .order('submitted_at', { ascending: false });
+
+      if (error) throw error;
+      setEvidence(data || []);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+    }
+  };
+
+  const fetchStreaks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_hunting_streaks')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setStreaks(data || []);
+    } catch (error) {
+      console.error('Error fetching streaks:', error);
+    }
+  };
+
+  const initializeUserWeek = async () => {
+    try {
+      const { error } = await supabase.functions.invoke('initialize-job-hunting-week', {
+        body: { user_id: user?.id }
+      });
+
+      if (error) throw error;
+      await fetchAssignments();
+      toast.success('Weekly assignments initialized!');
+    } catch (error: any) {
+      toast.error('Failed to initialize week: ' + error.message);
+    }
+  };
+
+  const submitEvidence = async (
+    assignmentId: string, 
+    evidenceType: string, 
+    evidenceData: any, 
+    files?: File[]
+  ) => {
+    try {
+      let fileUrls: string[] = [];
+
+      // Upload files if provided
+      if (files && files.length > 0) {
+        for (const file of files) {
+          const fileName = `${user?.id}/${assignmentId}/${Date.now()}-${file.name}`;
+          const { error: uploadError } = await supabase.storage
+            .from('career-evidence')
+            .upload(fileName, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = supabase.storage
+            .from('career-evidence')
+            .getPublicUrl(fileName);
+
+          fileUrls.push(urlData.publicUrl);
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('job_hunting_evidence')
+        .insert({
+          assignment_id: assignmentId,
+          evidence_type: evidenceType,
+          evidence_data: evidenceData,
+          file_urls: fileUrls.length > 0 ? fileUrls : null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update assignment status
+      await supabase
+        .from('job_hunting_assignments')
+        .update({ 
+          status: 'submitted',
+          submitted_at: new Date().toISOString()
+        })
+        .eq('id', assignmentId);
+
+      await fetchAssignments();
+      await fetchEvidence();
+      toast.success('Evidence submitted successfully!');
+      
+      return data;
+    } catch (error: any) {
+      toast.error('Failed to submit evidence: ' + error.message);
+      throw error;
+    }
+  };
+
+  const updateAssignmentStatus = async (assignmentId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('job_hunting_assignments')
+        .update({ status })
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+      
+      await fetchAssignments();
+      toast.success('Assignment status updated!');
+    } catch (error: any) {
+      toast.error('Failed to update status: ' + error.message);
+    }
+  };
+
+  const getWeekProgress = () => {
+    const currentWeek = assignments.filter(a => {
+      const weekStart = new Date(a.week_start_date);
+      const now = new Date();
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      return now >= weekStart && now <= weekEnd;
+    });
+
+    const completed = currentWeek.filter(a => a.status === 'verified').length;
+    const total = currentWeek.length;
+    const totalPoints = currentWeek.reduce((sum, a) => sum + (a.points_earned || 0), 0);
+    const maxPoints = currentWeek.reduce((sum, a) => sum + (a.template?.points_reward || 0), 0);
+
+    return { completed, total, totalPoints, maxPoints, assignments: currentWeek };
+  };
+
+  const getTasksByCategory = () => {
+    const categories = templates.reduce((acc, template) => {
+      if (!acc[template.category]) {
+        acc[template.category] = [];
+      }
+      acc[template.category].push(template);
+      return acc;
+    }, {} as Record<string, JobHuntingTaskTemplate[]>);
+
+    return categories;
+  };
+
+  const getTotalPoints = () => {
+    return assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
+  };
+
+  return {
+    assignments,
+    templates,
+    evidence,
+    streaks,
+    loading,
+    initializeUserWeek,
+    submitEvidence,
+    updateAssignmentStatus,
+    getWeekProgress,
+    getTasksByCategory,
+    getTotalPoints,
+    refetch: fetchData
+  };
+};
