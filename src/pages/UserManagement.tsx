@@ -493,7 +493,9 @@ export default function UserManagement() {
         // Admin can see ALL users directly from profiles table
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, username, email, profile_image_url, subscription_plan, subscription_active, subscription_start_date, subscription_end_date, total_resume_opens, total_job_searches, total_ai_queries, industry, created_at, updated_at');
+          .select('user_id, full_name, username, email, profile_image_url, subscription_plan, subscription_active, subscription_start_date, subscription_end_date, total_resume_opens, total_job_searches, total_ai_queries, industry, created_at, updated_at')
+          .limit(1000)
+          .order('created_at', { ascending: false });
 
         console.log('📊 Profiles query result:', { profiles: profiles?.length || 0, error: profilesError });
         
