@@ -132,6 +132,7 @@ export function AppSidebar() {
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
   const [githubOpen, setGitHubOpen] = useState(false);
   const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(true);
+  const [mainMenuOpen, setMainMenuOpen] = useState(true);
 
   const isCollapsed = !open;
 
@@ -161,6 +162,7 @@ export function AppSidebar() {
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
   const isCareerAssignmentsActive = careerAssignmentItems.some((i) => isActive(i.url));
+  const isMainMenuActive = mainItems.some((i) => isActive(i.url));
   
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
@@ -185,20 +187,8 @@ export function AppSidebar() {
       isCollapsed ? "w-16" : "w-64"
     )}>
       <div className="flex flex-col h-full">
-        {/* Header with Toggle */}
-        <div className="flex items-center justify-end p-3 border-b">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setOpen(!open)}
-            className="p-2 hover:bg-accent"
-          >
-            {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
-          </Button>
-        </div>
-
-        {/* User Profile */}
-        <div className="p-4 border-b">
+        {/* User Profile at Top */}
+        <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14">
               <AvatarImage src={profile?.profile_image_url || ""} />
@@ -217,6 +207,14 @@ export function AppSidebar() {
               </div>
             )}
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setOpen(!open)}
+            className="p-2 hover:bg-accent"
+          >
+            {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
+          </Button>
         </div>
 
         <SidebarContent className="flex-1 overflow-y-auto px-2 py-4">
@@ -289,26 +287,67 @@ export function AppSidebar() {
               )}
               <SidebarGroupContent>
                 <SidebarMenu>
-                {mainItems.map((item) => {
-                    const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <NavLink to={item.url} end className={({ isActive }) => 
-                            `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                              isActive 
-                                ? "bg-primary text-primary-foreground shadow-md" 
-                                : "text-foreground hover:bg-accent hover:text-accent-foreground"
-                            }`
-                          }>
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
-                            {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
-                            {!isCollapsed && isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  {/* Main Menu Section */}
+                  {!isCollapsed ? (
+                    <SidebarMenuItem>
+                      <Collapsible open={mainMenuOpen} onOpenChange={setMainMenuOpen}>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isMainMenuActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
+                            <Home className="h-5 w-5 flex-shrink-0" />
+                            <span className="font-medium text-sm">Dashboard & Tools</span>
+                            {mainMenuOpen ? (
+                              <ChevronDown className="h-4 w-4 ml-auto" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 ml-auto" />
+                            )}
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="pb-1">
+                          <SidebarMenuSub>
+                            {mainItems.map((item) => {
+                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                              return (
+                                <SidebarMenuSubItem key={item.title}>
+                                  <SidebarMenuSubButton asChild>
+                                    <NavLink to={item.url} end className={({ isActive }) => 
+                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                        isActive 
+                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
+                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                                      }`
+                                    }>
+                                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                                      <span className="text-sm truncate">{item.title}</span>
+                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
+                                    </NavLink>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </SidebarMenuItem>
+                  ) : (
+                    // When collapsed, show individual icons for main items
+                    <>
+                      {mainItems.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild>
+                            <NavLink to={item.url} end className={({ isActive }) => 
+                              `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                                isActive 
+                                  ? "bg-primary text-primary-foreground shadow-md" 
+                                  : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                              }`
+                            } title={item.title}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </>
+                  )}
 
                   {/* Career Assignments Section */}
                   {!isCollapsed ? (
