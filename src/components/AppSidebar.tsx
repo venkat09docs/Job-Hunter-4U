@@ -183,12 +183,12 @@ export function AppSidebar() {
 
   return (
     <div className={cn(
-      "h-full border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative",
+      "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
       isCollapsed ? "w-16" : "w-80"
     )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14">
               <AvatarImage src={profile?.profile_image_url || ""} />
@@ -209,7 +209,7 @@ export function AppSidebar() {
           </div>
         </div>
 
-        {/* Menu Content */}
+        {/* Menu Content - Scrollable */}
         <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
           {/* Admin Section */}
           {(isAdmin || isInstituteAdmin || isRecruiter) && (
@@ -383,7 +383,7 @@ export function AppSidebar() {
         </div>
 
         {/* Footer with Dark Mode Toggle */}
-        <div className="p-4 border-t mt-auto">
+        <div className="p-4 border-t flex-shrink-0">
           <div className="flex items-center gap-2">
             <Switch 
               checked={theme === 'dark'} 
