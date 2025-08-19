@@ -38,6 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -165,36 +166,54 @@ export function AppSidebar() {
     item: any, 
     isPremium?: boolean, 
     isSubItem?: boolean 
-  }) => (
-    <NavLink 
-      to={item.url} 
-      end 
-      className={({ isActive }) => 
-        `flex items-center gap-3 ${isSubItem ? 'px-6 py-2 mx-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
-          isActive 
-            ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
-            : "text-foreground hover:text-accent-foreground"
-        }`
-      }
-      title={item.title}
-    >
-      <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
-      {!isCollapsed && (
-        <>
-          <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate`}>
-            {item.title}
-          </span>
-          {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-        </>
-      )}
-    </NavLink>
-  );
+  }) => {
+    const menuItem = (
+      <NavLink 
+        to={item.url} 
+        end 
+        className={({ isActive }) => 
+          `flex items-center gap-3 ${isSubItem ? 'px-6 py-2 mx-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
+            isActive 
+              ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
+              : "text-foreground hover:text-accent-foreground"
+          }`
+        }
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <>
+            <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate`}>
+              {item.title}
+            </span>
+            {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
+          </>
+        )}
+      </NavLink>
+    );
+
+    // Add tooltip for sub-items or when collapsed
+    if (isSubItem || isCollapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {menuItem}
+          </TooltipTrigger>
+          <TooltipContent side="right" className="z-50">
+            <p>{item.title}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return menuItem;
+  };
 
   return (
-    <div className={cn(
-      "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
-      isCollapsed ? "w-16" : "w-80"
-    )}>
+    <TooltipProvider>
+      <div className={cn(
+        "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
+        isCollapsed ? "w-16" : "w-80"
+      )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
         <div className="flex items-center p-4 border-b flex-shrink-0">
@@ -418,5 +437,6 @@ export function AppSidebar() {
         </Button>
       </div>
     </div>
+    </TooltipProvider>
   );
 }
