@@ -4,7 +4,7 @@ import {
   ResizablePanel, 
   ResizableHandle 
 } from '@/components/ui/resizable';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { cn } from '@/lib/utils';
 
@@ -24,8 +24,12 @@ export function ResizableLayout({ children, className }: ResizableLayoutProps) {
             maxSize={50}
             className="relative"
           >
-            <div className="h-full w-full">
+            <div className="h-full w-full relative">
               <AppSidebar />
+              {/* Bottom Toggle Button - Always visible outside sidebar */}
+              <div className="absolute bottom-4 right-4 z-10">
+                <SidebarTrigger />
+              </div>
             </div>
           </ResizablePanel>
           

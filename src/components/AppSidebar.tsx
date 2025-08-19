@@ -474,17 +474,14 @@ export function AppSidebar() {
           )}
         </SidebarContent>
 
-        {/* Footer with Toggle Button */}
+        {/* Footer with Dark Mode Toggle */}
         <div className="p-4 border-t mt-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Switch 
-                checked={theme === 'dark'} 
-                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-              />
-              {!isCollapsed && <span className="text-sm text-muted-foreground">Dark Mode</span>}
-            </div>
-            <SidebarTrigger />
+          <div className="flex items-center gap-2">
+            <Switch 
+              checked={theme === 'dark'} 
+              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+            {!isCollapsed && <span className="text-sm text-muted-foreground">Dark Mode</span>}
           </div>
         </div>
       </div>
