@@ -31,28 +31,10 @@ import {
   ClipboardList,
   Moon,
   Sun,
-  LogOut
+  LogOut,
+  Menu,
+  X
 } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
@@ -117,7 +99,7 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-  const { open, setOpen } = useSidebar();
+  const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
@@ -130,9 +112,8 @@ export function AppSidebar() {
   const [jobHunterOpen, setJobHunterOpen] = useState(true);
   const [githubOpen, setGitHubOpen] = useState(false);
   const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(true);
-  const [mainMenuOpen, setMainMenuOpen] = useState(true);
 
-  const isCollapsed = !open;
+  const isCollapsed = !isOpen;
 
   useEffect(() => {
     if (user) {
@@ -160,14 +141,6 @@ export function AppSidebar() {
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
   const isCareerAssignmentsActive = careerAssignmentItems.some((i) => isActive(i.url));
-  const isMainMenuActive = mainItems.some((i) => isActive(i.url));
-  
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
-      isActive 
-        ? "bg-primary text-primary-foreground shadow-md" 
-        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-    }`;
 
   const getInitials = () => {
     if (profile?.username) {
@@ -179,9 +152,38 @@ export function AppSidebar() {
     return 'U';
   };
 
+  const MenuItem = ({ item, isPremium = false, isSubItem = false }: { 
+    item: any, 
+    isPremium?: boolean, 
+    isSubItem?: boolean 
+  }) => (
+    <NavLink 
+      to={item.url} 
+      end 
+      className={({ isActive }) => 
+        `flex items-center gap-3 ${isSubItem ? 'px-6 py-2 mx-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
+          isActive 
+            ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
+            : "text-foreground hover:text-accent-foreground"
+        }`
+      }
+      title={item.title}
+    >
+      <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+      {!isCollapsed && (
+        <>
+          <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate`}>
+            {item.title}
+          </span>
+          {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
+        </>
+      )}
+    </NavLink>
+  );
+
   return (
-    <Sidebar className={cn(
-      "border-r bg-card/50 backdrop-blur-sm transition-all duration-300",
+    <div className={cn(
+      "h-full border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative",
       isCollapsed ? "w-16" : "w-80"
     )}>
       <div className="flex flex-col h-full">
@@ -207,272 +209,178 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <SidebarContent className="flex-1 overflow-y-auto px-2 py-4">
+        {/* Menu Content */}
+        <div className="flex-1 overflow-y-auto px-2 py-4 space-y-6">
+          {/* Admin Section */}
           {(isAdmin || isInstituteAdmin || isRecruiter) && (
-            <SidebarGroup>
+            <div>
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
                   Administration
-                </SidebarGroupLabel>
+                </h3>
               )}
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : adminItems).map((item) => {
-                    // For recruiters, show only their items
-                    if (isRecruiter && !isAdmin && !isInstituteAdmin) {
-                      return (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild>
-                            <NavLink to={item.url} end className={getNavCls}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                              {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    }
+              <div className="space-y-1">
+                {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : adminItems).map((item) => {
+                  // Filter logic for different admin types
+                  if (isRecruiter && !isAdmin && !isInstituteAdmin) {
+                    return <MenuItem key={item.title} item={item} />;
+                  }
                   
-                    // Filter logic for different admin types
-                    if (isInstituteAdmin && !isAdmin && 
-                        item.title !== "Dashboard" &&
-                        item.title !== "Batch Management" &&
-                        item.title !== "Students Management" && 
-                        item.title !== "Students Report" && 
-                        item.title !== "Institute Membership Plans") return null;
-                    if (item.title === "Institute Membership Plans" && isAdmin && !isInstituteAdmin) return null;
-                    if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
-                    if (item.title === "Dashboard" && !isInstituteAdmin && !isRecruiter) return null;
-                    if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
-                    if (item.title === "Institute Management" && !isAdmin) return null;
-                    if (item.title === "Batch Management" && !isInstituteAdmin) return null;
-                    if (item.title === "Students Management" && !isInstituteAdmin) return null;
-                    if (item.title === "User Management" && !isAdmin) return null;
-                    if (item.title === "Leader Board Points" && !isAdmin) return null;
-                    if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
-                    if ((item.title === "Recruiter Dashboard" || item.title === "Post Job") && !isAdmin) return null;
-                  
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <NavLink to={item.url} end className={getNavCls}>
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
-                            {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+                  if (isInstituteAdmin && !isAdmin && 
+                      item.title !== "Dashboard" &&
+                      item.title !== "Batch Management" &&
+                      item.title !== "Students Management" && 
+                      item.title !== "Students Report" && 
+                      item.title !== "Institute Membership Plans") return null;
+                  if (item.title === "Institute Membership Plans" && isAdmin && !isInstituteAdmin) return null;
+                  if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
+                  if (item.title === "Dashboard" && !isInstituteAdmin && !isRecruiter) return null;
+                  if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
+                  if (item.title === "Institute Management" && !isAdmin) return null;
+                  if (item.title === "Batch Management" && !isInstituteAdmin) return null;
+                  if (item.title === "Students Management" && !isInstituteAdmin) return null;
+                  if (item.title === "User Management" && !isAdmin) return null;
+                  if (item.title === "Leader Board Points" && !isAdmin) return null;
+                  if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
+                  if ((item.title === "Recruiter Dashboard" || item.title === "Post Job") && !isAdmin) return null;
+                
+                  return <MenuItem key={item.title} item={item} />;
+                })}
+              </div>
+            </div>
           )}
 
-          {/* Hide other main items for institute admins and recruiters */}
+          {/* Main User Section */}
           {!isInstituteAdmin && !isRecruiter && (
-            <SidebarGroup>
+            <div>
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
                   Job Unter 4U
-                </SidebarGroupLabel>
+                </h3>
               )}
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {/* Main Menu Section - Always Visible */}
-                  {mainItems.map((item) => {
-                    const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
-                          <NavLink to={item.url} end className={({ isActive }) => 
-                            `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                              isActive 
-                                ? "text-primary" 
-                                : "text-foreground hover:text-accent-foreground"
-                            }`
-                          }>
-                            <item.icon className="h-5 w-5 flex-shrink-0" />
-                            {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
-                            {!isCollapsed && isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+              <div className="space-y-1">
+                {/* Main Menu Items */}
+                {mainItems.map((item) => {
+                  const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                  return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
+                })}
 
-                  {/* Career Assignments Section */}
-                  {!isCollapsed ? (
-                    <SidebarMenuItem>
-                      <Collapsible open={careerAssignmentsOpen} onOpenChange={setCareerAssignmentsOpen}>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isCareerAssignmentsActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'}`}>
-                            <ClipboardList className="h-5 w-5 flex-shrink-0" />
-                            <span className="font-medium text-sm">Career Assignments</span>
-                            {careerAssignmentsOpen ? (
-                              <ChevronDown className="h-4 w-4 ml-auto" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 ml-auto" />
-                            )}
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pb-1">
-                          <SidebarMenuSub>
-                            {careerAssignmentItems.map((item) => {
-                              const isPremium = item.featureKey ? !canAccessFeature(item.featureKey) : !canAccessFeature("career_assignments");
-                              return (
-                                <SidebarMenuSubItem key={item.title}>
-                                  <SidebarMenuSubButton asChild>
-                                    <NavLink to={item.url} end className={({ isActive }) => 
-                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                        isActive 
-                                          ? "text-primary border-l-2 border-primary" 
-                                          : "text-foreground hover:text-accent-foreground"
-                                      }`
-                                    }>
-                                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                                      <span className="text-sm truncate">{item.title}</span>
-                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              );
-                            })}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </SidebarMenuItem>
-                  ) : (
-                    // When collapsed, show individual icons
-                    <>
-                      {careerAssignmentItems.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild>
-                            <NavLink to={item.url} end className={getNavCls} title={item.title}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </>
-                  )}
-
-                  {/* Job Hunter Section */}
-                  {!isCollapsed ? (
-                    <SidebarMenuItem>
-                      <Collapsible open={jobHunterOpen} onOpenChange={setJobHunterOpen}>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isJobHunterActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'}`}>
-                            <Target className="h-5 w-5 flex-shrink-0" />
-                            <span className="font-medium text-sm">Job Hunter</span>
-                            {jobHunterOpen ? (
-                              <ChevronDown className="h-4 w-4 ml-auto" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 ml-auto" />
-                            )}
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pb-1">
-                          <SidebarMenuSub>
-                            {jobHunterItems.map((item) => {
-                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                              return (
-                                <SidebarMenuSubItem key={item.title}>
-                                  <SidebarMenuSubButton asChild>
-                                    <NavLink to={item.url} end className={({ isActive }) => 
-                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                        isActive 
-                                          ? "text-primary border-l-2 border-primary" 
-                                          : "text-foreground hover:text-accent-foreground"
-                                      }`
-                                    }>
-                                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                                      <span className="text-sm truncate">{item.title}</span>
-                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-                                    </NavLink>
-                                  </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                              );
-                            })}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </SidebarMenuItem>
-                  ) : (
-                    // When collapsed, show individual icons
-                    <>
-                      {jobHunterItems.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton asChild>
-                            <NavLink to={item.url} end className={getNavCls} title={item.title}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </>
-                  )}
-
-                  {/* GitHub Section - Only for IT industry users */}
-                  {isIT() && (
-                    !isCollapsed ? (
-                      <SidebarMenuItem>
-                        <Collapsible open={githubOpen} onOpenChange={setGitHubOpen}>
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuButton className={`${isGitHubActive ? 'text-primary' : 'text-secondary-foreground'} hover:bg-primary/10 hover:text-primary`}>
-                              <Github className="h-5 w-5 flex-shrink-0" />
-                              <span className="font-medium text-sm">GitHub Tools</span>
-                              {githubOpen ? (
-                                <ChevronDown className="h-4 w-4 ml-auto" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 ml-auto" />
-                              )}
-                            </SidebarMenuButton>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              {githubItems.map((item) => {
-                                const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                                return (
-                                  <SidebarMenuSubItem key={item.title}>
-                                    <SidebarMenuSubButton asChild>
-                                      <NavLink to={item.url} end className={({ isActive }) => 
-                                        `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
-                                          isActive 
-                                            ? "text-primary bg-primary/10" 
-                                            : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
-                                        }`
-                                      }>
-                                        <item.icon className="h-4 w-4 flex-shrink-0" />
-                                        <span className="text-xs truncate">{item.title}</span>
-                                        {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
-                                      </NavLink>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                );
-                              })}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </SidebarMenuItem>
-                    ) : (
-                      // GitHub collapsed mode
+                {/* Career Assignments Section */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => setCareerAssignmentsOpen(!careerAssignmentsOpen)}
+                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                      isCareerAssignmentsActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
+                    }`}
+                  >
+                    <ClipboardList className="h-5 w-5 flex-shrink-0" />
+                    {!isCollapsed && (
                       <>
-                        {githubItems.map((item) => (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild>
-                              <NavLink to={item.url} end className={getNavCls} title={item.title}>
-                                <item.icon className="h-5 w-5 flex-shrink-0" />
-                              </NavLink>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        ))}
+                        <span className="font-medium text-sm">Career Assignments</span>
+                        {careerAssignmentsOpen ? (
+                          <ChevronDown className="h-4 w-4 ml-auto" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        )}
                       </>
-                    )
+                    )}
+                  </button>
+                  {careerAssignmentsOpen && !isCollapsed && (
+                    <div className="space-y-1 mt-1">
+                      {careerAssignmentItems.map((item) => {
+                        const isPremium = item.featureKey ? !canAccessFeature(item.featureKey) : !canAccessFeature("career_assignments");
+                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
+                      })}
+                    </div>
                   )}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+                  {isCollapsed && (
+                    <div className="space-y-1">
+                      {careerAssignmentItems.map((item) => (
+                        <MenuItem key={item.title} item={item} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Job Hunter Section */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => setJobHunterOpen(!jobHunterOpen)}
+                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                      isJobHunterActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
+                    }`}
+                  >
+                    <Target className="h-5 w-5 flex-shrink-0" />
+                    {!isCollapsed && (
+                      <>
+                        <span className="font-medium text-sm">Job Hunter</span>
+                        {jobHunterOpen ? (
+                          <ChevronDown className="h-4 w-4 ml-auto" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        )}
+                      </>
+                    )}
+                  </button>
+                  {jobHunterOpen && !isCollapsed && (
+                    <div className="space-y-1 mt-1">
+                      {jobHunterItems.map((item) => {
+                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
+                      })}
+                    </div>
+                  )}
+                  {isCollapsed && (
+                    <div className="space-y-1">
+                      {jobHunterItems.map((item) => (
+                        <MenuItem key={item.title} item={item} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* GitHub Section - Only for IT users */}
+                {isIT() && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setGitHubOpen(!githubOpen)}
+                      className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                        isGitHubActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
+                      }`}
+                    >
+                      <Github className="h-5 w-5 flex-shrink-0" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="font-medium text-sm">GitHub Tools</span>
+                          {githubOpen ? (
+                            <ChevronDown className="h-4 w-4 ml-auto" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 ml-auto" />
+                          )}
+                        </>
+                      )}
+                    </button>
+                    {githubOpen && !isCollapsed && (
+                      <div className="space-y-1 mt-1">
+                        {githubItems.map((item) => {
+                          const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                          return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
+                        })}
+                      </div>
+                    )}
+                    {isCollapsed && (
+                      <div className="space-y-1">
+                        {githubItems.map((item) => (
+                          <MenuItem key={item.title} item={item} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
-        </SidebarContent>
+        </div>
 
         {/* Footer with Dark Mode Toggle */}
         <div className="p-4 border-t mt-auto">
@@ -485,6 +393,18 @@ export function AppSidebar() {
           </div>
         </div>
       </div>
-    </Sidebar>
+
+      {/* Bottom Toggle Button - Always visible outside sidebar */}
+      <div className="absolute bottom-4 right-4 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 hover:bg-accent"
+        >
+          <Menu className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
