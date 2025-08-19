@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard, Link } from 'lucide-react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { ResizableLayout } from '@/components/ResizableLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
@@ -283,11 +284,8 @@ const Settings = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-hero">
-        <AppSidebar />
-        
-        <main className="flex-1 flex flex-col min-w-0">
+    <ResizableLayout>
+      <main className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
@@ -610,8 +608,7 @@ const Settings = () => {
             </div>
           </div>
         </main>
-      </div>
-    </SidebarProvider>
+    </ResizableLayout>
   );
 };
 
