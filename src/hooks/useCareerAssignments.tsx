@@ -162,53 +162,83 @@ export const useCareerAssignments = () => {
       console.log('Weekly templates:', weeklyTemplates.length);
       console.log('One-off templates:', oneoffTemplates.length);
       
+      let createdCount = 0;
+      
       // Create assignments for weekly tasks
       for (const template of weeklyTemplates) {
-        console.log('Creating weekly assignment for template:', template.title);
-        const { error } = await supabase
-          .from('career_task_assignments')
-          .upsert({
-            user_id: user.id,
-            template_id: template.id,
-            period: currentPeriod,
-            due_date: getWeekEndDate(currentPeriod),
-            week_start_date: getWeekStartDate(currentPeriod),
-            status: 'assigned',
-            points_earned: 0
-          }, {
-            onConflict: 'user_id,template_id,period'
-          });
+        console.log('Processing weekly assignment for template:', template.title);
         
-        if (error) {
-          console.error('Error creating weekly assignment:', error);
-          throw error;
+        // Check if assignment already exists
+        const { data: existing } = await supabase
+          .from('career_task_assignments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('template_id', template.id)
+          .eq('period', currentPeriod)
+          .single();
+        
+        if (!existing) {
+          const { error } = await supabase
+            .from('career_task_assignments')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              period: currentPeriod,
+              due_date: getWeekEndDate(currentPeriod),
+              week_start_date: getWeekStartDate(currentPeriod),
+              status: 'assigned',
+              points_earned: 0
+            });
+          
+          if (error) {
+            console.error('Error creating weekly assignment:', error);
+            throw error;
+          }
+          createdCount++;
         }
       }
 
       // Create assignments for oneoff tasks (if not already created)
       for (const template of oneoffTemplates) {
-        console.log('Creating one-off assignment for template:', template.title);
-        const { error } = await supabase
-          .from('career_task_assignments')
-          .upsert({
-            user_id: user.id,
-            template_id: template.id,
-            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-            week_start_date: new Date().toISOString().split('T')[0], // Today's date
-            status: 'assigned',
-            points_earned: 0
-          }, {
-            onConflict: 'user_id,template_id'
-          });
+        console.log('Processing one-off assignment for template:', template.title);
         
-        if (error) {
-          console.error('Error creating one-off assignment:', error);
-          throw error;
+        // Check if assignment already exists
+        const { data: existing } = await supabase
+          .from('career_task_assignments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('template_id', template.id)
+          .is('period', null)
+          .single();
+        
+        if (!existing) {
+          const { error } = await supabase
+            .from('career_task_assignments')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              period: null,
+              due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+              week_start_date: new Date().toISOString().split('T')[0], // Today's date
+              status: 'assigned',
+              points_earned: 0
+            });
+          
+          if (error) {
+            console.error('Error creating one-off assignment:', error);
+            throw error;
+          }
+          createdCount++;
         }
       }
 
       await fetchAssignments();
-      toast.success(`Tasks initialized successfully! Created ${weeklyTemplates.length + oneoffTemplates.length} assignments.`);
+      
+      if (createdCount > 0) {
+        toast.success(`Tasks initialized successfully! Created ${createdCount} new assignments.`);
+      } else {
+        toast.success('All tasks already initialized for this period.');
+      }
     } catch (error) {
       console.error('Error initializing user week:', error);
       toast.error(`Failed to initialize tasks: ${error.message}`);
