@@ -88,6 +88,7 @@ const recruiterItems = [
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
+  { title: "Career Activities", url: "/career-activities", icon: TrendingUp },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
@@ -191,6 +192,8 @@ export function AppSidebar() {
                     if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                     // Show Institute Management only for super admins
                     if (item.title === "Institute Management" && !isAdmin) return null;
+                    // Show Career Activities only for super admins
+                    if (item.title === "Career Activities" && !isAdmin) return null;
                     // Show Batch Management only for institute admins
                     if (item.title === "Batch Management" && !isInstituteAdmin) return null;
                     // Show Students Management only for institute admins

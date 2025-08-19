@@ -58,6 +58,7 @@ import StatusView from "./pages/StatusView";
 import LevelUp from "./pages/LevelUp";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import PostJob from "./pages/PostJob";
+import CareerActivities from "./pages/CareerActivities";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -220,6 +221,14 @@ const AppContent = () => {
                 <UserManagement />
               </ProtectedRoute>
           } 
+          />
+          <Route 
+            path="/career-activities" 
+            element={
+              <ProtectedRoute>
+                <CareerActivities />
+              </ProtectedRoute>
+            } 
           />
           <Route path="/dashboard/resume-builder" element={
             <PremiumProtectedRoute featureKey="page_resume_builder">
