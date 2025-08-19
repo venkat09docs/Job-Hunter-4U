@@ -317,7 +317,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                       <Collapsible open={careerAssignmentsOpen} onOpenChange={setCareerAssignmentsOpen}>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`${isCareerAssignmentsActive ? 'text-primary' : 'text-secondary-foreground'} hover:bg-primary/10 hover:text-primary`}>
+                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isCareerAssignmentsActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
                             <ClipboardList className="h-5 w-5 flex-shrink-0" />
                             <span className="font-medium text-sm">Career Assignments</span>
                             {careerAssignmentsOpen ? (
@@ -327,7 +327,7 @@ export function AppSidebar() {
                             )}
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
-                        <CollapsibleContent>
+                        <CollapsibleContent className="pb-1">
                           <SidebarMenuSub>
                             {careerAssignmentItems.map((item) => {
                               const isPremium = item.featureKey ? !canAccessFeature(item.featureKey) : !canAccessFeature("career_assignments");
@@ -335,15 +335,15 @@ export function AppSidebar() {
                                 <SidebarMenuSubItem key={item.title}>
                                   <SidebarMenuSubButton asChild>
                                     <NavLink to={item.url} end className={({ isActive }) => 
-                                      `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
                                         isActive 
-                                          ? "text-primary bg-primary/10" 
-                                          : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
+                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
+                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
                                       }`
                                     }>
                                       <item.icon className="h-4 w-4 flex-shrink-0" />
-                                      <span className="text-xs truncate">{item.title}</span>
-                                      {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
+                                      <span className="text-sm truncate">{item.title}</span>
+                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
                                     </NavLink>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -373,7 +373,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                       <Collapsible open={jobHunterOpen} onOpenChange={setJobHunterOpen}>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className={`${isJobHunterActive ? 'text-primary' : 'text-secondary-foreground'} hover:bg-primary/10 hover:text-primary`}>
+                          <SidebarMenuButton className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${isJobHunterActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-accent hover:text-accent-foreground'}`}>
                             <Target className="h-5 w-5 flex-shrink-0" />
                             <span className="font-medium text-sm">Job Hunter</span>
                             {jobHunterOpen ? (
@@ -383,7 +383,7 @@ export function AppSidebar() {
                             )}
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
-                        <CollapsibleContent>
+                        <CollapsibleContent className="pb-1">
                           <SidebarMenuSub>
                             {jobHunterItems.map((item) => {
                               const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
@@ -391,15 +391,15 @@ export function AppSidebar() {
                                 <SidebarMenuSubItem key={item.title}>
                                   <SidebarMenuSubButton asChild>
                                     <NavLink to={item.url} end className={({ isActive }) => 
-                                      `flex items-center gap-2 px-4 py-2 mx-1 my-1 rounded-lg text-xs font-medium transition-all duration-200 ${
+                                      `flex items-center gap-2 px-6 py-2 mx-2 my-1 rounded-lg text-sm font-medium transition-all duration-200 ${
                                         isActive 
-                                          ? "text-primary bg-primary/10" 
-                                          : "text-secondary-foreground hover:bg-primary/10 hover:text-primary"
+                                          ? "text-primary bg-primary/10 border-l-2 border-primary" 
+                                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
                                       }`
                                     }>
                                       <item.icon className="h-4 w-4 flex-shrink-0" />
-                                      <span className="text-xs truncate">{item.title}</span>
-                                      {isPremium && <Lock className="h-3 w-3 ml-auto text-muted-foreground" />}
+                                      <span className="text-sm truncate">{item.title}</span>
+                                      {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
                                     </NavLink>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
