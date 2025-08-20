@@ -155,7 +155,7 @@ export default function StudentsReport() {
     }
   };
 
-  const handleExportSelected = () => {
+  const handleExportSelected = async () => {
     if (selectedStudents.length === 0) {
       toast({
         title: 'No Selection',
@@ -164,17 +164,98 @@ export default function StudentsReport() {
       });
       return;
     }
-    toast({
-      title: 'Export Started',
-      description: 'Preparing selected student data for export...'
-    });
+
+    try {
+      const XLSX = await import('xlsx');
+      
+      // Get selected students data
+      const dataToExport = batches.flatMap(batch => 
+        batch.students.filter(student => selectedStudents.includes(student.user_id))
+      );
+
+      const worksheet = XLSX.utils.json_to_sheet(
+        dataToExport.map(student => ({
+          'Full Name': student.full_name,
+          'Email': student.email,
+          'Username': student.username,
+          'Batch': student.batch_name,
+          'Profile Completion %': student.profile_completion,
+          'Resume Progress %': student.resume_progress,
+          'LinkedIn Progress %': student.linkedin_progress,
+          'GitHub Progress %': student.github_completion,
+          'Job Applications': student.job_applications,
+          'LinkedIn Connections': student.linkedin_connections,
+          'LinkedIn Posts': student.linkedin_posts,
+          'Subscription Plan': student.subscription_plan || 'Free',
+          'Subscription Active': student.subscription_active ? 'Yes' : 'No',
+          'Last Activity': student.last_activity
+        }))
+      );
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Selected Students');
+      
+      const fileName = `selected_students_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
+      toast({
+        title: 'Export Complete',
+        description: `Downloaded ${dataToExport.length} student records`
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'There was an error exporting the data',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const handleExportAll = () => {
-    toast({
-      title: 'Export Started', 
-      description: 'Preparing all student data for export...'
-    });
+  const handleExportAll = async () => {
+    try {
+      const XLSX = await import('xlsx');
+      
+      // Get all students data
+      const dataToExport = batches.flatMap(batch => batch.students);
+
+      const worksheet = XLSX.utils.json_to_sheet(
+        dataToExport.map(student => ({
+          'Full Name': student.full_name,
+          'Email': student.email,
+          'Username': student.username,
+          'Batch': student.batch_name,
+          'Profile Completion %': student.profile_completion,
+          'Resume Progress %': student.resume_progress,
+          'LinkedIn Progress %': student.linkedin_progress,
+          'GitHub Progress %': student.github_completion,
+          'Job Applications': student.job_applications,
+          'LinkedIn Connections': student.linkedin_connections,
+          'LinkedIn Posts': student.linkedin_posts,
+          'Subscription Plan': student.subscription_plan || 'Free',
+          'Subscription Active': student.subscription_active ? 'Yes' : 'No',
+          'Last Activity': student.last_activity
+        }))
+      );
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'All Students');
+      
+      const fileName = `all_students_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
+      toast({
+        title: 'Export Complete',
+        description: `Downloaded ${dataToExport.length} student records`
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: 'Export Failed',
+        description: 'There was an error exporting the data',
+        variant: 'destructive'
+      });
+    }
   };
 
   // Generate batch summary data for charts
