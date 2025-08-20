@@ -58,6 +58,7 @@ interface Student {
   full_name?: string;
   username?: string;
   email?: string;
+  industry?: string;
   batch_name?: string;
   batch_code?: string;
   batch_id?: string;
@@ -222,7 +223,7 @@ export const StudentsManagement = () => {
       console.log('🔍 Fetching profiles for user IDs:', userIds);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, email, username, subscription_active, subscription_plan, subscription_end_date')
+        .select('user_id, full_name, email, username, industry, subscription_active, subscription_plan, subscription_end_date')
         .in('user_id', userIds);
 
       console.log('📋 Profiles query result:', { profiles, profilesError });
@@ -238,6 +239,7 @@ export const StudentsManagement = () => {
           full_name: profile?.full_name || 'Unknown Student',
           username: profile?.username || 'No Username',
           email: profile?.email || '',
+          industry: profile?.industry || 'IT',
           batch_name: assignment.batches?.name,
           batch_code: assignment.batches?.code,
           batch_id: assignment.batch_id,
@@ -684,10 +686,10 @@ export const StudentsManagement = () => {
     setFormData({
       email: student.email || '',
       full_name: student.full_name || '',
-      username: '', // Don't populate username for editing for now
+      username: student.username || '',
       batch_id: student.batch_id || '',
       password: '', // Don't populate password for editing
-      industry: 'IT', // Default industry for existing students
+      industry: student.industry || 'IT',
     });
     setShowForm(true);
   };
@@ -915,7 +917,7 @@ export const StudentsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Enter student email"
                   required
-                  disabled={false}
+                  disabled={!!editingStudent}
                 />
               </div>
 
@@ -939,7 +941,7 @@ export const StudentsManagement = () => {
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                   placeholder="Enter student username"
                   required
-                  disabled={false}
+                  disabled={!!editingStudent}
                 />
               </div>
 
@@ -984,6 +986,7 @@ export const StudentsManagement = () => {
                   value={formData.industry}
                   onValueChange={(value: 'IT' | 'Non-IT') => setFormData({ ...formData, industry: value })}
                   required
+                  disabled={!!editingStudent}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select industry" />
