@@ -32,7 +32,7 @@ const Hero = () => {
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
-                  ⚠️ Your competition is already using AI. Don't get left behind.
+                  ⚠️ Your competitor is already using AI. Don't get left behind.
                 </p>
               </div>
             </div>
