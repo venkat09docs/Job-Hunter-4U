@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { CrossDomainStorage } from '@/utils/domainRedirect';
 
 interface AuthContextType {
   user: User | null;
@@ -117,7 +118,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(null);
       setUser(null);
       
-      // Clear all possible storage locations
+      // Clear all possible storage locations using our cross-domain storage
+      CrossDomainStorage.clear();
+      
+      // Also clear standard storage as fallback
       localStorage.clear();
       sessionStorage.clear();
       
@@ -131,6 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       ];
       
       storageKeys.forEach(key => {
+        CrossDomainStorage.removeItem(key);
         localStorage.removeItem(key);
         sessionStorage.removeItem(key);
       });

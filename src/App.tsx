@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useAuth } from "@/hooks/useAuth";
+import { ensureConsistentDomain } from "@/utils/domainRedirect";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -65,6 +67,10 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  // Ensure consistent domain usage on app load
+  useEffect(() => {
+    ensureConsistentDomain();
+  }, []);
 
   return (
     <>
