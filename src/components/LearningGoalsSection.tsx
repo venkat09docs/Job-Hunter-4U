@@ -164,7 +164,7 @@ export function LearningGoalsSection() {
                     <TableCell>{getStatusBadge(goal)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Dialog>
+                        <Dialog open={progressGoal?.id === goal.id} onOpenChange={(open) => !open && setProgressGoal(null)}>
                           <DialogTrigger asChild>
                             <Button size="sm" variant="ghost" onClick={() => openProgressDialog(goal)}>
                               <TrendingUp className="h-4 w-4" />
