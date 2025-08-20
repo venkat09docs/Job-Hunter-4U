@@ -1,16 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Users, Eye, LayoutDashboard, Calendar } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, LayoutDashboard, Calendar, Edit, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useRecruiterStats } from "@/hooks/useRecruiterStats";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState } from "react";
+import { Label } from "@/components/ui/label";
 
 export default function RecruiterDashboard() {
   const navigate = useNavigate();
   const { stats, loading, error } = useRecruiterStats();
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,6 +128,89 @@ export default function RecruiterDashboard() {
                         <div className="text-xs text-muted-foreground flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
                           {format(new Date(job.created_at), "MMM dd")}
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedJob(job)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>Job Details</DialogTitle>
+                              </DialogHeader>
+                              {selectedJob && (
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-sm font-medium">Job Title</Label>
+                                      <p className="text-sm text-muted-foreground">{selectedJob.title}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium">Company</Label>
+                                      <p className="text-sm text-muted-foreground">{selectedJob.company}</p>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label className="text-sm font-medium">Location</Label>
+                                      <p className="text-sm text-muted-foreground">{selectedJob.location}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-sm font-medium">Status</Label>
+                                      <Badge variant={selectedJob.is_active ? "default" : "secondary"}>
+                                        {selectedJob.is_active ? "Active" : "Inactive"}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm font-medium">Posted On</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                      {format(new Date(selectedJob.created_at), "MMMM dd, yyyy")}
+                                    </p>
+                                  </div>
+                                  <div className="flex gap-2 pt-4">
+                                    <Button
+                                      onClick={() => {
+                                        setIsViewDialogOpen(false);
+                                        navigate(`/recruiter/post-job?edit=${selectedJob.id}`);
+                                      }}
+                                      className="gap-2"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                      Edit Job
+                                    </Button>
+                                    {selectedJob.job_url && (
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => window.open(selectedJob.job_url, '_blank')}
+                                        className="gap-2"
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                        View Application URL
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+                          {job.is_active && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/recruiter/post-job?edit=${job.id}`)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>

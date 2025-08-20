@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,7 +15,11 @@ export default function PostJob() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const editJobId = searchParams.get('edit');
+  const isEditMode = !!editJobId;
   const [loading, setLoading] = useState(false);
+  const [loadingJob, setLoadingJob] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -30,6 +34,54 @@ export default function PostJob() {
     applicationDeadline: "",
     jobUrl: "",
   });
+
+  // Load job data for editing
+  useEffect(() => {
+    if (isEditMode && editJobId) {
+      loadJobData();
+    }
+  }, [isEditMode, editJobId]);
+
+  const loadJobData = async () => {
+    setLoadingJob(true);
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('id', editJobId)
+        .eq('posted_by', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData({
+          title: data.title || "",
+          company: data.company || "",
+          location: data.location || "",
+          jobType: data.job_type || "",
+          experienceLevel: data.experience_level || "",
+          salaryMin: data.salary_min?.toString() || "",
+          salaryMax: data.salary_max?.toString() || "",
+          description: data.description || "",
+          requirements: data.requirements || "",
+          benefits: data.benefits || "",
+          applicationDeadline: data.application_deadline || "",
+          jobUrl: data.job_url || "",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error loading job data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load job data. Please try again.",
+        variant: "destructive",
+      });
+      navigate('/recruiter');
+    } finally {
+      setLoadingJob(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -66,41 +118,60 @@ export default function PostJob() {
         posted_by: user.id,
       };
 
-      const { data, error } = await supabase
-        .from('jobs')
-        .insert([jobData])
-        .select()
-        .single();
+      if (isEditMode && editJobId) {
+        // Update existing job
+        const { data, error } = await supabase
+          .from('jobs')
+          .update(jobData)
+          .eq('id', editJobId)
+          .eq('posted_by', user.id)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Job posted successfully! All institute users will be notified.",
-      });
-      
-      // Reset form
-      setFormData({
-        title: "",
-        company: "",
-        location: "",
-        jobType: "",
-        experienceLevel: "",
-        salaryMin: "",
-        salaryMax: "",
-        description: "",
-        requirements: "",
-        benefits: "",
-        applicationDeadline: "",
-        jobUrl: "",
-      });
+        toast({
+          title: "Success",
+          description: "Job updated successfully!",
+        });
+      } else {
+        // Create new job
+        const { data, error } = await supabase
+          .from('jobs')
+          .insert([jobData])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Job posted successfully! All institute users will be notified.",
+        });
+        
+        // Reset form for new job
+        setFormData({
+          title: "",
+          company: "",
+          location: "",
+          jobType: "",
+          experienceLevel: "",
+          salaryMin: "",
+          salaryMax: "",
+          description: "",
+          requirements: "",
+          benefits: "",
+          applicationDeadline: "",
+          jobUrl: "",
+        });
+      }
       
       navigate('/recruiter');
     } catch (error: any) {
-      console.error('Error posting job:', error);
+      console.error('Error saving job:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to post job. Please try again.",
+        description: error.message || `Failed to ${isEditMode ? 'update' : 'post'} job. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -116,8 +187,12 @@ export default function PostJob() {
           Back to Dashboard
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Post a New Job</h1>
-          <p className="text-muted-foreground">Fill in the details to create your job posting</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            {isEditMode ? 'Edit Job Posting' : 'Post a New Job'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditMode ? 'Update the job posting details' : 'Fill in the details to create your job posting'}
+          </p>
         </div>
       </div>
 
@@ -126,6 +201,13 @@ export default function PostJob() {
           <CardTitle>Job Details</CardTitle>
         </CardHeader>
         <CardContent>
+          {loadingJob ? (
+            <div className="space-y-6">
+              <div className="text-center py-8">
+                <p>Loading job details...</p>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -272,13 +354,14 @@ export default function PostJob() {
 
             <div className="flex gap-4 pt-4">
               <Button type="submit" disabled={loading} className="flex-1">
-                {loading ? "Posting..." : "Post Job"}
+                {loading ? (isEditMode ? "Updating..." : "Posting...") : (isEditMode ? "Update Job" : "Post Job")}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/recruiter')}>
                 Cancel
               </Button>
             </div>
           </form>
+          )}
         </CardContent>
       </Card>
     </div>
