@@ -3558,6 +3558,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      refresh_student_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       send_learning_goal_reminders: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3580,6 +3584,10 @@ export type Database = {
           message: string
           synced_count: number
         }[]
+      }
+      sync_student_data_now: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       upsert_resume_data: {
         Args: {
