@@ -17,7 +17,7 @@ import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
 import { 
-  Download, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft,
+  Upload, Plus, Search, Filter, Edit, Archive, Trash2, Coins, ArrowLeft,
   MapPin, Building, Clock, ExternalLink, DollarSign
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -458,13 +458,13 @@ const JobTracker = () => {
                   variant="outline" 
                   size="sm"
                 >
-                  <Download className="h-4 w-4 mr-2" />
+                  <Upload className="h-4 w-4 mr-2" />
                   Export CSV
                 </Button>
               ) : (
                 <SubscriptionUpgrade featureName="job tracker">
                   <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
+                    <Upload className="h-4 w-4 mr-2" />
                     Export CSV
                   </Button>
                 </SubscriptionUpgrade>
