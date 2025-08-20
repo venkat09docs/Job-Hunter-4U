@@ -166,19 +166,19 @@ export function AppSidebar() {
         end 
         className={({ isActive }) => 
           isSubItem 
-            ? `flex items-center gap-2 pl-8 pr-4 py-2 mx-2 my-0.5 rounded-xl text-sm transition-all duration-300 ${
+            ? `flex items-center gap-2 pl-8 pr-4 py-2 mx-2 my-1 rounded-xl text-sm transition-all duration-300 w-full ${
                 isActive 
                   ? "text-primary bg-primary/5" 
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               }`
-            : `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+            : `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
                 isActive 
                   ? "text-primary bg-primary/10" 
                   : "text-foreground hover:text-accent-foreground hover:bg-accent/50"
               }`
         }
       >
-        {!isSubItem && <item.icon className="h-5 w-5 flex-shrink-0" />}
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
         {!isCollapsed && (
           <>
             <span className="truncate flex-1">
