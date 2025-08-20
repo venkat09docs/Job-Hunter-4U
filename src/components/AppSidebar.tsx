@@ -165,7 +165,7 @@ export function AppSidebar() {
         to={item.url} 
         end 
         className={({ isActive }) => 
-          `flex items-center gap-2 whitespace-nowrap ${isSubItem ? 'pl-6 pr-3 py-2 ml-6 mr-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
+          `flex items-center gap-2 ${isSubItem ? 'pl-10 pr-4 py-2 mx-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
             isActive 
               ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
               : "text-foreground hover:text-accent-foreground"
@@ -205,7 +205,7 @@ export function AppSidebar() {
     <TooltipProvider>
       <div className={cn(
         "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
-        isCollapsed ? "w-16" : "w-80"
+        isCollapsed ? "w-16" : "w-[350px]"
       )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
