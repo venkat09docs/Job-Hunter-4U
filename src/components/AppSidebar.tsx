@@ -165,21 +165,21 @@ export function AppSidebar() {
         to={item.url} 
         end 
         className={({ isActive }) => 
-          `flex items-center ${isSubItem ? 'pl-10 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 min-w-0 ${
+          `flex items-center ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
             isActive 
               ? "text-primary" + (isSubItem ? " bg-primary/5" : " bg-primary/10")
               : "text-foreground hover:text-accent-foreground hover:bg-accent/50"
           }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4 mr-3' : 'h-5 w-5 mr-3'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 mr-3`} />
         {!isCollapsed && (
-          <div className="flex items-center min-w-0 flex-1">
+          <>
             <span className="text-sm truncate flex-1">
               {item.title}
             </span>
-            {isPremium && <Lock className="h-4 w-4 ml-2 flex-shrink-0 text-muted-foreground" />}
-          </div>
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+          </>
         )}
       </NavLink>
     );
@@ -205,7 +205,7 @@ export function AppSidebar() {
     <TooltipProvider>
       <div className={cn(
         "h-screen border-r bg-card/50 backdrop-blur-sm transition-all duration-300 flex flex-col relative overflow-hidden",
-        isCollapsed ? "w-16" : "w-[350px]"
+        isCollapsed ? "w-16" : "w-[280px]"
       )}>
       <div className="flex flex-col h-full">
         {/* User Profile at Top */}
