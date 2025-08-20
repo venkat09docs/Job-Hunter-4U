@@ -160,7 +160,28 @@ export function AppSidebar() {
     isPremium?: boolean, 
     isSubItem?: boolean 
   }) => {
-    const menuItem = (
+    // Special handling for AI-Powered Career Tools to open in new tab
+    const isAICareerTools = item.title === "AI-Powered Career Tools";
+    
+    const menuItem = isAICareerTools ? (
+      <a 
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground ml-2" />
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />}
+          </div>
+        )}
+      </a>
+    ) : (
       <NavLink 
         to={item.url} 
         end 

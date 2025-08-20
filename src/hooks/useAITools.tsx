@@ -294,6 +294,7 @@ export const useAITools = () => {
       toast({
         title: 'Tool Accessed',
         description: 'Tool accessed successfully with your active subscription.',
+        duration: 3000, // Auto-dismiss after 3 seconds
       });
 
       return { success: true, remainingCredits: 1 };
