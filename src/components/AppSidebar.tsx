@@ -165,21 +165,27 @@ export function AppSidebar() {
         to={item.url} 
         end 
         className={({ isActive }) => 
-          `flex items-center gap-2 ${isSubItem ? 'pl-10 pr-4 py-2 mx-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
-            isActive 
-              ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
-              : "text-foreground hover:text-accent-foreground"
-          }`
+          isSubItem 
+            ? `flex items-center gap-3 pl-12 pr-4 py-2 mx-2 my-0.5 rounded-xl text-sm transition-all duration-300 ${
+                isActive 
+                  ? "text-primary bg-primary/5 border-l-2 border-primary" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+              }`
+            : `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                isActive 
+                  ? "text-primary bg-primary/10" 
+                  : "text-foreground hover:text-accent-foreground hover:bg-accent/50"
+              }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 min-w-fit`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
         {!isCollapsed && (
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate flex-1`}>
+          <>
+            <span className="truncate flex-1">
               {item.title}
             </span>
             {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
-          </div>
+          </>
         )}
       </NavLink>
     );
