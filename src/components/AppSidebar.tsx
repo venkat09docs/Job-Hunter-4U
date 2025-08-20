@@ -165,21 +165,21 @@ export function AppSidebar() {
         to={item.url} 
         end 
         className={({ isActive }) => 
-          `flex items-center gap-3 ${isSubItem ? 'pl-10 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+          `flex items-center ${isSubItem ? 'pl-10 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 min-w-0 ${
             isActive 
               ? "text-primary" + (isSubItem ? " bg-primary/5" : " bg-primary/10")
               : "text-foreground hover:text-accent-foreground hover:bg-accent/50"
           }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4 mr-3' : 'h-5 w-5 mr-3'} flex-shrink-0`} />
         {!isCollapsed && (
-          <>
-            <span className="text-sm truncate">
+          <div className="flex items-center min-w-0 flex-1">
+            <span className="text-sm truncate flex-1">
               {item.title}
             </span>
-            {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-          </>
+            {isPremium && <Lock className="h-4 w-4 ml-2 flex-shrink-0 text-muted-foreground" />}
+          </div>
         )}
       </NavLink>
     );
