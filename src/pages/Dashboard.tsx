@@ -429,6 +429,7 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
+              <SubscriptionStatus />
               <UserProfileDropdown />
             </div>
           </div>
