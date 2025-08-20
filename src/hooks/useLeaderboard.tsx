@@ -213,13 +213,13 @@ export const useLeaderboard = () => {
         userPoints.set(record.user_id, current + record.points_earned);
       });
 
-      // Get user details for top 10 users
+      // Get user details for top 5 users
       const topUserIds = Array.from(userPoints.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
+        .slice(0, 5)
         .map(([userId]) => userId);
 
-      // Always include current user if they have points but aren't in top 10
+      // Always include current user if they have points but aren't in top 5
       if (user && userPoints.has(user.id) && !topUserIds.includes(user.id)) {
         topUserIds.push(user.id);
       }
@@ -236,8 +236,8 @@ export const useLeaderboard = () => {
       // Filter profiles to only include users in our leaderboard
       const filteredProfiles = profileData?.filter(p => topUserIds.includes(p.user_id)) || [];
 
-      // Combine user data with points and rankings for top 10
-      const topTenEntries: LeaderboardEntry[] = topUserIds.slice(0, 10).map((userId, index) => {
+      // Combine user data with points and rankings for top 5
+      const topFiveEntries: LeaderboardEntry[] = topUserIds.slice(0, 5).map((userId, index) => {
         const profile = filteredProfiles?.find(p => p.user_id === userId);
         return {
           user_id: userId,
@@ -249,9 +249,9 @@ export const useLeaderboard = () => {
         };
       });
 
-      // If current user is not in top 10, add them separately for points display
-      let leaderboardEntries = topTenEntries;
-      if (user && userPoints.has(user.id) && !topTenEntries.some(entry => entry.user_id === user.id)) {
+      // If current user is not in top 5, add them separately for points display
+      let leaderboardEntries = topFiveEntries;
+      if (user && userPoints.has(user.id) && !topFiveEntries.some(entry => entry.user_id === user.id)) {
         const profile = filteredProfiles?.find(p => p.user_id === user.id);
         const userEntry: LeaderboardEntry = {
           user_id: user.id,
@@ -263,7 +263,7 @@ export const useLeaderboard = () => {
             .sort((a, b) => b[1] - a[1])
             .findIndex(([userId]) => userId === user.id) + 1
         };
-        leaderboardEntries = [...topTenEntries, userEntry];
+        leaderboardEntries = [...topFiveEntries, userEntry];
       }
 
       return leaderboardEntries;
