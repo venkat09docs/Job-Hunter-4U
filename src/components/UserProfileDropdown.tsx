@@ -48,21 +48,13 @@ export function UserProfileDropdown() {
         <NotificationBell />
         <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-auto px-2 gap-2">
+          <Button variant="ghost" className="relative h-10 w-10 p-0 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage src={profile?.profile_image_url || ""} />
               <AvatarFallback className="text-xs">
                 {getInitials()}
               </AvatarFallback>
             </Avatar>
-            <span className="hidden md:inline text-sm">
-              {profile?.username || user?.email?.split('@')[0] || 'User'}
-            </span>
-            <Badge variant="secondary" className="ml-2 gap-1">
-              <Trophy className="h-3 w-3" />
-              {userPoints}
-            </Badge>
-            <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
