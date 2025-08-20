@@ -3558,6 +3558,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      send_learning_goal_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      send_profile_completion_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      send_weekly_progress_summaries: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       should_send_notification: {
         Args: { notif_type: string; target_user_id: string }
         Returns: boolean
