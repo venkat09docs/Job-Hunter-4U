@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { LearningGoalForm } from '@/components/LearningGoalForm';
 import { format } from 'date-fns';
@@ -13,6 +16,8 @@ export function LearningGoalsSection() {
   const { goals, loading, createGoal, updateGoal, deleteGoal, getGoalStatus } = useLearningGoals();
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<any>(null);
+  const [progressGoal, setProgressGoal] = useState<any>(null);
+  const [progressValue, setProgressValue] = useState(0);
 
   const handleCreate = async (data: any) => {
     const success = await createGoal(data);
@@ -34,6 +39,25 @@ export function LearningGoalsSection() {
     if (confirm('Are you sure you want to delete this learning goal?')) {
       await deleteGoal(id);
     }
+  };
+
+  const handleProgressUpdate = async () => {
+    if (progressGoal) {
+      const newStatus = progressValue === 100 ? 'completed' : progressValue > 0 ? 'in_progress' : 'not_started';
+      const success = await updateGoal(progressGoal.id, { 
+        progress: progressValue,
+        status: newStatus
+      });
+      if (success) {
+        setProgressGoal(null);
+        setProgressValue(0);
+      }
+    }
+  };
+
+  const openProgressDialog = (goal: any) => {
+    setProgressGoal(goal);
+    setProgressValue(goal.progress);
   };
 
   const getStatusBadge = (goal: any) => {
@@ -140,6 +164,47 @@ export function LearningGoalsSection() {
                     <TableCell>{getStatusBadge(goal)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="ghost" onClick={() => openProgressDialog(goal)}>
+                              <TrendingUp className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Update Progress</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label className="text-sm font-medium">{progressGoal?.skill_name}</Label>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Current progress: {progressGoal?.progress}%
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="progress-slider">New Progress: {progressValue}%</Label>
+                                <Slider
+                                  id="progress-slider"
+                                  min={0}
+                                  max={100}
+                                  step={5}
+                                  value={[progressValue]}
+                                  onValueChange={(value) => setProgressValue(value[0])}
+                                  className="w-full"
+                                />
+                                <Progress value={progressValue} className="h-2" />
+                              </div>
+                              <div className="flex justify-end gap-2">
+                                <Button variant="outline" onClick={() => setProgressGoal(null)}>
+                                  Cancel
+                                </Button>
+                                <Button onClick={handleProgressUpdate} disabled={loading}>
+                                  Update Progress
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                         <Button size="sm" variant="ghost" onClick={() => setEditingGoal(goal)}>
                           <Edit className="h-4 w-4" />
                         </Button>
