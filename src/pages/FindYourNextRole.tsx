@@ -30,6 +30,7 @@ interface JobResult {
   job_min_salary?: number;
   job_max_salary?: number;
   job_salary_period?: string;
+  job_application_deadline?: string;
 }
 
 interface JobSearchForm {
@@ -1878,7 +1879,8 @@ const FindYourNextRole = () => {
                               job_apply_link: job.job_url || '',
                               job_description: job.description || '',
                               job_min_salary: job.salary_min,
-                              job_max_salary: job.salary_max
+                              job_max_salary: job.salary_max,
+                              job_application_deadline: job.application_deadline
                             })}>
                               <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -2212,11 +2214,17 @@ const FindYourNextRole = () => {
                           <MapPin className="h-5 w-5" />
                           <span>{selectedJob.job_location}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-5 w-5" />
-                          <span>Posted {selectedJob.job_posted_at}</span>
-                        </div>
-                      </div>
+                         <div className="flex items-center gap-1">
+                           <Clock className="h-5 w-5" />
+                           <span>Posted {selectedJob.job_posted_at}</span>
+                         </div>
+                         {selectedJob.job_application_deadline && (
+                           <div className="flex items-center gap-1 text-orange-600">
+                             <Clock className="h-5 w-5" />
+                             <span>Apply by {new Date(selectedJob.job_application_deadline).toLocaleDateString()}</span>
+                           </div>
+                         )}
+                       </div>
 
                       {/* Salary Information */}
                       {(selectedJob.job_min_salary || selectedJob.job_max_salary) && (
