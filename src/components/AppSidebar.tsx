@@ -172,14 +172,14 @@ export function AppSidebar() {
           }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 min-w-fit`} />
         {!isCollapsed && (
-          <>
-            <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate`}>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <span className={`${isSubItem ? 'text-sm' : 'text-sm font-medium'} truncate flex-1`}>
               {item.title}
             </span>
-            {isPremium && <Lock className="h-4 w-4 ml-auto text-muted-foreground" />}
-          </>
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />}
+          </div>
         )}
       </NavLink>
     );
