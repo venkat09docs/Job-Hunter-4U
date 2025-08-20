@@ -166,11 +166,11 @@ export function AppSidebar() {
         end 
         className={({ isActive }) => 
           isSubItem 
-            ? `flex items-center gap-3 pl-12 pr-4 py-2 mx-2 my-0.5 rounded-xl text-sm transition-all duration-300 ${
+            ? `flex items-center gap-2 pl-14 pr-4 py-2 mx-2 my-0.5 rounded-xl text-sm transition-all duration-300 relative ${
                 isActive 
-                  ? "text-primary bg-primary/5 border-l-2 border-primary" 
+                  ? "text-primary bg-primary/5" 
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              }`
+              } before:content-[''] before:absolute before:left-6 before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-px before:bg-border`
             : `flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
                 isActive 
                   ? "text-primary bg-primary/10" 
