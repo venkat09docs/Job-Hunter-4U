@@ -165,7 +165,7 @@ export function AppSidebar() {
         to={item.url} 
         end 
         className={({ isActive }) => 
-          `flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3 py-2 ml-4 mr-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
+          `flex items-center gap-2 whitespace-nowrap ${isSubItem ? 'pl-6 pr-3 py-2 ml-6 mr-2' : 'px-3 py-2.5 mx-2'} my-0.5 rounded-xl text-sm font-medium transition-all duration-300 group ${
             isActive 
               ? "text-primary" + (isSubItem ? " border-l-2 border-primary" : "")
               : "text-foreground hover:text-accent-foreground"
