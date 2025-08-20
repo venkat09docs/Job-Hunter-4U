@@ -185,10 +185,10 @@ export default function PostJob() {
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="entry">Entry Level</SelectItem>
-                    <SelectItem value="mid">Mid Level</SelectItem>
-                    <SelectItem value="senior">Senior Level</SelectItem>
-                    <SelectItem value="lead">Lead/Principal</SelectItem>
+                    <SelectItem value="0-1">0-1 Year</SelectItem>
+                    <SelectItem value="1-3">1-3 Years</SelectItem>
+                    <SelectItem value="3-5">3-5 Years</SelectItem>
+                    <SelectItem value="5+">More than 5 Years</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
