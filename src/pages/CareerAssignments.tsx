@@ -15,6 +15,7 @@ import {
   History,
   FileText,
   Users,
+  User,
   Github,
   RefreshCw,
   Copy,
@@ -72,6 +73,7 @@ const CareerAssignments = () => {
 
   const resumeTasks = getTasksByModule('RESUME');
   const linkedinTasks = getTasksByModule('LINKEDIN');
+  const digitalProfileTasks = getTasksByModule('DIGITAL_PROFILE');
   const githubTasks = getTasksByModule('GITHUB');
 
   if (loading) {
@@ -153,7 +155,7 @@ const CareerAssignments = () => {
               </div>
             </div>
             <Progress value={getOverallProgress()} className="h-3" />
-            <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="grid grid-cols-4 gap-4 mt-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{getModuleProgress('RESUME')}%</div>
                 <div className="text-sm text-muted-foreground">Resume</div>
@@ -161,6 +163,10 @@ const CareerAssignments = () => {
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">{getModuleProgress('LINKEDIN')}%</div>
                 <div className="text-sm text-muted-foreground">LinkedIn</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{getModuleProgress('DIGITAL_PROFILE')}%</div>
+                <div className="text-sm text-muted-foreground">Digital Profile</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{getModuleProgress('GITHUB')}%</div>
@@ -191,7 +197,7 @@ const CareerAssignments = () => {
           <TabsContent value="assignments">
             <div className="grid md:grid-cols-4 gap-6">
               <div className="md:col-span-3">
-                <Accordion type="multiple" defaultValue={["resume", "linkedin", "github"]} className="space-y-4">
+                <Accordion type="multiple" defaultValue={["resume", "linkedin", "digital-profile", "github"]} className="space-y-4">
                   {/* Resume Section */}
                   <AccordionItem value="resume">
                     <AccordionTrigger className="text-lg font-semibold hover:no-underline">
@@ -254,6 +260,42 @@ const CareerAssignments = () => {
                         <div className="text-center py-8 text-muted-foreground">
                           <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
                           <p>No LinkedIn tasks assigned yet</p>
+                          <Button 
+                            onClick={handleInitialize} 
+                            className="mt-3"
+                            disabled={!canAccessFeature("career_assignments")}
+                          >
+                            Initialize Tasks
+                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                          </Button>
+                        </div>
+                      )}
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  {/* Digital Profile Section */}
+                  <AccordionItem value="digital-profile">
+                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                      <div className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-blue-600" />
+                        <span>Digital Profile ({digitalProfileTasks.length} tasks)</span>
+                        <Progress value={getModuleProgress('DIGITAL_PROFILE')} className="w-24 h-2" />
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="space-y-4 pt-4">
+                      {digitalProfileTasks.map(assignment => (
+                        <CareerTaskCard
+                          key={assignment.id}
+                          assignment={assignment}
+                          evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                          isSubmitting={submittingEvidence}
+                        />
+                      ))}
+                      {digitalProfileTasks.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                          <p>No digital profile tasks assigned yet</p>
                           <Button 
                             onClick={handleInitialize} 
                             className="mt-3"

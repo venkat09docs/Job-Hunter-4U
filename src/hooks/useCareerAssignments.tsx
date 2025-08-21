@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 interface TaskTemplate {
   id: string;
   code: string;
-  module: 'RESUME' | 'LINKEDIN' | 'GITHUB';
+  module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB';
   title: string;
   description: string;
   category: string;
@@ -329,11 +329,11 @@ export const useCareerAssignments = () => {
     }
   };
 
-  const getTasksByModule = (module: 'RESUME' | 'LINKEDIN' | 'GITHUB') => {
+  const getTasksByModule = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
     return assignments.filter(a => a.career_task_templates?.module === module);
   };
 
-  const getModuleProgress = (module: 'RESUME' | 'LINKEDIN' | 'GITHUB') => {
+  const getModuleProgress = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
     const moduleTasks = getTasksByModule(module);
     if (moduleTasks.length === 0) return 0;
     
