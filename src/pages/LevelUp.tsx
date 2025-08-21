@@ -1,4 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
@@ -18,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const LevelUp = () => {
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const { profile, loading, hasActiveSubscription } = useProfile();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
@@ -73,8 +75,13 @@ const LevelUp = () => {
            eligiblePlans.includes(profile.subscription_plan);
   };
 
-  // Show upgrade page for users without eligible subscription
-  if (!loading && !hasEligibleSubscription()) {
+  // Check if user can access Level Up (admin or eligible subscription)
+  const canAccessLevelUp = () => {
+    return isAdmin || hasEligibleSubscription();
+  };
+
+  // Show upgrade page for users without eligible subscription (excluding admins)
+  if (!loading && !canAccessLevelUp()) {
     return (
       <ResizableLayout>
         <main className="h-full flex flex-col">
