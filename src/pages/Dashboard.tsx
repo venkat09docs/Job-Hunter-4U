@@ -48,6 +48,21 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin } = useRole();
+  
+  // Define eligible subscription plans for Badge Leaders and Leaderboard
+  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  
+  // Check if user has eligible subscription
+  const hasEligibleSubscription = () => {
+    return hasActiveSubscription() && 
+           profile?.subscription_plan && 
+           eligiblePlans.includes(profile.subscription_plan);
+  };
+
+  // Check if user can access Badge Leaders and Leaderboard (admin or eligible subscription)
+  const canAccessLeaderboards = () => {
+    return isAdmin || hasEligibleSubscription();
+  };
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
@@ -487,7 +502,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Badge Leaders */}
+            {/* Badge Leaders - Premium Feature */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -496,11 +511,24 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <BadgeLeadersSlider />
+                {canAccessLeaderboards() ? (
+                  <BadgeLeadersSlider />
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Premium Feature</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Badge Leaders is available with 3 Months, 6 Months, or 1 Year plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Badge Leaders">
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Leaderboard */}
+            {/* Leaderboard - Premium Feature */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -509,7 +537,20 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />}
+                {canAccessLeaderboards() ? (
+                  isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Premium Feature</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Leaderboard is available with 3 Months, 6 Months, or 1 Year plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Leaderboard">
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
