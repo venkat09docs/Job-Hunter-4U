@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { Navigate } from 'react-router-dom';
 
@@ -47,10 +49,24 @@ const VerifyAssignments = () => {
   const { user } = useAuth();
   const { isAdmin, isRecruiter, loading: roleLoading } = useRole();
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
+  const [filteredAssignments, setFilteredAssignments] = useState<SubmittedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState<SubmittedAssignment | null>(null);
   const [verificationNotes, setVerificationNotes] = useState('');
   const [processing, setProcessing] = useState(false);
+
+  // Filter and pagination states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [moduleFilter, setModuleFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAssignments = filteredAssignments.slice(startIndex, endIndex);
 
   // Check authorization
   if (!roleLoading && !isAdmin && !isRecruiter) {
@@ -62,6 +78,34 @@ const VerifyAssignments = () => {
       fetchSubmittedAssignments();
     }
   }, [user, isAdmin, isRecruiter]);
+
+  // Filter assignments based on search and filters
+  useEffect(() => {
+    let filtered = assignments;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(assignment =>
+        assignment.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.profiles.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.career_task_templates.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.career_task_templates.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Module filter
+    if (moduleFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.career_task_templates.module === moduleFilter);
+    }
+
+    // User filter
+    if (userFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.user_id === userFilter);
+    }
+
+    setFilteredAssignments(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [assignments, searchTerm, moduleFilter, userFilter]);
 
   const fetchSubmittedAssignments = async () => {
     try {
@@ -127,6 +171,19 @@ const VerifyAssignments = () => {
       setLoading(false);
     }
   };
+
+  // Get unique users for filter dropdown
+  const uniqueUsers = Array.from(
+    new Map(
+      assignments.map(assignment => [
+        assignment.user_id,
+        { id: assignment.user_id, name: assignment.profiles.full_name, username: assignment.profiles.username }
+      ])
+    ).values()
+  );
+
+  // Get unique modules for filter dropdown
+  const uniqueModules = [...new Set(assignments.map(assignment => assignment.career_task_templates.module))];
 
   const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
     if (!selectedAssignment) return;
@@ -234,95 +291,230 @@ const VerifyAssignments = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Verify Assignments</h1>
-          <p className="text-muted-foreground mt-2">
-            Review and verify user submitted assignments
-          </p>
-        </div>
-        <Badge variant="secondary" className="text-lg px-3 py-1">
-          {assignments.length} Pending
-        </Badge>
-      </div>
-
-      {assignments.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Assignments to Review</h3>
-            <p className="text-muted-foreground">
-              All submitted assignments have been verified.
+    <div>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Verify Assignments</h1>
+            <p className="text-muted-foreground mt-2">
+              Review and verify user submitted assignments
             </p>
+          </div>
+          <Badge variant="secondary" className="text-lg px-3 py-1">
+            {filteredAssignments.length} Total / {assignments.length} Pending
+          </Badge>
+        </div>
+
+        {/* Filters Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filters & Search
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="search">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Search users or tasks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Module</Label>
+                <Select value={moduleFilter} onValueChange={setModuleFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Modules" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Modules</SelectItem>
+                    {uniqueModules.map(module => (
+                      <SelectItem key={module} value={module}>{module}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>User</Label>
+                <Select value={userFilter} onValueChange={setUserFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Users" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Users</SelectItem>
+                    {uniqueUsers.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} (@{user.username})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>&nbsp;</Label>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setModuleFilter('all');
+                    setUserFilter('all');
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-6">
-          {assignments.map((assignment) => (
-            <Card key={assignment.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={assignment.profiles.profile_image_url} />
-                      <AvatarFallback>
-                        {assignment.profiles.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {assignment.career_task_templates.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4" />
-                        <span>{assignment.profiles.full_name} (@{assignment.profiles.username})</span>
+
+        {filteredAssignments.length === 0 ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Assignments to Review</h3>
+              <p className="text-muted-foreground">
+                All submitted assignments have been verified.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="grid gap-6">
+              {currentAssignments.map((assignment) => (
+                <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={assignment.profiles.profile_image_url} />
+                          <AvatarFallback>
+                            {assignment.profiles.full_name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {assignment.career_task_templates.title}
+                          </h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <User className="h-4 w-4" />
+                            <span>{assignment.profiles.full_name} (@{assignment.profiles.username})</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge 
+                          className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
+                        >
+                          {assignment.career_task_templates.module}
+                        </Badge>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Award className="h-4 w-4" />
+                          <span>{assignment.career_task_templates.points_reward} pts</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge 
-                      className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
-                    >
-                      {assignment.career_task_templates.module}
-                    </Badge>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Award className="h-4 w-4" />
-                      <span>{assignment.career_task_templates.points_reward} pts</span>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            Submitted {format(new Date(assignment.submitted_at), 'PPp')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <FileText className="h-4 w-4" />
+                          <span>{assignment.evidence.length} Evidence Files</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedAssignment(assignment)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Review
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6">
+                <div className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredAssignments.length)} of {filteredAssignments.length} assignments
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        Submitted {format(new Date(assignment.submitted_at), 'PPp')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FileText className="h-4 w-4" />
-                      <span>{assignment.evidence.length} Evidence Files</span>
-                    </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedAssignment(assignment)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Review
-                    </Button>
-                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Review Dialog */}
       <Dialog 

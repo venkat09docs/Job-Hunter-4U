@@ -319,6 +319,7 @@ export const useCareerAssignments = () => {
         .from('career_task_assignments')
         .update({ 
           status: 'submitted',
+          submitted_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('id', assignmentId);
