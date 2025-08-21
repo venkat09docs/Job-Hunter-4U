@@ -38,9 +38,41 @@ interface JobEntry {
 }
 
 const Dashboard = () => {
+  console.log('Dashboard component rendering...');
+  
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin } = useRole();
+  
+  console.log('Dashboard: user =', user);
+  console.log('Dashboard: profile =', profile);
+  console.log('Dashboard: loading =', loading);
+  
+  if (loading) {
+    console.log('Dashboard showing loading state');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 animate-spin mx-auto border-2 border-primary border-t-transparent rounded-full mb-4" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user || !profile) {
+    console.log('Dashboard: No user or profile, redirecting...');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Please log in to access the dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  console.log('Dashboard: Rendering main content');
+
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
