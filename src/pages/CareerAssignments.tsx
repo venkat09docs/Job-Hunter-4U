@@ -434,7 +434,7 @@ const CareerAssignments = () => {
 
               {/* Sidebar */}
               <div className="space-y-6">
-                {/* Quick Stats */}
+                {/* Weekly Score */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -446,65 +446,20 @@ const CareerAssignments = () => {
                     <div className="text-center">
                       <div className="text-3xl font-bold text-primary">{totalPoints}</div>
                       <div className="text-sm text-muted-foreground">points earned</div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Progress Overview */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5" />
-                      Progress Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span>Tasks Completed</span>
-                      <span>{completedTasks}/{assignments.length}</span>
-                    </div>
-                    <Progress value={assignments.length > 0 ? (completedTasks / assignments.length) * 100 : 0} />
-                    
-                    <div className="flex justify-between text-sm">
-                      <span>Points Progress</span>
-                      <span>{totalPoints}/{maxPoints}</span>
-                    </div>
-                    <Progress value={maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0} />
-                  </CardContent>
-                </Card>
-
-                {/* Sub-Categories Overview */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Category Progress</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {subCategories.map((subCategory) => {
-                      const progress = getSubCategoryProgress(subCategory.name);
-                      const taskCount = getTasksBySubCategory(subCategory.name).length;
-                      
-                      return (
-                        <div key={subCategory.id}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>{subCategory.name}</span>
-                            <span>{taskCount} tasks</span>
-                          </div>
-                          <Progress value={progress} />
-                        </div>
-                      );
-                    })}
-                    {subCategories.length === 0 && (
-                      <div className="text-center text-muted-foreground py-4">
-                        No categories available
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {completedTasks}/{assignments.length} tasks completed
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
 
                 {/* Quick Inputs */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Quick Inputs</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Quick Inputs
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
@@ -563,6 +518,38 @@ const CareerAssignments = () => {
                         ))}
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+
+                {/* Progress Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Progress Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Points Progress</span>
+                      <span>{totalPoints}/{maxPoints}</span>
+                    </div>
+                    <Progress value={maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0} />
+                    
+                    {subCategories.map((subCategory) => {
+                      const progress = getSubCategoryProgress(subCategory.name);
+                      const taskCount = getTasksBySubCategory(subCategory.name).length;
+                      
+                      return (
+                        <div key={subCategory.id}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>{subCategory.name}</span>
+                            <span>{taskCount} tasks</span>
+                          </div>
+                          <Progress value={progress} className="h-2" />
+                        </div>
+                      );
+                    })}
                   </CardContent>
                 </Card>
               </div>
