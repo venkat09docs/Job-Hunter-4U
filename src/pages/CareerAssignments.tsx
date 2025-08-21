@@ -185,14 +185,14 @@ const CareerAssignments = () => {
     };
   };
 
-  const getTasksBySubCategory = (subCategoryName: string) => {
+  const getTasksBySubCategory = (subCategoryId: string) => {
     return assignments.filter(assignment => 
-      assignment.template?.category === subCategoryName
+      assignment.template?.sub_category_id === subCategoryId
     );
   };
 
-  const getSubCategoryProgress = (subCategoryName: string) => {
-    const tasks = getTasksBySubCategory(subCategoryName);
+  const getSubCategoryProgress = (subCategoryId: string) => {
+    const tasks = getTasksBySubCategory(subCategoryId);
     if (tasks.length === 0) return 0;
     const completed = tasks.filter(task => task.status === 'completed').length;
     return Math.round((completed / tasks.length) * 100);
@@ -379,8 +379,8 @@ const CareerAssignments = () => {
                 <Accordion type="multiple" className="space-y-4">
                   {/* Dynamic Sub-Categories */}
                   {subCategories.map((subCategory) => {
-                    const categoryTasks = getTasksBySubCategory(subCategory.name);
-                    const categoryProgress = getSubCategoryProgress(subCategory.name);
+                     const categoryTasks = getTasksBySubCategory(subCategory.id);
+                     const categoryProgress = getSubCategoryProgress(subCategory.id);
                     
                     return (
                       <AccordionItem key={subCategory.id} value={subCategory.id}>
@@ -536,9 +536,9 @@ const CareerAssignments = () => {
                     </div>
                     <Progress value={maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0} />
                     
-                    {subCategories.map((subCategory) => {
-                      const progress = getSubCategoryProgress(subCategory.name);
-                      const taskCount = getTasksBySubCategory(subCategory.name).length;
+                     {subCategories.map((subCategory) => {
+                       const progress = getSubCategoryProgress(subCategory.id);
+                       const taskCount = getTasksBySubCategory(subCategory.id).length;
                       
                       return (
                         <div key={subCategory.id}>
