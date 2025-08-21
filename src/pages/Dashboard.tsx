@@ -82,6 +82,20 @@ const Dashboard = () => {
   console.log('Dashboard: profile =', profile);
   console.log('Dashboard: loading =', loading);
   
+  // Check loading states IMMEDIATELY after all hooks are called, before any other logic
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (loading) {
     console.log('Dashboard showing loading state');
     return (
@@ -435,19 +449,6 @@ const Dashboard = () => {
         return 'outline';
     }
   };
-
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <ResizableLayout>
