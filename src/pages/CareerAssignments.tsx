@@ -191,8 +191,8 @@ const CareerAssignments = () => {
         assignment.career_task_templates?.sub_category_id === subCategoryId
       )
       .sort((a, b) => {
-        const orderA = a.career_task_templates?.display_order || 0;
-        const orderB = b.career_task_templates?.display_order || 0;
+        const orderA = a.display_order || 0;
+        const orderB = b.display_order || 0;
         return orderA - orderB;
       });
   };
