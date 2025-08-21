@@ -779,7 +779,7 @@ const Dashboard = () => {
                     onClick={() => navigate('/dashboard/build-my-profile')}
                     className="bg-primary hover:bg-primary/90"
                   >
-                    Build My Profile
+                    JOB HUNTER 4U
                   </Button>
                 </div>
               </CardHeader>
