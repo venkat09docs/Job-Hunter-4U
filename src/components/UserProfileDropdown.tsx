@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown, Trophy, Bell, Calendar, Crown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy, Bell, Calendar } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
 import { NotificationBell } from '@/components/NotificationBell';
-import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -70,12 +69,6 @@ export function UserProfileDropdown() {
     <>
       <div className="flex items-center gap-3">
         {getSubscriptionDisplay()}
-        <SubscriptionUpgrade variant="ghost" size="sm">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <Crown className="h-4 w-4" />
-            {hasActiveSubscription() ? 'Manage Plan' : 'Upgrade'}
-          </Button>
-        </SubscriptionUpgrade>
         <NotificationBell />
         <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
