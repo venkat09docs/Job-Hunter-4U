@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown, Trophy, Bell } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy, Bell, Calendar, Crown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,11 @@ import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
 import { NotificationBell } from '@/components/NotificationBell';
+import { SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, hasActiveSubscription, getRemainingDays } = useProfile();
   const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
@@ -42,9 +43,39 @@ export function UserProfileDropdown() {
     return 'U';
   };
 
+  const getSubscriptionDisplay = () => {
+    if (!hasActiveSubscription()) {
+      return (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>No active plan</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <Calendar className="h-4 w-4 text-green-600" />
+        <span className="text-green-600">{getRemainingDays()} days remaining</span>
+        {profile?.subscription_plan && (
+          <Badge variant="outline" className="text-xs">
+            {profile.subscription_plan}
+          </Badge>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        {getSubscriptionDisplay()}
+        <SubscriptionUpgrade variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="gap-2">
+            <Crown className="h-4 w-4" />
+            {hasActiveSubscription() ? 'Manage Plan' : 'Upgrade'}
+          </Button>
+        </SubscriptionUpgrade>
         <NotificationBell />
         <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>

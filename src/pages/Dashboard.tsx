@@ -484,8 +484,32 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Subscription Status */}
-            <SubscriptionStatus />
+            {/* Badge Leaders */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Badge Leaders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BadgeLeadersSlider />
+              </CardContent>
+            </Card>
+
+            {/* Leaderboard */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5" />
+                  Leaderboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />}
+              </CardContent>
+            </Card>
+
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
@@ -547,7 +571,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Left Column */}
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                {/* Activity Chart */}
+                {/* Weekly Activity Overview - Moved to be with Profile Activity */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -675,31 +699,6 @@ const Dashboard = () => {
                   </Card>
                 )}
 
-                {/* Leaderboard */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Leaderboard
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />}
-                  </CardContent>
-                </Card>
-
-                {/* Badge Leaders */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Badge Leaders
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <BadgeLeadersSlider />
-                  </CardContent>
-                </Card>
               </div>
             </div>
 
