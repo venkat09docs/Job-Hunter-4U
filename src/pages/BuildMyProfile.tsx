@@ -1,6 +1,3 @@
-import { useLinkedInProgressPoints } from '@/hooks/useLinkedInProgressPoints';
-import { useGitHubProgressPoints } from '@/hooks/useGitHubProgressPoints';
-import { useResumeProgressPoints } from '@/hooks/useResumeProgressPoints';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
@@ -40,17 +37,6 @@ const BuildMyProfile = () => {
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { isIT } = useUserIndustry();
-  
-  // Integrate profile building points hooks for automatic point awarding
-  const { linkedInProgress: linkedInProgressPoints } = useLinkedInProgressPoints(profile);
-  const { gitHubProgress: gitHubProgressPoints } = useGitHubProgressPoints({
-    github_url: profile?.github_url,
-    full_name: profile?.full_name,
-    bio: profile?.bio_link_url, // Use bio_link_url instead of bio
-    profile_image_url: profile?.profile_image_url,
-    hasRepositories: true // This can be enhanced to check actual GitHub data
-  });
-  const { resumeProgress: resumeProgressPoints } = useResumeProgressPoints(null); // Will need resume data here
   
   const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
   const { toast } = useToast();

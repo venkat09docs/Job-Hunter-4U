@@ -3,8 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
-import { useLinkedInProgressPoints } from '@/hooks/useLinkedInProgressPoints';
-import { useGitHubProgressPoints } from '@/hooks/useGitHubProgressPoints';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,9 +47,6 @@ const EditProfile = () => {
   const [saving, setSaving] = useState(false);
   const [profileData, setProfileData] = useState(null);
 
-  // Integrate profile building points hooks
-  const { linkedInProgress } = useLinkedInProgressPoints(profileData);
-  const { gitHubProgress } = useGitHubProgressPoints(profileData);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),

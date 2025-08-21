@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Target, CheckCircle, Clock, BookOpen, Users, Star, TrendingUp, Calendar, MessageSquare, Share2, Heart, UserPlus, Activity, User, AlertCircle } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
-import { useLinkedInGrowthPoints } from '@/hooks/useLinkedInGrowthPoints';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useToast } from '@/hooks/use-toast';
@@ -130,9 +130,8 @@ const [selectedCategory, setSelectedCategory] = useState<string>(initialTab);
   const [previousTodayMetrics, setPreviousTodayMetrics] = useState<ActivityMetrics>({});
 const [inputValues, setInputValues] = useState<InputValues>({});
 
-  // Initialize LinkedIn Growth Points hook - now tracking weekly progress
+  // Initialize weekly points tracking
   const [previousWeeklyMetrics, setPreviousWeeklyMetrics] = useState<ActivityMetrics>({});
-  useLinkedInGrowthPoints(weeklyMetrics, previousWeeklyMetrics);
 
   // Job Applications - weekly tracker
   const { fetchWeek, upsertActivity, getWeekDatesMonToFri } = useJobApplicationActivities();
