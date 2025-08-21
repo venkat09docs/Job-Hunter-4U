@@ -329,8 +329,32 @@ export const useCareerAssignments = () => {
     }
   };
 
+  // Define display order for resume tasks (Assignment #1, #2, #3, etc.)
+  const resumeTaskOrder: Record<string, number> = {
+    'RESUME_PROFESSIONAL_LINKS': 1,
+    'RESUME_TOP_6_SKILLS': 2, 
+    'RESUME_ACHIEVEMENTS_RESPONSIBILITIES': 3,
+    'RESUME_SUMMARY_GENERATION': 4,
+    'RESUME_COMPLETE_PROFILE': 5,
+    'RESUME_EDUCATION_CERTIFICATIONS': 6,
+    'RESUME_ATS_BASELINE_SCORE': 7,
+    'RESUME_UPLOAD_DEFAULT': 8,
+    'RESUME_COVER_LETTER_LIBRARY': 9,
+  };
+
   const getTasksByModule = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
-    return assignments.filter(a => a.career_task_templates?.module === module);
+    const filteredTasks = assignments.filter(a => a.career_task_templates?.module === module);
+    
+    // Sort resume tasks in ascending order (Assignment #1, #2, #3, etc.)
+    if (module === 'RESUME') {
+      return filteredTasks.sort((a, b) => {
+        const orderA = resumeTaskOrder[a.career_task_templates?.code || ''] || 999;
+        const orderB = resumeTaskOrder[b.career_task_templates?.code || ''] || 999;
+        return orderA - orderB;
+      });
+    }
+    
+    return filteredTasks;
   };
 
   const getModuleProgress = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
