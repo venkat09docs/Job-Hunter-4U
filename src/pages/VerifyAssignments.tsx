@@ -96,6 +96,72 @@ const VerifyAssignments = () => {
     }
   }, [user, isAdmin, isRecruiter]);
 
+  const fetchVerifiedAssignments = async () => {
+    try {
+      // Fetch verified assignments with user profiles
+      const { data, error } = await supabase
+        .from('career_task_assignments')
+        .select(`
+          *,
+          career_task_templates (
+            title,
+            module,
+            points_reward,
+            category
+          )
+        `)
+        .eq('status', 'verified')
+        .order('verified_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch user profiles separately
+      const userIds = data?.map(assignment => assignment.user_id) || [];
+      if (userIds.length === 0) {
+        setVerifiedAssignments([]);
+        return;
+      }
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine assignments with profiles and fetch evidence
+      const assignmentsWithProfiles = (data || []).map(assignment => {
+        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+        return {
+          ...assignment,
+          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+        };
+      });
+
+      // Fetch evidence for each assignment
+      const assignmentsWithEvidence = await Promise.all(
+        assignmentsWithProfiles.map(async (assignment) => {
+          const { data: evidenceData, error: evidenceError } = await supabase
+            .from('career_task_evidence')
+            .select('*')
+            .eq('assignment_id', assignment.id);
+
+          if (evidenceError) {
+            console.error('Error fetching evidence:', evidenceError);
+            return { ...assignment, evidence: [] };
+          }
+
+          return { ...assignment, evidence: evidenceData || [] };
+        })
+      );
+
+      setVerifiedAssignments(assignmentsWithEvidence);
+    } catch (error) {
+      console.error('Error fetching verified assignments:', error);
+      toast.error('Failed to load verified assignments');
+    }
+  };
+
   // Filter pending assignments based on search and filters
   useEffect(() => {
     let filtered = assignments;
@@ -214,72 +280,6 @@ const VerifyAssignments = () => {
       toast.error('Failed to load assignments');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchVerifiedAssignments = async () => {
-    try {
-      // Fetch verified assignments with user profiles
-      const { data, error } = await supabase
-        .from('career_task_assignments')
-        .select(`
-          *,
-          career_task_templates (
-            title,
-            module,
-            points_reward,
-            category
-          )
-        `)
-        .eq('status', 'verified')
-        .order('verified_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch user profiles separately
-      const userIds = data?.map(assignment => assignment.user_id) || [];
-      if (userIds.length === 0) {
-        setVerifiedAssignments([]);
-        return;
-      }
-
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, username, profile_image_url')
-        .in('user_id', userIds);
-
-      if (profilesError) throw profilesError;
-
-      // Combine assignments with profiles and fetch evidence
-      const assignmentsWithProfiles = (data || []).map(assignment => {
-        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
-        return {
-          ...assignment,
-          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
-        };
-      });
-
-      // Fetch evidence for each assignment
-      const assignmentsWithEvidence = await Promise.all(
-        assignmentsWithProfiles.map(async (assignment) => {
-          const { data: evidenceData, error: evidenceError } = await supabase
-            .from('career_task_evidence')
-            .select('*')
-            .eq('assignment_id', assignment.id);
-
-          if (evidenceError) {
-            console.error('Error fetching evidence:', evidenceError);
-            return { ...assignment, evidence: [] };
-          }
-
-          return { ...assignment, evidence: evidenceData || [] };
-        })
-      );
-
-      setVerifiedAssignments(assignmentsWithEvidence);
-    } catch (error) {
-      console.error('Error fetching verified assignments:', error);
-      toast.error('Failed to load verified assignments');
     }
   };
 
