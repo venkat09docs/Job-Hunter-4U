@@ -2308,12 +2308,31 @@ ${resumeData.personalDetails.fullName}`;
                              onChange={(e) => updatePersonalDetails('phone', e.target.value)}
                         />
                       </div>
+                      <div>
+                        <Label htmlFor="location">Location (Optional)</Label>
+                           <Input 
+                             id="location"
+                             value={resumeData.personalDetails.location || ''}
+                             onChange={(e) => updatePersonalDetails('location', e.target.value)}
+                             placeholder="e.g., New York, NY"
+                        />
+                      </div>
                        <div>
                          <Label htmlFor="linkedin">LinkedIn (Optional)</Label>
                             <Input 
                               id="linkedin"
                               value={resumeData.personalDetails.linkedIn || ''}
                               onChange={(e) => updatePersonalDetails('linkedIn', e.target.value)}
+                              placeholder="e.g., linkedin.com/in/yourname"
+                         />
+                       </div>
+                       <div>
+                         <Label htmlFor="github">GitHub / Portfolio Link (Optional)</Label>
+                            <Input 
+                              id="github"
+                              value={resumeData.personalDetails.github || ''}
+                              onChange={(e) => updatePersonalDetails('github', e.target.value)}
+                              placeholder="e.g., github.com/username or portfolio.com"
                          />
                        </div>
                     </div>
