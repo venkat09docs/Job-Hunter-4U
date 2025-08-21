@@ -653,8 +653,8 @@ ${resumeData.personalDetails.fullName}`;
     if (resumeData.personalDetails.email) contactDetails.push(`Email: ${resumeData.personalDetails.email}`);
     if (resumeData.personalDetails.phone) contactDetails.push(`Phone: ${resumeData.personalDetails.phone}`);
     if (resumeData.personalDetails.location) contactDetails.push(`Location: ${resumeData.personalDetails.location}`);
-    if (resumeData.personalDetails.linkedIn) contactDetails.push(`LinkedIn: ${resumeData.personalDetails.linkedIn}`);
-    if (resumeData.personalDetails.github) contactDetails.push(`GitHub: ${resumeData.personalDetails.github}`);
+    if (resumeData.personalDetails.linkedIn) contactDetails.push(resumeData.personalDetails.linkedIn);
+    if (resumeData.personalDetails.github) contactDetails.push(resumeData.personalDetails.github);
     
     contactDetails.forEach(detail => {
       addATSText(detail, 10);
@@ -1816,8 +1816,8 @@ ${resumeData.personalDetails.fullName}`;
               {resumeData.personalDetails.email && <div>Email: {resumeData.personalDetails.email}</div>}
               {resumeData.personalDetails.phone && <div>Phone: {resumeData.personalDetails.phone}</div>}
               {resumeData.personalDetails.location && <div>Location: {resumeData.personalDetails.location}</div>}
-              {resumeData.personalDetails.linkedIn && <div>LinkedIn: {resumeData.personalDetails.linkedIn}</div>}
-              {resumeData.personalDetails.github && <div>GitHub: {resumeData.personalDetails.github}</div>}
+              {resumeData.personalDetails.linkedIn && <div>{resumeData.personalDetails.linkedIn}</div>}
+              {resumeData.personalDetails.github && <div>{resumeData.personalDetails.github}</div>}
             </div>
           </div>
         )}
