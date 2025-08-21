@@ -101,7 +101,7 @@ const CareerAssignments = () => {
             </Button>
             <Target className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-4xl font-bold">Career Assignments</h1>
+              <h1 className="text-4xl font-bold">Profile Assignments</h1>
               <p className="text-muted-foreground mt-2">Complete tasks to build your professional profile</p>
             </div>
           </div>

@@ -98,7 +98,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         {
           id: 'profile-bronze',
           title: 'Profile Rookie',
-          description: 'Create a basic profile',
+          description: 'Build Your Resume',
           tier: 'bronze',
           progress: calculateProfileProgress('bronze'),
           criteria: 'Create your first profile',
