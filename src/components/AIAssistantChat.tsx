@@ -39,6 +39,16 @@ const AIAssistantChat = () => {
     }
   }, [messages]);
 
+  // Re-focus input after loading completes
+  useEffect(() => {
+    if (!isLoading && hasValidSubscription && isOpen) {
+      const inputElement = document.querySelector('input[placeholder*="Type your message"]') as HTMLInputElement;
+      if (inputElement) {
+        setTimeout(() => inputElement.focus(), 100);
+      }
+    }
+  }, [isLoading, hasValidSubscription, isOpen]);
+
   // Initialize with welcome message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
