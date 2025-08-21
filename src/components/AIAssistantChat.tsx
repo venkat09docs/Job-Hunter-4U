@@ -35,16 +35,29 @@ const AIAssistantChat = () => {
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      // Find the actual scrollable viewport within the ScrollArea component
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
     }
   }, [messages]);
 
-  // Re-focus input after loading completes
+  // Re-focus input after loading completes and scroll to bottom
   useEffect(() => {
     if (!isLoading && hasValidSubscription && isOpen) {
       const inputElement = document.querySelector('input[placeholder*="Type your message"]') as HTMLInputElement;
       if (inputElement) {
-        setTimeout(() => inputElement.focus(), 100);
+        setTimeout(() => {
+          inputElement.focus();
+          // Also scroll to bottom after AI response
+          if (scrollAreaRef.current) {
+            const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+            if (viewport) {
+              viewport.scrollTop = viewport.scrollHeight;
+            }
+          }
+        }, 100);
       }
     }
   }, [isLoading, hasValidSubscription, isOpen]);
