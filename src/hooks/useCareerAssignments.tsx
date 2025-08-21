@@ -259,6 +259,11 @@ export const useCareerAssignments = () => {
       if (error) throw error;
 
       await fetchAssignments();
+      
+      // Show success message based on status change
+      if (newStatus === 'started') {
+        toast.success('Assignment started! You can now submit your work.');
+      }
     } catch (error) {
       console.error('Error updating assignment status:', error);
       toast.error('Failed to update assignment status');
