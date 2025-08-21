@@ -31,6 +31,9 @@ import { useUserInputs } from '@/hooks/useUserInputs';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { CareerTaskCard } from '@/components/CareerTaskCard';
 import { toast } from 'sonner';
+import { AppSidebar } from '@/components/AppSidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 const CareerAssignments = () => {
   const { canAccessFeature } = usePremiumFeatures();
@@ -89,45 +92,24 @@ const CareerAssignments = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/dashboard'}
-              className="mr-4"
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Go to Dashboard
-            </Button>
-            <Target className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-4xl font-bold">Profile Assignments</h1>
-              <p className="text-muted-foreground mt-2">Complete tasks to build your professional profile</p>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Top Menu */}
+        <div className="border-b bg-card">
+          <div className="container mx-auto flex items-center justify-between p-4">
+            <div className="flex items-center gap-4">
+              <Target className="h-6 w-6 text-primary" />
+              <div>
+                <h1 className="text-xl font-semibold">Profile Assignments</h1>
+                <p className="text-sm text-muted-foreground">Complete tasks to build your professional profile</p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleVerify} 
-              variant="outline"
-              disabled={!canAccessFeature("career_assignments")}
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Verify Tasks
-              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-            </Button>
-            <Button 
-              onClick={handleInitialize}
-              disabled={!canAccessFeature("career_assignments")}
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Initialize Tasks
-              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-            </Button>
+            <UserProfileDropdown />
           </div>
         </div>
+
+        <div className="container mx-auto px-6 py-8">
 
         {/* Premium Feature Notice */}
         {!canAccessFeature("career_assignments") && (
@@ -612,8 +594,9 @@ const CareerAssignments = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
