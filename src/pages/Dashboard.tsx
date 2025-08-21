@@ -350,83 +350,84 @@ const Dashboard = () => {
 
   // Listen for real-time updates from Career Growth page and Job Tracker
   useEffect(() => {
-    if (user) {
-      const channel = supabase
-        .channel('dashboard-sync')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'daily_progress_snapshots',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            // Refresh all progress data when daily snapshots are updated
-            refreshLinkedInProgress();
-            refreshGitHubProgress();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'job_tracker',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            // Refresh job data when job tracker is updated
-            fetchJobData();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'linkedin_network_metrics',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            // Refresh network metrics when LinkedIn network activities are updated
-            refreshNetworkMetrics();
-            fetchWeeklyDailyBreakdown();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'github_daily_flow_sessions',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            // Refresh GitHub daily flow weekly completions when sessions change
-            refreshWeeklyFlow();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'github_progress',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            // Refresh GitHub profile setup progress when github_progress updates
-            refreshGitHubProgress();
-          }
-        )
-        .subscribe();
+    console.log('🔍 Dashboard: Setting up real-time subscriptions');
+    if (!user) return;
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData]);
+    const channel = supabase
+      .channel('dashboard-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_progress_snapshots',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh all progress data when daily snapshots are updated
+          refreshLinkedInProgress();
+          refreshGitHubProgress();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'job_tracker',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh job data when job tracker is updated
+          fetchJobData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'linkedin_network_metrics',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh network metrics when LinkedIn network activities are updated
+          refreshNetworkMetrics();
+          fetchWeeklyDailyBreakdown();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'github_daily_flow_sessions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh GitHub daily flow weekly completions when sessions change
+          refreshWeeklyFlow();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'github_progress',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refresh GitHub profile setup progress when github_progress updates
+          refreshGitHubProgress();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData, refreshWeeklyFlow]);
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
