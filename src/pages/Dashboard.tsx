@@ -24,7 +24,7 @@ import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
 import { BadgeLeadersSlider } from '@/components/BadgeLeadersSlider';
 import { supabase } from '@/integrations/supabase/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
 
@@ -135,7 +135,7 @@ const Dashboard = () => {
     setRepoMetrics({ completed, total: REPO_TASK_IDS.length });
   }, [githubTasks]);
 
-  const refreshWeeklyFlow = async () => {
+  const refreshWeeklyFlow = useCallback(async () => {
     if (!user) return;
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
@@ -147,11 +147,11 @@ const Dashboard = () => {
       .gte('session_date', format(weekStart, 'yyyy-MM-dd'))
       .lte('session_date', format(weekEnd, 'yyyy-MM-dd'));
     if (!error) setWeeklyFlowCompleted(data?.length || 0);
-  };
+  }, [user]);
 
   useEffect(() => {
     refreshWeeklyFlow();
-  }, [user]);
+  }, [refreshWeeklyFlow]);
 
   const WEEKLY_TARGET = 3;
   const repoCompleted = repoMetrics.completed;
@@ -186,7 +186,7 @@ const Dashboard = () => {
   };
 
   // Fetch recent job applications and total count
-  const fetchJobData = async () => {
+  const fetchJobData = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -281,14 +281,14 @@ const Dashboard = () => {
     } finally {
       setJobsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchJobData();
-  }, [user]);
+  }, [fetchJobData]);
 
   // Fetch current week day-wise network activity totals
-  const fetchWeeklyDailyBreakdown = async () => {
+  const fetchWeeklyDailyBreakdown = useCallback(async () => {
     if (!user) return;
     try {
       const baseStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -316,11 +316,11 @@ const Dashboard = () => {
     } catch (e) {
       console.error('Error fetching weekly network breakdown:', e);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchWeeklyDailyBreakdown();
-  }, [user]);
+  }, [fetchWeeklyDailyBreakdown]);
 
   // Calculate overall career development score based on the three core tasks
   const getOverallCareerScore = () => {
@@ -412,7 +412,7 @@ const Dashboard = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown]);
+  }, [user, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData]);
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
