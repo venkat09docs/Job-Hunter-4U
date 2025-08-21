@@ -40,9 +40,43 @@ interface JobEntry {
 const Dashboard = () => {
   console.log('Dashboard component rendering...');
   
+  // Constants
+  const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
+  
+  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL LOGIC OR EARLY RETURNS
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin } = useRole();
+  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
+  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
+  const { loading: networkLoading } = useLinkedInNetworkProgress();
+  const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { isIT } = useUserIndustry();
+  const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // State hooks
+  const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [totalJobApplications, setTotalJobApplications] = useState(0);
+  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
+  const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
+  const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
+  const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
+  const [jobStatusCounts, setJobStatusCounts] = useState({
+    wishlist: 0,
+    applied: 0,
+    interviewing: 0,
+    negotiating: 0,
+    accepted: 0,
+    not_selected: 0,
+    no_response: 0,
+    archived: 0
+  });
+  const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<Record<string, Record<string, number>>>({});
+  const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
+  const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
   
   console.log('Dashboard: user =', user);
   console.log('Dashboard: profile =', profile);
@@ -72,37 +106,9 @@ const Dashboard = () => {
   }
   
   console.log('Dashboard: Rendering main content');
-
-  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
-  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
-  const { loading: networkLoading } = useLinkedInNetworkProgress();
-  const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
-  const { isIT } = useUserIndustry();
   
   // Get the GitHub progress percentage only for IT users
   const githubProgress = isIT() ? getGitHubProgress() : 0;
-  const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
-  const [jobsLoading, setJobsLoading] = useState(true);
-  const [totalJobApplications, setTotalJobApplications] = useState(0);
-  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
-  const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
-  const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
-  const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
-  const [jobStatusCounts, setJobStatusCounts] = useState({
-    wishlist: 0,
-    applied: 0,
-    interviewing: 0,
-    negotiating: 0,
-    accepted: 0,
-    not_selected: 0,
-    no_response: 0,
-    archived: 0
-  });
-
-  const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<Record<string, Record<string, number>>>({});
 
   const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
@@ -122,11 +128,6 @@ const Dashboard = () => {
     { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
     { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
   ];
-
-  // GitHub Activities tracker metrics
-  const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
-  const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
-  const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
 
   useEffect(() => {
     if (!githubTasks) return;
