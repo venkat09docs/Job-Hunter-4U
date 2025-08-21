@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight, History } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ interface SubmittedAssignment {
   template_id: string;
   status: string;
   submitted_at: string;
+  verified_at?: string;
   points_earned: number;
   score_awarded: number;
   career_task_templates: {
@@ -50,23 +52,37 @@ const VerifyAssignments = () => {
   const { isAdmin, isRecruiter, loading: roleLoading } = useRole();
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<SubmittedAssignment[]>([]);
+  const [verifiedAssignments, setVerifiedAssignments] = useState<SubmittedAssignment[]>([]);
+  const [filteredVerifiedAssignments, setFilteredVerifiedAssignments] = useState<SubmittedAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAssignment, setSelectedAssignment] = useState<SubmittedAssignment | null>(null);
   const [verificationNotes, setVerificationNotes] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  // Filter and pagination states
+  // Filter and pagination states for pending assignments
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
-  // Calculate pagination
+  // Filter and pagination states for verified assignments
+  const [verifiedSearchTerm, setVerifiedSearchTerm] = useState('');
+  const [verifiedModuleFilter, setVerifiedModuleFilter] = useState('all');
+  const [verifiedUserFilter, setVerifiedUserFilter] = useState('all');
+  const [verifiedCurrentPage, setVerifiedCurrentPage] = useState(1);
+
+  // Calculate pagination for pending assignments
   const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentAssignments = filteredAssignments.slice(startIndex, endIndex);
+
+  // Calculate pagination for verified assignments
+  const verifiedTotalPages = Math.ceil(filteredVerifiedAssignments.length / itemsPerPage);
+  const verifiedStartIndex = (verifiedCurrentPage - 1) * itemsPerPage;
+  const verifiedEndIndex = verifiedStartIndex + itemsPerPage;
+  const currentVerifiedAssignments = filteredVerifiedAssignments.slice(verifiedStartIndex, verifiedEndIndex);
 
   // Check authorization
   if (!roleLoading && !isAdmin && !isRecruiter) {
@@ -76,10 +92,11 @@ const VerifyAssignments = () => {
   useEffect(() => {
     if (user && (isAdmin || isRecruiter)) {
       fetchSubmittedAssignments();
+      fetchVerifiedAssignments();
     }
   }, [user, isAdmin, isRecruiter]);
 
-  // Filter assignments based on search and filters
+  // Filter pending assignments based on search and filters
   useEffect(() => {
     let filtered = assignments;
 
@@ -106,6 +123,34 @@ const VerifyAssignments = () => {
     setFilteredAssignments(filtered);
     setCurrentPage(1); // Reset to first page when filters change
   }, [assignments, searchTerm, moduleFilter, userFilter]);
+
+  // Filter verified assignments based on search and filters
+  useEffect(() => {
+    let filtered = verifiedAssignments;
+
+    // Search filter
+    if (verifiedSearchTerm) {
+      filtered = filtered.filter(assignment =>
+        assignment.profiles.full_name.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.profiles.username.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.career_task_templates.title.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.career_task_templates.category.toLowerCase().includes(verifiedSearchTerm.toLowerCase())
+      );
+    }
+
+    // Module filter
+    if (verifiedModuleFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.career_task_templates.module === verifiedModuleFilter);
+    }
+
+    // User filter
+    if (verifiedUserFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.user_id === verifiedUserFilter);
+    }
+
+    setFilteredVerifiedAssignments(filtered);
+    setVerifiedCurrentPage(1); // Reset to first page when filters change
+  }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedUserFilter]);
 
   const fetchSubmittedAssignments = async () => {
     try {
@@ -172,6 +217,72 @@ const VerifyAssignments = () => {
     }
   };
 
+  const fetchVerifiedAssignments = async () => {
+    try {
+      // Fetch verified assignments with user profiles
+      const { data, error } = await supabase
+        .from('career_task_assignments')
+        .select(`
+          *,
+          career_task_templates (
+            title,
+            module,
+            points_reward,
+            category
+          )
+        `)
+        .eq('status', 'verified')
+        .order('verified_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch user profiles separately
+      const userIds = data?.map(assignment => assignment.user_id) || [];
+      if (userIds.length === 0) {
+        setVerifiedAssignments([]);
+        return;
+      }
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine assignments with profiles and fetch evidence
+      const assignmentsWithProfiles = (data || []).map(assignment => {
+        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+        return {
+          ...assignment,
+          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+        };
+      });
+
+      // Fetch evidence for each assignment
+      const assignmentsWithEvidence = await Promise.all(
+        assignmentsWithProfiles.map(async (assignment) => {
+          const { data: evidenceData, error: evidenceError } = await supabase
+            .from('career_task_evidence')
+            .select('*')
+            .eq('assignment_id', assignment.id);
+
+          if (evidenceError) {
+            console.error('Error fetching evidence:', evidenceError);
+            return { ...assignment, evidence: [] };
+          }
+
+          return { ...assignment, evidence: evidenceData || [] };
+        })
+      );
+
+      setVerifiedAssignments(assignmentsWithEvidence);
+    } catch (error) {
+      console.error('Error fetching verified assignments:', error);
+      toast.error('Failed to load verified assignments');
+    }
+  };
+
   // Get unique users for filter dropdown
   const uniqueUsers = Array.from(
     new Map(
@@ -184,6 +295,19 @@ const VerifyAssignments = () => {
 
   // Get unique modules for filter dropdown
   const uniqueModules = [...new Set(assignments.map(assignment => assignment.career_task_templates.module))];
+
+  // Get unique users for verified assignments filter dropdown
+  const uniqueVerifiedUsers = Array.from(
+    new Map(
+      verifiedAssignments.map(assignment => [
+        assignment.user_id,
+        { id: assignment.user_id, name: assignment.profiles.full_name, username: assignment.profiles.username }
+      ])
+    ).values()
+  );
+
+  // Get unique modules for verified assignments filter dropdown
+  const uniqueVerifiedModules = [...new Set(verifiedAssignments.map(assignment => assignment.career_task_templates.module))];
 
   const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
     if (!selectedAssignment) return;
@@ -263,7 +387,8 @@ const VerifyAssignments = () => {
 
       setSelectedAssignment(null);
       setVerificationNotes('');
-      fetchSubmittedAssignments(); // Refresh the list
+      fetchSubmittedAssignments(); // Refresh pending assignments
+      fetchVerifiedAssignments(); // Refresh verified assignments
     } catch (error) {
       console.error('Error verifying assignment:', error);
       toast.error('Failed to process verification');
@@ -300,220 +425,458 @@ const VerifyAssignments = () => {
               Review and verify user submitted assignments
             </p>
           </div>
-          <Badge variant="secondary" className="text-lg px-3 py-1">
-            {filteredAssignments.length} Total / {assignments.length} Pending
-          </Badge>
+          <div className="flex gap-3">
+            <Badge variant="secondary" className="text-lg px-3 py-1">
+              {filteredAssignments.length} Pending
+            </Badge>
+            <Badge variant="outline" className="text-lg px-3 py-1">
+              {verifiedAssignments.length} Verified
+            </Badge>
+          </div>
         </div>
 
-        {/* Filters Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters & Search
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="search">Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search users or tasks..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Module</Label>
-                <Select value={moduleFilter} onValueChange={setModuleFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Modules" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Modules</SelectItem>
-                    {uniqueModules.map(module => (
-                      <SelectItem key={module} value={module}>{module}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>User</Label>
-                <Select value={userFilter} onValueChange={setUserFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Users" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Users</SelectItem>
-                    {uniqueUsers.map(user => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name} (@{user.username})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>&nbsp;</Label>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setModuleFilter('all');
-                    setUserFilter('all');
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="pending" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="pending" className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Pending Reviews ({filteredAssignments.length})
+            </TabsTrigger>
+            <TabsTrigger value="verified" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Verified Assignments ({filteredVerifiedAssignments.length})
+            </TabsTrigger>
+          </TabsList>
 
-        {filteredAssignments.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Assignments to Review</h3>
-              <p className="text-muted-foreground">
-                All submitted assignments have been verified.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <div className="grid gap-6">
-              {currentAssignments.map((assignment) => (
-                <Card key={assignment.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={assignment.profiles.profile_image_url} />
-                          <AvatarFallback>
-                            {assignment.profiles.full_name?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold text-lg">
-                            {assignment.career_task_templates.title}
-                          </h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <User className="h-4 w-4" />
-                            <span>{assignment.profiles.full_name} (@{assignment.profiles.username})</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Badge 
-                          className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
-                        >
-                          {assignment.career_task_templates.module}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Award className="h-4 w-4" />
-                          <span>{assignment.career_task_templates.points_reward} pts</span>
-                        </div>
-                      </div>
+          {/* Pending Reviews Tab */}
+          <TabsContent value="pending" className="space-y-6">
+            {/* Filters Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filters & Search
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Search</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="search"
+                        placeholder="Search users or tasks..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>
-                            Submitted {format(new Date(assignment.submitted_at), 'PPp')}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <FileText className="h-4 w-4" />
-                          <span>{assignment.evidence.length} Evidence Files</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedAssignment(assignment)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Review
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <div className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredAssignments.length)} of {filteredAssignments.length} assignments
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
                   </div>
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  <div className="space-y-2">
+                    <Label>Module</Label>
+                    <Select value={moduleFilter} onValueChange={setModuleFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Modules" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Modules</SelectItem>
+                        {uniqueModules.map(module => (
+                          <SelectItem key={module} value={module}>{module}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>User</Label>
+                    <Select value={userFilter} onValueChange={setUserFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Users" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        {uniqueUsers.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name} (@{user.username})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>&nbsp;</Label>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setModuleFilter('all');
+                        setUserFilter('all');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            {filteredAssignments.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Assignments to Review</h3>
+                  <p className="text-muted-foreground">
+                    All submitted assignments have been verified.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="grid gap-6">
+                  {currentAssignments.map((assignment) => (
+                    <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={assignment.profiles.profile_image_url} />
+                              <AvatarFallback>
+                                {assignment.profiles.full_name?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-semibold text-lg">
+                                {assignment.career_task_templates.title}
+                              </h3>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="h-4 w-4" />
+                                <span>{assignment.profiles.full_name} (@{assignment.profiles.username})</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge 
+                              className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
+                            >
+                              {assignment.career_task_templates.module}
+                            </Badge>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Award className="h-4 w-4" />
+                              <span>{assignment.career_task_templates.points_reward} pts</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>
+                                Submitted {format(new Date(assignment.submitted_at), 'PPp')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <FileText className="h-4 w-4" />
+                              <span>{assignment.evidence.length} Evidence Files</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedAssignment(assignment)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Review
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {startIndex + 1}-{Math.min(endIndex, filteredAssignments.length)} of {filteredAssignments.length} assignments
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </TabsContent>
+
+          {/* Verified Assignments Tab */}
+          <TabsContent value="verified" className="space-y-6">
+            {/* Filters Section for Verified */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filters & Search - Verified Assignments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="verified-search">Search</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="verified-search"
+                        placeholder="Search users or tasks..."
+                        value={verifiedSearchTerm}
+                        onChange={(e) => setVerifiedSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Module</Label>
+                    <Select value={verifiedModuleFilter} onValueChange={setVerifiedModuleFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Modules" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Modules</SelectItem>
+                        {uniqueVerifiedModules.map(module => (
+                          <SelectItem key={module} value={module}>{module}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>User</Label>
+                    <Select value={verifiedUserFilter} onValueChange={setVerifiedUserFilter}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Users" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        {uniqueVerifiedUsers.map(user => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.name} (@{user.username})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>&nbsp;</Label>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        setVerifiedSearchTerm('');
+                        setVerifiedModuleFilter('all');
+                        setVerifiedUserFilter('all');
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {filteredVerifiedAssignments.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <CheckCircle className="h-16 w-16 mx-auto text-green-500 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Verified Assignments</h3>
+                  <p className="text-muted-foreground">
+                    No assignments have been verified yet.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="grid gap-6">
+                  {currentVerifiedAssignments.map((assignment) => (
+                    <Card key={assignment.id} className="hover:shadow-md transition-shadow border-green-200">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={assignment.profiles.profile_image_url} />
+                              <AvatarFallback>
+                                {assignment.profiles.full_name?.charAt(0) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-semibold text-lg">
+                                {assignment.career_task_templates.title}
+                              </h3>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="h-4 w-4" />
+                                <span>{assignment.profiles.full_name} (@{assignment.profiles.username})</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className="bg-green-500 text-white">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                            <Badge 
+                              className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
+                            >
+                              {assignment.career_task_templates.module}
+                            </Badge>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Award className="h-4 w-4" />
+                              <span>{assignment.points_earned} pts awarded</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>
+                                Verified {assignment.verified_at ? format(new Date(assignment.verified_at), 'PPp') : 'N/A'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <FileText className="h-4 w-4" />
+                              <span>{assignment.evidence.length} Evidence Files</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedAssignment(assignment)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Pagination for Verified */}
+                {verifiedTotalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {verifiedStartIndex + 1}-{Math.min(verifiedEndIndex, filteredVerifiedAssignments.length)} of {filteredVerifiedAssignments.length} verified assignments
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVerifiedCurrentPage(Math.max(1, verifiedCurrentPage - 1))}
+                        disabled={verifiedCurrentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, verifiedTotalPages) }, (_, i) => {
+                          let pageNum;
+                          if (verifiedTotalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (verifiedCurrentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (verifiedCurrentPage >= verifiedTotalPages - 2) {
+                            pageNum = verifiedTotalPages - 4 + i;
+                          } else {
+                            pageNum = verifiedCurrentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={verifiedCurrentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setVerifiedCurrentPage(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVerifiedCurrentPage(Math.min(verifiedTotalPages, verifiedCurrentPage + 1))}
+                        disabled={verifiedCurrentPage === verifiedTotalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Review Dialog */}
