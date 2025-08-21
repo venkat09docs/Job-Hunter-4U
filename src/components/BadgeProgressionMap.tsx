@@ -55,7 +55,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   // Calculate progress for each badge
   const calculateProfileProgress = (tier: string) => {
     switch (tier) {
-      case 'bronze': return Math.min(100, resumeProgress > 0 ? 100 : 0);
+      case 'bronze': return resumeProgress;
       case 'silver': return Math.min(100, resumeProgress >= 50 ? 100 : (resumeProgress / 50) * 100);
       case 'gold': return Math.min(100, resumeProgress >= 80 ? 100 : (resumeProgress / 80) * 100);
       default: return 0;
