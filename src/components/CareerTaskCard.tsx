@@ -89,12 +89,8 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
   };
 
   const handleStartAssignment = () => {
-    if (assignment.status === 'assigned') {
-      onUpdateStatus(assignment.id, 'STARTED');
-      return; // Don't open modal yet, just update status
-    }
-    // Only open modal if already started
-    setShowEvidenceModal(true);
+    // Only update status, no modal or other actions
+    onUpdateStatus(assignment.id, 'STARTED');
   };
 
   const handleSubmitEvidence = () => {
@@ -183,7 +179,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                 <DialogTrigger asChild>
                   <Button className="w-full" onClick={() => setShowEvidenceModal(true)}>
                     <Upload className="w-4 h-4 mr-2" />
-                    {assignment.status === 'STARTED' ? 'Submit Evidence' : 'Update Evidence'}
+                    {assignment.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
