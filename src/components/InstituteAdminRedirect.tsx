@@ -7,11 +7,9 @@ interface InstituteAdminRedirectProps {
 }
 
 const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
+  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL LOGIC OR EARLY RETURNS
   const { isInstituteAdmin, loading } = useRole();
   const navigate = useNavigate();
-
-  console.log('InstituteAdminRedirect: loading =', loading);
-  console.log('InstituteAdminRedirect: isInstituteAdmin =', isInstituteAdmin);
 
   useEffect(() => {
     console.log('InstituteAdminRedirect useEffect: loading =', loading, 'isInstituteAdmin =', isInstituteAdmin);
@@ -31,6 +29,9 @@ const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
     
     return () => clearTimeout(timeoutId);
   }, [loading]);
+
+  console.log('InstituteAdminRedirect: loading =', loading);
+  console.log('InstituteAdminRedirect: isInstituteAdmin =', isInstituteAdmin);
 
   // If loading or is institute admin (will redirect), don't render children
   if (loading) {

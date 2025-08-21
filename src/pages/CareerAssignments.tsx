@@ -68,7 +68,7 @@ const CareerAssignments = () => {
   const getOverallProgress = () => {
     const totalTasks = assignments.length;
     if (totalTasks === 0) return 0;
-    const completedTasks = assignments.filter(a => a.status === 'VERIFIED').length;
+    const completedTasks = assignments.filter(a => a.status === 'verified').length;
     return Math.round((completedTasks / totalTasks) * 100);
   };
 
