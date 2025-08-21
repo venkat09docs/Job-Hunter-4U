@@ -89,7 +89,7 @@ const CareerAssignments = () => {
         .from('career_task_assignments')
         .select(`
           *,
-          template:career_task_templates(*)
+          career_task_templates(*)
         `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
@@ -100,7 +100,7 @@ const CareerAssignments = () => {
       // Calculate stats
       const completed = data?.filter(a => a.status === 'completed').length || 0;
       const points = data?.reduce((sum, a) => sum + (a.points_earned || 0), 0) || 0;
-      const maxPts = data?.reduce((sum, a) => sum + (a.template?.points_reward || 0), 0) || 0;
+      const maxPts = data?.reduce((sum, a) => sum + (a.career_task_templates?.points_reward || 0), 0) || 0;
       
       setCompletedTasks(completed);
       setTotalPoints(points);
@@ -187,7 +187,7 @@ const CareerAssignments = () => {
 
   const getTasksBySubCategory = (subCategoryId: string) => {
     return assignments.filter(assignment => 
-      assignment.template?.sub_category_id === subCategoryId
+      assignment.career_task_templates?.sub_category_id === subCategoryId
     );
   };
 
@@ -580,9 +580,9 @@ const CareerAssignments = () => {
                       {assignments.map(assignment => (
                         <div key={assignment.id} className="flex items-center justify-between p-3 border rounded">
                           <div>
-                            <p className="font-medium">{assignment.template?.title}</p>
+                            <p className="font-medium">{assignment.career_task_templates?.title}</p>
                             <p className="text-sm text-muted-foreground">
-                              {assignment.template?.category} • {assignment.status.replace('_', ' ')}
+                              {assignment.career_task_templates?.category} • {assignment.status.replace('_', ' ')}
                             </p>
                           </div>
                           <div className="text-right">
