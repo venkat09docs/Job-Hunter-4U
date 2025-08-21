@@ -180,59 +180,20 @@ export default function ManageAssignments() {
   };
 
   const fetchSubCategories = async () => {
-    // Mock implementation for sub-categories
-    const mockSubCategories: SubCategory[] = [
-      {
-        id: '1',
-        name: 'Resume Building',
-        description: 'Tasks related to building and optimizing resumes',
-        parent_category: 'profile',
-        is_active: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '2',
-        name: 'Profile Optimization',
-        description: 'Tasks for optimizing professional profiles',
-        parent_category: 'profile',
-        is_active: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '3',
-        name: 'Network Building',
-        description: 'Tasks related to growing LinkedIn network',
-        parent_category: 'linkedin',
-        is_active: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '4',
-        name: 'Content Creation',
-        description: 'Tasks related to creating LinkedIn content',
-        parent_category: 'linkedin',
-        is_active: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '5',
-        name: 'Job Applications',
-        description: 'Tasks related to job applications',
-        parent_category: 'job_hunter',
-        is_active: true,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '6',
-        name: 'Code Quality',
-        description: 'Tasks related to improving code quality',
-        parent_category: 'github',
-        is_active: true,
-        created_at: new Date().toISOString()
-      }
-    ];
-    
-    setSubCategories(mockSubCategories.filter(sub => sub.parent_category === activeCategory));
+    try {
+      const { data, error } = await supabase
+        .from('sub_categories')
+        .select('*')
+        .eq('parent_category', activeCategory)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setSubCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching sub categories:', error);
+      toast.error('Failed to load sub categories');
+    }
   };
 
   const handleSaveAssignment = async () => {
@@ -455,8 +416,15 @@ export default function ManageAssignments() {
   const handleDeleteSubCategory = async (subCategoryId: string) => {
     if (window.confirm('Are you sure you want to delete this sub category?')) {
       try {
-        // For now, just remove from local state since we're using mock data
-        setSubCategories(prev => prev.filter(sub => sub.id !== subCategoryId));
+        const { error } = await supabase
+          .from('sub_categories')
+          .update({ is_active: false })
+          .eq('id', subCategoryId);
+
+        if (error) throw error;
+        
+        // Refresh the data
+        await fetchSubCategories();
         toast.success('Sub category deleted successfully');
       } catch (error) {
         console.error('Error deleting sub category:', error);
@@ -469,23 +437,35 @@ export default function ManageAssignments() {
     try {
       if (editingSubCategory) {
         // Update existing sub category
-        setSubCategories(prev => prev.map(sub => 
-          sub.id === editingSubCategory.id 
-            ? { ...sub, ...subCategoryForm }
-            : sub
-        ));
+        const { error } = await supabase
+          .from('sub_categories')
+          .update({
+            name: subCategoryForm.name,
+            description: subCategoryForm.description,
+            is_active: subCategoryForm.is_active,
+          })
+          .eq('id', editingSubCategory.id);
+
+        if (error) throw error;
         toast.success('Sub category updated successfully');
       } else {
         // Create new sub category
-        const newSubCategory: SubCategory = {
-          id: Date.now().toString(),
-          ...subCategoryForm,
-          parent_category: activeCategory,
-          created_at: new Date().toISOString()
-        };
-        setSubCategories(prev => [...prev, newSubCategory]);
+        const { error } = await supabase
+          .from('sub_categories')
+          .insert({
+            name: subCategoryForm.name,
+            description: subCategoryForm.description,
+            parent_category: activeCategory,
+            is_active: subCategoryForm.is_active,
+            created_by: (await supabase.auth.getUser()).data.user?.id,
+          });
+
+        if (error) throw error;
         toast.success('Sub category created successfully');
       }
+      
+      // Refresh the data
+      await fetchSubCategories();
       resetSubCategoryForm();
     } catch (error) {
       console.error('Error saving sub category:', error);

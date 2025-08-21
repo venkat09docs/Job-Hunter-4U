@@ -416,6 +416,7 @@ export type Database = {
           is_active: boolean
           module: Database["public"]["Enums"]["module_code"] | null
           points_reward: number
+          sub_category_id: string | null
           title: string
           updated_at: string
           verification_criteria: Json
@@ -435,6 +436,7 @@ export type Database = {
           is_active?: boolean
           module?: Database["public"]["Enums"]["module_code"] | null
           points_reward?: number
+          sub_category_id?: string | null
           title: string
           updated_at?: string
           verification_criteria: Json
@@ -454,11 +456,20 @@ export type Database = {
           is_active?: boolean
           module?: Database["public"]["Enums"]["module_code"] | null
           points_reward?: number
+          sub_category_id?: string | null
           title?: string
           updated_at?: string
           verification_criteria?: Json
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "career_task_templates_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       career_weekly_schedules: {
         Row: {
@@ -2936,6 +2947,39 @@ export type Database = {
           raw_meta?: Json | null
           subject?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      sub_categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parent_category: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parent_category: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parent_category?: string
+          updated_at?: string
         }
         Relationships: []
       }

@@ -1,63 +1,303 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
-  Target,
-  Trophy,
-  Calendar,
-  Settings,
-  History,
-  FileText,
-  Users,
-  User,
-  Github,
-  RefreshCw,
-  Copy,
-  Mail,
-  Shield,
-  Activity,
-  TrendingUp,
-  Home,
-  Lock
+  Home, Target, Trophy, Clock, FileText, Users, User, Github, 
+  Copy, RefreshCw, Settings, Lock, History, Activity, Shield, Mail
 } from 'lucide-react';
-import { useCareerAssignments } from '@/hooks/useCareerAssignments';
-import { useUserInputs } from '@/hooks/useUserInputs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { CareerTaskCard } from '@/components/CareerTaskCard';
-import { toast } from 'sonner';
+import { useUserInputs } from '@/hooks/useUserInputs';
+
+interface SubCategory {
+  id: string;
+  name: string;
+  description: string;
+  parent_category: string;
+  is_active: boolean;
+  created_at: string;
+}
 
 const CareerAssignments = () => {
   const { canAccessFeature } = usePremiumFeatures();
-  const {
-    assignments,
-    templates,
-    evidence,
-    loading,
-    submittingEvidence,
-    initializeUserWeek,
-    submitEvidence,
-    updateAssignmentStatus,
-    verifyAssignments,
-    getTasksByModule,
-    getModuleProgress,
-    getTotalPoints,
-    getMaxPoints
-  } = useCareerAssignments();
-
+  const { user } = useAuth();
   const { inputs, saveInput, getInput } = useUserInputs();
+  
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [evidence, setEvidence] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [submittingEvidence, setSubmittingEvidence] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Stats
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [maxPoints, setMaxPoints] = useState(0);
+  const [completedTasks, setCompletedTasks] = useState(0);
 
-  const handleInitialize = () => {
-    initializeUserWeek();
+  useEffect(() => {
+    if (user) {
+      fetchData();
+      setupRealtimeSubscription();
+    }
+  }, [user]);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        fetchSubCategories(),
+        fetchAssignments(),
+        fetchEvidence(),
+        fetchTemplates()
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerify = () => {
-    verifyAssignments();
+  const fetchSubCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sub_categories')
+        .select('*')
+        .eq('parent_category', 'profile')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setSubCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching sub categories:', error);
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('career_task_assignments')
+        .select(`
+          *,
+          template:career_task_templates(*)
+        `)
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssignments(data || []);
+      
+      // Calculate stats
+      const completed = data?.filter(a => a.status === 'completed').length || 0;
+      const points = data?.reduce((sum, a) => sum + (a.points_earned || 0), 0) || 0;
+      const maxPts = data?.reduce((sum, a) => sum + (a.template?.points_reward || 0), 0) || 0;
+      
+      setCompletedTasks(completed);
+      setTotalPoints(points);
+      setMaxPoints(maxPts);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
+  };
+
+  const fetchEvidence = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('career_task_evidence')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setEvidence(data || []);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('career_task_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTemplates(data || []);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    const channel = supabase
+      .channel('profile-assignments-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sub_categories',
+          filter: `parent_category=eq.profile`
+        },
+        () => {
+          fetchSubCategories();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'career_task_templates'
+        },
+        () => {
+          fetchTemplates();
+          fetchAssignments();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'career_task_assignments',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchAssignments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const getTasksBySubCategory = (subCategoryName: string) => {
+    return assignments.filter(assignment => 
+      assignment.template?.category === subCategoryName
+    );
+  };
+
+  const getSubCategoryProgress = (subCategoryName: string) => {
+    const tasks = getTasksBySubCategory(subCategoryName);
+    if (tasks.length === 0) return 0;
+    const completed = tasks.filter(task => task.status === 'completed').length;
+    return Math.round((completed / tasks.length) * 100);
+  };
+
+  const submitEvidence = async (assignmentId: string, evidenceData: any) => {
+    if (!canAccessFeature("career_assignments")) return;
+    
+    setSubmittingEvidence(true);
+    try {
+      const { error } = await supabase
+        .from('career_task_evidence')
+        .insert({
+          assignment_id: assignmentId,
+          evidence_type: evidenceData.type || 'url',
+          evidence_data: evidenceData,
+          verification_status: 'pending'
+        });
+
+      if (error) throw error;
+      
+      // Update assignment status
+      await supabase
+        .from('career_task_assignments')
+        .update({ 
+          status: 'submitted',
+          submitted_at: new Date().toISOString()
+        })
+        .eq('id', assignmentId);
+
+      toast.success('Evidence submitted successfully');
+      await fetchData();
+    } catch (error) {
+      console.error('Error submitting evidence:', error);
+      toast.error('Failed to submit evidence');
+    } finally {
+      setSubmittingEvidence(false);
+    }
+  };
+
+  const updateAssignmentStatus = async (assignmentId: string, status: string) => {
+    if (!canAccessFeature("career_assignments")) return;
+    
+    try {
+      const { error } = await supabase
+        .from('career_task_assignments')
+        .update({ status })
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+      
+      toast.success('Assignment status updated');
+      await fetchData();
+    } catch (error) {
+      console.error('Error updating assignment status:', error);
+      toast.error('Failed to update assignment status');
+    }
+  };
+
+  const handleInitialize = async () => {
+    if (!canAccessFeature("career_assignments")) return;
+    
+    try {
+      // Call edge function to initialize tasks
+      const response = await fetch(`https://moirryvajzyriagqihbe.supabase.co/functions/v1/instantiate-week`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vaXJyeXZhanp5cmlhZ3FpaGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzE1MzgsImV4cCI6MjA2OTE0NzUzOH0.fyoyxE5pv42Vemp3iA1HmGkzJIA3SAtByXyf5FmYxOw`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: user?.id })
+      });
+
+      if (!response.ok) throw new Error('Failed to initialize tasks');
+      
+      toast.success('Tasks initialized successfully');
+      await fetchData();
+    } catch (error) {
+      console.error('Error initializing tasks:', error);
+      toast.error('Failed to initialize tasks');
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!canAccessFeature("career_assignments")) return;
+    
+    try {
+      // Call edge function to verify all assignments
+      const response = await fetch(`https://moirryvajzyriagqihbe.supabase.co/functions/v1/verify-all-assignments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vaXJyeXZhanp5cmlhZ3FpaGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzE1MzgsImV4cCI6MjA2OTE0NzUzOH0.fyoyxE5pv42Vemp3iA1HmGkzJIA3SAtByXyf5FmYxOw`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user_id: user?.id })
+      });
+
+      if (!response.ok) throw new Error('Failed to verify assignments');
+      
+      toast.success('Assignments verified successfully');
+      await fetchData();
+    } catch (error) {
+      console.error('Error verifying assignments:', error);
+      toast.error('Failed to verify assignments');
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -65,24 +305,12 @@ const CareerAssignments = () => {
     toast.success('Copied to clipboard!');
   };
 
-  const getOverallProgress = () => {
-    const totalTasks = assignments.length;
-    if (totalTasks === 0) return 0;
-    const completedTasks = assignments.filter(a => a.status === 'verified').length;
-    return Math.round((completedTasks / totalTasks) * 100);
-  };
-
-  const resumeTasks = getTasksByModule('RESUME');
-  const linkedinTasks = getTasksByModule('LINKEDIN');
-  const digitalProfileTasks = getTasksByModule('DIGITAL_PROFILE');
-  const githubTasks = getTasksByModule('GITHUB');
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-primary" />
-          <p className="mt-2 text-muted-foreground">Loading career assignments...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading assignments...</p>
         </div>
       </div>
     );
@@ -127,37 +355,6 @@ const CareerAssignments = () => {
           </Card>
         )}
 
-        {/* Overall Progress */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Overall Progress</h3>
-              <div className="text-sm text-muted-foreground">
-                {getTotalPoints()} / {getMaxPoints()} points
-              </div>
-            </div>
-            <Progress value={getOverallProgress()} className="h-3" />
-            <div className="grid grid-cols-4 gap-4 mt-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{getModuleProgress('RESUME')}%</div>
-                <div className="text-sm text-muted-foreground">Resume</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{getModuleProgress('LINKEDIN')}%</div>
-                <div className="text-sm text-muted-foreground">LinkedIn</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{getModuleProgress('DIGITAL_PROFILE')}%</div>
-                <div className="text-sm text-muted-foreground">Digital Profile</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{getModuleProgress('GITHUB')}%</div>
-                <div className="text-sm text-muted-foreground">GitHub</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Main Tabs */}
         <Tabs defaultValue="assignments" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 h-12">
@@ -175,161 +372,63 @@ const CareerAssignments = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Assignments Tab */}
-          <TabsContent value="assignments">
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="md:col-span-3">
-                <Accordion type="multiple" defaultValue={["resume", "linkedin", "digital-profile", "github"]} className="space-y-4">
-                  {/* Resume Section */}
-                  <AccordionItem value="resume">
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <span>Resume ({resumeTasks.length} tasks)</span>
-                        <Progress value={getModuleProgress('RESUME')} className="w-24 h-2" />
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-4">
-                      {resumeTasks.map(assignment => (
-                      <CareerTaskCard
-                        key={assignment.id}
-                        assignment={{
-                          ...assignment,
-                          assigned_at: assignment.created_at
-                        }}
-                        evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                        onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                        onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                        isSubmitting={submittingEvidence}
-                      />
-                      ))}
-                      {resumeTasks.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No resume tasks assigned yet</p>
-                        <Button 
-                          onClick={handleInitialize} 
-                          className="mt-3"
-                          disabled={!canAccessFeature("career_assignments")}
-                        >
-                          Initialize Tasks
-                          {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                        </Button>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* LinkedIn Section */}
-                  <AccordionItem value="linkedin">
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <Users className="w-5 h-5 text-purple-600" />
-                        <span>LinkedIn ({linkedinTasks.length} tasks)</span>
-                        <Progress value={getModuleProgress('LINKEDIN')} className="w-24 h-2" />
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-4">
-                      {linkedinTasks.map(assignment => (
-                        <CareerTaskCard
-                          key={assignment.id}
-                          assignment={assignment}
-                          evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                          onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                          isSubmitting={submittingEvidence}
-                        />
-                      ))}
-                      {linkedinTasks.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No LinkedIn tasks assigned yet</p>
-                          <Button 
-                            onClick={handleInitialize} 
-                            className="mt-3"
-                            disabled={!canAccessFeature("career_assignments")}
-                          >
-                            Initialize Tasks
-                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* Digital Profile Section */}
-                  <AccordionItem value="digital-profile">
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <User className="w-5 h-5 text-blue-600" />
-                        <span>Digital Profile ({digitalProfileTasks.length} tasks)</span>
-                        <Progress value={getModuleProgress('DIGITAL_PROFILE')} className="w-24 h-2" />
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-4">
-                      {digitalProfileTasks.map(assignment => (
-                        <CareerTaskCard
-                          key={assignment.id}
-                          assignment={assignment}
-                          evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                          onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                          isSubmitting={submittingEvidence}
-                        />
-                      ))}
-                      {digitalProfileTasks.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No digital profile tasks assigned yet</p>
-                          <Button 
-                            onClick={handleInitialize} 
-                            className="mt-3"
-                            disabled={!canAccessFeature("career_assignments")}
-                          >
-                            Initialize Tasks
-                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* GitHub Section */}
-                  <AccordionItem value="github">
-                    <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                      <div className="flex items-center gap-3">
-                        <Github className="w-5 h-5 text-green-600" />
-                        <span>GitHub ({githubTasks.length} tasks)</span>
-                        <Progress value={getModuleProgress('GITHUB')} className="w-24 h-2" />
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-4">
-                       {githubTasks.map(assignment => (
-                         <CareerTaskCard
-                           key={assignment.id}
-                           assignment={assignment}
-                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                           onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                           onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                           isSubmitting={submittingEvidence}
-                         />
-                       ))}
-                      {githubTasks.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Github className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No GitHub tasks assigned yet</p>
-                          <Button 
-                            onClick={handleInitialize} 
-                            className="mt-3"
-                            disabled={!canAccessFeature("career_assignments")}
-                          >
-                            Initialize Tasks
-                            {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
+          <TabsContent value="assignments" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2">
+                <Accordion type="multiple" className="space-y-4">
+                  {/* Dynamic Sub-Categories */}
+                  {subCategories.map((subCategory) => {
+                    const categoryTasks = getTasksBySubCategory(subCategory.name);
+                    const categoryProgress = getSubCategoryProgress(subCategory.name);
+                    
+                    return (
+                      <AccordionItem key={subCategory.id} value={subCategory.id}>
+                        <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <Target className="w-5 h-5 text-primary" />
+                            <span>{subCategory.name} ({categoryTasks.length} tasks)</span>
+                            <Progress value={categoryProgress} className="w-24 h-2" />
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 pt-4">
+                          {categoryTasks.map(assignment => (
+                            <CareerTaskCard
+                              key={assignment.id}
+                              assignment={assignment}
+                              evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                              onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                              onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
+                              isSubmitting={submittingEvidence}
+                            />
+                          ))}
+                          {categoryTasks.length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                              <p>No {subCategory.name.toLowerCase()} tasks assigned yet</p>
+                              <Button 
+                                onClick={handleInitialize} 
+                                className="mt-3"
+                                disabled={!canAccessFeature("career_assignments")}
+                              >
+                                Initialize Tasks
+                                {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                              </Button>
+                            </div>
+                          )}
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                  
+                  {/* Fallback for when no sub-categories exist */}
+                  {subCategories.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Target className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-semibold mb-2">No Assignment Categories</h3>
+                      <p className="mb-4">No sub-categories have been created yet. Contact your administrator to set up assignment categories.</p>
+                    </div>
+                  )}
                 </Accordion>
               </div>
 
@@ -345,10 +444,60 @@ const CareerAssignments = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-primary">{getTotalPoints()}</div>
+                      <div className="text-3xl font-bold text-primary">{totalPoints}</div>
                       <div className="text-sm text-muted-foreground">points earned</div>
                     </div>
-                    <Progress value={(getTotalPoints() / Math.max(getMaxPoints(), 1)) * 100} className="mt-4" />
+                  </CardContent>
+                </Card>
+
+                {/* Progress Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Progress Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Tasks Completed</span>
+                      <span>{completedTasks}/{assignments.length}</span>
+                    </div>
+                    <Progress value={assignments.length > 0 ? (completedTasks / assignments.length) * 100 : 0} />
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Points Progress</span>
+                      <span>{totalPoints}/{maxPoints}</span>
+                    </div>
+                    <Progress value={maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0} />
+                  </CardContent>
+                </Card>
+
+                {/* Sub-Categories Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Category Progress</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {subCategories.map((subCategory) => {
+                      const progress = getSubCategoryProgress(subCategory.name);
+                      const taskCount = getTasksBySubCategory(subCategory.name).length;
+                      
+                      return (
+                        <div key={subCategory.id}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>{subCategory.name}</span>
+                            <span>{taskCount} tasks</span>
+                          </div>
+                          <Progress value={progress} />
+                        </div>
+                      );
+                    })}
+                    {subCategories.length === 0 && (
+                      <div className="text-center text-muted-foreground py-4">
+                        No categories available
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -405,7 +554,7 @@ const CareerAssignments = () => {
                           <div key={e.id} className="flex items-center gap-3 text-sm">
                             <div className="w-2 h-2 bg-primary rounded-full" />
                             <div className="flex-1">
-                              <p className="font-medium">{e.kind.toLowerCase()} evidence</p>
+                              <p className="font-medium">{e.evidence_type} evidence</p>
                               <p className="text-muted-foreground text-xs">
                                 {new Date(e.created_at).toLocaleDateString()}
                               </p>
@@ -444,13 +593,13 @@ const CareerAssignments = () => {
                       {assignments.map(assignment => (
                         <div key={assignment.id} className="flex items-center justify-between p-3 border rounded">
                           <div>
-                            <p className="font-medium">{assignment.career_task_templates?.title}</p>
+                            <p className="font-medium">{assignment.template?.title}</p>
                             <p className="text-sm text-muted-foreground">
-                              {assignment.career_task_templates?.module} • {assignment.status.replace('_', ' ')}
+                              {assignment.template?.category} • {assignment.status.replace('_', ' ')}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">{assignment.points_earned} pts</p>
+                            <p className="font-medium">{assignment.points_earned || 0} pts</p>
                             <p className="text-xs text-muted-foreground">
                               {new Date(assignment.updated_at).toLocaleDateString()}
                             </p>
