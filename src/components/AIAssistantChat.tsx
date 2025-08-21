@@ -240,27 +240,33 @@ const AIAssistantChat = () => {
             </div>
           </ScrollArea>
           
-          <div className="p-4 border-t">
-            <div className="flex gap-2">
+          <div className="p-4 border-t bg-background">
+            <div className="flex gap-2 mb-2">
               <Input
-                placeholder={hasValidSubscription ? "Ask me anything..." : "Subscription required"}
+                placeholder={hasValidSubscription ? "Type your message..." : "Subscription required"}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 disabled={isLoading || !hasValidSubscription}
                 className="flex-1"
+                autoFocus={!isLoading && hasValidSubscription}
               />
               <Button
                 onClick={sendMessage}
                 disabled={!inputMessage.trim() || isLoading || !hasValidSubscription}
                 size="icon"
+                className="shrink-0"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
             
             {!hasValidSubscription && (
-              <div className="mt-2 text-center">
+              <div className="text-center">
                 <Button
                   variant="link"
                   size="sm"
@@ -272,9 +278,11 @@ const AIAssistantChat = () => {
               </div>
             )}
             
-            <div className="text-xs text-muted-foreground text-center mt-1">
-              Requires active subscription
-            </div>
+            {hasValidSubscription && (
+              <div className="text-xs text-muted-foreground text-center">
+                Press Enter to send • Continuous chat enabled
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
