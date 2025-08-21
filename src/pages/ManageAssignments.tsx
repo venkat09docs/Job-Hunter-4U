@@ -441,6 +441,69 @@ export default function ManageAssignments() {
     setShowAddAssignment(true);
   };
 
+  const startEditSubCategory = (subCategory: SubCategory) => {
+    setEditingSubCategory(subCategory);
+    setSubCategoryForm({
+      name: subCategory.name,
+      description: subCategory.description,
+      parent_category: subCategory.parent_category,
+      is_active: subCategory.is_active
+    });
+    setShowAddSubCategory(true);
+  };
+
+  const handleDeleteSubCategory = async (subCategoryId: string) => {
+    if (window.confirm('Are you sure you want to delete this sub category?')) {
+      try {
+        // For now, just remove from local state since we're using mock data
+        setSubCategories(prev => prev.filter(sub => sub.id !== subCategoryId));
+        toast.success('Sub category deleted successfully');
+      } catch (error) {
+        console.error('Error deleting sub category:', error);
+        toast.error('Failed to delete sub category');
+      }
+    }
+  };
+
+  const handleSaveSubCategory = async () => {
+    try {
+      if (editingSubCategory) {
+        // Update existing sub category
+        setSubCategories(prev => prev.map(sub => 
+          sub.id === editingSubCategory.id 
+            ? { ...sub, ...subCategoryForm }
+            : sub
+        ));
+        toast.success('Sub category updated successfully');
+      } else {
+        // Create new sub category
+        const newSubCategory: SubCategory = {
+          id: Date.now().toString(),
+          ...subCategoryForm,
+          parent_category: activeCategory,
+          created_at: new Date().toISOString()
+        };
+        setSubCategories(prev => [...prev, newSubCategory]);
+        toast.success('Sub category created successfully');
+      }
+      resetSubCategoryForm();
+    } catch (error) {
+      console.error('Error saving sub category:', error);
+      toast.error('Failed to save sub category');
+    }
+  };
+
+  const resetSubCategoryForm = () => {
+    setSubCategoryForm({
+      name: '',
+      description: '',
+      parent_category: activeCategory,
+      is_active: true
+    });
+    setEditingSubCategory(null);
+    setShowAddSubCategory(false);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -500,7 +563,10 @@ export default function ManageAssignments() {
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold">{category.name}</h2>
                   <div className="flex gap-2">
-                    <Button onClick={() => setShowAddSubCategory(true)}>
+                    <Button onClick={() => {
+                      resetSubCategoryForm();
+                      setShowAddSubCategory(true);
+                    }}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Sub Category
                     </Button>
@@ -530,10 +596,18 @@ export default function ManageAssignments() {
                             {subCategory.description}
                           </p>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => startEditSubCategory(subCategory)}
+                            >
                               <Edit className="h-3 w-3" />
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDeleteSubCategory(subCategory.id)}
+                            >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
@@ -648,13 +722,27 @@ export default function ManageAssignments() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
+                  <Label htmlFor="category">Category (Sub Category)</Label>
+                  <Select
                     value={assignmentForm.category}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, category: e.target.value })}
-                    placeholder="Enter category"
-                  />
+                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a sub category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subCategories.map((subCategory) => (
+                        <SelectItem key={subCategory.id} value={subCategory.name}>
+                          {subCategory.name}
+                        </SelectItem>
+                      ))}
+                      {subCategories.length === 0 && (
+                        <SelectItem value="" disabled>
+                          No sub categories available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
@@ -722,7 +810,7 @@ export default function ManageAssignments() {
         <Dialog open={showAddSubCategory} onOpenChange={setShowAddSubCategory}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Sub Category</DialogTitle>
+              <DialogTitle>{editingSubCategory ? 'Edit Sub Category' : 'Add New Sub Category'}</DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -749,13 +837,13 @@ export default function ManageAssignments() {
             </div>
             
             <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowAddSubCategory(false)}>
+              <Button variant="outline" onClick={resetSubCategoryForm}>
                 <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
-              <Button>
+              <Button onClick={handleSaveSubCategory}>
                 <Save className="h-4 w-4 mr-2" />
-                Create
+                {editingSubCategory ? 'Update' : 'Create'}
               </Button>
             </div>
           </DialogContent>
