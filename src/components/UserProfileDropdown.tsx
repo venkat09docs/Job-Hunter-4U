@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown, Trophy, Bell, Calendar } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy, Bell } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
@@ -19,7 +18,7 @@ import { NotificationBell } from '@/components/NotificationBell';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
-  const { profile, hasActiveSubscription, getRemainingDays } = useProfile();
+  const { profile } = useProfile();
   const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
@@ -42,33 +41,9 @@ export function UserProfileDropdown() {
     return 'U';
   };
 
-  const getSubscriptionDisplay = () => {
-    if (!hasActiveSubscription()) {
-      return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span>No active plan</span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2 text-sm">
-        <Calendar className="h-4 w-4 text-green-600" />
-        <span className="text-green-600">{getRemainingDays()} days remaining</span>
-        {profile?.subscription_plan && (
-          <Badge variant="outline" className="text-xs">
-            {profile.subscription_plan}
-          </Badge>
-        )}
-      </div>
-    );
-  };
-
   return (
     <>
       <div className="flex items-center gap-3">
-        {getSubscriptionDisplay()}
         <NotificationBell />
         <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>

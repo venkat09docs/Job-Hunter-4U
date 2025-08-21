@@ -458,6 +458,9 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <div className="hidden sm:flex">
+                <SubscriptionStatus />
+              </div>
               <UserProfileDropdown />
             </div>
           </div>
