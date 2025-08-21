@@ -91,7 +91,9 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
   const handleStartAssignment = () => {
     if (assignment.status === 'assigned') {
       onUpdateStatus(assignment.id, 'STARTED');
+      return; // Don't open modal yet, just update status
     }
+    // Only open modal if already started
     setShowEvidenceModal(true);
   };
 
@@ -175,53 +177,62 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
         )}
 
         {assignment.status !== 'VERIFIED' && (
-          <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
-            <DialogTrigger asChild>
+          <>
+            {(assignment.status === 'STARTED' || assignment.status === 'SUBMITTED') && (
+              <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
+                <DialogTrigger asChild>
+                  <Button className="w-full" onClick={() => setShowEvidenceModal(true)}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    {assignment.status === 'STARTED' ? 'Submit Evidence' : 'Update Evidence'}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{task.title}</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label>URL (if applicable)</Label>
+                      <Input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label>File Upload</Label>
+                      <Input
+                        type="file"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Description</Label>
+                      <Textarea
+                        value={textInput}
+                        onChange={(e) => setTextInput(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+
+                    <Button onClick={handleSubmitEvidence} disabled={isSubmitting}>
+                      {isSubmitting ? 'Submitting...' : 'Submit'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+            
+            {assignment.status === 'assigned' && (
               <Button className="w-full" onClick={handleStartAssignment}>
                 <Upload className="w-4 h-4 mr-2" />
-                {assignment.status === 'assigned' ? 'Start Assignment' : 
-                 assignment.status === 'STARTED' ? 'Submit Evidence' :
-                 'Update Evidence'}
+                Start Assignment
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{task.title}</DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label>URL (if applicable)</Label>
-                  <Input
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                  />
-                </div>
-                
-                <div>
-                  <Label>File Upload</Label>
-                  <Input
-                    type="file"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Description</Label>
-                  <Textarea
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                <Button onClick={handleSubmitEvidence} disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
