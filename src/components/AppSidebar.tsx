@@ -321,7 +321,7 @@ export function AppSidebar() {
                     <ClipboardList className="h-5 w-5 flex-shrink-0" />
                     {!isCollapsed && (
                       <>
-                        <span className="font-medium text-sm">Profile Assignments</span>
+                        <span className="font-medium text-sm">Career Assignments</span>
                         {careerAssignmentsOpen ? (
                           <ChevronDown className="h-4 w-4 ml-auto" />
                         ) : (
