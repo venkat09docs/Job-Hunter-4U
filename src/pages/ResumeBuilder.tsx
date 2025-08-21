@@ -22,7 +22,7 @@ import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useNavigate } from 'react-router-dom';
 import { useToolChats } from '@/hooks/useToolChats';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink } from 'docx';
 import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 
 interface Experience {
@@ -650,15 +650,49 @@ ${resumeData.personalDetails.fullName}`;
     currentY += 2;
     
     const contactDetails = [];
+    const linkDetails = [];
     if (resumeData.personalDetails.email) contactDetails.push(`Email: ${resumeData.personalDetails.email}`);
     if (resumeData.personalDetails.phone) contactDetails.push(`Phone: ${resumeData.personalDetails.phone}`);
     if (resumeData.personalDetails.location) contactDetails.push(`Location: ${resumeData.personalDetails.location}`);
-    if (resumeData.personalDetails.linkedIn) contactDetails.push(resumeData.personalDetails.linkedIn);
-    if (resumeData.personalDetails.github) contactDetails.push(resumeData.personalDetails.github);
+    
+    // Store URLs separately for linking
+    if (resumeData.personalDetails.linkedIn) {
+      linkDetails.push({
+        text: resumeData.personalDetails.linkedIn,
+        url: resumeData.personalDetails.linkedIn.startsWith('http') 
+          ? resumeData.personalDetails.linkedIn 
+          : `https://${resumeData.personalDetails.linkedIn}`
+      });
+    }
+    if (resumeData.personalDetails.github) {
+      linkDetails.push({
+        text: resumeData.personalDetails.github,
+        url: resumeData.personalDetails.github.startsWith('http') 
+          ? resumeData.personalDetails.github 
+          : `https://${resumeData.personalDetails.github}`
+      });
+    }
     
     contactDetails.forEach(detail => {
       addATSText(detail, 10);
     });
+    
+    // Add clickable links for URLs
+    linkDetails.forEach(link => {
+      if (currentY > 270) {
+        pdf.addPage();
+        currentY = margin;
+      }
+      pdf.setFont('arial', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 238); // Blue color for links
+      pdf.textWithLink(link.text, margin, currentY, { url: link.url });
+      currentY += 10 * 0.4 + 2;
+    });
+    
+    // Reset text color to black for the rest of the document
+    pdf.setTextColor(0, 0, 0);
+    
     currentY += 8;
 
     // Professional Summary (ATS Section)
@@ -818,10 +852,19 @@ ${resumeData.personalDetails.fullName}`;
 
           ...(resumeData.personalDetails.linkedIn ? [new Paragraph({
             children: [
-              new TextRun({
-                text: resumeData.personalDetails.linkedIn,
-                font: "Arial",
-                size: 20,
+              new ExternalHyperlink({
+                children: [
+                  new TextRun({
+                    text: resumeData.personalDetails.linkedIn,
+                    font: "Arial",
+                    size: 20,
+                    color: "0000EE",
+                    underline: {},
+                  }),
+                ],
+                link: resumeData.personalDetails.linkedIn.startsWith('http') 
+                  ? resumeData.personalDetails.linkedIn 
+                  : `https://${resumeData.personalDetails.linkedIn}`,
               }),
             ],
             spacing: { after: 50 },
@@ -829,10 +872,19 @@ ${resumeData.personalDetails.fullName}`;
 
           ...(resumeData.personalDetails.github ? [new Paragraph({
             children: [
-              new TextRun({
-                text: resumeData.personalDetails.github,
-                font: "Arial",
-                size: 20,
+              new ExternalHyperlink({
+                children: [
+                  new TextRun({
+                    text: resumeData.personalDetails.github,
+                    font: "Arial",
+                    size: 20,
+                    color: "0000EE",
+                    underline: {},
+                  }),
+                ],
+                link: resumeData.personalDetails.github.startsWith('http') 
+                  ? resumeData.personalDetails.github 
+                  : `https://${resumeData.personalDetails.github}`,
               }),
             ],
             spacing: { after: 200 },
@@ -1816,8 +1868,30 @@ ${resumeData.personalDetails.fullName}`;
               {resumeData.personalDetails.email && <div>Email: {resumeData.personalDetails.email}</div>}
               {resumeData.personalDetails.phone && <div>Phone: {resumeData.personalDetails.phone}</div>}
               {resumeData.personalDetails.location && <div>Location: {resumeData.personalDetails.location}</div>}
-              {resumeData.personalDetails.linkedIn && <div>{resumeData.personalDetails.linkedIn}</div>}
-              {resumeData.personalDetails.github && <div>{resumeData.personalDetails.github}</div>}
+              {resumeData.personalDetails.linkedIn && (
+                <div>
+                  <a 
+                    href={resumeData.personalDetails.linkedIn.startsWith('http') ? resumeData.personalDetails.linkedIn : `https://${resumeData.personalDetails.linkedIn}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {resumeData.personalDetails.linkedIn}
+                  </a>
+                </div>
+              )}
+              {resumeData.personalDetails.github && (
+                <div>
+                  <a 
+                    href={resumeData.personalDetails.github.startsWith('http') ? resumeData.personalDetails.github : `https://${resumeData.personalDetails.github}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    {resumeData.personalDetails.github}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}
