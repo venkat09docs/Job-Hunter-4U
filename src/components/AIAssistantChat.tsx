@@ -184,7 +184,7 @@ const AIAssistantChat = () => {
   return (
     <>
       <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-xl z-50 flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">AI Assistant</h3>
@@ -205,8 +205,8 @@ const AIAssistantChat = () => {
           </div>
         </CardHeader>
         
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 min-h-0">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
@@ -221,7 +221,7 @@ const AIAssistantChat = () => {
                           : 'bg-muted'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                     <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                       {message.type === 'user' ? (
@@ -250,7 +250,7 @@ const AIAssistantChat = () => {
             </div>
           </ScrollArea>
           
-          <div className="p-4 border-t bg-background">
+          <div className="p-4 border-t bg-background shrink-0">
             <div className="flex gap-2 mb-2">
               <Input
                 placeholder={hasValidSubscription ? "Type your message..." : "Subscription required"}
@@ -259,7 +259,7 @@ const AIAssistantChat = () => {
                 onKeyPress={handleKeyPress}
                 disabled={isLoading || !hasValidSubscription}
                 className="flex-1"
-                autoFocus={!isLoading && hasValidSubscription}
+                autoFocus={hasValidSubscription}
               />
               <Button
                 onClick={sendMessage}
