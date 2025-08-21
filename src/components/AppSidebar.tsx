@@ -89,6 +89,7 @@ const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
+  { title: "Manage Assignments", url: "/admin/manage-assignments", icon: ClipboardList },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
