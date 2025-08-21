@@ -1,5 +1,4 @@
 import { useAuth } from '@/hooks/useAuth';
-import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
@@ -10,17 +9,21 @@ import { ResizableLayout } from '@/components/ResizableLayout';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
 import BadgeProgressionMap from '@/components/BadgeProgressionMap';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import PricingDialog from '@/components/PricingDialog';
+import { Crown, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 const LevelUp = () => {
   const { user } = useAuth();
-  const { isAdmin } = useRole();
-  const { profile, loading } = useProfile();
+  const { profile, loading, hasActiveSubscription } = useProfile();
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -60,8 +63,18 @@ const LevelUp = () => {
     fetchJobData();
   }, [user]);
 
-  // Show coming soon for non-admin users
-  if (!isAdmin) {
+  // Define eligible subscription plans for Level Up
+  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  
+  // Check if user has eligible subscription
+  const hasEligibleSubscription = () => {
+    return hasActiveSubscription() && 
+           profile?.subscription_plan && 
+           eligiblePlans.includes(profile.subscription_plan);
+  };
+
+  // Show upgrade page for users without eligible subscription
+  if (!loading && !hasEligibleSubscription()) {
     return (
       <ResizableLayout>
         <main className="h-full flex flex-col">
@@ -83,18 +96,48 @@ const LevelUp = () => {
             </div>
           </header>
 
-          {/* Coming Soon Content */}
+          {/* Upgrade Required Content */}
           <div className="flex-1 flex items-center justify-center p-4">
-            <div className="text-center space-y-4">
-              <div className="text-6xl">🚀</div>
+            <div className="text-center space-y-6 max-w-2xl">
+              <div className="text-6xl mb-4">🚀</div>
               <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Coming Soon...
+                Upgrade Required
               </h2>
-              <p className="text-muted-foreground text-lg max-w-md">
-                We're working hard to bring you an amazing Level Up experience. Stay tuned!
+              <p className="text-muted-foreground text-lg">
+                The Level Up program is available exclusively for users with our premium subscription plans.
               </p>
+              <p className="text-muted-foreground">
+                Unlock advanced career growth tools, personalized coaching, and exclusive resources.
+              </p>
+              
+              <Button 
+                onClick={() => setUpgradeDialogOpen(true)}
+                className="bg-gradient-primary hover:bg-gradient-primary/90 text-white px-8 py-3 text-lg"
+                size="lg"
+              >
+                <Crown className="h-5 w-5 mr-2" />
+                Upgrade Plan
+              </Button>
             </div>
           </div>
+
+          {/* Upgrade Dialog */}
+          <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
+              <DialogHeader className="pb-4">
+                <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                  Upgrade to Access Level Up
+                </DialogTitle>
+              </DialogHeader>
+              <div className="mb-6">
+                <p className="text-muted-foreground text-center">
+                  Choose from our premium plans to unlock the Level Up program and advanced career growth features:
+                </p>
+              </div>
+              <PricingDialog eligiblePlans={eligiblePlans} />
+            </DialogContent>
+          </Dialog>
         </main>
       </ResizableLayout>
     );
