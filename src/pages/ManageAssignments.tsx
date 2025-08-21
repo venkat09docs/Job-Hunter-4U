@@ -28,6 +28,8 @@ interface Assignment {
   active?: boolean;
   created_at: string;
   updated_at?: string;
+  sub_category_id?: string;
+  display_order?: number;
 }
 
 interface SubCategory {
@@ -64,7 +66,8 @@ export default function ManageAssignments() {
     category: '',
     points_reward: 10,
     difficulty: 'medium',
-    is_active: true
+    is_active: true,
+    display_order: 0
   });
 
   const [subCategoryForm, setSubCategoryForm] = useState({
@@ -103,7 +106,7 @@ export default function ManageAssignments() {
         const { data: profileData, error } = await supabase
           .from('career_task_templates')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('display_order', { ascending: true });
         
         if (error) throw error;
         data = (profileData || []).map(item => ({
@@ -115,13 +118,15 @@ export default function ManageAssignments() {
           difficulty: item.difficulty,
           is_active: item.is_active,
           created_at: item.created_at,
-          updated_at: item.updated_at
+          updated_at: item.updated_at,
+          sub_category_id: item.sub_category_id,
+          display_order: item.display_order
         }));
       } else if (activeCategory === 'linkedin') {
         const { data: linkedinData, error } = await supabase
           .from('linkedin_tasks')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('display_order', { ascending: true });
         
         if (error) throw error;
         data = (linkedinData || []).map(item => ({
@@ -133,13 +138,14 @@ export default function ManageAssignments() {
           difficulty: 'medium',
           is_active: item.active || false,
           created_at: item.created_at || new Date().toISOString(),
-          updated_at: item.created_at || new Date().toISOString()
+          updated_at: item.created_at || new Date().toISOString(),
+          display_order: item.display_order
         }));
       } else if (activeCategory === 'job_hunter') {
         const { data: jobHunterData, error } = await supabase
           .from('job_hunting_task_templates')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('display_order', { ascending: true });
         
         if (error) throw error;
         data = (jobHunterData || []).map(item => ({
@@ -151,13 +157,14 @@ export default function ManageAssignments() {
           difficulty: item.difficulty,
           is_active: item.is_active,
           created_at: item.created_at,
-          updated_at: item.updated_at
+          updated_at: item.updated_at,
+          display_order: item.display_order
         }));
       } else if (activeCategory === 'github') {
         const { data: githubData, error } = await supabase
           .from('github_tasks')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('display_order', { ascending: true });
         
         if (error) throw error;
         data = (githubData || []).map(item => ({
@@ -169,7 +176,8 @@ export default function ManageAssignments() {
           difficulty: 'medium',
           is_active: item.active || false,
           created_at: item.created_at || new Date().toISOString(),
-          updated_at: item.updated_at
+          updated_at: item.updated_at,
+          display_order: item.display_order
         }));
       }
       
@@ -215,6 +223,7 @@ export default function ManageAssignments() {
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               updated_at: new Date().toISOString()
             })
             .eq('id', editingAssignment.id);
@@ -228,7 +237,8 @@ export default function ManageAssignments() {
               description: assignmentForm.description,
               code: assignmentForm.category,
               points_base: assignmentForm.points_reward,
-              active: assignmentForm.is_active
+              active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order
             })
             .eq('id', editingAssignment.id);
           
@@ -243,6 +253,7 @@ export default function ManageAssignments() {
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               updated_at: new Date().toISOString()
             })
             .eq('id', editingAssignment.id);
@@ -257,6 +268,7 @@ export default function ManageAssignments() {
               scope: assignmentForm.category,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               updated_at: new Date().toISOString()
             })
             .eq('id', editingAssignment.id);
@@ -282,6 +294,7 @@ export default function ManageAssignments() {
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               estimated_duration: 30,
               evidence_types: ['url', 'screenshot'],
               instructions: {},
@@ -298,6 +311,7 @@ export default function ManageAssignments() {
               code: assignmentForm.category,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               evidence_types: ['URL_REQUIRED']
             });
           
@@ -312,6 +326,7 @@ export default function ManageAssignments() {
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               estimated_duration: 30,
               evidence_types: ['url', 'screenshot'],
               instructions: {},
@@ -328,6 +343,7 @@ export default function ManageAssignments() {
               scope: assignmentForm.category,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
+              display_order: assignmentForm.display_order,
               code: assignmentForm.title.toLowerCase().replace(/\s+/g, '_'),
               evidence_types: ['URL_REQUIRED']
             });
@@ -393,7 +409,8 @@ export default function ManageAssignments() {
       category: '',
       points_reward: 10,
       difficulty: 'medium',
-      is_active: true
+      is_active: true,
+      display_order: 0
     });
     setEditingAssignment(null);
     setShowAddAssignment(false);
@@ -404,10 +421,11 @@ export default function ManageAssignments() {
     setAssignmentForm({
       title: assignment.title,
       description: assignment.description,
-      category: assignment.category,
+      category: activeCategory === 'profile' ? (assignment.sub_category_id || assignment.category) : assignment.category,
       points_reward: assignment.points_reward || 10,
       difficulty: assignment.difficulty || 'medium',
-      is_active: assignment.is_active
+      is_active: assignment.is_active,
+      display_order: assignment.display_order || 0
     });
     setShowAddAssignment(true);
   };
@@ -743,6 +761,17 @@ export default function ManageAssignments() {
                     value={assignmentForm.points_reward}
                     onChange={(e) => setAssignmentForm({ ...assignmentForm, points_reward: parseInt(e.target.value) })}
                     min="1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="order">Display Order</Label>
+                  <Input
+                    id="order"
+                    type="number"
+                    value={assignmentForm.display_order}
+                    onChange={(e) => setAssignmentForm({ ...assignmentForm, display_order: parseInt(e.target.value) })}
+                    min="0"
                   />
                 </div>
               </div>

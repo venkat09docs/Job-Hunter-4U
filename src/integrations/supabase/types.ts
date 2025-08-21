@@ -409,6 +409,7 @@ export type Database = {
           created_at: string
           description: string
           difficulty: string
+          display_order: number | null
           estimated_duration: number
           evidence_types: string[]
           id: string
@@ -429,6 +430,7 @@ export type Database = {
           created_at?: string
           description: string
           difficulty: string
+          display_order?: number | null
           estimated_duration: number
           evidence_types: string[]
           id?: string
@@ -449,6 +451,7 @@ export type Database = {
           created_at?: string
           description?: string
           difficulty?: string
+          display_order?: number | null
           estimated_duration?: number
           evidence_types?: string[]
           id?: string
@@ -914,6 +917,7 @@ export type Database = {
           code: string
           created_at: string | null
           description: string | null
+          display_order: number | null
           evidence_types: Database["public"]["Enums"]["evidence_type"][]
           id: string
           points_base: number
@@ -928,6 +932,7 @@ export type Database = {
           code: string
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           evidence_types: Database["public"]["Enums"]["evidence_type"][]
           id?: string
           points_base?: number
@@ -942,6 +947,7 @@ export type Database = {
           code?: string
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           evidence_types?: Database["public"]["Enums"]["evidence_type"][]
           id?: string
           points_base?: number
@@ -1400,6 +1406,7 @@ export type Database = {
           created_at: string
           description: string
           difficulty: string
+          display_order: number | null
           estimated_duration: number
           evidence_types: string[]
           id: string
@@ -1417,6 +1424,7 @@ export type Database = {
           created_at?: string
           description: string
           difficulty?: string
+          display_order?: number | null
           estimated_duration?: number
           evidence_types?: string[]
           id?: string
@@ -1434,6 +1442,7 @@ export type Database = {
           created_at?: string
           description?: string
           difficulty?: string
+          display_order?: number | null
           estimated_duration?: number
           evidence_types?: string[]
           id?: string
@@ -2170,6 +2179,7 @@ export type Database = {
           code: string
           created_at: string | null
           description: string | null
+          display_order: number | null
           evidence_types: Database["public"]["Enums"]["evidence_type"][]
           id: string
           points_base: number
@@ -2182,6 +2192,7 @@ export type Database = {
           code: string
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           evidence_types: Database["public"]["Enums"]["evidence_type"][]
           id?: string
           points_base?: number
@@ -2194,6 +2205,7 @@ export type Database = {
           code?: string
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           evidence_types?: Database["public"]["Enums"]["evidence_type"][]
           id?: string
           points_base?: number
