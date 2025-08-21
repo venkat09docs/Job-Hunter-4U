@@ -201,12 +201,17 @@ export default function ManageAssignments() {
       if (editingAssignment) {
         // Update existing assignment
         if (activeCategory === 'profile') {
+          // Find the sub-category to get its name for category field
+          const selectedSubCategory = subCategories.find(sc => sc.id === assignmentForm.category);
+          const categoryValue = selectedSubCategory?.name.toLowerCase().replace(/\s+/g, '_') || 'networking';
+          
           const { error } = await supabase
             .from('career_task_templates')
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              category: assignmentForm.category,
+              category: categoryValue,
+              sub_category_id: assignmentForm.category,
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
@@ -263,12 +268,17 @@ export default function ManageAssignments() {
       } else {
         // Create new assignment
         if (activeCategory === 'profile') {
+          // Find the sub-category to get its name for category field
+          const selectedSubCategory = subCategories.find(sc => sc.id === assignmentForm.category);
+          const categoryValue = selectedSubCategory?.name.toLowerCase().replace(/\s+/g, '_') || 'networking';
+          
           const { error } = await supabase
             .from('career_task_templates')
             .insert({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              category: assignmentForm.category,
+              category: categoryValue,
+              sub_category_id: assignmentForm.category,
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
@@ -712,7 +722,7 @@ export default function ManageAssignments() {
                     </SelectTrigger>
                     <SelectContent>
                       {subCategories.map((subCategory) => (
-                        <SelectItem key={subCategory.id} value={subCategory.name}>
+                        <SelectItem key={subCategory.id} value={subCategory.id}>
                           {subCategory.name}
                         </SelectItem>
                       ))}
