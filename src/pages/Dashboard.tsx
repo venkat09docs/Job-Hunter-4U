@@ -702,52 +702,156 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Analytics Demo Section */}
+            {/* Status Tracker */}
             <Card>
               <CardHeader>
-                <CardTitle>Analytics Demo</CardTitle>
-                <CardDescription>Track your activity with our built-in analytics</CardDescription>
+                <CardTitle className="text-xl font-bold">Status Tracker</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                    <p className="text-2xl font-bold">{profile?.total_resume_opens || 0}</p>
-                    <p className="text-sm text-muted-foreground">Resume Opens</p>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Profile Status */}
+                  <div className="bg-blue-50 rounded-lg p-6 text-center">
+                    <div className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
+                      <div 
+                        className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent"
+                        style={{
+                          transform: `rotate(${(getOverallCareerScore() * 3.6) - 90}deg)`,
+                          clipPath: `circle(50% at 50% 50%)`
+                        }}
+                      ></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg font-bold text-blue-600">{getOverallCareerScore()}%</span>
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-blue-800">Profile Status</h3>
+                    <p className="text-sm text-blue-600">Overall percentage</p>
                   </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <Search className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                    <p className="text-2xl font-bold">{profile?.total_job_searches || 0}</p>
-                    <p className="text-sm text-muted-foreground">Job Searches</p>
+
+                  {/* Job Applications */}
+                  <div className="bg-orange-50 rounded-lg p-6 text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-orange-200 rounded-full flex items-center justify-center">
+                      <span className="text-2xl font-bold text-orange-700">{totalJobApplications}</span>
+                    </div>
+                    <h3 className="font-semibold text-orange-800">Job Applications</h3>
+                    <p className="text-sm text-orange-600">In pipeline</p>
                   </div>
-                  <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <Bot className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                    <p className="text-2xl font-bold">{profile?.total_ai_queries || 0}</p>
-                    <p className="text-sm text-muted-foreground">AI Queries</p>
+
+                  {/* Network Growth */}
+                  <div className="bg-green-50 rounded-lg p-6 text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-green-200 rounded-full flex items-center justify-center">
+                      <span className="text-2xl font-bold text-green-700">
+                        {weeklyChartData.reduce((sum, day) => sum + day.total, 0)}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-green-800">Network Growth</h3>
+                    <p className="text-sm text-green-600">This week activities</p>
                   </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => handleDemoAction('resume_open')} variant="outline" size="sm">
-                    <Eye className="h-4 w-4 mr-2" />
-                    Track Resume View
-                  </Button>
-                  <Button onClick={() => handleDemoAction('job_search')} variant="outline" size="sm">
-                    <Search className="h-4 w-4 mr-2" />
-                    Track Job Search
-                  </Button>
-                  <Button onClick={() => handleDemoAction('ai_query')} variant="outline" size="sm">
-                    <Bot className="h-4 w-4 mr-2" />
-                    Track AI Query
-                  </Button>
+
+                  {/* GitHub Status */}
+                  {isIT() && (
+                    <div className="bg-purple-50 rounded-lg p-6 text-center">
+                      <div className="w-20 h-20 mx-auto mb-4 bg-purple-200 rounded-full flex items-center justify-center">
+                        <span className="text-2xl font-bold text-purple-700">{githubProgress}%</span>
+                      </div>
+                      <h3 className="font-semibold text-purple-800">GitHub Status</h3>
+                      <p className="text-sm text-purple-600">Repository tasks</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Verify Activities */}
-            <div className="flex justify-center">
-              <VerifyActivitiesButton />
-            </div>
+            {/* My Profile Status */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="h-6 w-6 text-primary" />
+                    <div>
+                      <CardTitle className="text-xl font-bold">My Profile Status</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Track your progress across all career development areas
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/dashboard/build-my-profile')}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    Build My Profile
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Resume */}
+                  <div className="text-center">
+                    <div className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
+                      <div 
+                        className="absolute inset-0 rounded-full border-4 border-primary"
+                        style={{
+                          background: `conic-gradient(hsl(var(--primary)) ${resumeProgress * 3.6}deg, transparent 0deg)`
+                        }}
+                      ></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg font-bold text-primary">{resumeProgress}%</span>
+                      </div>
+                    </div>
+                    <h3 className="font-semibold">Resume</h3>
+                    <p className="text-sm text-muted-foreground">Document completed</p>
+                  </div>
+
+                  {/* Cover Letter */}
+                  <div className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                      <span className="text-2xl font-bold text-foreground">{savedCoverLettersCount}</span>
+                    </div>
+                    <h3 className="font-semibold">Cover Letter</h3>
+                    <p className="text-sm text-muted-foreground">Saved in library</p>
+                  </div>
+
+                  {/* LinkedIn Profile */}
+                  <div className="text-center">
+                    <div className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
+                      <div 
+                        className="absolute inset-0 rounded-full border-4 border-primary"
+                        style={{
+                          background: `conic-gradient(hsl(var(--primary)) ${linkedinProgress * 3.6}deg, transparent 0deg)`
+                        }}
+                      ></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-lg font-bold text-primary">{linkedinProgress}%</span>
+                      </div>
+                    </div>
+                    <h3 className="font-semibold">LinkedIn Profile</h3>
+                    <p className="text-sm text-muted-foreground">Profile optimization</p>
+                  </div>
+
+                  {/* GitHub */}
+                  {isIT() && (
+                    <div className="text-center">
+                      <div className="relative w-20 h-20 mx-auto mb-4">
+                        <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
+                        <div 
+                          className="absolute inset-0 rounded-full border-4 border-primary"
+                          style={{
+                            background: `conic-gradient(hsl(var(--primary)) ${githubProgress * 3.6}deg, transparent 0deg)`
+                          }}
+                        ></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">{githubProgress}%</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold">GitHub</h3>
+                      <p className="text-sm text-muted-foreground">Profile setup progress</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
