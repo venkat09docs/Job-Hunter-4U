@@ -454,7 +454,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
               <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                Job Hunter 4U
+                JOB HUNTER 4U
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
@@ -511,79 +511,76 @@ const Dashboard = () => {
             </Card>
 
 
-            {/* Quick Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Resume</p>
-                      <p className="text-lg sm:text-2xl font-bold">{resumeProgress}%</p>
-                    </div>
-                    <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                  </div>
-                  <Progress value={resumeProgress} className="mt-3" />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">LinkedIn</p>
-                      <p className="text-lg sm:text-2xl font-bold">{linkedinProgress}%</p>
-                    </div>
-                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                  </div>
-                  <Progress value={linkedinProgress} className="mt-3" />
-                </CardContent>
-              </Card>
-
-              {isIT() && (
-                <Card>
-                  <CardContent className="p-4 lg:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-muted-foreground">GitHub</p>
-                        <p className="text-lg sm:text-2xl font-bold">{githubProgress}%</p>
+            {/* Status Tracker */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Status Tracker
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+                  <Card>
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">Resume</p>
+                          <p className="text-lg sm:text-2xl font-bold">{resumeProgress}%</p>
+                        </div>
+                        <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                       </div>
-                      <Github className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-                    </div>
-                    <Progress value={githubProgress} className="mt-3" />
-                  </CardContent>
-                </Card>
-              )}
+                      <Progress value={resumeProgress} className="mt-3" />
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardContent className="p-4 lg:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Job Apps</p>
-                      <p className="text-lg sm:text-2xl font-bold">{totalJobApplications}</p>
-                    </div>
-                    <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <Card>
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">LinkedIn</p>
+                          <p className="text-lg sm:text-2xl font-bold">{linkedinProgress}%</p>
+                        </div>
+                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                      </div>
+                      <Progress value={linkedinProgress} className="mt-3" />
+                    </CardContent>
+                  </Card>
+
+                  {isIT() && (
+                    <Card>
+                      <CardContent className="p-4 lg:p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs sm:text-sm font-medium text-muted-foreground">GitHub</p>
+                            <p className="text-lg sm:text-2xl font-bold">{githubProgress}%</p>
+                          </div>
+                          <Github className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                        </div>
+                        <Progress value={githubProgress} className="mt-3" />
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">Job Apps</p>
+                          <p className="text-lg sm:text-2xl font-bold">{totalJobApplications}</p>
+                        </div>
+                        <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Left Column */}
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                {/* Weekly Activity Overview - Moved to be with Profile Activity */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Weekly Activity Overview
-                    </CardTitle>
-                    <CardDescription>Your daily progress this week</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ActivityChart analytics={analytics} />
-                  </CardContent>
-                </Card>
 
                 {/* Recent Job Applications */}
                 <Card>
@@ -702,65 +699,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Status Tracker */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl font-bold">Status Tracker</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Profile Status */}
-                  <div className="bg-blue-50 rounded-lg p-6 text-center">
-                    <div className="relative w-20 h-20 mx-auto mb-4">
-                      <div className="absolute inset-0 rounded-full border-4 border-blue-200"></div>
-                      <div 
-                        className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent"
-                        style={{
-                          transform: `rotate(${(getOverallCareerScore() * 3.6) - 90}deg)`,
-                          clipPath: `circle(50% at 50% 50%)`
-                        }}
-                      ></div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-blue-600">{getOverallCareerScore()}%</span>
-                      </div>
-                    </div>
-                    <h3 className="font-semibold text-blue-800">Profile Status</h3>
-                    <p className="text-sm text-blue-600">Overall percentage</p>
-                  </div>
-
-                  {/* Job Applications */}
-                  <div className="bg-orange-50 rounded-lg p-6 text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-orange-200 rounded-full flex items-center justify-center">
-                      <span className="text-2xl font-bold text-orange-700">{totalJobApplications}</span>
-                    </div>
-                    <h3 className="font-semibold text-orange-800">Job Applications</h3>
-                    <p className="text-sm text-orange-600">In pipeline</p>
-                  </div>
-
-                  {/* Network Growth */}
-                  <div className="bg-green-50 rounded-lg p-6 text-center">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-green-200 rounded-full flex items-center justify-center">
-                      <span className="text-2xl font-bold text-green-700">
-                        {weeklyChartData.reduce((sum, day) => sum + day.total, 0)}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-green-800">Network Growth</h3>
-                    <p className="text-sm text-green-600">This week activities</p>
-                  </div>
-
-                  {/* GitHub Status */}
-                  {isIT() && (
-                    <div className="bg-purple-50 rounded-lg p-6 text-center">
-                      <div className="w-20 h-20 mx-auto mb-4 bg-purple-200 rounded-full flex items-center justify-center">
-                        <span className="text-2xl font-bold text-purple-700">{githubProgress}%</span>
-                      </div>
-                      <h3 className="font-semibold text-purple-800">GitHub Status</h3>
-                      <p className="text-sm text-purple-600">Repository tasks</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
 
             {/* My Profile Status */}
             <Card>
