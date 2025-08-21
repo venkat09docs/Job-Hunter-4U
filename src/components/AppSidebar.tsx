@@ -101,6 +101,8 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
+  console.log('🔍 AppSidebar: Starting render');
+  
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -115,6 +117,8 @@ export function AppSidebar() {
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
   const [githubOpen, setGitHubOpen] = useState(false);
   const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(false);
+
+  console.log('🔍 AppSidebar: All hooks called, continuing render');
 
   const isCollapsed = !isOpen;
 

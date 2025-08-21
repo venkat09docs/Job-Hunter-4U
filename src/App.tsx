@@ -67,10 +67,15 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  console.log('🔍 AppContent: Starting render');
+  
   // Ensure consistent domain usage on app load
   useEffect(() => {
+    console.log('🔍 AppContent: useEffect for domain consistency');
     ensureConsistentDomain();
   }, []);
+
+  console.log('🔍 AppContent: Finished render, returning JSX');
 
   return (
     <>
