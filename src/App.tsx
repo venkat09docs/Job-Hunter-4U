@@ -61,6 +61,7 @@ import CareerAssignments from "./pages/CareerAssignments";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
 import GitHubWeekly from "./pages/GitHubWeekly";
+import VerifyAssignments from "./pages/VerifyAssignments";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -399,6 +400,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <LeaderBoardPoints />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/verify-assignments"
+            element={
+              <ProtectedRoute>
+                <VerifyAssignments />
               </ProtectedRoute>
             } 
           />

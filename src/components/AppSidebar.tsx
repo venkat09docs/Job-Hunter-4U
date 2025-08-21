@@ -81,12 +81,14 @@ const careerAssignmentItems = [
 
 const recruiterItems = [
   { title: "Dashboard", url: "/recruiter", icon: Home },
+  { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
 ];
 
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
+  { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
@@ -292,6 +294,7 @@ export function AppSidebar() {
                   if (item.title === "Leader Board Points" && !isAdmin) return null;
                   if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
                   if ((item.title === "Recruiter Dashboard" || item.title === "Post Job") && !isAdmin) return null;
+                  if (item.title === "Verify Assignments" && !isAdmin && !isRecruiter) return null;
                 
                   return <MenuItem key={item.title} item={item} />;
                 })}
