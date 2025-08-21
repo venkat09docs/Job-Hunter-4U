@@ -313,7 +313,7 @@ export const useCareerAssignments = () => {
       const { error: statusError } = await supabase
         .from('career_task_assignments')
         .update({ 
-          status: 'SUBMITTED',
+          status: 'submitted',
           updated_at: new Date().toISOString()
         })
         .eq('id', assignmentId);
@@ -381,7 +381,7 @@ export const useCareerAssignments = () => {
     const moduleTasks = getTasksByModule(module);
     if (moduleTasks.length === 0) return 0;
     
-    const completedTasks = moduleTasks.filter(t => t.status === 'VERIFIED').length;
+    const completedTasks = moduleTasks.filter(t => t.status === 'verified').length;
     return Math.round((completedTasks / moduleTasks.length) * 100);
   };
 

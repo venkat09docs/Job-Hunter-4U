@@ -69,20 +69,20 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
 
   const getStatusColor = () => {
     switch (assignment.status) {
-      case 'VERIFIED': return 'bg-green-500';
-      case 'PARTIALLY_VERIFIED': return 'bg-yellow-500'; 
-      case 'SUBMITTED': return 'bg-blue-500';
-      case 'STARTED': return 'bg-orange-500';
+      case 'verified': return 'bg-green-500';
+      case 'partially_verified': return 'bg-yellow-500'; 
+      case 'submitted': return 'bg-blue-500';
+      case 'started': return 'bg-orange-500';
       default: return 'bg-gray-400';
     }
   };
 
   const getStatusLabel = () => {
     switch (assignment.status) {
-      case 'VERIFIED': return 'Completed';
-      case 'PARTIALLY_VERIFIED': return 'Partially Verified';
-      case 'SUBMITTED': return 'Under Review';
-      case 'STARTED': return 'Started';
+      case 'verified': return 'Completed';
+      case 'partially_verified': return 'Partially Verified';
+      case 'submitted': return 'Under Review';
+      case 'started': return 'Started';
       case 'assigned': return 'Not Yet Started';
       default: return 'Not Yet Started';
     }
@@ -90,7 +90,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
 
   const handleStartAssignment = () => {
     // Only update status, no modal or other actions
-    onUpdateStatus(assignment.id, 'STARTED');
+    onUpdateStatus(assignment.id, 'started');
   };
 
   const handleSubmitEvidence = () => {
@@ -172,14 +172,14 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
           </div>
         )}
 
-        {assignment.status !== 'VERIFIED' && (
+        {assignment.status !== 'verified' && (
           <>
-            {(assignment.status === 'STARTED' || assignment.status === 'SUBMITTED') && (
+            {(assignment.status === 'started' || assignment.status === 'submitted') && (
               <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
                 <DialogTrigger asChild>
                   <Button className="w-full" onClick={() => setShowEvidenceModal(true)}>
                     <Upload className="w-4 h-4 mr-2" />
-                    {assignment.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
+                    {assignment.status === 'started' ? 'Submit Assignment' : 'Update Assignment'}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
