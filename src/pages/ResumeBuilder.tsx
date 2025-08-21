@@ -819,7 +819,7 @@ ${resumeData.personalDetails.fullName}`;
           ...(resumeData.personalDetails.linkedIn ? [new Paragraph({
             children: [
               new TextRun({
-                text: `LinkedIn: ${resumeData.personalDetails.linkedIn}`,
+                text: resumeData.personalDetails.linkedIn,
                 font: "Arial",
                 size: 20,
               }),
@@ -830,7 +830,7 @@ ${resumeData.personalDetails.fullName}`;
           ...(resumeData.personalDetails.github ? [new Paragraph({
             children: [
               new TextRun({
-                text: `GitHub: ${resumeData.personalDetails.github}`,
+                text: resumeData.personalDetails.github,
                 font: "Arial",
                 size: 20,
               }),
@@ -1124,8 +1124,8 @@ ${resumeData.personalDetails.fullName}`;
     if (resumeData.personalDetails.email) contactDetails.push(`Email: ${resumeData.personalDetails.email}`);
     if (resumeData.personalDetails.phone) contactDetails.push(`Phone: ${resumeData.personalDetails.phone}`);
     if (resumeData.personalDetails.location) contactDetails.push(`Location: ${resumeData.personalDetails.location}`);
-    if (resumeData.personalDetails.linkedIn) contactDetails.push(`LinkedIn: ${resumeData.personalDetails.linkedIn}`);
-    if (resumeData.personalDetails.github) contactDetails.push(`GitHub: ${resumeData.personalDetails.github}`);
+    if (resumeData.personalDetails.linkedIn) contactDetails.push(resumeData.personalDetails.linkedIn);
+    if (resumeData.personalDetails.github) contactDetails.push(resumeData.personalDetails.github);
     
     contactDetails.forEach(detail => {
       addATSText(detail, 10);
