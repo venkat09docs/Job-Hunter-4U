@@ -18,6 +18,25 @@
     <meta name="twitter:title" content="Job Hunter 4U - Smart Job Hunting Platform" />
     <meta name="twitter:description" content="Career automation platform helping students and professionals in India build profiles, apply faster, and land jobs smarter." />
     <meta name="twitter:image" content="/lovable-uploads/0bb06074-8159-44c9-96da-62aa6265a361.png" />
+    
+    <!-- Optimize CSS loading to prevent render-blocking -->
+    <script>
+      // Preload CSS files to prevent render-blocking
+      (function() {
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        links.forEach(function(link) {
+          const preload = document.createElement('link');
+          preload.rel = 'preload';
+          preload.as = 'style';
+          preload.href = link.href;
+          preload.onload = function() {
+            link.media = 'all';
+          };
+          document.head.insertBefore(preload, link);
+          link.media = 'print';
+        });
+      })();
+    </script>
   </head>
 
   <body>
