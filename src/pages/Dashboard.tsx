@@ -14,7 +14,7 @@ import { ResizableLayout } from '@/components/ResizableLayout';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive, FileText } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -40,10 +40,11 @@ interface JobEntry {
 const Dashboard = () => {
   console.log('Dashboard component rendering...');
   
-  // Constants
+  // Constants - MUST be defined before hooks
   const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
+  const WEEKLY_TARGET = 3;
   
-  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL LOGIC OR EARLY RETURNS
+  // ALL HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin } = useRole();
@@ -56,7 +57,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // State hooks
+  // All useState hooks - MUST be called unconditionally
   const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [totalJobApplications, setTotalJobApplications] = useState(0);
@@ -78,77 +79,7 @@ const Dashboard = () => {
   const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
   const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
   
-  console.log('Dashboard: user =', user);
-  console.log('Dashboard: profile =', profile);
-  console.log('Dashboard: loading =', loading);
-  
-  // Check loading states IMMEDIATELY after all hooks are called, before any other logic
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
-            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (loading) {
-    console.log('Dashboard showing loading state');
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 animate-spin mx-auto border-2 border-primary border-t-transparent rounded-full mb-4" />
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!user || !profile) {
-    console.log('Dashboard: No user or profile, redirecting...');
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Please log in to access the dashboard.</p>
-        </div>
-      </div>
-    );
-  }
-  
-  console.log('Dashboard: Rendering main content');
-  
-  // Get the GitHub progress percentage only for IT users
-  const githubProgress = isIT() ? getGitHubProgress() : 0;
-
-  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
-    const key = format(date, 'yyyy-MM-dd');
-    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
-    const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
-    return { label: format(date, 'EEE'), total };
-  });
-
-  const jobStatusData = [
-    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--chart-wishlist))' },
-    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--chart-applied))' },
-    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--chart-interviewing))' },
-    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--chart-negotiating))' },
-    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--chart-accepted))' },
-    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--chart-not-selected))' },
-    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
-    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
-  ];
-
-  useEffect(() => {
-    if (!githubTasks) return;
-    const completed = githubTasks.filter(t => REPO_TASK_IDS.includes(t.task_id) && t.completed).length;
-    setRepoMetrics({ completed, total: REPO_TASK_IDS.length });
-  }, [githubTasks]);
-
+  // All useCallback hooks - MUST be called unconditionally  
   const refreshWeeklyFlow = useCallback(async () => {
     if (!user) return;
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -163,43 +94,6 @@ const Dashboard = () => {
     if (!error) setWeeklyFlowCompleted(data?.length || 0);
   }, [user]);
 
-  useEffect(() => {
-    refreshWeeklyFlow();
-  }, [refreshWeeklyFlow]);
-
-  const WEEKLY_TARGET = 3;
-  const repoCompleted = repoMetrics.completed;
-  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
-  const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
-  const flowCompleted = weeklyFlowCompleted;
-  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: 'Signed out successfully',
-        description: 'You have been logged out of your account.',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error signing out',
-        description: 'There was a problem signing you out.',
-        variant: 'destructive'
-      });
-    }
-  };
-
-
-  const handleDemoAction = async (actionType: 'resume_open' | 'job_search' | 'ai_query') => {
-    await incrementAnalytics(actionType);
-    toast({
-      title: 'Activity recorded',
-      description: `${actionType.replace('_', ' ')} has been logged!`,
-    });
-  };
-
-  // Fetch recent job applications and total count
   const fetchJobData = useCallback(async () => {
     if (!user) return;
     
@@ -222,7 +116,7 @@ const Dashboard = () => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .eq('is_archived', false)
-        .not('status', 'in', '("wishlist","not_selected","no_response","archived")');
+        .not('status', 'in', '(\\\"wishlist\\\",\\\"not_selected\\\",\\\"no_response\\\",\\\"archived\\\")');
 
       if (countError) throw countError;
       setTotalJobApplications(count || 0);
@@ -297,11 +191,6 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    fetchJobData();
-  }, [fetchJobData]);
-
-  // Fetch current week day-wise network activity totals
   const fetchWeeklyDailyBreakdown = useCallback(async () => {
     if (!user) return;
     try {
@@ -332,23 +221,25 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // All useEffect hooks - MUST be called unconditionally
+  useEffect(() => {
+    if (!githubTasks) return;
+    const completed = githubTasks.filter(t => REPO_TASK_IDS.includes(t.task_id) && t.completed).length;
+    setRepoMetrics({ completed, total: REPO_TASK_IDS.length });
+  }, [githubTasks]);
+
+  useEffect(() => {
+    refreshWeeklyFlow();
+  }, [refreshWeeklyFlow]);
+
+  useEffect(() => {
+    fetchJobData();
+  }, [fetchJobData]);
+
   useEffect(() => {
     fetchWeeklyDailyBreakdown();
   }, [fetchWeeklyDailyBreakdown]);
 
-  // Calculate overall career development score based on the three core tasks
-  const getOverallCareerScore = () => {
-    // For IT users, include GitHub progress; for Non-IT users, exclude it
-    const scores = isIT() 
-      ? [resumeProgress, linkedinProgress, getGitHubProgress()]
-      : [resumeProgress, linkedinProgress];
-    
-    return scores.length > 0 
-      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-      : 0;
-  };
-
-  // Listen for real-time updates from Career Growth page and Job Tracker
   useEffect(() => {
     console.log('🔍 Dashboard: Setting up real-time subscriptions');
     if (!user) return;
@@ -364,7 +255,6 @@ const Dashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh all progress data when daily snapshots are updated
           refreshLinkedInProgress();
           refreshGitHubProgress();
         }
@@ -378,7 +268,6 @@ const Dashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh job data when job tracker is updated
           fetchJobData();
         }
       )
@@ -391,7 +280,6 @@ const Dashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh network metrics when LinkedIn network activities are updated
           refreshNetworkMetrics();
           fetchWeeklyDailyBreakdown();
         }
@@ -405,7 +293,6 @@ const Dashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh GitHub daily flow weekly completions when sessions change
           refreshWeeklyFlow();
         }
       )
@@ -418,7 +305,6 @@ const Dashboard = () => {
           filter: `user_id=eq.${user.id}`
         },
         () => {
-          // Refresh GitHub profile setup progress when github_progress updates
           refreshGitHubProgress();
         }
       )
@@ -428,6 +314,114 @@ const Dashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData, refreshWeeklyFlow]);
+
+  // AFTER ALL HOOKS - Now safe to do conditional rendering
+  console.log('Dashboard: user =', user);
+  console.log('Dashboard: profile =', profile);
+  console.log('Dashboard: loading =', loading);
+  
+  // Check loading states IMMEDIATELY after all hooks are called, before any other logic
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4"></div>
+            <div className="h-4 bg-muted rounded w-32 mx-auto"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (loading) {
+    console.log('Dashboard showing loading state');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 animate-spin mx-auto border-2 border-primary border-t-transparent rounded-full mb-4" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!user || !profile) {
+    console.log('Dashboard: No user or profile, redirecting...');
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Please log in to access the dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  console.log('Dashboard: Rendering main content');
+
+  // GitHub Activities tracker metrics
+  const githubProgress = isIT() ? getGitHubProgress() : 0;
+
+  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+    const key = format(date, 'yyyy-MM-dd');
+    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
+    const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
+    return { label: format(date, 'EEE'), total };
+  });
+
+  const jobStatusData = [
+    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--chart-wishlist))' },
+    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--chart-applied))' },
+    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--chart-interviewing))' },
+    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--chart-negotiating))' },
+    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--chart-accepted))' },
+    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--chart-not-selected))' },
+    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
+    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
+  ];
+
+  const repoCompleted = repoMetrics.completed;
+  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
+  const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
+  const flowCompleted = weeklyFlowCompleted;
+  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been logged out of your account.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error signing out',
+        description: 'There was a problem signing you out.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDemoAction = async (actionType: 'resume_open' | 'job_search' | 'ai_query') => {
+    await incrementAnalytics(actionType);
+    toast({
+      title: 'Activity recorded',
+      description: `${actionType.replace('_', ' ')} has been logged!`,
+    });
+  };
+
+  // Calculate overall career development score based on the three core tasks
+  const getOverallCareerScore = () => {
+    // For IT users, include GitHub progress; for Non-IT users, exclude it
+    const scores = isIT() 
+      ? [resumeProgress, linkedinProgress, getGitHubProgress()]
+      : [resumeProgress, linkedinProgress];
+    
+    return scores.length > 0 
+      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+      : 0;
+  };
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
@@ -453,6 +447,7 @@ const Dashboard = () => {
 
   return (
     <ResizableLayout>
+      
       <main className="h-full flex flex-col min-w-0">
         {/* Header */}
         <header className="border-b bg-background/80 backdrop-blur-sm flex-shrink-0">
@@ -462,619 +457,299 @@ const Dashboard = () => {
                 Job Hunter 4U
               </h1>
             </div>
-            
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0">
-              <SubscriptionStatus />
+            <div className="flex items-center gap-2 sm:gap-3">
               <UserProfileDropdown />
             </div>
           </div>
         </header>
 
-          {/* Main Content */}
-          <div className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto min-h-0">
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-3 sm:p-4 lg:p-6 space-y-4 lg:space-y-6">
             {/* Welcome Section */}
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold mb-2">
-                Welcome back, {profile?.username || profile?.full_name || user?.email?.split('@')[0] || 'User'}!
-              </h2>
-              <p className="text-muted-foreground">
-                Here's your personalized dashboard. Track your progress and manage your job search.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1">
+                  Welcome back, {profile?.username || user?.email?.split('@')[0] || 'User'}!
+                </h2>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Let's continue building your professional presence
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="gap-1 text-sm px-3 py-1">
+                  <Trophy className="h-4 w-4" />
+                  Career Score: {getOverallCareerScore()}%
+                </Badge>
+              </div>
             </div>
 
-            {/* Activity Verification (Admin Only) */}
-            <div className="mb-8">
-              <VerifyActivitiesButton />
-            </div>
+            {/* Subscription Status */}
+            <SubscriptionStatus />
 
-
-            {/* Badge Leaders Slider */}
-            <div className="mb-8">
-              <BadgeLeadersSlider />
-            </div>
-
-            {/* Leader Board */}
-            <div className="mb-8">
-              {isInstituteAdmin && !isAdmin ? (
-                <InstituteLeaderBoard />
-              ) : (
-                <LeaderBoard />
-              )}
-            </div>
-
-            {/* Overall Career Development Score */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch min-h-[200px]">
-                    {/* Profile Picture Section - Full width on mobile, 1/3rd on desktop */}
-                    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-4 sm:p-6">
-                      <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
-                        <AvatarImage src={profile?.profile_image_url} alt={profile?.full_name || profile?.username || 'User'} />
-                        <AvatarFallback className="text-2xl sm:text-3xl">
-                          {(profile?.full_name || profile?.username || 'U').charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="text-center mt-4">
-                        <p className="font-semibold text-base sm:text-lg">{profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'User'}</p>
-                        <p className="text-sm text-muted-foreground">Career Professional</p>
-                      </div>
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+              <Card>
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Resume</p>
+                      <p className="text-lg sm:text-2xl font-bold">{resumeProgress}%</p>
                     </div>
-                    
-                    {/* Right Side - Header + 4 Boards - Full width on mobile, 2/3rd on desktop */}
-                    <div className="lg:col-span-2 flex flex-col justify-center space-y-4 sm:space-y-6">
-                      {/* Header Section */}
-                      <div className="text-center lg:text-left">
-                        <h3 className="text-xl sm:text-2xl font-bold mb-2">Status Tracker</h3>
-                      </div>
-                      
-                      {/* 4 Boards Section */}
-                      <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                        {/* Profile Status */}
-                        <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-900 dark:hover:to-blue-800 cursor-pointer transition-all duration-300"
-                          onClick={() => navigate('/dashboard/build-my-profile')}
-                        >
-                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                            <svg className="w-12 h-12 sm:w-16 sm:h-16 transform -rotate-90" viewBox="0 0 100 100">
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                stroke="hsl(var(--muted))"
-                                strokeWidth="8"
-                                fill="none"
-                              />
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                stroke="hsl(var(--primary))"
-                                strokeWidth="8"
-                                fill="none"
-                                strokeDasharray={`${getOverallCareerScore() * 2.827} ${(100 - getOverallCareerScore()) * 2.827}`}
-                                className="transition-all duration-500"
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-xs sm:text-sm font-bold text-blue-700 dark:text-blue-300">{getOverallCareerScore()}%</span>
-                            </div>
-                          </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-blue-700 dark:text-blue-300">Profile Status</h4>
-                          <p className="text-xs text-blue-600 dark:text-blue-400 text-center hidden sm:block">Overall percentage</p>
-                        </div>
-
-                        {/* Job Application Status */}
-                        <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-900 dark:hover:to-orange-800 cursor-pointer transition-all duration-300"
-                          onClick={() => navigate('/dashboard/job-tracker')}
-                        >
-                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-orange-200/50 dark:bg-orange-800/50 flex items-center justify-center">
-                                <span className="text-base sm:text-lg font-bold text-orange-700 dark:text-orange-300">
-                                  {totalJobApplications}
-                                </span>
-                             </div>
-                          </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-orange-700 dark:text-orange-300">Job Applications</h4>
-                          <p className="text-xs text-orange-600 dark:text-orange-400 text-center hidden sm:block">In pipeline</p>
-                        </div>
-
-                        {/* Network Growth */}
-                        <div 
-                          className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 hover:from-green-100 hover:to-green-200 dark:hover:from-green-900 dark:hover:to-green-800 cursor-pointer transition-all duration-300"
-                          onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}
-                        >
-                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-200/50 dark:bg-green-800/50 flex items-center justify-center">
-                               <span className="text-base sm:text-lg font-bold text-green-700 dark:text-green-300">{networkMetrics.weeklyProgress || 0}</span>
-                             </div>
-                          </div>
-                          <h4 className="font-medium text-center text-xs sm:text-sm text-green-700 dark:text-green-300">Network Growth</h4>
-                          <p className="text-xs text-green-600 dark:text-green-400 text-center hidden sm:block">This week activities</p>
-                        </div>
-
-                        {/* GitHub Activities - Only for IT users */}
-                        {isIT() && (
-                          <div 
-                            className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-900 dark:hover:to-purple-800 cursor-pointer transition-all duration-300"
-                            onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
-                          >
-                            <div className="relative w-12 h-12 sm:w-16 sm:h-16 mb-2">
-                               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-purple-200/50 dark:bg-purple-800/50 flex items-center justify-center">
-                                 <span className="text-base sm:text-lg font-bold text-purple-700 dark:text-purple-300">{repoPercent}%</span>
-                               </div>
-                            </div>
-                            <h4 className="font-medium text-center text-xs sm:text-sm text-purple-700 dark:text-purple-300">GitHub Status</h4>
-                            <p className="text-xs text-purple-600 dark:text-purple-400 text-center hidden sm:block">Repository tasks</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                   </div>
+                  <Progress value={resumeProgress} className="mt-3" />
                 </CardContent>
               </Card>
-            </div>
 
-            {/* My Profile Status */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Target className="h-5 w-5 text-primary" />
-                      My Profile Status
-                    </CardTitle>
-                    <CardDescription>
-                      Track your progress across all career development areas
-                    </CardDescription>
+              <Card>
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">LinkedIn</p>
+                      <p className="text-lg sm:text-2xl font-bold">{linkedinProgress}%</p>
+                    </div>
+                    <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                   </div>
-                  <Button 
-                    onClick={() => navigate('/dashboard/build-my-profile')}
-                    className="bg-gradient-primary hover:bg-gradient-primary/90"
-                  >
-                    Build My Profile
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {/* Resume Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/resume-builder')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${resumeProgress * 2.827} ${(100 - resumeProgress) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{resumeProgress}%</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">Resume</h4>
-                      <p className="text-sm text-muted-foreground text-center">Document completed</p>
-                    </div>
-
-                    {/* Cover Letter Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/resume-builder', { state: { activeTab: 'cover-letter' } })}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-primary">{savedCoverLettersCount}</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">Cover Letter</h4>
-                      <p className="text-sm text-muted-foreground text-center">Saved in library</p>
-                    </div>
-
-                    {/* LinkedIn Profile Status */}
-                    <div 
-                      className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => navigate('/dashboard/linkedin-optimization')}
-                    >
-                      <div className="relative w-20 h-20 mb-4">
-                        <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--muted))"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${linkedinProgress * 2.827} ${(100 - linkedinProgress) * 2.827}`}
-                            className="transition-all duration-500"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{linkedinProgress}%</span>
-                        </div>
-                      </div>
-                      <h4 className="font-medium text-center">LinkedIn Profile</h4>
-                      <p className="text-sm text-muted-foreground text-center">Profile optimization</p>
-                    </div>
-
-                    {/* GitHub Status - Only for IT users */}
-                    {isIT() && (
-                      <div 
-                        className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
-                        onClick={() => navigate('/dashboard/github-optimization')}
-                      >
-                        <div className="relative w-20 h-20 mb-4">
-                          <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-                            <circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              stroke="hsl(var(--border))"
-                              strokeWidth="8"
-                              fill="none"
-                            />
-                            <circle
-                              cx="50"
-                              cy="50"
-                              r="45"
-                              stroke="hsl(var(--primary))"
-                              strokeWidth="8"
-                              fill="none"
-                              strokeDasharray={`${githubProgress * 2.827} ${(100 - githubProgress) * 2.827}`}
-                              className="transition-all duration-500"
-                            />
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-lg font-bold text-primary">{githubProgress}%</span>
-                          </div>
-                        </div>
-                        <h4 className="font-medium text-center">GitHub</h4>
-                        <p className="text-sm text-muted-foreground text-center">Profile setup progress</p>
-                      </div>
-                    )}
-
-                  </div>
+                  <Progress value={linkedinProgress} className="mt-3" />
                 </CardContent>
               </Card>
-            </div>
 
-            {/* My Network Growth */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    My Network Growth Tracker
-                  </CardTitle>
-                  <CardDescription>
-                    Track your LinkedIn networking activities and overall growth
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {networkGrowthLoading ? (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      {[...Array(5)].map((_, index) => (
-                        <div key={index} className="text-center p-4 rounded-lg border bg-card animate-pulse">
-                          <div className="h-8 bg-muted rounded mb-2"></div>
-                          <div className="h-4 bg-muted rounded"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalConnections}</div>
-                          <div className="text-sm text-muted-foreground">Total Connections</div>
-                        </div>
-                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalLikes}</div>
-                          <div className="text-sm text-muted-foreground">Posts Liked</div>
-                        </div>
-                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalComments}</div>
-                          <div className="text-sm text-muted-foreground">Comments Made</div>
-                        </div>
-                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                          <div className="text-2xl font-bold text-primary">{networkMetrics.totalPosts}</div>
-                          <div className="text-sm text-muted-foreground">Posts Created</div>
-                        </div>
-                        <div className="text-center p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                             onClick={() => navigate('/dashboard/career-growth-activities?tab=networking')}>
-                          <div className="text-2xl font-bold text-primary">{networkMetrics.weeklyProgress}</div>
-                          <div className="text-sm text-muted-foreground">Weekly Activity</div>
-                        </div>
-                      </div>
-
+              {isIT() && (
+                <Card>
+                  <CardContent className="p-4 lg:p-6">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-medium mb-2">Day-wise Total Activities</div>
-                        <div style={{ width: '100%', height: 300 }}>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={weeklyChartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                              <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" />
-                              <YAxis stroke="hsl(var(--muted-foreground))" />
-                              <Tooltip />
-                              <Bar dataKey="total" name="Total Activities" fill="hsl(var(--primary))" radius={[4,4,0,0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <p className="text-xs sm:text-sm font-medium text-muted-foreground">GitHub</p>
+                        <p className="text-lg sm:text-2xl font-bold">{githubProgress}%</p>
                       </div>
+                      <Github className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
                     </div>
-                  )}
+                    <Progress value={githubProgress} className="mt-3" />
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card>
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">Job Apps</p>
+                      <p className="text-lg sm:text-2xl font-bold">{totalJobApplications}</p>
+                    </div>
+                    <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* GitHub Activities Tracker - Hidden for Non-IT users */}
-            {isIT() && (
-              <div className="mb-8">
-                <Card className="shadow-elegant border-primary/20">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+              {/* Left Column */}
+              <div className="xl:col-span-2 space-y-4 lg:space-y-6">
+                {/* Activity Chart */}
+                <Card>
                   <CardHeader>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Github className="h-5 w-5 text-primary" />
-                      GitHub Activities Tracker
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Weekly Activity Overview
                     </CardTitle>
-                    <CardDescription>
-                      Combined status from GitHub Activity Tracker and Activity & Engagement
-                    </CardDescription>
+                    <CardDescription>Your daily progress this week</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div>
-                        <div className="text-sm font-medium mb-2">Repository Setup Progress</div>
-                        <div className="w-full" style={{ height: 300 }}>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart
-                              data={[
-                                { name: 'Repo Completed', value: repoCompleted, color: 'hsl(var(--chart-accepted))' },
-                                { name: 'Repo Pending', value: repoPending, color: 'hsl(var(--chart-not-selected))' },
-                              ]}
-                              margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                              <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                              <Tooltip />
-                              <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
-                                {[
-                                  { name: 'Repo Completed', color: 'hsl(var(--chart-accepted))' },
-                                  { name: 'Repo Pending', color: 'hsl(var(--chart-not-selected))' },
-                                ].map((entry, index) => (
-                                  <Cell
-                                    key={`repo-cell-${index}`}
-                                    fill={entry.color}
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=repo')}
-                                  />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
+                    <ActivityChart analytics={analytics} />
+                  </CardContent>
+                </Card>
 
-                      <div>
-                        <div className="text-sm font-medium mb-2">Weekly Flow (Mon–Sun)</div>
-                        <div className="w-full" style={{ height: 300 }}>
-                          <ResponsiveContainer width="100%" height={300}>
-                            <BarChart
-                              data={[
-                                { name: 'Flow Completed', value: flowCompleted, color: 'hsl(var(--chart-applied))' },
-                                { name: 'Flow Remaining', value: flowRemaining, color: 'hsl(var(--chart-no-response))' },
-                              ]}
-                              margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
-                            >
-                              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                              <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                              <Tooltip />
-                              <Bar dataKey="value" name="Count" radius={[4,4,0,0]}>
-                                {[
-                                  { name: 'Flow Completed', color: 'hsl(var(--chart-applied))' },
-                                  { name: 'Flow Remaining', color: 'hsl(var(--chart-no-response))' },
-                                ].map((entry, index) => (
-                                  <Cell
-                                    key={`flow-cell-${index}`}
-                                    fill={entry.color}
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => navigate('/dashboard/career-growth-activities?tab=skill&gitTab=engagement')}
-                                  />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
+                {/* Recent Job Applications */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Briefcase className="h-5 w-5" />
+                        Recent Job Applications
+                      </CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate('/dashboard/job-tracker')}
+                      >
+                        View All
+                      </Button>
                     </div>
+                  </CardHeader>
+                  <CardContent>
+                    {jobsLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-muted rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : recentJobs.length > 0 ? (
+                      <div className="space-y-3">
+                        {recentJobs.map((job) => (
+                          <div
+                            key={job.id}
+                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                            onClick={() => handleJobClick(job.id)}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{job.job_title}</p>
+                              <p className="text-sm text-muted-foreground truncate">{job.company_name}</p>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <Badge variant={getStatusBadgeVariant(job.status)}>
+                                {job.status}
+                              </Badge>
+                              <p className="text-xs text-muted-foreground hidden sm:block">
+                                {formatDistanceToNow(new Date(job.created_at))} ago
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                        <p className="text-muted-foreground">No job applications yet</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                          onClick={() => navigate('/dashboard/job-search')}
+                        >
+                          Start Job Search
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
-            )}
 
-            {/* Job Application Status */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-primary" />
-                    Job Application Status
-                  </CardTitle>
-                  <CardDescription>
-                    Track your job applications across different pipeline stages
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {jobsLoading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {[...Array(5)].map((_, index) => (
-                        <div key={index} className="text-center p-4 rounded-lg border bg-card animate-pulse">
-                          <div className="h-8 bg-muted rounded mb-2"></div>
-                          <div className="h-4 bg-muted rounded"></div>
+              {/* Right Column */}
+              <div className="space-y-4 lg:space-y-6">
+                {/* GitHub Activities Card */}
+                {isIT() && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Github className="h-5 w-5" />
+                        GitHub Activities
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">Profile Setup</span>
+                          <span className="text-sm text-muted-foreground">{repoCompleted}/{repoMetrics.total}</span>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="w-full" style={{ height: 320 }}>
-                      <ResponsiveContainer width="100%" height={320}>
-                        <BarChart data={jobStatusData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" interval={0} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickMargin={8} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="value" name="Applications" radius={[4,4,0,0]}>
-                            {jobStatusData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard/job-tracker')} />
-                            ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Job Application Statistics */}
-            <div className="mb-8">
-              <Card className="shadow-elegant border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    Job Application Statistics
-                  </CardTitle>
-                  <CardDescription>
-                    View your job search activity and results
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                         onClick={() => navigate('/dashboard/find-your-next-role')}>
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <Search className="h-8 w-8 text-primary" />
-                      </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-primary mb-2">
-                          {profile?.total_job_searches || 0}
-                        </div>
-                        <h4 className="font-medium">No of Job Searches</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Total "Find Your Next Role" clicks
+                        <Progress value={repoPercent} className="h-2" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {repoPending} tasks remaining
                         </p>
                       </div>
-                    </div>
-                    
-                    <div className="flex flex-col items-center p-6 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                         onClick={() => navigate('/dashboard/job-search')}>
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <Briefcase className="h-8 w-8 text-primary" />
-                      </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-primary mb-2">
-                          {totalJobResultsCount}
+
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">Weekly Flow</span>
+                          <span className="text-sm text-muted-foreground">{flowCompleted}/{WEEKLY_TARGET}</span>
                         </div>
-                        <h4 className="font-medium">No of Jobs in History</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Total jobs found in search history
+                        <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="h-2" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {flowRemaining > 0 ? `${flowRemaining} sessions remaining` : 'Weekly target met! 🎉'}
                         </p>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => navigate('/dashboard/github-activity-tracker')}
+                      >
+                        View GitHub Tracker
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Leaderboard */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Leaderboard
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />}
+                  </CardContent>
+                </Card>
+
+                {/* Badge Leaders */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Badge Leaders
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <BadgeLeadersSlider />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-
-            {/* Recent Applications */}
-            <Card className="shadow-elegant">
+            {/* Analytics Demo Section */}
+            <Card>
               <CardHeader>
-                <CardTitle>Recent Applications</CardTitle>
-                <CardDescription>
-                  Your latest job application submissions
-                </CardDescription>
+                <CardTitle>Analytics Demo</CardTitle>
+                <CardDescription>Track your activity with our built-in analytics</CardDescription>
               </CardHeader>
               <CardContent>
-                {jobsLoading ? (
-                  <div className="space-y-4">
-                    {[...Array(3)].map((_, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
-                        <div className="space-y-2">
-                          <div className="h-4 bg-muted rounded w-48"></div>
-                          <div className="h-3 bg-muted rounded w-32"></div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="h-6 bg-muted rounded w-16"></div>
-                          <div className="h-3 bg-muted rounded w-20"></div>
-                        </div>
-                      </div>
-                    ))}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <Eye className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                    <p className="text-2xl font-bold">{profile?.total_resume_opens || 0}</p>
+                    <p className="text-sm text-muted-foreground">Resume Opens</p>
                   </div>
-                ) : recentJobs.length > 0 ? (
-                  <div className="space-y-4">
-                    {recentJobs.map((job) => (
-                      <div 
-                        key={job.id} 
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                        onClick={() => handleJobClick(job.id)}
-                      >
-                        <div>
-                          <h4 className="font-medium">{job.job_title}</h4>
-                          <p className="text-sm text-muted-foreground">{job.company_name}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Badge variant={getStatusBadgeVariant(job.status)}>
-                            {job.status}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <Search className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                    <p className="text-2xl font-bold">{profile?.total_job_searches || 0}</p>
+                    <p className="text-sm text-muted-foreground">Job Searches</p>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No job applications yet.</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-4"
-                      onClick={() => navigate('/dashboard/job-tracker')}
-                    >
-                      Start tracking your applications
-                    </Button>
+                  <div className="text-center p-4 bg-muted/50 rounded-lg">
+                    <Bot className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                    <p className="text-2xl font-bold">{profile?.total_ai_queries || 0}</p>
+                    <p className="text-sm text-muted-foreground">AI Queries</p>
                   </div>
-                )}
-               </CardContent>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={() => handleDemoAction('resume_open')} variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Track Resume View
+                  </Button>
+                  <Button onClick={() => handleDemoAction('job_search')} variant="outline" size="sm">
+                    <Search className="h-4 w-4 mr-2" />
+                    Track Job Search
+                  </Button>
+                  <Button onClick={() => handleDemoAction('ai_query')} variant="outline" size="sm">
+                    <Bot className="h-4 w-4 mr-2" />
+                    Track AI Query
+                  </Button>
+                </div>
+              </CardContent>
             </Card>
+
+            {/* Verify Activities */}
+            <div className="flex justify-center">
+              <VerifyActivitiesButton />
+            </div>
+          </div>
         </div>
       </main>
     </ResizableLayout>
