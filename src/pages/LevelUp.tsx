@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
-import { useResumeProgress } from '@/hooks/useResumeProgress';
+import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
@@ -21,11 +21,14 @@ const LevelUp = () => {
   const { user } = useAuth();
   const { isAdmin } = useRole();
   const { profile, loading, hasActiveSubscription } = useProfile();
-  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
+  const { getModuleProgress, loading: careerLoading } = useCareerAssignments();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  
+  // Get resume progress from career assignments (task-based calculation)
+  const resumeProgress = getModuleProgress('RESUME');
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -150,7 +153,7 @@ const LevelUp = () => {
     );
   }
 
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+  if (loading || careerLoading || linkedinLoading || networkLoading || githubLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
