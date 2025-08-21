@@ -28,7 +28,7 @@ const LevelUp = () => {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   
   // Get resume progress from career assignments (task-based calculation)
-  const resumeProgress = getModuleProgress('RESUME');
+  const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
