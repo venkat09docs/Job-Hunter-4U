@@ -114,14 +114,36 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             <Clock className="w-4 h-4 text-blue-500" />
             <span>{task.estimated_duration} min</span>
           </div>
+          <Badge variant="secondary">{task.difficulty}</Badge>
         </div>
+
+        {/* Instructions Section */}
+        {task.instructions && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Instructions:</Label>
+            <div className="bg-muted/50 p-3 rounded-md text-sm">
+              {task.instructions.steps && (
+                <ul className="list-disc list-inside space-y-1">
+                  {task.instructions.steps.map((step: string, index: number) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ul>
+              )}
+              {task.instructions.ai_tool && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
+                  <strong>🤖 AI Tool Required:</strong> {task.instructions.ai_tool}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {assignment.status !== 'VERIFIED' && (
           <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
             <DialogTrigger asChild>
               <Button className="w-full">
                 <Upload className="w-4 h-4 mr-2" />
-                Submit Evidence
+                Start Assignment
               </Button>
             </DialogTrigger>
             <DialogContent>
