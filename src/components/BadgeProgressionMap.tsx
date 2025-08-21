@@ -103,7 +103,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateProfileProgress('bronze'),
           criteria: 'Create your first profile',
           nextAction: 'Build Profile',
-          link: '/dashboard/build-my-profile'
+          link: '/dashboard/career-assignments'
         },
         {
           id: 'profile-silver',
@@ -113,7 +113,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateProfileProgress('silver'),
           criteria: 'Complete 50% of profile sections',
           nextAction: 'Complete Profile',
-          link: '/dashboard/build-my-profile'
+          link: '/dashboard/career-assignments'
         },
         {
           id: 'profile-gold',
@@ -123,7 +123,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateProfileProgress('gold'),
           criteria: 'Achieve 80%+ profile completion',
           nextAction: 'Perfect Profile',
-          link: '/dashboard/build-my-profile'
+          link: '/dashboard/career-assignments'
         }
       ]
     },
