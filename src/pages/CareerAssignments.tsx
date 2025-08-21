@@ -263,7 +263,7 @@ const CareerAssignments = () => {
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vaXJyeXZhanp5cmlhZ3FpaGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzE1MzgsImV4cCI6MjA2OTE0NzUzOH0.fyoyxE5pv42Vemp3iA1HmGkzJIA3SAtByXyf5FmYxOw`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ user_id: user?.id })
+        body: JSON.stringify({ userId: user?.id })
       });
 
       if (!response.ok) throw new Error('Failed to initialize tasks');
