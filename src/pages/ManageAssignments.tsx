@@ -41,6 +41,7 @@ interface SubCategory {
 
 const MAIN_CATEGORIES = [
   { id: 'profile', name: 'Profile Assignments' },
+  { id: 'linkedin', name: 'LinkedIn Growth Assignments' },
   { id: 'job_hunter', name: 'Job Hunter Assignments' },
   { id: 'github', name: 'GitHub Weekly' }
 ];
@@ -116,6 +117,24 @@ export default function ManageAssignments() {
           created_at: item.created_at,
           updated_at: item.updated_at
         }));
+      } else if (activeCategory === 'linkedin') {
+        const { data: linkedinData, error } = await supabase
+          .from('linkedin_tasks')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        data = (linkedinData || []).map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description || '',
+          category: item.code || 'general',
+          points_reward: item.points_base,
+          difficulty: 'medium',
+          is_active: item.active || false,
+          created_at: item.created_at || new Date().toISOString(),
+          updated_at: item.created_at || new Date().toISOString()
+        }));
       } else if (activeCategory === 'job_hunter') {
         const { data: jobHunterData, error } = await supabase
           .from('job_hunting_task_templates')
@@ -181,6 +200,22 @@ export default function ManageAssignments() {
       },
       {
         id: '3',
+        name: 'Network Building',
+        description: 'Tasks related to growing LinkedIn network',
+        parent_category: 'linkedin',
+        is_active: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: '4',
+        name: 'Content Creation',
+        description: 'Tasks related to creating LinkedIn content',
+        parent_category: 'linkedin',
+        is_active: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: '5',
         name: 'Job Applications',
         description: 'Tasks related to job applications',
         parent_category: 'job_hunter',
@@ -188,7 +223,7 @@ export default function ManageAssignments() {
         created_at: new Date().toISOString()
       },
       {
-        id: '4',
+        id: '6',
         name: 'Code Quality',
         description: 'Tasks related to improving code quality',
         parent_category: 'github',
@@ -215,6 +250,19 @@ export default function ManageAssignments() {
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
               updated_at: new Date().toISOString()
+            })
+            .eq('id', editingAssignment.id);
+          
+          if (error) throw error;
+        } else if (activeCategory === 'linkedin') {
+          const { error } = await supabase
+            .from('linkedin_tasks')
+            .update({
+              title: assignmentForm.title,
+              description: assignmentForm.description,
+              code: assignmentForm.category,
+              points_base: assignmentForm.points_reward,
+              active: assignmentForm.is_active
             })
             .eq('id', editingAssignment.id);
           
@@ -270,6 +318,19 @@ export default function ManageAssignments() {
             });
           
           if (error) throw error;
+        } else if (activeCategory === 'linkedin') {
+          const { error } = await supabase
+            .from('linkedin_tasks')
+            .insert({
+              title: assignmentForm.title,
+              description: assignmentForm.description,
+              code: assignmentForm.category,
+              points_base: assignmentForm.points_reward,
+              active: assignmentForm.is_active,
+              evidence_types: ['URL_REQUIRED']
+            });
+          
+          if (error) throw error;
         } else if (activeCategory === 'job_hunter') {
           const { error } = await supabase
             .from('job_hunting_task_templates')
@@ -319,6 +380,13 @@ export default function ManageAssignments() {
       if (activeCategory === 'profile') {
         const { error } = await supabase
           .from('career_task_templates')
+          .delete()
+          .eq('id', assignmentId);
+        
+        if (error) throw error;
+      } else if (activeCategory === 'linkedin') {
+        const { error } = await supabase
+          .from('linkedin_tasks')
           .delete()
           .eq('id', assignmentId);
         
@@ -419,7 +487,7 @@ export default function ManageAssignments() {
 
         <div className="container mx-auto p-6">
           <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               {MAIN_CATEGORIES.map((category) => (
                 <TabsTrigger key={category.id} value={category.id}>
                   {category.name}
