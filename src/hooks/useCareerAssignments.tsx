@@ -247,6 +247,24 @@ export const useCareerAssignments = () => {
     }
   };
 
+  const updateAssignmentStatus = async (assignmentId: string, newStatus: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('career_task_assignments')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+
+      await fetchAssignments();
+    } catch (error) {
+      console.error('Error updating assignment status:', error);
+      toast.error('Failed to update assignment status');
+    }
+  };
+
   const submitEvidence = async (
     assignmentId: string,
     evidenceType: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT',
@@ -291,14 +309,16 @@ export const useCareerAssignments = () => {
 
       if (error) throw error;
 
-      // Update assignment status
-      await supabase
+      // Update assignment status to submitted
+      const { error: statusError } = await supabase
         .from('career_task_assignments')
-        .update({
+        .update({ 
           status: 'SUBMITTED',
           updated_at: new Date().toISOString()
         })
         .eq('id', assignmentId);
+
+      if (statusError) throw statusError;
 
       await Promise.all([fetchAssignments(), fetchEvidence()]);
       toast.success('Evidence submitted successfully!');
@@ -382,6 +402,7 @@ export const useCareerAssignments = () => {
     submittingEvidence,
     initializeUserWeek,
     submitEvidence,
+    updateAssignmentStatus,
     verifyAssignments,
     getTasksByModule,
     getModuleProgress,

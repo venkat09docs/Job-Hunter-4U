@@ -248,6 +248,7 @@ const CareerActivitiesNew = () => {
                     assignment={assignment}
                     evidence={assignment.evidence || []}
                     onSubmitEvidence={() => {}}
+                    onUpdateStatus={() => {}}
                     isSubmitting={false}
                   />
                 ))}

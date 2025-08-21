@@ -42,6 +42,7 @@ const CareerAssignments = () => {
     submittingEvidence,
     initializeUserWeek,
     submitEvidence,
+    updateAssignmentStatus,
     verifyAssignments,
     getTasksByModule,
     getModuleProgress,
@@ -217,6 +218,7 @@ const CareerAssignments = () => {
                         }}
                         evidence={evidence.filter(e => e.assignment_id === assignment.id)}
                         onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                        onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
                         isSubmitting={submittingEvidence}
                       />
                       ))}
@@ -253,6 +255,7 @@ const CareerAssignments = () => {
                           assignment={assignment}
                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
                           onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                          onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
                           isSubmitting={submittingEvidence}
                         />
                       ))}
@@ -289,6 +292,7 @@ const CareerAssignments = () => {
                           assignment={assignment}
                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
                           onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                          onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
                           isSubmitting={submittingEvidence}
                         />
                       ))}
@@ -319,15 +323,16 @@ const CareerAssignments = () => {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="space-y-4 pt-4">
-                      {githubTasks.map(assignment => (
-                        <CareerTaskCard
-                          key={assignment.id}
-                          assignment={assignment}
-                          evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                          onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                          isSubmitting={submittingEvidence}
-                        />
-                      ))}
+                       {githubTasks.map(assignment => (
+                         <CareerTaskCard
+                           key={assignment.id}
+                           assignment={assignment}
+                           evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                           onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                           onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
+                           isSubmitting={submittingEvidence}
+                         />
+                       ))}
                       {githubTasks.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground">
                           <Github className="w-12 h-12 mx-auto mb-3 opacity-50" />

@@ -48,6 +48,7 @@ interface CareerTaskCardProps {
     evidenceData: any,
     file?: File
   ) => void;
+  onUpdateStatus: (assignmentId: string, newStatus: string) => void;
   isSubmitting: boolean;
 }
 
@@ -55,6 +56,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
   assignment,
   evidence,
   onSubmitEvidence,
+  onUpdateStatus,
   isSubmitting
 }) => {
   const [showEvidenceModal, setShowEvidenceModal] = useState(false);
@@ -70,8 +72,27 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
       case 'VERIFIED': return 'bg-green-500';
       case 'PARTIALLY_VERIFIED': return 'bg-yellow-500'; 
       case 'SUBMITTED': return 'bg-blue-500';
+      case 'STARTED': return 'bg-orange-500';
       default: return 'bg-gray-400';
     }
+  };
+
+  const getStatusLabel = () => {
+    switch (assignment.status) {
+      case 'VERIFIED': return 'Completed';
+      case 'PARTIALLY_VERIFIED': return 'Partially Verified';
+      case 'SUBMITTED': return 'Under Review';
+      case 'STARTED': return 'Started';
+      case 'assigned': return 'Not Yet Started';
+      default: return 'Not Yet Started';
+    }
+  };
+
+  const handleStartAssignment = () => {
+    if (assignment.status === 'assigned') {
+      onUpdateStatus(assignment.id, 'STARTED');
+    }
+    setShowEvidenceModal(true);
   };
 
   const handleSubmitEvidence = () => {
@@ -99,7 +120,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             <p className="text-sm text-muted-foreground">{task.description}</p>
           </div>
           <Badge variant="outline" className={`${getStatusColor()} text-white`}>
-            {assignment.status}
+            {getStatusLabel()}
           </Badge>
         </div>
       </CardHeader>
@@ -156,9 +177,11 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
         {assignment.status !== 'VERIFIED' && (
           <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
             <DialogTrigger asChild>
-              <Button className="w-full">
+              <Button className="w-full" onClick={handleStartAssignment}>
                 <Upload className="w-4 h-4 mr-2" />
-                Start Assignment
+                {assignment.status === 'assigned' ? 'Start Assignment' : 
+                 assignment.status === 'STARTED' ? 'Submit Evidence' :
+                 'Update Evidence'}
               </Button>
             </DialogTrigger>
             <DialogContent>
