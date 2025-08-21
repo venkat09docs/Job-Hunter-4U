@@ -314,17 +314,21 @@ export const useCareerAssignments = () => {
 
       if (error) throw error;
 
-      // Update assignment status to submitted
+      // Update assignment status to submitted with proper timestamp
+      const submittedAt = new Date().toISOString();
       const { error: statusError } = await supabase
         .from('career_task_assignments')
         .update({ 
           status: 'submitted',
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          submitted_at: submittedAt,
+          updated_at: submittedAt
         })
         .eq('id', assignmentId);
 
-      if (statusError) throw statusError;
+      if (statusError) {
+        console.error('Error updating assignment status:', statusError);
+        throw statusError;
+      }
 
       await Promise.all([fetchAssignments(), fetchEvidence()]);
       toast.success('Evidence submitted successfully!');
