@@ -739,14 +739,13 @@ const ResourcesLibrary = () => {
     setAtsJobDescription('');
     setAtsResumeText('');
     
-    // Check if this is an uploaded resume
-    // Uploaded resumes have pdf_url/word_url but no structured resume_data
-    // Created resumes have structured resume_data
-    const hasFileUrl = resume.pdf_url || resume.word_url;
-    const hasStructuredData = resume.resume_data && Object.keys(resume.resume_data).length > 0;
-    const isUploadedFile = hasFileUrl && !hasStructuredData;
+    // Check if this is an uploaded resume by checking the title format
+    // Generated resumes have timestamp format like "2025-08-07T05-56-34"
+    // Uploaded resumes have custom user-provided titles
+    const timestampPattern = /\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/;
+    const isGeneratedResume = timestampPattern.test(resume.title);
     
-    setIsUploadedResume(isUploadedFile);
+    setIsUploadedResume(!isGeneratedResume);
     setAtsDialogOpen(true);
   };
 
@@ -1448,9 +1447,12 @@ const ResourcesLibrary = () => {
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium">Analyzing Resume:</p>
                   <p className="text-sm text-muted-foreground">{selectedResumeForATS.title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Type: {isUploadedResume ? 'Uploaded file' : 'Generated resume'}
+                  </p>
                   {isUploadedResume && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Type: Uploaded file
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Please paste your resume content above since this is an uploaded file
                     </p>
                   )}
                 </div>
