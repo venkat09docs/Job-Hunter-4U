@@ -528,12 +528,19 @@ const VerifyAssignments = () => {
 
         if (pointsError) {
           console.error('Error awarding points:', pointsError);
+          console.error('Points error details:', pointsError);
           // Don't throw error here - assignment verification should still succeed
           toast.error('Assignment approved but failed to award points. Please contact admin.');
         } else {
           // Points were successfully awarded
-          console.log('Points successfully awarded to user:', selectedAssignment.user_id);
-          toast.success('Assignment approved and points awarded!');
+          console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', selectedAssignment.career_task_templates.points_reward);
+          
+          // Force a reload of the page to refresh all point displays
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+          
+          toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded to user!`);
         }
       } else {
         // Deny and set to resubmit

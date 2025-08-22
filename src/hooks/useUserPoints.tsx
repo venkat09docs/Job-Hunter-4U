@@ -111,7 +111,8 @@ export const useUserPoints = (): UserPoints => {
           table: 'user_activity_points',
           filter: `user_id=eq.${user.id}`,
         },
-        () => {
+        (payload) => {
+          console.log('🔄 Points change detected:', payload);
           // Refetch points when changes occur
           fetchUserPoints();
         }
