@@ -86,60 +86,85 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             .limit(1)
             .maybeSingle();
 
+          console.log('🔍 Raw query result:', { data, error });
+
           if (error) {
-            console.error('Error fetching existing evidence:', error);
+            console.error('🔍 Error fetching existing evidence:', error);
             return;
           }
 
-          console.log('🔍 Fetched evidence data:', data);
-
           if (data) {
+            console.log('🔍 Found evidence record:', {
+              id: data.id,
+              evidence_data: data.evidence_data,
+              evidence_type: data.evidence_type,
+              url: data.url,
+              file_urls: data.file_urls,
+              created_at: data.created_at
+            });
+
             // Handle both new format (object) and old format (string)
+            let foundData = false;
+            
             if (data.evidence_data && typeof data.evidence_data === 'object' && !Array.isArray(data.evidence_data)) {
+              console.log('🔍 Processing object evidence_data');
               const evidenceData = data.evidence_data as Record<string, any>;
               
-              // Pre-populate form fields with existing data
               if (evidenceData.url && typeof evidenceData.url === 'string') {
                 setUrlInput(evidenceData.url);
-                console.log('🔍 Set URL from evidence_data:', evidenceData.url);
+                console.log('🔍 Set URL from evidence_data.url:', evidenceData.url);
+                foundData = true;
               }
               if (evidenceData.description && typeof evidenceData.description === 'string') {
                 setTextInput(evidenceData.description);
-                console.log('🔍 Set description from evidence_data:', evidenceData.description);
+                console.log('🔍 Set description from evidence_data.description:', evidenceData.description);
+                foundData = true;
               } else if (evidenceData.text && typeof evidenceData.text === 'string') {
                 setTextInput(evidenceData.text);
-                console.log('🔍 Set text from evidence_data:', evidenceData.text);
+                console.log('🔍 Set text from evidence_data.text:', evidenceData.text);
+                foundData = true;
               }
               if (evidenceData.file_name && typeof evidenceData.file_name === 'string') {
                 setExistingFileInfo(`Previously uploaded: ${evidenceData.file_name}`);
-                console.log('🔍 Set file info from evidence_data:', evidenceData.file_name);
+                console.log('🔍 Set file info from evidence_data.file_name:', evidenceData.file_name);
+                foundData = true;
               }
-            } else {
-              // Fallback for old format - check individual columns
-              console.log('🔍 Using fallback for old evidence format');
+            }
+            
+            // Fallback to individual columns if evidence_data doesn't contain the data
+            if (!foundData) {
+              console.log('🔍 No data in evidence_data object, checking individual columns');
               
               if (data.url && typeof data.url === 'string') {
                 setUrlInput(data.url);
                 console.log('🔍 Set URL from url column:', data.url);
+                foundData = true;
               }
               
               if (data.file_urls && Array.isArray(data.file_urls) && data.file_urls.length > 0) {
-                setExistingFileInfo(`Previously uploaded file available`);
+                setExistingFileInfo(`Previously uploaded file: ${data.file_urls[0]}`);
                 console.log('🔍 Set file info from file_urls:', data.file_urls);
+                foundData = true;
               }
             }
             
-            console.log('🔍 Form pre-populated successfully');
+            if (!foundData) {
+              console.log('🔍 No usable data found in evidence record - this indicates a data storage issue');
+              setTextInput('Previous submission found but data could not be retrieved');
+            } else {
+              console.log('🔍 Form pre-populated successfully');
+            }
           } else {
-            console.log('🔍 No existing evidence found for assignment');
+            console.log('🔍 No existing evidence found for assignment:', assignment.id);
           }
         } catch (error) {
-          console.error('Error fetching existing evidence:', error);
+          console.error('🔍 Exception fetching existing evidence:', error);
         } finally {
           setLoadingExistingData(false);
         }
       } else if (!showEvidenceModal) {
         // Reset form when modal closes
+        console.log('🔍 Modal closed, resetting form');
         setUrlInput('');
         setTextInput('');
         setSelectedFile(null);
