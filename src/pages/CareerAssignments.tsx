@@ -262,19 +262,104 @@ const CareerAssignments = () => {
     if (!canAccessFeature("career_assignments")) return;
     
     try {
-      // Call edge function to initialize tasks
-      const response = await fetch(`https://moirryvajzyriagqihbe.supabase.co/functions/v1/instantiate-week`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vaXJyeXZhanp5cmlhZ3FpaGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzE1MzgsImV4cCI6MjA2OTE0NzUzOH0.fyoyxE5pv42Vemp3iA1HmGkzJIA3SAtByXyf5FmYxOw`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: user?.id })
-      });
+      if (!user?.id) throw new Error('User not authenticated');
 
-      if (!response.ok) throw new Error('Failed to initialize tasks');
+      // Get current ISO week
+      const getISOWeek = (date: Date): string => {
+        const year = date.getFullYear();
+        const start = new Date(year, 0, 1);
+        const diff = date.getTime() - start.getTime();
+        const week = Math.ceil(diff / (7 * 24 * 60 * 60 * 1000));
+        return `${year}-W${week.toString().padStart(2, '0')}`;
+      };
+
+      const getWeekStartDate = (period: string): string => {
+        const [year, week] = period.split('-W');
+        const startOfYear = new Date(parseInt(year), 0, 1);
+        const weekStart = new Date(startOfYear.getTime() + (parseInt(week) - 1) * 7 * 24 * 60 * 60 * 1000);
+        return weekStart.toISOString().split('T')[0];
+      };
+
+      const getWeekEndDate = (period: string): string => {
+        const [year, week] = period.split('-W');
+        const startOfYear = new Date(parseInt(year), 0, 1);
+        const weekStart = new Date(startOfYear.getTime() + (parseInt(week) - 1) * 7 * 24 * 60 * 60 * 1000);
+        const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+        return weekEnd.toISOString();
+      };
+
+      const currentPeriod = getISOWeek(new Date());
       
-      toast.success('Tasks initialized successfully');
+      // Get weekly templates
+      const weeklyTemplates = templates.filter(t => t.cadence === 'weekly');
+      
+      let createdCount = 0;
+      
+      // Create assignments for weekly tasks
+      for (const template of weeklyTemplates) {
+        // Check if assignment already exists
+        const { data: existing } = await supabase
+          .from('career_task_assignments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('template_id', template.id)
+          .eq('period', currentPeriod)
+          .maybeSingle();
+        
+        if (!existing) {
+          const { error } = await supabase
+            .from('career_task_assignments')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              period: currentPeriod,
+              due_date: getWeekEndDate(currentPeriod),
+              week_start_date: getWeekStartDate(currentPeriod),
+              status: 'assigned',
+              points_earned: 0
+            });
+          
+          if (error) throw error;
+          createdCount++;
+        }
+      }
+
+      // Create assignments for one-off tasks that haven't been created yet
+      const oneoffTemplates = templates.filter(t => t.cadence === 'oneoff');
+      
+      for (const template of oneoffTemplates) {
+        // Check if assignment already exists (one-off tasks don't need period matching)
+        const { data: existing } = await supabase
+          .from('career_task_assignments')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('template_id', template.id)
+          .maybeSingle();
+        
+        if (!existing) {
+          const { error } = await supabase
+            .from('career_task_assignments')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              period: null, // One-off tasks don't have a period
+              due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+              week_start_date: new Date().toISOString().split('T')[0],
+              status: 'assigned',
+              points_earned: 0
+            });
+          
+          if (error) throw error;
+          createdCount++;
+        }
+      }
+      
+      if (createdCount > 0) {
+        toast.success(`Created ${createdCount} new task assignments`);
+      } else {
+        toast.info('All tasks are already initialized');
+      }
+      
       await fetchData();
     } catch (error) {
       console.error('Error initializing tasks:', error);
