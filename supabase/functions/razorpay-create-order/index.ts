@@ -154,13 +154,18 @@ serve(async (req) => {
       body: JSON.stringify(orderData),
     });
 
+    console.log('Razorpay API response status:', response.status);
+    console.log('Razorpay API response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Razorpay API error:', errorText);
-      throw new Error(`Razorpay API error: ${response.status}`);
+      console.error('Razorpay API error response:', errorText);
+      console.error('Razorpay API error status:', response.status);
+      throw new Error(`Razorpay API error: ${response.status} - ${errorText}`);
     }
 
     const order = await response.json();
+    console.log('✅ Razorpay order created successfully:', order);
 
     // Store order details in our database
     const supabaseService = createClient(
