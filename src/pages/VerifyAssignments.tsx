@@ -1341,7 +1341,7 @@ const VerifyAssignments = () => {
                       )}
                       
                        {/* Show debugging info for incomplete submissions */}
-                       {(evidence.evidence_data === "URL" || (typeof evidence.evidence_data === 'string' && evidence.evidence_data.length < 10)) && (
+                       {(evidence.evidence_data === "URL" || evidence.evidence_data === "SCREENSHOT" || evidence.evidence_data === "DATA_EXPORT") && (
                          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
                            <div className="flex items-center gap-2 mb-2">
                              <AlertCircle className="h-4 w-4 text-red-600" />
