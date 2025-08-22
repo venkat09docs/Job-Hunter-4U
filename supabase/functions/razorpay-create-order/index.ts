@@ -203,21 +203,24 @@ serve(async (req) => {
       );
     }
     
-    // Try inserting with explicit null values for optional fields
-    console.log('Attempting database insert with explicit null values...');
+    // Add required fields including status to pass validation
+    console.log('Attempting database insert with all required fields for validation...');
+    
+    const insertData = {
+      user_id: user.id,
+      razorpay_order_id: order.id,
+      amount: amount,
+      plan_name: plan_name,
+      plan_duration: plan_duration,
+      status: 'pending', // Required by validation trigger
+      currency: 'INR'    // Include currency for completeness
+    };
+    
+    console.log('Insert data being sent:', insertData);
+    
     const { error: insertError } = await supabaseService
       .from('payments')
-      .insert({
-        user_id: user.id,
-        razorpay_order_id: order.id,
-        razorpay_payment_id: null,
-        razorpay_signature: null,
-        amount: amount,
-        currency: 'INR',
-        status: 'pending',
-        plan_name: plan_name,
-        plan_duration: plan_duration
-      });
+      .insert(insertData);
 
     console.log('Insert error:', insertError);
 
