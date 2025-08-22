@@ -203,20 +203,22 @@ serve(async (req) => {
       );
     }
     
-    // Insert with proper object format (not array)
-    console.log('Attempting database insert with correct format...');
-    const { data: insertResult, error: insertError } = await supabaseService
+    // Try inserting with explicit null values for optional fields
+    console.log('Attempting database insert with explicit null values...');
+    const { error: insertError } = await supabaseService
       .from('payments')
       .insert({
         user_id: user.id,
         razorpay_order_id: order.id,
+        razorpay_payment_id: null,
+        razorpay_signature: null,
         amount: amount,
+        currency: 'INR',
+        status: 'pending',
         plan_name: plan_name,
         plan_duration: plan_duration
-      })
-      .select();
+      });
 
-    console.log('Insert result:', insertResult);
     console.log('Insert error:', insertError);
 
     if (insertError) {
@@ -228,6 +230,8 @@ serve(async (req) => {
       });
       throw new Error(`Failed to store payment details: ${insertError.message}`);
     }
+
+    console.log('✅ Payment record created successfully');
 
     console.log('Order created successfully:', order.id);
 
