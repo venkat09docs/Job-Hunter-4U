@@ -203,16 +203,14 @@ serve(async (req) => {
       );
     }
     
-    // Use explicit column specification for the insert
-    console.log('Attempting database insert with explicit columns...');
+    // Insert only required fields, let others use defaults
+    console.log('Attempting minimal database insert...');
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
       .insert({
         user_id: user.id,
         razorpay_order_id: order.id,
         amount: amount,
-        currency: 'INR',
-        status: 'pending',
         plan_name: plan_name,
         plan_duration: plan_duration
       })
