@@ -530,9 +530,11 @@ const VerifyAssignments = () => {
           console.error('Error awarding points:', pointsError);
           // Don't throw error here - assignment verification should still succeed
           toast.error('Assignment approved but failed to award points. Please contact admin.');
+        } else {
+          // Points were successfully awarded
+          console.log('Points successfully awarded to user:', selectedAssignment.user_id);
+          toast.success('Assignment approved and points awarded!');
         }
-
-        toast.success('Assignment approved and points awarded!');
       } else {
         // Deny and set to resubmit
         const { error: updateError } = await supabase
