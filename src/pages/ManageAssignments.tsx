@@ -20,6 +20,7 @@ interface Assignment {
   id: string;
   title: string;
   description: string;
+  instructions?: string;
   category: string;
   points_reward?: number;
   points_base?: number;
@@ -76,6 +77,7 @@ export default function ManageAssignments() {
   const [assignmentForm, setAssignmentForm] = useState({
     title: '',
     description: '',
+    instructions: '',
     category: '',
     points_reward: 10,
     difficulty: 'medium',
@@ -126,6 +128,7 @@ export default function ManageAssignments() {
           id: item.id,
           title: item.title,
           description: item.description,
+          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
           category: item.category,
           points_reward: item.points_reward,
           difficulty: item.difficulty,
@@ -165,6 +168,7 @@ export default function ManageAssignments() {
           id: item.id,
           title: item.title,
           description: item.description,
+          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
           category: item.category,
           points_reward: item.points_reward,
           difficulty: item.difficulty,
@@ -234,6 +238,7 @@ export default function ManageAssignments() {
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
+              instructions: assignmentForm.instructions,
               category: validCategory, // Use mapped valid category
               sub_category_id: assignmentForm.category, // Store sub-category ID
               points_reward: assignmentForm.points_reward,
@@ -265,6 +270,7 @@ export default function ManageAssignments() {
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
+              instructions: assignmentForm.instructions,
               category: assignmentForm.category,
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
@@ -316,7 +322,7 @@ export default function ManageAssignments() {
               display_order: assignmentForm.display_order,
               estimated_duration: 30,
               evidence_types: ['url', 'screenshot'],
-              instructions: {},
+              instructions: assignmentForm.instructions,
               verification_criteria: {}
             });
           
@@ -348,7 +354,7 @@ export default function ManageAssignments() {
               display_order: assignmentForm.display_order,
               estimated_duration: 30,
               evidence_types: ['url', 'screenshot'],
-              instructions: {},
+              instructions: assignmentForm.instructions,
               verification_criteria: {}
             });
           
@@ -425,6 +431,7 @@ export default function ManageAssignments() {
     setAssignmentForm({
       title: '',
       description: '',
+      instructions: '',
       category: '',
       points_reward: 10,
       difficulty: 'medium',
@@ -440,6 +447,7 @@ export default function ManageAssignments() {
     setAssignmentForm({
       title: assignment.title,
       description: assignment.description,
+      instructions: assignment.instructions || '',
       category: activeCategory === 'profile' ? (assignment.sub_category_id || '') : assignment.category, // Use sub_category_id for profile assignments
       points_reward: assignment.points_reward || 10,
       difficulty: assignment.difficulty || 'medium',
@@ -744,6 +752,17 @@ export default function ManageAssignments() {
                   onChange={(e) => setAssignmentForm({ ...assignmentForm, description: e.target.value })}
                   placeholder="Enter assignment description"
                   rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="instructions">Instructions</Label>
+                <Textarea
+                  id="instructions"
+                  value={assignmentForm.instructions}
+                  onChange={(e) => setAssignmentForm({ ...assignmentForm, instructions: e.target.value })}
+                  placeholder="Enter step-by-step instructions for users (use bullet points with •)"
+                  rows={4}
                 />
               </div>
               
