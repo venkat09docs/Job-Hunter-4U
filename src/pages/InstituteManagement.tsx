@@ -258,8 +258,9 @@ export default function InstituteManagement() {
       }
 
       const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(startDate.getDate() + parseInt(newInstitute.subscription_duration));
+      const durationDays = parseInt(newInstitute.subscription_duration) || 30; // Default to 30 days if invalid
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + durationDays);
 
       const { data: { user } } = await supabase.auth.getUser();
       
