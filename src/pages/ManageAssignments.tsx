@@ -72,6 +72,7 @@ export default function ManageAssignments() {
   const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
   const [showAddSubCategory, setShowAddSubCategory] = useState(false);
+  const [isGeneratingInstructions, setIsGeneratingInstructions] = useState(false);
 
   // Form states
   const [assignmentForm, setAssignmentForm] = useState({
@@ -427,6 +428,41 @@ export default function ManageAssignments() {
     }
   };
 
+  const handleGenerateInstructions = async () => {
+    if (!assignmentForm.title || !assignmentForm.description) {
+      toast.error('Please enter both title and description before generating instructions');
+      return;
+    }
+
+    setIsGeneratingInstructions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-assignment-instructions', {
+        body: {
+          title: assignmentForm.title,
+          description: assignmentForm.description
+        }
+      });
+
+      if (error) {
+        console.error('Error generating instructions:', error);
+        toast.error('Failed to generate instructions');
+        return;
+      }
+
+      if (data?.instructions) {
+        setAssignmentForm({ ...assignmentForm, instructions: data.instructions });
+        toast.success('Instructions generated successfully!');
+      } else {
+        toast.error('No instructions were generated');
+      }
+    } catch (error) {
+      console.error('Error generating instructions:', error);
+      toast.error('Failed to generate instructions');
+    } finally {
+      setIsGeneratingInstructions(false);
+    }
+  };
+
   const resetForm = () => {
     setAssignmentForm({
       title: '',
@@ -756,7 +792,26 @@ export default function ManageAssignments() {
               </div>
               
               <div>
-                <Label htmlFor="instructions">Instructions</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="instructions">Instructions</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateInstructions}
+                    disabled={isGeneratingInstructions || !assignmentForm.title || !assignmentForm.description}
+                    className="h-8"
+                  >
+                    {isGeneratingInstructions ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Instructions'
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="instructions"
                   value={assignmentForm.instructions}
