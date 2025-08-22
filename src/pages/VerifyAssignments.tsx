@@ -49,7 +49,7 @@ interface SubmittedAssignment {
 
 const VerifyAssignments = () => {
   const { user } = useAuth();
-  const { isAdmin, isRecruiter, loading: roleLoading } = useRole();
+  const { isAdmin, isRecruiter, isInstituteAdmin, loading: roleLoading } = useRole();
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<SubmittedAssignment[]>([]);
   const [verifiedAssignments, setVerifiedAssignments] = useState<SubmittedAssignment[]>([]);
@@ -85,21 +85,20 @@ const VerifyAssignments = () => {
   const currentVerifiedAssignments = filteredVerifiedAssignments.slice(verifiedStartIndex, verifiedEndIndex);
 
   // Check authorization
-  if (!roleLoading && !isAdmin && !isRecruiter) {
+  if (!roleLoading && !isAdmin && !isRecruiter && !isInstituteAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
   useEffect(() => {
-    if (user && (isAdmin || isRecruiter)) {
+    if (user && (isAdmin || isRecruiter || isInstituteAdmin)) {
       fetchSubmittedAssignments();
       fetchVerifiedAssignments();
     }
-  }, [user, isAdmin, isRecruiter]);
+  }, [user, isAdmin, isRecruiter, isInstituteAdmin]);
 
   const fetchVerifiedAssignments = async () => {
     try {
-      // Fetch verified assignments with user profiles
-      const { data, error } = await supabase
+      let query = supabase
         .from('career_task_assignments')
         .select(`
           *,
@@ -112,6 +111,46 @@ const VerifyAssignments = () => {
         `)
         .eq('status', 'verified')
         .order('verified_at', { ascending: false });
+
+      // If institute admin, filter by their institute's students
+      if (isInstituteAdmin && !isAdmin) {
+        // First get the institute(s) this admin manages
+        const { data: institutes, error: instituteError } = await supabase
+          .from('institute_admin_assignments')
+          .select('institute_id')
+          .eq('user_id', user?.id)
+          .eq('is_active', true);
+
+        if (instituteError) throw instituteError;
+
+        if (institutes && institutes.length > 0) {
+          const instituteIds = institutes.map(i => i.institute_id);
+          
+          // Get students assigned to these institutes
+          const { data: studentAssignments, error: studentsError } = await supabase
+            .from('user_assignments')
+            .select('user_id')
+            .in('institute_id', instituteIds)
+            .eq('is_active', true);
+
+          if (studentsError) throw studentsError;
+
+          if (studentAssignments && studentAssignments.length > 0) {
+            const studentIds = studentAssignments.map(s => s.user_id);
+            query = query.in('user_id', studentIds);
+          } else {
+            // No students found, return empty
+            setVerifiedAssignments([]);
+            return;
+          }
+        } else {
+          // No institutes managed, return empty
+          setVerifiedAssignments([]);
+          return;
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -222,8 +261,7 @@ const VerifyAssignments = () => {
     try {
       setLoading(true);
       
-      // Fetch submitted assignments with user profiles
-      const { data, error } = await supabase
+      let query = supabase
         .from('career_task_assignments')
         .select(`
           *,
@@ -236,6 +274,46 @@ const VerifyAssignments = () => {
         `)
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false });
+
+      // If institute admin, filter by their institute's students
+      if (isInstituteAdmin && !isAdmin) {
+        // First get the institute(s) this admin manages
+        const { data: institutes, error: instituteError } = await supabase
+          .from('institute_admin_assignments')
+          .select('institute_id')
+          .eq('user_id', user?.id)
+          .eq('is_active', true);
+
+        if (instituteError) throw instituteError;
+
+        if (institutes && institutes.length > 0) {
+          const instituteIds = institutes.map(i => i.institute_id);
+          
+          // Get students assigned to these institutes
+          const { data: studentAssignments, error: studentsError } = await supabase
+            .from('user_assignments')
+            .select('user_id')
+            .in('institute_id', instituteIds)
+            .eq('is_active', true);
+
+          if (studentsError) throw studentsError;
+
+          if (studentAssignments && studentAssignments.length > 0) {
+            const studentIds = studentAssignments.map(s => s.user_id);
+            query = query.in('user_id', studentIds);
+          } else {
+            // No students found, return empty
+            setAssignments([]);
+            return;
+          }
+        } else {
+          // No institutes managed, return empty
+          setAssignments([]);
+          return;
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
