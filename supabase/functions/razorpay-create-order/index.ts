@@ -169,19 +169,32 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { error: insertError } = await supabaseService
+    console.log('Attempting to insert payment record...');
+    const insertData = {
+      user_id: user.id,
+      razorpay_order_id: order.id,
+      amount: amount,
+      plan_name: plan_name,
+      plan_duration: plan_duration
+    };
+    console.log('Insert data:', JSON.stringify(insertData, null, 2));
+
+    const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
-      .insert([{
-        user_id: user.id,
-        razorpay_order_id: order.id,
-        amount: amount,
-        plan_name: plan_name,
-        plan_duration: plan_duration
-      }]);
+      .insert(insertData)
+      .select();
+
+    console.log('Insert result:', insertResult);
+    console.log('Insert error:', insertError);
 
     if (insertError) {
-      console.error('Database insert error:', insertError);
-      throw new Error('Failed to store payment details');
+      console.error('Database insert error details:', {
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        code: insertError.code
+      });
+      throw new Error(`Failed to store payment details: ${insertError.message}`);
     }
 
     console.log('Order created successfully:', order.id);
