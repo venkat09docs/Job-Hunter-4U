@@ -140,7 +140,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateJobsProgress('bronze'),
           criteria: 'Apply to 1 job',
           nextAction: 'Apply Now',
-          link: '/dashboard/job-tracker'
+          link: '/dashboard/job-hunting-assignments'
         },
         {
           id: 'jobs-silver',
@@ -150,7 +150,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateJobsProgress('silver'),
           criteria: 'Apply to 14 jobs total',
           nextAction: 'Keep Applying',
-          link: '/dashboard/job-tracker'
+          link: '/dashboard/job-hunting-assignments'
         },
         {
           id: 'jobs-gold',
@@ -160,7 +160,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateJobsProgress('gold'),
           criteria: 'Apply to 30+ jobs',
           nextAction: 'Scale Applications',
-          link: '/dashboard/job-tracker'
+          link: '/dashboard/job-hunting-assignments'
         }
       ]
     },
@@ -215,7 +215,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('bronze'),
           criteria: 'First repo + 5 commits',
           nextAction: 'Start Coding',
-          link: '/dashboard/github-activity-tracker'
+          link: '/dashboard/github-weekly'
         },
         {
           id: 'github-silver',
@@ -225,7 +225,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('silver'),
           criteria: 'Repo with README + 30 commits',
           nextAction: 'Improve Projects',
-          link: '/dashboard/github-activity-tracker'
+          link: '/dashboard/github-weekly'
         },
         {
           id: 'github-gold',
@@ -235,7 +235,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('gold'),
           criteria: 'Contribute to public projects',
           nextAction: 'Go Open Source',
-          link: '/dashboard/github-activity-tracker'
+          link: '/dashboard/github-weekly'
         }
       ]
     }] : [])
