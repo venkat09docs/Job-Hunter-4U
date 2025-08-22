@@ -165,16 +165,17 @@ serve(async (req) => {
 
     // Get the payment record to fetch plan details
     console.log('Fetching payment record for order:', razorpay_order_id, 'user:', userId);
-    const { data: paymentData, error: fetchError } = await supabaseService
+    let { data: paymentData, error: fetchError } = await supabaseService
       .from('payments')
       .select('*')
       .eq('razorpay_order_id', razorpay_order_id)
       .eq('user_id', userId)
       .single();
 
+    // If not found, try to create a payment record based on the Razorpay order
     if (fetchError || !paymentData) {
-      console.error('❌ Payment fetch error:', fetchError);
-      console.log('Order ID:', razorpay_order_id, 'User ID:', userId);
+      console.log('❌ Payment record not found, checking if we need to create one...');
+      console.log('Fetch error:', fetchError);
       
       // Try to find payment without user_id filter to debug
       const { data: debugData } = await supabaseService
@@ -183,7 +184,69 @@ serve(async (req) => {
         .eq('razorpay_order_id', razorpay_order_id);
       console.log('Debug - All payments for order:', debugData);
       
-      throw new Error('Payment record not found');
+      // Fetch order details from Razorpay to get plan info
+      const razorpayKeySecret = isLiveMode 
+        ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
+        : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
+      const razorpayKeyId = isLiveMode 
+        ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
+        : Deno.env.get('RAZORPAY_TEST_KEY_ID');
+      
+      try {
+        console.log('Fetching order details from Razorpay...');
+        const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+          headers: {
+            'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret.trim()}`)}`
+          }
+        });
+        
+        if (orderResponse.ok) {
+          const orderData = await orderResponse.json();
+          console.log('Razorpay order data:', orderData);
+          
+          // Create payment record based on order notes
+          const planName = orderData.notes?.plan_name || 'One Week Plan';
+          const planDuration = orderData.notes?.plan_duration || '1 week';
+          const amount = Math.floor(orderData.amount / 100); // Convert from paisa to rupees
+          
+          console.log('Creating payment record with:', { planName, planDuration, amount });
+          
+          const { data: newPaymentId, error: createError } = await supabaseService
+            .rpc('create_payment_record', {
+              p_user_id: userId,
+              p_razorpay_order_id: razorpay_order_id,
+              p_amount: amount,
+              p_plan_name: planName,
+              p_plan_duration: planDuration
+            });
+          
+          if (createError) {
+            console.error('Failed to create payment record:', createError);
+          } else {
+            console.log('✅ Payment record created with ID:', newPaymentId);
+            
+            // Fetch the newly created record
+            const { data: newPaymentData, error: newFetchError } = await supabaseService
+              .from('payments')
+              .select('*')
+              .eq('razorpay_order_id', razorpay_order_id)
+              .eq('user_id', userId)
+              .single();
+            
+            if (!newFetchError && newPaymentData) {
+              paymentData = newPaymentData;
+              console.log('✅ Payment record retrieved after creation');
+            }
+          }
+        }
+      } catch (razorpayError) {
+        console.error('Failed to fetch order from Razorpay:', razorpayError);
+      }
+      
+      // If we still don't have payment data, fail
+      if (!paymentData) {
+        throw new Error('Payment record not found and could not be created');
+      }
     }
     
     console.log('✅ Found payment record:', paymentData.id, 'Plan:', paymentData.plan_name);
