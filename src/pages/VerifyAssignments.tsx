@@ -98,22 +98,10 @@ const VerifyAssignments = () => {
 
   const fetchVerifiedAssignments = async () => {
     try {
-      let query = supabase
-        .from('career_task_assignments')
-        .select(`
-          *,
-          career_task_templates (
-            title,
-            module,
-            points_reward,
-            category
-          )
-        `)
-        .eq('status', 'verified')
-        .order('verified_at', { ascending: false });
-
       // If institute admin, filter by their institute's students
       if (isInstituteAdmin && !isAdmin) {
+        console.log('Fetching verified assignments for institute admin:', user?.id);
+        
         // First get the institute(s) this admin manages
         const { data: institutes, error: instituteError } = await supabase
           .from('institute_admin_assignments')
@@ -121,10 +109,16 @@ const VerifyAssignments = () => {
           .eq('user_id', user?.id)
           .eq('is_active', true);
 
-        if (instituteError) throw instituteError;
+        console.log('Institute admin assignments (verified):', institutes);
+
+        if (instituteError) {
+          console.error('Error fetching institute assignments (verified):', instituteError);
+          throw instituteError;
+        }
 
         if (institutes && institutes.length > 0) {
           const instituteIds = institutes.map(i => i.institute_id);
+          console.log('Institute IDs managed (verified):', instituteIds);
           
           // Get students assigned to these institutes
           const { data: studentAssignments, error: studentsError } = await supabase
@@ -133,72 +127,114 @@ const VerifyAssignments = () => {
             .in('institute_id', instituteIds)
             .eq('is_active', true);
 
-          if (studentsError) throw studentsError;
+          console.log('Student assignments found (verified):', studentAssignments);
+
+          if (studentsError) {
+            console.error('Error fetching student assignments (verified):', studentsError);
+            throw studentsError;
+          }
 
           if (studentAssignments && studentAssignments.length > 0) {
             const studentIds = studentAssignments.map(s => s.user_id);
-            query = query.in('user_id', studentIds);
+            console.log('Student IDs (verified):', studentIds);
+            
+            // Fetch verified assignments for these students
+            const { data, error } = await supabase
+              .from('career_task_assignments')
+              .select(`
+                *,
+                career_task_templates (
+                  title,
+                  module,
+                  points_reward,
+                  category
+                )
+              `)
+              .eq('status', 'verified')
+              .in('user_id', studentIds)
+              .order('verified_at', { ascending: false });
+
+            console.log('Verified assignments found:', data);
+
+            if (error) throw error;
+
+            // Continue with the rest of the logic
+            await processVerifiedAssignments(data || []);
           } else {
-            // No students found, return empty
+            console.log('No students found for this institute admin (verified)');
             setVerifiedAssignments([]);
-            return;
           }
         } else {
-          // No institutes managed, return empty
+          console.log('No institutes managed by this admin (verified)');
           setVerifiedAssignments([]);
-          return;
         }
+      } else {
+        // For super admins and recruiters, fetch all verified assignments
+        const { data, error } = await supabase
+          .from('career_task_assignments')
+          .select(`
+            *,
+            career_task_templates (
+              title,
+              module,
+              points_reward,
+              category
+            )
+          `)
+          .eq('status', 'verified')
+          .order('verified_at', { ascending: false });
+
+        if (error) throw error;
+        await processVerifiedAssignments(data || []);
       }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      // Fetch user profiles separately
-      const userIds = data?.map(assignment => assignment.user_id) || [];
-      if (userIds.length === 0) {
-        setVerifiedAssignments([]);
-        return;
-      }
-
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, username, profile_image_url')
-        .in('user_id', userIds);
-
-      if (profilesError) throw profilesError;
-
-      // Combine assignments with profiles and fetch evidence
-      const assignmentsWithProfiles = (data || []).map(assignment => {
-        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
-        return {
-          ...assignment,
-          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
-        };
-      });
-
-      // Fetch evidence for each assignment
-      const assignmentsWithEvidence = await Promise.all(
-        assignmentsWithProfiles.map(async (assignment) => {
-          const { data: evidenceData, error: evidenceError } = await supabase
-            .from('career_task_evidence')
-            .select('*')
-            .eq('assignment_id', assignment.id);
-
-          if (evidenceError) {
-            console.error('Error fetching evidence:', evidenceError);
-            return { ...assignment, evidence: [] };
-          }
-
-          return { ...assignment, evidence: evidenceData || [] };
-        })
-      );
-
-      setVerifiedAssignments(assignmentsWithEvidence);
     } catch (error) {
       console.error('Error fetching verified assignments:', error);
       toast.error('Failed to load verified assignments');
     }
+  };
+
+  const processVerifiedAssignments = async (data: any[]) => {
+    // Fetch user profiles separately
+    const userIds = data?.map(assignment => assignment.user_id) || [];
+    if (userIds.length === 0) {
+      setVerifiedAssignments([]);
+      return;
+    }
+
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, username, profile_image_url')
+      .in('user_id', userIds);
+
+    if (profilesError) throw profilesError;
+
+    // Combine assignments with profiles and fetch evidence
+    const assignmentsWithProfiles = data.map(assignment => {
+      const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+      return {
+        ...assignment,
+        profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+      };
+    });
+
+    // Fetch evidence for each assignment
+    const assignmentsWithEvidence = await Promise.all(
+      assignmentsWithProfiles.map(async (assignment) => {
+        const { data: evidenceData, error: evidenceError } = await supabase
+          .from('career_task_evidence')
+          .select('*')
+          .eq('assignment_id', assignment.id);
+
+        if (evidenceError) {
+          console.error('Error fetching evidence:', evidenceError);
+          return { ...assignment, evidence: [] };
+        }
+
+        return { ...assignment, evidence: evidenceData || [] };
+      })
+    );
+
+    setVerifiedAssignments(assignmentsWithEvidence);
   };
 
   // Filter pending assignments based on search and filters
@@ -261,22 +297,10 @@ const VerifyAssignments = () => {
     try {
       setLoading(true);
       
-      let query = supabase
-        .from('career_task_assignments')
-        .select(`
-          *,
-          career_task_templates (
-            title,
-            module,
-            points_reward,
-            category
-          )
-        `)
-        .eq('status', 'submitted')
-        .order('submitted_at', { ascending: false });
-
       // If institute admin, filter by their institute's students
       if (isInstituteAdmin && !isAdmin) {
+        console.log('Fetching assignments for institute admin:', user?.id);
+        
         // First get the institute(s) this admin manages
         const { data: institutes, error: instituteError } = await supabase
           .from('institute_admin_assignments')
@@ -284,10 +308,16 @@ const VerifyAssignments = () => {
           .eq('user_id', user?.id)
           .eq('is_active', true);
 
-        if (instituteError) throw instituteError;
+        console.log('Institute admin assignments:', institutes);
+
+        if (instituteError) {
+          console.error('Error fetching institute assignments:', instituteError);
+          throw instituteError;
+        }
 
         if (institutes && institutes.length > 0) {
           const instituteIds = institutes.map(i => i.institute_id);
+          console.log('Institute IDs managed:', instituteIds);
           
           // Get students assigned to these institutes
           const { data: studentAssignments, error: studentsError } = await supabase
@@ -296,69 +326,116 @@ const VerifyAssignments = () => {
             .in('institute_id', instituteIds)
             .eq('is_active', true);
 
-          if (studentsError) throw studentsError;
+          console.log('Student assignments found:', studentAssignments);
+
+          if (studentsError) {
+            console.error('Error fetching student assignments:', studentsError);
+            throw studentsError;
+          }
 
           if (studentAssignments && studentAssignments.length > 0) {
             const studentIds = studentAssignments.map(s => s.user_id);
-            query = query.in('user_id', studentIds);
+            console.log('Student IDs:', studentIds);
+            
+            // Fetch submitted assignments for these students
+            const { data, error } = await supabase
+              .from('career_task_assignments')
+              .select(`
+                *,
+                career_task_templates (
+                  title,
+                  module,
+                  points_reward,
+                  category
+                )
+              `)
+              .eq('status', 'submitted')
+              .in('user_id', studentIds)
+              .order('submitted_at', { ascending: false });
+
+            console.log('Submitted assignments found:', data);
+
+            if (error) throw error;
+
+            // Continue with the rest of the logic
+            await processAssignments(data || []);
           } else {
-            // No students found, return empty
+            console.log('No students found for this institute admin');
             setAssignments([]);
-            return;
           }
         } else {
-          // No institutes managed, return empty
+          console.log('No institutes managed by this admin');
           setAssignments([]);
-          return;
         }
+      } else {
+        // For super admins and recruiters, fetch all assignments
+        const { data, error } = await supabase
+          .from('career_task_assignments')
+          .select(`
+            *,
+            career_task_templates (
+              title,
+              module,
+              points_reward,
+              category
+            )
+          `)
+          .eq('status', 'submitted')
+          .order('submitted_at', { ascending: false });
+
+        if (error) throw error;
+        await processAssignments(data || []);
       }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      // Fetch user profiles separately
-      const userIds = data?.map(assignment => assignment.user_id) || [];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, username, profile_image_url')
-        .in('user_id', userIds);
-
-      if (profilesError) throw profilesError;
-
-      // Combine assignments with profiles and fetch evidence
-      const assignmentsWithProfiles = (data || []).map(assignment => {
-        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
-        return {
-          ...assignment,
-          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
-        };
-      });
-
-      // Fetch evidence for each assignment
-      const assignmentsWithEvidence = await Promise.all(
-        assignmentsWithProfiles.map(async (assignment) => {
-          const { data: evidenceData, error: evidenceError } = await supabase
-            .from('career_task_evidence')
-            .select('*')
-            .eq('assignment_id', assignment.id);
-
-          if (evidenceError) {
-            console.error('Error fetching evidence:', evidenceError);
-            return { ...assignment, evidence: [] };
-          }
-
-          return { ...assignment, evidence: evidenceData || [] };
-        })
-      );
-
-      setAssignments(assignmentsWithEvidence);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to load assignments');
     } finally {
       setLoading(false);
     }
+  };
+
+  const processAssignments = async (data: any[]) => {
+    // Fetch user profiles separately
+    const userIds = data?.map(assignment => assignment.user_id) || [];
+    if (userIds.length === 0) {
+      setAssignments([]);
+      return;
+    }
+
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, username, profile_image_url')
+      .in('user_id', userIds);
+
+    if (profilesError) throw profilesError;
+
+    // Combine assignments with profiles and fetch evidence
+    const assignmentsWithProfiles = data.map(assignment => {
+      const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+      return {
+        ...assignment,
+        profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+      };
+    });
+
+    // Fetch evidence for each assignment
+    const assignmentsWithEvidence = await Promise.all(
+      assignmentsWithProfiles.map(async (assignment) => {
+        const { data: evidenceData, error: evidenceError } = await supabase
+          .from('career_task_evidence')
+          .select('*')
+          .eq('assignment_id', assignment.id);
+
+        if (evidenceError) {
+          console.error('Error fetching evidence:', evidenceError);
+          return { ...assignment, evidence: [] };
+        }
+
+        return { ...assignment, evidence: evidenceData || [] };
+      })
+    );
+
+    setAssignments(assignmentsWithEvidence);
   };
 
   // Get unique users for filter dropdown
