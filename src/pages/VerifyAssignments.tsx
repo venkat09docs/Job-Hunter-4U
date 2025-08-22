@@ -31,6 +31,9 @@ interface SubmittedAssignment {
     module: string;
     points_reward: number;
     category: string;
+    sub_categories?: {
+      name: string;
+    };
   };
   profiles: {
     full_name: string;
@@ -155,7 +158,10 @@ const VerifyAssignments = () => {
                   title,
                   module,
                   points_reward,
-                  category
+                  category,
+                  sub_categories (
+                    name
+                  )
                 )
               `)
               .eq('status', 'verified')
@@ -186,7 +192,10 @@ const VerifyAssignments = () => {
               title,
               module,
               points_reward,
-              category
+              category,
+              sub_categories (
+                name
+              )
             )
           `)
           .eq('status', 'verified')
@@ -261,9 +270,13 @@ const VerifyAssignments = () => {
 
     // Module filter
     if (moduleFilter !== 'all') {
-      filtered = filtered.filter(assignment => 
-        (assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL') === moduleFilter
-      );
+      filtered = filtered.filter(assignment => {
+        const displayModule = assignment.career_task_templates.sub_categories?.name || 
+                              assignment.career_task_templates.module || 
+                              assignment.career_task_templates.category || 
+                              'GENERAL';
+        return displayModule === moduleFilter;
+      });
     }
 
     // User filter
@@ -291,9 +304,13 @@ const VerifyAssignments = () => {
 
     // Module filter
     if (verifiedModuleFilter !== 'all') {
-      filtered = filtered.filter(assignment => 
-        (assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL') === verifiedModuleFilter
-      );
+      filtered = filtered.filter(assignment => {
+        const displayModule = assignment.career_task_templates.sub_categories?.name || 
+                              assignment.career_task_templates.module || 
+                              assignment.career_task_templates.category || 
+                              'GENERAL';
+        return displayModule === verifiedModuleFilter;
+      });
     }
 
     // User filter
@@ -367,7 +384,10 @@ const VerifyAssignments = () => {
                   title,
                   module,
                   points_reward,
-                  category
+                  category,
+                  sub_categories (
+                    name
+                  )
                 )
               `)
               .eq('status', 'submitted')
@@ -406,7 +426,10 @@ const VerifyAssignments = () => {
               title,
               module,
               points_reward,
-              category
+              category,
+              sub_categories (
+                name
+              )
             )
           `)
           .eq('status', 'submitted')
@@ -481,7 +504,10 @@ const VerifyAssignments = () => {
 
   // Get unique modules for filter dropdown
   const uniqueModules = [...new Set(assignments.map(assignment => 
-    assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'
+    assignment.career_task_templates.sub_categories?.name || 
+    assignment.career_task_templates.module || 
+    assignment.career_task_templates.category || 
+    'GENERAL'
   ))];
 
   // Get unique users for verified assignments filter dropdown
@@ -496,7 +522,10 @@ const VerifyAssignments = () => {
 
   // Get unique modules for verified assignments filter dropdown
   const uniqueVerifiedModules = [...new Set(verifiedAssignments.map(assignment => 
-    assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'
+    assignment.career_task_templates.sub_categories?.name || 
+    assignment.career_task_templates.module || 
+    assignment.career_task_templates.category || 
+    'GENERAL'
   ))];
 
   const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
@@ -608,15 +637,26 @@ const VerifyAssignments = () => {
     }
   };
 
-  const getModuleBadgeColor = (module: string) => {
-    switch (module) {
-      case 'RESUME': return 'bg-blue-500';
-      case 'LINKEDIN': return 'bg-blue-600';
-      case 'GITHUB': return 'bg-gray-800';
-      case 'DIGITAL_PROFILE': return 'bg-purple-500';
+  const getModuleBadgeColor = (assignment: SubmittedAssignment) => {
+    const displayModule = assignment.career_task_templates.sub_categories?.name || 
+                          assignment.career_task_templates.module || 
+                          assignment.career_task_templates.category || 
+                          'GENERAL';
+    
+    switch (displayModule) {
+      case 'RESUME': 
+      case 'Resume Building': return 'bg-blue-500';
+      case 'LINKEDIN': 
+      case 'LinkedIn Profile': return 'bg-blue-600';
+      case 'GITHUB': 
+      case 'GitHub Optimization': return 'bg-gray-800';
+      case 'JOB_HUNTING': 
+      case 'Job Search': return 'bg-green-500';
+      case 'NETWORKING': 
+      case 'Professional Networking': return 'bg-purple-500';
       case 'networking': return 'bg-green-500';
       case 'resume_building': return 'bg-blue-500';
-      case 'GENERAL': return 'bg-gray-500';
+      case 'GENERAL': 
       default: return 'bg-gray-500';
     }
   };
@@ -784,9 +824,12 @@ const VerifyAssignments = () => {
                           </div>
                           <div className="flex flex-col items-end gap-2">
                             <Badge 
-                              className={`${getModuleBadgeColor(assignment.career_task_templates.module || 'GENERAL')} text-white`}
+                              className={`${getModuleBadgeColor(assignment)} text-white`}
                             >
-                              {assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'}
+                              {assignment.career_task_templates.sub_categories?.name || 
+                               assignment.career_task_templates.module || 
+                               assignment.career_task_templates.category || 
+                               'GENERAL'}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Award className="h-4 w-4" />
@@ -1001,9 +1044,12 @@ const VerifyAssignments = () => {
                               Verified
                             </Badge>
                             <Badge 
-                              className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
+                              className={`${getModuleBadgeColor(assignment)} text-white`}
                             >
-                              {assignment.career_task_templates.module}
+                              {assignment.career_task_templates.sub_categories?.name || 
+                               assignment.career_task_templates.module || 
+                               assignment.career_task_templates.category || 
+                               'GENERAL'}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Award className="h-4 w-4" />
