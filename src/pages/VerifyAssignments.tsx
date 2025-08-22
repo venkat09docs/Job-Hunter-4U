@@ -516,16 +516,21 @@ const VerifyAssignments = () => {
         }
 
         // Award points to user
-        await supabase
+        const { error: pointsError } = await supabase
           .from('user_activity_points')
           .insert({
             user_id: selectedAssignment.user_id,
             activity_type: 'career_assignment',
-            activity_id: selectedAssignment.template_id,
+            activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
             points_earned: selectedAssignment.career_task_templates.points_reward,
-            activity_date: new Date().toISOString().split('T')[0],
-            notes: `Assignment completed: ${selectedAssignment.career_task_templates.title}`
+            activity_date: new Date().toISOString().split('T')[0]
           });
+
+        if (pointsError) {
+          console.error('Error awarding points:', pointsError);
+          // Don't throw error here - assignment verification should still succeed
+          toast.error('Assignment approved but failed to award points. Please contact admin.');
+        }
 
         toast.success('Assignment approved and points awarded!');
       } else {
