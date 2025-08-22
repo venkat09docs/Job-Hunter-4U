@@ -215,7 +215,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('bronze'),
           criteria: 'First repo + 5 commits',
           nextAction: 'Start Coding',
-          link: '/dashboard/github-weekly'
+          link: '/github-weekly'
         },
         {
           id: 'github-silver',
@@ -225,7 +225,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('silver'),
           criteria: 'Repo with README + 30 commits',
           nextAction: 'Improve Projects',
-          link: '/dashboard/github-weekly'
+          link: '/github-weekly'
         },
         {
           id: 'github-gold',
@@ -235,7 +235,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateGithubProgress('gold'),
           criteria: 'Contribute to public projects',
           nextAction: 'Go Open Source',
-          link: '/dashboard/github-weekly'
+          link: '/github-weekly'
         }
       ]
     }] : [])
