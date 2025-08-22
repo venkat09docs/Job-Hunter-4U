@@ -72,13 +72,6 @@ const githubItems = [
   { title: "GitHub Weekly", url: "/github-weekly", icon: Target, featureKey: null },
 ];
 
-const careerAssignmentItems = [
-  { title: "Profile Assignments", url: "/dashboard/career-assignments", icon: ClipboardList, featureKey: null },
-  { title: "LinkedIn Growth Assignments", url: "/career-activities", icon: Linkedin, featureKey: null },
-  { title: "Job Hunter Assignments", url: "/dashboard/job-hunting-assignments", icon: Target, featureKey: "job_hunting_assignments" },
-  { title: "GitHub Weekly", url: "/github-weekly", icon: Github, featureKey: null },
-];
-
 const recruiterItems = [
   { title: "Dashboard", url: "/recruiter", icon: Home },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
@@ -127,7 +120,6 @@ export function AppSidebar() {
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
   const [githubOpen, setGitHubOpen] = useState(false);
-  const [careerAssignmentsOpen, setCareerAssignmentsOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -158,7 +150,6 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
-  const isCareerAssignmentsActive = careerAssignmentItems.some((i) => isActive(i.url));
 
   const getInitials = () => {
     if (profile?.username) {
@@ -326,43 +317,6 @@ export function AppSidebar() {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
                 })}
-
-                {/* Career Assignments Section */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => setCareerAssignmentsOpen(!careerAssignmentsOpen)}
-                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                      isCareerAssignmentsActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
-                    }`}
-                  >
-                    <ClipboardList className="h-5 w-5 flex-shrink-0" />
-                    {!isCollapsed && (
-                      <>
-                        <span className="font-medium text-sm">Career Assignments</span>
-                        {careerAssignmentsOpen ? (
-                          <ChevronDown className="h-4 w-4 ml-auto" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 ml-auto" />
-                        )}
-                      </>
-                    )}
-                  </button>
-                  {careerAssignmentsOpen && !isCollapsed && (
-                    <div className="space-y-1 mt-1">
-                      {careerAssignmentItems.map((item) => {
-                        const isPremium = item.featureKey ? !canAccessFeature(item.featureKey) : !canAccessFeature("career_assignments");
-                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
-                      })}
-                    </div>
-                  )}
-                  {isCollapsed && (
-                    <div className="space-y-1">
-                      {careerAssignmentItems.map((item) => (
-                        <MenuItem key={item.title} item={item} />
-                      ))}
-                    </div>
-                  )}
-                </div>
 
                 {/* Job Hunter Section */}
                 <div className="mt-4">
