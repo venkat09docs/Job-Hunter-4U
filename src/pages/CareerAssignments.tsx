@@ -144,12 +144,21 @@ const CareerAssignments = () => {
   };
 
   const getTasksBySubCategory = (subCategoryId: string) => {
+    console.log('getTasksBySubCategory called with:', subCategoryId);
+    console.log('assignments available:', assignments.length);
+    
     // Filter assignments by sub_category_id from the related template
-    return assignments
-      .filter(assignment => 
-        assignment.career_task_templates?.sub_category_id === subCategoryId
-      )
+    const filtered = assignments
+      .filter(assignment => {
+        console.log('Checking assignment:', assignment.id, 'template sub_category_id:', assignment.career_task_templates?.sub_category_id);
+        return assignment.career_task_templates?.sub_category_id === subCategoryId;
+      });
+    
+    console.log('Filtered assignments:', filtered.length);
+    
+    return filtered
       .sort((a, b) => {
+        console.log('Sorting assignments:', a.id, 'vs', b.id);
         // Sort by display_order if available, otherwise by created_at
         const orderA = a.career_task_templates?.display_order || 0;
         const orderB = b.career_task_templates?.display_order || 0;
