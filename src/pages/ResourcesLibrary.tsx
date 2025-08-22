@@ -90,6 +90,8 @@ const ResourcesLibrary = () => {
   const [selectedResumeForATS, setSelectedResumeForATS] = useState<SavedResume | null>(null);
   const [atsRole, setAtsRole] = useState('');
   const [atsJobDescription, setAtsJobDescription] = useState('');
+  const [atsResumeText, setAtsResumeText] = useState('');
+  const [isUploadedResume, setIsUploadedResume] = useState(false);
   const [atsResults, setAtsResults] = useState<Record<string, ATSAnalysis>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [latestATSScores, setLatestATSScores] = useState<Record<string, { score: number; created_at: string }>>({});
@@ -735,6 +737,16 @@ const ResourcesLibrary = () => {
     setSelectedResumeForATS(resume);
     setAtsRole('');
     setAtsJobDescription('');
+    setAtsResumeText('');
+    
+    // Check if this is an uploaded resume
+    // Uploaded resumes have pdf_url/word_url but no structured resume_data
+    // Created resumes have structured resume_data
+    const hasFileUrl = resume.pdf_url || resume.word_url;
+    const hasStructuredData = resume.resume_data && Object.keys(resume.resume_data).length > 0;
+    const isUploadedFile = hasFileUrl && !hasStructuredData;
+    
+    setIsUploadedResume(isUploadedFile);
     setAtsDialogOpen(true);
   };
 
@@ -748,62 +760,77 @@ const ResourcesLibrary = () => {
       return;
     }
 
+    // For uploaded resumes, check if resume text is provided
+    if (isUploadedResume && !atsResumeText.trim()) {
+      toast({
+        title: 'Missing resume text',
+        description: 'Please copy and paste your resume content below.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
-      // Extract resume text from resume_data
       let resumeText = '';
       
-      if (selectedResumeForATS.resume_data) {
-        const data = selectedResumeForATS.resume_data;
-        
-        // Build resume text from structured data
-        if (data.personalDetails) {
-          resumeText += `Name: ${data.personalDetails.fullName || ''}\n`;
-          resumeText += `Email: ${data.personalDetails.email || ''}\n`;
-          resumeText += `Phone: ${data.personalDetails.phone || ''}\n`;
-          resumeText += `Location: ${data.personalDetails.location || ''}\n\n`;
-        }
-
-        if (data.professionalSummary) {
-          resumeText += `Professional Summary: ${data.professionalSummary}\n\n`;
-        }
-
-        if (data.experience && Array.isArray(data.experience)) {
-          resumeText += 'Experience:\n';
-          data.experience.forEach((exp: any) => {
-            resumeText += `- ${exp.role} at ${exp.company} (${exp.duration})\n`;
-            resumeText += `  ${exp.description}\n`;
-          });
-          resumeText += '\n';
-        }
-
-        if (data.education && Array.isArray(data.education)) {
-          resumeText += 'Education:\n';
-          data.education.forEach((edu: any) => {
-            resumeText += `- ${edu.degree} from ${edu.institution} (${edu.duration})\n`;
-            if (edu.gpa) resumeText += `  GPA: ${edu.gpa}\n`;
-          });
-          resumeText += '\n';
-        }
-
-        if (data.skills_interests) {
-          if (data.skills_interests.skills && Array.isArray(data.skills_interests.skills)) {
-            resumeText += `Skills: ${data.skills_interests.skills.join(', ')}\n`;
+      if (isUploadedResume) {
+        // Use the provided resume text for uploaded resumes
+        resumeText = atsResumeText.trim();
+      } else {
+        // Extract resume text from resume_data for created resumes
+        if (selectedResumeForATS.resume_data) {
+          const data = selectedResumeForATS.resume_data;
+          
+          // Build resume text from structured data
+          if (data.personalDetails) {
+            resumeText += `Name: ${data.personalDetails.fullName || ''}\n`;
+            resumeText += `Email: ${data.personalDetails.email || ''}\n`;
+            resumeText += `Phone: ${data.personalDetails.phone || ''}\n`;
+            resumeText += `Location: ${data.personalDetails.location || ''}\n\n`;
           }
-          if (data.skills_interests.interests && Array.isArray(data.skills_interests.interests)) {
-            resumeText += `Interests: ${data.skills_interests.interests.join(', ')}\n`;
+
+          if (data.professionalSummary) {
+            resumeText += `Professional Summary: ${data.professionalSummary}\n\n`;
           }
-          resumeText += '\n';
+
+          if (data.experience && Array.isArray(data.experience)) {
+            resumeText += 'Experience:\n';
+            data.experience.forEach((exp: any) => {
+              resumeText += `- ${exp.role} at ${exp.company} (${exp.duration})\n`;
+              resumeText += `  ${exp.description}\n`;
+            });
+            resumeText += '\n';
+          }
+
+          if (data.education && Array.isArray(data.education)) {
+            resumeText += 'Education:\n';
+            data.education.forEach((edu: any) => {
+              resumeText += `- ${edu.degree} from ${edu.institution} (${edu.duration})\n`;
+              if (edu.gpa) resumeText += `  GPA: ${edu.gpa}\n`;
+            });
+            resumeText += '\n';
+          }
+
+          if (data.skills_interests) {
+            if (data.skills_interests.skills && Array.isArray(data.skills_interests.skills)) {
+              resumeText += `Skills: ${data.skills_interests.skills.join(', ')}\n`;
+            }
+            if (data.skills_interests.interests && Array.isArray(data.skills_interests.interests)) {
+              resumeText += `Interests: ${data.skills_interests.interests.join(', ')}\n`;
+            }
+            resumeText += '\n';
+          }
+
+          if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
+            resumeText += `Certifications: ${data.certifications_awards.join(', ')}\n\n`;
+          }
         }
 
-        if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
-          resumeText += `Certifications: ${data.certifications_awards.join(', ')}\n\n`;
+        // If no structured data, use a fallback message
+        if (!resumeText.trim()) {
+          resumeText = `Resume: ${selectedResumeForATS.title}\nThis is an uploaded resume file. Please analyze the resume content for ATS compatibility.`;
         }
-      }
-
-      // If no structured data, use a fallback message
-      if (!resumeText.trim()) {
-        resumeText = `Resume: ${selectedResumeForATS.title}\nThis is an uploaded resume file. Please analyze the resume content for ATS compatibility.`;
       }
 
       console.log('Calling ATS verification with:', { resumeText: resumeText.substring(0, 200) + '...', role: atsRole, jobDescription: atsJobDescription });
@@ -840,6 +867,7 @@ const ResourcesLibrary = () => {
       setSelectedResumeForATS(null);
       setAtsRole('');
       setAtsJobDescription('');
+      setAtsResumeText('');
 
       toast({
         title: 'ATS Analysis Complete',
@@ -1400,10 +1428,31 @@ const ResourcesLibrary = () => {
                   onChange={(e) => setAtsJobDescription(e.target.value)}
                 />
               </div>
+              {/* Show resume text field only for uploaded resumes */}
+              {isUploadedResume && (
+                <div className="space-y-2">
+                  <Label htmlFor="ats-resume-text">Resume Content</Label>
+                  <Textarea
+                    id="ats-resume-text"
+                    placeholder="Please copy and paste your resume content here"
+                    className="min-h-[200px] resize-none"
+                    value={atsResumeText}
+                    onChange={(e) => setAtsResumeText(e.target.value)}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Since this is an uploaded resume, please copy and paste the text content of your resume above for ATS analysis.
+                  </p>
+                </div>
+              )}
               {selectedResumeForATS && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium">Analyzing Resume:</p>
                   <p className="text-sm text-muted-foreground">{selectedResumeForATS.title}</p>
+                  {isUploadedResume && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Type: Uploaded file
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -1416,6 +1465,7 @@ const ResourcesLibrary = () => {
                   setSelectedResumeForATS(null);
                   setAtsRole('');
                   setAtsJobDescription('');
+                  setAtsResumeText('');
                 }}
                 disabled={isAnalyzing}
               >
@@ -1424,7 +1474,7 @@ const ResourcesLibrary = () => {
               <Button 
                 type="button" 
                 onClick={verifyATSScore}
-                disabled={isAnalyzing || !atsRole.trim() || !atsJobDescription.trim()}
+                disabled={isAnalyzing || !atsRole.trim() || !atsJobDescription.trim() || (isUploadedResume && !atsResumeText.trim())}
                 className="flex items-center gap-2"
               >
                 {isAnalyzing ? (
