@@ -142,8 +142,15 @@ const VerifyAssignments = () => {
             const { data, error } = await supabase
               .from('career_task_assignments')
               .select(`
-                *,
-                career_task_templates (
+                id,
+                user_id,
+                template_id,
+                status,
+                submitted_at,
+                verified_at,
+                points_earned,
+                score_awarded,
+                career_task_templates!inner (
                   title,
                   module,
                   points_reward,
@@ -343,8 +350,15 @@ const VerifyAssignments = () => {
             const { data, error } = await supabase
               .from('career_task_assignments')
               .select(`
-                *,
-                career_task_templates (
+                id,
+                user_id,
+                template_id,
+                status,
+                submitted_at,
+                verified_at,
+                points_earned,
+                score_awarded,
+                career_task_templates!inner (
                   title,
                   module,
                   points_reward,
