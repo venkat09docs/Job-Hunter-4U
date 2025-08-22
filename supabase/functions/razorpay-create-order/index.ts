@@ -185,7 +185,7 @@ serve(async (req) => {
       .from('payments')
       .select('id')
       .eq('razorpay_order_id', order.id)
-      .single();
+      .maybeSingle();
       
     if (existingOrder) {
       console.log('Order already exists in database:', order.id);
@@ -203,20 +203,19 @@ serve(async (req) => {
       );
     }
     
-    const insertData = {
-      user_id: user.id,
-      razorpay_order_id: order.id,
-      amount: amount,
-      plan_name: plan_name,
-      plan_duration: plan_duration
-    };
-    console.log('Insert data before insert:', JSON.stringify(insertData, null, 2));
-    
-    // Try the insert with explicit error handling
-    console.log('Attempting database insert...');
+    // Use explicit column specification for the insert
+    console.log('Attempting database insert with explicit columns...');
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
-      .insert(insertData)
+      .insert({
+        user_id: user.id,
+        razorpay_order_id: order.id,
+        amount: amount,
+        currency: 'INR',
+        status: 'pending',
+        plan_name: plan_name,
+        plan_duration: plan_duration
+      })
       .select();
 
     console.log('Insert result:', insertResult);
