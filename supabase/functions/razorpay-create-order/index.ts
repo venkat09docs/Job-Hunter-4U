@@ -203,24 +203,22 @@ serve(async (req) => {
       );
     }
     
-    // Add required fields including status to pass validation
-    console.log('Attempting database insert with all required fields for validation...');
-    
-    const insertData = {
-      user_id: user.id,
-      razorpay_order_id: order.id,
-      amount: amount,
-      plan_name: plan_name,
-      plan_duration: plan_duration,
-      status: 'pending', // Required by validation trigger
-      currency: 'INR'    // Include currency for completeness
-    };
-    
-    console.log('Insert data being sent:', insertData);
+    // Insert with only the absolutely required fields to debug
+    console.log('Attempting minimal database insert with only required fields...');
+    console.log('User ID:', user.id);
+    console.log('Order ID:', order.id); 
+    console.log('Amount:', amount);
+    console.log('Plan name:', plan_name);
+    console.log('Plan duration:', plan_duration);
     
     const { error: insertError } = await supabaseService
       .from('payments')
-      .insert(insertData);
+      .insert({
+        user_id: user.id,
+        amount: amount,
+        plan_name: plan_name,
+        plan_duration: plan_duration
+      });
 
     console.log('Insert error:', insertError);
 
