@@ -174,15 +174,23 @@ serve(async (req) => {
 
     // If not found, try to create a payment record based on the Razorpay order
     if (fetchError || !paymentData) {
-      console.log('❌ Payment record not found, checking if we need to create one...');
-      console.log('Fetch error:', fetchError);
+      console.log('❌ Payment record not found, error:', fetchError);
+      console.log('Trying to find without user filter...');
       
       // Try to find payment without user_id filter to debug
-      const { data: debugData } = await supabaseService
+      const { data: debugData, error: debugError } = await supabaseService
         .from('payments')
         .select('*')
         .eq('razorpay_order_id', razorpay_order_id);
-      console.log('Debug - All payments for order:', debugData);
+      console.log('Debug - All payments for order:', debugData, 'Error:', debugError);
+      
+      console.log('Trying to find any payments for this user...');
+      const { data: userPayments, error: userPaymentsError } = await supabaseService
+        .from('payments')
+        .select('*')
+        .eq('user_id', userId)
+        .limit(3);
+      console.log('User payments:', userPayments, 'Error:', userPaymentsError);
       
       // Fetch order details from Razorpay to get plan info
       const razorpayKeySecret = isLiveMode 
@@ -193,7 +201,7 @@ serve(async (req) => {
         : Deno.env.get('RAZORPAY_TEST_KEY_ID');
       
       try {
-        console.log('Fetching order details from Razorpay...');
+        console.log('Fetching order details from Razorpay for order:', razorpay_order_id);
         const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
           headers: {
             'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret.trim()}`)}`
@@ -202,45 +210,86 @@ serve(async (req) => {
         
         if (orderResponse.ok) {
           const orderData = await orderResponse.json();
-          console.log('Razorpay order data:', orderData);
+          console.log('✅ Razorpay order data:', JSON.stringify(orderData, null, 2));
           
           // Create payment record based on order notes
           const planName = orderData.notes?.plan_name || 'One Week Plan';
           const planDuration = orderData.notes?.plan_duration || '1 week';
           const amount = Math.floor(orderData.amount / 100); // Convert from paisa to rupees
           
-          console.log('Creating payment record with:', { planName, planDuration, amount });
+          console.log('Creating payment record with:', { 
+            userId, 
+            razorpay_order_id, 
+            amount, 
+            planName, 
+            planDuration 
+          });
           
-          const { data: newPaymentId, error: createError } = await supabaseService
-            .rpc('create_payment_record', {
-              p_user_id: userId,
-              p_razorpay_order_id: razorpay_order_id,
-              p_amount: amount,
-              p_plan_name: planName,
-              p_plan_duration: planDuration
-            });
+          // Try direct INSERT first
+          const { data: insertData, error: insertError } = await supabaseService
+            .from('payments')
+            .insert({
+              user_id: userId,
+              razorpay_order_id: razorpay_order_id,
+              amount: amount,
+              plan_name: planName,
+              plan_duration: planDuration,
+              status: 'pending',
+              currency: 'INR',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
           
-          if (createError) {
-            console.error('Failed to create payment record:', createError);
-          } else {
-            console.log('✅ Payment record created with ID:', newPaymentId);
+          if (insertError) {
+            console.error('❌ Direct INSERT failed:', insertError);
             
-            // Fetch the newly created record
-            const { data: newPaymentData, error: newFetchError } = await supabaseService
-              .from('payments')
-              .select('*')
-              .eq('razorpay_order_id', razorpay_order_id)
-              .eq('user_id', userId)
-              .single();
+            // Try using the function as fallback
+            console.log('Trying function approach...');
+            const { data: newPaymentId, error: createError } = await supabaseService
+              .rpc('create_payment_record', {
+                p_user_id: userId,
+                p_razorpay_order_id: razorpay_order_id,
+                p_amount: amount,
+                p_plan_name: planName,
+                p_plan_duration: planDuration
+              });
             
-            if (!newFetchError && newPaymentData) {
-              paymentData = newPaymentData;
-              console.log('✅ Payment record retrieved after creation');
+            if (createError) {
+              console.error('❌ Function approach also failed:', createError);
+              throw new Error(`Failed to create payment record: ${createError.message}`);
+            } else {
+              console.log('✅ Payment record created via function with ID:', newPaymentId);
+              
+              // Fetch the newly created record
+              const { data: newPaymentData, error: newFetchError } = await supabaseService
+                .from('payments')
+                .select('*')
+                .eq('razorpay_order_id', razorpay_order_id)
+                .eq('user_id', userId)
+                .single();
+              
+              if (!newFetchError && newPaymentData) {
+                paymentData = newPaymentData;
+                console.log('✅ Payment record retrieved after function creation');
+              } else {
+                console.error('❌ Failed to fetch after function creation:', newFetchError);
+                throw new Error('Payment record created but could not be retrieved');
+              }
             }
+          } else {
+            paymentData = insertData;
+            console.log('✅ Payment record created via direct INSERT with ID:', insertData.id);
           }
+        } else {
+          const errorText = await orderResponse.text();
+          console.error('❌ Failed to fetch order from Razorpay:', orderResponse.status, errorText);
+          throw new Error(`Failed to fetch Razorpay order: ${orderResponse.status}`);
         }
       } catch (razorpayError) {
-        console.error('Failed to fetch order from Razorpay:', razorpayError);
+        console.error('❌ Failed to fetch order from Razorpay:', razorpayError);
+        throw new Error(`Payment record not found and could not be created: ${razorpayError.message}`);
       }
       
       // If we still don't have payment data, fail
