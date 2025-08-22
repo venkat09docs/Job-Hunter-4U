@@ -223,9 +223,19 @@ serve(async (req) => {
     
     console.log('Insert data with all fields:', insertData);
     
-    const { error: insertError } = await supabaseService
+    // Try insert with just the most basic required fields
+    const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
-      .insert(insertData);
+      .insert({
+        user_id: user.id,
+        amount: amount,
+        plan_name: plan_name,
+        plan_duration: plan_duration
+      })
+      .select()
+      .single();
+
+    console.log('Insert result:', insertResult);
 
     console.log('Insert error:', insertError);
 
