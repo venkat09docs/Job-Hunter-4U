@@ -1400,14 +1400,14 @@ const ResourcesLibrary = () => {
 
         {/* ATS Verification Dialog */}
         <Dialog open={atsDialogOpen} onOpenChange={setAtsDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle>Verify ATS Score</DialogTitle>
               <DialogDescription>
                 Enter the role and job description to analyze your resume's ATS compatibility.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-2">
               <div className="space-y-2">
                 <Label htmlFor="ats-role">Role/Position</Label>
                 <Input
@@ -1458,7 +1458,7 @@ const ResourcesLibrary = () => {
                 </div>
               )}
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t pt-4 mt-4">
               <Button 
                 type="button" 
                 variant="outline" 
