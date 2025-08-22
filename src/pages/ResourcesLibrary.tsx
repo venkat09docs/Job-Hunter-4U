@@ -57,6 +57,8 @@ interface SavedReadmeFile {
 }
 
 const ResourcesLibrary = () => {
+  console.log('ResourcesLibrary component initializing');
+  
   const { user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
@@ -90,6 +92,9 @@ const ResourcesLibrary = () => {
   const [atsJobDescription, setAtsJobDescription] = useState('');
   const [atsResults, setAtsResults] = useState<Record<string, ATSAnalysis>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  console.log('State variables declared, historyDialogOpen:', historyDialogOpen);
+  
   const { isLoading: isHistoryLoading, history, saveATSResult, fetchATSHistory } = useATSHistory();
 
   useEffect(() => {
