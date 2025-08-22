@@ -338,6 +338,8 @@ const VerifyAssignments = () => {
             console.log('Student IDs:', studentIds);
             
             // Fetch submitted assignments for these students
+            console.log('Querying career_task_assignments with studentIds:', studentIds);
+            
             const { data, error } = await supabase
               .from('career_task_assignments')
               .select(`
@@ -353,6 +355,8 @@ const VerifyAssignments = () => {
               .in('user_id', studentIds)
               .order('submitted_at', { ascending: false });
 
+            console.log('Query result - data:', data);
+            console.log('Query result - error:', error);
             console.log('Submitted assignments found:', data);
 
             if (error) throw error;
