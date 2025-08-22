@@ -144,14 +144,18 @@ const CareerAssignments = () => {
   };
 
   const getTasksBySubCategory = (subCategoryId: string) => {
-    // Since sub_category_id doesn't exist in the template type, filter by category for now
+    // Filter assignments by sub_category_id from the related template
     return assignments
       .filter(assignment => 
-        assignment.career_task_templates?.category === 'resume_building' || 
-        assignment.career_task_templates?.category === 'linkedin_profile'
+        assignment.career_task_templates?.sub_category_id === subCategoryId
       )
       .sort((a, b) => {
-        // Use the assignment created_at for sorting since display_order doesn't exist
+        // Sort by display_order if available, otherwise by created_at
+        const orderA = a.career_task_templates?.display_order || 0;
+        const orderB = b.career_task_templates?.display_order || 0;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
   };

@@ -10,6 +10,8 @@ interface TaskTemplate {
   title: string;
   description: string;
   category: string;
+  sub_category_id?: string;
+  display_order?: number;
   evidence_types: string[];
   points_reward: number;
   cadence: string;
