@@ -206,20 +206,17 @@ serve(async (req) => {
       );
     }
     
-    // Insert payment record with exact column matching
-    console.log('Attempting database insert...');
+    // Insert payment record using direct SQL to avoid client-side column issues
+    console.log('Attempting database insert with direct SQL...');
     
     const { data: insertResult, error: insertError } = await supabaseService
-      .from('payments')
-      .insert({
-        user_id: user.id,
-        razorpay_order_id: order.id,
-        amount: amount,
-        plan_name: plan_name,
-        plan_duration: plan_duration
-      })
-      .select()
-      .single();
+      .rpc('create_payment_record', {
+        p_user_id: user.id,
+        p_razorpay_order_id: order.id,
+        p_amount: amount,
+        p_plan_name: plan_name,
+        p_plan_duration: plan_duration
+      });
 
     if (insertError) {
       console.error('Database insert error:', insertError);
