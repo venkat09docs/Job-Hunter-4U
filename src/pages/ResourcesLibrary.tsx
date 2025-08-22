@@ -92,6 +92,7 @@ const ResourcesLibrary = () => {
   const [atsJobDescription, setAtsJobDescription] = useState('');
   const [atsResults, setAtsResults] = useState<Record<string, ATSAnalysis>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [latestATSScores, setLatestATSScores] = useState<Record<string, { score: number; created_at: string }>>({});
   
   console.log('State variables declared, historyDialogOpen:', historyDialogOpen);
   
@@ -102,8 +103,36 @@ const ResourcesLibrary = () => {
       fetchSavedResumes();
       fetchSavedCoverLetters();
       fetchSavedReadmeFiles();
+      fetchLatestATSScores();
     }
   }, [user]);
+
+  const fetchLatestATSScores = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ats_score_history')
+        .select('resume_name, ats_score, created_at')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Group by resume_name and get the latest score for each
+      const latestScores: Record<string, { score: number; created_at: string }> = {};
+      data?.forEach((record) => {
+        if (!latestScores[record.resume_name]) {
+          latestScores[record.resume_name] = {
+            score: record.ats_score,
+            created_at: record.created_at
+          };
+        }
+      });
+
+      setLatestATSScores(latestScores);
+    } catch (error) {
+      console.error('Error fetching latest ATS scores:', error);
+    }
+  };
 
   const fetchSavedResumes = async () => {
     try {
@@ -827,6 +856,15 @@ const ResourcesLibrary = () => {
           analysisResult.analysis
         );
         console.log('ATS result automatically saved to history');
+        
+        // Update the latest ATS scores
+        setLatestATSScores(prev => ({
+          ...prev,
+          [selectedResumeForATS.title]: {
+            score: analysisResult.score,
+            created_at: new Date().toISOString()
+          }
+        }));
       } catch (saveError) {
         console.error('Error auto-saving ATS result:', saveError);
         // Don't show error to user since the analysis was successful
@@ -1035,7 +1073,18 @@ const ResourcesLibrary = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 items-start">
+                              {/* Latest ATS Score Badge */}
+                              {latestATSScores[resume.title] && (
+                                <Badge 
+                                  variant={latestATSScores[resume.title].score >= 80 ? 'default' : 'secondary'}
+                                  className={`${latestATSScores[resume.title].score >= 80 ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'} text-white flex items-center gap-1`}
+                                >
+                                  <CheckCircle className="h-3 w-3" />
+                                  {latestATSScores[resume.title].score}/100
+                                </Badge>
+                              )}
+                              
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
