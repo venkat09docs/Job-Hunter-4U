@@ -28,13 +28,14 @@ import {
   Trophy,
   Bell,
   Github,
-  ClipboardList,
   Moon,
   Sun,
   LogOut,
   Menu,
   X
 } from "lucide-react";
+
+import { ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
