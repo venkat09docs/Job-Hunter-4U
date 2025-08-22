@@ -225,63 +225,39 @@ serve(async (req) => {
             planDuration 
           });
           
-          // Try direct INSERT first
-          const { data: insertData, error: insertError } = await supabaseService
+          // Use the create_payment_record function (safer approach)
+          console.log('Creating payment record using function...');
+          const { data: newPaymentId, error: createError } = await supabaseService
+            .rpc('create_payment_record', {
+              p_user_id: userId,
+              p_razorpay_order_id: razorpay_order_id,
+              p_amount: amount,
+              p_plan_name: planName,
+              p_plan_duration: planDuration
+            });
+          
+          if (createError) {
+            console.error('❌ Failed to create payment record via function:', createError);
+            throw new Error(`Failed to create payment record: ${createError.message}`);
+          }
+          
+          console.log('✅ Payment record created via function with ID:', newPaymentId);
+          
+          // Fetch the newly created record
+          const { data: newPaymentData, error: newFetchError } = await supabaseService
             .from('payments')
-            .insert({
-              user_id: userId,
-              razorpay_order_id: razorpay_order_id,
-              amount: amount,
-              plan_name: planName,
-              plan_duration: planDuration,
-              status: 'pending',
-              currency: 'INR',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .select()
+            .select('*')
+            .eq('razorpay_order_id', razorpay_order_id)
+            .eq('user_id', userId)
             .single();
           
-          if (insertError) {
-            console.error('❌ Direct INSERT failed:', insertError);
-            
-            // Try using the function as fallback
-            console.log('Trying function approach...');
-            const { data: newPaymentId, error: createError } = await supabaseService
-              .rpc('create_payment_record', {
-                p_user_id: userId,
-                p_razorpay_order_id: razorpay_order_id,
-                p_amount: amount,
-                p_plan_name: planName,
-                p_plan_duration: planDuration
-              });
-            
-            if (createError) {
-              console.error('❌ Function approach also failed:', createError);
-              throw new Error(`Failed to create payment record: ${createError.message}`);
-            } else {
-              console.log('✅ Payment record created via function with ID:', newPaymentId);
-              
-              // Fetch the newly created record
-              const { data: newPaymentData, error: newFetchError } = await supabaseService
-                .from('payments')
-                .select('*')
-                .eq('razorpay_order_id', razorpay_order_id)
-                .eq('user_id', userId)
-                .single();
-              
-              if (!newFetchError && newPaymentData) {
-                paymentData = newPaymentData;
-                console.log('✅ Payment record retrieved after function creation');
-              } else {
-                console.error('❌ Failed to fetch after function creation:', newFetchError);
-                throw new Error('Payment record created but could not be retrieved');
-              }
-            }
-          } else {
-            paymentData = insertData;
-            console.log('✅ Payment record created via direct INSERT with ID:', insertData.id);
+          if (newFetchError || !newPaymentData) {
+            console.error('❌ Failed to fetch payment record after creation:', newFetchError);
+            throw new Error('Payment record created but could not be retrieved');
           }
+          
+          paymentData = newPaymentData;
+          console.log('✅ Payment record retrieved successfully');
         } else {
           const errorText = await orderResponse.text();
           console.error('❌ Failed to fetch order from Razorpay:', orderResponse.status, errorText);
