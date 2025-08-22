@@ -261,7 +261,9 @@ const VerifyAssignments = () => {
 
     // Module filter
     if (moduleFilter !== 'all') {
-      filtered = filtered.filter(assignment => assignment.career_task_templates.module === moduleFilter);
+      filtered = filtered.filter(assignment => 
+        (assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL') === moduleFilter
+      );
     }
 
     // User filter
@@ -289,7 +291,9 @@ const VerifyAssignments = () => {
 
     // Module filter
     if (verifiedModuleFilter !== 'all') {
-      filtered = filtered.filter(assignment => assignment.career_task_templates.module === verifiedModuleFilter);
+      filtered = filtered.filter(assignment => 
+        (assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL') === verifiedModuleFilter
+      );
     }
 
     // User filter
@@ -476,7 +480,9 @@ const VerifyAssignments = () => {
   );
 
   // Get unique modules for filter dropdown
-  const uniqueModules = [...new Set(assignments.map(assignment => assignment.career_task_templates.module))];
+  const uniqueModules = [...new Set(assignments.map(assignment => 
+    assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'
+  ))];
 
   // Get unique users for verified assignments filter dropdown
   const uniqueVerifiedUsers = Array.from(
@@ -489,7 +495,9 @@ const VerifyAssignments = () => {
   );
 
   // Get unique modules for verified assignments filter dropdown
-  const uniqueVerifiedModules = [...new Set(verifiedAssignments.map(assignment => assignment.career_task_templates.module))];
+  const uniqueVerifiedModules = [...new Set(verifiedAssignments.map(assignment => 
+    assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'
+  ))];
 
   const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
     if (!selectedAssignment) return;
@@ -606,6 +614,9 @@ const VerifyAssignments = () => {
       case 'LINKEDIN': return 'bg-blue-600';
       case 'GITHUB': return 'bg-gray-800';
       case 'DIGITAL_PROFILE': return 'bg-purple-500';
+      case 'networking': return 'bg-green-500';
+      case 'resume_building': return 'bg-blue-500';
+      case 'GENERAL': return 'bg-gray-500';
       default: return 'bg-gray-500';
     }
   };
@@ -773,9 +784,9 @@ const VerifyAssignments = () => {
                           </div>
                           <div className="flex flex-col items-end gap-2">
                             <Badge 
-                              className={`${getModuleBadgeColor(assignment.career_task_templates.module)} text-white`}
+                              className={`${getModuleBadgeColor(assignment.career_task_templates.module || 'GENERAL')} text-white`}
                             >
-                              {assignment.career_task_templates.module}
+                              {assignment.career_task_templates.module || assignment.career_task_templates.category || 'GENERAL'}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Award className="h-4 w-4" />
@@ -1188,14 +1199,22 @@ const VerifyAssignments = () => {
                       
                       {evidence.evidence_data && (
                         <div>
-                          <Label className="text-xs text-muted-foreground">Description & Details:</Label>
-                          {typeof evidence.evidence_data === 'object' ? (
+                          <Label className="text-xs text-muted-foreground">User Submission:</Label>
+                          {typeof evidence.evidence_data === 'object' && evidence.evidence_data !== null ? (
                             <div className="mt-1 space-y-2">
                               {evidence.evidence_data.description && (
                                 <div>
                                   <Label className="text-xs font-medium">Description:</Label>
                                   <p className="text-sm bg-muted p-2 rounded mt-1">
                                     {evidence.evidence_data.description}
+                                  </p>
+                                </div>
+                              )}
+                              {evidence.evidence_data.text && (
+                                <div>
+                                  <Label className="text-xs font-medium">Submission Text:</Label>
+                                  <p className="text-sm bg-muted p-2 rounded mt-1">
+                                    {evidence.evidence_data.text}
                                   </p>
                                 </div>
                               )}
@@ -1233,21 +1252,54 @@ const VerifyAssignments = () => {
                                   </a>
                                 </div>
                               )}
+                              {evidence.evidence_data.url && (
+                                <div>
+                                  <Label className="text-xs font-medium">Submitted URL:</Label>
+                                  <a 
+                                    href={evidence.evidence_data.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline block text-sm"
+                                  >
+                                    {evidence.evidence_data.url}
+                                  </a>
+                                </div>
+                              )}
+                              {/* Show raw data if none of the specific fields are available */}
                               {Object.keys(evidence.evidence_data).length > 0 && 
                                !evidence.evidence_data.description && 
+                               !evidence.evidence_data.text &&
                                !evidence.evidence_data.notes && 
                                !evidence.evidence_data.linkedinUrl && 
-                               !evidence.evidence_data.githubUrl && (
+                               !evidence.evidence_data.githubUrl &&
+                               !evidence.evidence_data.url && (
                                 <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto max-h-32">
                                   {JSON.stringify(evidence.evidence_data, null, 2)}
                                 </pre>
                               )}
                             </div>
                           ) : (
-                            <p className="text-sm bg-muted p-2 rounded mt-1">
-                              {String(evidence.evidence_data)}
-                            </p>
+                            <div className="mt-1">
+                              {evidence.evidence_data !== "URL" ? (
+                                <p className="text-sm bg-muted p-2 rounded">
+                                  {String(evidence.evidence_data)}
+                                </p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground italic">
+                                  User submitted evidence via URL submission form (details may be stored separately)
+                                </p>
+                              )}
+                            </div>
                           )}
+                        </div>
+                      )}
+                      
+                      {/* Show if evidence has no meaningful data */}
+                      {(!evidence.evidence_data || evidence.evidence_data === "URL") && !evidence.url && (!evidence.file_urls || evidence.file_urls.length === 0) && (
+                        <div className="mt-2">
+                          <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+                            ⚠️ No detailed evidence data available. User may have submitted through a different method.
+                          </p>
                         </div>
                       )}
                     </Card>
