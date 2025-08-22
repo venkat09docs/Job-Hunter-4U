@@ -179,6 +179,8 @@ serve(async (req) => {
       user_id: user.id,
       razorpay_order_id: order.id,
       amount: amount,
+      currency: 'INR',
+      status: 'pending',
       plan_name: plan_name,
       plan_duration: plan_duration
     };
