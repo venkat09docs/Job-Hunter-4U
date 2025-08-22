@@ -171,13 +171,13 @@ serve(async (req) => {
 
     const { error: insertError } = await supabaseService
       .from('payments')
-      .insert({
+      .insert([{
         user_id: user.id,
         razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration,
-      });
+        plan_duration: plan_duration
+      }]);
 
     if (insertError) {
       console.error('Database insert error:', insertError);
