@@ -13,6 +13,7 @@ interface SubscriptionUpgradeProps {
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
+  eligiblePlans?: string[];
 }
 
 export const SubscriptionUpgrade = ({ 
@@ -20,7 +21,8 @@ export const SubscriptionUpgrade = ({
   featureName = "this feature",
   variant = "default",
   size = "default",
-  className = ""
+  className = "",
+  eligiblePlans
 }: SubscriptionUpgradeProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
@@ -108,7 +110,7 @@ export const SubscriptionUpgrade = ({
             You need an active subscription to access {featureName}. Choose a plan that works for you:
           </p>
         </div>
-        <PricingDialog />
+        <PricingDialog eligiblePlans={eligiblePlans} />
       </DialogContent>
     </Dialog>
   );

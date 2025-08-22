@@ -520,7 +520,7 @@ const Dashboard = () => {
                     <p className="text-muted-foreground mb-4">
                       Badge Leaders is available with 3 Months, 6 Months, or 1 Year plans
                     </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders">
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -546,7 +546,7 @@ const Dashboard = () => {
                     <p className="text-muted-foreground mb-4">
                       Leaderboard is available with 3 Months, 6 Months, or 1 Year plans
                     </p>
-                    <SubscriptionUpgrade featureName="Leaderboard">
+                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
