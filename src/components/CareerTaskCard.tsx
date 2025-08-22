@@ -149,8 +149,11 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             }
             
             if (!foundData) {
-              console.log('🔍 No usable data found in evidence record - this indicates a data storage issue');
-              setTextInput('Previous submission found but data could not be retrieved');
+              console.log('🔍 No usable data found in evidence record - legacy corrupted data');
+              // Instead of showing error message, provide helpful context
+              setTextInput('');
+              setUrlInput('');
+              setExistingFileInfo('Note: Previous submission had corrupted data. Please re-enter your information.');
             } else {
               console.log('🔍 Form pre-populated successfully');
             }
