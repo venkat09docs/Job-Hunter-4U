@@ -175,9 +175,7 @@ serve(async (req) => {
       razorpay_order_id: order.id,
       amount: amount,
       plan_name: plan_name,
-      plan_duration: plan_duration,
-      status: 'pending',
-      currency: 'INR'
+      plan_duration: plan_duration
     };
     console.log('Insert data:', JSON.stringify(insertData, null, 2));
 
