@@ -163,6 +163,42 @@ export type Database = {
           },
         ]
       }
+      ats_score_history: {
+        Row: {
+          analysis_result: Json
+          ats_score: number
+          created_at: string
+          id: string
+          job_description: string
+          resume_name: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis_result?: Json
+          ats_score: number
+          created_at?: string
+          id?: string
+          job_description: string
+          resume_name: string
+          role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis_result?: Json
+          ats_score?: number
+          created_at?: string
+          id?: string
+          job_description?: string
+          resume_name?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string

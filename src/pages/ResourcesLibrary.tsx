@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useATSHistory } from '@/hooks/useATSHistory';
 
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload, CheckCircle } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload, CheckCircle, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -35,6 +36,8 @@ interface ATSAnalysis {
   score: number;
   analysis: string;
   isAnalyzing?: boolean;
+  role?: string;
+  jobDescription?: string;
 }
 
 interface SavedCoverLetter {
@@ -81,11 +84,13 @@ const ResourcesLibrary = () => {
   
   // ATS Score verification state
   const [atsDialogOpen, setAtsDialogOpen] = useState(false);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedResumeForATS, setSelectedResumeForATS] = useState<SavedResume | null>(null);
   const [atsRole, setAtsRole] = useState('');
   const [atsJobDescription, setAtsJobDescription] = useState('');
   const [atsResults, setAtsResults] = useState<Record<string, ATSAnalysis>>({});
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { isLoading: isHistoryLoading, history, saveATSResult, fetchATSHistory } = useATSHistory();
 
   useEffect(() => {
     if (user) {
@@ -790,7 +795,9 @@ const ResourcesLibrary = () => {
         [selectedResumeForATS.id]: {
           score: analysisResult.score,
           analysis: analysisResult.analysis,
-          isAnalyzing: false
+          isAnalyzing: false,
+          role: atsRole,
+          jobDescription: atsJobDescription
         }
       }));
 
@@ -814,6 +821,34 @@ const ResourcesLibrary = () => {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveATSResult = async (resumeId: string) => {
+    const result = atsResults[resumeId];
+    const resume = savedResumes.find(r => r.id === resumeId);
+    
+    if (!result || !resume) return;
+    
+    try {
+      await saveATSResult(
+        resume.title,
+        result.role || '',
+        result.jobDescription || '',
+        result.score,
+        result.analysis
+      );
+    } catch (error) {
+      console.error('Error saving ATS result:', error);
+    }
+  };
+
+  const handleViewHistory = async (resume: SavedResume) => {
+    try {
+      await fetchATSHistory(resume.title);
+      setHistoryDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching history:', error);
     }
   };
 
@@ -946,23 +981,45 @@ const ResourcesLibrary = () => {
                                     {updatingDefault === resume.id ? 'Setting...' : 'Set as Default'}
                                   </Button>
                                 )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openATSDialog(resume)}
-                                  className="flex items-center gap-1"
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                  Verify ATS Score
-                                </Button>
-                                {atsResults[resume.id] && (
-                                  <Badge 
-                                    variant={getATSScoreBadgeVariant(atsResults[resume.id].score)}
-                                    className={`${getATSScoreColor(atsResults[resume.id].score)} flex items-center gap-1`}
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openATSDialog(resume)}
+                                    className="flex items-center gap-1"
                                   >
-                                    <CheckCircle className="h-3 w-3" />
-                                    ATS: {atsResults[resume.id].score}/100
-                                  </Badge>
+                                    <CheckCircle className="h-4 w-4" />
+                                    Verify ATS Score
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleViewHistory(resume)}
+                                    className="flex items-center gap-1"
+                                  >
+                                    <History className="h-4 w-4" />
+                                    View ATS History
+                                  </Button>
+                                </div>
+                                {atsResults[resume.id] && (
+                                  <div className="flex items-center gap-2">
+                                    <Badge 
+                                      variant={getATSScoreBadgeVariant(atsResults[resume.id].score)}
+                                      className={`${getATSScoreColor(atsResults[resume.id].score)} flex items-center gap-1`}
+                                    >
+                                      <CheckCircle className="h-3 w-3" />
+                                      ATS: {atsResults[resume.id].score}/100
+                                    </Badge>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleSaveATSResult(resume.id)}
+                                      className="flex items-center gap-1 text-xs"
+                                    >
+                                      <Save className="h-3 w-3" />
+                                      Save Report
+                                    </Button>
+                                  </div>
                                 )}
                                 {resume.pdf_url && (
                                   <Button
@@ -1453,6 +1510,64 @@ const ResourcesLibrary = () => {
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* ATS History Dialog */}
+        <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>ATS Score History</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {isHistoryLoading ? (
+                <div className="text-center py-8">Loading history...</div>
+              ) : history.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No ATS score history found for this resume.
+                </div>
+              ) : (
+                history.map((entry) => (
+                  <Card key={entry.id} className="w-full">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{entry.role}</CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(entry.created_at).toLocaleDateString()} at{' '}
+                            {new Date(entry.created_at).toLocaleTimeString()}
+                          </p>
+                        </div>
+                        <Badge 
+                          className={entry.ats_score >= 80 ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'}
+                        >
+                          Score: {entry.ats_score}%
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Job Description:</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {entry.job_description}
+                          </p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">Analysis Result:</h4>
+                          <div className="bg-muted p-3 rounded text-sm max-h-60 overflow-y-auto">
+                            <pre className="whitespace-pre-wrap">
+                              {entry.analysis_result.content}
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

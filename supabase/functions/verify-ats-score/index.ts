@@ -1,8 +1,13 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { corsHeaders } from "../_shared/cors.ts";
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -10,6 +15,23 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const url = new URL(req.url);
+  const pathname = url.pathname;
+
+  // Handle different endpoints
+  if (pathname.endsWith('/analyze') || pathname.endsWith('/verify-ats-score')) {
+    return await handleAnalyze(req);
+  } else if (pathname.endsWith('/save')) {
+    return await handleSave(req);
+  } else if (pathname.endsWith('/history')) {
+    return await handleHistory(req);
+  }
+
+  // Default behavior for backward compatibility
+  return await handleAnalyze(req);
+});
+
+async function handleAnalyze(req: Request) {
   if (!openAIApiKey) {
     console.error('OpenAI API key not found');
     return new Response(
@@ -147,7 +169,7 @@ write output in bullet points with side heading and provide suggestions which ar
       }
     );
   } catch (error) {
-    console.error('Error in verify-ats-score function:', error);
+    console.error('Error in analyze endpoint:', error);
     return new Response(
       JSON.stringify({ 
         error: 'An unexpected error occurred', 
@@ -159,4 +181,109 @@ write output in bullet points with side heading and provide suggestions which ar
       }
     );
   }
-});
+}
+
+async function handleSave(req: Request) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    if (authError || !user) {
+      throw new Error('Authentication failed');
+    }
+
+    const { resumeName, role, jobDescription, atsScore, analysisResult } = await req.json();
+
+    const { data, error } = await supabase
+      .from('ats_score_history')
+      .insert([
+        {
+          user_id: user.id,
+          resume_name: resumeName,
+          role,
+          job_description: jobDescription,
+          ats_score: atsScore,
+          analysis_result: { content: analysisResult }
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      data
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error in save endpoint:', error);
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+async function handleHistory(req: Request) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
+
+    if (authError || !user) {
+      throw new Error('Authentication failed');
+    }
+
+    const url = new URL(req.url);
+    const resumeName = url.searchParams.get('resumeName');
+
+    if (!resumeName) {
+      throw new Error('Resume name is required');
+    }
+
+    const { data, error } = await supabase
+      .from('ats_score_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('resume_name', resumeName)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true,
+      data
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error in history endpoint:', error);
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: error.message 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
