@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -29,6 +29,12 @@ interface SavedResume {
   created_at: string;
   updated_at: string;
   is_default: boolean;
+}
+
+interface ATSAnalysis {
+  score: number;
+  analysis: string;
+  isAnalyzing?: boolean;
 }
 
 interface SavedCoverLetter {
@@ -72,6 +78,14 @@ const ResourcesLibrary = () => {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState('');
+  
+  // ATS Score verification state
+  const [atsDialogOpen, setAtsDialogOpen] = useState(false);
+  const [selectedResumeForATS, setSelectedResumeForATS] = useState<SavedResume | null>(null);
+  const [atsRole, setAtsRole] = useState('');
+  const [atsJobDescription, setAtsJobDescription] = useState('');
+  const [atsResults, setAtsResults] = useState<Record<string, ATSAnalysis>>({});
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -677,6 +691,140 @@ const ResourcesLibrary = () => {
     setUploadDialogOpen(true);
   };
 
+  // ATS Score verification functions
+  const openATSDialog = (resume: SavedResume) => {
+    setSelectedResumeForATS(resume);
+    setAtsRole('');
+    setAtsJobDescription('');
+    setAtsDialogOpen(true);
+  };
+
+  const verifyATSScore = async () => {
+    if (!selectedResumeForATS || !atsRole.trim() || !atsJobDescription.trim()) {
+      toast({
+        title: 'Missing information',
+        description: 'Please enter both role and job description.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      // Extract resume text from resume_data
+      let resumeText = '';
+      
+      if (selectedResumeForATS.resume_data) {
+        const data = selectedResumeForATS.resume_data;
+        
+        // Build resume text from structured data
+        if (data.personalDetails) {
+          resumeText += `Name: ${data.personalDetails.fullName || ''}\n`;
+          resumeText += `Email: ${data.personalDetails.email || ''}\n`;
+          resumeText += `Phone: ${data.personalDetails.phone || ''}\n`;
+          resumeText += `Location: ${data.personalDetails.location || ''}\n\n`;
+        }
+
+        if (data.professionalSummary) {
+          resumeText += `Professional Summary: ${data.professionalSummary}\n\n`;
+        }
+
+        if (data.experience && Array.isArray(data.experience)) {
+          resumeText += 'Experience:\n';
+          data.experience.forEach((exp: any) => {
+            resumeText += `- ${exp.role} at ${exp.company} (${exp.duration})\n`;
+            resumeText += `  ${exp.description}\n`;
+          });
+          resumeText += '\n';
+        }
+
+        if (data.education && Array.isArray(data.education)) {
+          resumeText += 'Education:\n';
+          data.education.forEach((edu: any) => {
+            resumeText += `- ${edu.degree} from ${edu.institution} (${edu.duration})\n`;
+            if (edu.gpa) resumeText += `  GPA: ${edu.gpa}\n`;
+          });
+          resumeText += '\n';
+        }
+
+        if (data.skills_interests) {
+          if (data.skills_interests.skills && Array.isArray(data.skills_interests.skills)) {
+            resumeText += `Skills: ${data.skills_interests.skills.join(', ')}\n`;
+          }
+          if (data.skills_interests.interests && Array.isArray(data.skills_interests.interests)) {
+            resumeText += `Interests: ${data.skills_interests.interests.join(', ')}\n`;
+          }
+          resumeText += '\n';
+        }
+
+        if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
+          resumeText += `Certifications: ${data.certifications_awards.join(', ')}\n\n`;
+        }
+      }
+
+      // If no structured data, use a fallback message
+      if (!resumeText.trim()) {
+        resumeText = `Resume: ${selectedResumeForATS.title}\nThis is an uploaded resume file. Please analyze the resume content for ATS compatibility.`;
+      }
+
+      console.log('Calling ATS verification with:', { resumeText: resumeText.substring(0, 200) + '...', role: atsRole, jobDescription: atsJobDescription });
+
+      const { data, error } = await supabase.functions.invoke('verify-ats-score', {
+        body: {
+          resumeText,
+          role: atsRole.trim(),
+          jobDescription: atsJobDescription.trim()
+        }
+      });
+
+      if (error) {
+        console.error('ATS verification error:', error);
+        throw error;
+      }
+
+      const analysisResult = data as { analysis: string; score: number };
+
+      // Store the result
+      setAtsResults(prev => ({
+        ...prev,
+        [selectedResumeForATS.id]: {
+          score: analysisResult.score,
+          analysis: analysisResult.analysis,
+          isAnalyzing: false
+        }
+      }));
+
+      // Close dialog
+      setAtsDialogOpen(false);
+      setSelectedResumeForATS(null);
+      setAtsRole('');
+      setAtsJobDescription('');
+
+      toast({
+        title: 'ATS Analysis Complete',
+        description: `Your resume scored ${analysisResult.score}/100 for the ${atsRole} role.`,
+      });
+
+    } catch (error) {
+      console.error('Error verifying ATS score:', error);
+      toast({
+        title: 'Verification failed',
+        description: 'Failed to analyze resume. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getATSScoreColor = (score: number) => {
+    return score >= 80 ? 'text-green-600' : 'text-orange-600';
+  };
+
+  const getATSScoreBadgeVariant = (score: number) => {
+    return score >= 80 ? 'default' : 'secondary';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -797,6 +945,24 @@ const ResourcesLibrary = () => {
                                     <Star className="h-4 w-4" />
                                     {updatingDefault === resume.id ? 'Setting...' : 'Set as Default'}
                                   </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openATSDialog(resume)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                  Verify ATS Score
+                                </Button>
+                                {atsResults[resume.id] && (
+                                  <Badge 
+                                    variant={getATSScoreBadgeVariant(atsResults[resume.id].score)}
+                                    className={`${getATSScoreColor(atsResults[resume.id].score)} flex items-center gap-1`}
+                                  >
+                                    <CheckCircle className="h-3 w-3" />
+                                    ATS: {atsResults[resume.id].score}/100
+                                  </Badge>
                                 )}
                                 {resume.pdf_url && (
                                   <Button
@@ -1109,6 +1275,78 @@ const ResourcesLibrary = () => {
           </TabsContent>
         </Tabs>
 
+        {/* ATS Verification Dialog */}
+        <Dialog open={atsDialogOpen} onOpenChange={setAtsDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Verify ATS Score</DialogTitle>
+              <DialogDescription>
+                Enter the role and job description to analyze your resume's ATS compatibility.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="ats-role">Role/Position</Label>
+                <Input
+                  id="ats-role"
+                  placeholder="e.g., Software Engineer, Marketing Manager"
+                  value={atsRole}
+                  onChange={(e) => setAtsRole(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ats-job-description">Job Description / Required Skills</Label>
+                <Textarea
+                  id="ats-job-description"
+                  placeholder="Enter the job description or list of required skills for this role"
+                  className="min-h-[150px] resize-none"
+                  value={atsJobDescription}
+                  onChange={(e) => setAtsJobDescription(e.target.value)}
+                />
+              </div>
+              {selectedResumeForATS && (
+                <div className="p-3 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">Analyzing Resume:</p>
+                  <p className="text-sm text-muted-foreground">{selectedResumeForATS.title}</p>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setAtsDialogOpen(false);
+                  setSelectedResumeForATS(null);
+                  setAtsRole('');
+                  setAtsJobDescription('');
+                }}
+                disabled={isAnalyzing}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="button" 
+                onClick={verifyATSScore}
+                disabled={isAnalyzing || !atsRole.trim() || !atsJobDescription.trim()}
+                className="flex items-center gap-2"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-4 w-4" />
+                    Verify ATS Score
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
         {/* Upload Resume Dialog */}
         <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
           <DialogContent className="sm:max-w-md">
