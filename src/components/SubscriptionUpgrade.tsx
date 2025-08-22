@@ -118,13 +118,36 @@ export const SubscriptionUpgrade = ({
 
 export const SubscriptionStatus = () => {
   const { hasActiveSubscription, getRemainingDays, profile } = useProfile();
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
   if (!hasActiveSubscription()) {
     return (
-      <div className="flex items-center gap-2 text-sm">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="text-muted-foreground">No active subscription</span>
-      </div>
+      <>
+        <Dialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="text-sm">
+              <Crown className="h-4 w-4 mr-2" />
+              Upgrade Plan
+            </Button>
+          </DialogTrigger>
+          <DialogContent 
+            className="max-w-5xl max-h-[90vh] overflow-y-auto p-6"
+            onCloseAutoFocus={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-2xl font-bold text-center">Choose Your Plan</DialogTitle>
+            </DialogHeader>
+            <div className="mb-6">
+              <p className="text-muted-foreground text-center">
+                Unlock premium features and accelerate your career growth with our subscription plans:
+              </p>
+            </div>
+            <PricingDialog />
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
