@@ -319,20 +319,25 @@ export const useCareerAssignments = () => {
         ...evidenceData
       };
 
-      console.log('🔍 Complete evidence data to store:', completeEvidenceData);
+      console.log('🔍 FIXED VERSION - Complete evidence data to store:', completeEvidenceData);
+      console.log('🔍 FIXED VERSION - Original evidenceData received:', evidenceData);
 
       // Insert evidence with proper data structure
+      const insertPayload = {
+        assignment_id: assignmentId,
+        evidence_type: evidenceType.toLowerCase(),
+        kind: evidenceType,
+        url: completeEvidenceData.url,
+        file_urls: fileUrls.length > 0 ? fileUrls : null,
+        evidence_data: completeEvidenceData, // Store the complete object
+        verification_status: 'pending'
+      };
+
+      console.log('🔍 FIXED VERSION - Insert payload:', insertPayload);
+
       const { error } = await supabase
         .from('career_task_evidence')
-        .insert({
-          assignment_id: assignmentId,
-          evidence_type: evidenceType.toLowerCase(),
-          kind: evidenceType,
-          url: completeEvidenceData.url,
-          file_urls: fileUrls.length > 0 ? fileUrls : null,
-          evidence_data: completeEvidenceData, // Store the complete object
-          verification_status: 'pending'
-        });
+        .insert(insertPayload);
 
       if (error) {
         console.error('🔍 Database insertion error:', error);

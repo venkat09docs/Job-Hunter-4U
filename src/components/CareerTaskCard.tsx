@@ -228,7 +228,9 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
       evidenceData.file_type = selectedFile.type;
     }
 
-    console.log('🔍 Submitting evidence with data:', evidenceData);
+    console.log('🔍 FIXED VERSION - Submitting evidence with data:', evidenceData);
+    console.log('🔍 FIXED VERSION - Evidence type:', evidenceType);
+    console.log('🔍 FIXED VERSION - Assignment ID:', assignment.id);
     onSubmitEvidence(assignment.id, evidenceType, evidenceData, selectedFile || undefined);
     setUrlInput('');
     setTextInput('');
