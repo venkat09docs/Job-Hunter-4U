@@ -301,28 +301,36 @@ export const useCareerAssignments = () => {
         console.log('🔍 File uploaded successfully:', publicUrl);
       }
 
-      // Prepare complete evidence data
+      // Ensure we always have a proper evidence data object
       const completeEvidenceData = {
-        ...evidenceData,
         evidence_type: evidenceType.toLowerCase(),
         submitted_by: user.id,
         submitted_at: new Date().toISOString(),
         has_file: fileUrls.length > 0,
-        file_count: fileUrls.length
+        file_count: fileUrls.length,
+        // Include all user-provided data, with defaults for empty values
+        url: evidenceData.url || null,
+        description: evidenceData.description || evidenceData.text || null,
+        text: evidenceData.text || evidenceData.description || null,
+        file_name: evidenceData.file_name || null,
+        file_size: evidenceData.file_size || null,
+        file_type: evidenceData.file_type || null,
+        // Include any additional data from evidenceData
+        ...evidenceData
       };
 
       console.log('🔍 Complete evidence data to store:', completeEvidenceData);
 
-      // Insert evidence
+      // Insert evidence with proper data structure
       const { error } = await supabase
         .from('career_task_evidence')
         .insert({
           assignment_id: assignmentId,
           evidence_type: evidenceType.toLowerCase(),
           kind: evidenceType,
-          url: evidenceData.url || null,
+          url: completeEvidenceData.url,
           file_urls: fileUrls.length > 0 ? fileUrls : null,
-          evidence_data: completeEvidenceData,
+          evidence_data: completeEvidenceData, // Store the complete object
           verification_status: 'pending'
         });
 
@@ -331,7 +339,7 @@ export const useCareerAssignments = () => {
         throw error;
       }
 
-      console.log('🔍 Evidence inserted successfully');
+      console.log('🔍 Evidence inserted successfully with complete data');
 
       // Update assignment status to submitted with proper timestamp
       const submittedAt = new Date().toISOString();
