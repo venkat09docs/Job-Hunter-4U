@@ -106,9 +106,20 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             // Handle both new format (object) and old format (string)
             let foundData = false;
             
-            if (data.evidence_data && typeof data.evidence_data === 'object' && !Array.isArray(data.evidence_data)) {
+            // First try to parse evidence_data if it's a string
+            let evidenceData = data.evidence_data;
+            if (typeof evidenceData === 'string') {
+              try {
+                evidenceData = JSON.parse(evidenceData);
+                console.log('🔍 Successfully parsed stringified evidence_data:', evidenceData);
+              } catch (e) {
+                console.log('🔍 Failed to parse evidence_data as JSON, treating as string:', evidenceData);
+                evidenceData = null;
+              }
+            }
+            
+            if (evidenceData && typeof evidenceData === 'object' && !Array.isArray(evidenceData)) {
               console.log('🔍 Processing object evidence_data');
-              const evidenceData = data.evidence_data as Record<string, any>;
               
               if (evidenceData.url && typeof evidenceData.url === 'string') {
                 setUrlInput(evidenceData.url);

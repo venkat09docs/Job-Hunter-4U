@@ -329,11 +329,12 @@ export const useCareerAssignments = () => {
         kind: evidenceType,
         url: completeEvidenceData.url,
         file_urls: fileUrls.length > 0 ? fileUrls : null,
-        evidence_data: completeEvidenceData, // Store the complete object
+        evidence_data: JSON.stringify(completeEvidenceData), // Explicitly stringify the object
         verification_status: 'pending'
       };
 
       console.log('🔍 FIXED VERSION - Insert payload:', insertPayload);
+      console.log('🔍 FIXED VERSION - evidence_data as string:', JSON.stringify(completeEvidenceData));
 
       const { error } = await supabase
         .from('career_task_evidence')
