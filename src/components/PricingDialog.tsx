@@ -159,9 +159,11 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
 
       if (orderError || !orderData) {
         console.error('Order creation error:', orderError);
+        console.error('Order data:', orderData);
+        console.error('Full error details:', JSON.stringify(orderError, null, 2));
         toast({
-          title: "Error",
-          description: "Failed to create payment order. Please try again.",
+          title: "Payment Order Failed",
+          description: orderError?.message || "Failed to create payment order. Please try again.",
           variant: "destructive"
         });
         setLoadingPlan(null);
