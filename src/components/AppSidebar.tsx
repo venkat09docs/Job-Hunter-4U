@@ -295,7 +295,7 @@ export function AppSidebar() {
                   if (item.title === "Leader Board Points" && !isAdmin) return null;
                   if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
                   if ((item.title === "Recruiter Dashboard" || item.title === "Post Job") && !isAdmin) return null;
-                  if (item.title === "Verify Assignments" && !isAdmin && !isRecruiter) return null;
+                  if (item.title === "Verify Assignments" && !isAdmin && !isRecruiter && !isInstituteAdmin) return null;
                 
                   return <MenuItem key={item.title} item={item} />;
                 })}
