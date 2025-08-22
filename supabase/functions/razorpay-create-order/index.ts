@@ -206,70 +206,27 @@ serve(async (req) => {
       );
     }
     
-    // Insert payment record with proper field mapping
-    console.log('Attempting database insert with correct field mapping...');
-    console.log('User ID:', user.id);
-    console.log('Order ID:', order.id); 
-    console.log('Amount:', amount);
-    console.log('Plan name:', plan_name);
-    console.log('Plan duration:', plan_duration);
+    // Insert payment record with exact column matching
+    console.log('Attempting database insert...');
     
-    const insertData = {
-      user_id: user.id,
-      razorpay_order_id: order.id,
-      amount: amount,
-      plan_name: plan_name,
-      plan_duration: plan_duration,
-      status: 'pending',
-      currency: 'INR'
-    };
-    
-    console.log('Insert data with all fields:', insertData);
-    
-    // Insert with only the essential required fields first
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
-      .insert([{
+      .insert({
         user_id: user.id,
+        razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
         plan_duration: plan_duration
-      }])
+      })
       .select()
       .single();
 
-    console.log('Insert result:', insertResult);
-
-    console.log('Insert error:', insertError);
-
     if (insertError) {
-      console.error('Database insert error details:', {
-        message: insertError.message,
-        details: insertError.details,
-        hint: insertError.hint,
-        code: insertError.code
-      });
+      console.error('Database insert error:', insertError);
       throw new Error(`Failed to store payment details: ${insertError.message}`);
     }
 
-    // Now update with Razorpay details
-    const { error: updateError } = await supabaseService
-      .from('payments')
-      .update({
-        razorpay_order_id: order.id,
-        status: 'pending',
-        currency: 'INR'
-      })
-      .eq('id', insertResult.id);
-
-    if (updateError) {
-      console.error('Failed to update payment with Razorpay details:', updateError);
-      // Continue anyway as the basic record is created
-    }
-
     console.log('✅ Payment record created successfully');
-
-    console.log('Order created successfully:', order.id);
 
     return new Response(
       JSON.stringify({
