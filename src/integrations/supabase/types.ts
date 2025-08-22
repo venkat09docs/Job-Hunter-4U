@@ -3363,6 +3363,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_payment_record: {
+        Args: {
+          p_amount: number
+          p_plan_duration: string
+          p_plan_name: string
+          p_razorpay_order_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_all_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
