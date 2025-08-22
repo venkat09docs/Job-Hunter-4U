@@ -226,18 +226,15 @@ serve(async (req) => {
     
     console.log('Insert data with all fields:', insertData);
     
-    // Insert with all required fields using service role
+    // Insert with only the essential required fields first
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
-      .insert({
+      .insert([{
         user_id: user.id,
-        razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration,
-        status: 'pending',
-        currency: 'INR'
-      })
+        plan_duration: plan_duration
+      }])
       .select()
       .single();
 
@@ -253,6 +250,21 @@ serve(async (req) => {
         code: insertError.code
       });
       throw new Error(`Failed to store payment details: ${insertError.message}`);
+    }
+
+    // Now update with Razorpay details
+    const { error: updateError } = await supabaseService
+      .from('payments')
+      .update({
+        razorpay_order_id: order.id,
+        status: 'pending',
+        currency: 'INR'
+      })
+      .eq('id', insertResult.id);
+
+    if (updateError) {
+      console.error('Failed to update payment with Razorpay details:', updateError);
+      // Continue anyway as the basic record is created
     }
 
     console.log('✅ Payment record created successfully');
