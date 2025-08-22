@@ -48,6 +48,19 @@ const MAIN_CATEGORIES = [
   { id: 'github', name: 'GitHub Weekly' }
 ];
 
+// Valid category values for career_task_templates (based on database constraint)
+const VALID_PROFILE_CATEGORIES = [
+  'linkedin_growth',
+  'supabase_practice',
+  'n8n_practice',
+  'networking',
+  'content_creation',
+  'resume_building',
+  'resume_optimization',
+  'resume_management',
+  'cover_letter'
+];
+
 export default function ManageAssignments() {
   const { isAdmin, loading } = useRole();
   const [activeCategory, setActiveCategory] = useState('profile');
@@ -209,17 +222,13 @@ export default function ManageAssignments() {
       if (editingAssignment) {
         // Update existing assignment
         if (activeCategory === 'profile') {
-          // Find the sub-category to get its name for category field
-          const selectedSubCategory = subCategories.find(sc => sc.id === assignmentForm.category);
-          const categoryValue = selectedSubCategory?.name.toLowerCase().replace(/\s+/g, '_') || 'networking';
-          
+          // Use the selected valid category value directly for updates too
           const { error } = await supabase
             .from('career_task_templates')
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              category: categoryValue,
-              sub_category_id: assignmentForm.category,
+              category: assignmentForm.category, // Use selected valid category directly
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
@@ -280,17 +289,13 @@ export default function ManageAssignments() {
       } else {
         // Create new assignment
         if (activeCategory === 'profile') {
-          // Find the sub-category to get its name for category field
-          const selectedSubCategory = subCategories.find(sc => sc.id === assignmentForm.category);
-          const categoryValue = selectedSubCategory?.name.toLowerCase().replace(/\s+/g, '_') || 'networking';
-          
+          // Use the selected valid category value directly
           const { error } = await supabase
             .from('career_task_templates')
             .insert({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              category: categoryValue,
-              sub_category_id: assignmentForm.category,
+              category: assignmentForm.category, // Use selected valid category directly
               points_reward: assignmentForm.points_reward,
               difficulty: assignmentForm.difficulty,
               is_active: assignmentForm.is_active,
@@ -421,7 +426,7 @@ export default function ManageAssignments() {
     setAssignmentForm({
       title: assignment.title,
       description: assignment.description,
-      category: activeCategory === 'profile' ? (assignment.sub_category_id || assignment.category) : assignment.category,
+      category: assignment.category, // Use the actual category value from database
       points_reward: assignment.points_reward || 10,
       difficulty: assignment.difficulty || 'medium',
       is_active: assignment.is_active,
@@ -730,24 +735,41 @@ export default function ManageAssignments() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="category">Category (Sub Category)</Label>
+                  <Label htmlFor="category">
+                    {activeCategory === 'profile' ? 'Category' : 'Category (Sub Category)'}
+                  </Label>
                   <Select
                     value={assignmentForm.category}
                     onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a sub category" />
+                      <SelectValue placeholder={
+                        activeCategory === 'profile' ? 'Select a category' : 'Select a sub category'
+                      } />
                     </SelectTrigger>
                     <SelectContent>
-                      {subCategories.map((subCategory) => (
-                        <SelectItem key={subCategory.id} value={subCategory.id}>
-                          {subCategory.name}
-                        </SelectItem>
-                      ))}
-                      {subCategories.length === 0 && (
-                        <SelectItem value="" disabled>
-                          No sub categories available
-                        </SelectItem>
+                      {activeCategory === 'profile' ? (
+                        // Show valid profile categories
+                        VALID_PROFILE_CATEGORIES.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category.split('_').map(word => 
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                            ).join(' ')}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        // Show sub-categories for other tabs
+                        subCategories.length > 0 ? (
+                          subCategories.map((subCategory) => (
+                            <SelectItem key={subCategory.id} value={subCategory.id}>
+                              {subCategory.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="" disabled>
+                            No sub categories available
+                          </SelectItem>
+                        )
                       )}
                     </SelectContent>
                   </Select>
