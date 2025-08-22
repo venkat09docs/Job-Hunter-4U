@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useATSHistory } from '@/hooks/useATSHistory';
 
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, Save, X, Star, Upload, CheckCircle, History } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, X, Star, Upload, CheckCircle, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -817,6 +817,21 @@ const ResourcesLibrary = () => {
         description: `Your resume scored ${analysisResult.score}/100 for the ${atsRole} role.`,
       });
 
+      // Automatically save the result to history
+      try {
+        await saveATSResult(
+          selectedResumeForATS.title,
+          atsRole,
+          atsJobDescription,
+          analysisResult.score,
+          analysisResult.analysis
+        );
+        console.log('ATS result automatically saved to history');
+      } catch (saveError) {
+        console.error('Error auto-saving ATS result:', saveError);
+        // Don't show error to user since the analysis was successful
+      }
+
     } catch (error) {
       console.error('Error verifying ATS score:', error);
       toast({
@@ -826,25 +841,6 @@ const ResourcesLibrary = () => {
       });
     } finally {
       setIsAnalyzing(false);
-    }
-  };
-
-  const handleSaveATSResult = async (resumeId: string) => {
-    const result = atsResults[resumeId];
-    const resume = savedResumes.find(r => r.id === resumeId);
-    
-    if (!result || !resume) return;
-    
-    try {
-      await saveATSResult(
-        resume.title,
-        result.role || '',
-        result.jobDescription || '',
-        result.score,
-        result.analysis
-      );
-    } catch (error) {
-      console.error('Error saving ATS result:', error);
     }
   };
 
@@ -1007,24 +1003,13 @@ const ResourcesLibrary = () => {
                                   </Button>
                                 </div>
                                 {atsResults[resume.id] && (
-                                  <div className="flex items-center gap-2">
-                                    <Badge 
-                                      variant={getATSScoreBadgeVariant(atsResults[resume.id].score)}
-                                      className={`${getATSScoreColor(atsResults[resume.id].score)} flex items-center gap-1`}
-                                    >
-                                      <CheckCircle className="h-3 w-3" />
-                                      ATS: {atsResults[resume.id].score}/100
-                                    </Badge>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleSaveATSResult(resume.id)}
-                                      className="flex items-center gap-1 text-xs"
-                                    >
-                                      <Save className="h-3 w-3" />
-                                      Save Report
-                                    </Button>
-                                  </div>
+                                  <Badge 
+                                    variant={getATSScoreBadgeVariant(atsResults[resume.id].score)}
+                                    className={`${getATSScoreColor(atsResults[resume.id].score)} flex items-center gap-1`}
+                                  >
+                                    <CheckCircle className="h-3 w-3" />
+                                    ATS: {atsResults[resume.id].score}/100
+                                  </Badge>
                                 )}
                                 {resume.pdf_url && (
                                   <Button

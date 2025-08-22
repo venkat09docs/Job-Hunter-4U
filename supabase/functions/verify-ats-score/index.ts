@@ -155,9 +155,27 @@ write output in bullet points with side heading and provide suggestions which ar
 
     console.log('ATS analysis completed successfully');
 
-    // Extract score from the analysis result
-    const scoreMatch = analysisResult.match(/score[:\s]*(\d+)/i);
-    const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+    // Extract score from the analysis result - handle multiple formats
+    let score = 0;
+    const scorePatterns = [
+      /\*\*Score:\*\*\s*(\d+)\/100/i,      // **Score:** 40/100
+      /score[:\s]*(\d+)\/100/i,           // score: 40/100 or score 40/100
+      /score[:\s]*(\d+)/i,                // score: 40 or score 40
+      /(\d+)\/100/i,                      // 40/100
+      /(\d+)\s*out\s*of\s*100/i          // 40 out of 100
+    ];
+    
+    for (const pattern of scorePatterns) {
+      const scoreMatch = analysisResult.match(pattern);
+      if (scoreMatch) {
+        score = parseInt(scoreMatch[1]);
+        console.log(`Score extracted using pattern ${pattern}: ${score}`);
+        break;
+      }
+    }
+    
+    console.log('Final extracted score:', score);
+    console.log('Analysis result sample:', analysisResult.substring(0, 200));
 
     return new Response(
       JSON.stringify({ 
@@ -200,6 +218,35 @@ async function handleSave(req: Request) {
 
     const { resumeName, role, jobDescription, atsScore, analysisResult } = await req.json();
 
+    // First, clean up old records - keep only the latest 9 so we can add 1 more (total 10)
+    const { data: existingRecords, error: fetchError } = await supabase
+      .from('ats_score_history')
+      .select('id, created_at')
+      .eq('user_id', user.id)
+      .eq('resume_name', resumeName)
+      .order('created_at', { ascending: false });
+
+    if (fetchError) {
+      console.error('Error fetching existing records:', fetchError);
+    } else if (existingRecords && existingRecords.length >= 10) {
+      // Keep only the latest 9 records, delete the rest
+      const recordsToDelete = existingRecords.slice(9);
+      if (recordsToDelete.length > 0) {
+        const idsToDelete = recordsToDelete.map(record => record.id);
+        const { error: deleteError } = await supabase
+          .from('ats_score_history')
+          .delete()
+          .in('id', idsToDelete);
+        
+        if (deleteError) {
+          console.error('Error deleting old records:', deleteError);
+        } else {
+          console.log(`Deleted ${recordsToDelete.length} old ATS records for resume: ${resumeName}`);
+        }
+      }
+    }
+
+    // Insert the new record
     const { data, error } = await supabase
       .from('ats_score_history')
       .insert([
@@ -218,6 +265,8 @@ async function handleSave(req: Request) {
     if (error) {
       throw new Error(`Database error: ${error.message}`);
     }
+
+    console.log(`ATS result saved for resume: ${resumeName}, score: ${atsScore}`);
 
     return new Response(JSON.stringify({ 
       success: true,
