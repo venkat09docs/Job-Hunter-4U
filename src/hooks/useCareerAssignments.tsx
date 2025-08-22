@@ -280,6 +280,7 @@ export const useCareerAssignments = () => {
 
     try {
       setSubmittingEvidence(true);
+      console.log('🔍 submitEvidence called with:', { assignmentId, evidenceType, evidenceData, file });
 
       let fileUrls: string[] = [];
       
@@ -297,7 +298,20 @@ export const useCareerAssignments = () => {
           .getPublicUrl(fileName);
         
         fileUrls = [publicUrl];
+        console.log('🔍 File uploaded successfully:', publicUrl);
       }
+
+      // Prepare complete evidence data
+      const completeEvidenceData = {
+        ...evidenceData,
+        evidence_type: evidenceType.toLowerCase(),
+        submitted_by: user.id,
+        submitted_at: new Date().toISOString(),
+        has_file: fileUrls.length > 0,
+        file_count: fileUrls.length
+      };
+
+      console.log('🔍 Complete evidence data to store:', completeEvidenceData);
 
       // Insert evidence
       const { error } = await supabase
@@ -306,13 +320,18 @@ export const useCareerAssignments = () => {
           assignment_id: assignmentId,
           evidence_type: evidenceType.toLowerCase(),
           kind: evidenceType,
-          url: evidenceData.url,
+          url: evidenceData.url || null,
           file_urls: fileUrls.length > 0 ? fileUrls : null,
-          evidence_data: evidenceData,
+          evidence_data: completeEvidenceData,
           verification_status: 'pending'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('🔍 Database insertion error:', error);
+        throw error;
+      }
+
+      console.log('🔍 Evidence inserted successfully');
 
       // Update assignment status to submitted with proper timestamp
       const submittedAt = new Date().toISOString();

@@ -94,14 +94,30 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
   };
 
   const handleSubmitEvidence = () => {
-    const evidenceData: any = {};
-    if (evidenceType === 'URL' && urlInput.trim()) {
+    const evidenceData: any = {
+      submitted_at: new Date().toISOString(),
+      evidence_type: evidenceType.toLowerCase()
+    };
+    
+    // Always include URL if provided
+    if (urlInput.trim()) {
       evidenceData.url = urlInput.trim();
     }
+    
+    // Always include description if provided
     if (textInput.trim()) {
-      evidenceData.text = textInput.trim();
+      evidenceData.description = textInput.trim();
+      evidenceData.text = textInput.trim(); // Keep both for compatibility
+    }
+    
+    // Include file info if file selected
+    if (selectedFile) {
+      evidenceData.file_name = selectedFile.name;
+      evidenceData.file_size = selectedFile.size;
+      evidenceData.file_type = selectedFile.type;
     }
 
+    console.log('🔍 Submitting evidence with data:', evidenceData);
     onSubmitEvidence(assignment.id, evidenceType, evidenceData, selectedFile || undefined);
     setUrlInput('');
     setTextInput('');

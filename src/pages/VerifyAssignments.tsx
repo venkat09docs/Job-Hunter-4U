@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight, History, ArrowLeft } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight, History, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -1340,14 +1340,32 @@ const VerifyAssignments = () => {
                         </div>
                       )}
                       
-                      {/* Show if evidence has no meaningful data */}
-                      {(!evidence.evidence_data || evidence.evidence_data === "URL") && !evidence.url && (!evidence.file_urls || evidence.file_urls.length === 0) && (
-                        <div className="mt-2">
-                          <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                            ⚠️ No detailed evidence data available. User may have submitted through a different method.
-                          </p>
-                        </div>
-                      )}
+                       {/* Show debugging info for incomplete submissions */}
+                       {(evidence.evidence_data === "URL" || (typeof evidence.evidence_data === 'string' && evidence.evidence_data.length < 10)) && (
+                         <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+                           <div className="flex items-center gap-2 mb-2">
+                             <AlertCircle className="h-4 w-4 text-red-600" />
+                             <Label className="text-xs font-semibold text-red-800">
+                               Incomplete Evidence Data Detected
+                             </Label>
+                           </div>
+                           <p className="text-xs text-red-700 mb-2">
+                             This evidence appears to contain only minimal data (just "{evidence.evidence_data}") instead of the complete user submission.
+                           </p>
+                           <p className="text-xs text-red-600">
+                             This indicates an issue with the evidence submission process that has now been fixed for future submissions.
+                           </p>
+                         </div>
+                       )}
+                       
+                       {/* Show if evidence has no meaningful data */}
+                       {(!evidence.evidence_data || evidence.evidence_data === "URL") && !evidence.url && (!evidence.file_urls || evidence.file_urls.length === 0) && (
+                         <div className="mt-2">
+                           <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+                             ⚠️ No detailed evidence data available. User may have submitted through a different method.
+                           </p>
+                         </div>
+                       )}
                     </Card>
                   ))}
                 </div>
