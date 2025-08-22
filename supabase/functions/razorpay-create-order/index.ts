@@ -175,17 +175,45 @@ serve(async (req) => {
     );
 
     console.log('Attempting to insert payment record...');
+    
+    // Debug: Check if service client is properly initialized
+    console.log('Service client URL:', Deno.env.get('SUPABASE_URL'));
+    console.log('Service role key exists:', !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+    
+    // First check if this order already exists
+    const { data: existingOrder } = await supabaseService
+      .from('payments')
+      .select('id')
+      .eq('razorpay_order_id', order.id)
+      .single();
+      
+    if (existingOrder) {
+      console.log('Order already exists in database:', order.id);
+      return new Response(
+        JSON.stringify({
+          order_id: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          key: razorpayKeyId,
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
+    
     const insertData = {
       user_id: user.id,
       razorpay_order_id: order.id,
       amount: amount,
-      currency: 'INR',
-      status: 'pending',
       plan_name: plan_name,
       plan_duration: plan_duration
     };
-    console.log('Insert data:', JSON.stringify(insertData, null, 2));
-
+    console.log('Insert data before insert:', JSON.stringify(insertData, null, 2));
+    
+    // Try the insert with explicit error handling
+    console.log('Attempting database insert...');
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
       .insert(insertData)
