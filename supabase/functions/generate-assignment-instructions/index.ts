@@ -36,16 +36,15 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert at creating clear, actionable step-by-step instructions for career development assignments. 
+            content: `You are an expert at creating concise, actionable instructions for career development assignments. 
 
-Generate detailed instructions that users can follow to complete the assignment successfully. The instructions should be:
-- Clear and specific
-- Easy to follow step-by-step format
-- Include practical tips where relevant
-- Use bullet points for better readability
-- Focus on actionable steps the user can take
+Generate exactly 4 simple instruction points. Each point must be exactly 10 words long. The instructions should be:
+- Clear and actionable
+- Concise and to the point
+- Easy to follow
+- Focused on key steps
 
-Format your response as plain text with bullet points using the • character.`
+Format your response as plain text with bullet points using the • character. Each bullet point must contain exactly 10 words.`
           },
           {
             role: 'user',
