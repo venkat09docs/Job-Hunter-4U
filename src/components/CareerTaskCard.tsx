@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,8 +65,64 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [textInput, setTextInput] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [existingFileInfo, setExistingFileInfo] = useState<string | null>(null);
+  const [loadingExistingData, setLoadingExistingData] = useState(false);
 
   const task = assignment.career_task_templates;
+
+  // Fetch existing evidence when modal opens for submitted assignments
+  useEffect(() => {
+    const fetchExistingEvidence = async () => {
+      if (showEvidenceModal && assignment.status === 'submitted') {
+        setLoadingExistingData(true);
+        try {
+          const { data, error } = await supabase
+            .from('career_task_evidence')
+            .select('*')
+            .eq('assignment_id', assignment.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (error) {
+            console.error('Error fetching existing evidence:', error);
+            return;
+          }
+
+          if (data && data.evidence_data && typeof data.evidence_data === 'object' && !Array.isArray(data.evidence_data)) {
+            const evidenceData = data.evidence_data as Record<string, any>;
+            
+            // Pre-populate form fields with existing data
+            if (evidenceData.url && typeof evidenceData.url === 'string') {
+              setUrlInput(evidenceData.url);
+            }
+            if (evidenceData.description && typeof evidenceData.description === 'string') {
+              setTextInput(evidenceData.description);
+            } else if (evidenceData.text && typeof evidenceData.text === 'string') {
+              setTextInput(evidenceData.text);
+            }
+            if (evidenceData.file_name && typeof evidenceData.file_name === 'string') {
+              setExistingFileInfo(`Previously uploaded: ${evidenceData.file_name}`);
+            }
+            
+            console.log('Pre-populated form with existing evidence:', evidenceData);
+          }
+        } catch (error) {
+          console.error('Error fetching existing evidence:', error);
+        } finally {
+          setLoadingExistingData(false);
+        }
+      } else if (!showEvidenceModal) {
+        // Reset form when modal closes
+        setUrlInput('');
+        setTextInput('');
+        setSelectedFile(null);
+        setExistingFileInfo(null);
+      }
+    };
+
+    fetchExistingEvidence();
+  }, [showEvidenceModal, assignment.id, assignment.status]);
 
   const getStatusColor = () => {
     switch (assignment.status) {
@@ -204,12 +261,19 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                   </DialogHeader>
                   
                   <div className="space-y-4">
+                    {loadingExistingData && (
+                      <div className="text-sm text-muted-foreground">
+                        Loading existing data...
+                      </div>
+                    )}
+                    
                     <div>
                       <Label>URL (if applicable)</Label>
                       <Input
                         type="url"
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
+                        placeholder="Enter URL if applicable"
                       />
                     </div>
                     
@@ -219,6 +283,13 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                         type="file"
                         onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                       />
+                      {existingFileInfo && (
+                        <div className="mt-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+                          {existingFileInfo}
+                          <br />
+                          <span className="text-xs">Select a new file to replace the existing one</span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -227,11 +298,12 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                         value={textInput}
                         onChange={(e) => setTextInput(e.target.value)}
                         rows={3}
+                        placeholder="Enter description of your work"
                       />
                     </div>
 
-                    <Button onClick={handleSubmitEvidence} disabled={isSubmitting}>
-                      {isSubmitting ? 'Submitting...' : 'Submit'}
+                    <Button onClick={handleSubmitEvidence} disabled={isSubmitting || loadingExistingData}>
+                      {isSubmitting ? 'Submitting...' : loadingExistingData ? 'Loading...' : 'Submit'}
                     </Button>
                   </div>
                 </DialogContent>
