@@ -167,11 +167,14 @@ serve(async (req) => {
     const order = await response.json();
     console.log('✅ Razorpay order created successfully:', order);
 
-    // Store order details in our database
+    // Store order details in our database using service role
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
+      { 
+        auth: { persistSession: false },
+        global: { headers: { 'x-client-info': 'edge-function' } }
+      }
     );
 
     console.log('Attempting to insert payment record...');
@@ -223,14 +226,17 @@ serve(async (req) => {
     
     console.log('Insert data with all fields:', insertData);
     
-    // Try insert with just the most basic required fields
+    // Insert with all required fields using service role
     const { data: insertResult, error: insertError } = await supabaseService
       .from('payments')
       .insert({
         user_id: user.id,
+        razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration
+        plan_duration: plan_duration,
+        status: 'pending',
+        currency: 'INR'
       })
       .select()
       .single();
