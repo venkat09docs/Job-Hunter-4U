@@ -373,6 +373,12 @@ const VerifyAssignments = () => {
             console.log('Query result - data:', data);
             console.log('Query result - error:', error);
             console.log('Submitted assignments found:', data);
+            
+            // Debug: Check what modules we're getting
+            if (data) {
+              console.log('🔍 Modules found in assignments:', data.map(d => d.career_task_templates?.module).filter(Boolean));
+              console.log('🔍 First assignment template:', data[0]?.career_task_templates);
+            }
 
             if (error) throw error;
 
@@ -450,10 +456,12 @@ const VerifyAssignments = () => {
           return { ...assignment, evidence: [] };
         }
 
+        console.log('🔍 Evidence for assignment', assignment.id, ':', evidenceData);
         return { ...assignment, evidence: evidenceData || [] };
       })
     );
 
+    console.log('🔍 Final assignments with evidence:', assignmentsWithEvidence);
     setAssignments(assignmentsWithEvidence);
   };
 
@@ -485,6 +493,9 @@ const VerifyAssignments = () => {
 
   const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
     if (!selectedAssignment) return;
+    
+    console.log('🔍 Selected assignment for verification:', selectedAssignment);
+    console.log('🔍 Evidence to display:', selectedAssignment.evidence);
 
     try {
       setProcessing(true);
