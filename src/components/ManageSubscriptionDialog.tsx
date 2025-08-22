@@ -263,6 +263,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
             if (verifyError || !verifyData?.success) {
               console.error('Payment verification error:', verifyError);
+              setLoadingPlan(null);
+              document.body.classList.remove('razorpay-open');
               toast({
                 title: "Payment Verification Failed",
                 description: "Payment received but verification failed. Please contact support.",
