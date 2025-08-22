@@ -515,8 +515,13 @@ const VerifyAssignments = () => {
             .eq('id', evidence.id);
         }
 
+        console.log('🔍 About to award points for assignment:', selectedAssignment.id);
+        console.log('🔍 User ID:', selectedAssignment.user_id);
+        console.log('🔍 Points to award:', selectedAssignment.career_task_templates.points_reward);
+        console.log('🔍 Current user (auth.uid()):', supabase.auth.getUser().then(u => console.log('Current user:', u.data.user?.id)));
+
         // Award points to user
-        const { error: pointsError } = await supabase
+        const { data: pointsData, error: pointsError } = await supabase
           .from('user_activity_points')
           .insert({
             user_id: selectedAssignment.user_id,
@@ -524,21 +529,20 @@ const VerifyAssignments = () => {
             activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
             points_earned: selectedAssignment.career_task_templates.points_reward,
             activity_date: new Date().toISOString().split('T')[0]
-          });
+          })
+          .select();
+
+        console.log('🔍 Points insertion result:', { pointsData, pointsError });
 
         if (pointsError) {
-          console.error('Error awarding points:', pointsError);
-          console.error('Points error details:', pointsError);
+          console.error('❌ Error awarding points:', pointsError);
+          console.error('❌ Points error details:', JSON.stringify(pointsError, null, 2));
           // Don't throw error here - assignment verification should still succeed
-          toast.error('Assignment approved but failed to award points. Please contact admin.');
+          toast.error(`Assignment approved but failed to award points: ${pointsError.message}`);
         } else {
           // Points were successfully awarded
           console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', selectedAssignment.career_task_templates.points_reward);
-          
-          // Force a reload of the page to refresh all point displays
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
+          console.log('✅ Inserted points data:', pointsData);
           
           toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded to user!`);
         }
