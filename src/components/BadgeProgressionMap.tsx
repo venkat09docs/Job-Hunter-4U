@@ -177,7 +177,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateNetworkProgress('bronze'),
           criteria: '25 new connections',
           nextAction: 'Connect More',
-          link: '/dashboard/career-activities'
+          link: '/career-activities'
         },
         {
           id: 'network-silver',
@@ -187,7 +187,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateNetworkProgress('silver'),
           criteria: '50 connections + 5 posts/week',
           nextAction: 'Engage More',
-          link: '/dashboard/career-activities'
+          link: '/career-activities'
         },
         {
           id: 'network-gold',
@@ -197,7 +197,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: calculateNetworkProgress('gold'),
           criteria: '100 connections + 1,000 profile views',
           nextAction: 'Build Influence',
-          link: '/dashboard/career-activities'
+          link: '/career-activities'
         }
       ]
     },
