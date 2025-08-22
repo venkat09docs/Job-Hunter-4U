@@ -179,6 +179,8 @@ serve(async (req) => {
         status: 'pending',
         plan_name: plan_name,
         plan_duration: plan_duration,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       });
 
     if (insertError) {
