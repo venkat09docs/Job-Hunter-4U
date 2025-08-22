@@ -281,32 +281,46 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Instructions:</Label>
             <div className="bg-muted/50 p-3 rounded-md text-sm">
-              {task.instructions.steps && (
-                <ul className="list-disc list-inside space-y-1">
-                  {task.instructions.steps.map((step: string, index: number) => (
-                    <li key={index}>{step}</li>
+              {typeof task.instructions === 'string' ? (
+                // Handle plain string instructions (from AI-generated content)
+                <div className="whitespace-pre-line leading-relaxed">
+                  {task.instructions.split('•').filter(step => step.trim()).map((step, index) => (
+                    <div key={index} className="mb-2 pl-2 border-l-2 border-primary/20">
+                      • {step.trim()}
+                    </div>
                   ))}
-                </ul>
-              )}
-              {task.instructions.ai_tool && (
-                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
-                  <strong>🤖 AI Tool Required:</strong>{' '}
-                  <button
-                    onClick={() => {
-                      const toolUrls: Record<string, string> = {
-                        'Resume Builder - Top 6 Skills': '/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd',
-                        'Resume Builder - Achievements': '/dashboard/digital-career-hub?toolId=20c53c53-70c1-4d50-b0af-655fe09aef7b',
-                        'Generate Resume Summary': '/dashboard/digital-career-hub?toolId=55b57cf9-4781-4b80-8e40-eb154420ce49',
-                        'Resume Score Tracking': '/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75'
-                      };
-                      const url = toolUrls[task.instructions.ai_tool] || '/dashboard/digital-career-hub';
-                      window.open(url, '_blank');
-                    }}
-                    className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors"
-                  >
-                    {task.instructions.ai_tool}
-                  </button>
                 </div>
+              ) : (
+                // Handle object-based instructions (legacy format)
+                <>
+                  {task.instructions.steps && (
+                    <ul className="list-disc list-inside space-y-1">
+                      {task.instructions.steps.map((step: string, index: number) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {task.instructions.ai_tool && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
+                      <strong>🤖 AI Tool Required:</strong>{' '}
+                      <button
+                        onClick={() => {
+                          const toolUrls: Record<string, string> = {
+                            'Resume Builder - Top 6 Skills': '/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd',
+                            'Resume Builder - Achievements': '/dashboard/digital-career-hub?toolId=20c53c53-70c1-4d50-b0af-655fe09aef7b',
+                            'Generate Resume Summary': '/dashboard/digital-career-hub?toolId=55b57cf9-4781-4b80-8e40-eb154420ce49',
+                            'Resume Score Tracking': '/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75'
+                          };
+                          const url = toolUrls[task.instructions.ai_tool] || '/dashboard/digital-career-hub';
+                          window.open(url, '_blank');
+                        }}
+                        className="text-blue-600 hover:text-blue-800 underline hover:no-underline transition-colors"
+                      >
+                        {task.instructions.ai_tool}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
