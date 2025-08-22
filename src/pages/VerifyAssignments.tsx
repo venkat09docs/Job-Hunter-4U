@@ -8,14 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight, History } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Calendar, User, Award, FileText, Clock, Filter, Search, ChevronLeft, ChevronRight, History, ArrowLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 interface SubmittedAssignment {
   id: string;
@@ -50,6 +50,7 @@ interface SubmittedAssignment {
 const VerifyAssignments = () => {
   const { user } = useAuth();
   const { isAdmin, isRecruiter, isInstituteAdmin, loading: roleLoading } = useRole();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<SubmittedAssignment[]>([]);
   const [verifiedAssignments, setVerifiedAssignments] = useState<SubmittedAssignment[]>([]);
@@ -150,7 +151,7 @@ const VerifyAssignments = () => {
                 verified_at,
                 points_earned,
                 score_awarded,
-                career_task_templates!inner (
+                career_task_templates (
                   title,
                   module,
                   points_reward,
@@ -358,7 +359,7 @@ const VerifyAssignments = () => {
                 verified_at,
                 points_earned,
                 score_awarded,
-                career_task_templates!inner (
+                career_task_templates (
                   title,
                   module,
                   points_reward,
@@ -610,11 +611,22 @@ const VerifyAssignments = () => {
     <div>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Verify Assignments</h1>
-            <p className="text-muted-foreground mt-2">
-              Review and verify user submitted assignments
-            </p>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Verify Assignments</h1>
+              <p className="text-muted-foreground mt-2">
+                Review and verify user submitted assignments
+              </p>
+            </div>
           </div>
           <div className="flex gap-3">
             <Badge variant="secondary" className="text-lg px-3 py-1">
@@ -1165,10 +1177,66 @@ const VerifyAssignments = () => {
                       
                       {evidence.evidence_data && (
                         <div>
-                          <Label className="text-xs text-muted-foreground">Additional Data:</Label>
-                          <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto max-h-32">
-                            {JSON.stringify(evidence.evidence_data, null, 2)}
-                          </pre>
+                          <Label className="text-xs text-muted-foreground">Description & Details:</Label>
+                          {typeof evidence.evidence_data === 'object' ? (
+                            <div className="mt-1 space-y-2">
+                              {evidence.evidence_data.description && (
+                                <div>
+                                  <Label className="text-xs font-medium">Description:</Label>
+                                  <p className="text-sm bg-muted p-2 rounded mt-1">
+                                    {evidence.evidence_data.description}
+                                  </p>
+                                </div>
+                              )}
+                              {evidence.evidence_data.notes && (
+                                <div>
+                                  <Label className="text-xs font-medium">Notes:</Label>
+                                  <p className="text-sm bg-muted p-2 rounded mt-1">
+                                    {evidence.evidence_data.notes}
+                                  </p>
+                                </div>
+                              )}
+                              {evidence.evidence_data.linkedinUrl && (
+                                <div>
+                                  <Label className="text-xs font-medium">LinkedIn URL:</Label>
+                                  <a 
+                                    href={evidence.evidence_data.linkedinUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline block text-sm"
+                                  >
+                                    {evidence.evidence_data.linkedinUrl}
+                                  </a>
+                                </div>
+                              )}
+                              {evidence.evidence_data.githubUrl && (
+                                <div>
+                                  <Label className="text-xs font-medium">GitHub URL:</Label>
+                                  <a 
+                                    href={evidence.evidence_data.githubUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline block text-sm"
+                                  >
+                                    {evidence.evidence_data.githubUrl}
+                                  </a>
+                                </div>
+                              )}
+                              {Object.keys(evidence.evidence_data).length > 0 && 
+                               !evidence.evidence_data.description && 
+                               !evidence.evidence_data.notes && 
+                               !evidence.evidence_data.linkedinUrl && 
+                               !evidence.evidence_data.githubUrl && (
+                                <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto max-h-32">
+                                  {JSON.stringify(evidence.evidence_data, null, 2)}
+                                </pre>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm bg-muted p-2 rounded mt-1">
+                              {String(evidence.evidence_data)}
+                            </p>
+                          )}
                         </div>
                       )}
                     </Card>
