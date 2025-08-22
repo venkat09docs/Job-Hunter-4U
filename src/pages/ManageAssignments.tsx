@@ -73,8 +73,6 @@ export default function ManageAssignments() {
   const [showAddAssignment, setShowAddAssignment] = useState(false);
   const [showAddSubCategory, setShowAddSubCategory] = useState(false);
   const [isGeneratingInstructions, setIsGeneratingInstructions] = useState(false);
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string | null>(null);
-  const [subCategoryAssignments, setSubCategoryAssignments] = useState<Assignment[]>([]);
 
   // Form states
   const [assignmentForm, setAssignmentForm] = useState({
@@ -465,104 +463,6 @@ export default function ManageAssignments() {
     }
   };
 
-  const handleInitializeTasks = async (subCategoryId: string, subCategoryName: string) => {
-    try {
-      setIsLoading(true);
-      let data: Assignment[] = [];
-      
-      if (activeCategory === 'profile') {
-        const { data: profileData, error } = await supabase
-          .from('career_task_templates')
-          .select('*')
-          .eq('sub_category_id', subCategoryId)
-          .order('display_order', { ascending: true });
-        
-        if (error) throw error;
-        data = (profileData || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
-          category: item.category,
-          points_reward: item.points_reward,
-          difficulty: item.difficulty,
-          is_active: item.is_active,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-          sub_category_id: item.sub_category_id,
-          display_order: item.display_order
-        }));
-      } else if (activeCategory === 'linkedin') {
-        // For LinkedIn tasks, we'll filter by the sub-category somehow - this might need adjustment based on your schema
-        const { data: linkedinData, error } = await supabase
-          .from('linkedin_tasks')
-          .select('*')
-          .order('display_order', { ascending: true });
-        
-        if (error) throw error;
-        data = (linkedinData || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || '',
-          category: item.code || 'general',
-          points_reward: item.points_base,
-          difficulty: 'medium',
-          is_active: item.active || false,
-          created_at: item.created_at || new Date().toISOString(),
-          updated_at: item.created_at || new Date().toISOString(),
-          display_order: item.display_order
-        }));
-      } else if (activeCategory === 'job_hunter') {
-        const { data: jobHunterData, error } = await supabase
-          .from('job_hunting_task_templates')
-          .select('*')
-          .order('display_order', { ascending: true });
-        
-        if (error) throw error;
-        data = (jobHunterData || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
-          category: item.category,
-          points_reward: item.points_reward,
-          difficulty: item.difficulty,
-          is_active: item.is_active,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-          display_order: item.display_order
-        }));
-      } else if (activeCategory === 'github') {
-        const { data: githubData, error } = await supabase
-          .from('github_tasks')
-          .select('*')
-          .order('display_order', { ascending: true });
-        
-        if (error) throw error;
-        data = (githubData || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description || '',
-          category: item.scope || 'general',
-          points_reward: item.points_base,
-          difficulty: 'medium',
-          is_active: item.active || false,
-          created_at: item.created_at || new Date().toISOString(),
-          updated_at: item.updated_at,
-          display_order: item.display_order
-        }));
-      }
-      
-      setSubCategoryAssignments(data);
-      setSelectedSubCategoryId(subCategoryId);
-      toast.success(`Loaded ${data.length} assignments for ${subCategoryName}`);
-    } catch (error) {
-      console.error('Error fetching sub-category assignments:', error);
-      toast.error('Failed to load sub-category assignments');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const resetForm = () => {
     setAssignmentForm({
@@ -770,15 +670,6 @@ export default function ManageAssignments() {
                            <div className="flex gap-2">
                              <Button 
                                size="sm" 
-                               variant="default"
-                               onClick={() => handleInitializeTasks(subCategory.id, subCategory.name)}
-                               className="mr-auto"
-                             >
-                               <Play className="h-3 w-3 mr-1" />
-                               Initialize Tasks
-                             </Button>
-                             <Button 
-                               size="sm" 
                                variant="outline"
                                onClick={() => startEditSubCategory(subCategory)}
                              >
@@ -805,31 +696,9 @@ export default function ManageAssignments() {
 
                 {/* Assignments Section */}
                 <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <CardTitle>
-                        Assignments
-                        {selectedSubCategoryId && (
-                          <span className="text-sm font-normal text-muted-foreground ml-2">
-                            - Filtered by sub-category
-                          </span>
-                        )}
-                      </CardTitle>
-                      {selectedSubCategoryId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedSubCategoryId(null);
-                            setSubCategoryAssignments([]);
-                          }}
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          Clear Filter
-                        </Button>
-                      )}
-                    </div>
-                  </CardHeader>
+                   <CardHeader>
+                     <CardTitle>Assignments</CardTitle>
+                   </CardHeader>
                   <CardContent>
                     {isLoading ? (
                       <div className="text-center py-8">
@@ -837,8 +706,8 @@ export default function ManageAssignments() {
                         <p>Loading assignments...</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {(selectedSubCategoryId ? subCategoryAssignments : assignments).map((assignment) => (
+                       <div className="space-y-4">
+                         {assignments.map((assignment) => (
                           <div key={assignment.id} className="p-4 border rounded-lg">
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex-1">
@@ -878,14 +747,11 @@ export default function ManageAssignments() {
                             </div>
                           </div>
                         ))}
-                        {(selectedSubCategoryId ? subCategoryAssignments : assignments).length === 0 && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            {selectedSubCategoryId 
-                              ? "No assignments found for this sub-category." 
-                              : "No assignments found. Create one to get started."
-                            }
-                          </div>
-                        )}
+                         {assignments.length === 0 && (
+                           <div className="text-center py-8 text-muted-foreground">
+                             No assignments found. Create one to get started.
+                           </div>
+                         )}
                       </div>
                     )}
                   </CardContent>

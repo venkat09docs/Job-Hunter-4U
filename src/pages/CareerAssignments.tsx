@@ -176,6 +176,60 @@ const CareerAssignments = () => {
     return Math.round((completed / tasks.length) * 100);
   };
 
+  const initializeSubCategoryTasks = async (subCategoryId: string) => {
+    if (!canAccessFeature("career_assignments")) return;
+    
+    try {
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Get templates for this specific sub-category
+      const subCategoryTemplates = templates.filter(t => t.sub_category_id === subCategoryId);
+      
+      if (subCategoryTemplates.length === 0) {
+        toast.info('No templates found for this category');
+        return;
+      }
+
+      let createdCount = 0;
+      
+      for (const template of subCategoryTemplates) {
+        // Check if assignment already exists
+        const existingAssignment = assignments.find(a => 
+          a.template_id === template.id && a.user_id === user.id
+        );
+        
+        if (!existingAssignment) {
+          const { error } = await supabase
+            .from('career_task_assignments')
+            .insert({
+              user_id: user.id,
+              template_id: template.id,
+              period: template.cadence === 'weekly' ? 
+                new Date().toISOString().split('T')[0] : null,
+              due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              week_start_date: new Date().toISOString().split('T')[0],
+              status: 'assigned',
+              points_earned: 0
+            });
+          
+          if (error) throw error;
+          createdCount++;
+        }
+      }
+      
+      if (createdCount > 0) {
+        toast.success(`Initialized ${createdCount} tasks for this category`);
+        await fetchData();
+      } else {
+        toast.info('All tasks in this category are already initialized');
+      }
+      
+    } catch (error) {
+      console.error('Error initializing sub-category tasks:', error);
+      toast.error('Failed to initialize tasks for this category');
+    }
+  };
+
   // Functions are now provided by useCareerAssignments hook
 
 
@@ -397,10 +451,25 @@ const CareerAssignments = () => {
                     return (
                       <AccordionItem key={subCategory.id} value={subCategory.id}>
                         <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                          <div className="flex items-center gap-3">
-                            <Target className="w-5 h-5 text-primary" />
-                            <span>{subCategory.name} ({categoryTasks.length} tasks)</span>
-                            <Progress value={categoryProgress} className="w-24 h-2" />
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-3">
+                              <Target className="w-5 h-5 text-primary" />
+                              <span>{subCategory.name} ({categoryTasks.length} tasks)</span>
+                              <Progress value={categoryProgress} className="w-24 h-2" />
+                            </div>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                initializeSubCategoryTasks(subCategory.id);
+                              }}
+                              size="sm"
+                              variant="outline"
+                              disabled={!canAccessFeature("career_assignments")}
+                              className="ml-4"
+                            >
+                              Initialize Tasks
+                              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                            </Button>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="space-y-4 pt-4">
