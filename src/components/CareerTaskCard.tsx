@@ -76,6 +76,8 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
       if (showEvidenceModal && assignment.status === 'submitted') {
         setLoadingExistingData(true);
         try {
+          console.log('🔍 Fetching existing evidence for assignment:', assignment.id);
+          
           const { data, error } = await supabase
             .from('career_task_evidence')
             .select('*')
@@ -89,23 +91,47 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
             return;
           }
 
-          if (data && data.evidence_data && typeof data.evidence_data === 'object' && !Array.isArray(data.evidence_data)) {
-            const evidenceData = data.evidence_data as Record<string, any>;
+          console.log('🔍 Fetched evidence data:', data);
+
+          if (data) {
+            // Handle both new format (object) and old format (string)
+            if (data.evidence_data && typeof data.evidence_data === 'object' && !Array.isArray(data.evidence_data)) {
+              const evidenceData = data.evidence_data as Record<string, any>;
+              
+              // Pre-populate form fields with existing data
+              if (evidenceData.url && typeof evidenceData.url === 'string') {
+                setUrlInput(evidenceData.url);
+                console.log('🔍 Set URL from evidence_data:', evidenceData.url);
+              }
+              if (evidenceData.description && typeof evidenceData.description === 'string') {
+                setTextInput(evidenceData.description);
+                console.log('🔍 Set description from evidence_data:', evidenceData.description);
+              } else if (evidenceData.text && typeof evidenceData.text === 'string') {
+                setTextInput(evidenceData.text);
+                console.log('🔍 Set text from evidence_data:', evidenceData.text);
+              }
+              if (evidenceData.file_name && typeof evidenceData.file_name === 'string') {
+                setExistingFileInfo(`Previously uploaded: ${evidenceData.file_name}`);
+                console.log('🔍 Set file info from evidence_data:', evidenceData.file_name);
+              }
+            } else {
+              // Fallback for old format - check individual columns
+              console.log('🔍 Using fallback for old evidence format');
+              
+              if (data.url && typeof data.url === 'string') {
+                setUrlInput(data.url);
+                console.log('🔍 Set URL from url column:', data.url);
+              }
+              
+              if (data.file_urls && Array.isArray(data.file_urls) && data.file_urls.length > 0) {
+                setExistingFileInfo(`Previously uploaded file available`);
+                console.log('🔍 Set file info from file_urls:', data.file_urls);
+              }
+            }
             
-            // Pre-populate form fields with existing data
-            if (evidenceData.url && typeof evidenceData.url === 'string') {
-              setUrlInput(evidenceData.url);
-            }
-            if (evidenceData.description && typeof evidenceData.description === 'string') {
-              setTextInput(evidenceData.description);
-            } else if (evidenceData.text && typeof evidenceData.text === 'string') {
-              setTextInput(evidenceData.text);
-            }
-            if (evidenceData.file_name && typeof evidenceData.file_name === 'string') {
-              setExistingFileInfo(`Previously uploaded: ${evidenceData.file_name}`);
-            }
-            
-            console.log('Pre-populated form with existing evidence:', evidenceData);
+            console.log('🔍 Form pre-populated successfully');
+          } else {
+            console.log('🔍 No existing evidence found for assignment');
           }
         } catch (error) {
           console.error('Error fetching existing evidence:', error);
