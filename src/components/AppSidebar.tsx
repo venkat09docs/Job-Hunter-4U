@@ -85,6 +85,14 @@ const recruiterItems = [
   { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
 ];
 
+const instituteAdminItems = [
+  { title: "Institute Dashboard", url: "/admin/institute-dashboard", icon: Building },
+  { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
+  { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
+  { title: "Students Management", url: "/admin/students-management", icon: Users },
+  { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
+];
+
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
@@ -272,25 +280,26 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : adminItems).map((item) => {
+                {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : 
+                  isInstituteAdmin && !isAdmin ? instituteAdminItems : adminItems).map((item) => {
                   // Filter logic for different admin types
                   if (isRecruiter && !isAdmin && !isInstituteAdmin) {
                     return <MenuItem key={item.title} item={item} />;
                   }
                   
-                  if (isInstituteAdmin && !isAdmin && 
-                      item.title !== "Dashboard" &&
-                      item.title !== "Batch Management" &&
-                      item.title !== "Students Management" && 
-                      item.title !== "Students Report" && 
-                      item.title !== "Institute Membership Plans") return null;
+                  if (isInstituteAdmin && !isAdmin) {
+                    // For institute admins, all items in instituteAdminItems are allowed
+                    return <MenuItem key={item.title} item={item} />;
+                  }
+                  
+                  // For super admins, apply existing filtering logic
                   if (item.title === "Institute Membership Plans" && isAdmin && !isInstituteAdmin) return null;
                   if (item.title === "Admin Dashboard" && isInstituteAdmin && !isAdmin) return null;
                   if (item.title === "Dashboard" && !isInstituteAdmin && !isRecruiter) return null;
                   if (item.title === "Students Report" && isAdmin && !isInstituteAdmin) return null;
                   if (item.title === "Institute Management" && !isAdmin) return null;
-                  if (item.title === "Batch Management" && !isInstituteAdmin) return null;
-                  if (item.title === "Students Management" && !isInstituteAdmin) return null;
+                  if (item.title === "Batch Management" && !isInstituteAdmin && !isAdmin) return null;
+                  if (item.title === "Students Management" && !isInstituteAdmin && !isAdmin) return null;
                   if (item.title === "User Management" && !isAdmin) return null;
                   if (item.title === "Leader Board Points" && !isAdmin) return null;
                   if ((item.title === "Manage Career Hub" || item.title === "Manage Subscriptions") && !isAdmin) return null;
