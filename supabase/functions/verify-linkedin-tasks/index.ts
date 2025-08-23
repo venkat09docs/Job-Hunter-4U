@@ -201,9 +201,7 @@ serve(async (req) => {
           activity_id: `linkedin_task_${task.task_id}`,
           activity_date: new Date().toISOString().split('T')[0], // Today's date
           points_earned: task.score_awarded,
-          description: `LinkedIn task: ${task.linkedin_tasks.title}`,
-          evidence_url: null,
-          verified_at: new Date().toISOString()
+          activity_type: 'linkedin_assignment'
         });
       }
       
@@ -219,8 +217,14 @@ serve(async (req) => {
 
         if (pointsError) {
           console.error('Error inserting activity points:', pointsError);
+          console.error('Points insert data:', JSON.stringify(activityPointsInserts, null, 2));
         } else {
-          console.log(`Added ${activityPointsInserts.length} activity point records`);
+          console.log(`✅ Successfully added ${activityPointsInserts.length} activity point records`);
+          console.log('Points awarded:', activityPointsInserts.map(p => ({
+            user_id: p.user_id,
+            points: p.points_earned,
+            activity_id: p.activity_id
+          })));
         }
       }
     }

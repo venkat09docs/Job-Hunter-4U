@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
+import { TestPointsButton } from '@/components/TestPointsButton';
 
 interface SubmittedAssignment {
   id: string;
@@ -787,24 +788,27 @@ const VerifyAssignments = () => {
               .eq('id', evidence.id);
           }
 
+          // Award points to user with better error handling and debugging
+          const pointsToAward = selectedAssignment.career_task_templates.points_reward;
+          const pointsData = {
+            user_id: selectedAssignment.user_id,
+            activity_type: 'career_assignment',
+            activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
+            points_earned: pointsToAward,
+            activity_date: new Date().toISOString().split('T')[0]
+          };
+
           console.log('🔍 About to award points for assignment:', selectedAssignment.id);
           console.log('🔍 User ID:', selectedAssignment.user_id);
-          console.log('🔍 Points to award:', selectedAssignment.career_task_templates.points_reward);
-          console.log('🔍 Current user (auth.uid()):', supabase.auth.getUser().then(u => console.log('Current user:', u.data.user?.id)));
+          console.log('🔍 Points to award:', pointsToAward);
+          console.log('🔍 Points data to insert:', pointsData);
 
-          // Award points to user
-          const { data: pointsData, error: pointsError } = await supabase
+          const { data: insertedPoints, error: pointsError } = await supabase
             .from('user_activity_points')
-            .insert({
-              user_id: selectedAssignment.user_id,
-              activity_type: 'career_assignment',
-              activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
-              points_earned: selectedAssignment.career_task_templates.points_reward,
-              activity_date: new Date().toISOString().split('T')[0]
-            })
+            .insert(pointsData)
             .select();
 
-          console.log('🔍 Points insertion result:', { pointsData, pointsError });
+          console.log('🔍 Points insertion result:', { insertedPoints, pointsError });
 
           if (pointsError) {
             console.error('❌ Error awarding points:', pointsError);
@@ -813,10 +817,10 @@ const VerifyAssignments = () => {
             toast.error(`Assignment approved but failed to award points: ${pointsError.message}`);
           } else {
             // Points were successfully awarded
-            console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', selectedAssignment.career_task_templates.points_reward);
-            console.log('✅ Inserted points data:', pointsData);
+            console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', pointsToAward);
+            console.log('✅ Inserted points data:', insertedPoints);
             
-            toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded to user!`);
+            toast.success(`Assignment approved and ${pointsToAward} points awarded to user!`);
           }
         } else {
           // Deny and set to resubmit
@@ -915,6 +919,7 @@ const VerifyAssignments = () => {
             </div>
           </div>
           <div className="flex gap-3">
+            <TestPointsButton />
             <AdminReenableRequestsDialog />
             <Badge variant="secondary" className="text-lg px-3 py-1">
               {filteredAssignments.length} Pending
