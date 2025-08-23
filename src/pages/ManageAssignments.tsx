@@ -257,7 +257,7 @@ export default function ManageAssignments() {
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              code: assignmentForm.category,
+              code: 'weekly_linkedin', // Set default code for LinkedIn assignments
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order
@@ -334,7 +334,7 @@ export default function ManageAssignments() {
             .insert({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              code: assignmentForm.category,
+              code: 'weekly_linkedin', // Set default code for LinkedIn assignments
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order,
@@ -635,13 +635,16 @@ export default function ManageAssignments() {
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold">{category.name}</h2>
                   <div className="flex gap-2">
-                    <Button onClick={() => {
-                      resetSubCategoryForm();
-                      setShowAddSubCategory(true);
-                    }}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Sub Category
-                    </Button>
+                    {/* Only show "Add Sub Category" for non-LinkedIn assignments */}
+                    {activeCategory !== 'linkedin' && (
+                      <Button onClick={() => {
+                        resetSubCategoryForm();
+                        setShowAddSubCategory(true);
+                      }}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Sub Category
+                      </Button>
+                    )}
                     <Button onClick={() => setShowAddAssignment(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Assignment
@@ -649,50 +652,52 @@ export default function ManageAssignments() {
                   </div>
                 </div>
 
-                {/* Sub Categories Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Sub Categories</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {subCategories.map((subCategory) => (
-                        <div key={subCategory.id} className="p-4 border rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium">{subCategory.name}</h4>
-                            <Badge variant={subCategory.is_active ? "default" : "secondary"}>
-                              {subCategory.is_active ? "Active" : "Inactive"}
-                            </Badge>
+                {/* Sub Categories Section - Only show for non-LinkedIn assignments */}
+                {activeCategory !== 'linkedin' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Sub Categories</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {subCategories.map((subCategory) => (
+                          <div key={subCategory.id} className="p-4 border rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium">{subCategory.name}</h4>
+                              <Badge variant={subCategory.is_active ? "default" : "secondary"}>
+                                {subCategory.is_active ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {subCategory.description}
+                            </p>
+                             <div className="flex gap-2">
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 onClick={() => startEditSubCategory(subCategory)}
+                               >
+                                 <Edit className="h-3 w-3" />
+                               </Button>
+                               <Button 
+                                 size="sm" 
+                                 variant="outline"
+                                 onClick={() => handleDeleteSubCategory(subCategory.id)}
+                               >
+                                 <Trash2 className="h-3 w-3" />
+                               </Button>
+                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-3">
-                            {subCategory.description}
-                          </p>
-                           <div className="flex gap-2">
-                             <Button 
-                               size="sm" 
-                               variant="outline"
-                               onClick={() => startEditSubCategory(subCategory)}
-                             >
-                               <Edit className="h-3 w-3" />
-                             </Button>
-                             <Button 
-                               size="sm" 
-                               variant="outline"
-                               onClick={() => handleDeleteSubCategory(subCategory.id)}
-                             >
-                               <Trash2 className="h-3 w-3" />
-                             </Button>
-                           </div>
-                        </div>
-                      ))}
-                      {subCategories.length === 0 && (
-                        <div className="col-span-full text-center py-8 text-muted-foreground">
-                          No sub categories found. Create one to get started.
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                        {subCategories.length === 0 && (
+                          <div className="col-span-full text-center py-8 text-muted-foreground">
+                            No sub categories found. Create one to get started.
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Assignments Section */}
                 <Card>
@@ -822,51 +827,54 @@ export default function ManageAssignments() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="category">
-                    {activeCategory === 'profile' ? 'Sub-Category' : 'Category (Sub Category)'}
-                  </Label>
-                  <Select
-                    value={assignmentForm.category}
-                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={
-                        activeCategory === 'profile' ? 'Select a sub-category' : 'Select a sub category'
-                      } />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activeCategory === 'profile' ? (
-                        // Show sub-categories for profile assignments
-                        subCategories.length > 0 ? (
-                          subCategories.map((subCategory) => (
-                            <SelectItem key={subCategory.id} value={subCategory.id}>
-                              {subCategory.name}
+              <div className={`grid ${activeCategory === 'linkedin' ? 'grid-cols-2' : 'grid-cols-2'} gap-4`}>
+                {/* Only show category selector for non-LinkedIn assignments */}
+                {activeCategory !== 'linkedin' && (
+                  <div>
+                    <Label htmlFor="category">
+                      {activeCategory === 'profile' ? 'Sub-Category' : 'Category (Sub Category)'}
+                    </Label>
+                    <Select
+                      value={assignmentForm.category}
+                      onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          activeCategory === 'profile' ? 'Select a sub-category' : 'Select a sub category'
+                        } />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {activeCategory === 'profile' ? (
+                          // Show sub-categories for profile assignments
+                          subCategories.length > 0 ? (
+                            subCategories.map((subCategory) => (
+                              <SelectItem key={subCategory.id} value={subCategory.id}>
+                                {subCategory.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-categories" disabled>
+                              No sub categories available
                             </SelectItem>
-                          ))
+                          )
                         ) : (
-                          <SelectItem value="no-categories" disabled>
-                            No sub categories available
-                          </SelectItem>
-                        )
-                      ) : (
-                        // Show sub-categories for other tabs
-                        subCategories.length > 0 ? (
-                          subCategories.map((subCategory) => (
-                            <SelectItem key={subCategory.id} value={subCategory.id}>
-                              {subCategory.name}
+                          // Show sub-categories for other tabs
+                          subCategories.length > 0 ? (
+                            subCategories.map((subCategory) => (
+                              <SelectItem key={subCategory.id} value={subCategory.id}>
+                                {subCategory.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-categories" disabled>
+                              No sub categories available
                             </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-categories" disabled>
-                            No sub categories available
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 
                 <div>
                   <Label htmlFor="points">Points Reward</Label>
