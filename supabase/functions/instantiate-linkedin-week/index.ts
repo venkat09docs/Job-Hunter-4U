@@ -31,16 +31,11 @@ serve(async (req) => {
     const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
     const currentPeriod = `${year}-${week.toString().padStart(2, '0')}`;
 
-    // Get Monday of current week for due date calculation
+    // Get Monday of current week for task assignment and due date calculations
     const dayOfWeek = now.getDay();
     const monday = new Date(now);
     monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
     monday.setHours(0, 0, 0, 0);
-    
-    // Due date is end of week (Sunday)
-    const dueDate = new Date(monday);
-    dueDate.setDate(monday.getDate() + 6);
-    dueDate.setHours(23, 59, 59, 999);
 
     let targetUserId = userId;
 
@@ -98,11 +93,12 @@ serve(async (req) => {
       linkedinUserId = newUser.id;
     }
 
-    // Get all active tasks
+    // Get all active tasks ordered by display_order (day assignment)
     const { data: tasks, error: tasksError } = await supabase
       .from('linkedin_tasks')
       .select('*')
-      .eq('active', true);
+      .eq('active', true)
+      .order('display_order');
 
     if (tasksError) {
       console.error('Error fetching tasks:', tasksError);
@@ -113,13 +109,34 @@ serve(async (req) => {
     }
 
     // Create user tasks for the current period if they don't exist
-    const userTasksToInsert = tasks.map(task => ({
-      user_id: linkedinUserId,
-      task_id: task.id,
-      period: currentPeriod,
-      due_at: dueDate.toISOString(),
-      status: 'NOT_STARTED'
-    }));
+    // Calculate individual due dates for each task based on display_order (day assignment)
+    const userTasksToInsert = tasks.map(task => {
+      const dayAssignment = task.display_order; // 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
+      
+      // Calculate due date based on day assignment
+      let dueDate = new Date(monday);
+      
+      if (dayAssignment === 7) {
+        // Sunday tasks are due on Sunday evening (same day)
+        dueDate.setDate(monday.getDate() + 6); // Sunday
+        dueDate.setHours(23, 59, 59, 999);
+      } else {
+        // Other tasks are due the next day evening
+        // Day 1 (Monday) -> Due Tuesday evening
+        // Day 2 (Tuesday) -> Due Wednesday evening
+        // etc.
+        dueDate.setDate(monday.getDate() + dayAssignment); // Next day after assignment
+        dueDate.setHours(23, 59, 59, 999);
+      }
+      
+      return {
+        user_id: linkedinUserId,
+        task_id: task.id,
+        period: currentPeriod,
+        due_at: dueDate.toISOString(),
+        status: 'NOT_STARTED'
+      };
+    });
 
     const { data: createdTasks, error: insertError } = await supabase
       .from('linkedin_user_tasks')
@@ -173,11 +190,13 @@ serve(async (req) => {
     }
 
     console.log(`Instantiated ${allUserTasks.length} tasks for user ${targetUserId} in period ${currentPeriod}`);
+    console.log(`Tasks assigned with individual due dates based on day assignment`);
 
     return new Response(JSON.stringify({
       period: currentPeriod,
       userTasks: allUserTasks,
-      dueDate: dueDate.toISOString()
+      weekStart: monday.toISOString(),
+      weekEnd: new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

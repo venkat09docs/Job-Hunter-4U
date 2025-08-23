@@ -164,10 +164,17 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Due Date */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock className="w-4 h-4" />
-          <span>Due: {format(new Date(task.due_at), 'MMM dd, yyyy h:mm a')}</span>
+        {/* Due Date with Day Assignment */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>Due: {format(new Date(task.due_at), 'MMM dd, yyyy h:mm a')}</span>
+          </div>
+          {task.linkedin_tasks.title.includes('Day') && (
+            <Badge variant="secondary" className="text-xs">
+              {task.linkedin_tasks.title.split('–')[0].trim()}
+            </Badge>
+          )}
         </div>
 
         {/* Evidence Types */}
