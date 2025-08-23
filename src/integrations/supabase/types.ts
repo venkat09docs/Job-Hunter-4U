@@ -3775,6 +3775,7 @@ export type Database = {
         | "PROFILE_UPDATED"
       verify_status:
         | "NOT_STARTED"
+        | "STARTED"
         | "SUBMITTED"
         | "PARTIALLY_VERIFIED"
         | "VERIFIED"
@@ -3924,6 +3925,7 @@ export const Constants = {
       ],
       verify_status: [
         "NOT_STARTED",
+        "STARTED",
         "SUBMITTED",
         "PARTIALLY_VERIFIED",
         "VERIFIED",
