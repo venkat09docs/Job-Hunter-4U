@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { TestPointsButton } from '@/components/TestPointsButton';
+import { DebugPointsDisplay } from '@/components/DebugPointsDisplay';
 
 interface SubmittedAssignment {
   id: string;
@@ -799,10 +800,23 @@ const VerifyAssignments = () => {
             activity_date: today
           };
 
-          console.log('🔍 About to award points for assignment:', selectedAssignment.id);
+          console.log('🔍 === POINTS AWARDING DEBUG START ===');
+          console.log('🔍 Assignment ID:', selectedAssignment.id);
+          console.log('🔍 Template ID:', selectedAssignment.template_id);
           console.log('🔍 User ID:', selectedAssignment.user_id);
           console.log('🔍 Points to award:', pointsToAward);
-          console.log('🔍 Points data to insert:', pointsData);
+          console.log('🔍 Today date:', today);
+          console.log('🔍 Points data to insert:', JSON.stringify(pointsData, null, 2));
+
+          // Check if points already exist for this combination
+          const { data: existingPoints, error: checkError } = await supabase
+            .from('user_activity_points')
+            .select('*')
+            .eq('user_id', selectedAssignment.user_id)
+            .eq('activity_id', `career_task_${selectedAssignment.template_id}`)
+            .eq('activity_date', today);
+
+          console.log('🔍 Existing points check:', { existingPoints, checkError });
 
           const { data: insertedPoints, error: pointsError } = await supabase
             .from('user_activity_points')
@@ -811,20 +825,58 @@ const VerifyAssignments = () => {
             })
             .select();
 
-          console.log('🔍 Points insertion result:', { insertedPoints, pointsError });
+          console.log('🔍 Points upsert result:', { insertedPoints, pointsError });
 
           if (pointsError) {
             console.error('❌ Error awarding points:', pointsError);
-            console.error('❌ Points error details:', JSON.stringify(pointsError, null, 2));
+            console.error('❌ Points error code:', pointsError.code);
+            console.error('❌ Points error message:', pointsError.message);
+            console.error('❌ Points error details:', pointsError.details);
+            console.error('❌ Points error hint:', pointsError.hint);
+            console.error('❌ Failed points data:', JSON.stringify(pointsData, null, 2));
             // Don't throw error here - assignment verification should still succeed
             toast.error(`Assignment approved but failed to award points: ${pointsError.message}`);
           } else {
-            // Points were successfully awarded
-            console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', pointsToAward);
-            console.log('✅ Inserted points data:', insertedPoints);
+            console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id);
+            console.log('✅ Points amount:', pointsToAward);
+            console.log('✅ Inserted points data:', JSON.stringify(insertedPoints, null, 2));
+            
+            // Double-check the points were actually inserted
+            setTimeout(async () => {
+              try {
+                const { data: verifyPoints, error: verifyError } = await supabase
+                  .from('user_activity_points')
+                  .select('*')
+                  .eq('user_id', selectedAssignment.user_id)
+                  .eq('activity_id', `career_task_${selectedAssignment.template_id}`)
+                  .eq('activity_date', today);
+                
+                console.log('🔍 Double-check verification:', { verifyPoints, verifyError });
+                
+                if (verifyPoints && verifyPoints.length > 0) {
+                  console.log('✅ Points confirmed in database:', verifyPoints[0]);
+                  
+                  // Get updated total points for user
+                  const { data: allPoints } = await supabase
+                    .from('user_activity_points')
+                    .select('points_earned')
+                    .eq('user_id', selectedAssignment.user_id);
+                  
+                  const totalPoints = allPoints?.reduce((sum, p) => sum + p.points_earned, 0) || 0;
+                  console.log('🔍 User total points now:', totalPoints);
+                  
+                } else {
+                  console.error('❌ Points verification failed - not found in database');
+                }
+              } catch (error) {
+                console.error('❌ Error in double-check:', error);
+              }
+            }, 500);
             
             toast.success(`Assignment approved and ${pointsToAward} points awarded to user!`);
           }
+          
+          console.log('🔍 === POINTS AWARDING DEBUG END ===');
         } else {
           // Deny and set to resubmit
           const { error: updateError } = await supabase
@@ -931,6 +983,11 @@ const VerifyAssignments = () => {
               {verifiedAssignments.length} Verified
             </Badge>
           </div>
+        </div>
+        
+        {/* Debug Points Display - Remove in production */}
+        <div className="mb-6">
+          <DebugPointsDisplay />
         </div>
 
         <Tabs defaultValue="pending" className="space-y-6">
