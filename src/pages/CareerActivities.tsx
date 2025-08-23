@@ -35,10 +35,13 @@ import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LinkedInHistoryTab } from '@/components/LinkedInHistoryTab';
+import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
+import { useRole } from '@/hooks/useRole';
 import { format } from 'date-fns';
 
 const CareerActivities = () => {
   const { canAccessFeature } = usePremiumFeatures();
+  const { isAdmin, isInstituteAdmin } = useRole();
   const {
     userTasks,
     evidence,
@@ -268,9 +271,14 @@ const CareerActivities = () => {
               <div className="md:col-span-2 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-semibold">Week {currentPeriod} ({getWeekDateRange(currentPeriod)}) - LinkedIn Growth Tasks</h3>
-                  <Badge variant="outline" className="text-sm">
-                    {stats.completed} of {stats.total} completed
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {(isAdmin || isInstituteAdmin) && (
+                      <AdminReenableRequestsDialog />
+                    )}
+                    <Badge variant="outline" className="text-sm">
+                      {stats.completed} of {stats.total} completed
+                    </Badge>
+                  </div>
                 </div>
 
                 {tasksLoading && (

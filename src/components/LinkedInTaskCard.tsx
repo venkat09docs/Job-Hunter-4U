@@ -24,6 +24,12 @@ import {
 } from 'lucide-react';
 import { LinkedInUserTask, Evidence } from '@/hooks/useLinkedInTasks';
 import { format } from 'date-fns';
+import { 
+  getTaskAvailabilityStatus, 
+  canUserInteractWithTask,
+  isDueDatePassed 
+} from '@/utils/dueDateValidation';
+import { RequestReenableDialog } from '@/components/RequestReenableDialog';
 
 interface LinkedInTaskCardProps {
   task: LinkedInUserTask;
@@ -176,6 +182,11 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   const taskEvidence = evidence.filter(e => e.user_task_id === task.id);
   const isCompleted = task.status === 'VERIFIED';
   const hasEvidence = taskEvidence.length > 0;
+  
+  // Due date validation
+  const duePassed = isDueDatePassed(task.due_at);
+  const canInteract = canUserInteractWithTask(task.due_at, task.admin_extended);
+  const availabilityStatus = getTaskAvailabilityStatus(task.due_at, task.admin_extended);
 
   return (
     <Card className={`transition-all hover:shadow-lg ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
@@ -203,18 +214,55 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Due Date with Day Assignment */}
+        {/* Due Date with Status */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>Due: {format(new Date(task.due_at), 'MMM dd, yyyy h:mm a')}</span>
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className={`w-4 h-4 ${duePassed ? 'text-red-500' : 'text-muted-foreground'}`} />
+            <span className={duePassed ? 'text-red-600 font-medium' : 'text-muted-foreground'}>
+              Due: {format(new Date(task.due_at), 'MMM dd, yyyy h:mm a')}
+            </span>
           </div>
-          {task.linkedin_tasks.title.includes('Day') && (
-            <Badge variant="secondary" className="text-xs">
-              {task.linkedin_tasks.title.split('–')[0].trim()}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {task.admin_extended && (
+              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                Extended
+              </Badge>
+            )}
+            {duePassed && (
+              <Badge variant="outline" className={`text-xs ${
+                availabilityStatus.status === 'week_expired' 
+                  ? 'bg-red-50 text-red-700 border-red-200' 
+                  : 'bg-orange-50 text-orange-700 border-orange-200'
+              }`}>
+                {availabilityStatus.status === 'week_expired' ? 'Week Expired' : 'Overdue'}
+              </Badge>
+            )}
+            {task.linkedin_tasks.title.includes('Day') && (
+              <Badge variant="secondary" className="text-xs">
+                {task.linkedin_tasks.title.split('–')[0].trim()}
+              </Badge>
+            )}
+          </div>
         </div>
+
+        {/* Availability Status Message */}
+        {!canInteract && (
+          <div className={`p-3 rounded-lg text-sm ${
+            availabilityStatus.status === 'week_expired'
+              ? 'bg-red-50 text-red-700 border border-red-200'
+              : 'bg-orange-50 text-orange-700 border border-orange-200'
+          }`}>
+            <div className="flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4" />
+              {availabilityStatus.message}
+            </div>
+            {availabilityStatus.status === 'week_expired' && (
+              <p className="text-xs mt-1">
+                This task can no longer be extended as the week has ended.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Evidence Types */}
         <div className="space-y-2">
@@ -275,21 +323,44 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
           <>
             {/* Start Assignment Button */}
             {task.status === 'NOT_STARTED' && (
-              <Button className="w-full" onClick={handleStartAssignment}>
-                <Upload className="w-4 h-4 mr-2" />
-                Start Assignment
-              </Button>
+              <>
+                {canInteract ? (
+                  <Button className="w-full" onClick={handleStartAssignment}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Start Assignment
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full" 
+                      variant="secondary" 
+                      disabled
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Assignment Expired
+                    </Button>
+                    {availabilityStatus.status === 'expired' && (
+                      <RequestReenableDialog
+                        taskId={task.id}
+                        taskTitle={task.linkedin_tasks.title}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
             
             {/* Submit/Update Assignment Button */}
             {(task.status === 'STARTED' || task.status === 'SUBMITTED') && (
-              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full">
-                    <Upload className="w-4 h-4 mr-2" />
-                    {task.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
-                  </Button>
-                </DialogTrigger>
+              <>
+                {canInteract ? (
+                  <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full">
+                        <Upload className="w-4 h-4 mr-2" />
+                        {task.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
+                      </Button>
+                    </DialogTrigger>
                 <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{task.linkedin_tasks.title}</DialogTitle>
@@ -425,6 +496,25 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                   </div>
                 </DialogContent>
               </Dialog>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full" 
+                      variant="secondary" 
+                      disabled
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Submission Expired
+                    </Button>
+                    {availabilityStatus.status === 'expired' && (
+                      <RequestReenableDialog
+                        taskId={task.id}
+                        taskTitle={task.linkedin_tasks.title}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

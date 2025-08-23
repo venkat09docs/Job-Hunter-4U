@@ -2210,6 +2210,56 @@ export type Database = {
           },
         ]
       }
+      linkedin_task_renable_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_task_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_task_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkedin_task_renable_requests_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "linkedin_user_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       linkedin_tasks: {
         Row: {
           active: boolean | null
@@ -2290,8 +2340,12 @@ export type Database = {
       }
       linkedin_user_tasks: {
         Row: {
+          admin_extended: boolean | null
           created_at: string | null
           due_at: string | null
+          extended_at: string | null
+          extended_by: string | null
+          extension_reason: string | null
           id: string
           period: string
           score_awarded: number | null
@@ -2301,8 +2355,12 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          admin_extended?: boolean | null
           created_at?: string | null
           due_at?: string | null
+          extended_at?: string | null
+          extended_by?: string | null
+          extension_reason?: string | null
           id?: string
           period: string
           score_awarded?: number | null
@@ -2312,8 +2370,12 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          admin_extended?: boolean | null
           created_at?: string | null
           due_at?: string | null
+          extended_at?: string | null
+          extended_by?: string | null
+          extension_reason?: string | null
           id?: string
           period?: string
           score_awarded?: number | null

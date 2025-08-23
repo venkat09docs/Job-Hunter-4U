@@ -24,6 +24,10 @@ export interface LinkedInUserTask {
   score_awarded: number;
   created_at: string;
   updated_at: string;
+  admin_extended?: boolean;
+  extended_by?: string;
+  extended_at?: string;
+  extension_reason?: string;
   linkedin_tasks: LinkedInTask;
 }
 
