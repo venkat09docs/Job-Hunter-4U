@@ -83,6 +83,32 @@ const CareerActivities = () => {
     toast.success('Copied to clipboard!');
   };
 
+  // Get week date range from currentPeriod (format: 2025-34)
+  const getWeekDateRange = (period: string) => {
+    if (!period) return "";
+    
+    try {
+      const [year, week] = period.split('-').map(Number);
+      
+      // Calculate the date of the first day of that ISO week
+      const jan4 = new Date(year, 0, 4);
+      const jan4Day = jan4.getDay() || 7; // Make Sunday = 7
+      const mondayOfWeek1 = new Date(jan4.getTime() - (jan4Day - 1) * 24 * 60 * 60 * 1000);
+      
+      // Calculate the Monday of the target week
+      const targetMonday = new Date(mondayOfWeek1.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
+      
+      // Get Monday to Sunday
+      const monday = targetMonday;
+      const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+      
+      return `${format(monday, 'MMM dd')} - ${format(sunday, 'MMM dd, yyyy')}`;
+    } catch (error) {
+      console.error('Error parsing week period:', error);
+      return period;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-8">
@@ -216,7 +242,7 @@ const CareerActivities = () => {
               {/* Tasks Column */}
               <div className="md:col-span-2 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">Week {currentPeriod} - LinkedIn Growth Tasks</h3>
+                  <h3 className="text-xl font-semibold">Week {currentPeriod} ({getWeekDateRange(currentPeriod)}) - LinkedIn Growth Tasks</h3>
                   <Badge variant="outline" className="text-sm">
                     {stats.completed} of {stats.total} completed
                   </Badge>

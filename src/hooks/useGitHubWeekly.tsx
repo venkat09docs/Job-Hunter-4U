@@ -36,7 +36,7 @@ interface GitHubUserTask {
   period?: string;
   repo_id?: string;
   due_at?: string;
-  status: 'NOT_STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED';
+  status: 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED';
   score_awarded: number;
   created_at: string;
   updated_at: string;

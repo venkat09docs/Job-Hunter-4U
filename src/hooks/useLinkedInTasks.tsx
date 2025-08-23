@@ -170,21 +170,29 @@ export const useLinkedInTasks = () => {
             evidence_types,
             points_base,
             bonus_rules,
-            active
+            active,
+            display_order
           )
         `)
         .eq('user_id', linkedinUser.id)
         .eq('period', currentPeriod)
         .order('created_at');
+      
+      // Sort by display_order from linkedin_tasks
+      const sortedData = data?.sort((a, b) => {
+        const orderA = a.linkedin_tasks?.display_order || 999;
+        const orderB = b.linkedin_tasks?.display_order || 999;
+        return orderA - orderB;
+      });
 
       if (error) {
         console.error('🔍 Error fetching tasks:', error);
         throw error;
       }
       
-      console.log('🔍 Fetched tasks:', data?.length || 0, 'tasks for period', currentPeriod);
-      console.log('🔍 Tasks data:', data);
-      return data as LinkedInUserTask[];
+      console.log('🔍 Fetched tasks:', sortedData?.length || 0, 'tasks for period', currentPeriod);
+      console.log('🔍 Tasks data:', sortedData);
+      return sortedData as LinkedInUserTask[];
     },
     enabled: !!currentPeriod,
     staleTime: 1000, // Refetch after 1 second to ensure fresh data
