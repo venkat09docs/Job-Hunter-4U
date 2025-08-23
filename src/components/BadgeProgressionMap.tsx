@@ -52,6 +52,44 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
 
+  // Badge unlock logic - progressive unlocking system
+  const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
+    switch (categoryId) {
+      case 'profile':
+        // Profile Build (Bronze) - Always unlocked (default)
+        if (tier === 'bronze') return true;
+        // Profile Complete (Silver) - Unlocked when Bronze is 100% complete
+        if (tier === 'silver') return resumeProgress >= 100;
+        // Profile Perfectionist (Gold) - Unlocked when Silver prerequisites are met
+        if (tier === 'gold') return resumeProgress >= 100 && calculateProfileProgress('silver') >= 100;
+        return false;
+      
+      case 'jobs':
+        // First badge always unlocked, others unlock progressively
+        if (badgeIndex === 0) return true;
+        if (badgeIndex === 1) return jobApplicationsCount >= 1;
+        if (badgeIndex === 2) return jobApplicationsCount >= 14;
+        return false;
+      
+      case 'network':
+        // First badge always unlocked, others unlock progressively  
+        if (badgeIndex === 0) return true;
+        if (badgeIndex === 1) return networkConnections >= 25;
+        if (badgeIndex === 2) return networkConnections >= 50;
+        return false;
+      
+      case 'github':
+        // First badge always unlocked, others unlock progressively
+        if (badgeIndex === 0) return true;
+        if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5;
+        if (badgeIndex === 2) return githubCommits >= 30;
+        return false;
+      
+      default:
+        return false;
+    }
+  };
+
   // Calculate progress for each badge
   const calculateProfileProgress = (tier: string) => {
     switch (tier) {
@@ -301,71 +339,100 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 
                 {/* Badge Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {category.badges.map((badge) => {
+                  {category.badges.map((badge, badgeIndex) => {
                     const TierIcon = getTierIcon(badge.tier);
                     const tierColor = getTierColor(badge.tier);
+                    const isUnlocked = isBadgeUnlocked(category.id, badge.tier, badgeIndex);
                     
                     return (
                       <Card 
                         key={badge.id}
-                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer bg-gradient-to-br ${getTierGradient(badge.tier)} border-2`}
-                        style={{ borderColor: `${tierColor}20` }}
-                        onClick={() => navigate(badge.link)}
+                        className={`relative overflow-hidden transition-all duration-300 ${
+                          isUnlocked 
+                            ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' 
+                            : 'cursor-not-allowed opacity-50'
+                        } bg-gradient-to-br ${getTierGradient(badge.tier)} border-2`}
+                        style={{ 
+                          borderColor: isUnlocked ? `${tierColor}20` : '#E5E5E5',
+                          filter: isUnlocked ? 'none' : 'grayscale(50%)'
+                        }}
+                        onClick={() => isUnlocked && navigate(badge.link)}
                       >
                         <CardContent className="p-4 space-y-4">
-                          {/* Badge Header */}
+                          {/* Badge Header with Lock Indicator */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <TierIcon 
-                                className="h-5 w-5" 
-                                style={{ color: tierColor }}
-                              />
+                              {isUnlocked ? (
+                                <TierIcon 
+                                  className="h-5 w-5" 
+                                  style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
+                                />
+                              ) : (
+                                <div className="h-5 w-5 flex items-center justify-center">
+                                  🔒
+                                </div>
+                              )}
                               <Badge 
                                 variant="outline" 
                                 className="text-xs capitalize"
-                                style={{ borderColor: tierColor, color: tierColor }}
+                                style={{ 
+                                  borderColor: isUnlocked ? tierColor : '#E5E5E5', 
+                                  color: isUnlocked ? tierColor : '#9CA3AF' 
+                                }}
                               >
-                                {badge.tier}
+                                {isUnlocked ? badge.tier : 'Locked'}
                               </Badge>
                             </div>
-                            <div className="text-sm font-medium" style={{ color: tierColor }}>
-                              {Math.round(badge.progress)}%
+                            <div 
+                              className="text-sm font-medium" 
+                              style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
+                            >
+                              {isUnlocked ? Math.round(badge.progress) : 0}%
                             </div>
                           </div>
 
                           {/* Badge Title & Description */}
                           <div className="space-y-1">
-                            <h4 className="font-semibold text-sm">{badge.title}</h4>
-                            <p className="text-xs text-muted-foreground">{badge.description}</p>
+                            <h4 className={`font-semibold text-sm ${!isUnlocked ? 'text-muted-foreground' : ''}`}>
+                              {badge.title}
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                              {isUnlocked ? badge.description : 'Complete previous badge to unlock'}
+                            </p>
                           </div>
 
                           {/* Progress Ring */}
                           <div className="space-y-2">
                             <Progress 
-                              value={badge.progress} 
+                              value={isUnlocked ? badge.progress : 0} 
                               className="h-2"
                               style={{
-                                '--progress-background': tierColor,
+                                '--progress-background': isUnlocked ? tierColor : '#E5E5E5',
                               } as React.CSSProperties}
                             />
-                            <p className="text-xs text-muted-foreground">{badge.criteria}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {isUnlocked ? badge.criteria : 'Unlock requirements not met'}
+                            </p>
                           </div>
 
                           {/* Next Action Button */}
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="w-full text-xs hover:scale-105 transition-transform"
+                            className={`w-full text-xs transition-transform ${
+                              isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed'
+                            }`}
                             style={{ 
-                              borderColor: `${tierColor}40`,
-                              color: tierColor
+                              borderColor: isUnlocked ? `${tierColor}40` : '#E5E5E5',
+                              color: isUnlocked ? tierColor : '#9CA3AF'
                             }}
+                            disabled={!isUnlocked}
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(badge.link);
+                              if (isUnlocked) navigate(badge.link);
                             }}
                           >
-                            {badge.nextAction}
+                            {isUnlocked ? badge.nextAction : 'Locked'}
                           </Button>
                         </CardContent>
 
