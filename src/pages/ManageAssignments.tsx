@@ -398,6 +398,15 @@ export default function ManageAssignments() {
         
         if (error) throw error;
       } else if (activeCategory === 'linkedin') {
+        // First delete all related linkedin_user_tasks
+        const { error: userTasksError } = await supabase
+          .from('linkedin_user_tasks')
+          .delete()
+          .eq('task_id', assignmentId);
+        
+        if (userTasksError) throw userTasksError;
+        
+        // Then delete the linkedin_tasks record
         const { error } = await supabase
           .from('linkedin_tasks')
           .delete()
