@@ -30,7 +30,8 @@ import {
   AlertTriangle,
   Filter,
   BarChart3,
-  Lock
+  Lock,
+  Briefcase
 } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -252,11 +253,188 @@ export const JobHuntingAssignments: React.FC = () => {
 
               {/* Assignments Tab - Weekly quotas + Per-job tasks + Pipeline */}
               <TabsContent value="assignments" className="space-y-6">
-                <JobHunterAssignments 
-                  weekProgress={weekProgress}
-                  assignments={filteredAssignments}
-                  initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
-                />
+                {/* Weekly Progress Overview */}
+                <Card className="shadow-elegant border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Target className="h-5 w-5 text-primary" />
+                      Job Hunting Weekly Progress
+                    </CardTitle>
+                    <CardDescription>
+                      Track your job search activities and maintain consistent application habits
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Overall Progress</span>
+                          <span className="text-sm text-muted-foreground">
+                            {weekProgress.completed} / {weekProgress.total} completed
+                          </span>
+                        </div>
+                        <Progress 
+                          value={weekProgress.total > 0 ? (weekProgress.completed / weekProgress.total) * 100 : 0} 
+                          className="h-3" 
+                        />
+                      </div>
+                      <Badge variant={weekProgress.total > 0 && weekProgress.completed === weekProgress.total ? "default" : "secondary"} className="text-lg px-3 py-1">
+                        {weekProgress.total > 0 ? Math.round((weekProgress.completed / weekProgress.total) * 100) : 0}%
+                      </Badge>
+                    </div>
+                    
+                    {weekProgress.total > 0 && weekProgress.completed === weekProgress.total && (
+                      <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-green-800 dark:text-green-200 font-medium">
+                          Excellent work! You've completed all weekly job hunting tasks!
+                        </span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Task Categories */}
+                <div className="space-y-6">
+                  {/* Application Activities */}
+                  <Card className="shadow-elegant">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Target className="h-5 w-5 text-blue-600" />
+                        Application Activities
+                        <Badge variant="outline" className="ml-auto">
+                          {filteredAssignments.filter(a => a.template?.category === 'application' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'application').length}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        Weekly job application quotas and application-related tasks
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {filteredAssignments.filter(a => a.template?.category === 'application').length > 0 ? (
+                        <JobHunterAssignments 
+                          weekProgress={weekProgress}
+                          assignments={filteredAssignments.filter(a => a.template?.category === 'application')}
+                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
+                        />
+                      ) : (
+                        <div className="text-center py-8">
+                          <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">No application tasks assigned this week</p>
+                          <Button
+                            onClick={initializeUserWeek}
+                            disabled={!canAccessFeature("job_hunting_assignments")}
+                            className="mt-4"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Generate Weekly Tasks
+                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Networking Activities */}
+                  <Card className="shadow-elegant">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Users className="h-5 w-5 text-green-600" />
+                        Networking Activities
+                        <Badge variant="outline" className="ml-auto">
+                          {filteredAssignments.filter(a => a.template?.category === 'networking' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'networking').length}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        Professional networking and relationship building tasks
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {filteredAssignments.filter(a => a.template?.category === 'networking').length > 0 ? (
+                        <JobHunterAssignments 
+                          weekProgress={weekProgress}
+                          assignments={filteredAssignments.filter(a => a.template?.category === 'networking')}
+                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
+                        />
+                      ) : (
+                        <div className="text-center py-8">
+                          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">No networking tasks assigned this week</p>
+                          <Button
+                            onClick={initializeUserWeek}
+                            disabled={!canAccessFeature("job_hunting_assignments")}
+                            className="mt-4"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Generate Weekly Tasks
+                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Profile Optimization */}
+                  <Card className="shadow-elegant">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Award className="h-5 w-5 text-purple-600" />
+                        Profile Optimization
+                        <Badge variant="outline" className="ml-auto">
+                          {filteredAssignments.filter(a => a.template?.category === 'profile' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'profile').length}
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        Improve your online presence and professional profiles
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {filteredAssignments.filter(a => a.template?.category === 'profile').length > 0 ? (
+                        <JobHunterAssignments 
+                          weekProgress={weekProgress}
+                          assignments={filteredAssignments.filter(a => a.template?.category === 'profile')}
+                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
+                        />
+                      ) : (
+                        <div className="text-center py-8">
+                          <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">No profile optimization tasks assigned this week</p>
+                          <Button
+                            onClick={initializeUserWeek}
+                            disabled={!canAccessFeature("job_hunting_assignments")}
+                            className="mt-4"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Generate Weekly Tasks
+                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* All Tasks Section (fallback) */}
+                  {filteredAssignments.length > 0 && (
+                    <Card className="shadow-elegant">
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Briefcase className="h-5 w-5 text-gray-600" />
+                          All Weekly Tasks
+                        </CardTitle>
+                        <CardDescription>
+                          Complete overview of all assigned tasks for this week
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <JobHunterAssignments 
+                          weekProgress={weekProgress}
+                          assignments={filteredAssignments}
+                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
+                        />
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               </TabsContent>
 
               {/* History Tab - Period summaries, audit trail */}

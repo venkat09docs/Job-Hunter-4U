@@ -368,73 +368,143 @@ const GitHubWeekly = () => {
 
         {/* Assignments Tab */}
         <TabsContent value="assignments" className="space-y-6">
-          {/* Weekly Tasks Section */}
-          <Card>
+          {/* Weekly Progress Overview */}
+          <Card className="shadow-elegant border-primary/20">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    This Week's Tasks
-                  </CardTitle>
-                  <CardDescription>
-                    Complete weekly GitHub activities to earn points and maintain streaks
-                  </CardDescription>
-                </div>
-                <Button 
-                  onClick={() => instantiateWeek()}
-                  disabled={!canAccessFeature("github_weekly")}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Generate Week
-                  {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
-                </Button>
-              </div>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Github className="h-5 w-5 text-primary" />
+                GitHub Weekly Progress
+              </CardTitle>
+              <CardDescription>
+                Complete weekly GitHub activities to build your developer profile and earn points
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {weeklyTasks.length > 0 ? (
-                <div className="grid gap-4">
-                  {weeklyTasks.map((task) => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Overall Progress</span>
+                    <span className="text-sm text-muted-foreground">
+                      {weeklyTasks.filter(task => task.status === 'VERIFIED').length} / {weeklyTasks.length} completed
+                    </span>
+                  </div>
+                  <Progress 
+                    value={weeklyTasks.length > 0 ? (weeklyTasks.filter(task => task.status === 'VERIFIED').length / weeklyTasks.length) * 100 : 0} 
+                    className="h-3" 
+                  />
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No weekly tasks generated yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Click "Generate Week" to create this week's tasks
-                  </p>
-                </div>
-              )}
+                <Badge variant={weeklyTasks.length > 0 && weeklyTasks.filter(task => task.status === 'VERIFIED').length === weeklyTasks.length ? "default" : "secondary"} className="text-lg px-3 py-1">
+                  {weeklyTasks.length > 0 ? Math.round((weeklyTasks.filter(task => task.status === 'VERIFIED').length / weeklyTasks.length) * 100) : 0}%
+                </Badge>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Repository Showcase Tasks */}
-          {selectedRepo && repoTasks[selectedRepo] && (
-            <Card>
+          {/* Weekly Tasks Categories */}
+          <div className="space-y-6">
+            {/* Development Activity Tasks */}
+            <Card className="shadow-elegant">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Showcase Setup Tasks
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <GitCommit className="h-5 w-5 text-green-600" />
+                  Development Activity
+                  <Badge variant="outline" className="ml-auto">
+                    {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly' && task.status === 'VERIFIED').length} / {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').length}
+                  </Badge>
                 </CardTitle>
                 <CardDescription>
-                  One-time setup tasks to make your repository shine
+                  Weekly coding activities to maintain consistent development habits
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  {repoTasks[selectedRepo].map((task) => (
-                    <TaskCard 
-                      key={task.id} 
-                      task={task} 
-                      repo={repos.find(r => r.id === selectedRepo)} 
-                    />
+                <div className="space-y-4">
+                  {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').map((task) => (
+                    <TaskCard key={task.id} task={task} />
                   ))}
+                  {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').length === 0 && (
+                    <div className="text-center py-8">
+                      <GitCommit className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No weekly development tasks assigned</p>
+                      <Button 
+                        onClick={() => instantiateWeek()}
+                        disabled={!canAccessFeature("github_weekly")}
+                        className="mt-4"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Generate Week Tasks
+                        {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          )}
+
+            {/* Repository Showcase Tasks */}
+            {selectedRepo && repoTasks[selectedRepo] && (
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-600" />
+                    Repository Showcase
+                    <Badge variant="outline" className="ml-auto">
+                      {repoTasks[selectedRepo].filter(task => task.status === 'VERIFIED').length} / {repoTasks[selectedRepo].length}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    One-time setup tasks to make your {repos.find(r => r.id === selectedRepo)?.full_name} repository shine
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {repoTasks[selectedRepo].map((task) => (
+                      <TaskCard 
+                        key={task.id} 
+                        task={task} 
+                        repo={repos.find(r => r.id === selectedRepo)} 
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Repository Selection */}
+            {repos.length > 0 && !selectedRepo && (
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Github className="h-5 w-5 text-gray-600" />
+                    Select Repository for Showcase Tasks
+                  </CardTitle>
+                  <CardDescription>
+                    Choose a repository to generate showcase and optimization tasks
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {repos.map((repo) => (
+                      <div 
+                        key={repo.id}
+                        className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => setSelectedRepo(repo.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Github className="h-5 w-5" />
+                          <div>
+                            <p className="font-medium">{repo.full_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {repo.default_branch} • {repo.html_url}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* Repositories Tab */}
