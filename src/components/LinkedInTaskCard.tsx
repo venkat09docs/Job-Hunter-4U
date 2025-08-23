@@ -33,6 +33,11 @@ interface LinkedInTaskCardProps {
     kind: 'URL' | 'EMAIL' | 'SCREENSHOT' | 'DATA_EXPORT';
     url?: string;
     file?: File;
+    trackingMetrics?: {
+      connections_accepted: number;
+      posts_count: number;
+      profile_views: number;
+    };
   }) => void;
   onUpdateStatus: (taskId: string, newStatus: string) => void;
   isSubmitting?: boolean;
@@ -49,6 +54,11 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   const [selectedEvidenceType, setSelectedEvidenceType] = useState<string>('');
   const [url, setUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  // New tracking metrics
+  const [connectionsAccepted, setConnectionsAccepted] = useState('');
+  const [postsCount, setPostsCount] = useState('');
+  const [profileViews, setProfileViews] = useState('');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -108,6 +118,30 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   };
 
   const handleSubmit = () => {
+    // Validate tracking metrics
+    if (!connectionsAccepted || !postsCount || !profileViews) {
+      alert('Please fill in all tracking metrics (connections accepted, posts count, and profile views)');
+      return;
+    }
+
+    // Validate numeric values
+    const connectionsNum = parseInt(connectionsAccepted);
+    const postsNum = parseInt(postsCount);
+    const viewsNum = parseInt(profileViews);
+
+    if (isNaN(connectionsNum) || isNaN(postsNum) || isNaN(viewsNum) || 
+        connectionsNum < 0 || postsNum < 0 || viewsNum < 0) {
+      alert('Please enter valid positive numbers for all tracking metrics');
+      return;
+    }
+
+    // Prepare tracking metrics
+    const trackingMetrics = {
+      connections_accepted: connectionsNum,
+      posts_count: postsNum,
+      profile_views: viewsNum
+    };
+
     if (selectedEvidenceType === 'URL_REQUIRED' && url) {
       // Validate LinkedIn URL
       if (!url.includes('linkedin.com')) {
@@ -117,13 +151,15 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       onSubmitEvidence({
         taskId: task.id,
         kind: 'URL',
-        url
+        url,
+        trackingMetrics
       });
     } else if ((selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && selectedFile) {
       onSubmitEvidence({
         taskId: task.id,
         kind: selectedEvidenceType === 'SCREENSHOT_OK' ? 'SCREENSHOT' : 'DATA_EXPORT',
-        file: selectedFile
+        file: selectedFile,
+        trackingMetrics
       });
     }
     
@@ -131,6 +167,9 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
     setUrl('');
     setSelectedFile(null);
     setSelectedEvidenceType('');
+    setConnectionsAccepted('');
+    setPostsCount('');
+    setProfileViews('');
     setIsModalOpen(false);
   };
 
@@ -190,27 +229,41 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
           </div>
         </div>
 
-        {/* Submitted Evidence */}
+        {/* Submitted Evidence with Metrics */}
         {hasEvidence && (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Submitted Evidence:</Label>
             <div className="space-y-2">
               {taskEvidence.map((ev) => (
-                <div key={ev.id} className="flex items-center gap-2 p-2 bg-muted/50 rounded text-sm">
-                  {getEvidenceIcon(ev.kind)}
-                  <span>
-                    {ev.kind === 'URL' && ev.url && (
-                      <a href={ev.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        LinkedIn URL
-                      </a>
-                    )}
-                    {ev.kind === 'SCREENSHOT' && 'Screenshot uploaded'}
-                    {ev.kind === 'DATA_EXPORT' && 'Data export uploaded'}
-                    {ev.kind === 'EMAIL' && 'Email notification'}
-                  </span>
-                  <span className="text-muted-foreground ml-auto">
-                    {format(new Date(ev.created_at), 'MMM dd, h:mm a')}
-                  </span>
+                <div key={ev.id} className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    {getEvidenceIcon(ev.kind)}
+                    <span>
+                      {ev.kind === 'URL' && ev.url && (
+                        <a href={ev.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          LinkedIn URL
+                        </a>
+                      )}
+                      {ev.kind === 'SCREENSHOT' && 'Screenshot uploaded'}
+                      {ev.kind === 'DATA_EXPORT' && 'Data export uploaded'}
+                      {ev.kind === 'EMAIL' && 'Email notification'}
+                    </span>
+                    <span className="text-muted-foreground ml-auto">
+                      {format(new Date(ev.created_at), 'MMM dd, h:mm a')}
+                    </span>
+                  </div>
+                  
+                  {/* Display tracking metrics if available */}
+                  {ev.evidence_data?.tracking_metrics && (
+                    <div className="mt-2 p-2 bg-background/50 rounded text-xs space-y-1">
+                      <div className="font-medium text-primary">📊 LinkedIn Metrics:</div>
+                      <div className="grid grid-cols-3 gap-2 text-muted-foreground">
+                        <div>Connections: {ev.evidence_data.tracking_metrics.connections_accepted}</div>
+                        <div>Posts: {ev.evidence_data.tracking_metrics.posts_count}</div>
+                        <div>Views: {ev.evidence_data.tracking_metrics.profile_views}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -300,18 +353,74 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                       </div>
                     )}
 
+                    {/* Tracking Metrics - Required for all submissions */}
+                    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+                      <Label className="text-sm font-semibold text-primary">
+                        📊 LinkedIn Metrics Tracking (Required)
+                      </Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="connections">Connections Accepted This Week:</Label>
+                          <Input
+                            id="connections"
+                            type="number"
+                            min="0"
+                            placeholder="e.g., 5"
+                            value={connectionsAccepted}
+                            onChange={(e) => setConnectionsAccepted(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Number of new connection requests accepted
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="posts">Posts Published This Week:</Label>
+                          <Input
+                            id="posts"
+                            type="number"
+                            min="0"
+                            placeholder="e.g., 3"
+                            value={postsCount}
+                            onChange={(e) => setPostsCount(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Number of posts/updates you published
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="views">Profile Views This Week:</Label>
+                          <Input
+                            id="views"
+                            type="number"
+                            min="0"
+                            placeholder="e.g., 25"
+                            value={profileViews}
+                            onChange={(e) => setProfileViews(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Number of profile views you received
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Submit Button */}
                     <Button 
                       onClick={handleSubmit} 
                       disabled={
                         isSubmitting || 
                         !selectedEvidenceType || 
+                        !connectionsAccepted ||
+                        !postsCount ||
+                        !profileViews ||
                         (selectedEvidenceType === 'URL_REQUIRED' && !url) ||
                         ((selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && !selectedFile)
                       }
                       className="w-full"
                     >
-                      {isSubmitting ? 'Submitting...' : 'Submit Evidence'}
+                      {isSubmitting ? 'Submitting...' : 'Submit Evidence & Metrics'}
                     </Button>
                   </div>
                 </DialogContent>

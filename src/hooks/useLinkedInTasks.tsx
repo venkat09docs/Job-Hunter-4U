@@ -35,6 +35,14 @@ export interface Evidence {
   file_key?: string;
   email_meta?: any;
   parsed_json?: any;
+  evidence_data?: {
+    tracking_metrics?: {
+      connections_accepted: number;
+      posts_count: number;
+      profile_views: number;
+    };
+    submission_timestamp?: string;
+  };
   created_at: string;
 }
 
@@ -341,12 +349,18 @@ export const useLinkedInTasks = () => {
       taskId, 
       kind, 
       url, 
-      file 
+      file,
+      trackingMetrics 
     }: { 
       taskId: string; 
       kind: 'URL' | 'EMAIL' | 'SCREENSHOT' | 'DATA_EXPORT';
       url?: string;
       file?: File;
+      trackingMetrics?: {
+        connections_accepted: number;
+        posts_count: number;
+        profile_views: number;
+      };
     }) => {
       let fileKey: string | undefined;
       
@@ -363,13 +377,20 @@ export const useLinkedInTasks = () => {
         fileKey = fileName;
       }
 
+      // Prepare evidence data with tracking metrics
+      const evidenceData = {
+        ...(trackingMetrics && { tracking_metrics: trackingMetrics }),
+        submission_timestamp: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from('linkedin_evidence')
         .insert({
           user_task_id: taskId,
           kind,
           url,
-          file_key: fileKey
+          file_key: fileKey,
+          evidence_data: evidenceData
         })
         .select()
         .single();
