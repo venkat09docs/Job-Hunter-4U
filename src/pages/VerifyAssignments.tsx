@@ -788,14 +788,15 @@ const VerifyAssignments = () => {
               .eq('id', evidence.id);
           }
 
-          // Award points to user with better error handling and debugging
+          // Award points to user using the same logic as verify-evidence function
           const pointsToAward = selectedAssignment.career_task_templates.points_reward;
+          const today = new Date().toISOString().split('T')[0];
           const pointsData = {
             user_id: selectedAssignment.user_id,
-            activity_type: 'career_assignment',
-            activity_id: `assignment_${selectedAssignment.id}`, // Use prefixed assignment ID for uniqueness
+            activity_type: 'career_task_completion',
+            activity_id: `career_task_${selectedAssignment.template_id}`,
             points_earned: pointsToAward,
-            activity_date: new Date().toISOString().split('T')[0]
+            activity_date: today
           };
 
           console.log('🔍 About to award points for assignment:', selectedAssignment.id);

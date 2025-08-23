@@ -191,43 +191,44 @@ serve(async (req) => {
       console.error('Error updating score:', scoreError);
     }
 
-    // Add points to user_activity_points for each newly verified task
-    if (verifiedCount > 0 && newlyVerifiedTasks.length > 0) {
-      const activityPointsInserts = [];
-      
-      for (const task of newlyVerifiedTasks) {
-        activityPointsInserts.push({
-          user_id: user.id, // Use auth user ID, not linkedin user ID
-          activity_id: `linkedin_task_${task.task_id}`,
-          activity_date: new Date().toISOString().split('T')[0], // Today's date
-          points_earned: task.score_awarded,
-          activity_type: 'linkedin_assignment'
-        });
-      }
-      
-      console.log(`Preparing to insert ${activityPointsInserts.length} activity point records`);
-      console.log('Activity points data:', activityPointsInserts);
-
-      if (activityPointsInserts.length > 0) {
-        const { error: pointsError } = await supabase
-          .from('user_activity_points')
-          .upsert(activityPointsInserts, {
-            onConflict: 'user_id,activity_id,activity_date'
+      // Add points to user_activity_points for each newly verified task
+      if (verifiedCount > 0 && newlyVerifiedTasks.length > 0) {
+        const activityPointsInserts = [];
+        const today = new Date().toISOString().split('T')[0];
+        
+        for (const task of newlyVerifiedTasks) {
+          activityPointsInserts.push({
+            user_id: user.id, // Use auth user ID, not linkedin user ID
+            activity_id: `linkedin_task_${task.task_id}`,
+            activity_date: today,
+            points_earned: task.score_awarded,
+            activity_type: 'linkedin_task_completion'
           });
+        }
+        
+        console.log(`Preparing to insert ${activityPointsInserts.length} activity point records`);
+        console.log('Activity points data:', activityPointsInserts);
 
-        if (pointsError) {
-          console.error('Error inserting activity points:', pointsError);
-          console.error('Points insert data:', JSON.stringify(activityPointsInserts, null, 2));
-        } else {
-          console.log(`✅ Successfully added ${activityPointsInserts.length} activity point records`);
-          console.log('Points awarded:', activityPointsInserts.map(p => ({
-            user_id: p.user_id,
-            points: p.points_earned,
-            activity_id: p.activity_id
-          })));
+        if (activityPointsInserts.length > 0) {
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .upsert(activityPointsInserts, {
+              onConflict: 'user_id,activity_id,activity_date'
+            });
+
+          if (pointsError) {
+            console.error('Error inserting activity points:', pointsError);
+            console.error('Points insert data:', JSON.stringify(activityPointsInserts, null, 2));
+          } else {
+            console.log(`✅ Successfully added ${activityPointsInserts.length} activity point records`);
+            console.log('Points awarded:', activityPointsInserts.map(p => ({
+              user_id: p.user_id,
+              points: p.points_earned,
+              activity_id: p.activity_id
+            })));
+          }
         }
       }
-    }
 
     console.log(`Verified ${verifiedCount} LinkedIn tasks for user ${user.id} in period ${currentPeriod}`);
 
