@@ -84,25 +84,28 @@ const CareerActivities = () => {
   };
 
   // Get week date range from currentPeriod (format: 2025-34)
-  const getWeekDateRange = (period: string) => {
+  const getWeekDateRange = (period: string): string => {
     if (!period) return "";
     
     try {
       const [year, week] = period.split('-').map(Number);
+      if (!year || !week) return period;
       
-      // Calculate the date of the first day of that ISO week
-      const jan4 = new Date(year, 0, 4);
-      const jan4Day = jan4.getDay() || 7; // Make Sunday = 7
-      const mondayOfWeek1 = new Date(jan4.getTime() - (jan4Day - 1) * 24 * 60 * 60 * 1000);
+      // Create date for January 1st of the year
+      const jan1 = new Date(year, 0, 1);
+      
+      // Find the first Monday of the year (or previous year if Jan 1 is not Monday)
+      const jan1Day = jan1.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysToFirstMonday = jan1Day === 1 ? 0 : (8 - jan1Day) % 7;
       
       // Calculate the Monday of the target week
-      const targetMonday = new Date(mondayOfWeek1.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
+      const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+      const targetMonday = new Date(firstMonday.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
       
-      // Get Monday to Sunday
-      const monday = targetMonday;
-      const sunday = new Date(monday.getTime() + 6 * 24 * 60 * 60 * 1000);
+      // Get Sunday (6 days after Monday)
+      const targetSunday = new Date(targetMonday.getTime() + 6 * 24 * 60 * 60 * 1000);
       
-      return `${format(monday, 'MMM dd')} - ${format(sunday, 'MMM dd, yyyy')}`;
+      return `${format(targetMonday, 'MMM dd')} - ${format(targetSunday, 'MMM dd, yyyy')}`;
     } catch (error) {
       console.error('Error parsing week period:', error);
       return period;
