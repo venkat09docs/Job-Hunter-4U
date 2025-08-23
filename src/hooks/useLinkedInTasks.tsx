@@ -71,6 +71,7 @@ export const useLinkedInTasks = () => {
 
   // Calculate current ISO week
   useEffect(() => {
+    // Use exact same calculation as edge function
     const now = new Date();
     const year = now.getFullYear();
     const startOfYear = new Date(year, 0, 1);
@@ -79,6 +80,10 @@ export const useLinkedInTasks = () => {
     const calculatedPeriod = `${year}-${week.toString().padStart(2, '0')}`;
     
     console.log('🔍 Calculated current period:', calculatedPeriod);
+    console.log('🔍 Current date:', now.toISOString());
+    console.log('🔍 Day of year:', dayOfYear);
+    console.log('🔍 Week number:', week);
+    
     setCurrentPeriod(calculatedPeriod);
   }, []);
 
@@ -96,6 +101,13 @@ export const useLinkedInTasks = () => {
       console.log('✅ Successfully initialized tasks:', data);
       console.log('✅ Tasks period from response:', data?.period);
       console.log('✅ Current hook period:', currentPeriod);
+      console.log('✅ Period match:', data?.period === currentPeriod);
+      
+      // Update current period to match the response if different
+      if (data?.period && data.period !== currentPeriod) {
+        console.log('🔄 Updating period from', currentPeriod, 'to', data.period);
+        setCurrentPeriod(data.period);
+      }
       
       // Invalidate and refetch all related queries
       queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
