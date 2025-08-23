@@ -8,6 +8,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
+import { useProfileBadges } from '@/hooks/useProfileBadges';
 import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal } from 'lucide-react';
 
 interface BadgeData {
@@ -53,6 +54,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
+  const { checkAndAwardBadges } = useProfileBadges();
 
   // Badge unlock logic - progressive unlocking system
   const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
@@ -429,9 +431,15 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               color: isUnlocked ? tierColor : '#9CA3AF'
                             }}
                             disabled={!isUnlocked}
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (isUnlocked) navigate(badge.link);
+                              if (isUnlocked) {
+                                // Check for badge awards when navigating to profile tasks
+                                if (category.id === 'profile') {
+                                  await checkAndAwardBadges();
+                                }
+                                navigate(badge.link);
+                              }
                             }}
                           >
                             {isUnlocked ? badge.nextAction : 'Locked'}

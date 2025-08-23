@@ -2656,6 +2656,83 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_badges: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          criteria: Json
+          description: string
+          icon: string
+          id: string
+          is_active: boolean
+          points_required: number
+          tier: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          code: string
+          created_at?: string
+          criteria?: Json
+          description: string
+          icon: string
+          id?: string
+          is_active?: boolean
+          points_required?: number
+          tier: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          criteria?: Json
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          points_required?: number
+          tier?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profile_user_badges: {
+        Row: {
+          awarded_at: string
+          badge_id: string
+          id: string
+          progress_data: Json | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_id: string
+          id?: string
+          progress_data?: Json | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_id?: string
+          id?: string
+          progress_data?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "profile_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio_link_url: string | null
@@ -3492,6 +3569,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      award_profile_badges_for_user: {
+        Args: { user_uuid: string }
+        Returns: undefined
       }
       create_follow_up_reminder: {
         Args: {

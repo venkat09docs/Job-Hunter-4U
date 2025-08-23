@@ -42,8 +42,24 @@ export const useBadgeLeaders = () => {
 
       if (pointsError) throw pointsError;
 
+      // Get users who have earned profile badges
+      const { data: profileBadgeData, error: badgeError } = await supabase
+        .from('profile_user_badges')
+        .select(`
+          user_id,
+          awarded_at,
+          profile_badges!inner (
+            points_required,
+            tier,
+            title
+          ),
+          profiles!inner(username, full_name, profile_image_url, industry)
+        `);
+
+      if (badgeError) throw badgeError;
+
       // Process data to categorize leaders by activity type
-      const processLeaders = (activityCategories: string[], includeITOnly = false) => {
+      const processLeaders = (activityCategories: string[], includeITOnly = false, includeProfileBadges = false) => {
         const userPointsMap = new Map<string, { user_id: string; total_points: number; profile: any }>();
         
         pointsData?.forEach((item: any) => {
@@ -88,6 +104,25 @@ export const useBadgeLeaders = () => {
           current.total_points += item.points_earned || 0;
         });
 
+        // Include profile badge holders for profile categories
+        if (includeProfileBadges && profileBadgeData) {
+          profileBadgeData.forEach((badgeItem: any) => {
+            const key = badgeItem.user_id;
+            if (!userPointsMap.has(key)) {
+              userPointsMap.set(key, {
+                user_id: badgeItem.user_id,
+                total_points: 0,
+                profile: badgeItem.profiles
+              });
+            }
+            
+            const current = userPointsMap.get(key)!;
+            // Add points based on badge tier
+            const badgePoints = badgeItem.profile_badges?.points_required || 0;
+            current.total_points += badgePoints;
+          });
+        }
+
         // Convert to array and sort by points
         const leaders = Array.from(userPointsMap.values())
           .filter(item => item.total_points > 0)
@@ -106,7 +141,7 @@ export const useBadgeLeaders = () => {
       };
 
       setBadgeLeaders({
-        profileBuild: processLeaders(['profile', 'completion', 'resume']),
+        profileBuild: processLeaders(['profile', 'completion', 'resume'], false, true), // Include profile badges
         jobsApply: processLeaders(['jobs', 'application', 'job_tracker']),
         linkedinGrowth: processLeaders(['linkedin', 'network']),
         githubRepository: processLeaders(['github', 'repo'], true) // IT only

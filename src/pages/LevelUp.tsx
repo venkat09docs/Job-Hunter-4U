@@ -2,6 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
+import { useProfileBadges } from '@/hooks/useProfileBadges';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
@@ -21,7 +22,8 @@ const LevelUp = () => {
   const { user } = useAuth();
   const { isAdmin } = useRole();
   const { profile, loading, hasActiveSubscription } = useProfile();
-  const { getModuleProgress, loading: careerLoading } = useCareerAssignments();
+  const { getModuleProgress, loading: careerLoading, getTasksByModule } = useCareerAssignments();
+  const { checkAndAwardBadges } = useProfileBadges();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
@@ -31,9 +33,15 @@ const LevelUp = () => {
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
   // Get completed profile assignments count for badge unlocking
-  const { getTasksByModule } = useCareerAssignments();
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
   const completedProfileTasks = profileTasks.filter(task => task.status === 'verified').length;
+
+  // Check for badge awards when profile tasks are completed
+  useEffect(() => {
+    if (!careerLoading && completedProfileTasks > 0) {
+      checkAndAwardBadges();
+    }
+  }, [completedProfileTasks, careerLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -44,6 +52,7 @@ const LevelUp = () => {
   const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
   const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
 
+  // Move this after the job data effect
   useEffect(() => {
     if (!githubTasks) return;
     const completed = githubTasks.filter(t => REPO_TASK_IDS.includes(t.task_id) && t.completed).length;
