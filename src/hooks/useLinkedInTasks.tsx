@@ -20,7 +20,7 @@ export interface LinkedInUserTask {
   task_id: string;
   period: string;
   due_at: string;
-  status: 'NOT_STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED';
+  status: 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED';
   score_awarded: number;
   created_at: string;
   updated_at: string;
@@ -300,6 +300,33 @@ export const useLinkedInTasks = () => {
     enabled: !!currentPeriod
   });
 
+  // Update task status
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: async ({ taskId, newStatus }: { taskId: string; newStatus: string }) => {
+      const { data, error } = await supabase
+        .from('linkedin_user_tasks')
+        .update({ 
+          status: newStatus as 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['linkedin-scores'] });
+      toast.success('Task status updated successfully!');
+    },
+    onError: (error) => {
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status');
+    }
+  });
+
   // Submit evidence
   const submitEvidenceMutation = useMutation({
     mutationFn: async ({ 
@@ -340,6 +367,16 @@ export const useLinkedInTasks = () => {
         .single();
 
       if (error) throw error;
+      
+      // Update task status to SUBMITTED
+      await supabase
+        .from('linkedin_user_tasks')
+        .update({ 
+          status: 'SUBMITTED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId);
+
       return data;
     },
     onSuccess: () => {
@@ -384,6 +421,8 @@ export const useLinkedInTasks = () => {
     tasksLoading,
     initializeWeek: initializeWeekMutation.mutate,
     submitEvidence: submitEvidenceMutation.mutate,
+    updateTaskStatus: (taskId: string, newStatus: string) => 
+      updateTaskStatusMutation.mutate({ taskId, newStatus }),
     verifyTasks: verifyTasksMutation.mutate,
     isSubmittingEvidence: submitEvidenceMutation.isPending,
     isVerifying: verifyTasksMutation.isPending,

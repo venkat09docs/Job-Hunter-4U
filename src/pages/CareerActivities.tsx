@@ -48,6 +48,7 @@ const CareerActivities = () => {
     tasksLoading,
     initializeWeek,
     submitEvidence,
+    updateTaskStatus,
     verifyTasks,
     isSubmittingEvidence,
     isVerifying,
@@ -277,6 +278,7 @@ const CareerActivities = () => {
                         task={task}
                         evidence={evidence.filter(e => e.user_task_id === task.id)}
                         onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
+                        onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
                         isSubmitting={isSubmittingEvidence}
                       />
                     ))}

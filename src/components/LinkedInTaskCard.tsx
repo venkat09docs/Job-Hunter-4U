@@ -34,6 +34,7 @@ interface LinkedInTaskCardProps {
     url?: string;
     file?: File;
   }) => void;
+  onUpdateStatus: (taskId: string, newStatus: string) => void;
   isSubmitting?: boolean;
 }
 
@@ -41,6 +42,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   task,
   evidence,
   onSubmitEvidence,
+  onUpdateStatus,
   isSubmitting = false
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,19 +52,32 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'NOT_STARTED': return 'secondary';
-      case 'SUBMITTED': return 'outline';
-      case 'PARTIALLY_VERIFIED': return 'default';
-      case 'VERIFIED': return 'default';
-      default: return 'secondary';
+      case 'VERIFIED': return 'bg-green-500';
+      case 'PARTIALLY_VERIFIED': return 'bg-yellow-500'; 
+      case 'SUBMITTED': return 'bg-blue-500';
+      case 'STARTED': return 'bg-orange-500';
+      case 'NOT_STARTED': return 'bg-gray-400';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const getStatusLabel = () => {
+    switch (task.status) {
+      case 'VERIFIED': return 'Completed';
+      case 'PARTIALLY_VERIFIED': return 'Partially Verified';
+      case 'SUBMITTED': return 'Under Review';
+      case 'STARTED': return 'Started';
+      case 'NOT_STARTED': return 'Not Yet Started';
+      default: return 'Not Yet Started';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'NOT_STARTED': return <Clock className="w-4 h-4" />;
-      case 'SUBMITTED': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'PARTIALLY_VERIFIED': return <AlertCircle className="w-4 h-4 text-blue-500" />;
+      case 'STARTED': return <AlertCircle className="w-4 h-4 text-orange-500" />;
+      case 'SUBMITTED': return <AlertCircle className="w-4 h-4 text-blue-500" />;
+      case 'PARTIALLY_VERIFIED': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
       case 'VERIFIED': return <CheckCircle className="w-4 h-4 text-green-500" />;
       default: return <Clock className="w-4 h-4" />;
     }
@@ -86,6 +101,10 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       case 'DATA_EXPORT_OK': return 'Data Export';
       default: return type;
     }
+  };
+
+  const handleStartAssignment = () => {
+    onUpdateStatus(task.id, 'STARTED');
   };
 
   const handleSubmit = () => {
@@ -133,8 +152,8 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
             </p>
           </div>
           <div className="text-right">
-            <Badge variant={getStatusColor(task.status)} className="mb-2">
-              {task.status.replace('_', ' ')}
+            <Badge variant="outline" className={`${getStatusColor(task.status)} text-white mb-2`}>
+              {getStatusLabel()}
             </Badge>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Trophy className="w-4 h-4" />
@@ -191,94 +210,107 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
           </div>
         )}
 
-        {/* Submit Evidence Button */}
-        {!isCompleted && (
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full" variant="outline">
+        {/* Action Buttons - Following Career Assignments Flow */}
+        {task.status !== 'VERIFIED' && (
+          <>
+            {/* Start Assignment Button */}
+            {task.status === 'NOT_STARTED' && (
+              <Button className="w-full" onClick={handleStartAssignment}>
                 <Upload className="w-4 h-4 mr-2" />
-                Submit Evidence
+                Start Assignment
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Submit Evidence for {task.linkedin_tasks.title}</DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                {/* Evidence Type Selection */}
-                <div className="space-y-2">
-                  <Label>Select Evidence Type:</Label>
-                  <div className="space-y-2">
-                    {task.linkedin_tasks.evidence_types.map((type) => (
-                      <Button
-                        key={type}
-                        variant={selectedEvidenceType === type ? "default" : "outline"}
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => setSelectedEvidenceType(type)}
-                      >
-                        {getEvidenceIcon(type)}
-                        <span className="ml-2">{getEvidenceTypeLabel(type)}</span>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
+            )}
+            
+            {/* Submit/Update Assignment Button */}
+            {(task.status === 'STARTED' || task.status === 'SUBMITTED') && (
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {task.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>{task.linkedin_tasks.title}</DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    {/* Evidence Type Selection */}
+                    <div className="space-y-2">
+                      <Label>Select Evidence Type:</Label>
+                      <div className="space-y-2">
+                        {task.linkedin_tasks.evidence_types.map((type) => (
+                          <Button
+                            key={type}
+                            variant={selectedEvidenceType === type ? "default" : "outline"}
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => setSelectedEvidenceType(type)}
+                          >
+                            {getEvidenceIcon(type)}
+                            <span className="ml-2">{getEvidenceTypeLabel(type)}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* URL Input */}
-                {selectedEvidenceType === 'URL_REQUIRED' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="url">LinkedIn URL:</Label>
-                    <Input
-                      id="url"
-                      type="url"
-                      placeholder="https://linkedin.com/posts/..."
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Paste the URL of your LinkedIn post or comment
-                    </p>
-                  </div>
-                )}
+                    {/* URL Input */}
+                    {selectedEvidenceType === 'URL_REQUIRED' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="url">LinkedIn URL:</Label>
+                        <Input
+                          id="url"
+                          type="url"
+                          placeholder="https://linkedin.com/posts/..."
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Paste the URL of your LinkedIn post or comment
+                        </p>
+                      </div>
+                    )}
 
-                {/* File Upload */}
-                {(selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && (
-                  <div className="space-y-2">
-                    <Label htmlFor="file">
-                      {selectedEvidenceType === 'SCREENSHOT_OK' ? 'Screenshot:' : 'Data Export File:'}
-                    </Label>
-                    <Input
-                      id="file"
-                      type="file"
-                      accept={selectedEvidenceType === 'SCREENSHOT_OK' ? "image/*" : ".csv,.json,.zip,.xlsx"}
-                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {selectedEvidenceType === 'SCREENSHOT_OK' 
-                        ? 'Upload a screenshot as proof of completion'
-                        : 'Upload CSV, JSON, ZIP, or Excel file'
+                    {/* File Upload */}
+                    {(selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && (
+                      <div className="space-y-2">
+                        <Label htmlFor="file">
+                          {selectedEvidenceType === 'SCREENSHOT_OK' ? 'Screenshot:' : 'Data Export File:'}
+                        </Label>
+                        <Input
+                          id="file"
+                          type="file"
+                          accept={selectedEvidenceType === 'SCREENSHOT_OK' ? "image/*" : ".csv,.json,.zip,.xlsx"}
+                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {selectedEvidenceType === 'SCREENSHOT_OK' 
+                            ? 'Upload a screenshot as proof of completion'
+                            : 'Upload CSV, JSON, ZIP, or Excel file'
+                          }
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <Button 
+                      onClick={handleSubmit} 
+                      disabled={
+                        isSubmitting || 
+                        !selectedEvidenceType || 
+                        (selectedEvidenceType === 'URL_REQUIRED' && !url) ||
+                        ((selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && !selectedFile)
                       }
-                    </p>
+                      className="w-full"
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Evidence'}
+                    </Button>
                   </div>
-                )}
-
-                {/* Submit Button */}
-                <Button 
-                  onClick={handleSubmit} 
-                  disabled={
-                    isSubmitting || 
-                    !selectedEvidenceType || 
-                    (selectedEvidenceType === 'URL_REQUIRED' && !url) ||
-                    ((selectedEvidenceType === 'SCREENSHOT_OK' || selectedEvidenceType === 'DATA_EXPORT_OK') && !selectedFile)
-                  }
-                  className="w-full"
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Evidence'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+                </DialogContent>
+              </Dialog>
+            )}
+          </>
         )}
 
         {/* Bonus Rules */}
