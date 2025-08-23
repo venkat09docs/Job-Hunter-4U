@@ -457,7 +457,22 @@ const CareerAssignments = () => {
                 return Math.round((completedFields / totalFields) * 100);
               };
 
-              // Status board data
+              // Get tasks by sub-category name (matching the actual assignment tabs)
+              const getTasksBySubCategoryName = (categoryName: string) => {
+                const subCategory = subCategories.find(sc => 
+                  sc.name.toLowerCase().includes(categoryName.toLowerCase())
+                );
+                return subCategory ? getTasksBySubCategory(subCategory.id) : [];
+              };
+
+              const getProgressBySubCategoryName = (categoryName: string) => {
+                const subCategory = subCategories.find(sc => 
+                  sc.name.toLowerCase().includes(categoryName.toLowerCase())
+                );
+                return subCategory ? getSubCategoryProgress(subCategory.id) : 0;
+              };
+
+              // Status board data using sub-category matching
               const statusBoards = [
                 {
                   id: 'resume',
@@ -473,9 +488,14 @@ const CareerAssignments = () => {
                   id: 'linkedin',
                   title: 'LinkedIn Profile',
                   icon: Users,
-                  progress: getModuleProgress('LINKEDIN'),
-                  total: getTasksByModule('LINKEDIN').length,
-                  completed: getTasksByModule('LINKEDIN').filter(task => task.status === 'verified').length,
+                  progress: (() => {
+                    const linkedinTasks = getTasksBySubCategoryName('linkedin');
+                    return linkedinTasks.length > 0 
+                      ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
+                      : 0;
+                  })(),
+                  total: getTasksBySubCategoryName('linkedin').length,
+                  completed: getTasksBySubCategoryName('linkedin').filter(task => task.status === 'verified').length,
                   color: 'bg-blue-600',
                   description: 'Optimize your LinkedIn presence'
                 },
@@ -483,9 +503,14 @@ const CareerAssignments = () => {
                   id: 'github',
                   title: 'GitHub Profile',
                   icon: Github,
-                  progress: getModuleProgress('GITHUB'),
-                  total: getTasksByModule('GITHUB').length,
-                  completed: getTasksByModule('GITHUB').filter(task => task.status === 'verified').length,
+                  progress: (() => {
+                    const githubTasks = getTasksBySubCategoryName('github');
+                    return githubTasks.length > 0 
+                      ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
+                      : 0;
+                  })(),
+                  total: getTasksBySubCategoryName('github').length,
+                  completed: getTasksBySubCategoryName('github').filter(task => task.status === 'verified').length,
                   color: 'bg-gray-800',
                   description: 'Showcase your coding projects'
                 },
@@ -493,9 +518,14 @@ const CareerAssignments = () => {
                   id: 'digital',
                   title: 'Digital Portfolio',
                   icon: FileText,
-                  progress: getModuleProgress('DIGITAL_PROFILE'),
-                  total: getTasksByModule('DIGITAL_PROFILE').length,
-                  completed: getTasksByModule('DIGITAL_PROFILE').filter(task => task.status === 'verified').length,
+                  progress: (() => {
+                    const digitalTasks = getTasksBySubCategoryName('digital');
+                    return digitalTasks.length > 0 
+                      ? Math.round((digitalTasks.filter(t => t.status === 'verified').length / digitalTasks.length) * 100)
+                      : 0;
+                  })(),
+                  total: getTasksBySubCategoryName('digital').length,
+                  completed: getTasksBySubCategoryName('digital').filter(task => task.status === 'verified').length,
                   color: 'bg-purple-500',
                   description: 'Complete your online presence'
                 }
