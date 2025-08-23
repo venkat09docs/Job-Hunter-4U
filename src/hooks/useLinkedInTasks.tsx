@@ -76,7 +76,10 @@ export const useLinkedInTasks = () => {
     const startOfYear = new Date(year, 0, 1);
     const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
     const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
-    setCurrentPeriod(`${year}-${week.toString().padStart(2, '0')}`);
+    const calculatedPeriod = `${year}-${week.toString().padStart(2, '0')}`;
+    
+    console.log('🔍 Calculated current period:', calculatedPeriod);
+    setCurrentPeriod(calculatedPeriod);
   }, []);
 
   // Initialize week tasks
@@ -90,7 +93,10 @@ export const useLinkedInTasks = () => {
       return data;
     },
     onSuccess: (data) => {
-      console.log('Successfully initialized tasks:', data);
+      console.log('✅ Successfully initialized tasks:', data);
+      console.log('✅ Tasks period from response:', data?.period);
+      console.log('✅ Current hook period:', currentPeriod);
+      
       // Invalidate and refetch all related queries
       queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['linkedin-scores'] });
@@ -98,8 +104,9 @@ export const useLinkedInTasks = () => {
       
       // Force refetch after short delay to ensure data is fresh
       setTimeout(() => {
+        console.log('🔄 Force refetching tasks...');
         refetchTasks();
-      }, 500);
+      }, 1000); // Increased delay to 1 second
       
       toast.success(`Successfully initialized ${data?.userTasks?.length || 0} LinkedIn tasks for this week!`);
     },
@@ -113,8 +120,12 @@ export const useLinkedInTasks = () => {
   const { data: userTasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery({
     queryKey: ['linkedin-user-tasks', currentPeriod],
     queryFn: async () => {
+      console.log('🔍 Fetching LinkedIn tasks for period:', currentPeriod);
+      
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
+
+      console.log('🔍 Authenticated user:', user.user.id);
 
       // Get linkedin user
       const { data: linkedinUser, error: userError } = await supabase
@@ -124,14 +135,16 @@ export const useLinkedInTasks = () => {
         .single();
 
       if (userError && userError.code !== 'PGRST116') {
+        console.error('🔍 Error fetching linkedin user:', userError);
         throw userError;
       }
 
       if (!linkedinUser) {
-        // User doesn't exist, they need to initialize manually
-        console.log('LinkedIn user not found, user needs to initialize week');
+        console.log('🔍 LinkedIn user not found, user needs to initialize week');
         return [];
       }
+
+      console.log('🔍 LinkedIn user found:', linkedinUser.id);
 
       const { data, error } = await supabase
         .from('linkedin_user_tasks')
@@ -152,7 +165,13 @@ export const useLinkedInTasks = () => {
         .eq('period', currentPeriod)
         .order('created_at');
 
-      if (error) throw error;
+      if (error) {
+        console.error('🔍 Error fetching tasks:', error);
+        throw error;
+      }
+      
+      console.log('🔍 Fetched tasks:', data?.length || 0, 'tasks for period', currentPeriod);
+      console.log('🔍 Tasks data:', data);
       return data as LinkedInUserTask[];
     },
     enabled: !!currentPeriod,
@@ -356,6 +375,12 @@ export const useLinkedInTasks = () => {
     verifyTasks: verifyTasksMutation.mutate,
     isSubmittingEvidence: submitEvidenceMutation.isPending,
     isVerifying: verifyTasksMutation.isPending,
-    isInitializing: initializeWeekMutation.isPending
+    isInitializing: initializeWeekMutation.isPending,
+    // Debug info
+    debugInfo: {
+      userTasksCount: userTasks.length,
+      currentPeriod,
+      tasksLoading
+    }
   };
 };

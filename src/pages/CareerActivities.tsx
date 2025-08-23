@@ -266,6 +266,11 @@ const CareerActivities = () => {
 
                 {!tasksLoading && userTasks.length > 0 && (
                   <div className="space-y-4">
+                    {/* Debug info */}
+                    <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
+                      Debug: {userTasks.length} tasks loaded for period {currentPeriod}
+                    </div>
+                    
                     {userTasks.map((task) => (
                       <LinkedInTaskCard
                         key={task.id}
