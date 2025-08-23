@@ -846,7 +846,7 @@ export default function ManageAssignments() {
                             </SelectItem>
                           ))
                         ) : (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="no-categories" disabled>
                             No sub categories available
                           </SelectItem>
                         )
@@ -859,7 +859,7 @@ export default function ManageAssignments() {
                             </SelectItem>
                           ))
                         ) : (
-                          <SelectItem value="" disabled>
+                          <SelectItem value="no-categories" disabled>
                             No sub categories available
                           </SelectItem>
                         )
