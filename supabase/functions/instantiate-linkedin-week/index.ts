@@ -23,19 +23,31 @@ serve(async (req) => {
 
     const { userId }: InstantiateWeekRequest = await req.json().catch(() => ({}));
     
-    // Get current ISO week (YYYY-WW format)
+    // Get current week period (Monday to Sunday) in YYYY-WW format  
     const now = new Date();
     const year = now.getFullYear();
+    
+    // Get Monday of current week
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const monday = new Date(now);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+    
+    // Calculate week number from Monday dates
     const startOfYear = new Date(year, 0, 1);
-    const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-    const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+    const startOfYearDay = startOfYear.getDay();
+    const daysToFirstMonday = (8 - startOfYearDay) % 7;
+    const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+    
+    const diffTime = monday.getTime() - firstMonday.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const week = Math.floor(diffDays / 7) + 1;
+    
     const currentPeriod = `${year}-${week.toString().padStart(2, '0')}`;
 
-    // Get Monday of current week for task assignment and due date calculations
-    const dayOfWeek = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    monday.setHours(0, 0, 0, 0);
+    console.log('🔍 Current period:', currentPeriod);
+    console.log('🔍 Monday of week:', monday.toISOString().split('T')[0]);
 
     let targetUserId = userId;
 

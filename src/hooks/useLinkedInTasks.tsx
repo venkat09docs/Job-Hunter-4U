@@ -77,19 +77,33 @@ export const useLinkedInTasks = () => {
   const [currentPeriod, setCurrentPeriod] = useState<string>('');
   const queryClient = useQueryClient();
 
-  // Calculate current ISO week
+  // Calculate current week period (Monday to Sunday)
   useEffect(() => {
-    // Use exact same calculation as edge function
     const now = new Date();
     const year = now.getFullYear();
+    
+    // Get Monday of current week
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    const monday = new Date(now);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+    
+    // Calculate week number from Monday dates
     const startOfYear = new Date(year, 0, 1);
-    const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-    const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+    const startOfYearDay = startOfYear.getDay();
+    const daysToFirstMonday = (8 - startOfYearDay) % 7;
+    const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+    
+    const diffTime = monday.getTime() - firstMonday.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const week = Math.floor(diffDays / 7) + 1;
+    
     const calculatedPeriod = `${year}-${week.toString().padStart(2, '0')}`;
     
     console.log('🔍 Calculated current period:', calculatedPeriod);
     console.log('🔍 Current date:', now.toISOString());
-    console.log('🔍 Day of year:', dayOfYear);
+    console.log('🔍 Monday of week:', monday.toISOString().split('T')[0]);
     console.log('🔍 Week number:', week);
     
     setCurrentPeriod(calculatedPeriod);

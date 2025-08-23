@@ -23,14 +23,29 @@ serve(async (req) => {
 
     const { period }: VerifyTasksRequest = await req.json().catch(() => ({}));
     
-    // Get current ISO week if not provided
+    // Get current week period (Monday to Sunday) if not provided
     let currentPeriod = period;
     if (!currentPeriod) {
       const now = new Date();
       const year = now.getFullYear();
+      
+      // Get Monday of current week
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+      const monday = new Date(now);
+      monday.setDate(diff);
+      monday.setHours(0, 0, 0, 0);
+      
+      // Calculate week number from Monday dates
       const startOfYear = new Date(year, 0, 1);
-      const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-      const week = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+      const startOfYearDay = startOfYear.getDay();
+      const daysToFirstMonday = (8 - startOfYearDay) % 7;
+      const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+      
+      const diffTime = monday.getTime() - firstMonday.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const week = Math.floor(diffDays / 7) + 1;
+      
       currentPeriod = `${year}-${week.toString().padStart(2, '0')}`;
     }
 
@@ -119,6 +134,7 @@ serve(async (req) => {
 
     let verifiedCount = 0;
     let totalPointsAwarded = 0;
+    const newlyVerifiedTasks = [];
 
     // Verify tasks that have evidence
     for (const task of userTasks) {
@@ -142,6 +158,12 @@ serve(async (req) => {
         } else {
           verifiedCount++;
           totalPointsAwarded += pointsAwarded;
+          // Track newly verified tasks for points allocation
+          newlyVerifiedTasks.push({
+            ...task,
+            score_awarded: pointsAwarded,
+            status: 'VERIFIED'
+          });
         }
       }
     }
@@ -169,23 +191,24 @@ serve(async (req) => {
       console.error('Error updating score:', scoreError);
     }
 
-    // Add points to user_activity_points for each verified task
-    if (verifiedCount > 0) {
+    // Add points to user_activity_points for each newly verified task
+    if (verifiedCount > 0 && newlyVerifiedTasks.length > 0) {
       const activityPointsInserts = [];
       
-      for (const task of userTasks) {
-        if (task.status === 'VERIFIED' && task.score_awarded > 0) {
-          activityPointsInserts.push({
-            user_id: user.id, // Use auth user ID, not linkedin user ID
-            activity_id: `linkedin_task_${task.task_id}`,
-            activity_date: new Date().toISOString().split('T')[0], // Today's date
-            points_earned: task.score_awarded,
-            description: `LinkedIn task: ${task.linkedin_tasks.title}`,
-            evidence_url: null,
-            verified_at: new Date().toISOString()
-          });
-        }
+      for (const task of newlyVerifiedTasks) {
+        activityPointsInserts.push({
+          user_id: user.id, // Use auth user ID, not linkedin user ID
+          activity_id: `linkedin_task_${task.task_id}`,
+          activity_date: new Date().toISOString().split('T')[0], // Today's date
+          points_earned: task.score_awarded,
+          description: `LinkedIn task: ${task.linkedin_tasks.title}`,
+          evidence_url: null,
+          verified_at: new Date().toISOString()
+        });
       }
+      
+      console.log(`Preparing to insert ${activityPointsInserts.length} activity point records`);
+      console.log('Activity points data:', activityPointsInserts);
 
       if (activityPointsInserts.length > 0) {
         const { error: pointsError } = await supabase
