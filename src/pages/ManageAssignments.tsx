@@ -252,12 +252,19 @@ export default function ManageAssignments() {
           
           if (error) throw error;
         } else if (activeCategory === 'linkedin') {
+          // Generate unique code from title
+          const uniqueCode = assignmentForm.title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '_')
+            .slice(0, 30) + '_' + Date.now();
+            
           const { error } = await supabase
             .from('linkedin_tasks')
             .update({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              code: 'weekly_linkedin', // Set default code for LinkedIn assignments
+              code: uniqueCode,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order
@@ -329,12 +336,19 @@ export default function ManageAssignments() {
           
           if (error) throw error;
         } else if (activeCategory === 'linkedin') {
+          // Generate unique code from title
+          const uniqueCode = assignmentForm.title
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '_')
+            .slice(0, 30) + '_' + Date.now();
+            
           const { error } = await supabase
             .from('linkedin_tasks')
             .insert({
               title: assignmentForm.title,
               description: assignmentForm.description,
-              code: 'weekly_linkedin', // Set default code for LinkedIn assignments
+              code: uniqueCode,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order,
