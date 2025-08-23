@@ -793,7 +793,7 @@ const VerifyAssignments = () => {
           const pointsData = {
             user_id: selectedAssignment.user_id,
             activity_type: 'career_assignment',
-            activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
+            activity_id: `assignment_${selectedAssignment.id}`, // Use prefixed assignment ID for uniqueness
             points_earned: pointsToAward,
             activity_date: new Date().toISOString().split('T')[0]
           };
@@ -805,7 +805,9 @@ const VerifyAssignments = () => {
 
           const { data: insertedPoints, error: pointsError } = await supabase
             .from('user_activity_points')
-            .insert(pointsData)
+            .upsert(pointsData, {
+              onConflict: 'user_id,activity_id,activity_date'
+            })
             .select();
 
           console.log('🔍 Points insertion result:', { insertedPoints, pointsError });

@@ -113,11 +113,18 @@ export const useUserPoints = (): UserPoints => {
         },
         (payload) => {
           console.log('🔄 Points change detected:', payload);
-          // Refetch points when changes occur
-          fetchUserPoints();
+          console.log('🔄 Event type:', payload.eventType);
+          console.log('🔄 New record:', payload.new);
+          // Refetch points when changes occur with a small delay to ensure DB consistency
+          setTimeout(() => {
+            console.log('🔄 Refetching points after change...');
+            fetchUserPoints();
+          }, 500);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔄 Points subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
