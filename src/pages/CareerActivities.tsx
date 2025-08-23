@@ -34,7 +34,8 @@ import { LinkedInTaskCard } from '@/components/LinkedInTaskCard';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { format, addDays, startOfWeek } from 'date-fns';
+import { LinkedInHistoryTab } from '@/components/LinkedInHistoryTab';
+import { format } from 'date-fns';
 
 const CareerActivities = () => {
   const { canAccessFeature } = usePremiumFeatures();
@@ -464,26 +465,7 @@ const CareerActivities = () => {
 
           {/* History Tab */}
           <TabsContent value="history" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <BarChart3 className="w-6 h-6" />
-                  Historical Activity Data
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <BarChart3 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Historical Data</h3>
-                  <p className="text-muted-foreground">
-                    View past activity trends, completion rates, and user engagement metrics.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Coming soon - Advanced analytics dashboard
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <LinkedInHistoryTab />
           </TabsContent>
 
           {/* Settings Tab */}
