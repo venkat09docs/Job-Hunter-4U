@@ -100,26 +100,6 @@ const CareerActivities = () => {
               <p className="text-muted-foreground mt-2">Complete weekly LinkedIn tasks to grow your professional network and earn points</p>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleVerifyTasks} 
-              disabled={isVerifying || !canAccessFeature("linkedin_growth_activities")}
-              variant="outline"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isVerifying ? 'animate-spin' : ''}`} />
-              {isVerifying ? 'Verifying...' : 'Verify Tasks'}
-              {!canAccessFeature("linkedin_growth_activities") && <Lock className="w-4 h-4 ml-2" />}
-            </Button>
-            <Button 
-              onClick={handleInitializeWeek} 
-              disabled={isInitializing || tasksLoading || !canAccessFeature("linkedin_growth_activities")}
-              className="flex items-center gap-2"
-            >
-              <Target className={`w-5 h-5 ${isInitializing ? 'animate-spin' : ''}`} />
-              {isInitializing ? 'Initializing...' : 'Initialize Week'}
-              {!canAccessFeature("linkedin_growth_activities") && <Lock className="w-4 h-4 ml-2" />}
-            </Button>
-          </div>
         </div>
 
         {/* Weekly Stats */}

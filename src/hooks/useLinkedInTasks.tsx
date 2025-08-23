@@ -95,6 +95,12 @@ export const useLinkedInTasks = () => {
       queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['linkedin-scores'] });
       queryClient.invalidateQueries({ queryKey: ['linkedin-evidence'] });
+      
+      // Force refetch after short delay to ensure data is fresh
+      setTimeout(() => {
+        refetchTasks();
+      }, 500);
+      
       toast.success(`Successfully initialized ${data?.userTasks?.length || 0} LinkedIn tasks for this week!`);
     },
     onError: (error) => {
@@ -104,7 +110,7 @@ export const useLinkedInTasks = () => {
   });
 
   // Get user tasks for current period
-  const { data: userTasks = [], isLoading: tasksLoading } = useQuery({
+  const { data: userTasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery({
     queryKey: ['linkedin-user-tasks', currentPeriod],
     queryFn: async () => {
       const { data: user } = await supabase.auth.getUser();
@@ -149,7 +155,9 @@ export const useLinkedInTasks = () => {
       if (error) throw error;
       return data as LinkedInUserTask[];
     },
-    enabled: !!currentPeriod
+    enabled: !!currentPeriod,
+    staleTime: 1000, // Refetch after 1 second to ensure fresh data
+    refetchOnWindowFocus: true
   });
 
   // Get evidence for tasks
