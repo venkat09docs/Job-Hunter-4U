@@ -30,6 +30,11 @@ const LevelUp = () => {
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
+  // Get completed profile assignments count for badge unlocking
+  const { getTasksByModule } = useCareerAssignments();
+  const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
+  const completedProfileTasks = profileTasks.filter(task => task.status === 'verified').length;
+  
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
   const { metrics: networkMetrics, loading: networkGrowthLoading } = useNetworkGrowthMetrics();
@@ -203,6 +208,7 @@ const LevelUp = () => {
           <div className="mb-8">
             <BadgeProgressionMap 
               resumeProgress={resumeProgress}
+              completedProfileTasks={completedProfileTasks}
               linkedinProgress={linkedinProgress}
               githubProgress={githubProgress}
               jobApplicationsCount={totalJobApplications}

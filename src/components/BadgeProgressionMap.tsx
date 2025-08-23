@@ -30,6 +30,7 @@ interface BadgeCategory {
 
 interface BadgeProgressionMapProps {
   resumeProgress?: number;
+  completedProfileTasks?: number;
   linkedinProgress?: number;
   githubProgress?: number;
   jobApplicationsCount?: number;
@@ -41,6 +42,7 @@ interface BadgeProgressionMapProps {
 
 const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   resumeProgress = 0,
+  completedProfileTasks = 0,
   linkedinProgress = 0,
   githubProgress = 0,
   jobApplicationsCount = 0,
@@ -58,10 +60,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'profile':
         // Profile Build (Bronze) - Always unlocked (default)
         if (tier === 'bronze') return true;
-        // Profile Complete (Silver) - Unlocked when Bronze is 100% complete
-        if (tier === 'silver') return resumeProgress >= 100;
+        // Profile Complete (Silver) - Unlocked when all 9 profile assignments are completed
+        if (tier === 'silver') return completedProfileTasks >= 9;
         // Profile Perfectionist (Gold) - Unlocked when Silver prerequisites are met
-        if (tier === 'gold') return resumeProgress >= 100 && calculateProfileProgress('silver') >= 100;
+        if (tier === 'gold') return completedProfileTasks >= 9 && calculateProfileProgress('silver') >= 100;
         return false;
       
       case 'jobs':
