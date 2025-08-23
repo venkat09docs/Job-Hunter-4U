@@ -48,6 +48,9 @@ interface SubmittedAssignment {
     file_urls?: string[];
     verification_status: string;
   }[];
+  // LinkedIn assignment specific properties
+  _isLinkedInAssignment?: boolean;
+  _originalLinkedInTask?: any;
 }
 
 const VerifyAssignments = () => {
@@ -326,9 +329,113 @@ const VerifyAssignments = () => {
     try {
       setLoading(true);
       
+      // Fetch both career assignments and LinkedIn assignments
+      const careerAssignments = await fetchCareerAssignments();
+      const linkedinAssignments = await fetchLinkedInAssignments();
+      
+      // Combine both types of assignments
+      const allAssignments = [...careerAssignments, ...linkedinAssignments];
+      
+      // Sort by submission time
+      allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+      
+      await processAssignments(allAssignments);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      toast.error('Failed to load assignments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCareerAssignments = async () => {
+    // If institute admin, filter by their institute's students
+    if (isInstituteAdmin && !isAdmin) {
+      console.log('Fetching career assignments for institute admin:', user?.id);
+      
+      // First get the institute(s) this admin manages
+      const { data: institutes, error: instituteError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', user?.id)
+        .eq('is_active', true);
+
+      if (instituteError) throw instituteError;
+
+      if (institutes && institutes.length > 0) {
+        const instituteIds = institutes.map(i => i.institute_id);
+        
+        // Get students assigned to these institutes
+        const { data: studentAssignments, error: studentsError } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .in('institute_id', instituteIds)
+          .eq('is_active', true);
+
+        if (studentsError) throw studentsError;
+
+        if (studentAssignments && studentAssignments.length > 0) {
+          const studentIds = studentAssignments.map(s => s.user_id);
+          
+          const { data, error } = await supabase
+            .from('career_task_assignments')
+            .select(`
+              id,
+              user_id,
+              template_id,
+              status,
+              submitted_at,
+              verified_at,
+              points_earned,
+              score_awarded,
+              career_task_templates (
+                title,
+                module,
+                points_reward,
+                category,
+                sub_categories (
+                  name
+                )
+              )
+            `)
+            .eq('status', 'submitted')
+            .in('user_id', studentIds)
+            .order('submitted_at', { ascending: false });
+
+          if (error) throw error;
+          return data || [];
+        }
+      }
+      return [];
+    } else {
+      // For super admins and recruiters, fetch all career assignments
+      const { data, error } = await supabase
+        .from('career_task_assignments')
+        .select(`
+          *,
+          career_task_templates (
+            title,
+            module,
+            points_reward,
+            category,
+            sub_categories (
+              name
+            )
+          )
+        `)
+        .eq('status', 'submitted')
+        .order('submitted_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+  };
+
+  const fetchLinkedInAssignments = async () => {
+    try {
       // If institute admin, filter by their institute's students
       if (isInstituteAdmin && !isAdmin) {
-        console.log('Fetching assignments for institute admin:', user?.id);
+        console.log('Fetching LinkedIn assignments for institute admin:', user?.id);
         
         // First get the institute(s) this admin manages
         const { data: institutes, error: instituteError } = await supabase
@@ -337,16 +444,10 @@ const VerifyAssignments = () => {
           .eq('user_id', user?.id)
           .eq('is_active', true);
 
-        console.log('Institute admin assignments:', institutes);
-
-        if (instituteError) {
-          console.error('Error fetching institute assignments:', instituteError);
-          throw instituteError;
-        }
+        if (instituteError) throw instituteError;
 
         if (institutes && institutes.length > 0) {
           const instituteIds = institutes.map(i => i.institute_id);
-          console.log('Institute IDs managed:', instituteIds);
           
           // Get students assigned to these institutes
           const { data: studentAssignments, error: studentsError } = await supabase
@@ -355,94 +456,145 @@ const VerifyAssignments = () => {
             .in('institute_id', instituteIds)
             .eq('is_active', true);
 
-          console.log('Student assignments found:', studentAssignments);
-
-          if (studentsError) {
-            console.error('Error fetching student assignments:', studentsError);
-            throw studentsError;
-          }
+          if (studentsError) throw studentsError;
 
           if (studentAssignments && studentAssignments.length > 0) {
             const studentIds = studentAssignments.map(s => s.user_id);
-            console.log('Student IDs:', studentIds);
             
-            // Fetch submitted assignments for these students
-            console.log('Querying career_task_assignments with studentIds:', studentIds);
-            
-            const { data, error } = await supabase
-              .from('career_task_assignments')
-              .select(`
-                id,
-                user_id,
-                template_id,
-                status,
-                submitted_at,
-                verified_at,
-                points_earned,
-                score_awarded,
-                career_task_templates (
-                  title,
-                  module,
-                  points_reward,
-                  category,
-                  sub_categories (
-                    name
+            // Get LinkedIn users for these students
+            const { data: linkedinUsers, error: linkedinUsersError } = await supabase
+              .from('linkedin_users')
+              .select('id, auth_uid')
+              .in('auth_uid', studentIds);
+
+            if (linkedinUsersError) throw linkedinUsersError;
+
+            if (linkedinUsers && linkedinUsers.length > 0) {
+              const linkedinUserIds = linkedinUsers.map(lu => lu.id);
+              
+              // Fetch LinkedIn assignments
+              const { data: linkedinTasks, error: linkedinTasksError } = await supabase
+                .from('linkedin_user_tasks')
+                .select(`
+                  id,
+                  user_id,
+                  task_id,
+                  period,
+                  status,
+                  score_awarded,
+                  created_at,
+                  updated_at,
+                  linkedin_tasks:task_id (
+                    id,
+                    code,
+                    title,
+                    description,
+                    points_base
                   )
-                )
-              `)
-              .eq('status', 'submitted')
-              .in('user_id', studentIds)
-              .order('submitted_at', { ascending: false });
+                `)
+                .eq('status', 'SUBMITTED')
+                .in('user_id', linkedinUserIds)
+                .order('updated_at', { ascending: false });
 
-            console.log('Query result - data:', data);
-            console.log('Query result - error:', error);
-            console.log('Submitted assignments found:', data);
-            
-            // Debug: Check what modules we're getting
-            if (data) {
-              console.log('🔍 Modules found in assignments:', data.map(d => d.career_task_templates?.module).filter(Boolean));
-              console.log('🔍 First assignment template:', data[0]?.career_task_templates);
+              if (linkedinTasksError) throw linkedinTasksError;
+
+              // Transform LinkedIn tasks to match career assignment format
+              return (linkedinTasks || []).map(task => {
+                const linkedinUser = linkedinUsers.find(lu => lu.id === task.user_id);
+                return {
+                  id: task.id,
+                  user_id: linkedinUser?.auth_uid || task.user_id,
+                  template_id: task.task_id,
+                  status: 'submitted',
+                  submitted_at: task.updated_at,
+                  verified_at: null,
+                  points_earned: 0,
+                  score_awarded: task.score_awarded || 0,
+                  career_task_templates: {
+                    title: task.linkedin_tasks?.title || 'LinkedIn Task',
+                    module: 'LINKEDIN_GROWTH',
+                    points_reward: task.linkedin_tasks?.points_base || 0,
+                    category: 'LinkedIn Growth',
+                    sub_categories: {
+                      name: 'LinkedIn Growth Activities'
+                    }
+                  },
+                  // Mark as LinkedIn assignment for processing
+                  _isLinkedInAssignment: true,
+                  _originalLinkedInTask: task
+                };
+              });
             }
-
-            if (error) throw error;
-
-            // Continue with the rest of the logic
-            await processAssignments(data || []);
-          } else {
-            console.log('No students found for this institute admin');
-            setAssignments([]);
           }
-        } else {
-          console.log('No institutes managed by this admin');
-          setAssignments([]);
         }
+        return [];
       } else {
-        // For super admins and recruiters, fetch all assignments
-        const { data, error } = await supabase
-          .from('career_task_assignments')
+        // For super admins and recruiters, fetch all LinkedIn assignments
+        const { data: linkedinTasks, error: linkedinTasksError } = await supabase
+          .from('linkedin_user_tasks')
           .select(`
-            *,
-            career_task_templates (
+            id,
+            user_id,
+            task_id,
+            period,
+            status,
+            score_awarded,
+            created_at,
+            updated_at,
+            linkedin_tasks:task_id (
+              id,
+              code,
               title,
-              module,
-              points_reward,
-              category,
-              sub_categories (
-                name
-              )
+              description,
+              points_base
             )
           `)
-          .eq('status', 'submitted')
-          .order('submitted_at', { ascending: false });
+          .eq('status', 'SUBMITTED')
+          .order('updated_at', { ascending: false });
 
-        if (error) throw error;
-        await processAssignments(data || []);
+        if (linkedinTasksError) throw linkedinTasksError;
+
+        // Get LinkedIn users to map to auth users
+        const linkedinUserIds = linkedinTasks?.map(task => task.user_id) || [];
+        if (linkedinUserIds.length === 0) return [];
+
+        const { data: linkedinUsers, error: linkedinUsersError } = await supabase
+          .from('linkedin_users')
+          .select('id, auth_uid')
+          .in('id', linkedinUserIds);
+
+        if (linkedinUsersError) throw linkedinUsersError;
+
+        // Transform LinkedIn tasks to match career assignment format
+        return (linkedinTasks || []).map(task => {
+          const linkedinUser = linkedinUsers?.find(lu => lu.id === task.user_id);
+          return {
+            id: task.id,
+            user_id: linkedinUser?.auth_uid || task.user_id,
+            template_id: task.task_id,
+            status: 'submitted',
+            submitted_at: task.updated_at,
+            verified_at: null,
+            points_earned: 0,
+            score_awarded: task.score_awarded || 0,
+            career_task_templates: {
+              title: task.linkedin_tasks?.title || 'LinkedIn Task',
+              module: 'LINKEDIN_GROWTH',
+              points_reward: task.linkedin_tasks?.points_base || 0,
+              category: 'LinkedIn Growth',
+              sub_categories: {
+                name: 'LinkedIn Growth Activities'
+              }
+            },
+            // Mark as LinkedIn assignment for processing
+            _isLinkedInAssignment: true,
+            _originalLinkedInTask: task
+          };
+        });
       }
     } catch (error) {
-      console.error('Error fetching assignments:', error);
-      toast.error('Failed to load assignments');
-    } finally {
-      setLoading(false);
+      console.error('Error fetching LinkedIn assignments:', error);
+      return [];
     }
   };
 
@@ -470,21 +622,51 @@ const VerifyAssignments = () => {
       };
     });
 
-    // Fetch evidence for each assignment
+    // Fetch evidence for each assignment (handle both career and LinkedIn assignments)
     const assignmentsWithEvidence = await Promise.all(
       assignmentsWithProfiles.map(async (assignment) => {
-        const { data: evidenceData, error: evidenceError } = await supabase
-          .from('career_task_evidence')
-          .select('*')
-          .eq('assignment_id', assignment.id);
+        let evidenceData = [];
+        
+        if (assignment._isLinkedInAssignment) {
+          // Fetch LinkedIn evidence
+          const { data: linkedinEvidenceData, error: linkedinEvidenceError } = await supabase
+            .from('linkedin_evidence')
+            .select('*')
+            .eq('user_task_id', assignment.id);
 
-        if (evidenceError) {
-          console.error('Error fetching evidence:', evidenceError);
-          return { ...assignment, evidence: [] };
+          if (linkedinEvidenceError) {
+            console.error('Error fetching LinkedIn evidence:', linkedinEvidenceError);
+          } else {
+            // Transform LinkedIn evidence to match career evidence format
+            evidenceData = (linkedinEvidenceData || []).map(evidence => ({
+              id: evidence.id,
+              evidence_type: evidence.kind || 'URL',
+              evidence_data: evidence.evidence_data || {},
+              url: evidence.url,
+              file_urls: evidence.file_key ? [`linkedin-evidence/${evidence.file_key}`] : [],
+              verification_status: 'pending',
+              created_at: evidence.created_at,
+              // Additional LinkedIn-specific data
+              _isLinkedInEvidence: true,
+              _originalEvidence: evidence
+            }));
+          }
+        } else {
+          // Fetch career task evidence
+          const { data: careerEvidenceData, error: careerEvidenceError } = await supabase
+            .from('career_task_evidence')
+            .select('*')
+            .eq('assignment_id', assignment.id);
+
+          if (careerEvidenceError) {
+            console.error('Error fetching career evidence:', careerEvidenceError);
+          } else {
+            evidenceData = careerEvidenceData || [];
+          }
         }
 
         console.log('🔍 Evidence for assignment', assignment.id, ':', evidenceData);
-        return { ...assignment, evidence: evidenceData || [] };
+        return { ...assignment, evidence: evidenceData };
       })
     );
 
@@ -537,92 +719,133 @@ const VerifyAssignments = () => {
     try {
       setProcessing(true);
 
-      if (action === 'approve') {
-        // Approve the assignment and award points
-        const { error: updateError } = await supabase
-          .from('career_task_assignments')
-          .update({
-            status: 'verified',
-            verified_at: new Date().toISOString(),
-            points_earned: selectedAssignment.career_task_templates.points_reward,
-            score_awarded: 100
-          })
-          .eq('id', assignmentId);
-
-        if (updateError) throw updateError;
-
-        // Update evidence status
-        for (const evidence of selectedAssignment.evidence) {
-          await supabase
-            .from('career_task_evidence')
+      if (selectedAssignment._isLinkedInAssignment) {
+        // Handle LinkedIn assignments
+        if (action === 'approve') {
+          // Update LinkedIn user task status to VERIFIED
+          const { error: updateError } = await supabase
+            .from('linkedin_user_tasks')
             .update({
-              verification_status: 'approved',
-              verified_at: new Date().toISOString(),
-              verified_by: user?.id,
-              verification_notes: verificationNotes
+              status: 'VERIFIED',
+              score_awarded: selectedAssignment.career_task_templates.points_reward,
+              updated_at: new Date().toISOString()
             })
-            .eq('id', evidence.id);
-        }
+            .eq('id', assignmentId);
 
-        console.log('🔍 About to award points for assignment:', selectedAssignment.id);
-        console.log('🔍 User ID:', selectedAssignment.user_id);
-        console.log('🔍 Points to award:', selectedAssignment.career_task_templates.points_reward);
-        console.log('🔍 Current user (auth.uid()):', supabase.auth.getUser().then(u => console.log('Current user:', u.data.user?.id)));
+          if (updateError) throw updateError;
 
-        // Award points to user
-        const { data: pointsData, error: pointsError } = await supabase
-          .from('user_activity_points')
-          .insert({
-            user_id: selectedAssignment.user_id,
-            activity_type: 'career_assignment',
-            activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
-            points_earned: selectedAssignment.career_task_templates.points_reward,
-            activity_date: new Date().toISOString().split('T')[0]
-          })
-          .select();
+          // Call the LinkedIn verification function
+          const { data, error: verifyError } = await supabase.functions.invoke('verify-linkedin-tasks', {
+            body: { period: selectedAssignment._originalLinkedInTask?.period }
+          });
 
-        console.log('🔍 Points insertion result:', { pointsData, pointsError });
+          if (verifyError) throw verifyError;
 
-        if (pointsError) {
-          console.error('❌ Error awarding points:', pointsError);
-          console.error('❌ Points error details:', JSON.stringify(pointsError, null, 2));
-          // Don't throw error here - assignment verification should still succeed
-          toast.error(`Assignment approved but failed to award points: ${pointsError.message}`);
+          toast.success(`LinkedIn assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
         } else {
-          // Points were successfully awarded
-          console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', selectedAssignment.career_task_templates.points_reward);
-          console.log('✅ Inserted points data:', pointsData);
-          
-          toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded to user!`);
+          // Deny LinkedIn assignment - reset to STARTED so user can resubmit
+          const { error: updateError } = await supabase
+            .from('linkedin_user_tasks')
+            .update({
+              status: 'STARTED',
+              score_awarded: 0,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', assignmentId);
+
+          if (updateError) throw updateError;
+
+          toast.success('LinkedIn assignment rejected. User can now resubmit.');
         }
       } else {
-        // Deny and set to resubmit
-        const { error: updateError } = await supabase
-          .from('career_task_assignments')
-          .update({
-            status: 'assigned',  // Reset to assigned so user can resubmit
-            verified_at: null,
-            points_earned: 0,
-            score_awarded: 0
-          })
-          .eq('id', assignmentId);
-
-        if (updateError) throw updateError;
-
-        // Update evidence status
-        for (const evidence of selectedAssignment.evidence) {
-          await supabase
-            .from('career_task_evidence')
+        // Handle regular career assignments
+        if (action === 'approve') {
+          // Approve the assignment and award points
+          const { error: updateError } = await supabase
+            .from('career_task_assignments')
             .update({
-              verification_status: 'rejected',
+              status: 'verified',
               verified_at: new Date().toISOString(),
-              verified_by: user?.id,
-              verification_notes: verificationNotes
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              score_awarded: 100
             })
-            .eq('id', evidence.id);
-        }
+            .eq('id', assignmentId);
 
-        toast.success('Assignment rejected. User can now resubmit.');
+          if (updateError) throw updateError;
+
+          // Update evidence status
+          for (const evidence of selectedAssignment.evidence) {
+            await supabase
+              .from('career_task_evidence')
+              .update({
+                verification_status: 'approved',
+                verified_at: new Date().toISOString(),
+                verified_by: user?.id,
+                verification_notes: verificationNotes
+              })
+              .eq('id', evidence.id);
+          }
+
+          console.log('🔍 About to award points for assignment:', selectedAssignment.id);
+          console.log('🔍 User ID:', selectedAssignment.user_id);
+          console.log('🔍 Points to award:', selectedAssignment.career_task_templates.points_reward);
+          console.log('🔍 Current user (auth.uid()):', supabase.auth.getUser().then(u => console.log('Current user:', u.data.user?.id)));
+
+          // Award points to user
+          const { data: pointsData, error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_type: 'career_assignment',
+              activity_id: selectedAssignment.id, // Use assignment ID instead of template ID to avoid unique constraint issues
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              activity_date: new Date().toISOString().split('T')[0]
+            })
+            .select();
+
+          console.log('🔍 Points insertion result:', { pointsData, pointsError });
+
+          if (pointsError) {
+            console.error('❌ Error awarding points:', pointsError);
+            console.error('❌ Points error details:', JSON.stringify(pointsError, null, 2));
+            // Don't throw error here - assignment verification should still succeed
+            toast.error(`Assignment approved but failed to award points: ${pointsError.message}`);
+          } else {
+            // Points were successfully awarded
+            console.log('✅ Points successfully awarded to user:', selectedAssignment.user_id, 'Points:', selectedAssignment.career_task_templates.points_reward);
+            console.log('✅ Inserted points data:', pointsData);
+            
+            toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded to user!`);
+          }
+        } else {
+          // Deny and set to resubmit
+          const { error: updateError } = await supabase
+            .from('career_task_assignments')
+            .update({
+              status: 'assigned',  // Reset to assigned so user can resubmit
+              verified_at: null,
+              points_earned: 0,
+              score_awarded: 0
+            })
+            .eq('id', assignmentId);
+
+          if (updateError) throw updateError;
+
+          // Update evidence status
+          for (const evidence of selectedAssignment.evidence) {
+            await supabase
+              .from('career_task_evidence')
+              .update({
+                verification_status: 'rejected',
+                verified_at: new Date().toISOString(),
+                verified_by: user?.id,
+                verification_notes: verificationNotes
+              })
+              .eq('id', evidence.id);
+          }
+
+          toast.success('Assignment rejected. User can now resubmit.');
+        }
       }
 
       setSelectedAssignment(null);
