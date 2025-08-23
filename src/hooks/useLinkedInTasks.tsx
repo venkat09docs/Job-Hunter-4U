@@ -89,13 +89,17 @@ export const useLinkedInTasks = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Successfully initialized tasks:', data);
+      // Invalidate and refetch all related queries
       queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['linkedin-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['linkedin-evidence'] });
+      toast.success(`Successfully initialized ${data?.userTasks?.length || 0} LinkedIn tasks for this week!`);
     },
     onError: (error) => {
       console.error('Error initializing week:', error);
-      toast.error('Failed to initialize weekly tasks');
+      toast.error('Failed to initialize weekly tasks. Please try again.');
     }
   });
 
@@ -118,8 +122,8 @@ export const useLinkedInTasks = () => {
       }
 
       if (!linkedinUser) {
-        // Initialize if user doesn't exist
-        await initializeWeekMutation.mutateAsync();
+        // User doesn't exist, they need to initialize manually
+        console.log('LinkedIn user not found, user needs to initialize week');
         return [];
       }
 
