@@ -290,12 +290,12 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                     {task.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{task.linkedin_tasks.title}</DialogTitle>
                   </DialogHeader>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-4 pb-4">{/* Add padding bottom for better scrolling */}
                     {/* Evidence Type Selection */}
                     <div className="space-y-2">
                       <Label>Select Evidence Type:</Label>

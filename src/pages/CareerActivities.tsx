@@ -76,6 +76,27 @@ const CareerActivities = () => {
     return { completed, submitted, total, progress, totalPoints, maxPoints };
   };
 
+  // Calculate cumulative statistics from all evidence
+  const getCumulativeStats = () => {
+    const stats = {
+      connections: 0,
+      posts: 0,
+      views: 0
+    };
+    
+    evidence.forEach(ev => {
+      if (ev.evidence_data?.tracking_metrics) {
+        const metrics = ev.evidence_data.tracking_metrics;
+        stats.connections += metrics.connections_accepted || 0;
+        stats.posts += metrics.posts_count || 0;
+        stats.views += metrics.profile_views || 0;
+      }
+    });
+    
+    return stats;
+  };
+
+  const cumulativeStats = getCumulativeStats();
   const stats = getTaskStats();
 
   const copyToClipboard = (text: string) => {
@@ -333,6 +354,47 @@ const CareerActivities = () => {
                     <Progress value={(stats.totalPoints / stats.maxPoints) * 100} className="h-2" />
                     <div className="text-xs text-muted-foreground text-center">
                       {Math.round(stats.progress)}% complete
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* LinkedIn Growth Statistics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      LinkedIn Growth Stats
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-blue-50/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium">Connections</span>
+                        </div>
+                        <span className="text-lg font-bold text-blue-600">{cumulativeStats.connections}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-green-50/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium">Posts</span>
+                        </div>
+                        <span className="text-lg font-bold text-green-600">{cumulativeStats.posts}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-purple-50/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-purple-600" />
+                          <span className="text-sm font-medium">Profile Views</span>
+                        </div>
+                        <span className="text-lg font-bold text-purple-600">{cumulativeStats.views}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-3 border-t text-xs text-muted-foreground text-center">
+                      Total across all submissions
                     </div>
                   </CardContent>
                 </Card>
