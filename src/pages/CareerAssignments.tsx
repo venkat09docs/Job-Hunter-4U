@@ -473,9 +473,9 @@ const CareerAssignments = () => {
                   id: 'linkedin',
                   title: 'LinkedIn Profile',
                   icon: Users,
-                  progress: linkedinProgress || 0,
-                  total: 9, // Standard LinkedIn profile tasks
-                  completed: Math.round((linkedinProgress || 0) / 100 * 9),
+                  progress: getModuleProgress('LINKEDIN'),
+                  total: getTasksByModule('LINKEDIN').length,
+                  completed: getTasksByModule('LINKEDIN').filter(task => task.status === 'verified').length,
                   color: 'bg-blue-600',
                   description: 'Optimize your LinkedIn presence'
                 },
@@ -483,9 +483,9 @@ const CareerAssignments = () => {
                   id: 'github',
                   title: 'GitHub Profile',
                   icon: Github,
-                  progress: getGitHubProgress(),
-                  total: 5, // Standard GitHub profile tasks
-                  completed: Math.round(getGitHubProgress() / 100 * 5),
+                  progress: getModuleProgress('GITHUB'),
+                  total: getTasksByModule('GITHUB').length,
+                  completed: getTasksByModule('GITHUB').filter(task => task.status === 'verified').length,
                   color: 'bg-gray-800',
                   description: 'Showcase your coding projects'
                 },
@@ -493,9 +493,9 @@ const CareerAssignments = () => {
                   id: 'digital',
                   title: 'Digital Portfolio',
                   icon: FileText,
-                  progress: getDigitalProfileProgress(),
-                   total: 7, // Profile fields
-                   completed: Math.round(getDigitalProfileProgress() / 100 * 7),
+                  progress: getModuleProgress('DIGITAL_PROFILE'),
+                  total: getTasksByModule('DIGITAL_PROFILE').length,
+                  completed: getTasksByModule('DIGITAL_PROFILE').filter(task => task.status === 'verified').length,
                   color: 'bg-purple-500',
                   description: 'Complete your online presence'
                 }
