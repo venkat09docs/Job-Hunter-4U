@@ -1998,6 +1998,7 @@ export type Database = {
         Row: {
           created_at: string | null
           email_meta: Json | null
+          evidence_data: Json | null
           file_key: string | null
           id: string
           kind: Database["public"]["Enums"]["evidence_kind"]
@@ -2008,6 +2009,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email_meta?: Json | null
+          evidence_data?: Json | null
           file_key?: string | null
           id?: string
           kind: Database["public"]["Enums"]["evidence_kind"]
@@ -2018,6 +2020,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           email_meta?: Json | null
+          evidence_data?: Json | null
           file_key?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["evidence_kind"]
