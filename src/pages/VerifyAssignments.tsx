@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 
 interface SubmittedAssignment {
   id: string;
@@ -914,6 +915,7 @@ const VerifyAssignments = () => {
             </div>
           </div>
           <div className="flex gap-3">
+            <AdminReenableRequestsDialog />
             <Badge variant="secondary" className="text-lg px-3 py-1">
               {filteredAssignments.length} Pending
             </Badge>
