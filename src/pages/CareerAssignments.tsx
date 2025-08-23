@@ -17,6 +17,9 @@ import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { CareerTaskCard } from '@/components/CareerTaskCard';
 import { useUserInputs } from '@/hooks/useUserInputs';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
+import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
+import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useProfile } from '@/hooks/useProfile';
 
 interface SubCategory {
   id: string;
@@ -31,6 +34,7 @@ const CareerAssignments = () => {
   const { canAccessFeature } = usePremiumFeatures();
   const { user } = useAuth();
   const { inputs, saveInput, getInput } = useUserInputs();
+  const { profile } = useProfile();
   
   // Use the proper hook instead of local state
   const {
@@ -41,8 +45,14 @@ const CareerAssignments = () => {
     submittingEvidence,
     submitEvidence,
     updateAssignmentStatus,
-    initializeUserWeek
+    initializeUserWeek,
+    getModuleProgress,
+    getTasksByModule
   } = useCareerAssignments();
+
+  // Progress hooks for different modules
+  const { completionPercentage: linkedinProgress } = useLinkedInProgress();
+  const { getCompletionPercentage: getGitHubProgress } = useGitHubProgress();
   
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   
@@ -420,6 +430,121 @@ const CareerAssignments = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Status Boards */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <Activity className="h-6 w-6 text-primary" />
+            Progress Overview
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(() => {
+              // Calculate digital portfolio progress based on profile completion
+              const getDigitalProfileProgress = () => {
+                if (!profile) return 0;
+                
+                 let completedFields = 0;
+                 const totalFields = 7; // Basic fields to check
+                
+                 if (profile.full_name) completedFields++;
+                 if (profile.username) completedFields++;
+                 if (profile.profile_image_url) completedFields++;
+                 if (profile.linkedin_url) completedFields++;
+                 if (profile.github_url) completedFields++;
+                 if (profile.subscription_plan) completedFields++;
+                 if (profile.industry) completedFields++;
+                
+                return Math.round((completedFields / totalFields) * 100);
+              };
+
+              // Status board data
+              const statusBoards = [
+                {
+                  id: 'resume',
+                  title: 'Resume Profile',
+                  icon: User,
+                  progress: getModuleProgress('RESUME'),
+                  total: getTasksByModule('RESUME').length,
+                  completed: getTasksByModule('RESUME').filter(task => task.status === 'verified').length,
+                  color: 'bg-blue-500',
+                  description: 'Build your professional resume'
+                },
+                {
+                  id: 'linkedin',
+                  title: 'LinkedIn Profile',
+                  icon: Users,
+                  progress: linkedinProgress || 0,
+                  total: 9, // Standard LinkedIn profile tasks
+                  completed: Math.round((linkedinProgress || 0) / 100 * 9),
+                  color: 'bg-blue-600',
+                  description: 'Optimize your LinkedIn presence'
+                },
+                {
+                  id: 'github',
+                  title: 'GitHub Profile',
+                  icon: Github,
+                  progress: getGitHubProgress(),
+                  total: 5, // Standard GitHub profile tasks
+                  completed: Math.round(getGitHubProgress() / 100 * 5),
+                  color: 'bg-gray-800',
+                  description: 'Showcase your coding projects'
+                },
+                {
+                  id: 'digital',
+                  title: 'Digital Portfolio',
+                  icon: FileText,
+                  progress: getDigitalProfileProgress(),
+                   total: 7, // Profile fields
+                   completed: Math.round(getDigitalProfileProgress() / 100 * 7),
+                  color: 'bg-purple-500',
+                  description: 'Complete your online presence'
+                }
+              ];
+
+              return statusBoards.map((board) => {
+                const IconComponent = board.icon;
+                return (
+                  <Card key={board.id} className="relative overflow-hidden hover:shadow-lg transition-all duration-200">
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${board.color}`} />
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <div className={`p-2 rounded-lg ${board.color} bg-opacity-10`}>
+                            <IconComponent className={`h-4 w-4 ${board.color.replace('bg-', 'text-')}`} />
+                          </div>
+                          {board.title}
+                        </CardTitle>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold">{board.progress}%</div>
+                          <div className="text-xs text-muted-foreground">
+                            {board.completed}/{board.total} tasks
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
+                        <Progress value={board.progress} className="h-2" />
+                        <p className="text-xs text-muted-foreground">{board.description}</p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Status:</span>
+                        <span className={`px-2 py-1 rounded-full ${
+                          board.progress >= 100 ? 'bg-green-100 text-green-800' :
+                          board.progress >= 50 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {board.progress >= 100 ? 'Complete' : 
+                           board.progress >= 50 ? 'In Progress' : 'Getting Started'}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              });
+            })()}
+          </div>
+        </div>
 
         {/* Main Tabs */}
         <Tabs defaultValue="assignments" className="space-y-6">
