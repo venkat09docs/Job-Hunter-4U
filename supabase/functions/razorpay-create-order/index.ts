@@ -137,7 +137,9 @@ serve(async (req) => {
         razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration
+        plan_duration: plan_duration,
+        currency: 'INR',
+        status: 'pending'
       };
       console.log('📋 INSERT DATA FOR CREATE-ORDER:', JSON.stringify(insertData, null, 2));
       console.log('📋 DATA TYPES CHECK:');
@@ -146,6 +148,8 @@ serve(async (req) => {
       console.log('- amount type:', typeof insertData.amount, 'value:', insertData.amount);
       console.log('- plan_name type:', typeof insertData.plan_name, 'value:', insertData.plan_name);
       console.log('- plan_duration type:', typeof insertData.plan_duration, 'value:', insertData.plan_duration);
+      console.log('- currency type:', typeof insertData.currency, 'value:', insertData.currency);
+      console.log('- status type:', typeof insertData.status, 'value:', insertData.status);
 
       const { data: paymentRecord, error: dbError } = await supabaseService
         .from('payments')
