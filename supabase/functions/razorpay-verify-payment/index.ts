@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -88,23 +89,21 @@ serve(async (req) => {
     
     // Parse request body
     const requestBody = await req.json();
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+    console.log('📋 FULL REQUEST BODY FROM RAZORPAY:', JSON.stringify(requestBody, null, 2));
     
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, upgrade_end_date } = requestBody;
 
-    console.log('Extracted fields:', { 
-      razorpay_order_id, 
-      razorpay_payment_id, 
-      razorpay_signature,
-      upgrade_end_date 
-    });
+    console.log('📋 EXTRACTED FIELDS FROM RAZORPAY:');
+    console.log('- razorpay_order_id:', razorpay_order_id, 'type:', typeof razorpay_order_id);
+    console.log('- razorpay_payment_id:', razorpay_payment_id, 'type:', typeof razorpay_payment_id);
+    console.log('- razorpay_signature:', razorpay_signature, 'type:', typeof razorpay_signature);
+    console.log('- upgrade_end_date:', upgrade_end_date, 'type:', typeof upgrade_end_date);
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      console.log('Missing fields validation failed:', { 
-        razorpay_order_id: !!razorpay_order_id, 
-        razorpay_payment_id: !!razorpay_payment_id, 
-        razorpay_signature: !!razorpay_signature 
-      });
+      console.log('❌ MISSING FIELDS VALIDATION:');
+      console.log('- razorpay_order_id present:', !!razorpay_order_id);
+      console.log('- razorpay_payment_id present:', !!razorpay_payment_id);
+      console.log('- razorpay_signature present:', !!razorpay_signature);
       throw new Error('Missing required payment verification fields');
     }
 
@@ -162,7 +161,23 @@ serve(async (req) => {
     
     console.log('✅ Payment signature verified successfully');
 
-    // STEP 1: Try to find existing payment record first
+    // Get database schema for payments table
+    console.log('=== DATABASE SCHEMA CHECK ===');
+    try {
+      const { data: schemaData, error: schemaError } = await supabaseService.rpc('get_table_schema', { 
+        table_name: 'payments' 
+      }).single();
+      
+      if (schemaError) {
+        console.log('Could not fetch schema:', schemaError);
+      } else {
+        console.log('📋 PAYMENTS TABLE SCHEMA:', JSON.stringify(schemaData, null, 2));
+      }
+    } catch (schemaErr) {
+      console.log('Schema fetch failed, continuing...');
+    }
+
+    // STEP 1: Try to find existing payment record
     console.log('=== STEP 1: Looking for existing payment record ===');
     console.log('Searching for order:', razorpay_order_id, 'user:', userId);
     
@@ -170,11 +185,25 @@ serve(async (req) => {
       .from('payments')
       .select('*')
       .eq('razorpay_order_id', razorpay_order_id)
-      .maybeSingle(); // Use maybeSingle instead of single to avoid error if not found
+      .maybeSingle();
 
-    console.log('Initial payment search result:', { paymentData, fetchError });
+    console.log('📋 PAYMENT SEARCH RESULT:');
+    console.log('- paymentData:', paymentData ? 'FOUND' : 'NOT FOUND');
+    console.log('- fetchError:', fetchError ? JSON.stringify(fetchError, null, 2) : 'NONE');
+    
+    if (paymentData) {
+      console.log('📋 FOUND PAYMENT DATA:', JSON.stringify(paymentData, null, 2));
+      console.log('📋 PAYMENT DATA FIELD ANALYSIS:');
+      console.log('- id:', paymentData.id, 'type:', typeof paymentData.id);
+      console.log('- user_id:', paymentData.user_id, 'type:', typeof paymentData.user_id);
+      console.log('- razorpay_order_id:', paymentData.razorpay_order_id, 'type:', typeof paymentData.razorpay_order_id);
+      console.log('- amount:', paymentData.amount, 'type:', typeof paymentData.amount);
+      console.log('- plan_name:', paymentData.plan_name, 'type:', typeof paymentData.plan_name);
+      console.log('- plan_duration:', paymentData.plan_duration, 'type:', typeof paymentData.plan_duration);
+      console.log('- status:', paymentData.status, 'type:', typeof paymentData.status);
+    }
 
-    // STEP 2: If not found, try without user filter (maybe created during order creation)
+    // STEP 2: If not found, try without user filter
     if (!paymentData && !fetchError) {
       console.log('=== STEP 2: Payment record not found with user filter, searching without user filter ===');
       
@@ -184,46 +213,60 @@ serve(async (req) => {
         .eq('razorpay_order_id', razorpay_order_id)
         .maybeSingle();
       
-      console.log('Payment search without user filter:', { debugData, debugError });
+      console.log('📋 PAYMENT SEARCH WITHOUT USER FILTER:');
+      console.log('- debugData:', debugData ? 'FOUND' : 'NOT FOUND');
+      console.log('- debugError:', debugError ? JSON.stringify(debugError, null, 2) : 'NONE');
       
-      if (debugData && debugData.user_id === userId) {
-        console.log('✅ Found payment record without user filter, and user_id matches');
-        paymentData = debugData;
-      } else if (debugData && debugData.user_id !== userId) {
-        console.log('❌ Found payment record but user_id does not match');
+      if (debugData) {
+        console.log('📋 PAYMENT DATA WITHOUT USER FILTER:', JSON.stringify(debugData, null, 2));
         console.log('Expected user_id:', userId, 'Found user_id:', debugData.user_id);
-        throw new Error('Payment record exists but belongs to different user');
+        console.log('User ID match:', debugData.user_id === userId);
+        
+        if (debugData.user_id === userId) {
+          console.log('✅ Found payment record without user filter, and user_id matches');
+          paymentData = debugData;
+        } else {
+          console.log('❌ Found payment record but user_id does not match');
+          throw new Error('Payment record exists but belongs to different user');
+        }
       }
     }
 
-    // STEP 3: If still not found, create it based on Razorpay order data
+    // STEP 3: If still not found, this is an error
     if (!paymentData) {
-      console.log('=== STEP 3: Skip payment record creation - should exist from order creation ===');
+      console.log('=== STEP 3: No payment record found - this should not happen ===');
       console.error('❌ No payment record found for order:', razorpay_order_id);
       console.error('This suggests the order creation did not create a payment record properly');
       throw new Error('Payment record not found. Order may not have been created properly.');
     }
 
-    if (!paymentData) {
-      throw new Error('Could not find or create payment record');
-    }
-    
     console.log('✅ Using payment record:', paymentData.id, 'Plan:', paymentData.plan_name);
 
     // STEP 4: Update payment status with verification details
     console.log('=== STEP 4: Updating payment status to completed ===');
+    
+    const updateData = {
+      razorpay_payment_id: razorpay_payment_id,
+      razorpay_signature: razorpay_signature,
+      status: 'completed',
+      updated_at: new Date().toISOString(),
+    };
+    
+    console.log('📋 UPDATE DATA FOR PAYMENT:', JSON.stringify(updateData, null, 2));
+    console.log('📋 UPDATE DATA TYPES:');
+    console.log('- razorpay_payment_id type:', typeof updateData.razorpay_payment_id);
+    console.log('- razorpay_signature type:', typeof updateData.razorpay_signature);
+    console.log('- status type:', typeof updateData.status);
+    console.log('- updated_at type:', typeof updateData.updated_at);
+    
     const { error: updateError } = await supabaseService
       .from('payments')
-      .update({
-        razorpay_payment_id: razorpay_payment_id,
-        razorpay_signature: razorpay_signature,
-        status: 'completed',
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', paymentData.id);
 
     if (updateError) {
       console.error('❌ Payment update error:', updateError);
+      console.error('📋 FULL UPDATE ERROR:', JSON.stringify(updateError, null, 2));
       throw new Error(`Failed to update payment status: ${updateError.message}`);
     }
     
@@ -234,25 +277,29 @@ serve(async (req) => {
     const startDate = new Date();
     const endDate = upgrade_end_date ? new Date(upgrade_end_date) : calculateSubscriptionEndDate(paymentData.plan_duration);
 
-    console.log('Subscription dates:', { 
-      startDate: startDate.toISOString(), 
-      endDate: endDate.toISOString(),
-      isUpgrade: !!upgrade_end_date 
-    });
+    console.log('📋 SUBSCRIPTION DATES:');
+    console.log('- startDate:', startDate.toISOString());
+    console.log('- endDate:', endDate.toISOString());
+    console.log('- isUpgrade:', !!upgrade_end_date);
+
+    const profileUpdateData = {
+      subscription_plan: paymentData.plan_name,
+      subscription_start_date: startDate.toISOString(),
+      subscription_end_date: endDate.toISOString(),
+      subscription_active: true,
+      updated_at: new Date().toISOString(),
+    };
+    
+    console.log('📋 PROFILE UPDATE DATA:', JSON.stringify(profileUpdateData, null, 2));
 
     const { error: profileError } = await supabaseService
       .from('profiles')
-      .update({
-        subscription_plan: paymentData.plan_name,
-        subscription_start_date: startDate.toISOString(),
-        subscription_end_date: endDate.toISOString(),
-        subscription_active: true,
-        updated_at: new Date().toISOString(),
-      })
+      .update(profileUpdateData)
       .eq('user_id', paymentData.user_id);
 
     if (profileError) {
       console.error('❌ Profile update error:', profileError);
+      console.error('📋 FULL PROFILE ERROR:', JSON.stringify(profileError, null, 2));
       throw new Error(`Failed to update subscription: ${profileError.message}`);
     }
 
@@ -283,7 +330,7 @@ serve(async (req) => {
     console.error('Error name:', error?.name);
     console.error('Error message:', error?.message);
     console.error('Error stack:', error?.stack);
-    console.error('Full error object:', error);
+    console.error('📋 FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
     
     return new Response(
       JSON.stringify({ 

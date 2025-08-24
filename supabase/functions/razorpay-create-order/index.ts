@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -106,16 +107,30 @@ serve(async (req) => {
 
     const order = await response.json();
     console.log('✅ Razorpay order created:', order.id);
+    console.log('📋 FULL RAZORPAY ORDER RESPONSE:', JSON.stringify(order, null, 2));
 
-    // Try to store payment record (optional - don't fail if this fails)
-    console.log('5. Storing payment record...');
+    // Get database schema for payments table
+    console.log('5. Checking payments table schema...');
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
+
+    // Get table schema
+    const { data: schemaData, error: schemaError } = await supabaseService.rpc('get_table_schema', { 
+      table_name: 'payments' 
+    }).single();
+    
+    if (schemaError) {
+      console.log('Could not fetch schema, proceeding with insert...');
+    } else {
+      console.log('📋 PAYMENTS TABLE SCHEMA:', JSON.stringify(schemaData, null, 2));
+    }
+
+    // Try to store payment record (this is now CRITICAL - must succeed)
+    console.log('6. Storing payment record (CRITICAL STEP)...');
     try {
-      const supabaseService = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-        { auth: { persistSession: false } }
-      );
-
       console.log('Creating payment record with exact required fields:');
       const insertData = {
         user_id: user.id,
@@ -124,30 +139,45 @@ serve(async (req) => {
         plan_name: plan_name,
         plan_duration: plan_duration
       };
-      console.log('Insert data for create-order:', JSON.stringify(insertData, null, 2));
+      console.log('📋 INSERT DATA FOR CREATE-ORDER:', JSON.stringify(insertData, null, 2));
+      console.log('📋 DATA TYPES CHECK:');
+      console.log('- user_id type:', typeof insertData.user_id, 'value:', insertData.user_id);
+      console.log('- razorpay_order_id type:', typeof insertData.razorpay_order_id, 'value:', insertData.razorpay_order_id);
+      console.log('- amount type:', typeof insertData.amount, 'value:', insertData.amount);
+      console.log('- plan_name type:', typeof insertData.plan_name, 'value:', insertData.plan_name);
+      console.log('- plan_duration type:', typeof insertData.plan_duration, 'value:', insertData.plan_duration);
 
       const { data: paymentRecord, error: dbError } = await supabaseService
         .from('payments')
         .insert(insertData)
-        .select('id')
+        .select('*')
         .single();
 
       if (dbError) {
         console.error('❌ CRITICAL: Database storage failed during order creation:', dbError.message);
-        console.error('Full DB error:', JSON.stringify(dbError, null, 2));
+        console.error('📋 FULL DB ERROR DETAILS:', JSON.stringify(dbError, null, 2));
         console.error('Error code:', dbError.code);
         console.error('Error details:', dbError.details);
         console.error('Error hint:', dbError.hint);
+        
+        // Try to get more details about the error
+        if (dbError.code === '42601') {
+          console.error('❌ SQL SYNTAX ERROR: The INSERT statement has column/value mismatch');
+          console.error('This usually means we have more columns specified than values provided');
+        }
+        
         throw new Error(`Payment record creation failed: ${dbError.message} (Code: ${dbError.code})`);
       } else {
         console.log('✅ Payment record stored during order creation with ID:', paymentRecord.id);
+        console.log('📋 CREATED PAYMENT RECORD:', JSON.stringify(paymentRecord, null, 2));
       }
     } catch (dbError) {
       console.error('❌ CRITICAL: Database storage exception during order creation:', dbError);
+      console.error('📋 FULL EXCEPTION DETAILS:', JSON.stringify(dbError, null, 2));
       throw new Error(`Failed to create payment record: ${dbError.message}`);
     }
 
-    console.log('6. Returning success response...');
+    console.log('7. Returning success response...');
     console.log('=== RAZORPAY CREATE ORDER SUCCESS ===');
 
     return new Response(
@@ -168,6 +198,7 @@ serve(async (req) => {
     console.error('Error type:', typeof error);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
+    console.error('📋 FULL ERROR OBJECT:', JSON.stringify(error, null, 2));
     console.error('=== ERROR END ===');
     
     return new Response(
