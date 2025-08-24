@@ -149,28 +149,17 @@ serve(async (req) => {
       }
     );
 
-    // Explicit column mapping to avoid INSERT mismatch
-    const paymentData = {
-      user_id: user.id,
-      razorpay_order_id: order.id,
-      amount: amount,
-      plan_name: plan_name,
-      plan_duration: plan_duration
-      // Let database handle defaults for: id, currency, status, created_at, updated_at
-      // razorpay_payment_id, razorpay_signature will be null initially
-    };
-    
-    logStep('Inserting payment record...', { 
-      user_id: paymentData.user_id.substring(0, 8) + '...',
-      razorpay_order_id: paymentData.razorpay_order_id,
-      amount: paymentData.amount,
-      plan_name: paymentData.plan_name,
-      plan_duration: paymentData.plan_duration
-    });
+    logStep('Inserting payment record...');
     
     const { data: paymentRecord, error: dbError } = await supabaseService
       .from('payments')
-      .insert(paymentData)
+      .insert({
+        user_id: user.id,
+        razorpay_order_id: order.id,
+        amount: amount,
+        plan_name: plan_name,
+        plan_duration: plan_duration
+      })
       .select('id, created_at')
       .single();
 
