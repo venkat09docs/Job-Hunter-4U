@@ -6,56 +6,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface OrderRequest {
-  amount: number;
-  plan_name: string;
-  plan_duration: string;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log('=== RAZORPAY CREATE ORDER START ===');
-  
   try {
-    // Parse request body first
-    console.log('1. Parsing request body...');
-    const requestBody = await req.json();
-    const { amount, plan_name, plan_duration }: OrderRequest = requestBody;
-    console.log('Request data:', { amount, plan_name, plan_duration });
-
-    if (!amount || !plan_name || !plan_duration) {
-      throw new Error('Missing required fields: amount, plan_name, plan_duration');
-    }
+    console.log('=== Razorpay Create Order Started ===');
+    
+    // Parse request
+    const { amount, plan_name, plan_duration } = await req.json();
+    console.log('Request:', { amount, plan_name, plan_duration });
 
     // Authenticate user
-    console.log('2. Authenticating user...');
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header provided');
+      throw new Error('No authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const supabaseClient = createClient(
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData?.user?.email) {
-      console.error('Auth error:', userError);
       throw new Error('Authentication failed');
     }
 
     const user = userData.user;
-    console.log('✅ User authenticated:', user.email);
+    console.log('User authenticated:', user.email);
 
     // Get Razorpay credentials
-    console.log('3. Getting Razorpay credentials...');
     const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
     const isLiveMode = razorpayMode === 'live';
     
@@ -67,16 +50,13 @@ serve(async (req) => {
       : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
     if (!razorpayKeyId || !razorpayKeySecret) {
-      throw new Error(`Razorpay ${isLiveMode ? 'live' : 'test'} credentials not configured`);
+      throw new Error('Razorpay credentials not configured');
     }
 
-    console.log('✅ Razorpay credentials found, mode:', razorpayMode);
+    console.log('Using Razorpay mode:', razorpayMode);
 
     // Create Razorpay order
-    console.log('4. Creating Razorpay order...');
-    const timestamp = Date.now().toString();
-    const userIdShort = user.id.slice(0, 8);
-    const receipt = `rcpt_${userIdShort}_${timestamp}`.slice(0, 40);
+    const receipt = `rcpt_${user.id.slice(0, 8)}_${Date.now()}`.slice(0, 40);
     
     const orderData = {
       amount: amount * 100, // Convert to paisa
@@ -89,10 +69,11 @@ serve(async (req) => {
       }
     };
 
+    console.log('Creating Razorpay order...');
     const response = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret.trim()}`)}`,
+        'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(orderData),
@@ -105,17 +86,16 @@ serve(async (req) => {
     }
 
     const order = await response.json();
-    console.log('✅ Razorpay order created:', order.id);
+    console.log('Razorpay order created:', order.id);
 
-    // Store payment record using service role key
-    console.log('5. Storing payment record...');
+    // Store payment record using service role
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     );
 
-    // Simple insert with only required fields
+    console.log('Storing payment record...');
     const { data: paymentRecord, error: dbError } = await supabaseService
       .from('payments')
       .insert({
@@ -123,19 +103,20 @@ serve(async (req) => {
         razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration
-        // Let triggers handle currency, status, timestamps
+        plan_duration: plan_duration,
+        currency: 'INR',
+        status: 'pending'
       })
       .select('id')
       .single();
 
     if (dbError) {
-      console.error('❌ Database error:', dbError);
-      throw new Error(`Failed to create payment record: ${dbError.message}`);
+      console.error('Database error:', dbError);
+      throw new Error(`Database error: ${dbError.message}`);
     }
 
-    console.log('✅ Payment record created with ID:', paymentRecord.id);
-    console.log('=== RAZORPAY CREATE ORDER SUCCESS ===');
+    console.log('Payment record created:', paymentRecord.id);
+    console.log('=== Order Creation Success ===');
 
     return new Response(
       JSON.stringify({
@@ -151,9 +132,8 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('=== RAZORPAY CREATE ORDER ERROR ===');
-    console.error('Error message:', error.message);
-    console.error('=== ERROR END ===');
+    console.error('=== Order Creation Error ===');
+    console.error('Error:', error.message);
     
     return new Response(
       JSON.stringify({ error: error.message }),
