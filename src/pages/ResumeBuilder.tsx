@@ -2088,11 +2088,10 @@ ${resumeData.personalDetails.fullName}`;
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="before-starting">Before Starting</TabsTrigger>
               <TabsTrigger value="resume-builder">Resume Builder</TabsTrigger>
               <TabsTrigger value="cover-letter">Cover Letter</TabsTrigger>
-              <TabsTrigger value="resume-analyzer">Resume Analyzer</TabsTrigger>
             </TabsList>
 
             <TabsContent value="before-starting" className="space-y-6 mt-6">
@@ -3424,24 +3423,6 @@ ${resumeData.personalDetails.fullName}`;
                   </div>
                 )}
               </div>
-            </TabsContent>
-
-
-            <TabsContent value="resume-analyzer" className="space-y-6 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resume Analyzer</CardTitle>
-                  <CardDescription>
-                    Coming soon - Analyze your resume for ATS compatibility and optimization
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Resume analysis feature will be available soon</p>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
           </Tabs>
         </div>
