@@ -198,65 +198,10 @@ serve(async (req) => {
 
     // STEP 3: If still not found, create it based on Razorpay order data
     if (!paymentData) {
-      console.log('=== STEP 3: Creating payment record from Razorpay order data ===');
-      
-      const razorpayKeyId = isLiveMode 
-        ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
-        : Deno.env.get('RAZORPAY_TEST_KEY_ID');
-      
-      console.log('Fetching order details from Razorpay for order:', razorpay_order_id);
-      const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
-        headers: {
-          'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`
-        }
-      });
-      
-      if (!orderResponse.ok) {
-        const errorText = await orderResponse.text();
-        console.error('❌ Failed to fetch order from Razorpay:', orderResponse.status, errorText);
-        throw new Error(`Failed to fetch Razorpay order: ${orderResponse.status}`);
-      }
-
-      const orderData = await orderResponse.json();
-      console.log('✅ Razorpay order data:', JSON.stringify(orderData, null, 2));
-      
-      // Create payment record based on order notes
-      const planName = orderData.notes?.plan_name || 'One Week Plan';
-      const planDuration = orderData.notes?.plan_duration || '1 week';
-      const amount = Math.floor(orderData.amount / 100); // Convert from paisa to rupees
-      
-      console.log('Attempting to create payment record with exact required data:');
-      const insertData = {
-        user_id: userId,
-        razorpay_order_id: razorpay_order_id,
-        amount: amount,
-        plan_name: planName,
-        plan_duration: planDuration
-      };
-      console.log('Insert data:', JSON.stringify(insertData, null, 2));
-      
-      try {
-        const { data: newPaymentData, error: insertError } = await supabaseService
-          .from('payments')
-          .insert(insertData)
-          .select('*')
-          .single();
-        
-        if (insertError) {
-          console.error('❌ Payment insert failed with error:', insertError);
-          console.error('Error code:', insertError.code);
-          console.error('Error message:', insertError.message);
-          console.error('Error details:', insertError.details);
-          console.error('Error hint:', insertError.hint);
-          throw new Error(`Database insert failed: ${insertError.message} (Code: ${insertError.code})`);
-        }
-        
-        console.log('✅ Payment record created successfully:', newPaymentData.id);
-        paymentData = newPaymentData;
-      } catch (dbError) {
-        console.error('❌ Database error during payment creation:', dbError);
-        throw new Error(`Failed to create payment record: ${dbError.message}`);
-      }
+      console.log('=== STEP 3: Skip payment record creation - should exist from order creation ===');
+      console.error('❌ No payment record found for order:', razorpay_order_id);
+      console.error('This suggests the order creation did not create a payment record properly');
+      throw new Error('Payment record not found. Order may not have been created properly.');
     }
 
     if (!paymentData) {

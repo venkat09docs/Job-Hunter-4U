@@ -133,15 +133,18 @@ serve(async (req) => {
         .single();
 
       if (dbError) {
-        console.warn('Database storage failed during order creation:', dbError.message);
-        console.warn('Full DB error:', JSON.stringify(dbError, null, 2));
-        console.warn('This is non-critical - payment can be created during verification');
+        console.error('❌ CRITICAL: Database storage failed during order creation:', dbError.message);
+        console.error('Full DB error:', JSON.stringify(dbError, null, 2));
+        console.error('Error code:', dbError.code);
+        console.error('Error details:', dbError.details);
+        console.error('Error hint:', dbError.hint);
+        throw new Error(`Payment record creation failed: ${dbError.message} (Code: ${dbError.code})`);
       } else {
         console.log('✅ Payment record stored during order creation with ID:', paymentRecord.id);
       }
     } catch (dbError) {
-      console.warn('Database storage exception during order creation:', dbError);
-      console.warn('This is non-critical - payment can be created during verification');
+      console.error('❌ CRITICAL: Database storage exception during order creation:', dbError);
+      throw new Error(`Failed to create payment record: ${dbError.message}`);
     }
 
     console.log('6. Returning success response...');
