@@ -6,11 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Comprehensive logging function
+// Enhanced logging with timestamps
 const logStep = (step: string, details?: any) => {
   const timestamp = new Date().toISOString();
-  const detailsStr = details ? ` - ${JSON.stringify(details, null, 2)}` : '';
-  console.log(`[${timestamp}] [RAZORPAY-CREATE-ORDER] ${step}${detailsStr}`);
+  const detailsStr = details ? ` | ${JSON.stringify(details)}` : '';
+  console.log(`[${timestamp}] RAZORPAY-CREATE-ORDER: ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -19,47 +19,61 @@ serve(async (req) => {
   }
 
   try {
-    logStep('=== Function Started ===');
+    logStep('=== STARTING PAYMENT ORDER CREATION ===');
     
-    // Parse request
+    // Parse and validate request
     const requestBody = await req.json();
     const { amount, plan_name, plan_duration } = requestBody;
+    
     logStep('Request received', { amount, plan_name, plan_duration });
-
-    // Validate request data
-    if (!amount || !plan_name || !plan_duration) {
-      throw new Error('Missing required fields: amount, plan_name, plan_duration');
+    
+    // Comprehensive validation
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+      throw new Error(`Invalid amount: ${amount}. Must be a positive number.`);
     }
-
-    if (typeof amount !== 'number' || amount <= 0) {
-      throw new Error('Amount must be a positive number');
+    if (!plan_name || typeof plan_name !== 'string' || plan_name.trim() === '') {
+      throw new Error(`Invalid plan_name: ${plan_name}. Must be a non-empty string.`);
+    }
+    if (!plan_duration || typeof plan_duration !== 'string' || plan_duration.trim() === '') {
+      throw new Error(`Invalid plan_duration: ${plan_duration}. Must be a non-empty string.`);
     }
 
     logStep('Request validation passed');
 
-    // Authenticate user
+    // Authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('No authorization header');
+      throw new Error('Missing Authorization header');
     }
 
     const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      throw new Error('Invalid Authorization token format');
+    }
+
+    logStep('Initializing Supabase client for auth...');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    logStep('Authenticating user...');
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData?.user?.email) {
-      logStep('Authentication failed', { userError });
-      throw new Error('Authentication failed');
+    if (userError) {
+      logStep('Authentication error', { error: userError });
+      throw new Error(`Authentication failed: ${userError.message}`);
+    }
+    
+    if (!userData?.user?.id || !userData?.user?.email) {
+      throw new Error('User data incomplete: missing id or email');
     }
 
     const user = userData.user;
-    logStep('User authenticated', { userId: user.id, email: user.email });
+    logStep('User authenticated successfully', { 
+      userId: user.id.substring(0, 8) + '...', 
+      email: user.email 
+    });
 
-    // Get Razorpay credentials
+    // Check Razorpay credentials
     const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
     const isLiveMode = razorpayMode === 'live';
     
@@ -71,16 +85,20 @@ serve(async (req) => {
       : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
     if (!razorpayKeyId || !razorpayKeySecret) {
-      throw new Error('Razorpay credentials not configured');
+      logStep('Missing Razorpay credentials', { 
+        mode: razorpayMode, 
+        hasKeyId: !!razorpayKeyId, 
+        hasKeySecret: !!razorpayKeySecret 
+      });
+      throw new Error(`Razorpay credentials not configured for ${razorpayMode} mode`);
     }
 
     logStep('Razorpay credentials verified', { mode: razorpayMode });
 
     // Create Razorpay order
     const receipt = `rcpt_${user.id.slice(0, 8)}_${Date.now()}`.slice(0, 40);
-    
     const orderData = {
-      amount: amount * 100, // Convert to paisa
+      amount: Math.round(amount * 100), // Ensure integer, convert to paisa
       currency: 'INR',
       receipt: receipt,
       notes: {
@@ -91,7 +109,8 @@ serve(async (req) => {
     };
 
     logStep('Creating Razorpay order...', orderData);
-    const response = await fetch('https://api.razorpay.com/v1/orders', {
+    
+    const razorpayResponse = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`,
@@ -100,16 +119,24 @@ serve(async (req) => {
       body: JSON.stringify(orderData),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      logStep('Razorpay API error', { status: response.status, error: errorText });
-      throw new Error(`Razorpay API error: ${response.status} - ${errorText}`);
+    if (!razorpayResponse.ok) {
+      const errorText = await razorpayResponse.text();
+      logStep('Razorpay API error', { 
+        status: razorpayResponse.status, 
+        statusText: razorpayResponse.statusText,
+        error: errorText 
+      });
+      throw new Error(`Razorpay API error ${razorpayResponse.status}: ${errorText}`);
     }
 
-    const order = await response.json();
-    logStep('Razorpay order created successfully', { orderId: order.id, amount: order.amount });
+    const order = await razorpayResponse.json();
+    logStep('Razorpay order created successfully', { 
+      orderId: order.id, 
+      amount: order.amount, 
+      currency: order.currency 
+    });
 
-    // Store payment record using service role
+    // Database operations with service role
     logStep('Initializing Supabase service client...');
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -118,53 +145,63 @@ serve(async (req) => {
         auth: { 
           persistSession: false,
           autoRefreshToken: false 
-        },
-        db: { 
-          schema: 'public' 
         }
       }
     );
 
-    // Prepare insert data
-    const insertData = {
+    // Explicit column mapping to avoid INSERT mismatch
+    const paymentData = {
       user_id: user.id,
       razorpay_order_id: order.id,
       amount: amount,
       plan_name: plan_name,
-      plan_duration: plan_duration,
-      currency: 'INR',
-      status: 'pending'
+      plan_duration: plan_duration
+      // Let database handle defaults for: id, currency, status, created_at, updated_at
+      // razorpay_payment_id, razorpay_signature will be null initially
     };
     
-    logStep('Storing payment record...', { insertData });
+    logStep('Inserting payment record...', { 
+      user_id: paymentData.user_id.substring(0, 8) + '...',
+      razorpay_order_id: paymentData.razorpay_order_id,
+      amount: paymentData.amount,
+      plan_name: paymentData.plan_name,
+      plan_duration: paymentData.plan_duration
+    });
     
     const { data: paymentRecord, error: dbError } = await supabaseService
       .from('payments')
-      .insert(insertData)
-      .select('id')
+      .insert(paymentData)
+      .select('id, created_at')
       .single();
 
     if (dbError) {
-      logStep('Database error occurred', { 
-        error: dbError, 
+      logStep('Database insertion failed', { 
+        error: dbError,
         code: dbError.code,
         message: dbError.message,
         details: dbError.details,
-        hint: dbError.hint 
+        hint: dbError.hint
       });
-      throw new Error(`Database error: ${dbError.message}`);
+      throw new Error(`Database error: ${dbError.message} (Code: ${dbError.code})`);
     }
 
-    logStep('Payment record created successfully', { paymentRecordId: paymentRecord.id });
-    logStep('=== Order Creation Success ===');
+    logStep('Payment record created successfully', { 
+      recordId: paymentRecord.id,
+      createdAt: paymentRecord.created_at
+    });
+
+    // Return response
+    const responseData = {
+      order_id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key: razorpayKeyId,
+    };
+    
+    logStep('=== ORDER CREATION COMPLETED SUCCESSFULLY ===', responseData);
 
     return new Response(
-      JSON.stringify({
-        order_id: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        key: razorpayKeyId,
-      }),
+      JSON.stringify(responseData),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -173,13 +210,18 @@ serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep('=== Order Creation Error ===', { 
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    logStep('=== ORDER CREATION FAILED ===', { 
       error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined 
+      stack: errorStack
     });
     
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ 
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
