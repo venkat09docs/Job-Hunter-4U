@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.sync-user-profiles]
 verify_jwt = false
+
+[functions.test-payment-insert]
+verify_jwt = false
