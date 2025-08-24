@@ -193,9 +193,6 @@ serve(async (req) => {
       console.log('User payments:', userPayments, 'Error:', userPaymentsError);
       
       // Fetch order details from Razorpay to get plan info
-      const razorpayKeySecret = isLiveMode 
-        ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
-        : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
       const razorpayKeyId = isLiveMode 
         ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
         : Deno.env.get('RAZORPAY_TEST_KEY_ID');
@@ -204,7 +201,7 @@ serve(async (req) => {
         console.log('Fetching order details from Razorpay for order:', razorpay_order_id);
         const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
           headers: {
-            'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret.trim()}`)}`
+            'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`
           }
         });
         
@@ -225,38 +222,60 @@ serve(async (req) => {
             planDuration 
           });
           
-          // Use the create_payment_record function (safer approach)
-          console.log('Creating payment record using function...');
-          const { data: newPaymentId, error: createError } = await supabaseService
-            .rpc('create_payment_record', {
-              p_user_id: userId,
-              p_razorpay_order_id: razorpay_order_id,
-              p_amount: amount,
-              p_plan_name: planName,
-              p_plan_duration: planDuration
-            });
-          
-          if (createError) {
-            console.error('❌ Failed to create payment record via function:', createError);
-            throw new Error(`Failed to create payment record: ${createError.message}`);
-          }
-          
-          console.log('✅ Payment record created via function with ID:', newPaymentId);
-          
-          // Fetch the newly created record
-          const { data: newPaymentData, error: newFetchError } = await supabaseService
+          // Try direct insertion first (more reliable than function)
+          console.log('Creating payment record directly...');
+          const { data: directInsertData, error: directInsertError } = await supabaseService
             .from('payments')
-            .select('*')
-            .eq('razorpay_order_id', razorpay_order_id)
-            .eq('user_id', userId)
+            .insert({
+              user_id: userId,
+              razorpay_order_id: razorpay_order_id,
+              amount: amount,
+              currency: 'INR',
+              status: 'pending',
+              plan_name: planName,
+              plan_duration: planDuration
+            })
+            .select()
             .single();
           
-          if (newFetchError || !newPaymentData) {
-            console.error('❌ Failed to fetch payment record after creation:', newFetchError);
-            throw new Error('Payment record created but could not be retrieved');
+          if (directInsertError) {
+            console.log('❌ Direct insertion failed, trying function approach:', directInsertError);
+            
+            // Fallback to function approach
+            const { data: newPaymentId, error: createError } = await supabaseService
+              .rpc('create_payment_record', {
+                p_user_id: userId,
+                p_razorpay_order_id: razorpay_order_id,
+                p_amount: amount,
+                p_plan_name: planName,
+                p_plan_duration: planDuration
+              });
+            
+            if (createError) {
+              console.error('❌ Failed to create payment record via function:', createError);
+              throw new Error(`Failed to create payment record: ${createError.message}`);
+            }
+            
+            console.log('✅ Payment record created via function with ID:', newPaymentId);
+            
+            // Fetch the newly created record
+            const { data: newPaymentData, error: newFetchError } = await supabaseService
+              .from('payments')
+              .select('*')
+              .eq('id', newPaymentId)
+              .single();
+            
+            if (newFetchError || !newPaymentData) {
+              console.error('❌ Failed to fetch payment record after creation:', newFetchError);
+              throw new Error('Payment record created but could not be retrieved');
+            }
+            
+            paymentData = newPaymentData;
+          } else {
+            console.log('✅ Payment record created directly:', directInsertData.id);
+            paymentData = directInsertData;
           }
           
-          paymentData = newPaymentData;
           console.log('✅ Payment record retrieved successfully');
         } else {
           const errorText = await orderResponse.text();
