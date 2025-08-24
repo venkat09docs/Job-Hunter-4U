@@ -116,29 +116,32 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
 
-      console.log('Creating payment record with minimal required fields...');
+      console.log('Creating payment record with exact required fields:');
+      const insertData = {
+        user_id: user.id,
+        razorpay_order_id: order.id,
+        amount: amount,
+        plan_name: plan_name,
+        plan_duration: plan_duration
+      };
+      console.log('Insert data for create-order:', JSON.stringify(insertData, null, 2));
+
       const { data: paymentRecord, error: dbError } = await supabaseService
         .from('payments')
-        .insert({
-          user_id: user.id,
-          razorpay_order_id: order.id,
-          amount: amount,
-          plan_name: plan_name,
-          plan_duration: plan_duration
-          // Let defaults handle: id, currency, status, created_at, updated_at
-        })
+        .insert(insertData)
         .select('id')
         .single();
 
       if (dbError) {
-        console.warn('Database storage failed:', dbError.message);
+        console.warn('Database storage failed during order creation:', dbError.message);
         console.warn('Full DB error:', JSON.stringify(dbError, null, 2));
+        console.warn('This is non-critical - payment can be created during verification');
       } else {
-        console.log('✅ Payment record stored with ID:', paymentRecord.id);
+        console.log('✅ Payment record stored during order creation with ID:', paymentRecord.id);
       }
     } catch (dbError) {
-      console.warn('Database storage error:', dbError);
-      // Continue anyway - payment record is optional
+      console.warn('Database storage exception during order creation:', dbError);
+      console.warn('This is non-critical - payment can be created during verification');
     }
 
     console.log('6. Returning success response...');

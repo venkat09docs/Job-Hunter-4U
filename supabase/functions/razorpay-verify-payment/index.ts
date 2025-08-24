@@ -85,7 +85,6 @@ serve(async (req) => {
   try {
     console.log('=== PAYMENT VERIFICATION START ===');
     console.log('Request method:', req.method);
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
     // Parse request body
     const requestBody = await req.json();
@@ -163,118 +162,111 @@ serve(async (req) => {
     
     console.log('✅ Payment signature verified successfully');
 
-    // Get the payment record to fetch plan details
-    console.log('Fetching payment record for order:', razorpay_order_id, 'user:', userId);
+    // STEP 1: Try to find existing payment record first
+    console.log('=== STEP 1: Looking for existing payment record ===');
+    console.log('Searching for order:', razorpay_order_id, 'user:', userId);
+    
     let { data: paymentData, error: fetchError } = await supabaseService
       .from('payments')
       .select('*')
       .eq('razorpay_order_id', razorpay_order_id)
-      .eq('user_id', userId)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid error if not found
 
-    // If not found, try to create a payment record based on the Razorpay order
-    if (fetchError || !paymentData) {
-      console.log('❌ Payment record not found, error:', fetchError);
-      console.log('Trying to find without user filter...');
+    console.log('Initial payment search result:', { paymentData, fetchError });
+
+    // STEP 2: If not found, try without user filter (maybe created during order creation)
+    if (!paymentData && !fetchError) {
+      console.log('=== STEP 2: Payment record not found with user filter, searching without user filter ===');
       
-      // Try to find payment without user_id filter to debug
       const { data: debugData, error: debugError } = await supabaseService
         .from('payments')
         .select('*')
-        .eq('razorpay_order_id', razorpay_order_id);
-      console.log('Debug - All payments for order:', debugData, 'Error:', debugError);
+        .eq('razorpay_order_id', razorpay_order_id)
+        .maybeSingle();
       
-      console.log('Trying to find any payments for this user...');
-      const { data: userPayments, error: userPaymentsError } = await supabaseService
-        .from('payments')
-        .select('*')
-        .eq('user_id', userId)
-        .limit(3);
-      console.log('User payments:', userPayments, 'Error:', userPaymentsError);
+      console.log('Payment search without user filter:', { debugData, debugError });
       
-      // Fetch order details from Razorpay to get plan info
+      if (debugData && debugData.user_id === userId) {
+        console.log('✅ Found payment record without user filter, and user_id matches');
+        paymentData = debugData;
+      } else if (debugData && debugData.user_id !== userId) {
+        console.log('❌ Found payment record but user_id does not match');
+        console.log('Expected user_id:', userId, 'Found user_id:', debugData.user_id);
+        throw new Error('Payment record exists but belongs to different user');
+      }
+    }
+
+    // STEP 3: If still not found, create it based on Razorpay order data
+    if (!paymentData) {
+      console.log('=== STEP 3: Creating payment record from Razorpay order data ===');
+      
       const razorpayKeyId = isLiveMode 
         ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
         : Deno.env.get('RAZORPAY_TEST_KEY_ID');
       
-      try {
-        console.log('Fetching order details from Razorpay for order:', razorpay_order_id);
-        const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
-          headers: {
-            'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`
-          }
-        });
-        
-        if (orderResponse.ok) {
-          const orderData = await orderResponse.json();
-          console.log('✅ Razorpay order data:', JSON.stringify(orderData, null, 2));
-          
-          // Create payment record based on order notes
-          const planName = orderData.notes?.plan_name || 'One Week Plan';
-          const planDuration = orderData.notes?.plan_duration || '1 week';
-          const amount = Math.floor(orderData.amount / 100); // Convert from paisa to rupees
-          
-          console.log('Creating payment record with:', { 
-            userId, 
-            razorpay_order_id, 
-            amount, 
-            planName, 
-            planDuration 
-          });
-          
-          // Use only direct insertion - skip the function approach entirely
-          console.log('Creating payment record directly with explicit columns...');
-          console.log('Direct insert payload:', {
-            user_id: userId,
-            razorpay_order_id: razorpay_order_id,
-            amount: amount,
-            plan_name: planName,
-            plan_duration: planDuration
-          });
-          
-          const { data: directInsertData, error: directInsertError } = await supabaseService
-            .from('payments')
-            .insert({
-              user_id: userId,
-              razorpay_order_id: razorpay_order_id,
-              amount: amount,
-              plan_name: planName,
-              plan_duration: planDuration
-              // Let defaults handle: id, currency, status, created_at, updated_at
-            })
-            .select()
-            .single();
-          
-          if (directInsertError) {
-            console.error('❌ Direct insertion failed:', directInsertError);
-            console.error('Full error details:', JSON.stringify(directInsertError, null, 2));
-            throw new Error(`Failed to create payment record: ${directInsertError.message}`);
-          }
-          
-          console.log('✅ Payment record created directly:', directInsertData.id);
-          paymentData = directInsertData;
-          
-          console.log('✅ Payment record retrieved successfully');
-        } else {
-          const errorText = await orderResponse.text();
-          console.error('❌ Failed to fetch order from Razorpay:', orderResponse.status, errorText);
-          throw new Error(`Failed to fetch Razorpay order: ${orderResponse.status}`);
+      console.log('Fetching order details from Razorpay for order:', razorpay_order_id);
+      const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+        headers: {
+          'Authorization': `Basic ${btoa(`${razorpayKeyId}:${razorpayKeySecret}`)}`
         }
-      } catch (razorpayError) {
-        console.error('❌ Failed to fetch order from Razorpay:', razorpayError);
-        throw new Error(`Payment record not found and could not be created: ${razorpayError.message}`);
-      }
+      });
       
-      // If we still don't have payment data, fail
-      if (!paymentData) {
-        throw new Error('Payment record not found and could not be created');
+      if (!orderResponse.ok) {
+        const errorText = await orderResponse.text();
+        console.error('❌ Failed to fetch order from Razorpay:', orderResponse.status, errorText);
+        throw new Error(`Failed to fetch Razorpay order: ${orderResponse.status}`);
+      }
+
+      const orderData = await orderResponse.json();
+      console.log('✅ Razorpay order data:', JSON.stringify(orderData, null, 2));
+      
+      // Create payment record based on order notes
+      const planName = orderData.notes?.plan_name || 'One Week Plan';
+      const planDuration = orderData.notes?.plan_duration || '1 week';
+      const amount = Math.floor(orderData.amount / 100); // Convert from paisa to rupees
+      
+      console.log('Attempting to create payment record with exact required data:');
+      const insertData = {
+        user_id: userId,
+        razorpay_order_id: razorpay_order_id,
+        amount: amount,
+        plan_name: planName,
+        plan_duration: planDuration
+      };
+      console.log('Insert data:', JSON.stringify(insertData, null, 2));
+      
+      try {
+        const { data: newPaymentData, error: insertError } = await supabaseService
+          .from('payments')
+          .insert(insertData)
+          .select('*')
+          .single();
+        
+        if (insertError) {
+          console.error('❌ Payment insert failed with error:', insertError);
+          console.error('Error code:', insertError.code);
+          console.error('Error message:', insertError.message);
+          console.error('Error details:', insertError.details);
+          console.error('Error hint:', insertError.hint);
+          throw new Error(`Database insert failed: ${insertError.message} (Code: ${insertError.code})`);
+        }
+        
+        console.log('✅ Payment record created successfully:', newPaymentData.id);
+        paymentData = newPaymentData;
+      } catch (dbError) {
+        console.error('❌ Database error during payment creation:', dbError);
+        throw new Error(`Failed to create payment record: ${dbError.message}`);
       }
     }
-    
-    console.log('✅ Found payment record:', paymentData.id, 'Plan:', paymentData.plan_name);
 
-    // Update payment status with verification details
-    console.log('Updating payment status to paid...');
+    if (!paymentData) {
+      throw new Error('Could not find or create payment record');
+    }
+    
+    console.log('✅ Using payment record:', paymentData.id, 'Plan:', paymentData.plan_name);
+
+    // STEP 4: Update payment status with verification details
+    console.log('=== STEP 4: Updating payment status to completed ===');
     const { error: updateError } = await supabaseService
       .from('payments')
       .update({
@@ -283,16 +275,17 @@ serve(async (req) => {
         status: 'completed',
         updated_at: new Date().toISOString(),
       })
-      .eq('razorpay_order_id', razorpay_order_id);
+      .eq('id', paymentData.id);
 
     if (updateError) {
       console.error('❌ Payment update error:', updateError);
-      throw new Error('Failed to update payment status');
+      throw new Error(`Failed to update payment status: ${updateError.message}`);
     }
     
-    console.log('✅ Payment status updated to paid');
+    console.log('✅ Payment status updated to completed');
 
-    // Calculate subscription dates - use upgrade_end_date if provided (for upgrades with remaining days)
+    // STEP 5: Calculate subscription dates and update profile
+    console.log('=== STEP 5: Updating user profile with subscription ===');
     const startDate = new Date();
     const endDate = upgrade_end_date ? new Date(upgrade_end_date) : calculateSubscriptionEndDate(paymentData.plan_duration);
 
@@ -302,16 +295,6 @@ serve(async (req) => {
       isUpgrade: !!upgrade_end_date 
     });
 
-    // Update user profile with subscription details
-    console.log('Updating user profile with subscription details...');
-    console.log('Profile update data:', {
-      subscription_plan: paymentData.plan_name,
-      subscription_start_date: startDate.toISOString(),
-      subscription_end_date: endDate.toISOString(),
-      subscription_active: true,
-      user_id: paymentData.user_id
-    });
-    
     const { error: profileError } = await supabaseService
       .from('profiles')
       .update({
@@ -325,12 +308,12 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('❌ Profile update error:', profileError);
-      throw new Error('Failed to update subscription');
+      throw new Error(`Failed to update subscription: ${profileError.message}`);
     }
 
     console.log('✅ Subscription activated successfully for user:', paymentData.user_id);
     console.log('Plan:', paymentData.plan_name, 'Valid until:', endDate.toISOString());
-    console.log('=== PAYMENT VERIFICATION END ===');
+    console.log('=== PAYMENT VERIFICATION END SUCCESS ===');
 
     return new Response(
       JSON.stringify({
@@ -350,11 +333,19 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in verify-payment function:', error);
+    console.error('=== PAYMENT VERIFICATION ERROR ===');
+    console.error('Error type:', typeof error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error stack:', error?.stack);
+    console.error('Full error object:', error);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message,
+        error_type: error?.name || 'Unknown',
+        timestamp: new Date().toISOString()
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
