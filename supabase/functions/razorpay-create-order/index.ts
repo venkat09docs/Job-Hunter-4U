@@ -103,9 +103,7 @@ serve(async (req) => {
         razorpay_order_id: order.id,
         amount: amount,
         plan_name: plan_name,
-        plan_duration: plan_duration,
-        currency: 'INR',
-        status: 'pending'
+        plan_duration: plan_duration
       })
       .select('id')
       .single();
