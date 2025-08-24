@@ -222,59 +222,37 @@ serve(async (req) => {
             planDuration 
           });
           
-          // Try direct insertion first (more reliable than function)
-          console.log('Creating payment record directly...');
+          // Use only direct insertion - skip the function approach entirely
+          console.log('Creating payment record directly with explicit columns...');
+          console.log('Direct insert payload:', {
+            user_id: userId,
+            razorpay_order_id: razorpay_order_id,
+            amount: amount,
+            plan_name: planName,
+            plan_duration: planDuration
+          });
+          
           const { data: directInsertData, error: directInsertError } = await supabaseService
             .from('payments')
             .insert({
               user_id: userId,
               razorpay_order_id: razorpay_order_id,
               amount: amount,
-              currency: 'INR',
-              status: 'pending',
               plan_name: planName,
               plan_duration: planDuration
+              // Let defaults handle: id, currency, status, created_at, updated_at
             })
             .select()
             .single();
           
           if (directInsertError) {
-            console.log('❌ Direct insertion failed, trying function approach:', directInsertError);
-            
-            // Fallback to function approach
-            const { data: newPaymentId, error: createError } = await supabaseService
-              .rpc('create_payment_record', {
-                p_user_id: userId,
-                p_razorpay_order_id: razorpay_order_id,
-                p_amount: amount,
-                p_plan_name: planName,
-                p_plan_duration: planDuration
-              });
-            
-            if (createError) {
-              console.error('❌ Failed to create payment record via function:', createError);
-              throw new Error(`Failed to create payment record: ${createError.message}`);
-            }
-            
-            console.log('✅ Payment record created via function with ID:', newPaymentId);
-            
-            // Fetch the newly created record
-            const { data: newPaymentData, error: newFetchError } = await supabaseService
-              .from('payments')
-              .select('*')
-              .eq('id', newPaymentId)
-              .single();
-            
-            if (newFetchError || !newPaymentData) {
-              console.error('❌ Failed to fetch payment record after creation:', newFetchError);
-              throw new Error('Payment record created but could not be retrieved');
-            }
-            
-            paymentData = newPaymentData;
-          } else {
-            console.log('✅ Payment record created directly:', directInsertData.id);
-            paymentData = directInsertData;
+            console.error('❌ Direct insertion failed:', directInsertError);
+            console.error('Full error details:', JSON.stringify(directInsertError, null, 2));
+            throw new Error(`Failed to create payment record: ${directInsertError.message}`);
           }
+          
+          console.log('✅ Payment record created directly:', directInsertData.id);
+          paymentData = directInsertData;
           
           console.log('✅ Payment record retrieved successfully');
         } else {

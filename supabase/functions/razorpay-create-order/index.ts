@@ -116,19 +116,25 @@ serve(async (req) => {
         { auth: { persistSession: false } }
       );
 
-      const { data: paymentId, error: dbError } = await supabaseService
-        .rpc('create_payment_record', {
-          p_user_id: user.id,
-          p_razorpay_order_id: order.id,
-          p_amount: amount,
-          p_plan_name: plan_name,
-          p_plan_duration: plan_duration
-        });
+      console.log('Creating payment record with minimal required fields...');
+      const { data: paymentRecord, error: dbError } = await supabaseService
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          razorpay_order_id: order.id,
+          amount: amount,
+          plan_name: plan_name,
+          plan_duration: plan_duration
+          // Let defaults handle: id, currency, status, created_at, updated_at
+        })
+        .select('id')
+        .single();
 
       if (dbError) {
         console.warn('Database storage failed:', dbError.message);
+        console.warn('Full DB error:', JSON.stringify(dbError, null, 2));
       } else {
-        console.log('✅ Payment record stored with ID:', paymentId);
+        console.log('✅ Payment record stored with ID:', paymentRecord.id);
       }
     } catch (dbError) {
       console.warn('Database storage error:', dbError);
