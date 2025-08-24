@@ -95,10 +95,11 @@ serve(async (req) => {
 
     logStep('Razorpay credentials verified', { mode: razorpayMode });
 
-    // Create Razorpay order
+    // Create Razorpay order - amount should already be in paisa from frontend
     const receipt = `rcpt_${user.id.slice(0, 8)}_${Date.now()}`.slice(0, 40);
+    const amountInPaisa = Math.round(amount); // Ensure integer, amount already in paisa
     const orderData = {
-      amount: Math.round(amount * 100), // Ensure integer, convert to paisa
+      amount: amountInPaisa,
       currency: 'INR',
       receipt: receipt,
       notes: {
@@ -149,14 +150,20 @@ serve(async (req) => {
       }
     );
 
-    logStep('Inserting payment record...');
+    logStep('Inserting payment record...', { 
+      user_id: user.id.substring(0, 8) + '...',
+      razorpay_order_id: order.id,
+      amount: amountInPaisa,
+      plan_name: plan_name,
+      plan_duration: plan_duration
+    });
     
     const { data: paymentRecord, error: dbError } = await supabaseService
       .from('payments')
       .insert({
         user_id: user.id,
         razorpay_order_id: order.id,
-        amount: amount,
+        amount: amountInPaisa, // Store amount in paisa for consistency
         plan_name: plan_name,
         plan_duration: plan_duration
       })

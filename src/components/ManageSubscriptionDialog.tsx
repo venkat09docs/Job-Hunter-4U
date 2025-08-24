@@ -203,11 +203,12 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       }
       console.log('✅ Razorpay SDK loaded successfully');
 
-      // Create order using our edge function
-      console.log('Creating payment order...', { amount: plan.price, plan_name: plan.name });
+      // Create order using our edge function - send amount in paisa (multiply by 100)
+      const amountInPaisa = Math.round(plan.price * 100);
+      console.log('Creating payment order...', { amount: plan.price, amountInPaisa, plan_name: plan.name });
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
-          amount: plan.price,
+          amount: amountInPaisa, // Send amount in paisa
           plan_name: plan.name,
           plan_duration: plan.duration,
         }
