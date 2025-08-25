@@ -92,31 +92,31 @@ serve(async (req) => {
     console.log('Creating Instamojo payment request...');
     console.log('Amount in rupees:', amountInRupees);
 
-      // Create payment request with Instamojo
-      const instamojoPayload = {
-        purpose: `${plan_name} - ${plan_duration}`,
-        amount: amountInRupees.toString(),
-        buyer_name: user.user.user_metadata?.full_name || user.user.email?.split('@')[0] || 'Customer',
-        email: user.user.email,
-        phone: '9999999999', // Default phone for Indian market
-        redirect_url: `${req.headers.get('origin') || 'http://localhost:5173'}/dashboard`,
-        send_email: true,
-        webhook: `${Deno.env.get('SUPABASE_URL')}/functions/v1/instamojo-webhook`,
-        send_sms: false,
-        allow_repeated_payments: false
-      };
+    // Create payment request with Instamojo
+    const instamojoPayload = {
+      purpose: `${plan_name} - ${plan_duration}`,
+      amount: amountInRupees.toString(),
+      buyer_name: user.user.user_metadata?.full_name || user.user.email?.split('@')[0] || 'Customer',
+      email: user.user.email,
+      phone: '9999999999', // Default phone for Indian market
+      redirect_url: `${req.headers.get('origin') || 'https://c741bca4-9e9c-4676-a3ac-6eee8726284a.sandbox.lovable.dev'}/dashboard`,
+      send_email: true,
+      webhook: `${Deno.env.get('SUPABASE_URL')}/functions/v1/instamojo-webhook`,
+      send_sms: false,
+      allow_repeated_payments: false
+    };
 
-      console.log('Instamojo API payload:', instamojoPayload);
+    console.log('Instamojo API payload:', instamojoPayload);
 
-      const instamojoResponse = await fetch('https://instamojo.com/api/1.1/payment-requests/', {
-        method: 'POST',
-        headers: {
-          'X-Api-Key': INSTAMOJO_API_KEY,
-          'X-Auth-Token': INSTAMOJO_AUTH_TOKEN,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams(instamojoPayload).toString()
-      });
+    const instamojoResponse = await fetch('https://instamojo.com/api/1.1/payment-requests/', {
+      method: 'POST',
+      headers: {
+        'X-Api-Key': INSTAMOJO_API_KEY,
+        'X-Auth-Token': INSTAMOJO_AUTH_TOKEN,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams(instamojoPayload).toString()
+    });
 
     const instamojoData = await instamojoResponse.json();
     console.log('Instamojo API response:', instamojoData);
