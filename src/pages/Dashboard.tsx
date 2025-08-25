@@ -426,17 +426,6 @@ const Dashboard = () => {
     });
   };
 
-  // Calculate overall career development score based on the three core tasks
-  const getOverallCareerScore = () => {
-    // For IT users, include GitHub progress; for Non-IT users, exclude it
-    const scores = isIT() 
-      ? [resumeProgress, linkedinProgress, getGitHubProgress()]
-      : [resumeProgress, linkedinProgress];
-    
-    return scores.length > 0 
-      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
-      : 0;
-  };
 
   const handleJobClick = (jobId: string) => {
     navigate('/dashboard/job-tracker');
@@ -493,12 +482,6 @@ const Dashboard = () => {
                 <p className="text-sm sm:text-base text-muted-foreground">
                   Let's continue building your professional presence
                 </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="gap-1 text-sm px-3 py-1">
-                  <Trophy className="h-4 w-4" />
-                  Career Score: {getOverallCareerScore()}%
-                </Badge>
               </div>
             </div>
 
