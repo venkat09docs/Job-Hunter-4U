@@ -75,20 +75,6 @@ const VerifyAssignments = () => {
   const [verifiedCurrentPage, setVerifiedCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Check access permissions
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAdmin && !isInstituteAdmin && !isRecruiter) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  useEffect(() => {
-    fetchSubmittedAssignments();
-    fetchVerifiedAssignments();
-  }, [user?.id, isAdmin, isInstituteAdmin]);
-
   const fetchVerifiedAssignments = async () => {
     try {
       // Only fetch if user has proper permissions
@@ -404,6 +390,23 @@ const VerifyAssignments = () => {
     console.log('🔍 Final assignments with evidence:', assignmentsWithEvidence);
     setAssignments(assignmentsWithEvidence);
   };
+
+  // Check access permissions after hooks are defined
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAdmin && !isInstituteAdmin && !isRecruiter) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Fetch assignments on component mount
+  useEffect(() => {
+    if (!loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+      fetchSubmittedAssignments();
+      fetchVerifiedAssignments();
+    }
+  }, [user?.id, isAdmin, isInstituteAdmin, loading]);
 
   // Get unique users for filter dropdown
   const uniqueUsers = Array.from(
