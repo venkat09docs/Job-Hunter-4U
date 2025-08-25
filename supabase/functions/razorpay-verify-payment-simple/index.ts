@@ -1,18 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createHmac } from "https://deno.land/std@0.177.0/node/crypto.ts";
+import { createHmac } from "https://deno.land/std@0.190.0/node/crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const planDurationMap: Record<string, number> = {
-  "1 week": 7,
-  "1 month": 30,
-  "3 months": 90,
-  "6 months": 180,
-  "1 year": 365,
 };
 
 serve(async (req) => {
@@ -20,179 +12,141 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method === 'GET') {
+    return new Response(
+      JSON.stringify({
+        status: 'Verification function working',
+        timestamp: new Date().toISOString()
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
-    console.log('=== SIMPLE RAZORPAY VERIFICATION STARTED ===');
+    const body = await req.json();
+    console.log('🔍 Verification request received:', body);
     
-    // Parse request
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
-    console.log('Verification request:', { razorpay_order_id, razorpay_payment_id });
-
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+    
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      throw new Error('Missing required payment data');
+      throw new Error('Missing required payment verification parameters');
     }
 
-    // Authenticate user
+    // Auth
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
+    if (!authHeader) throw new Error('No auth header');
 
-    const token = authHeader.replace('Bearer ', '');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData?.user) {
-      console.error('Auth error:', userError);
-      throw new Error('Authentication failed');
-    }
+    const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (userError || !user) throw new Error('Auth failed');
+    console.log('✅ User authenticated:', user.id);
 
-    const user = userData.user;
-    console.log('User authenticated:', user.email);
-
-    // Get Razorpay secret for signature verification - Check mode first
-    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
-    const isLiveMode = razorpayMode === 'live';
+    // Get Razorpay credentials
+    const mode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const isLive = mode === 'live';
     
-    console.log('Razorpay verification mode:', razorpayMode);
+    const keySecret = isLive ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
-    const razorpayKeySecret = isLiveMode 
-      ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
-      : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
-    
-    if (!razorpayKeySecret) {
-      throw new Error(`Razorpay secret key not configured for ${razorpayMode} mode`);
+    if (!keySecret) {
+      throw new Error(`Missing ${mode} mode secret key`);
     }
+    console.log('🔑 Using credentials for mode:', mode);
 
     // Verify signature
-    console.log('Verifying signature...');
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = createHmac("sha256", razorpayKeySecret)
-      .update(body)
-      .digest("hex");
-
-    console.log('Expected signature:', expectedSignature.substring(0, 10) + '...');
-    console.log('Received signature:', razorpay_signature.substring(0, 10) + '...');
-
-    if (expectedSignature !== razorpay_signature) {
-      console.error('Signature mismatch');
-      throw new Error('Invalid payment signature');
+    const body_string = razorpay_order_id + "|" + razorpay_payment_id;
+    
+    const expectedSignature = createHmac('sha256', keySecret)
+      .update(body_string)
+      .digest('hex');
+    
+    console.log('🔍 Generated signature:', expectedSignature);
+    console.log('🔍 Received signature:', razorpay_signature);
+    
+    const isValidSignature = expectedSignature === razorpay_signature;
+    console.log('✅ Signature validation result:', isValidSignature);
+    
+    if (!isValidSignature) {
+      throw new Error('Invalid payment signature - verification failed');
     }
 
-    console.log('✅ Signature verified successfully');
-
-    // Use service role to update payment
+    // Update payment record
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Find the payment record
-    console.log('Finding payment record for order:', razorpay_order_id, 'user:', user.id);
-    
-    // First check if any payment records exist for this user
-    const { data: allUserPayments, error: allPaymentsError } = await supabaseService
-      .from('payments')
-      .select('id, razorpay_order_id, status, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(5);
-    
-    console.log('Recent payments for user:', allUserPayments);
-    
-    const { data: paymentRecord, error: findError } = await supabaseService
-      .from('payments')
-      .select('*')
-      .eq('razorpay_order_id', razorpay_order_id)
-      .eq('user_id', user.id)
-      .single();
-
-    if (findError || !paymentRecord) {
-      console.error('Payment record not found:', findError);
-      console.error('Searched for order_id:', razorpay_order_id, 'user_id:', user.id);
-      console.error('Available payments:', allUserPayments);
-      throw new Error(`Payment record not found in database. Order ID: ${razorpay_order_id}`);
-    }
-
-    console.log('Payment record found:', paymentRecord.id);
-
-    // Update payment record
-    console.log('Updating payment record...');
-    const { error: updateError } = await supabaseService
-      .from('payments')
+    const { data: paymentRecord, error: updateError } = await supabaseService
+      .from('payment_records')
       .update({
         razorpay_payment_id: razorpay_payment_id,
-        razorpay_signature: razorpay_signature,
-        status: 'completed'
+        status: 'completed',
+        verified_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
-      .eq('id', paymentRecord.id);
+      .eq('razorpay_order_id', razorpay_order_id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
 
     if (updateError) {
-      console.error('Failed to update payment:', updateError);
-      throw new Error('Failed to update payment record');
+      console.error('❌ Database update error:', updateError);
+      throw new Error(`Failed to update payment record: ${updateError.message}`);
     }
 
-    console.log('Payment record updated successfully');
+    console.log('✅ Payment record updated:', paymentRecord);
 
-    // Calculate subscription dates
-    const planDuration = paymentRecord.plan_duration;
-    const daysToAdd = planDurationMap[planDuration] || 30;
-    
-    const now = new Date();
-    const subscriptionStartDate = now.toISOString();
-    const subscriptionEndDate = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000)).toISOString();
+    // Update user subscription if payment is for a plan
+    if (paymentRecord && paymentRecord.plan_name) {
+      const subscriptionEndDate = new Date();
+      
+      // Calculate subscription end date based on plan duration
+      if (paymentRecord.plan_duration === '1 week') {
+        subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 7);
+      } else if (paymentRecord.plan_duration === '1 month') {
+        subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+      } else if (paymentRecord.plan_duration === '3 months') {
+        subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 3);
+      }
 
-    console.log('Updating user subscription...');
-    console.log('Plan:', paymentRecord.plan_name);
-    console.log('Duration:', planDuration, '(', daysToAdd, 'days)');
-    
-    // Update user profile with subscription
-    const { error: profileError } = await supabaseService
-      .from('profiles')
-      .update({
-        subscription_plan: paymentRecord.plan_name,
-        subscription_start_date: subscriptionStartDate,
-        subscription_end_date: subscriptionEndDate,
-        subscription_active: true
-      })
-      .eq('user_id', user.id);
+      const { error: profileError } = await supabaseService
+        .from('profiles')
+        .update({
+          subscription_plan: paymentRecord.plan_name,
+          subscription_active: true,
+          subscription_start_date: new Date().toISOString(),
+          subscription_end_date: subscriptionEndDate.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
 
-    if (profileError) {
-      console.error('Failed to update profile:', profileError);
-      throw new Error('Failed to update user subscription');
+      if (profileError) {
+        console.error('❌ Profile update error:', profileError);
+        // Don't throw here as payment is already verified, just log the error
+      } else {
+        console.log('✅ User subscription updated');
+      }
     }
-
-    console.log('✅ User subscription updated successfully');
-    console.log('=== PAYMENT VERIFICATION SUCCESS ===');
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Payment verified and subscription activated',
-        subscription: {
-          plan: paymentRecord.plan_name,
-          start_date: subscriptionStartDate,
-          end_date: subscriptionEndDate
-        }
+      JSON.stringify({
+        success: true,
+        message: 'Payment verified successfully',
+        payment_id: razorpay_payment_id,
+        order_id: razorpay_order_id
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('=== PAYMENT VERIFICATION FAILED ===');
-    console.error('Error:', error.message);
-    console.error('Stack:', error.stack);
-    
+    console.error('❌ Verification error:', error.message);
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error.message,
-        timestamp: new Date().toISOString()
+        success: false,
+        error: error.message 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
