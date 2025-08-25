@@ -160,13 +160,13 @@ serve(async (req) => {
     
     const { data: paymentRecord, error: dbError } = await supabaseService
       .from('payments')
-      .insert({
+      .insert([{
         user_id: user.id,
         razorpay_order_id: order.id,
-        amount: amountInPaisa, // Store amount in paisa for consistency
+        amount: amountInPaisa,
         plan_name: plan_name,
         plan_duration: plan_duration
-      })
+      }])
       .select('id, created_at')
       .single();
 

@@ -206,24 +206,28 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       // Create order using our edge function - send amount in paisa (multiply by 100)
       const amountInPaisa = Math.round(plan.price * 100);
       console.log('Creating payment order...', { amount: plan.price, amountInPaisa, plan_name: plan.name });
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
-        body: {
-          amount: amountInPaisa, // Send amount in paisa
-          plan_name: plan.name,
-          plan_duration: plan.duration,
-        }
-      });
-
-      if (orderError) {
-        console.error('Order creation error:', orderError);
-        toast({
-          title: "Payment Order Failed",
-          description: `Failed to create payment order: ${orderError.message}. Please try refreshing the page and logging in again.`,
-          variant: "destructive"
+      
+      try {
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+          body: {
+            amount: amountInPaisa, // Send amount in paisa
+            plan_name: plan.name,
+            plan_duration: plan.duration,
+          }
         });
-        setLoadingPlan(null);
-        return;
-      }
+
+        console.log('Edge function response:', { orderData, orderError });
+
+        if (orderError) {
+          console.error('Order creation error:', orderError);
+          toast({
+            title: "Payment Order Failed",
+            description: `Failed to create payment order: ${orderError.message}. Please try refreshing the page and logging in again.`,
+            variant: "destructive"
+          });
+          setLoadingPlan(null);
+          return;
+        }
 
       if (!orderData) {
         console.error('No order data returned');
@@ -357,11 +361,20 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         window.focus();
       }, 300);
       
+      } catch (error) {
+        console.error('Payment initialization error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to initialize payment. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+      }
     } catch (error) {
-      console.error('Payment initialization error:', error);
+      console.error('Payment function error:', error);
       toast({
         title: "Error",
-        description: "Failed to initialize payment. Please try again.",
+        description: "Failed to process payment request. Please try again.",
         variant: "destructive"
       });
       setLoadingPlan(null);

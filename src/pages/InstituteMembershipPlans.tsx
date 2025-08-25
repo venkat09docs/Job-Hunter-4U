@@ -125,24 +125,33 @@ const InstituteMembershipPlans = () => {
       }
 
       // Create order using our edge function - send amount in paisa (multiply by 100)
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
-        body: {
-          amount: Math.round(plan.price * 100), // Convert rupees to paisa
-          plan_name: plan.name,
-          plan_duration: plan.duration,
-        }
+      console.log('Calling razorpay-create-order with:', {
+        amount: Math.round(plan.price * 100),
+        plan_name: plan.name,
+        plan_duration: plan.duration,
       });
 
-      if (orderError || !orderData) {
-        console.error('Order creation error:', orderError);
-        toast({
-          title: "Error",
-          description: "Failed to create payment order. Please try again.",
-          variant: "destructive"
+      try {
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+          body: {
+            amount: Math.round(plan.price * 100), // Convert rupees to paisa
+            plan_name: plan.name,
+            plan_duration: plan.duration,
+          }
         });
-        setLoadingPlan(null);
-        return;
-      }
+
+        console.log('Edge function response:', { orderData, orderError });
+
+        if (orderError || !orderData) {
+          console.error('Order creation error:', orderError);
+          toast({
+            title: "Error",
+            description: "Failed to create payment order. Please try again.",
+            variant: "destructive"
+          });
+          setLoadingPlan(null);
+          return;
+        }
 
       // Configure Razorpay options
       const options = {
@@ -232,11 +241,20 @@ const InstituteMembershipPlans = () => {
         window.focus();
       }, 300);
       
+      } catch (error) {
+        console.error('Payment initialization error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to initialize payment. Please try again.",
+          variant: "destructive"
+        });
+        setLoadingPlan(null);
+      }
     } catch (error) {
-      console.error('Payment initialization error:', error);
+      console.error('Payment function error:', error);
       toast({
         title: "Error",
-        description: "Failed to initialize payment. Please try again.",
+        description: "Failed to process payment request. Please try again.",
         variant: "destructive"
       });
       setLoadingPlan(null);
