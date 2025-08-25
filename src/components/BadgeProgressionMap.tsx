@@ -78,8 +78,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
         // Profile Perfectionist (Gold) - Unlocked only when LinkedIn profile from career assignments reaches 100%
         if (tier === 'gold') return linkedinProfileProgress >= 100 && calculateProfileProgress('bronze') >= 100;
-        // Profile Elite (Diamond) - Unlocked when gold is 100% and has network activity + job applications
-        if (tier === 'diamond') return calculateProfileProgress('gold') >= 100 && networkConnections >= 50 && jobApplicationsCount >= 5;
+        // Profile Elite (Diamond) - Unlocked when gold reaches 100%
+        if (tier === 'diamond') return calculateProfileProgress('gold') >= 100;
         return false;
       
       case 'jobs':
