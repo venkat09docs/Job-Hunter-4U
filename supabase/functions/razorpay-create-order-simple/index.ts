@@ -108,26 +108,46 @@ serve(async (req) => {
     };
 
     console.log('Razorpay order payload:', orderPayload);
+    console.log('Using auth string (first 20 chars):', `Basic ${btoa(`${keyId}:${keySecret}`)}`.substring(0, 20) + '...');
 
-    const razorpayResponse = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${btoa(`${keyId}:${keySecret}`)}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderPayload),
-    });
+    let razorpayResponse;
+    let razorpayOrder;
+    
+    try {
+      razorpayResponse = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${btoa(`${keyId}:${keySecret}`)}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload),
+      });
 
-    console.log('Razorpay response status:', razorpayResponse.status);
+      console.log('Razorpay response status:', razorpayResponse.status);
+      console.log('Razorpay response headers:', Object.fromEntries(razorpayResponse.headers.entries()));
 
-    if (!razorpayResponse.ok) {
-      const errorText = await razorpayResponse.text();
-      console.error('Razorpay error:', errorText);
-      throw new Error(`Razorpay API error: ${errorText}`);
+      if (!razorpayResponse.ok) {
+        const errorText = await razorpayResponse.text();
+        console.error('Razorpay API error response:', errorText);
+        console.error('Request details:', {
+          url: 'https://api.razorpay.com/v1/orders',
+          method: 'POST',
+          payload: orderPayload,
+          auth_prefix: `Basic ${btoa(`${keyId}:${keySecret}`)}`.substring(0, 30) + '...'
+        });
+        throw new Error(`Razorpay API error (${razorpayResponse.status}): ${errorText}`);
+      }
+
+      razorpayOrder = await razorpayResponse.json();
+      console.log('Razorpay order created successfully:', razorpayOrder.id);
+      
+    } catch (fetchError) {
+      console.error('Fetch error details:', fetchError);
+      console.error('Error name:', fetchError.name);
+      console.error('Error message:', fetchError.message);
+      console.error('Error stack:', fetchError.stack);
+      throw new Error(`Failed to create Razorpay order: ${fetchError.message}`);
     }
-
-    const razorpayOrder = await razorpayResponse.json();
-    console.log('Razorpay order created:', razorpayOrder.id);
 
     // Create payment record using service role client
     const supabaseService = createClient(
