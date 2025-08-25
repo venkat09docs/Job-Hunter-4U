@@ -137,7 +137,7 @@ serve(async (req) => {
       currency: order.currency 
     });
 
-    // Database operations with service role
+    // Database operations - use database function for safer insertion
     logStep('Initializing Supabase service client...');
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -150,7 +150,7 @@ serve(async (req) => {
       }
     );
 
-    logStep('Inserting payment record...', { 
+    logStep('Creating payment record using database function...', { 
       user_id: user.id.substring(0, 8) + '...',
       razorpay_order_id: order.id,
       amount: amountInPaisa,
@@ -158,20 +158,17 @@ serve(async (req) => {
       plan_duration: plan_duration
     });
     
-    const { data: paymentRecord, error: dbError } = await supabaseService
-      .from('payments')
-      .insert([{
-        user_id: user.id,
-        razorpay_order_id: order.id,
-        amount: amountInPaisa,
-        plan_name: plan_name,
-        plan_duration: plan_duration
-      }])
-      .select('id, created_at')
-      .single();
+    const { data: paymentId, error: dbError } = await supabaseService
+      .rpc('create_payment_record', {
+        p_user_id: user.id,
+        p_razorpay_order_id: order.id,
+        p_amount: amountInPaisa,
+        p_plan_name: plan_name,
+        p_plan_duration: plan_duration
+      });
 
     if (dbError) {
-      logStep('Database insertion failed', { 
+      logStep('Database function call failed', { 
         error: dbError,
         code: dbError.code,
         message: dbError.message,
@@ -181,9 +178,8 @@ serve(async (req) => {
       throw new Error(`Database error: ${dbError.message} (Code: ${dbError.code})`);
     }
 
-    logStep('Payment record created successfully', { 
-      recordId: paymentRecord.id,
-      createdAt: paymentRecord.created_at
+    logStep('Payment record created successfully via database function', { 
+      paymentId: paymentId
     });
 
     // Return response
