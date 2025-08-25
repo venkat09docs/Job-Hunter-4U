@@ -17,9 +17,7 @@ interface BadgeCategory {
 export const BadgeLeadersSlider = () => {
   const { badgeLeaders, loading } = useBadgeLeaders();
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  console.log('🎭 BadgeLeadersSlider: badgeLeaders data:', badgeLeaders);
-  console.log('🎭 BadgeLeadersSlider: loading state:', loading);
+  const [isHovered, setIsHovered] = useState(false);
 
   const categories: BadgeCategory[] = [
     {
@@ -48,20 +46,16 @@ export const BadgeLeadersSlider = () => {
     }
   ];
 
-  console.log('🎭 BadgeLeadersSlider: categories created:', categories.map(c => ({ 
-    id: c.id, 
-    title: c.title, 
-    leadersCount: c.leaders.length 
-  })));
-
-  // Auto-scroll functionality
+  // Auto-scroll functionality with hover pause
   useEffect(() => {
+    if (isHovered) return; // Don't auto-scroll when hovered
+    
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % categories.length);
     }, 4000); // Change slide every 4 seconds
 
     return () => clearInterval(interval);
-  }, [categories.length]);
+  }, [categories.length, isHovered]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % categories.length);
@@ -138,7 +132,11 @@ export const BadgeLeadersSlider = () => {
   );
 
   return (
-    <Card className="overflow-hidden">
+    <Card 
+      className="overflow-hidden transition-all duration-200"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -177,6 +175,12 @@ export const BadgeLeadersSlider = () => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="relative overflow-hidden">
+          {/* Hover indicator */}
+          {isHovered && (
+            <div className="absolute top-2 right-2 z-10 bg-primary/10 backdrop-blur-sm rounded-full px-2 py-1">
+              <span className="text-xs text-primary font-medium">Paused</span>
+            </div>
+          )}
           <div 
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}

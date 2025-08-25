@@ -27,28 +27,18 @@ export const useBadgeLeaders = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchBadgeLeaders = async () => {
-    console.log('🏆 fetchBadgeLeaders: Function called');
     try {
       setLoading(true);
-      console.log('🏆 Starting badge leaders fetch...');
 
-      // First, let's test a simple query to see if we can access the data
-      const { data: testQuery, error: testError } = await supabase
-        .from('profile_user_badges')
-        .select('user_id, badge_id')
-        .limit(5);
-
-      console.log('🏆 Test query result:', testQuery, 'Error:', testError);
-
-      // Let's try a different approach - use RPC function
-      console.log('🏆 Trying RPC function approach for safer data access...');
+      // Use RPC function for safer profile data access
       const { data: rpcProfileData, error: rpcError } = await supabase
         .rpc('get_safe_leaderboard_profiles');
 
-      console.log('🏆 RPC profiles result:', rpcProfileData, 'Error:', rpcError);
+      if (rpcError) {
+        console.error('❌ Error fetching profiles:', rpcError);
+      }
 
-      // Get users who have earned profile badges (Bronze, Silver, Gold)
-      console.log('🏆 Executing main profile badges query...');
+      // Get users who have earned profile badges
       const { data: profileBadgeData, error: profileBadgeError } = await supabase
         .from('profile_user_badges')
         .select(`
@@ -64,17 +54,11 @@ export const useBadgeLeaders = () => {
         `)
         .order('awarded_at', { ascending: false });
 
-      console.log('🏆 Profile badge query executed');
-      console.log('🏆 Profile badge error:', profileBadgeError);
-      console.log('🏆 Profile badge data length:', profileBadgeData?.length || 0);
-      console.log('🏆 Raw profile badge data:', profileBadgeData);
-
       if (profileBadgeError) {
         console.error('❌ Error fetching profile badges:', profileBadgeError);
-        // Don't throw, let's continue with empty data and see what happens
       }
 
-      // If we got badge data but no profiles from the join, let's combine manually
+      // Combine badge data with profile data manually to avoid RLS issues
       let processedProfileBadgeData = [];
       if (profileBadgeData && profileBadgeData.length > 0 && rpcProfileData && rpcProfileData.length > 0) {
         processedProfileBadgeData = profileBadgeData.map(badge => {
@@ -84,8 +68,6 @@ export const useBadgeLeaders = () => {
             profiles: profile
           };
         }).filter(badge => badge.profiles); // Only include badges with valid profiles
-        
-        console.log('🏆 Manually combined badge and profile data:', processedProfileBadgeData);
       }
 
       // Get users with job application activity
@@ -128,9 +110,7 @@ export const useBadgeLeaders = () => {
       if (githubError) console.error('❌ Error fetching GitHub data:', githubError);
 
       // Process Profile Build Champions (users with profile badges)
-      console.log('🏆 About to process profile badge leaders with data:', processedProfileBadgeData?.length || 0, 'records');
       const profileBuildLeaders = processProfileBadgeLeaders(processedProfileBadgeData || []);
-      console.log('🏆 Processed profile build leaders:', profileBuildLeaders);
       
       // Process Job Application Masters
       const jobApplicationLeaders = processJobLeaders(jobActivityData || []);
@@ -141,7 +121,7 @@ export const useBadgeLeaders = () => {
       // Process GitHub Repository Experts (IT users only)
       const githubLeaders = processGitHubLeaders(githubActivityData || []);
 
-      console.log('🏆 All badge leaders processed:', {
+      console.log('🏆 Final badge leaders processed:', {
         profileBuild: profileBuildLeaders.length,
         jobsApply: jobApplicationLeaders.length,
         linkedinGrowth: linkedinLeaders.length,
@@ -166,17 +146,13 @@ export const useBadgeLeaders = () => {
 
   // Process users who have earned profile badges
   const processProfileBadgeLeaders = (badgeData: any[]): BadgeLeader[] => {
-    console.log('🏆 Processing profile badge leaders, input data length:', badgeData.length);
-    
     if (badgeData.length === 0) {
-      console.log('🏆 No profile badge data to process');
       return [];
     }
 
     const userBadgesMap = new Map<string, { user_id: string; profile: any; badges: any[]; maxTier: string; totalPoints: number }>();
     
     badgeData.forEach((item: any) => {
-      console.log('🏆 Processing badge item:', item);
       const key = item.user_id;
       if (!userBadgesMap.has(key)) {
         userBadgesMap.set(key, {
@@ -198,9 +174,6 @@ export const useBadgeLeaders = () => {
       else if (tier === 'silver' && current.maxTier !== 'gold') current.maxTier = 'silver';
     });
 
-    console.log('🏆 User badges map size:', userBadgesMap.size);
-    console.log('🏆 User badges map values:', Array.from(userBadgesMap.values()));
-
     const result = Array.from(userBadgesMap.values())
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .slice(0, 3)
@@ -213,7 +186,6 @@ export const useBadgeLeaders = () => {
         badge_type: getBadgeTypeFromTier(item.maxTier) as 'Silver' | 'Gold' | 'Diamond'
       }));
 
-    console.log('🏆 Final profile badge leaders:', result);
     return result;
   };
 
@@ -326,8 +298,6 @@ export const useBadgeLeaders = () => {
   };
 
   useEffect(() => {
-    console.log('🏆 useBadgeLeaders: useEffect triggered');
-    console.log('🏆 useBadgeLeaders: Starting fetchBadgeLeaders');
     fetchBadgeLeaders().catch(error => {
       console.error('🏆 useBadgeLeaders: Error in useEffect:', error);
     });
