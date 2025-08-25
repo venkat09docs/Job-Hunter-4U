@@ -120,7 +120,51 @@ serve(async (req) => {
       });
     }
 
-    // Create user tasks for the current period if they don't exist
+    // Check if tasks already exist for the current period
+    const { data: existingTasks, error: existingTasksError } = await supabase
+      .from('linkedin_user_tasks')
+      .select('id')
+      .eq('user_id', linkedinUserId)
+      .eq('period', currentPeriod);
+
+    if (existingTasksError) {
+      console.error('Error checking existing tasks:', existingTasksError);
+      return new Response(JSON.stringify({ error: 'Failed to check existing tasks' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // If tasks exist for this period, delete them to start fresh
+    if (existingTasks && existingTasks.length > 0) {
+      console.log(`Deleting ${existingTasks.length} existing tasks for period ${currentPeriod} to start fresh`);
+      
+      // Delete existing tasks and their evidence for this period to start fresh
+      const { error: deleteEvidenceError } = await supabase
+        .from('linkedin_evidence')
+        .delete()
+        .in('user_task_id', existingTasks.map(t => t.id));
+
+      if (deleteEvidenceError) {
+        console.error('Error deleting existing evidence:', deleteEvidenceError);
+      }
+
+      const { error: deleteTasksError } = await supabase
+        .from('linkedin_user_tasks')
+        .delete()
+        .eq('user_id', linkedinUserId)
+        .eq('period', currentPeriod);
+
+      if (deleteTasksError) {
+        console.error('Error deleting existing tasks:', deleteTasksError);
+        return new Response(JSON.stringify({ error: 'Failed to delete existing tasks' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Create fresh user tasks for the current period
     // Calculate individual due dates for each task based on display_order (day assignment)
     const userTasksToInsert = tasks.map(task => {
       const dayAssignment = task.display_order; // 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
@@ -150,12 +194,11 @@ serve(async (req) => {
       };
     });
 
+    console.log(`Creating ${userTasksToInsert.length} fresh tasks for period ${currentPeriod}`);
+
     const { data: createdTasks, error: insertError } = await supabase
       .from('linkedin_user_tasks')
-      .upsert(userTasksToInsert, { 
-        onConflict: 'user_id,task_id,period',
-        ignoreDuplicates: true 
-      })
+      .insert(userTasksToInsert)
       .select(`
         *,
         linkedin_tasks:task_id (
