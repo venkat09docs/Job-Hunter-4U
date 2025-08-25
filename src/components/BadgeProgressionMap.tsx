@@ -98,14 +98,6 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 
   // Calculate progress for each badge - progressive system
   const calculateProfileProgress = (tier: string) => {
-    // Debug logging
-    console.log('🎯 Badge Progress Debug:', {
-      tier,
-      resumeProgress,
-      linkedinProfileProgress,
-      completedProfileTasks
-    });
-    
     switch (tier) {
       case 'bronze': 
         // Bronze: 0-100% based on resume progress
@@ -113,7 +105,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'silver': 
         // Silver: Only progresses after bronze is 100% AND depends on LinkedIn profile completion from career assignments
         if (resumeProgress < 100) return 0;
-        // Silver progress is based on LinkedIn profile completion from career assignments
+        // Silver progress is based on LinkedIn profile completion (same as Career Assignments page)
         return Math.min(100, linkedinProfileProgress);
       case 'gold': 
         // Gold: Only progresses after silver is 100% (LinkedIn profile completion from career assignments)
