@@ -110,36 +110,15 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               {evidenceItem.evidence_data && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
-                    {/* Description debugging and display */}
-                    <div>
-                      <Label className="text-xs font-medium">Description Debug Info:</Label>
-                      <div className="text-xs text-red-600 mb-2 bg-red-50 p-2 rounded">
-                        <div>Evidence Data Keys: {evidenceItem.evidence_data ? Object.keys(evidenceItem.evidence_data).join(', ') : 'No evidence_data'}</div>
-                        <div>Has description: {evidenceItem.evidence_data?.description ? 'YES' : 'NO'}</div>
-                        <div>Has text: {evidenceItem.evidence_data?.text ? 'YES' : 'NO'}</div>
-                        <div>Description value: "{evidenceItem.evidence_data?.description || 'null/undefined'}"</div>
-                        <div>Text value: "{evidenceItem.evidence_data?.text || 'null/undefined'}"</div>
-                        <div>Full evidence_data: {JSON.stringify(evidenceItem.evidence_data, null, 2)}</div>
-                      </div>
-                    </div>
-
-                    {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) ? (
+                    {/* Description - simple display */}
+                    {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) && (
                       <div>
                         <Label className="text-xs font-medium">User's Description:</Label>
                         <div className="text-sm whitespace-pre-wrap mt-1 p-2 border rounded bg-gray-50">
                           {evidenceItem.evidence_data.description || evidenceItem.evidence_data.text}
                         </div>
                       </div>
-                    ) : (
-                      <div>
-                        <Label className="text-xs font-medium text-red-600">Description Missing:</Label>
-                        <div className="text-xs text-red-600">
-                          No description found in evidence data. User may not have provided description when submitting.
-                        </div>
-                      </div>
                     )}
-                    
-                    {/* URLs completely removed from evidence display */}
                     
                     {/* File info */}
                     {evidenceItem.evidence_data.file_name && (
