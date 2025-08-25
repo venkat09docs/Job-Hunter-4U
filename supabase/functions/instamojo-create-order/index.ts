@@ -108,25 +108,32 @@ serve(async (req) => {
 
     console.log('Instamojo API payload:', instamojoPayload);
 
+    // Make the API request to create payment
+    console.log('Making API request to Instamojo...');
     const instamojoResponse = await fetch('https://instamojo.com/api/1.1/payment-requests/', {
       method: 'POST',
       headers: {
         'X-Api-Key': INSTAMOJO_API_KEY,
         'X-Auth-Token': INSTAMOJO_AUTH_TOKEN,
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
       },
       body: new URLSearchParams(instamojoPayload).toString()
     });
 
-    const instamojoData = await instamojoResponse.json();
-    console.log('Instamojo API response:', instamojoData);
+    console.log('Instamojo response status:', instamojoResponse.status);
+    console.log('Instamojo response headers:', Object.fromEntries(instamojoResponse.headers.entries()));
 
-    if (!instamojoResponse.ok || !instamojoData.success) {
-      console.error('Instamojo API error:', instamojoData);
+    const instamojoData = await instamojoResponse.json();
+    console.log('Instamojo API response:', JSON.stringify(instamojoData, null, 2));
+
+    if (!instamojoResponse.ok) {
+      console.error('Instamojo HTTP error:', instamojoResponse.status, instamojoData);
       return new Response(
         JSON.stringify({ 
-          error: 'Failed to create payment request',
-          details: instamojoData.message || 'Payment gateway error'
+          error: 'Instamojo API HTTP error',
+          status: instamojoResponse.status,
+          details: instamojoData
         }),
         { 
           status: 400, 
@@ -135,14 +142,31 @@ serve(async (req) => {
       );
     }
 
+    if (!instamojoData.success) {
+      console.error('Instamojo API error:', instamojoData);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to create payment request',
+          details: instamojoData.message || instamojoData.errors || 'Payment gateway error'
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Handle the response - Instamojo returns payment_request (singular) for creation
     const paymentRequest = instamojoData.payment_request;
     
     if (!paymentRequest || !paymentRequest.id) {
       console.error('Invalid payment request in response:', instamojoData);
+      console.error('Expected payment_request object with id, got:', typeof paymentRequest, paymentRequest);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid payment response from Instamojo',
-          details: 'Payment request not found in response'
+          details: 'Payment request not found in response',
+          response_keys: Object.keys(instamojoData)
         }),
         { 
           status: 500, 
