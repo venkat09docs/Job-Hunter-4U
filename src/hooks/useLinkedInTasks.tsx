@@ -218,6 +218,36 @@ export const useLinkedInTasks = () => {
       
       console.log('🔍 Fetched tasks:', sortedData?.length || 0, 'tasks for period', currentPeriod);
       console.log('🔍 Tasks data:', sortedData);
+
+      // If no tasks found for current period, automatically initialize fresh tasks
+      if (!sortedData || sortedData.length === 0) {
+        console.log('🔄 No tasks found for current period, triggering auto-initialization...');
+        
+        // Trigger initialization asynchronously
+        setTimeout(async () => {
+          try {
+            console.log('🔄 Auto-initializing fresh tasks for period:', currentPeriod);
+            const { data: initData, error: initError } = await supabase.functions.invoke('instantiate-linkedin-week', {
+              body: {}
+            });
+            
+            if (initError) {
+              console.error('❌ Auto-initialization failed:', initError);
+            } else {
+              console.log('✅ Auto-initialization successful:', initData);
+              // Refetch tasks after initialization
+              setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['linkedin-user-tasks'] });
+              }, 1000);
+            }
+          } catch (error) {
+            console.error('❌ Auto-initialization error:', error);
+          }
+        }, 500);
+        
+        return [];
+      }
+      
       return sortedData as LinkedInUserTask[];
     },
     enabled: !!currentPeriod,
