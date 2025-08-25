@@ -32,18 +32,17 @@ const LevelUp = () => {
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
-  // Get LinkedIn profile progress from career assignments (same pattern as resume)
-  // Debug: Let's check what modules are available
-  const allTasks = !careerLoading ? assignments : [];
-  const uniqueModules = [...new Set(allTasks.map(a => a.career_task_templates?.module))];
-  console.log('🔍 Available modules:', uniqueModules);
-  console.log('🔍 All LinkedIn-related tasks:', allTasks.filter(a => 
-    a.career_task_templates?.title?.toLowerCase().includes('linkedin') ||
-    a.career_task_templates?.description?.toLowerCase().includes('linkedin') ||
-    a.career_task_templates?.category?.toLowerCase().includes('linkedin')
-  ));
+  // Get LinkedIn profile progress from networking category tasks
+  const linkedinProfileTasks = !careerLoading ? assignments.filter(a => 
+    a.career_task_templates?.category === 'networking' &&
+    (a.career_task_templates?.title?.toLowerCase().includes('linkedin') ||
+     a.career_task_templates?.description?.toLowerCase().includes('linkedin'))
+  ) : [];
   
-  const linkedinProfileProgress = !careerLoading ? getModuleProgress('LINKEDIN') : 0;
+  const completedLinkedInTasks = linkedinProfileTasks.filter(task => task.status === 'verified').length;
+  const linkedinProfileProgress = linkedinProfileTasks.length > 0 
+    ? Math.round((completedLinkedInTasks / linkedinProfileTasks.length) * 100) 
+    : 0;
   
   // Get completed profile assignments count for badge unlocking
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
