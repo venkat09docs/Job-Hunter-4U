@@ -298,21 +298,23 @@ const VerifyAssignments = () => {
     try {
       console.log('🔍 Processing assignment:', { approved, selectedAssignment: selectedAssignment.id });
       
+      // Create base update data - only include fields that are safe to update
       const updateData: any = {
         status: approved ? 'verified' : 'rejected',
         verified_at: new Date().toISOString(),
-        verified_by: user?.id,
-        verification_notes: verificationNotes || ''
+        verified_by: user?.id
       };
+
+      // Only add verification_notes if it's not empty
+      if (verificationNotes && verificationNotes.trim()) {
+        updateData.verification_notes = verificationNotes.trim();
+      }
 
       if (approved) {
         updateData.points_earned = selectedAssignment.career_task_templates.points_reward;
         updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
-      } else {
-        // For rejected assignments, set points to 0
-        updateData.points_earned = 0;
-        updateData.score_awarded = 0;
       }
+      // For rejected assignments, don't modify points fields to avoid constraint issues
 
       console.log('🔍 Update data:', updateData);
 
@@ -323,6 +325,12 @@ const VerifyAssignments = () => {
 
       if (error) {
         console.error('🔍 Database update error:', error);
+        console.error('🔍 Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
@@ -362,11 +370,24 @@ const VerifyAssignments = () => {
       
       setSelectedAssignment(null);
       setVerificationNotes('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('🔍 Complete error details:', error);
-      console.error('🔍 Error message:', error.message);
-      console.error('🔍 Error stack:', error.stack);
-      toast.error(`Failed to process assignment: ${error.message}`);
+      console.error('🔍 Error message:', error?.message);
+      console.error('🔍 Error code:', error?.code);
+      console.error('🔍 Error details:', error?.details);
+      
+      let errorMessage = 'Failed to process assignment';
+      if (error?.message) {
+        if (error.message.includes('constraint')) {
+          errorMessage = `Database constraint failed: ${error.message}`;
+        } else if (error.message.includes('foreign key')) {
+          errorMessage = `Reference error: ${error.message}`;
+        } else {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setProcessing(false);
     }

@@ -117,39 +117,56 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
           const isLatest = index === 0;
           const submissionDate = new Date(evidenceItem.created_at);
           
-          // Parse evidence data once for this item
+          // Enhanced parsing logic to handle legacy data
           let parsedEvidenceData = null;
+          let url = null;
+          let description = null;
+          let fileName = null;
+          
+          // First check the direct url field
+          if (evidenceItem.url) {
+            url = evidenceItem.url;
+          }
+          
+          // Then parse evidence_data
           if (evidenceItem.evidence_data) {
             if (typeof evidenceItem.evidence_data === 'object' && evidenceItem.evidence_data !== null) {
               parsedEvidenceData = evidenceItem.evidence_data;
+              url = url || parsedEvidenceData.url;
+              description = parsedEvidenceData.description || parsedEvidenceData.text;
+              fileName = parsedEvidenceData.file_name;
             } else if (typeof evidenceItem.evidence_data === 'string') {
               try {
                 parsedEvidenceData = JSON.parse(evidenceItem.evidence_data);
+                url = url || parsedEvidenceData.url;
+                description = parsedEvidenceData.description || parsedEvidenceData.text;
+                fileName = parsedEvidenceData.file_name;
               } catch (e) {
-                // If it's not valid JSON, treat it as description text
-                parsedEvidenceData = { description: evidenceItem.evidence_data };
+                // If it's not valid JSON, check if it's a URL or description
+                const dataStr = evidenceItem.evidence_data.trim();
+                if (dataStr.toLowerCase().startsWith('http') || dataStr.includes('.')) {
+                  url = dataStr;
+                } else if (dataStr !== 'URL' && dataStr !== 'SCREENSHOT' && dataStr !== 'DATA_EXPORT') {
+                  // If it's not just the evidence type, treat as description
+                  description = dataStr;
+                }
               }
             }
           }
           
-          // Extract values
-          const url = evidenceItem.url || parsedEvidenceData?.url || null;
-          const description = parsedEvidenceData?.description || parsedEvidenceData?.text || null;
-          const fileName = parsedEvidenceData?.file_name || null;
-          
           // Debug logging for this specific item
-          console.log(`🔍 Evidence ${index} URL extraction:`, {
-            'evidenceItem.url': evidenceItem.url,
-            'parsedEvidenceData?.url': parsedEvidenceData?.url,
-            'final url': url,
-            'parsedEvidenceData': parsedEvidenceData
+          console.log(`🔍 Evidence ${index} final extracted values:`, {
+            'url': url,
+            'description': description,
+            'fileName': fileName,
+            'raw evidence_data': evidenceItem.evidence_data,
+            'evidence_data type': typeof evidenceItem.evidence_data
           });
           
           return (
             <Card key={evidenceItem.id} className={`p-4 ${!isLatest ? 'opacity-75 border-muted' : 'border-primary/20'}`}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  {/* Removed evidence_type badge that was showing "url" */}
                   {isLatest && <Badge variant="default" className="text-xs">Latest</Badge>}
                   {index > 0 && <Badge variant="secondary" className="text-xs">Previous</Badge>}
                 </div>
@@ -225,18 +242,16 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
 
-              {parsedEvidenceData && (
+              {parsedEvidenceData && fileName && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
                     {/* File info */}
-                    {fileName && (
-                      <div className="text-xs text-muted-foreground">
-                        File: {fileName}
-                        {parsedEvidenceData?.file_size && (
-                          <span> ({Math.round(parsedEvidenceData.file_size / 1024)}KB)</span>
-                        )}
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground">
+                      File: {fileName}
+                      {parsedEvidenceData?.file_size && (
+                        <span> ({Math.round(parsedEvidenceData.file_size / 1024)}KB)</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
