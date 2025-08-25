@@ -42,15 +42,22 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     if (userError || !user) throw new Error('Auth failed');
 
-    // Razorpay config
+    // Razorpay config with debugging
     const mode = Deno.env.get('RAZORPAY_MODE') || 'test';
     const isLive = mode === 'live';
     
     const keyId = isLive ? Deno.env.get('RAZORPAY_LIVE_KEY_ID') : Deno.env.get('RAZORPAY_TEST_KEY_ID');
     const keySecret = isLive ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
+    console.log('🔑 Credentials check:', {
+      mode,
+      keyIdExists: !!keyId,
+      keySecretExists: !!keySecret,
+      keyIdPrefix: keyId ? keyId.substring(0, 8) + '...' : 'MISSING'
+    });
+    
     if (!keyId || !keySecret) {
-      throw new Error(`Missing ${mode} mode credentials`);
+      throw new Error(`Missing ${mode} mode credentials - keyId: ${!!keyId}, keySecret: ${!!keySecret}`);
     }
 
     // Create Razorpay order
