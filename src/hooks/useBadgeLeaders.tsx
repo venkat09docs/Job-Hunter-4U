@@ -58,14 +58,33 @@ export const useBadgeLeaders = () => {
         console.error('❌ Error fetching profile badges:', profileBadgeError);
       }
 
-      // Combine badge data with profile data manually to avoid RLS issues
+      // Get actual user activity points for badge holders
+      const badgeUserIds = profileBadgeData?.map(badge => badge.user_id) || [];
+      const { data: userPointsData, error: pointsError } = await supabase
+        .from('user_activity_points')
+        .select('user_id, points_earned')
+        .in('user_id', badgeUserIds);
+
+      if (pointsError) {
+        console.error('❌ Error fetching user points:', pointsError);
+      }
+
+      // Calculate total points per user from activity points
+      const userPointsMap = new Map<string, number>();
+      userPointsData?.forEach(point => {
+        const current = userPointsMap.get(point.user_id) || 0;
+        userPointsMap.set(point.user_id, current + point.points_earned);
+      });
+
+      // Combine badge data with profile data and real activity points
       let processedProfileBadgeData = [];
       if (profileBadgeData && profileBadgeData.length > 0 && rpcProfileData && rpcProfileData.length > 0) {
         processedProfileBadgeData = profileBadgeData.map(badge => {
           const profile = rpcProfileData.find(p => p.user_id === badge.user_id);
           return {
             ...badge,
-            profiles: profile
+            profiles: profile,
+            actual_points: userPointsMap.get(badge.user_id) || 0 // Use real activity points
           };
         }).filter(badge => badge.profiles); // Only include badges with valid profiles
       }
@@ -160,13 +179,13 @@ export const useBadgeLeaders = () => {
           profile: item.profiles,
           badges: [],
           maxTier: 'bronze',
-          totalPoints: 0
+          totalPoints: item.actual_points || 0 // Use real activity points, not badge requirements
         });
       }
       
       const current = userBadgesMap.get(key)!;
       current.badges.push(item.profile_badges);
-      current.totalPoints += item.profile_badges.points_required || 0;
+      // Don't add badge requirements to points - use actual activity points only
       
       // Determine highest tier
       const tier = item.profile_badges.tier;
@@ -182,7 +201,7 @@ export const useBadgeLeaders = () => {
         username: item.profile?.username || '',
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
-        total_points: item.totalPoints,
+        total_points: item.totalPoints, // Now shows real activity points
         badge_type: getBadgeTypeFromTier(item.maxTier) as 'Silver' | 'Gold' | 'Diamond'
       }));
 
