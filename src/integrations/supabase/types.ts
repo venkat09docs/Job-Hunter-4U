@@ -326,7 +326,9 @@ export type Database = {
           template_id: string
           updated_at: string
           user_id: string
+          verification_notes: string | null
           verified_at: string | null
+          verified_by: string | null
           week_start_date: string
         }
         Insert: {
@@ -342,7 +344,9 @@ export type Database = {
           template_id: string
           updated_at?: string
           user_id: string
+          verification_notes?: string | null
           verified_at?: string | null
+          verified_by?: string | null
           week_start_date: string
         }
         Update: {
@@ -358,7 +362,9 @@ export type Database = {
           template_id?: string
           updated_at?: string
           user_id?: string
+          verification_notes?: string | null
           verified_at?: string | null
+          verified_by?: string | null
           week_start_date?: string
         }
         Relationships: [
