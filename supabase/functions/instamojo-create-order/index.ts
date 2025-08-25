@@ -136,6 +136,21 @@ serve(async (req) => {
     }
 
     const paymentRequest = instamojoData.payment_request;
+    
+    if (!paymentRequest || !paymentRequest.id) {
+      console.error('Invalid payment request in response:', instamojoData);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid payment response from Instamojo',
+          details: 'Payment request not found in response'
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
     console.log('✅ Payment request created successfully:', paymentRequest.id);
 
     // Store payment record in database using the helper function
