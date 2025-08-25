@@ -9,13 +9,13 @@ import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useProfileBadges } from '@/hooks/useProfileBadges';
-import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal } from 'lucide-react';
+import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal, Gem } from 'lucide-react';
 
 interface BadgeData {
   id: string;
   title: string;
   description: string;
-  tier: 'bronze' | 'silver' | 'gold';
+  tier: 'bronze' | 'silver' | 'gold' | 'diamond';
   progress: number;
   criteria: string;
   nextAction: string;
@@ -78,6 +78,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
         // Profile Perfectionist (Gold) - Unlocked only when LinkedIn profile from career assignments reaches 100%
         if (tier === 'gold') return linkedinProfileProgress >= 100 && calculateProfileProgress('bronze') >= 100;
+        // Profile Elite (Diamond) - Unlocked when gold is 100% and has network activity + job applications
+        if (tier === 'diamond') return calculateProfileProgress('gold') >= 100 && networkConnections >= 50 && jobApplicationsCount >= 5;
         return false;
       
       case 'jobs':
@@ -122,6 +124,13 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (resumeProgress < 100 || linkedinProfileProgress < 100) return 0;
         // Gold requires both resume completion and LinkedIn profile completion
         return Math.min(100, resumeProgress >= 100 && linkedinProfileProgress >= 100 ? 100 : 0);
+      case 'diamond':
+        // Diamond: Only progresses after gold is 100% AND network activity + job applications
+        if (calculateProfileProgress('gold') < 100) return 0;
+        // Diamond requires network activity (50+ connections) and job applications (5+)
+        const networkReq = networkConnections >= 50 ? 50 : (networkConnections / 50) * 50;
+        const jobReq = jobApplicationsCount >= 5 ? 50 : (jobApplicationsCount / 5) * 50;
+        return Math.min(100, networkReq + jobReq);
       default: return 0;
     }
   };
@@ -191,6 +200,17 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           nextAction: 'Perfect Profile',
           link: '/dashboard/career-assignments',
           code: 'profile_perfectionist'
+        },
+        {
+          id: 'profile-diamond',
+          title: 'Profile Elite',
+          description: 'Master networker with active job seeking',
+          tier: 'diamond',
+          progress: isBadgeAwarded('profile_elite') ? 100 : calculateProfileProgress('diamond'),
+          criteria: '50+ connections + 5+ job applications',
+          nextAction: 'Build Network',
+          link: '/career-activities',
+          code: 'profile_elite'
         }
       ]
     },
@@ -316,6 +336,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'bronze': return '#CD7F32';
       case 'silver': return '#C0C0C0';
       case 'gold': return '#FFD700';
+      case 'diamond': return '#B9F2FF';
       default: return '#6C8BFF';
     }
   };
@@ -325,6 +346,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'bronze': return Medal;
       case 'silver': return Trophy;
       case 'gold': return Crown;
+      case 'diamond': return Gem;
       default: return Target;
     }
   };
@@ -334,6 +356,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'bronze': return 'from-orange-500/10 to-amber-600/10';
       case 'silver': return 'from-gray-400/10 to-gray-500/10';
       case 'gold': return 'from-yellow-400/10 to-yellow-500/10';
+      case 'diamond': return 'from-cyan-300/10 to-blue-400/10';
       default: return 'from-primary/10 to-primary/20';
     }
   };
@@ -367,7 +390,11 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                 </div>
 
                 {/* Badge Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${
+                  category.id === 'profile' 
+                    ? 'md:grid-cols-2 lg:grid-cols-4' 
+                    : 'md:grid-cols-3'
+                }`}>
                   {category.badges.map((badge, badgeIndex) => {
                     const TierIcon = getTierIcon(badge.tier);
                     const tierColor = getTierColor(badge.tier);
