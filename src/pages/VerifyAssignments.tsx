@@ -296,27 +296,41 @@ const VerifyAssignments = () => {
     setProcessing(true);
     
     try {
+      console.log('🔍 Processing assignment:', { approved, selectedAssignment: selectedAssignment.id });
+      
       const updateData: any = {
         status: approved ? 'verified' : 'rejected',
         verified_at: new Date().toISOString(),
         verified_by: user?.id,
-        verification_notes: verificationNotes
+        verification_notes: verificationNotes || ''
       };
 
       if (approved) {
         updateData.points_earned = selectedAssignment.career_task_templates.points_reward;
         updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
+      } else {
+        // For rejected assignments, set points to 0
+        updateData.points_earned = 0;
+        updateData.score_awarded = 0;
       }
+
+      console.log('🔍 Update data:', updateData);
 
       const { error } = await supabase
         .from('career_task_assignments')
         .update(updateData)
         .eq('id', selectedAssignment.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('🔍 Database update error:', error);
+        throw error;
+      }
+
+      console.log('🔍 Assignment updated successfully');
 
       // If approved, add points to user_activity_points table
       if (approved) {
+        console.log('🔍 Adding points to user_activity_points');
         const { error: pointsError } = await supabase
           .from('user_activity_points')
           .insert({
@@ -328,16 +342,19 @@ const VerifyAssignments = () => {
           });
 
         if (pointsError) {
-          console.error('Error adding points:', pointsError);
+          console.error('🔍 Error adding points:', pointsError);
           // Still show success for assignment approval, but log the points error
           toast.success(`Assignment approved successfully, but there was an issue recording points`);
         } else {
+          console.log('🔍 Points added successfully');
           toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
         }
       } else {
+        console.log('🔍 Assignment rejected successfully');
         toast.success(`Assignment rejected successfully`);
       }
       
+      console.log('🔍 Refreshing assignment lists');
       if (isAdmin) {
         await fetchVerifiedAssignments();
       }
@@ -346,8 +363,10 @@ const VerifyAssignments = () => {
       setSelectedAssignment(null);
       setVerificationNotes('');
     } catch (error) {
-      console.error('Error processing assignment:', error);
-      toast.error('Failed to process assignment');
+      console.error('🔍 Complete error details:', error);
+      console.error('🔍 Error message:', error.message);
+      console.error('🔍 Error stack:', error.stack);
+      toast.error(`Failed to process assignment: ${error.message}`);
     } finally {
       setProcessing(false);
     }

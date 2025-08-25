@@ -64,8 +64,25 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
       console.log(`🔍 Evidence ${index}:`, evidenceItem);
       console.log(`🔍 Raw evidence_data ${index}:`, evidenceItem.evidence_data);
       console.log(`🔍 evidence_data type ${index}:`, typeof evidenceItem.evidence_data);
-      console.log(`🔍 Description ${index}:`, getDescription(evidenceItem));
-      console.log(`🔍 URL ${index}:`, getUrl(evidenceItem));
+      console.log(`🔍 evidence_data JSON stringified ${index}:`, JSON.stringify(evidenceItem.evidence_data));
+      
+      // Try to extract URL from different possible locations
+      let possibleUrls = {
+        'direct_url': evidenceItem.url,
+        'evidence_data_as_object_url': evidenceItem.evidence_data?.url,
+        'evidence_data_parsed_url': null
+      };
+      
+      if (typeof evidenceItem.evidence_data === 'string') {
+        try {
+          const parsed = JSON.parse(evidenceItem.evidence_data);
+          possibleUrls.evidence_data_parsed_url = parsed?.url;
+        } catch (e) {
+          console.log(`🔍 Cannot parse evidence_data as JSON ${index}`);
+        }
+      }
+      
+      console.log(`🔍 All possible URL sources ${index}:`, possibleUrls);
     });
   }, [evidence]);
 
