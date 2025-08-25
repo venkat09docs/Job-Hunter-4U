@@ -175,10 +175,10 @@ export const BadgeLeadersSlider = () => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="relative overflow-hidden">
-          {/* Hover indicator */}
+          {/* Subtle hover indicator - more transparent */}
           {isHovered && (
-            <div className="absolute top-2 right-2 z-10 bg-primary/10 backdrop-blur-sm rounded-full px-2 py-1">
-              <span className="text-xs text-primary font-medium">Paused</span>
+            <div className="absolute top-2 right-2 z-10 bg-background/20 backdrop-blur-sm rounded-full px-2 py-1 border border-primary/10">
+              <span className="text-xs text-primary/70 font-medium">⏸</span>
             </div>
           )}
           <div 
