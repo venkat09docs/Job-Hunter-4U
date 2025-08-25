@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
@@ -1509,93 +1509,128 @@ const VerifyAssignments = () => {
                         </div>
                       )}
                       
-                      {evidence.file_urls && evidence.file_urls.length > 0 && (
+                       {evidence.file_urls && evidence.file_urls.length > 0 && (
                         <div className="mb-2">
                           <Label className="text-xs text-muted-foreground">Files:</Label>
                           <div className="space-y-1">
-                            {evidence.file_urls.map((fileUrl, fileIndex) => (
-                              <a 
-                                key={fileIndex}
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline block text-sm"
-                              >
-                                File {fileIndex + 1}
-                              </a>
-                            ))}
+                            {evidence.file_urls.map((fileUrl, fileIndex) => {
+                              // Extract file path from full URL for signed URL generation
+                              const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
+                              
+                              const handleFileClick = async (e: React.MouseEvent) => {
+                                e.preventDefault();
+                                try {
+                                  // Generate signed URL for secure access
+                                  const { data, error } = await supabase.storage
+                                    .from('career-evidence')
+                                    .createSignedUrl(filePath, 3600); // 1 hour expiry
+                                  
+                                  if (error) {
+                                    console.error('Error creating signed URL:', error);
+                                    toast.error('Unable to access file');
+                                    return;
+                                  }
+                                  
+                                  if (data?.signedUrl) {
+                                    window.open(data.signedUrl, '_blank');
+                                  }
+                                } catch (error) {
+                                  console.error('Error accessing file:', error);
+                                  toast.error('Unable to access file');
+                                }
+                              };
+                              
+                              // Get filename from evidence_data or use default
+                              const fileName = evidence.evidence_data?.file_name || `File ${fileIndex + 1}`;
+                              
+                              return (
+                                <button
+                                  key={fileIndex}
+                                  onClick={handleFileClick}
+                                  className="text-blue-600 hover:underline text-sm block text-left"
+                                >
+                                  📎 {fileName}
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
                       
                       {evidence.evidence_data && (
                         <div>
-                          <Label className="text-xs text-muted-foreground">User Submission:</Label>
-                          <div className="mt-1 bg-muted p-3 rounded">
-                            {typeof evidence.evidence_data === 'object' && evidence.evidence_data !== null ? (
-                              <div className="space-y-2">
-                                {evidence.evidence_data.description && (
-                                  <div>
-                                    <p className="text-sm whitespace-pre-wrap">
-                                      {evidence.evidence_data.description}
-                                    </p>
-                                  </div>
-                                )}
-                                {evidence.evidence_data.text && (
-                                  <div>
-                                    <p className="text-sm whitespace-pre-wrap">
-                                      {evidence.evidence_data.text}
-                                    </p>
-                                  </div>
-                                )}
-                                {evidence.evidence_data.notes && (
-                                  <div>
-                                    <p className="text-sm whitespace-pre-wrap">
-                                      {evidence.evidence_data.notes}
-                                    </p>
-                                  </div>
-                                )}
-                                {evidence.evidence_data.linkedinUrl && (
-                                  <div>
-                                    <a 
-                                      href={evidence.evidence_data.linkedinUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline text-sm"
-                                    >
-                                      {evidence.evidence_data.linkedinUrl}
-                                    </a>
-                                  </div>
-                                )}
-                                {evidence.evidence_data.githubUrl && (
-                                  <div>
-                                    <a 
-                                      href={evidence.evidence_data.githubUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline text-sm"
-                                    >
-                                      {evidence.evidence_data.githubUrl}
-                                    </a>
-                                  </div>
-                                )}
-                                {evidence.evidence_data.url && (
-                                  <div>
-                                    <a 
-                                      href={evidence.evidence_data.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline text-sm"
-                                    >
-                                      {evidence.evidence_data.url}
-                                    </a>
-                                  </div>
+                          <Label className="text-xs text-muted-foreground">Submission Details:</Label>
+                          <div className="mt-1 bg-muted p-3 rounded space-y-2">
+                            {/* Display description/text */}
+                            {(evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes) && (
+                              <div>
+                                <Label className="text-xs font-medium">Description:</Label>
+                                <p className="text-sm whitespace-pre-wrap mt-1">
+                                  {evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes}
+                                </p>
+                              </div>
+                            )}
+                            
+                            {/* Display submitted URL from evidence_data if different from main URL */}
+                            {evidence.evidence_data.url && evidence.evidence_data.url !== evidence.url && (
+                              <div>
+                                <Label className="text-xs font-medium">Submitted URL:</Label>
+                                <a 
+                                  href={evidence.evidence_data.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline text-sm block"
+                                >
+                                  {evidence.evidence_data.url}
+                                </a>
+                              </div>
+                            )}
+                            
+                            {/* Display LinkedIn URL if present */}
+                            {evidence.evidence_data.linkedinUrl && (
+                              <div>
+                                <Label className="text-xs font-medium">LinkedIn URL:</Label>
+                                <a 
+                                  href={evidence.evidence_data.linkedinUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline text-sm block"
+                                >
+                                  {evidence.evidence_data.linkedinUrl}
+                                </a>
+                              </div>
+                            )}
+                            
+                            {/* Display GitHub URL if present */}
+                            {evidence.evidence_data.githubUrl && (
+                              <div>
+                                <Label className="text-xs font-medium">GitHub URL:</Label>
+                                <a 
+                                  href={evidence.evidence_data.githubUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline text-sm block"
+                                >
+                                  {evidence.evidence_data.githubUrl}
+                                </a>
+                              </div>
+                            )}
+                            
+                            {/* Display file information if present */}
+                            {evidence.evidence_data.file_name && (
+                              <div className="text-xs text-muted-foreground">
+                                File: {evidence.evidence_data.file_name}
+                                {evidence.evidence_data.file_size && (
+                                  <span> ({Math.round(evidence.evidence_data.file_size / 1024)}KB)</span>
                                 )}
                               </div>
-                            ) : (
-                              <p className="text-sm whitespace-pre-wrap">
-                                {String(evidence.evidence_data)}
-                              </p>
+                            )}
+                            
+                            {/* Display submission timestamp */}
+                            {evidence.evidence_data.submitted_at && (
+                              <div className="text-xs text-muted-foreground">
+                                Submitted: {format(new Date(evidence.evidence_data.submitted_at), 'PPpp')}
+                              </div>
                             )}
                           </div>
                         </div>
