@@ -70,10 +70,10 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
 
   const task = assignment.career_task_templates;
 
-  // Fetch existing evidence when modal opens for submitted assignments
+  // Fetch existing evidence when modal opens for started or rejected assignments
   useEffect(() => {
     const fetchExistingEvidence = async () => {
-      if (showEvidenceModal && assignment.status === 'submitted') {
+      if (showEvidenceModal && (assignment.status === 'started' || assignment.status === 'rejected')) {
         setLoadingExistingData(true);
         try {
           console.log('🔍 Fetching existing evidence for assignment:', assignment.id);
@@ -194,6 +194,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
       case 'verified': return 'bg-green-500';
       case 'partially_verified': return 'bg-yellow-500'; 
       case 'submitted': return 'bg-blue-500';
+      case 'rejected': return 'bg-red-500';
       case 'started': return 'bg-orange-500';
       default: return 'bg-gray-400';
     }
@@ -204,6 +205,7 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
       case 'verified': return 'Completed';
       case 'partially_verified': return 'Partially Verified';
       case 'submitted': return 'Under Review';
+      case 'rejected': return 'Rejected - Resubmit';
       case 'started': return 'Started';
       case 'assigned': return 'Not Yet Started';
       default: return 'Not Yet Started';
@@ -328,12 +330,12 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
 
         {assignment.status !== 'verified' && (
           <>
-            {(assignment.status === 'started' || assignment.status === 'submitted') && (
+            {(assignment.status === 'started' || assignment.status === 'rejected') && (
               <Dialog open={showEvidenceModal} onOpenChange={setShowEvidenceModal}>
                 <DialogTrigger asChild>
                   <Button className="w-full" onClick={() => setShowEvidenceModal(true)}>
                     <Upload className="w-4 h-4 mr-2" />
-                    {assignment.status === 'started' ? 'Submit Assignment' : 'Update Assignment'}
+                    {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -396,6 +398,19 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                 <Upload className="w-4 h-4 mr-2" />
                 Start Assignment
               </Button>
+            )}
+            
+            {assignment.status === 'submitted' && (
+              <div className="w-full p-3 bg-blue-50 border border-blue-200 rounded-md text-center">
+                <div className="flex items-center justify-center gap-2 text-blue-700">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="font-medium">Under Review</span>
+                </div>
+                <p className="text-sm text-blue-600 mt-1">
+                  Your assignment is being reviewed by an administrator. 
+                  You'll be able to make changes once it's approved or rejected.
+                </p>
+              </div>
             )}
           </>
         )}
