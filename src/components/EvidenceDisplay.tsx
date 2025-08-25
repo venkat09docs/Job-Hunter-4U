@@ -66,7 +66,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
             <Card key={evidenceItem.id} className={`p-4 ${!isLatest ? 'opacity-75 border-muted' : 'border-primary/20'}`}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{evidenceItem.evidence_type}</Badge>
+                  {/* Removed evidence_type badge that was showing "url" */}
                   {isLatest && <Badge variant="default" className="text-xs">Latest</Badge>}
                   {index > 0 && <Badge variant="secondary" className="text-xs">Previous</Badge>}
                 </div>
@@ -87,6 +87,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               
               {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 && (
                 <div className="mb-2">
+                  <Label className="text-xs text-muted-foreground">Files:</Label>
                   <div className="space-y-1">
                     {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
                       const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
