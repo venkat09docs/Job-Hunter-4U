@@ -29,6 +29,9 @@ const LevelUp = () => {
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   
+  // Get resume progress from career assignments (task-based calculation)
+  const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
+  
   // Get LinkedIn profile progress from career assignments (not general LinkedIn activities)
   const linkedinProfileProgress = !careerLoading ? getModuleProgress('LINKEDIN') : 0;
   
@@ -36,12 +39,10 @@ const LevelUp = () => {
   console.log('🔍 LinkedIn Profile Progress Debug:', {
     careerLoading,
     linkedinProfileProgress,
-    allAssignments: getTasksByModule('LINKEDIN').length,
-    completedLinkedInTasks: getTasksByModule('LINKEDIN').filter(t => t.status === 'verified').length
+    allLinkedInTasks: !careerLoading ? getTasksByModule('LINKEDIN') : [],
+    completedLinkedInTasks: !careerLoading ? getTasksByModule('LINKEDIN').filter(t => t.status === 'verified').length : 0,
+    resumeProgress
   });
-  
-  // Get resume progress from career assignments (task-based calculation)
-  const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
   // Get completed profile assignments count for badge unlocking
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
