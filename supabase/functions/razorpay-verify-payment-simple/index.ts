@@ -43,6 +43,44 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
     if (userError || !user) throw new Error('Auth failed');
     console.log('✅ User authenticated:', user.id);
+    
+    // Create service client for database operations
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+    
+    // Debug: Check if payment record exists for this user and order
+    console.log('🔍 Finding payment record for order:', razorpay_order_id, 'user:', user.id);
+    
+    const { data: existingPayment, error: findError } = await supabaseService
+      .from('payment_records')
+      .select('*')
+      .eq('razorpay_order_id', razorpay_order_id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    if (findError) {
+      console.error('❌ Error finding payment record:', findError);
+    }
+    
+    if (!existingPayment) {
+      console.error('❌ Payment record not found in database. Order ID:', razorpay_order_id);
+      
+      // Debug: Show recent payments for this user
+      const { data: recentPayments } = await supabaseService
+        .from('payment_records')
+        .select('id, razorpay_order_id, status, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+        
+      console.error('Recent payments for user:', recentPayments);
+      
+      throw new Error(`Payment record not found in database. Order ID: ${razorpay_order_id}`);
+    }
+    
+    console.log('✅ Payment record found:', existingPayment);
 
     // Get Razorpay credentials
     const mode = Deno.env.get('RAZORPAY_MODE') || 'test';
@@ -83,11 +121,6 @@ serve(async (req) => {
     }
 
     // Update payment record
-    const supabaseService = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     const { data: paymentRecord, error: updateError } = await supabaseService
       .from('payment_records')
       .update({

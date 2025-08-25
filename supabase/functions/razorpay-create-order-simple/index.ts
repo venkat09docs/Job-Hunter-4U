@@ -90,6 +90,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    console.log('📝 Creating payment record for order:', razorpayOrder.id);
+    console.log('📝 Payment details:', {
+      user_id: user.id,
+      order_id: razorpayOrder.id,
+      amount: parseInt(amount),
+      plan_name,
+      plan_duration
+    });
+
     const { data: paymentId, error: dbError } = await supabaseService.rpc('create_payment_record', {
       p_user_id: user.id,
       p_razorpay_order_id: razorpayOrder.id,
@@ -98,7 +107,27 @@ serve(async (req) => {
       p_plan_duration: plan_duration
     });
 
-    if (dbError) throw new Error(`DB error: ${dbError.message}`);
+    if (dbError) {
+      console.error('❌ Database error creating payment record:', dbError);
+      throw new Error(`DB error: ${dbError.message}`);
+    }
+
+    console.log('✅ Payment record created successfully with ID:', paymentId);
+
+    // Verify the record was actually created
+    const { data: verifyRecord, error: verifyError } = await supabaseService
+      .from('payment_records')
+      .select('*')
+      .eq('razorpay_order_id', razorpayOrder.id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (verifyError || !verifyRecord) {
+      console.error('❌ Failed to verify payment record creation:', verifyError);
+      throw new Error('Payment record was not created properly');
+    }
+
+    console.log('✅ Payment record verified in database:', verifyRecord);
 
     return new Response(
       JSON.stringify({
