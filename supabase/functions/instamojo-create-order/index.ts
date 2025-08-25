@@ -108,8 +108,11 @@ serve(async (req) => {
 
     console.log('Instamojo API payload:', instamojoPayload);
 
-    // Make the API request to create payment
+    // Make the API request to create payment - ensure fresh request with unique purpose
     console.log('Making API request to Instamojo...');
+    const uniquePurpose = `${plan_name} - ${plan_duration} - ${Date.now()}`;
+    instamojoPayload.purpose = uniquePurpose;
+    
     const instamojoResponse = await fetch('https://instamojo.com/api/1.1/payment-requests/', {
       method: 'POST',
       headers: {
@@ -156,21 +159,30 @@ serve(async (req) => {
       );
     }
 
-    // Handle the response - Instamojo returns payment_request (singular) for creation
-    const paymentRequest = instamojoData.payment_request;
+    // Handle the response - Check for new payment request creation
+    let paymentRequest;
+    
+    if (instamojoData.payment_request) {
+      // Single payment request created (expected response)
+      paymentRequest = instamojoData.payment_request;
+    } else if (instamojoData.payment_requests && instamojoData.payment_requests.length > 0) {
+      // Multiple payment requests returned - get the most recent one that matches our purpose
+      const uniquePurpose = `${plan_name} - ${plan_duration} - ${Date.now()}`;
+      paymentRequest = instamojoData.payment_requests.find(pr => pr.purpose === uniquePurpose) || instamojoData.payment_requests[0];
+    }
     
     if (!paymentRequest || !paymentRequest.id) {
-      console.error('Invalid payment request in response:', instamojoData);
+      console.error('No valid payment request found in response:', instamojoData);
       console.error('Expected payment_request object with id, got:', typeof paymentRequest, paymentRequest);
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid payment response from Instamojo',
-          details: 'Payment request not found in response',
-          response_keys: Object.keys(instamojoData)
+          error: 'Failed to create new payment request',
+          details: 'Instamojo did not return a valid payment request',
+          response_structure: Object.keys(instamojoData)
         }),
         { 
           status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
