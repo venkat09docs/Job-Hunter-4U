@@ -99,7 +99,34 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
         {evidence.map((evidenceItem, index) => {
           const isLatest = index === 0;
           const submissionDate = new Date(evidenceItem.created_at);
-          const parsedEvidenceData = parseEvidenceData(evidenceItem.evidence_data);
+          
+          // Parse evidence data once for this item
+          let parsedEvidenceData = null;
+          if (evidenceItem.evidence_data) {
+            if (typeof evidenceItem.evidence_data === 'object' && evidenceItem.evidence_data !== null) {
+              parsedEvidenceData = evidenceItem.evidence_data;
+            } else if (typeof evidenceItem.evidence_data === 'string') {
+              try {
+                parsedEvidenceData = JSON.parse(evidenceItem.evidence_data);
+              } catch (e) {
+                // If it's not valid JSON, treat it as description text
+                parsedEvidenceData = { description: evidenceItem.evidence_data };
+              }
+            }
+          }
+          
+          // Extract values
+          const url = evidenceItem.url || parsedEvidenceData?.url || null;
+          const description = parsedEvidenceData?.description || parsedEvidenceData?.text || null;
+          const fileName = parsedEvidenceData?.file_name || null;
+          
+          // Debug logging for this specific item
+          console.log(`🔍 Evidence ${index} URL extraction:`, {
+            'evidenceItem.url': evidenceItem.url,
+            'parsedEvidenceData?.url': parsedEvidenceData?.url,
+            'final url': url,
+            'parsedEvidenceData': parsedEvidenceData
+          });
           
           return (
             <Card key={evidenceItem.id} className={`p-4 ${!isLatest ? 'opacity-75 border-muted' : 'border-primary/20'}`}>
@@ -126,14 +153,14 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               <div className="mb-3">
                 <Label className="text-xs text-muted-foreground">URL:</Label>
                 <div className="mt-1">
-                  {getUrl(evidenceItem) ? (
+                  {url ? (
                     <a 
-                      href={getUrl(evidenceItem)} 
+                      href={url.startsWith('http') ? url : `http://${url}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline block break-all text-sm"
                     >
-                      {getUrl(evidenceItem)}
+                      {url}
                     </a>
                   ) : (
                     <span className="text-xs text-muted-foreground italic">No URL provided</span>
@@ -149,7 +176,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                     <div className="space-y-1">
                       {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
                         const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
-                        const fileName = getFileName(evidenceItem) || `File ${fileIndex + 1}`;
                         
                         return (
                           <button
@@ -157,7 +183,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                             onClick={() => handleFileClick(filePath)}
                             className="text-blue-600 hover:underline text-sm block text-left"
                           >
-                            📎 {fileName}
+                            📎 {fileName || `File ${fileIndex + 1}`}
                           </button>
                         );
                       })}
@@ -172,9 +198,9 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               <div className="mb-3">
                 <Label className="text-xs text-muted-foreground">Description:</Label>
                 <div className="mt-1">
-                  {getDescription(evidenceItem) ? (
+                  {description ? (
                     <div className="text-sm whitespace-pre-wrap p-2 border rounded bg-gray-50">
-                      {getDescription(evidenceItem)}
+                      {description}
                     </div>
                   ) : (
                     <span className="text-xs text-muted-foreground italic">No description provided</span>
@@ -182,15 +208,15 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
 
-              {parseEvidenceData(evidenceItem.evidence_data) && (
+              {parsedEvidenceData && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
                     {/* File info */}
-                    {getFileName(evidenceItem) && (
+                    {fileName && (
                       <div className="text-xs text-muted-foreground">
-                        File: {getFileName(evidenceItem)}
-                        {parseEvidenceData(evidenceItem.evidence_data)?.file_size && (
-                          <span> ({Math.round(parseEvidenceData(evidenceItem.evidence_data).file_size / 1024)}KB)</span>
+                        File: {fileName}
+                        {parsedEvidenceData?.file_size && (
+                          <span> ({Math.round(parsedEvidenceData.file_size / 1024)}KB)</span>
                         )}
                       </div>
                     )}
