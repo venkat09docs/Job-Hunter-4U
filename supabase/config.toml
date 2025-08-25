@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.test-instamojo]
 verify_jwt = false
+
+[functions.instamojo-create-order-debug]
+verify_jwt = false

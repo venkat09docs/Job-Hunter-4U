@@ -184,30 +184,71 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
 
   const handleInstamojoPayment = async () => {
     try {
-      // Create order using Instamojo edge function
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('instamojo-create-order', {
+      console.log('🔍 Starting Instamojo payment debug...');
+      
+      // First run debug function to check what's wrong
+      const { data: debugData, error: debugError } = await supabase.functions.invoke('instamojo-create-order-debug', {
         body: {
-          amount: Math.round(plan.price * 100), // Convert to paisa for consistency
+          amount: Math.round(plan.price * 100),
           plan_name: plan.name,
           plan_duration: plan.duration,
         }
       });
 
-      if (orderError || !orderData) {
-        console.error('Instamojo order creation error:', orderError);
+      console.log('🔍 Debug result:', { debugData, debugError });
+
+      if (debugError) {
+        console.error('❌ Debug function failed:', debugError);
         toast({
-          title: "Payment Order Failed",
-          description: orderError?.message || "Failed to create payment order. Please try again.",
+          title: "Debug Failed",
+          description: `Debug error: ${debugError.message}`,
           variant: "destructive"
         });
         return;
       }
 
-      // Redirect to Instamojo payment page
-      window.location.href = orderData.payment_url;
+      if (debugData?.success) {
+        // Now try the actual payment function
+        console.log('✅ Debug passed, trying actual payment...');
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('instamojo-create-order', {
+          body: {
+            amount: Math.round(plan.price * 100),
+            plan_name: plan.name,
+            plan_duration: plan.duration,
+          }
+        });
+
+        if (orderError) {
+          console.error('❌ Payment order error:', orderError);
+          toast({
+            title: "Payment Order Failed", 
+            description: `Error: ${orderError.message}`,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (orderData?.payment_url) {
+          window.location.href = orderData.payment_url;
+        } else {
+          console.error('❌ No payment URL returned:', orderData);
+          toast({
+            title: "Payment Order Failed",
+            description: "No payment URL received from Instamojo",
+            variant: "destructive"
+          });
+        }
+      } else {
+        console.error('❌ Debug failed:', debugData);
+        toast({
+          title: "System Check Failed",
+          description: "Please check the console for details",
+          variant: "destructive"
+        });
+      }
       
     } catch (error) {
-      console.error('Instamojo payment error:', error);
+      console.error('❌ Instamojo payment error:', error);
       toast({
         title: "Error",
         description: "Failed to initialize Instamojo payment. Please try again.",
