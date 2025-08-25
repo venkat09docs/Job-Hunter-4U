@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { createHash } from "https://deno.land/std@0.168.0/hash/mod.ts"
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -43,7 +43,22 @@ serve(async (req) => {
 
     // Verify webhook authenticity using MAC
     const data = `${payment_id}|${payment_request_id}|${payment_status}|${amount}`;
-    const expectedMac = createHash("sha1").update(data + INSTAMOJO_SALT).toString();
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(INSTAMOJO_SALT);
+    const messageData = encoder.encode(data);
+    
+    const key = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-1' },
+      false,
+      ['sign']
+    );
+    
+    const signature = await crypto.subtle.sign('HMAC', key, messageData);
+    const expectedMac = Array.from(new Uint8Array(signature))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
     
     if (mac !== expectedMac) {
       console.error('Webhook MAC verification failed');

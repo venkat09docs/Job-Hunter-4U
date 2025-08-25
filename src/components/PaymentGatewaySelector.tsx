@@ -184,6 +184,23 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
 
   const handleInstamojoPayment = async () => {
     try {
+      // First test basic function call
+      console.log('Testing basic Instamojo function...');
+      const { data: testData, error: testError } = await supabase.functions.invoke('test-instamojo', {
+        body: { test: true }
+      });
+
+      console.log('Test function result:', { testData, testError });
+
+      if (testError) {
+        toast({
+          title: "Function Test Failed",
+          description: `Test error: ${testError.message}`,
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Create order using Instamojo edge function
       const { data: orderData, error: orderError } = await supabase.functions.invoke('instamojo-create-order', {
         body: {
