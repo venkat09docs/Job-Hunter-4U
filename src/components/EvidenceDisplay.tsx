@@ -83,22 +83,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
               
-              {/* Only show main URL for latest submission */}
-              {evidenceItem.url && isLatest && (
-                <div className="mb-3">
-                  <Label className="text-xs text-muted-foreground">URL:</Label>
-                  <div className="mt-1">
-                    <a 
-                      href={evidenceItem.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline block break-all"
-                    >
-                      {evidenceItem.url}
-                    </a>
-                  </div>
-                </div>
-              )}
+              {/* URLs removed - no longer displayed in evidence */}
               
               {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 && (
                 <div className="mb-2">
@@ -125,32 +110,36 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               {evidenceItem.evidence_data && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
-                    {/* Description - Clean display without box styling */}
-                    {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) && (
+                    {/* Description debugging and display */}
+                    <div>
+                      <Label className="text-xs font-medium">Description Debug Info:</Label>
+                      <div className="text-xs text-red-600 mb-2 bg-red-50 p-2 rounded">
+                        <div>Evidence Data Keys: {evidenceItem.evidence_data ? Object.keys(evidenceItem.evidence_data).join(', ') : 'No evidence_data'}</div>
+                        <div>Has description: {evidenceItem.evidence_data?.description ? 'YES' : 'NO'}</div>
+                        <div>Has text: {evidenceItem.evidence_data?.text ? 'YES' : 'NO'}</div>
+                        <div>Description value: "{evidenceItem.evidence_data?.description || 'null/undefined'}"</div>
+                        <div>Text value: "{evidenceItem.evidence_data?.text || 'null/undefined'}"</div>
+                        <div>Full evidence_data: {JSON.stringify(evidenceItem.evidence_data, null, 2)}</div>
+                      </div>
+                    </div>
+
+                    {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) ? (
                       <div>
-                        <Label className="text-xs font-medium">Description:</Label>
-                        <div className="text-sm whitespace-pre-wrap mt-1">
+                        <Label className="text-xs font-medium">User's Description:</Label>
+                        <div className="text-sm whitespace-pre-wrap mt-1 p-2 border rounded bg-gray-50">
                           {evidenceItem.evidence_data.description || evidenceItem.evidence_data.text}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label className="text-xs font-medium text-red-600">Description Missing:</Label>
+                        <div className="text-xs text-red-600">
+                          No description found in evidence data. User may not have provided description when submitting.
                         </div>
                       </div>
                     )}
                     
-                    {/* Additional URLs - only show for latest submission */}
-                    {evidenceItem.evidence_data.url && evidenceItem.evidence_data.url !== evidenceItem.url && isLatest && (
-                      <div>
-                        <Label className="text-xs font-medium">Submitted URL:</Label>
-                        <div className="mt-1">
-                          <a 
-                            href={evidenceItem.evidence_data.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline text-sm block break-all"
-                          >
-                            {evidenceItem.evidence_data.url}
-                          </a>
-                        </div>
-                      </div>
-                    )}
+                    {/* URLs completely removed from evidence display */}
                     
                     {/* File info */}
                     {evidenceItem.evidence_data.file_name && (
