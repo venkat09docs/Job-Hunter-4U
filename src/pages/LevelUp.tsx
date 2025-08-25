@@ -138,12 +138,27 @@ const LevelUp = () => {
     
    console.log('🔍 LinkedIn Profile Tasks (Level Up):', linkedinTasks.length, 'Completed:', linkedinTasks.filter(t => t.status === 'verified').length, 'Progress:', linkedinProfileProgress + '%');
 
+  // Calculate Digital Profile progress using exact same logic as Career Assignments page  
+  const digitalProfileTasks = getTasksBySubCategoryName('digital profile');
+  const digitalProfileProgress = digitalProfileTasks.length > 0 
+    ? Math.round((digitalProfileTasks.filter(t => t.status === 'verified').length / digitalProfileTasks.length) * 100)
+    : 0;
+    
+   console.log('🔍 Digital Profile Tasks (Level Up):', digitalProfileTasks.length, 'Completed:', digitalProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', digitalProfileProgress + '%');
+
   // Also check when LinkedIn profile progress changes (for silver/gold progression)
   useEffect(() => {
     if (!careerLoading && linkedinProfileProgress >= 100) {
       checkAndAwardBadges();
     }
   }, [linkedinProfileProgress, careerLoading, checkAndAwardBadges]);
+
+  // Also check when Digital Profile progress changes (for gold progression)
+  useEffect(() => {
+    if (!careerLoading && digitalProfileProgress >= 100) {
+      checkAndAwardBadges();
+    }
+  }, [digitalProfileProgress, careerLoading, checkAndAwardBadges]);
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
@@ -283,6 +298,7 @@ const LevelUp = () => {
               completedProfileTasks={completedProfileTasks}
               linkedinProgress={linkedinProgress}
               linkedinProfileProgress={linkedinProfileProgress}
+              digitalProfileProgress={digitalProfileProgress}
               githubProgress={githubProgress}
               jobApplicationsCount={totalJobApplications}
               networkConnections={networkMetrics?.totalConnections || 0}

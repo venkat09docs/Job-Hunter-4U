@@ -35,6 +35,7 @@ interface BadgeProgressionMapProps {
   completedProfileTasks?: number;
   linkedinProgress?: number;
   linkedinProfileProgress?: number; // LinkedIn profile progress from career assignments
+  digitalProfileProgress?: number; // Digital Profile progress from career assignments
   githubProgress?: number;
   jobApplicationsCount?: number;
   networkConnections?: number;
@@ -48,6 +49,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   completedProfileTasks = 0,
   linkedinProgress = 0,
   linkedinProfileProgress = 0, // LinkedIn profile progress from career assignments
+  digitalProfileProgress = 0, // Digital Profile progress from career assignments
   githubProgress = 0,
   jobApplicationsCount = 0,
   networkConnections = 0,
@@ -76,8 +78,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'bronze') return true;
         // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
-        // Profile Perfectionist (Gold) - Unlocked only when LinkedIn profile from career assignments reaches 100%
-        if (tier === 'gold') return linkedinProfileProgress >= 100 && calculateProfileProgress('bronze') >= 100;
+        // Profile Perfectionist (Gold) - Unlocked only when Silver is completed
+        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
         // Profile Elite (Diamond) - Unlocked when gold reaches 100%
         if (tier === 'diamond') return calculateProfileProgress('gold') >= 100;
         return false;
@@ -120,10 +122,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Silver progress is based on LinkedIn profile completion (same as Career Assignments page)
         return Math.min(100, linkedinProfileProgress);
       case 'gold': 
-        // Gold: Only progresses after silver is 100% (LinkedIn profile completion from career assignments)
-        if (resumeProgress < 100 || linkedinProfileProgress < 100) return 0;
-        // Gold requires both resume completion and LinkedIn profile completion
-        return Math.min(100, resumeProgress >= 100 && linkedinProfileProgress >= 100 ? 100 : 0);
+        // Gold: Only progresses after silver is 100% (Digital Profile completion from career assignments)
+        if (calculateProfileProgress('silver') < 100) return 0;
+        // Gold progress is based on Digital Profile completion (same as Career Assignments page)
+        return Math.min(100, digitalProfileProgress);
       case 'diamond':
         // Diamond: Only progresses after gold is 100% AND network activity + job applications
         if (calculateProfileProgress('gold') < 100) return 0;
@@ -193,11 +195,11 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         {
           id: 'profile-gold',
           title: 'Profile Perfectionist',
-          description: 'Fully optimized profile with portfolio links',
+          description: 'Complete your digital profile portfolio',
           tier: 'gold',
           progress: isBadgeAwarded('profile_perfectionist') ? 100 : calculateProfileProgress('gold'),
-          criteria: 'Achieve 80%+ profile completion',
-          nextAction: 'Perfect Profile',
+          criteria: 'Complete Digital Profile tasks (100%)',
+          nextAction: 'Build Portfolio',
           link: '/dashboard/career-assignments',
           code: 'profile_perfectionist'
         },
