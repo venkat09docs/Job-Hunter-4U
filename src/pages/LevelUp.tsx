@@ -38,13 +38,18 @@ const LevelUp = () => {
 
   // Check for badge awards when profile progress milestones are reached
   useEffect(() => {
-    if (!careerLoading && resumeProgress > 0) {
-      // Award badges when reaching 100% milestones
-      if (resumeProgress >= 100 || resumeProgress >= 50 || resumeProgress >= 80) {
-        checkAndAwardBadges();
-      }
+    if (!careerLoading && resumeProgress >= 100) {
+      // Award badges when bronze reaches 100%
+      checkAndAwardBadges();
     }
   }, [resumeProgress, careerLoading, checkAndAwardBadges]);
+
+  // Also check when completed profile tasks change (for silver/gold progression)
+  useEffect(() => {
+    if (!careerLoading && completedProfileTasks >= 9) {
+      checkAndAwardBadges();
+    }
+  }, [completedProfileTasks, careerLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();

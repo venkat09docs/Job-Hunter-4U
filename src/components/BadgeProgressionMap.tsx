@@ -65,7 +65,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
         // Profile Perfectionist (Gold) - Unlocked only when silver reaches 100%
-        if (tier === 'gold') return calculateProfileProgress('silver') >= 100 && calculateProfileProgress('bronze') >= 100;
+        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
         return false;
       
       case 'jobs':
@@ -94,12 +94,22 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
     }
   };
 
-  // Calculate progress for each badge
+  // Calculate progress for each badge - progressive system
   const calculateProfileProgress = (tier: string) => {
     switch (tier) {
-      case 'bronze': return resumeProgress;
-      case 'silver': return Math.min(100, resumeProgress >= 50 ? 100 : (resumeProgress / 50) * 100);
-      case 'gold': return Math.min(100, resumeProgress >= 80 ? 100 : (resumeProgress / 80) * 100);
+      case 'bronze': 
+        // Bronze: 0-100% based on resume progress
+        return Math.min(100, resumeProgress);
+      case 'silver': 
+        // Silver: Only progresses after bronze is 100%
+        if (resumeProgress < 100) return 0;
+        // Silver needs additional profile completion beyond basic resume
+        return Math.min(100, completedProfileTasks >= 9 ? 100 : (completedProfileTasks / 9) * 100);
+      case 'gold': 
+        // Gold: Only progresses after silver is 100%
+        if (resumeProgress < 100 || completedProfileTasks < 9) return 0;
+        // Gold requires all profile tasks plus high quality completion
+        return Math.min(100, resumeProgress >= 100 && completedProfileTasks >= 9 ? 100 : 0);
       default: return 0;
     }
   };
