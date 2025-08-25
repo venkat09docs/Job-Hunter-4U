@@ -83,7 +83,8 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
               
-              {evidenceItem.url && (
+              {/* Only show main URL for latest submission */}
+              {evidenceItem.url && isLatest && (
                 <div className="mb-3">
                   <Label className="text-xs text-muted-foreground">URL:</Label>
                   <div className="mt-1">
@@ -134,8 +135,8 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                       </div>
                     )}
                     
-                    {/* Additional URLs */}
-                    {evidenceItem.evidence_data.url && evidenceItem.evidence_data.url !== evidenceItem.url && (
+                    {/* Additional URLs - only show for latest submission */}
+                    {evidenceItem.evidence_data.url && evidenceItem.evidence_data.url !== evidenceItem.url && isLatest && (
                       <div>
                         <Label className="text-xs font-medium">Submitted URL:</Label>
                         <div className="mt-1">
@@ -161,12 +162,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                       </div>
                     )}
                   </div>
-                </div>
-              )}
-              
-              {!isLatest && (
-                <div className="mt-2 text-xs text-muted-foreground italic">
-                  Previous submission - Read only
                 </div>
               )}
             </Card>
