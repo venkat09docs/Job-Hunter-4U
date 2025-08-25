@@ -87,7 +87,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               
               {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 && (
                 <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Files:</Label>
                   <div className="space-y-1">
                     {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
                       const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
