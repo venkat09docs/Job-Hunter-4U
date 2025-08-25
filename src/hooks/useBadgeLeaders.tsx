@@ -27,6 +27,7 @@ export const useBadgeLeaders = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchBadgeLeaders = async () => {
+    console.log('🏆 fetchBadgeLeaders: Function called');
     try {
       setLoading(true);
       console.log('🏆 Starting badge leaders fetch...');
@@ -39,6 +40,13 @@ export const useBadgeLeaders = () => {
 
       console.log('🏆 Test query result:', testQuery, 'Error:', testError);
 
+      // Let's try a different approach - use RPC function
+      console.log('🏆 Trying RPC function approach for safer data access...');
+      const { data: rpcProfileData, error: rpcError } = await supabase
+        .rpc('get_safe_leaderboard_profiles');
+
+      console.log('🏆 RPC profiles result:', rpcProfileData, 'Error:', rpcError);
+
       // Get users who have earned profile badges (Bronze, Silver, Gold)
       console.log('🏆 Executing main profile badges query...');
       const { data: profileBadgeData, error: profileBadgeError } = await supabase
@@ -47,13 +55,12 @@ export const useBadgeLeaders = () => {
           user_id,
           awarded_at,
           progress_data,
-          profile_badges!inner (
+          profile_badges (
             code,
             title,
             tier,
             points_required
-          ),
-          profiles!inner(username, full_name, profile_image_url, industry)
+          )
         `)
         .order('awarded_at', { ascending: false });
 
@@ -64,7 +71,21 @@ export const useBadgeLeaders = () => {
 
       if (profileBadgeError) {
         console.error('❌ Error fetching profile badges:', profileBadgeError);
-        throw profileBadgeError;
+        // Don't throw, let's continue with empty data and see what happens
+      }
+
+      // If we got badge data but no profiles from the join, let's combine manually
+      let processedProfileBadgeData = [];
+      if (profileBadgeData && profileBadgeData.length > 0 && rpcProfileData && rpcProfileData.length > 0) {
+        processedProfileBadgeData = profileBadgeData.map(badge => {
+          const profile = rpcProfileData.find(p => p.user_id === badge.user_id);
+          return {
+            ...badge,
+            profiles: profile
+          };
+        }).filter(badge => badge.profiles); // Only include badges with valid profiles
+        
+        console.log('🏆 Manually combined badge and profile data:', processedProfileBadgeData);
       }
 
       // Get users with job application activity
@@ -107,8 +128,8 @@ export const useBadgeLeaders = () => {
       if (githubError) console.error('❌ Error fetching GitHub data:', githubError);
 
       // Process Profile Build Champions (users with profile badges)
-      console.log('🏆 About to process profile badge leaders with data:', profileBadgeData?.length || 0, 'records');
-      const profileBuildLeaders = processProfileBadgeLeaders(profileBadgeData || []);
+      console.log('🏆 About to process profile badge leaders with data:', processedProfileBadgeData?.length || 0, 'records');
+      const profileBuildLeaders = processProfileBadgeLeaders(processedProfileBadgeData || []);
       console.log('🏆 Processed profile build leaders:', profileBuildLeaders);
       
       // Process Job Application Masters
@@ -305,8 +326,11 @@ export const useBadgeLeaders = () => {
   };
 
   useEffect(() => {
-    console.log('🏆 useBadgeLeaders: Starting effect');
-    fetchBadgeLeaders();
+    console.log('🏆 useBadgeLeaders: useEffect triggered');
+    console.log('🏆 useBadgeLeaders: Starting fetchBadgeLeaders');
+    fetchBadgeLeaders().catch(error => {
+      console.error('🏆 useBadgeLeaders: Error in useEffect:', error);
+    });
   }, []);
 
   return {
