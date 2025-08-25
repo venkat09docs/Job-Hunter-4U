@@ -20,6 +20,7 @@ interface BadgeData {
   criteria: string;
   nextAction: string;
   link: string;
+  code?: string; // Badge code for checking awards
 }
 
 interface BadgeCategory {
@@ -56,7 +57,16 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
-  const { checkAndAwardBadges } = useProfileBadges();
+  const { checkAndAwardBadges, userBadges, loading: badgesLoading } = useProfileBadges();
+
+  // Check if badge has been awarded to user
+  const isBadgeAwarded = (badgeCode: string) => {
+    const awarded = userBadges.some(userBadge => 
+      userBadge.profile_badges.code === badgeCode
+    );
+    console.log(`🏆 Badge ${badgeCode} awarded:`, awarded, 'User badges:', userBadges.length);
+    return awarded;
+  };
 
   // Badge unlock logic - progressive unlocking system
   const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
@@ -154,30 +164,33 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           title: 'Profile Rookie',
           description: 'Build Your Resume',
           tier: 'bronze',
-          progress: calculateProfileProgress('bronze'),
+          progress: isBadgeAwarded('profile_rookie') ? 100 : calculateProfileProgress('bronze'),
           criteria: 'Create your first profile',
           nextAction: 'Build Profile',
-          link: '/dashboard/career-assignments'
+          link: '/dashboard/career-assignments',
+          code: 'profile_rookie'
         },
         {
           id: 'profile-silver',
           title: 'Profile Complete',
           description: 'Complete your LinkedIn profile',
           tier: 'silver',
-          progress: calculateProfileProgress('silver'),
+          progress: isBadgeAwarded('profile_complete') ? 100 : calculateProfileProgress('silver'),
           criteria: 'Complete LinkedIn profile (100%)',
           nextAction: 'Complete LinkedIn',
-          link: '/dashboard/career-assignments'
+          link: '/dashboard/career-assignments',
+          code: 'profile_complete'
         },
         {
           id: 'profile-gold',
           title: 'Profile Perfectionist',
           description: 'Fully optimized profile with portfolio links',
           tier: 'gold',
-          progress: calculateProfileProgress('gold'),
+          progress: isBadgeAwarded('profile_perfectionist') ? 100 : calculateProfileProgress('gold'),
           criteria: 'Achieve 80%+ profile completion',
           nextAction: 'Perfect Profile',
-          link: '/dashboard/career-assignments'
+          link: '/dashboard/career-assignments',
+          code: 'profile_perfectionist'
         }
       ]
     },
@@ -359,6 +372,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                     const TierIcon = getTierIcon(badge.tier);
                     const tierColor = getTierColor(badge.tier);
                     const isUnlocked = isBadgeUnlocked(category.id, badge.tier, badgeIndex);
+                    const isAwarded = badge.code ? isBadgeAwarded(badge.code) : false;
                     
                     return (
                       <Card 
@@ -367,18 +381,25 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                           isUnlocked 
                             ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' 
                             : 'cursor-not-allowed opacity-50'
-                        } bg-gradient-to-br ${getTierGradient(badge.tier)} border-2`}
+                        } bg-gradient-to-br ${getTierGradient(badge.tier)} border-2 ${
+                          isAwarded ? 'ring-2 ring-primary/50 shadow-lg' : ''
+                        }`}
                         style={{ 
-                          borderColor: isUnlocked ? `${tierColor}20` : '#E5E5E5',
-                          filter: isUnlocked ? 'none' : 'grayscale(50%)'
+                          borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}20` : '#E5E5E5'),
+                          filter: isUnlocked ? 'none' : 'grayscale(50%)',
+                          boxShadow: isAwarded ? `0 0 20px ${tierColor}30` : undefined
                         }}
                         onClick={() => isUnlocked && navigate(badge.link)}
                       >
                         <CardContent className="p-4 space-y-4">
-                          {/* Badge Header with Lock Indicator */}
+                          {/* Badge Header with Award/Lock Indicator */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {isUnlocked ? (
+                              {isAwarded ? (
+                                <div className="h-5 w-5 flex items-center justify-center">
+                                  ✨
+                                </div>
+                              ) : isUnlocked ? (
                                 <TierIcon 
                                   className="h-5 w-5" 
                                   style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
@@ -392,42 +413,43 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                                 variant="outline" 
                                 className="text-xs capitalize"
                                 style={{ 
-                                  borderColor: isUnlocked ? tierColor : '#E5E5E5', 
-                                  color: isUnlocked ? tierColor : '#9CA3AF' 
+                                  borderColor: isAwarded ? tierColor : (isUnlocked ? tierColor : '#E5E5E5'), 
+                                  color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
+                                  backgroundColor: isAwarded ? `${tierColor}10` : 'transparent'
                                 }}
                               >
-                                {isUnlocked ? badge.tier : 'Locked'}
+                                {isAwarded ? 'Earned!' : (isUnlocked ? badge.tier : 'Locked')}
                               </Badge>
                             </div>
                             <div 
                               className="text-sm font-medium" 
-                              style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
+                              style={{ color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF') }}
                             >
-                              {isUnlocked ? Math.round(badge.progress) : 0}%
+                              {isAwarded ? '100%' : (isUnlocked ? Math.round(badge.progress) : 0)}%
                             </div>
                           </div>
 
                           {/* Badge Title & Description */}
                           <div className="space-y-1">
-                            <h4 className={`font-semibold text-sm ${!isUnlocked ? 'text-muted-foreground' : ''}`}>
-                              {badge.title}
+                            <h4 className={`font-semibold text-sm ${isAwarded ? 'text-primary' : (!isUnlocked ? 'text-muted-foreground' : '')}`}>
+                              {badge.title} {isAwarded ? '🏆' : ''}
                             </h4>
                             <p className="text-xs text-muted-foreground">
-                              {isUnlocked ? badge.description : 'Complete previous badge to unlock'}
+                              {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : 'Complete previous badge to unlock')}
                             </p>
                           </div>
 
                           {/* Progress Ring */}
                           <div className="space-y-2">
                             <Progress 
-                              value={isUnlocked ? badge.progress : 0} 
+                              value={isAwarded ? 100 : (isUnlocked ? badge.progress : 0)} 
                               className="h-2"
                               style={{
-                                '--progress-background': isUnlocked ? tierColor : '#E5E5E5',
+                                '--progress-background': isAwarded || isUnlocked ? tierColor : '#E5E5E5',
                               } as React.CSSProperties}
                             />
                             <p className="text-xs text-muted-foreground">
-                              {isUnlocked ? badge.criteria : 'Unlock requirements not met'}
+                              {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : 'Unlock requirements not met')}
                             </p>
                           </div>
 
@@ -439,8 +461,9 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed'
                             }`}
                             style={{ 
-                              borderColor: isUnlocked ? `${tierColor}40` : '#E5E5E5',
-                              color: isUnlocked ? tierColor : '#9CA3AF'
+                              borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}40` : '#E5E5E5'),
+                              color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
+                              backgroundColor: isAwarded ? `${tierColor}05` : 'transparent'
                             }}
                             disabled={!isUnlocked}
                             onClick={async (e) => {
@@ -454,7 +477,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               }
                             }}
                           >
-                            {isUnlocked ? badge.nextAction : 'Locked'}
+                            {isAwarded ? 'Badge Earned!' : (isUnlocked ? badge.nextAction : 'Locked')}
                           </Button>
                         </CardContent>
 
