@@ -83,43 +83,69 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
               
-              {/* URLs removed - no longer displayed in evidence */}
-              
-              {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 && (
-                <div className="mb-2">
-                  <Label className="text-xs text-muted-foreground">Files:</Label>
-                  <div className="space-y-1">
-                    {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
-                      const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
-                      const fileName = evidenceItem.evidence_data?.file_name || `File ${fileIndex + 1}`;
-                      
-                      return (
-                        <button
-                          key={fileIndex}
-                          onClick={() => handleFileClick(filePath)}
-                          className="text-blue-600 hover:underline text-sm block text-left"
-                        >
-                          📎 {fileName}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Always show URL section */}
+              <div className="mb-3">
+                <Label className="text-xs text-muted-foreground">URL:</Label>
+                <div className="mt-1">
+                  {evidenceItem.url || evidenceItem.evidence_data?.url ? (
+                    <a 
+                      href={evidenceItem.url || evidenceItem.evidence_data?.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline block break-all text-sm"
+                    >
+                      {evidenceItem.url || evidenceItem.evidence_data?.url}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">No URL provided</span>
+                  )}
                 </div>
-              )}
+              </div>
               
+              {/* Always show Files section */}
+              <div className="mb-3">
+                <Label className="text-xs text-muted-foreground">Files:</Label>
+                <div className="mt-1">
+                  {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 ? (
+                    <div className="space-y-1">
+                      {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
+                        const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
+                        const fileName = evidenceItem.evidence_data?.file_name || `File ${fileIndex + 1}`;
+                        
+                        return (
+                          <button
+                            key={fileIndex}
+                            onClick={() => handleFileClick(filePath)}
+                            className="text-blue-600 hover:underline text-sm block text-left"
+                          >
+                            📎 {fileName}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">No files uploaded</span>
+                  )}
+                </div>
+              </div>
+              
+              {/* Always show Description section */}
+              <div className="mb-3">
+                <Label className="text-xs text-muted-foreground">Description:</Label>
+                <div className="mt-1">
+                  {(evidenceItem.evidence_data?.description || evidenceItem.evidence_data?.text) ? (
+                    <div className="text-sm whitespace-pre-wrap p-2 border rounded bg-gray-50">
+                      {evidenceItem.evidence_data.description || evidenceItem.evidence_data.text}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground italic">No description provided</span>
+                  )}
+                </div>
+              </div>
+
               {evidenceItem.evidence_data && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
-                    {/* Description - simple display */}
-                    {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) && (
-                      <div>
-                        <Label className="text-xs font-medium">User's Description:</Label>
-                        <div className="text-sm whitespace-pre-wrap mt-1 p-2 border rounded bg-gray-50">
-                          {evidenceItem.evidence_data.description || evidenceItem.evidence_data.text}
-                        </div>
-                      </div>
-                    )}
-                    
                     {/* File info */}
                     {evidenceItem.evidence_data.file_name && (
                       <div className="text-xs text-muted-foreground">
