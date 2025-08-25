@@ -48,13 +48,22 @@ serve(async (req) => {
 
     console.log('User authenticated:', user.id);
 
-    // Get Razorpay credentials
-    const keyId = Deno.env.get('RAZORPAY_TEST_KEY_ID');
-    const keySecret = Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
+    // Get Razorpay credentials - Check mode first
+    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const isLiveMode = razorpayMode === 'live';
+    
+    console.log('Razorpay mode:', razorpayMode);
+    
+    const keyId = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
+      : Deno.env.get('RAZORPAY_TEST_KEY_ID');
+    const keySecret = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
+      : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
     if (!keyId || !keySecret) {
-      console.error('Missing Razorpay credentials');
-      throw new Error('Razorpay credentials not configured');
+      console.error('Missing Razorpay credentials for mode:', razorpayMode);
+      throw new Error(`Razorpay credentials not configured for ${razorpayMode} mode`);
     }
 
     console.log('Creating Razorpay order with amount:', amount);

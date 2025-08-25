@@ -52,11 +52,18 @@ serve(async (req) => {
     const user = userData.user;
     console.log('User authenticated:', user.email);
 
-    // Get Razorpay secret for signature verification
-    const razorpayKeySecret = Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
+    // Get Razorpay secret for signature verification - Check mode first
+    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const isLiveMode = razorpayMode === 'live';
+    
+    console.log('Razorpay verification mode:', razorpayMode);
+    
+    const razorpayKeySecret = isLiveMode 
+      ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
+      : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
     if (!razorpayKeySecret) {
-      throw new Error('Razorpay secret key not configured');
+      throw new Error(`Razorpay secret key not configured for ${razorpayMode} mode`);
     }
 
     // Verify signature
