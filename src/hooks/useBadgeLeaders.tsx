@@ -58,26 +58,25 @@ export const useBadgeLeaders = () => {
         console.error('❌ Error fetching profile badges:', profileBadgeError);
       }
 
-      // Get actual rewarded points (only positive) for badge holders
+      // Get total current points for badge holders (including negative adjustments)
       const badgeUserIds = profileBadgeData?.map(badge => badge.user_id) || [];
       const { data: userPointsData, error: pointsError } = await supabase
         .from('user_activity_points')
         .select('user_id, points_earned')
-        .in('user_id', badgeUserIds)
-        .gt('points_earned', 0); // Only get positive rewarded points
+        .in('user_id', badgeUserIds);
 
       if (pointsError) {
         console.error('❌ Error fetching user points:', pointsError);
       }
 
-      // Calculate total rewarded points per user (only positive points)
+      // Calculate total current points per user (including negative adjustments)
       const userPointsMap = new Map<string, number>();
       userPointsData?.forEach(point => {
         const current = userPointsMap.get(point.user_id) || 0;
         userPointsMap.set(point.user_id, current + point.points_earned);
       });
 
-      // Combine badge data with profile data and real rewarded points
+      // Combine badge data with profile data and current total points
       let processedProfileBadgeData = [];
       if (profileBadgeData && profileBadgeData.length > 0 && rpcProfileData && rpcProfileData.length > 0) {
         processedProfileBadgeData = profileBadgeData.map(badge => {
@@ -85,7 +84,7 @@ export const useBadgeLeaders = () => {
           return {
             ...badge,
             profiles: profile,
-            rewarded_points: userPointsMap.get(badge.user_id) || 0 // Use only positive rewarded points
+            current_points: userPointsMap.get(badge.user_id) || 0 // Use current total points (matches dashboard)
           };
         }).filter(badge => badge.profiles); // Only include badges with valid profiles
       }
@@ -170,7 +169,7 @@ export const useBadgeLeaders = () => {
       return [];
     }
 
-    const userBadgesMap = new Map<string, { user_id: string; profile: any; badges: any[]; maxTier: string; rewardedPoints: number }>();
+    const userBadgesMap = new Map<string, { user_id: string; profile: any; badges: any[]; maxTier: string; currentPoints: number }>();
     
     badgeData.forEach((item: any) => {
       const key = item.user_id;
@@ -180,13 +179,13 @@ export const useBadgeLeaders = () => {
           profile: item.profiles,
           badges: [],
           maxTier: 'bronze',
-          rewardedPoints: item.rewarded_points || 0 // Use only positive rewarded points
+          currentPoints: item.current_points || 0 // Use current total points (matches dashboard)
         });
       }
       
       const current = userBadgesMap.get(key)!;
       current.badges.push(item.profile_badges);
-      // Don't add badge requirements to points - use only rewarded points
+      // Don't add badge requirements to points - use current total points
       
       // Determine highest tier
       const tier = item.profile_badges.tier;
@@ -195,14 +194,14 @@ export const useBadgeLeaders = () => {
     });
 
     const result = Array.from(userBadgesMap.values())
-      .sort((a, b) => b.rewardedPoints - a.rewardedPoints)
+      .sort((a, b) => b.currentPoints - a.currentPoints)
       .slice(0, 3)
       .map(item => ({
         user_id: item.user_id,
         username: item.profile?.username || '',
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
-        total_points: item.rewardedPoints, // Now shows only positive rewarded points
+        total_points: item.currentPoints, // Now shows current total points (matches dashboard)
         badge_type: getBadgeTypeFromTier(item.maxTier) as 'Silver' | 'Gold' | 'Diamond'
       }));
 
