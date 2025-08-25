@@ -75,6 +75,74 @@ const VerifyAssignments = () => {
   const [verifiedCurrentPage, setVerifiedCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Fetch assignments on component mount
+  useEffect(() => {
+    if (!loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+      fetchSubmittedAssignments();
+      fetchVerifiedAssignments();
+    }
+  }, [user?.id, isAdmin, isInstituteAdmin, loading]);
+
+  // Filter pending assignments based on search and filters
+  useEffect(() => {
+    let filtered = assignments;
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(assignment =>
+        assignment.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.profiles.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.career_task_templates.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        assignment.career_task_templates.category.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Module filter
+    if (moduleFilter !== 'all') {
+      filtered = filtered.filter(assignment => 
+        assignment.career_task_templates.module === moduleFilter
+      );
+    }
+
+    // User filter
+    if (userFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.user_id === userFilter);
+    }
+
+    setFilteredAssignments(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [assignments, searchTerm, moduleFilter, userFilter]);
+
+  // Filter verified assignments based on search and filters
+  useEffect(() => {
+    let filtered = verifiedAssignments;
+
+    // Search filter
+    if (verifiedSearchTerm) {
+      filtered = filtered.filter(assignment =>
+        assignment.profiles.full_name.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.profiles.username.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.career_task_templates.title.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
+        assignment.career_task_templates.category.toLowerCase().includes(verifiedSearchTerm.toLowerCase())
+      );
+    }
+
+    // Module filter
+    if (verifiedModuleFilter !== 'all') {
+      filtered = filtered.filter(assignment => 
+        assignment.career_task_templates.module === verifiedModuleFilter
+      );
+    }
+
+    // User filter
+    if (verifiedUserFilter !== 'all') {
+      filtered = filtered.filter(assignment => assignment.user_id === verifiedUserFilter);
+    }
+
+    setFilteredVerifiedAssignments(filtered);
+    setVerifiedCurrentPage(1); // Reset to first page when filters change
+  }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedUserFilter]);
+
   const fetchVerifiedAssignments = async () => {
     try {
       // Only fetch if user has proper permissions
@@ -149,97 +217,6 @@ const VerifyAssignments = () => {
     );
 
     setVerifiedAssignments(assignmentsWithEvidence);
-  };
-
-  // Filter pending assignments based on search and filters
-  useEffect(() => {
-    let filtered = assignments;
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(assignment =>
-        assignment.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assignment.profiles.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assignment.career_task_templates.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        assignment.career_task_templates.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Module filter
-    if (moduleFilter !== 'all') {
-      filtered = filtered.filter(assignment => {
-        const displayModule = assignment.career_task_templates.sub_categories?.name || 
-                              assignment.career_task_templates.module || 
-                              assignment.career_task_templates.category || 
-                              'GENERAL';
-        return displayModule === moduleFilter;
-      });
-    }
-
-    // User filter
-    if (userFilter !== 'all') {
-      filtered = filtered.filter(assignment => assignment.user_id === userFilter);
-    }
-
-    setFilteredAssignments(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
-  }, [assignments, searchTerm, moduleFilter, userFilter]);
-
-  // Filter verified assignments based on search and filters
-  useEffect(() => {
-    let filtered = verifiedAssignments;
-
-    // Search filter
-    if (verifiedSearchTerm) {
-      filtered = filtered.filter(assignment =>
-        assignment.profiles.full_name.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
-        assignment.profiles.username.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
-        assignment.career_task_templates.title.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
-        assignment.career_task_templates.category.toLowerCase().includes(verifiedSearchTerm.toLowerCase())
-      );
-    }
-
-    // Module filter
-    if (verifiedModuleFilter !== 'all') {
-      filtered = filtered.filter(assignment => {
-        const displayModule = assignment.career_task_templates.sub_categories?.name || 
-                              assignment.career_task_templates.module || 
-                              assignment.career_task_templates.category || 
-                              'GENERAL';
-        return displayModule === verifiedModuleFilter;
-      });
-    }
-
-    // User filter
-    if (verifiedUserFilter !== 'all') {
-      filtered = filtered.filter(assignment => assignment.user_id === verifiedUserFilter);
-    }
-
-    setFilteredVerifiedAssignments(filtered);
-    setVerifiedCurrentPage(1); // Reset to first page when filters change
-  }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedUserFilter]);
-
-  const fetchSubmittedAssignments = async () => {
-    try {
-      setLoadingAssignments(true);
-      
-      // Fetch both career assignments and LinkedIn assignments
-      const careerAssignments = await fetchCareerAssignments();
-      const linkedinAssignments = await fetchLinkedInAssignments();
-      
-      // Combine both types of assignments
-      const allAssignments = [...careerAssignments, ...linkedinAssignments];
-      
-      // Sort by submission time
-      allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
-      
-      await processAssignments(allAssignments);
-    } catch (error) {
-      console.error('Error fetching assignments:', error);
-      toast.error('Failed to load assignments');
-    } finally {
-      setLoadingAssignments(false);
-    }
   };
 
   const fetchCareerAssignments = async () => {
@@ -391,6 +368,29 @@ const VerifyAssignments = () => {
     setAssignments(assignmentsWithEvidence);
   };
 
+  const fetchSubmittedAssignments = async () => {
+    try {
+      setLoadingAssignments(true);
+      
+      // Fetch both career assignments and LinkedIn assignments
+      const careerAssignments = await fetchCareerAssignments();
+      const linkedinAssignments = await fetchLinkedInAssignments();
+      
+      // Combine both types of assignments
+      const allAssignments = [...careerAssignments, ...linkedinAssignments];
+      
+      // Sort by submission time
+      allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+      
+      await processAssignments(allAssignments);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      toast.error('Failed to load assignments');
+    } finally {
+      setLoadingAssignments(false);
+    }
+  };
+
   // Check access permissions after hooks are defined
   if (loading) {
     return <div>Loading...</div>;
@@ -399,14 +399,6 @@ const VerifyAssignments = () => {
   if (!isAdmin && !isInstituteAdmin && !isRecruiter) {
     return <Navigate to="/dashboard" replace />;
   }
-
-  // Fetch assignments on component mount
-  useEffect(() => {
-    if (!loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
-      fetchSubmittedAssignments();
-      fetchVerifiedAssignments();
-    }
-  }, [user?.id, isAdmin, isInstituteAdmin, loading]);
 
   // Get unique users for filter dropdown
   const uniqueUsers = Array.from(
