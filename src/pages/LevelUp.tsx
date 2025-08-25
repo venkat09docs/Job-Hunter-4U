@@ -36,13 +36,16 @@ const LevelUp = () => {
   const linkedinProfileTasks = !careerLoading ? assignments.filter(a => 
     a.career_task_templates?.category === 'networking' &&
     (a.career_task_templates?.title?.toLowerCase().includes('linkedin') ||
-     a.career_task_templates?.description?.toLowerCase().includes('linkedin'))
+     a.career_task_templates?.description?.toLowerCase().includes('linkedin') ||
+     a.career_task_templates?.sub_category_id === '1f6bd7f0-117c-4167-8719-f55525b362e2') // LinkedIn profile subcategory
   ) : [];
   
   const completedLinkedInTasks = linkedinProfileTasks.filter(task => task.status === 'verified').length;
   const linkedinProfileProgress = linkedinProfileTasks.length > 0 
     ? Math.round((completedLinkedInTasks / linkedinProfileTasks.length) * 100) 
     : 0;
+    
+  console.log('🔍 LinkedIn Profile Tasks:', linkedinProfileTasks.length, 'Completed:', completedLinkedInTasks, 'Progress:', linkedinProfileProgress + '%');
   
   // Get completed profile assignments count for badge unlocking
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
