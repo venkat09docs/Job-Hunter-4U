@@ -257,12 +257,11 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
         handler: async function (response: any) {
           try {
             // Verify payment using our edge function
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment-simple', {
               body: {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                upgrade_end_date: upgradedEndDate.toISOString()
               }
             });
 

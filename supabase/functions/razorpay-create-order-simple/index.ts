@@ -93,31 +93,36 @@ serve(async (req) => {
     const razorpayOrder = await razorpayResponse.json();
     console.log('Razorpay order created:', razorpayOrder.id);
 
-    // Create payment record using service role client
+    // Create payment record using service role client - Fix the SQL insertion
     const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Simple direct insert without select
-    const { error: insertError } = await supabaseService
+    console.log('Creating payment record in database...');
+    
+    // Insert only the required non-null columns without defaults
+    const paymentInsert = {
+      user_id: user.id,
+      amount: amount,
+      plan_name: plan_name,
+      plan_duration: plan_duration,
+      razorpay_order_id: razorpayOrder.id
+    };
+    
+    console.log('Payment insert data:', paymentInsert);
+    
+    const { data: paymentData, error: insertError } = await supabaseService
       .from('payments')
-      .insert({
-        user_id: user.id,
-        razorpay_order_id: razorpayOrder.id,
-        amount: amount,
-        plan_name: plan_name,
-        plan_duration: plan_duration,
-        status: 'pending',
-        currency: 'INR'
-      });
+      .insert(paymentInsert)
+      .select('id')
+      .single();
 
     if (insertError) {
       console.error('Database insert error:', insertError);
-      // Don't fail the entire operation if DB insert fails
-      console.log('Continuing without payment record...');
+      throw new Error(`Failed to create payment record: ${insertError.message}`);
     } else {
-      console.log('Payment record created successfully');
+      console.log('Payment record created successfully:', paymentData.id);
     }
 
     // Return success response
