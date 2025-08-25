@@ -197,7 +197,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           title: 'Profile Perfectionist',
           description: 'Complete your digital profile portfolio',
           tier: 'gold',
-          progress: isBadgeAwarded('profile_perfectionist') ? 100 : calculateProfileProgress('gold'),
+          progress: calculateProfileProgress('gold'), // Always show actual progress, not awarded status
           criteria: 'Complete Digital Profile tasks (100%)',
           nextAction: 'Build Portfolio',
           link: '/dashboard/career-assignments',
