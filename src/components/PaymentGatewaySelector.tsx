@@ -72,9 +72,13 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
 
   const handleRazorpayPayment = async () => {
     try {
+      console.log('🚀 Starting Razorpay payment process...');
+      console.log('Plan details:', { name: plan.name, price: plan.price, duration: plan.duration });
+      
       // Load Razorpay SDK
       const res = await loadRazorpay();
       if (!res) {
+        console.error('❌ Razorpay SDK failed to load');
         toast({
           title: "Error",
           description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
@@ -82,18 +86,41 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
         });
         return;
       }
+      console.log('✅ Razorpay SDK loaded successfully');
+
+      // Test the edge function first
+      console.log('🧪 Testing edge function connectivity...');
+      try {
+        const testResponse = await fetch(`https://moirryvajzyriagqihbe.supabase.co/functions/v1/razorpay-create-order-simple`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vaXJyeXZhanp5cmlhZ3FpaGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1NzE1MzgsImV4cCI6MjA2OTE0NzUzOH0.fyoyxE5pv42Vemp3iA1HmGkzJIA3SAtByXyf5FmYxOw'
+          }
+        });
+        const testData = await testResponse.json();
+        console.log('🧪 Edge function test response:', testData);
+      } catch (testError) {
+        console.error('🧪 Edge function test failed:', testError);
+      }
 
       // Create order using our edge function
+      console.log('📦 Creating Razorpay order...');
+      const orderPayload = {
+        amount: Math.round(plan.price * 100), // Convert to paisa
+        plan_name: plan.name,
+        plan_duration: plan.duration,
+      };
+      console.log('📦 Order payload:', orderPayload);
+      
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order-simple', {
-        body: {
-          amount: Math.round(plan.price * 100), // Convert to paisa
-          plan_name: plan.name,
-          plan_duration: plan.duration,
-        }
+        body: orderPayload
       });
 
+      console.log('📦 Supabase function response:', { data: orderData, error: orderError });
+
       if (orderError || !orderData) {
-        console.error('Order creation error:', orderError);
+        console.error('❌ Order creation error:', orderError);
         toast({
           title: "Payment Order Failed",
           description: orderError?.message || "Failed to create payment order. Please try again.",
@@ -101,6 +128,7 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
         });
         return;
       }
+      console.log('✅ Order created successfully:', orderData);
 
       // Configure Razorpay options
       const options = {

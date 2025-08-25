@@ -12,6 +12,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Add test endpoint for debugging
+  if (req.method === 'GET') {
+    console.log('=== RAZORPAY FUNCTION TEST ENDPOINT ===');
+    const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
+    const availableEnvVars = Object.keys(Deno.env.toObject()).filter(k => k.includes('RAZORPAY'));
+    
+    return new Response(
+      JSON.stringify({
+        status: 'Function is working',
+        razorpay_mode: razorpayMode,
+        available_env_vars: availableEnvVars,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  }
+
   try {
     console.log('=== SIMPLE RAZORPAY ORDER CREATION STARTED ===');
     
@@ -48,11 +68,13 @@ serve(async (req) => {
 
     console.log('User authenticated:', user.id);
 
-    // Get Razorpay credentials - Check mode first
+    // Get Razorpay credentials - Check mode first with detailed logging
     const razorpayMode = Deno.env.get('RAZORPAY_MODE') || 'test';
     const isLiveMode = razorpayMode === 'live';
     
+    console.log('=== RAZORPAY CONFIGURATION ===');
     console.log('Razorpay mode:', razorpayMode);
+    console.log('Is live mode:', isLiveMode);
     
     const keyId = isLiveMode 
       ? Deno.env.get('RAZORPAY_LIVE_KEY_ID')
@@ -61,8 +83,13 @@ serve(async (req) => {
       ? Deno.env.get('RAZORPAY_LIVE_KEY_SECRET') 
       : Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
     
+    console.log('Key ID exists:', !!keyId);
+    console.log('Key Secret exists:', !!keySecret);
+    console.log('Key ID prefix:', keyId ? keyId.substring(0, 10) + '...' : 'NOT SET');
+    
     if (!keyId || !keySecret) {
       console.error('Missing Razorpay credentials for mode:', razorpayMode);
+      console.error('Available env vars:', Object.keys(Deno.env.toObject()).filter(k => k.includes('RAZORPAY')));
       throw new Error(`Razorpay credentials not configured for ${razorpayMode} mode`);
     }
 
