@@ -110,7 +110,7 @@ serve(async (req) => {
 
     console.log('Creating payment record in database...');
     
-    // Insert payment record with explicit column mapping
+    // Insert payment record with explicit column mapping - CRITICAL for verification
     const paymentRecord = {
       user_id: user.id,
       razorpay_order_id: razorpayOrder.id,
@@ -125,22 +125,18 @@ serve(async (req) => {
     
     console.log('Payment record data:', paymentRecord);
     
-    try {
-      const { data: paymentData, error: insertError } = await supabaseService
-        .from('payments')
-        .insert([paymentRecord])
-        .select('id')
-        .single();
+    const { data: paymentData, error: insertError } = await supabaseService
+      .from('payments')
+      .insert([paymentRecord])
+      .select('id')
+      .single();
 
-      if (insertError) {
-        console.error('Database insert error:', insertError);
-        console.log('Payment will proceed despite DB error - this is non-critical');
-      } else {
-        console.log('Payment record created successfully:', paymentData?.id);
-      }
-    } catch (dbError) {
-      console.error('Database operation failed:', dbError);
-      console.log('Payment will proceed despite DB error - this is non-critical');
+    if (insertError) {
+      console.error('CRITICAL: Database insert error:', insertError);
+      console.error('This will cause verification to fail!');
+      throw new Error(`Failed to create payment record: ${insertError.message}. Please try again.`);
+    } else {
+      console.log('✅ Payment record created successfully:', paymentData?.id);
     }
 
     // Return success response

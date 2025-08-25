@@ -90,7 +90,18 @@ serve(async (req) => {
     );
 
     // Find the payment record
-    console.log('Finding payment record...');
+    console.log('Finding payment record for order:', razorpay_order_id, 'user:', user.id);
+    
+    // First check if any payment records exist for this user
+    const { data: allUserPayments, error: allPaymentsError } = await supabaseService
+      .from('payments')
+      .select('id, razorpay_order_id, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    console.log('Recent payments for user:', allUserPayments);
+    
     const { data: paymentRecord, error: findError } = await supabaseService
       .from('payments')
       .select('*')
@@ -100,7 +111,9 @@ serve(async (req) => {
 
     if (findError || !paymentRecord) {
       console.error('Payment record not found:', findError);
-      throw new Error('Payment record not found in database');
+      console.error('Searched for order_id:', razorpay_order_id, 'user_id:', user.id);
+      console.error('Available payments:', allUserPayments);
+      throw new Error(`Payment record not found in database. Order ID: ${razorpay_order_id}`);
     }
 
     console.log('Payment record found:', paymentRecord.id);
