@@ -64,8 +64,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'bronze') return true;
         // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
-        // Profile Perfectionist (Gold) - Unlocked only when silver reaches 100%
-        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
+        // Profile Perfectionist (Gold) - Unlocked only when silver reaches 100% (LinkedIn completion)
+        if (tier === 'gold') return linkedinProgress >= 100 && calculateProfileProgress('bronze') >= 100;
         return false;
       
       case 'jobs':
@@ -101,15 +101,15 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Bronze: 0-100% based on resume progress
         return Math.min(100, resumeProgress);
       case 'silver': 
-        // Silver: Only progresses after bronze is 100%
+        // Silver: Only progresses after bronze is 100% AND depends on LinkedIn profile completion
         if (resumeProgress < 100) return 0;
-        // Silver needs additional profile completion beyond basic resume
-        return Math.min(100, completedProfileTasks >= 9 ? 100 : (completedProfileTasks / 9) * 100);
+        // Silver progress is based on LinkedIn profile completion
+        return Math.min(100, linkedinProgress);
       case 'gold': 
-        // Gold: Only progresses after silver is 100%
-        if (resumeProgress < 100 || completedProfileTasks < 9) return 0;
-        // Gold requires all profile tasks plus high quality completion
-        return Math.min(100, resumeProgress >= 100 && completedProfileTasks >= 9 ? 100 : 0);
+        // Gold: Only progresses after silver is 100% (LinkedIn completion)
+        if (resumeProgress < 100 || linkedinProgress < 100) return 0;
+        // Gold requires both resume completion and LinkedIn profile completion
+        return Math.min(100, resumeProgress >= 100 && linkedinProgress >= 100 ? 100 : 0);
       default: return 0;
     }
   };
@@ -160,12 +160,12 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         {
           id: 'profile-silver',
           title: 'Profile Complete',
-          description: 'Add experience, summary, certifications',
+          description: 'Complete your LinkedIn profile',
           tier: 'silver',
           progress: calculateProfileProgress('silver'),
-          criteria: 'Complete 50% of profile sections',
-          nextAction: 'Complete Profile',
-          link: '/dashboard/career-assignments'
+          criteria: 'Complete LinkedIn profile (100%)',
+          nextAction: 'Complete LinkedIn',
+          link: '/career-activities'
         },
         {
           id: 'profile-gold',

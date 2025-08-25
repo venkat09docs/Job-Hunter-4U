@@ -44,12 +44,12 @@ const LevelUp = () => {
     }
   }, [resumeProgress, careerLoading, checkAndAwardBadges]);
 
-  // Also check when completed profile tasks change (for silver/gold progression)
+  // Also check when LinkedIn progress changes (for silver/gold progression)
   useEffect(() => {
-    if (!careerLoading && completedProfileTasks >= 9) {
+    if (!linkedinLoading && linkedinProgress >= 100) {
       checkAndAwardBadges();
     }
-  }, [completedProfileTasks, careerLoading, checkAndAwardBadges]);
+  }, [linkedinProgress, linkedinLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
