@@ -315,7 +315,28 @@ const VerifyAssignments = () => {
 
       if (error) throw error;
 
-      toast.success(`Assignment ${approved ? 'approved' : 'rejected'} successfully`);
+      // If approved, add points to user_activity_points table
+      if (approved) {
+        const { error: pointsError } = await supabase
+          .from('user_activity_points')
+          .insert({
+            user_id: selectedAssignment.user_id,
+            activity_id: selectedAssignment.id,
+            activity_type: 'career_task_completion',
+            points_earned: selectedAssignment.career_task_templates.points_reward,
+            activity_date: new Date().toISOString().split('T')[0]
+          });
+
+        if (pointsError) {
+          console.error('Error adding points:', pointsError);
+          // Still show success for assignment approval, but log the points error
+          toast.success(`Assignment approved successfully, but there was an issue recording points`);
+        } else {
+          toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+        }
+      } else {
+        toast.success(`Assignment rejected successfully`);
+      }
       
       if (isAdmin) {
         await fetchVerifiedAssignments();
