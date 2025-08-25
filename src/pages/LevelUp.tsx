@@ -32,6 +32,14 @@ const LevelUp = () => {
   // Get LinkedIn profile progress from career assignments (not general LinkedIn activities)
   const linkedinProfileProgress = !careerLoading ? getModuleProgress('LINKEDIN') : 0;
   
+  // Debug logging for LinkedIn profile progress
+  console.log('🔍 LinkedIn Profile Progress Debug:', {
+    careerLoading,
+    linkedinProfileProgress,
+    allAssignments: getTasksByModule('LINKEDIN').length,
+    completedLinkedInTasks: getTasksByModule('LINKEDIN').filter(t => t.status === 'verified').length
+  });
+  
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   

@@ -98,6 +98,14 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 
   // Calculate progress for each badge - progressive system
   const calculateProfileProgress = (tier: string) => {
+    // Debug logging
+    console.log('🎯 Badge Progress Debug:', {
+      tier,
+      resumeProgress,
+      linkedinProfileProgress,
+      completedProfileTasks
+    });
+    
     switch (tier) {
       case 'bronze': 
         // Bronze: 0-100% based on resume progress
