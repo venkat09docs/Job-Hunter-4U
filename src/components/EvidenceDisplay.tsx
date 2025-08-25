@@ -84,16 +84,18 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               </div>
               
               {evidenceItem.url && (
-                <div className="mb-2">
+                <div className="mb-3">
                   <Label className="text-xs text-muted-foreground">URL:</Label>
-                  <a 
-                    href={evidenceItem.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline block truncate"
-                  >
-                    {evidenceItem.url}
-                  </a>
+                  <div className="mt-1">
+                    <a 
+                      href={evidenceItem.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline block break-all"
+                    >
+                      {evidenceItem.url}
+                    </a>
+                  </div>
                 </div>
               )}
               
@@ -121,13 +123,12 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               
               {evidenceItem.evidence_data && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
-                  <Label className="text-xs text-muted-foreground">Submission Details:</Label>
-                  <div className="mt-1 bg-muted p-3 rounded space-y-2">
-                    {/* Description - Fixed display */}
+                  <div className="mt-2 space-y-3">
+                    {/* Description - Clean display without box styling */}
                     {(evidenceItem.evidence_data.description || evidenceItem.evidence_data.text) && (
                       <div>
                         <Label className="text-xs font-medium">Description:</Label>
-                        <div className="text-sm whitespace-pre-wrap mt-1 bg-background p-2 rounded border">
+                        <div className="text-sm whitespace-pre-wrap mt-1">
                           {evidenceItem.evidence_data.description || evidenceItem.evidence_data.text}
                         </div>
                       </div>
@@ -137,14 +138,16 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                     {evidenceItem.evidence_data.url && evidenceItem.evidence_data.url !== evidenceItem.url && (
                       <div>
                         <Label className="text-xs font-medium">Submitted URL:</Label>
-                        <a 
-                          href={evidenceItem.evidence_data.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline text-sm block"
-                        >
-                          {evidenceItem.evidence_data.url}
-                        </a>
+                        <div className="mt-1">
+                          <a 
+                            href={evidenceItem.evidence_data.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline text-sm block break-all"
+                          >
+                            {evidenceItem.evidence_data.url}
+                          </a>
+                        </div>
                       </div>
                     )}
                     
@@ -155,13 +158,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                         {evidenceItem.evidence_data.file_size && (
                           <span> ({Math.round(evidenceItem.evidence_data.file_size / 1024)}KB)</span>
                         )}
-                      </div>
-                    )}
-                    
-                    {/* Submission timestamp */}
-                    {evidenceItem.evidence_data.submitted_at && (
-                      <div className="text-xs text-muted-foreground">
-                        Submitted: {format(new Date(evidenceItem.evidence_data.submitted_at), 'PPpp')}
                       </div>
                     )}
                   </div>
