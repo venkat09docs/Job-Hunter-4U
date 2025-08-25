@@ -241,10 +241,12 @@ const VerifyAssignments = () => {
     // Fetch evidence for each assignment
     const assignmentsWithEvidence = await Promise.all(
       assignmentsWithProfiles.map(async (assignment) => {
-        const { data: evidenceData, error: evidenceError } = await supabase
-          .from('career_task_evidence')
-          .select('*')
-          .eq('assignment_id', assignment.id);
+                        const { data: evidenceData, error: evidenceError } = await supabase
+                          .from('career_task_evidence')
+                          .select('*')
+                          .eq('assignment_id', assignment.id)
+                          .order('created_at', { ascending: false })
+                          .limit(1);
 
         if (evidenceError) {
           console.error('Error fetching evidence:', evidenceError);
@@ -653,11 +655,13 @@ const VerifyAssignments = () => {
             }));
           }
         } else {
-          // Fetch career task evidence
+          // Fetch career task evidence - get only the most recent evidence per assignment
           const { data: careerEvidenceData, error: careerEvidenceError } = await supabase
             .from('career_task_evidence')
             .select('*')
-            .eq('assignment_id', assignment.id);
+            .eq('assignment_id', assignment.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
           if (careerEvidenceError) {
             console.error('Error fetching career evidence:', careerEvidenceError);
@@ -1560,14 +1564,26 @@ const VerifyAssignments = () => {
                           <Label className="text-xs text-muted-foreground">Submission Details:</Label>
                           <div className="mt-1 bg-muted p-3 rounded space-y-2">
                             {/* Display description/text */}
-                            {(evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes || evidence.evidence_data.textInput || evidence.evidence_data.content || evidence.evidence_data.message) && (
-                              <div>
-                                <Label className="text-xs font-medium">Description:</Label>
-                                <p className="text-sm whitespace-pre-wrap mt-1">
-                                  {evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes || evidence.evidence_data.textInput || evidence.evidence_data.content || evidence.evidence_data.message}
-                                </p>
-                              </div>
-                            )}
+                            {(() => {
+                              const description = evidence.evidence_data.description || 
+                                                evidence.evidence_data.text || 
+                                                evidence.evidence_data.notes || 
+                                                evidence.evidence_data.textInput || 
+                                                evidence.evidence_data.content || 
+                                                evidence.evidence_data.message;
+                              
+                              console.log('🔍 Evidence data for description:', evidence.evidence_data);
+                              console.log('🔍 Extracted description:', description);
+                              
+                              return description && (
+                                <div>
+                                  <Label className="text-xs font-medium">Description:</Label>
+                                  <p className="text-sm whitespace-pre-wrap mt-1 bg-background p-2 rounded border">
+                                    {description}
+                                  </p>
+                                </div>
+                              );
+                            })()}
                             
                             {/* Display submitted URL from evidence_data if different from main URL */}
                             {evidence.evidence_data.url && evidence.evidence_data.url !== evidence.url && (
