@@ -3722,6 +3722,16 @@ export type Database = {
           username: string
         }[]
       }
+      get_safe_institute_data_for_user: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          code: string
+          description: string
+          id: string
+          is_active: boolean
+          name: string
+        }[]
+      }
       get_safe_institute_info: {
         Args: { institute_id_param: string }
         Returns: {
