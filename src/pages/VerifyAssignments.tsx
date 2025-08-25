@@ -18,7 +18,6 @@ import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { TestPointsButton } from '@/components/TestPointsButton';
-import { DebugPointsDisplay } from '@/components/DebugPointsDisplay';
 
 interface SubmittedAssignment {
   id: string;
@@ -985,10 +984,6 @@ const VerifyAssignments = () => {
           </div>
         </div>
         
-        {/* Debug Points Display - Remove in production */}
-        <div className="mb-6">
-          <DebugPointsDisplay />
-        </div>
 
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
@@ -1536,126 +1531,75 @@ const VerifyAssignments = () => {
                       {evidence.evidence_data && (
                         <div>
                           <Label className="text-xs text-muted-foreground">User Submission:</Label>
-                          {typeof evidence.evidence_data === 'object' && evidence.evidence_data !== null ? (
-                            <div className="mt-1 space-y-2">
-                              {evidence.evidence_data.description && (
-                                <div>
-                                  <Label className="text-xs font-medium">Description:</Label>
-                                  <p className="text-sm bg-muted p-2 rounded mt-1">
-                                    {evidence.evidence_data.description}
-                                  </p>
-                                </div>
-                              )}
-                              {evidence.evidence_data.text && (
-                                <div>
-                                  <Label className="text-xs font-medium">Submission Text:</Label>
-                                  <p className="text-sm bg-muted p-2 rounded mt-1">
-                                    {evidence.evidence_data.text}
-                                  </p>
-                                </div>
-                              )}
-                              {evidence.evidence_data.notes && (
-                                <div>
-                                  <Label className="text-xs font-medium">Notes:</Label>
-                                  <p className="text-sm bg-muted p-2 rounded mt-1">
-                                    {evidence.evidence_data.notes}
-                                  </p>
-                                </div>
-                              )}
-                              {evidence.evidence_data.linkedinUrl && (
-                                <div>
-                                  <Label className="text-xs font-medium">LinkedIn URL:</Label>
-                                  <a 
-                                    href={evidence.evidence_data.linkedinUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline block text-sm"
-                                  >
-                                    {evidence.evidence_data.linkedinUrl}
-                                  </a>
-                                </div>
-                              )}
-                              {evidence.evidence_data.githubUrl && (
-                                <div>
-                                  <Label className="text-xs font-medium">GitHub URL:</Label>
-                                  <a 
-                                    href={evidence.evidence_data.githubUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline block text-sm"
-                                  >
-                                    {evidence.evidence_data.githubUrl}
-                                  </a>
-                                </div>
-                              )}
-                              {evidence.evidence_data.url && (
-                                <div>
-                                  <Label className="text-xs font-medium">Submitted URL:</Label>
-                                  <a 
-                                    href={evidence.evidence_data.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline block text-sm"
-                                  >
-                                    {evidence.evidence_data.url}
-                                  </a>
-                                </div>
-                              )}
-                              {/* Show raw data if none of the specific fields are available */}
-                              {Object.keys(evidence.evidence_data).length > 0 && 
-                               !evidence.evidence_data.description && 
-                               !evidence.evidence_data.text &&
-                               !evidence.evidence_data.notes && 
-                               !evidence.evidence_data.linkedinUrl && 
-                               !evidence.evidence_data.githubUrl &&
-                               !evidence.evidence_data.url && (
-                                <pre className="text-xs bg-muted p-2 rounded mt-1 overflow-auto max-h-32">
-                                  {JSON.stringify(evidence.evidence_data, null, 2)}
-                                </pre>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="mt-1">
-                              {evidence.evidence_data !== "URL" ? (
-                                <p className="text-sm bg-muted p-2 rounded">
-                                  {String(evidence.evidence_data)}
-                                </p>
-                              ) : (
-                                <p className="text-sm text-muted-foreground italic">
-                                  User submitted evidence via URL submission form (details may be stored separately)
-                                </p>
-                              )}
-                            </div>
-                          )}
+                          <div className="mt-1 bg-muted p-3 rounded">
+                            {typeof evidence.evidence_data === 'object' && evidence.evidence_data !== null ? (
+                              <div className="space-y-2">
+                                {evidence.evidence_data.description && (
+                                  <div>
+                                    <p className="text-sm whitespace-pre-wrap">
+                                      {evidence.evidence_data.description}
+                                    </p>
+                                  </div>
+                                )}
+                                {evidence.evidence_data.text && (
+                                  <div>
+                                    <p className="text-sm whitespace-pre-wrap">
+                                      {evidence.evidence_data.text}
+                                    </p>
+                                  </div>
+                                )}
+                                {evidence.evidence_data.notes && (
+                                  <div>
+                                    <p className="text-sm whitespace-pre-wrap">
+                                      {evidence.evidence_data.notes}
+                                    </p>
+                                  </div>
+                                )}
+                                {evidence.evidence_data.linkedinUrl && (
+                                  <div>
+                                    <a 
+                                      href={evidence.evidence_data.linkedinUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm"
+                                    >
+                                      {evidence.evidence_data.linkedinUrl}
+                                    </a>
+                                  </div>
+                                )}
+                                {evidence.evidence_data.githubUrl && (
+                                  <div>
+                                    <a 
+                                      href={evidence.evidence_data.githubUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm"
+                                    >
+                                      {evidence.evidence_data.githubUrl}
+                                    </a>
+                                  </div>
+                                )}
+                                {evidence.evidence_data.url && (
+                                  <div>
+                                    <a 
+                                      href={evidence.evidence_data.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline text-sm"
+                                    >
+                                      {evidence.evidence_data.url}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-sm whitespace-pre-wrap">
+                                {String(evidence.evidence_data)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
-                      
-                       {/* Show debugging info for incomplete submissions */}
-                       {(evidence.evidence_data === "URL" || evidence.evidence_data === "SCREENSHOT" || evidence.evidence_data === "DATA_EXPORT") && (
-                         <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
-                           <div className="flex items-center gap-2 mb-2">
-                             <AlertCircle className="h-4 w-4 text-red-600" />
-                             <Label className="text-xs font-semibold text-red-800">
-                               Incomplete Evidence Data Detected
-                             </Label>
-                           </div>
-                           <p className="text-xs text-red-700 mb-2">
-                             This evidence appears to contain only minimal data (just "{evidence.evidence_data}") instead of the complete user submission.
-                           </p>
-                           <p className="text-xs text-red-600">
-                             This indicates an issue with the evidence submission process that has now been fixed for future submissions.
-                           </p>
-                         </div>
-                       )}
-                       
-                       {/* Show if evidence has no meaningful data */}
-                       {(!evidence.evidence_data || evidence.evidence_data === "URL") && !evidence.url && (!evidence.file_urls || evidence.file_urls.length === 0) && (
-                         <div className="mt-2">
-                           <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
-                             ⚠️ No detailed evidence data available. User may have submitted through a different method.
-                           </p>
-                         </div>
-                       )}
                     </Card>
                   ))}
                 </div>
