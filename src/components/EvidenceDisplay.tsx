@@ -21,29 +21,6 @@ interface EvidenceDisplayProps {
 }
 
 export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) => {
-  // Debug logging
-  React.useEffect(() => {
-    evidence.forEach((evidenceItem, index) => {
-      console.log(`🔍 Evidence ${index}:`, evidenceItem);
-      console.log(`🔍 Raw evidence_data ${index}:`, evidenceItem.evidence_data);
-      console.log(`🔍 evidence_data type ${index}:`, typeof evidenceItem.evidence_data);
-      
-      // Parse evidence_data if it's a string
-      let parsedData = evidenceItem.evidence_data;
-      if (typeof evidenceItem.evidence_data === 'string') {
-        try {
-          parsedData = JSON.parse(evidenceItem.evidence_data);
-          console.log(`🔍 Parsed evidence_data ${index}:`, parsedData);
-        } catch (e) {
-          console.log(`🔍 Failed to parse evidence_data as JSON ${index}:`, e);
-        }
-      }
-      
-      console.log(`🔍 Description ${index}:`, parsedData?.description || parsedData?.text);
-      console.log(`🔍 URL ${index}:`, parsedData?.url || evidenceItem.url);
-    });
-  }, [evidence]);
-
   const parseEvidenceData = (evidenceData: any) => {
     if (!evidenceData) return null;
     
@@ -58,12 +35,39 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
         return JSON.parse(evidenceData);
       } catch (e) {
         console.error('Failed to parse evidence_data as JSON:', e);
-        return null;
+        // If it's not valid JSON, treat it as plain text
+        return { description: evidenceData };
       }
     }
     
     return null;
   };
+
+  const getUrl = (evidenceItem: Evidence) => {
+    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
+    return evidenceItem.url || parsedData?.url || null;
+  };
+
+  const getDescription = (evidenceItem: Evidence) => {
+    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
+    return parsedData?.description || parsedData?.text || null;
+  };
+
+  const getFileName = (evidenceItem: Evidence) => {
+    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
+    return parsedData?.file_name || null;
+  };
+
+  // Debug logging
+  React.useEffect(() => {
+    evidence.forEach((evidenceItem, index) => {
+      console.log(`🔍 Evidence ${index}:`, evidenceItem);
+      console.log(`🔍 Raw evidence_data ${index}:`, evidenceItem.evidence_data);
+      console.log(`🔍 evidence_data type ${index}:`, typeof evidenceItem.evidence_data);
+      console.log(`🔍 Description ${index}:`, getDescription(evidenceItem));
+      console.log(`🔍 URL ${index}:`, getUrl(evidenceItem));
+    });
+  }, [evidence]);
 
   const handleFileClick = async (filePath: string) => {
     try {
@@ -122,14 +126,14 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               <div className="mb-3">
                 <Label className="text-xs text-muted-foreground">URL:</Label>
                 <div className="mt-1">
-                  {evidenceItem.url || parsedEvidenceData?.url ? (
+                  {getUrl(evidenceItem) ? (
                     <a 
-                      href={evidenceItem.url || parsedEvidenceData?.url} 
+                      href={getUrl(evidenceItem)} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline block break-all text-sm"
                     >
-                      {evidenceItem.url || parsedEvidenceData?.url}
+                      {getUrl(evidenceItem)}
                     </a>
                   ) : (
                     <span className="text-xs text-muted-foreground italic">No URL provided</span>
@@ -145,7 +149,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                     <div className="space-y-1">
                       {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
                         const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
-                        const fileName = parsedEvidenceData?.file_name || `File ${fileIndex + 1}`;
+                        const fileName = getFileName(evidenceItem) || `File ${fileIndex + 1}`;
                         
                         return (
                           <button
@@ -168,9 +172,9 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               <div className="mb-3">
                 <Label className="text-xs text-muted-foreground">Description:</Label>
                 <div className="mt-1">
-                  {(parsedEvidenceData?.description || parsedEvidenceData?.text) ? (
+                  {getDescription(evidenceItem) ? (
                     <div className="text-sm whitespace-pre-wrap p-2 border rounded bg-gray-50">
-                      {parsedEvidenceData.description || parsedEvidenceData.text}
+                      {getDescription(evidenceItem)}
                     </div>
                   ) : (
                     <span className="text-xs text-muted-foreground italic">No description provided</span>
@@ -178,15 +182,15 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
 
-              {parsedEvidenceData && (
+              {parseEvidenceData(evidenceItem.evidence_data) && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
                   <div className="mt-2 space-y-3">
                     {/* File info */}
-                    {parsedEvidenceData.file_name && (
+                    {getFileName(evidenceItem) && (
                       <div className="text-xs text-muted-foreground">
-                        File: {parsedEvidenceData.file_name}
-                        {parsedEvidenceData.file_size && (
-                          <span> ({Math.round(parsedEvidenceData.file_size / 1024)}KB)</span>
+                        File: {getFileName(evidenceItem)}
+                        {parseEvidenceData(evidenceItem.evidence_data)?.file_size && (
+                          <span> ({Math.round(parseEvidenceData(evidenceItem.evidence_data).file_size / 1024)}KB)</span>
                         )}
                       </div>
                     )}
