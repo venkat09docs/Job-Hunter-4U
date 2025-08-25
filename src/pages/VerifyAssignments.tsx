@@ -395,11 +395,21 @@ const VerifyAssignments = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Verify Assignments</h1>
-          <p className="text-muted-foreground mt-2">
-            Review and verify submitted assignments from students
-          </p>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Go to Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Verify Assignments</h1>
+            <p className="text-muted-foreground mt-2">
+              Review and verify submitted assignments from students
+            </p>
+          </div>
         </div>
         {isAdmin && <AdminReenableRequestsDialog />}
       </div>
