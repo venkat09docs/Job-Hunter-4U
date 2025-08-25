@@ -143,23 +143,66 @@ serve(async (req) => {
 
     // Update user subscription if payment is for a plan
     if (paymentRecord && paymentRecord.plan_name) {
-      const subscriptionEndDate = new Date();
+      console.log('🔄 Processing subscription update for plan:', paymentRecord.plan_name);
       
-      // Calculate subscription end date based on plan duration
+      // First, get the user's current subscription status
+      const { data: currentProfile, error: profileFetchError } = await supabaseService
+        .from('profiles')
+        .select('subscription_end_date, subscription_active, subscription_plan')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profileFetchError) {
+        console.error('❌ Error fetching current profile:', profileFetchError);
+      }
+      
+      console.log('📅 Current subscription status:', currentProfile);
+      
+      // Calculate the starting date for the new subscription
+      let subscriptionStartDate = new Date();
+      
+      // If user has an active subscription with future end date, start from that date
+      if (currentProfile?.subscription_active && currentProfile?.subscription_end_date) {
+        const currentEndDate = new Date(currentProfile.subscription_end_date);
+        const now = new Date();
+        
+        // If current subscription hasn't expired yet, add new days to existing end date
+        if (currentEndDate > now) {
+          subscriptionStartDate = currentEndDate;
+          console.log('✅ Adding days to existing subscription. Current end date:', currentEndDate.toISOString());
+        } else {
+          console.log('⏰ Current subscription expired, starting from now');
+        }
+      } else {
+        console.log('🆕 No active subscription, starting from now');
+      }
+      
+      // Calculate new subscription end date by adding duration to start date
+      const subscriptionEndDate = new Date(subscriptionStartDate);
+      
       if (paymentRecord.plan_duration === '1 week') {
         subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 7);
+        console.log('📅 Added 7 days to subscription');
       } else if (paymentRecord.plan_duration === '1 month') {
         subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+        console.log('📅 Added 1 month to subscription');
       } else if (paymentRecord.plan_duration === '3 months') {
         subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 3);
+        console.log('📅 Added 3 months to subscription');
       }
+      
+      console.log('🎯 Final subscription dates:', {
+        start: new Date().toISOString(),
+        end: subscriptionEndDate.toISOString(),
+        totalDaysFromNow: Math.ceil((subscriptionEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+      });
 
       const { error: profileError } = await supabaseService
         .from('profiles')
         .update({
           subscription_plan: paymentRecord.plan_name,
           subscription_active: true,
-          subscription_start_date: new Date().toISOString(),
+          subscription_start_date: new Date().toISOString(), // Always set start to now for tracking purposes
           subscription_end_date: subscriptionEndDate.toISOString(),
           updated_at: new Date().toISOString()
         })
