@@ -45,6 +45,7 @@ const CareerActivities = () => {
   const {
     userTasks,
     evidence,
+    allEvidence, // Use this for cumulative stats
     signals,
     userBadges,
     weeklyScore,
@@ -80,7 +81,7 @@ const CareerActivities = () => {
     return { completed, submitted, total, progress, totalPoints, maxPoints };
   };
 
-  // Calculate cumulative statistics from all evidence
+  // Calculate cumulative statistics from ALL evidence across all time periods
   const getCumulativeStats = () => {
     const stats = {
       connections: 0,
@@ -88,7 +89,8 @@ const CareerActivities = () => {
       views: 0
     };
     
-    evidence.forEach(ev => {
+    // Use allEvidence instead of evidence to get cumulative stats across all weeks
+    allEvidence.forEach(ev => {
       if (ev.evidence_data?.tracking_metrics) {
         const metrics = ev.evidence_data.tracking_metrics;
         stats.connections += metrics.connections_accepted || 0;
@@ -417,9 +419,9 @@ const CareerActivities = () => {
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t text-xs text-muted-foreground text-center">
-                      Total across all submissions
-                    </div>
+                     <div className="mt-4 pt-3 border-t text-xs text-muted-foreground text-center">
+                       Cumulative across all weeks
+                     </div>
                   </CardContent>
                 </Card>
 

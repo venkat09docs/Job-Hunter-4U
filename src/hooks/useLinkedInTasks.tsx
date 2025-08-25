@@ -255,7 +255,7 @@ export const useLinkedInTasks = () => {
     refetchOnWindowFocus: true
   });
 
-  // Get evidence for tasks
+  // Get evidence for current week tasks (for task-specific display)
   const { data: evidence = [] } = useQuery({
     queryKey: ['linkedin-evidence', userTasks.map(t => t.id)],
     queryFn: async () => {
@@ -272,6 +272,42 @@ export const useLinkedInTasks = () => {
       return data as Evidence[];
     },
     enabled: userTasks.length > 0
+  });
+
+  // Get ALL evidence for cumulative stats (across all periods)
+  const { data: allEvidence = [] } = useQuery({
+    queryKey: ['linkedin-all-evidence'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      // Get linkedin user
+      const { data: linkedinUser, error: userError } = await supabase
+        .from('linkedin_users')
+        .select('id')
+        .eq('auth_uid', user.user.id)
+        .single();
+
+      if (userError && userError.code !== 'PGRST116') {
+        console.error('Error fetching linkedin user for stats:', userError);
+        throw userError;
+      }
+
+      if (!linkedinUser) return [];
+
+      // Get ALL evidence for this user across all periods
+      const { data, error } = await supabase
+        .from('linkedin_evidence')
+        .select(`
+          *,
+          linkedin_user_tasks!inner(user_id)
+        `)
+        .eq('linkedin_user_tasks.user_id', linkedinUser.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Evidence[];
+    }
   });
 
   // Get recent signals
@@ -491,6 +527,7 @@ export const useLinkedInTasks = () => {
   return {
     userTasks,
     evidence,
+    allEvidence, // Add this for cumulative stats
     signals,
     userBadges,
     weeklyScore,
