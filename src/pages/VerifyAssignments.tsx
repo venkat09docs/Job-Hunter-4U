@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
+import { EvidenceDisplay } from '@/components/EvidenceDisplay';
 
 interface SubmittedAssignment {
   id: string;
@@ -245,8 +246,7 @@ const VerifyAssignments = () => {
                           .from('career_task_evidence')
                           .select('*')
                           .eq('assignment_id', assignment.id)
-                          .order('created_at', { ascending: false })
-                          .limit(1);
+                          .order('created_at', { ascending: false });
 
         if (evidenceError) {
           console.error('Error fetching evidence:', evidenceError);
@@ -655,13 +655,12 @@ const VerifyAssignments = () => {
             }));
           }
         } else {
-          // Fetch career task evidence - get only the most recent evidence per assignment
+          // Fetch all career task evidence - ordered by most recent first
           const { data: careerEvidenceData, error: careerEvidenceError } = await supabase
             .from('career_task_evidence')
             .select('*')
             .eq('assignment_id', assignment.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
+            .order('created_at', { ascending: false });
 
           if (careerEvidenceError) {
             console.error('Error fetching career evidence:', careerEvidenceError);
@@ -1480,22 +1479,115 @@ const VerifyAssignments = () => {
               </div>
 
               {/* Evidence */}
+              <EvidenceDisplay evidence={selectedAssignment.evidence} />
+
+              {/* Verification Notes */}
               <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Submitted Evidence ({selectedAssignment.evidence.length})
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  Verification Notes (Optional)
                 </Label>
-                <div className="space-y-3">
-                  {selectedAssignment.evidence.map((evidence, index) => (
-                    <Card key={evidence.id} className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge variant="outline">{evidence.evidence_type}</Badge>
-                        <Badge 
-                          variant={evidence.verification_status === 'pending' ? 'secondary' : 
-                                 evidence.verification_status === 'approved' ? 'default' : 'destructive'}
-                        >
-                          {evidence.verification_status}
-                        </Badge>
-                      </div>
+                <Textarea
+                  id="notes"
+                  placeholder="Enter any verification notes..."
+                  value={verificationNotes}
+                  onChange={(e) => setVerificationNotes(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'approve')}
+                  disabled={processing}
+                  className="flex-1"
+                >
+                  {processing ? 'Processing...' : 'Approve & Award Points'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'deny')}
+                  disabled={processing}
+                  className="flex-1"
+                >
+                  {processing ? 'Processing...' : 'Deny'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Student</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={selectedAssignment.profiles.profile_image_url} />
+                      <AvatarFallback>
+                        {selectedAssignment.profiles.full_name?.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">
+                      {selectedAssignment.profiles.full_name} (@{selectedAssignment.profiles.username})
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Points Reward</Label>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Award className="h-4 w-4 text-yellow-500" />
+                    <span className="font-semibold">
+                      {selectedAssignment.career_task_templates.points_reward} points
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Evidence */}
+              <EvidenceDisplay evidence={selectedAssignment.evidence} />
+
+              {/* Verification Notes */}
+              <div>
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  Verification Notes (Optional)
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Enter any verification notes..."
+                  value={verificationNotes}
+                  onChange={(e) => setVerificationNotes(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'approve')}
+                  disabled={processing}
+                  className="flex-1"
+                >
+                  {processing ? 'Processing...' : 'Approve & Award Points'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'deny')}
+                  disabled={processing}
+                  className="flex-1"
+                >
+                  {processing ? 'Processing...' : 'Deny'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
                       
                       {evidence.url && (
                         <div className="mb-2">
@@ -1559,31 +1651,28 @@ const VerifyAssignments = () => {
                         </div>
                       )}
                       
-                      {evidence.evidence_data && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Submission Details:</Label>
-                          <div className="mt-1 bg-muted p-3 rounded space-y-2">
-                            {/* Display description/text */}
-                            {(() => {
-                              const description = evidence.evidence_data.description || 
-                                                evidence.evidence_data.text || 
-                                                evidence.evidence_data.notes || 
-                                                evidence.evidence_data.textInput || 
-                                                evidence.evidence_data.content || 
-                                                evidence.evidence_data.message;
-                              
-                              console.log('🔍 Evidence data for description:', evidence.evidence_data);
-                              console.log('🔍 Extracted description:', description);
-                              
-                              return description && (
+                        {evidence.evidence_data && (
+                          <div className={!isLatest ? 'pointer-events-none' : ''}>
+                            <Label className="text-xs text-muted-foreground">Submission Details:</Label>
+                            <div className="mt-1 bg-muted p-3 rounded space-y-2">
+                              {/* Display description/text */}
+                              {evidence.evidence_data.description && (
                                 <div>
                                   <Label className="text-xs font-medium">Description:</Label>
-                                  <p className="text-sm whitespace-pre-wrap mt-1 bg-background p-2 rounded border">
-                                    {description}
-                                  </p>
+                                  <div className="text-sm whitespace-pre-wrap mt-1 bg-background p-2 rounded border">
+                                    {evidence.evidence_data.description}
+                                  </div>
                                 </div>
-                              );
-                            })()}
+                              )}
+                              
+                              {evidence.evidence_data.text && !evidence.evidence_data.description && (
+                                <div>
+                                  <Label className="text-xs font-medium">Description:</Label>
+                                  <div className="text-sm whitespace-pre-wrap mt-1 bg-background p-2 rounded border">
+                                    {evidence.evidence_data.text}
+                                  </div>
+                                </div>
+                              )}
                             
                             {/* Display submitted URL from evidence_data if different from main URL */}
                             {evidence.evidence_data.url && evidence.evidence_data.url !== evidence.url && (
@@ -1647,6 +1736,12 @@ const VerifyAssignments = () => {
                               </div>
                             )}
                           </div>
+                        </div>
+                      )}
+                      
+                      {!isLatest && (
+                        <div className="mt-2 text-xs text-muted-foreground italic">
+                          Previous submission - Read only
                         </div>
                       )}
                     </Card>
