@@ -54,6 +54,7 @@ export const useBadgeLeaders = () => {
       }
 
       console.log('🏆 Profile badge data:', profileBadgeData?.length || 0, 'records');
+      console.log('🏆 Sample profile badge data:', profileBadgeData?.slice(0, 2));
 
       // Get users with job application activity
       const { data: jobActivityData, error: jobError } = await supabase
@@ -129,9 +130,17 @@ export const useBadgeLeaders = () => {
 
   // Process users who have earned profile badges
   const processProfileBadgeLeaders = (badgeData: any[]): BadgeLeader[] => {
+    console.log('🏆 Processing profile badge leaders, input data length:', badgeData.length);
+    
+    if (badgeData.length === 0) {
+      console.log('🏆 No profile badge data to process');
+      return [];
+    }
+
     const userBadgesMap = new Map<string, { user_id: string; profile: any; badges: any[]; maxTier: string; totalPoints: number }>();
     
     badgeData.forEach((item: any) => {
+      console.log('🏆 Processing badge item:', item);
       const key = item.user_id;
       if (!userBadgesMap.has(key)) {
         userBadgesMap.set(key, {
@@ -153,7 +162,10 @@ export const useBadgeLeaders = () => {
       else if (tier === 'silver' && current.maxTier !== 'gold') current.maxTier = 'silver';
     });
 
-    return Array.from(userBadgesMap.values())
+    console.log('🏆 User badges map size:', userBadgesMap.size);
+    console.log('🏆 User badges map values:', Array.from(userBadgesMap.values()));
+
+    const result = Array.from(userBadgesMap.values())
       .sort((a, b) => b.totalPoints - a.totalPoints)
       .slice(0, 3)
       .map(item => ({
@@ -164,6 +176,9 @@ export const useBadgeLeaders = () => {
         total_points: item.totalPoints,
         badge_type: getBadgeTypeFromTier(item.maxTier) as 'Silver' | 'Gold' | 'Diamond'
       }));
+
+    console.log('🏆 Final profile badge leaders:', result);
+    return result;
   };
 
   // Process users with job applications
