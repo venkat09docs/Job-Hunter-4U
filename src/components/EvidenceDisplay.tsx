@@ -154,6 +154,14 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
             }
           }
           
+          // Additional check: if URL is still null but we have text field, check if text contains URL
+          if (!url && parsedEvidenceData?.text && parsedEvidenceData.text !== description) {
+            const textStr = parsedEvidenceData.text.trim();
+            if (textStr.toLowerCase().startsWith('http') || (textStr.includes('.') && textStr.includes('/'))) {
+              url = textStr;
+            }
+          }
+          
           // Debug logging for this specific item
           console.log(`🔍 Evidence ${index} final extracted values:`, {
             'url': url,
