@@ -29,9 +29,18 @@ export const useBadgeLeaders = () => {
   const fetchBadgeLeaders = async () => {
     try {
       setLoading(true);
-      console.log('🏆 Fetching badge leaders...');
+      console.log('🏆 Starting badge leaders fetch...');
+
+      // First, let's test a simple query to see if we can access the data
+      const { data: testQuery, error: testError } = await supabase
+        .from('profile_user_badges')
+        .select('user_id, badge_id')
+        .limit(5);
+
+      console.log('🏆 Test query result:', testQuery, 'Error:', testError);
 
       // Get users who have earned profile badges (Bronze, Silver, Gold)
+      console.log('🏆 Executing main profile badges query...');
       const { data: profileBadgeData, error: profileBadgeError } = await supabase
         .from('profile_user_badges')
         .select(`
@@ -48,13 +57,15 @@ export const useBadgeLeaders = () => {
         `)
         .order('awarded_at', { ascending: false });
 
+      console.log('🏆 Profile badge query executed');
+      console.log('🏆 Profile badge error:', profileBadgeError);
+      console.log('🏆 Profile badge data length:', profileBadgeData?.length || 0);
+      console.log('🏆 Raw profile badge data:', profileBadgeData);
+
       if (profileBadgeError) {
         console.error('❌ Error fetching profile badges:', profileBadgeError);
         throw profileBadgeError;
       }
-
-      console.log('🏆 Profile badge data:', profileBadgeData?.length || 0, 'records');
-      console.log('🏆 Sample profile badge data:', profileBadgeData?.slice(0, 2));
 
       // Get users with job application activity
       const { data: jobActivityData, error: jobError } = await supabase
@@ -96,7 +107,9 @@ export const useBadgeLeaders = () => {
       if (githubError) console.error('❌ Error fetching GitHub data:', githubError);
 
       // Process Profile Build Champions (users with profile badges)
+      console.log('🏆 About to process profile badge leaders with data:', profileBadgeData?.length || 0, 'records');
       const profileBuildLeaders = processProfileBadgeLeaders(profileBadgeData || []);
+      console.log('🏆 Processed profile build leaders:', profileBuildLeaders);
       
       // Process Job Application Masters
       const jobApplicationLeaders = processJobLeaders(jobActivityData || []);
@@ -107,12 +120,14 @@ export const useBadgeLeaders = () => {
       // Process GitHub Repository Experts (IT users only)
       const githubLeaders = processGitHubLeaders(githubActivityData || []);
 
-      console.log('🏆 Badge leaders processed:', {
+      console.log('🏆 All badge leaders processed:', {
         profileBuild: profileBuildLeaders.length,
         jobsApply: jobApplicationLeaders.length,
         linkedinGrowth: linkedinLeaders.length,
         githubRepository: githubLeaders.length
       });
+
+      console.log('🏆 Final profile build leaders to display:', profileBuildLeaders);
 
       setBadgeLeaders({
         profileBuild: profileBuildLeaders,

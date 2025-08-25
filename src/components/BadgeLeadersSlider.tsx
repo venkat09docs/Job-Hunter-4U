@@ -18,6 +18,9 @@ export const BadgeLeadersSlider = () => {
   const { badgeLeaders, loading } = useBadgeLeaders();
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  console.log('🎭 BadgeLeadersSlider: badgeLeaders data:', badgeLeaders);
+  console.log('🎭 BadgeLeadersSlider: loading state:', loading);
+
   const categories: BadgeCategory[] = [
     {
       id: 'profileBuild',
@@ -44,6 +47,12 @@ export const BadgeLeadersSlider = () => {
       leaders: badgeLeaders.githubRepository
     }
   ];
+
+  console.log('🎭 BadgeLeadersSlider: categories created:', categories.map(c => ({ 
+    id: c.id, 
+    title: c.title, 
+    leadersCount: c.leaders.length 
+  })));
 
   // Auto-scroll functionality
   useEffect(() => {
