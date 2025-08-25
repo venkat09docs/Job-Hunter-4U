@@ -199,7 +199,7 @@ const VerifyAssignments = () => {
       assignmentsWithProfiles.map(async (assignment) => {
         const { data: evidenceData, error: evidenceError } = await supabase
           .from('career_task_evidence')
-          .select('*')
+          .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
           .eq('assignment_id', assignment.id)
           .order('created_at', { ascending: false });
 
@@ -262,7 +262,7 @@ const VerifyAssignments = () => {
       assignmentsWithProfiles.map(async (assignment) => {
         const { data: evidenceData, error: evidenceError } = await supabase
           .from('career_task_evidence')
-          .select('*')
+          .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
           .eq('assignment_id', assignment.id)
           .order('created_at', { ascending: false });
 
@@ -466,7 +466,7 @@ const VerifyAssignments = () => {
                 {currentAssignments.map((assignment) => (
                   <Card key={assignment.id} className="p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
+                        <div className="flex items-start space-x-4">
                         <Avatar className="h-12 w-12">
                           <AvatarImage 
                             src={assignment.profiles.profile_image_url} 
@@ -479,14 +479,16 @@ const VerifyAssignments = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-lg">
-                              {assignment.profiles.full_name}
+                              {assignment.career_task_templates.title}
                             </h3>
-                            <Badge variant="outline">
-                              @{assignment.profiles.username}
+                            <Badge variant="outline" className="text-xs">
+                              {assignment.career_task_templates.sub_categories?.name || 
+                               assignment.career_task_templates.module || 
+                               assignment.career_task_templates.category || 'GENERAL'}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
-                            {assignment.career_task_templates.title}
+                            Submitted by: {assignment.profiles.full_name} (@{assignment.profiles.username})
                           </p>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
@@ -629,7 +631,19 @@ const VerifyAssignments = () => {
       <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Review Assignment</DialogTitle>
+            <DialogTitle>
+              Review Assignment: {selectedAssignment?.career_task_templates.title}
+            </DialogTitle>
+            <div className="flex items-center gap-2 pt-2">
+              <Badge variant="outline">
+                {selectedAssignment?.career_task_templates.sub_categories?.name || 
+                 selectedAssignment?.career_task_templates.module || 
+                 selectedAssignment?.career_task_templates.category || 'GENERAL'}
+              </Badge>
+              <Badge variant="secondary">
+                {selectedAssignment?.career_task_templates.points_reward} points
+              </Badge>
+            </div>
           </DialogHeader>
           
           {selectedAssignment && (
@@ -662,18 +676,25 @@ const VerifyAssignments = () => {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Task Details</h4>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {selectedAssignment.career_task_templates.title}
-                </p>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1">
-                    <Award className="h-4 w-4" />
-                    {selectedAssignment.career_task_templates.points_reward} points
-                  </span>
-                  <span>
-                    Submitted: {format(new Date(selectedAssignment.submitted_at), 'MMM dd, yyyy HH:mm')}
-                  </span>
+                <h4 className="font-semibold mb-2">Assignment Information</h4>
+                <div className="bg-muted p-4 rounded-lg space-y-2">
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="flex items-center gap-1">
+                      <Award className="h-4 w-4" />
+                      {selectedAssignment.career_task_templates.points_reward} points
+                    </span>
+                    <span>
+                      Submitted: {format(new Date(selectedAssignment.submitted_at), 'MMM dd, yyyy HH:mm')}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <strong>Category:</strong> {selectedAssignment.career_task_templates.category}
+                  </div>
+                  {selectedAssignment.career_task_templates.sub_categories?.name && (
+                    <div className="text-sm text-muted-foreground">
+                      <strong>Sub-category:</strong> {selectedAssignment.career_task_templates.sub_categories.name}
+                    </div>
+                  )}
                 </div>
               </div>
 
