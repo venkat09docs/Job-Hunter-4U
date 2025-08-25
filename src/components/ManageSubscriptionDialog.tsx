@@ -3,11 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Star, Loader2, Sparkles } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Check, Zap, Crown, Star, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { supabase } from '@/integrations/supabase/client';
+import PaymentGatewaySelector from './PaymentGatewaySelector';
 
 declare global {
   interface Window {
@@ -21,10 +20,10 @@ interface ManageSubscriptionDialogProps {
 }
 
 const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDialogProps) => {
-  const { toast } = useToast();
   const { user } = useAuth();
   const { profile, refreshProfile, getRemainingDays } = useProfile();
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const plans = [
     {
@@ -120,264 +119,19 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     }
   ];
 
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  const handleSelectPlan = (plan: typeof plans[0]) => {
+    setSelectedPlan(plan);
+    setPaymentDialogOpen(true);
   };
 
-  const calculateUpgradedEndDate = (newPlanDays: number) => {
-    const remainingDays = getRemainingDays();
-    const totalDays = newPlanDays + remainingDays;
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + totalDays);
-    return endDate;
-  };
-
-  const handleUpgrade = async (plan: typeof plans[0]) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login to upgrade your subscription",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check if user session is still valid before making the payment request
-    try {
-      console.log('Checking user session before payment...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        toast({
-          title: "Session Error",
-          description: "There was an error checking your session. Please refresh the page and login again.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (!session || !session.user) {
-        console.error('No valid session found');
-        toast({
-          title: "Session Expired",
-          description: "Your session has expired. Please refresh the page and login again.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log('✅ Session is valid, proceeding with payment...');
-    } catch (error) {
-      console.error('Session validation error:', error);
-      toast({
-        title: "Authentication Error",
-        description: "Unable to verify your session. Please refresh the page and try again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoadingPlan(plan.name);
-    
-    
-    try {
-      // Load Razorpay SDK
-      console.log('Loading Razorpay SDK...');
-      const res = await loadRazorpay();
-      if (!res) {
-        console.error('Razorpay SDK failed to load');
-        toast({
-          title: "Error",
-          description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
-          variant: "destructive"
-        });
-        setLoadingPlan(null);
-        return;
-      }
-      console.log('✅ Razorpay SDK loaded successfully');
-
-      // Create order using our edge function - send amount in paisa (multiply by 100)
-      const amountInPaisa = Math.round(plan.price * 100);
-      console.log('Creating payment order...', { amount: plan.price, amountInPaisa, plan_name: plan.name });
-      
-      try {
-        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order-simple', {
-          body: {
-            amount: amountInPaisa, // Send amount in paisa
-            plan_name: plan.name,
-            plan_duration: plan.duration,
-          }
-        });
-
-        console.log('Edge function response:', { orderData, orderError });
-
-        if (orderError) {
-          console.error('Order creation error:', orderError);
-          toast({
-            title: "Payment Order Failed",
-            description: `Failed to create payment order: ${orderError.message}. Please try refreshing the page and logging in again.`,
-            variant: "destructive"
-          });
-          setLoadingPlan(null);
-          return;
-        }
-
-      if (!orderData) {
-        console.error('No order data returned');
-        toast({
-          title: "Error",
-          description: "No payment order data received. Please try again.",
-          variant: "destructive"
-        });
-        setLoadingPlan(null);
-        return;
-      }
-
-      console.log('✅ Payment order created successfully:', orderData);
-
-      // Calculate upgraded end date
-      const upgradedEndDate = calculateUpgradedEndDate(plan.days);
-
-      // Configure Razorpay options
-      const options = {
-        key: orderData.key,
-        order_id: orderData.order_id,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "JobHunter Pro",
-        description: `${plan.name} - Upgrade your subscription`,
-        image: "/favicon.ico",
-        handler: async function (response: any) {
-          try {
-            // Verify payment using our edge function
-            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment-simple', {
-              body: {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }
-            });
-
-            if (verifyError || !verifyData?.success) {
-              console.error('Payment verification error:', verifyError);
-              setLoadingPlan(null);
-              document.body.classList.remove('razorpay-open');
-              toast({
-                title: "Payment Verification Failed",
-                description: "Payment received but verification failed. Please contact support.",
-                variant: "destructive"
-              });
-              return;
-            }
-
-            // Success! Refresh profile data
-            await refreshProfile();
-            
-            toast({
-              title: "🎉 Upgrade Successful!",
-              description: `Welcome to ${plan.name}! Your subscription has been upgraded.`,
-            });
-            
-            // Remove body class when successful
-            document.body.classList.remove('razorpay-open');
-            
-            // Close dialog and reload
-            onOpenChange(false);
-            setTimeout(() => {
-              window.location.reload();
-            }, 1500);
-            
-          } catch (error) {
-            console.error('Error processing upgrade:', error);
-            toast({
-              title: "Upgrade Processing Error",
-              description: "Payment may have been successful but activation failed. Please contact support.",
-              variant: "destructive"
-            });
-          }
-        },
-        modal: {
-          ondismiss: function() {
-            setLoadingPlan(null);
-            document.body.classList.remove('razorpay-open');
-            toast({
-              title: "Upgrade Cancelled",
-              description: "You can complete your upgrade anytime.",
-            });
-          },
-          escape: true,
-          backdropclose: false
-        },
-        theme: {
-          color: "#6366f1",
-          backdrop_color: "rgba(0, 0, 0, 0.8)"
-        },
-        prefill: {
-          name: user.user_metadata?.full_name || "",
-          email: user.email || "", 
-          contact: ""
-        },
-        notes: {
-          plan: plan.name,
-          duration: plan.duration,
-          upgrade: true
-        }
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', function (response: any) {
-        setLoadingPlan(null);
-        toast({
-          title: "Payment Failed",
-          description: `${response.error.description}. Please try again or contact support.`,
-          variant: "destructive"
-        });
-        console.error('Payment failed:', response.error);
-      });
-      
-      // Blur any currently focused element
-      if (document.activeElement && document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-      
-      // Open payment modal first
-      paymentObject.open();
-      
-      // Add class to body after modal opens to avoid affecting Razorpay
-      setTimeout(() => {
-        document.body.classList.add('razorpay-open');
-      }, 100);
-      
-      // Simple focus management - just ensure window focus
-      setTimeout(() => {
-        window.focus();
-      }, 300);
-      
-      } catch (error) {
-        console.error('Payment initialization error:', error);
-        toast({
-          title: "Error",
-          description: "Failed to initialize payment. Please try again.",
-          variant: "destructive"
-        });
-        setLoadingPlan(null);
-      }
-    } catch (error) {
-      console.error('Payment function error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to process payment request. Please try again.",
-        variant: "destructive"
-      });
-      setLoadingPlan(null);
-    }
+  const handlePaymentSuccess = () => {
+    setPaymentDialogOpen(false);
+    setSelectedPlan(null);
+    onOpenChange(false);
+    // Refresh the page to show updated subscription status
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
   };
 
   const currentPlan = plans.find(plan => plan.name === profile?.subscription_plan);
@@ -494,25 +248,21 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
                 )}
 
                 <div className="space-y-2">
-                  <Button
-                    variant={isCurrentPlan ? "secondary" : plan.variant}
-                    className="w-full h-8 text-xs font-semibold"
-                    disabled={isCurrentPlan || loadingPlan === plan.name}
-                    onClick={() => handleUpgrade(plan)}
+                  <Button 
+                    variant={plan.popular ? "default" : "outline"}
+                    size="sm"
+                    className="w-full mt-4"
+                    onClick={() => handleSelectPlan(plan)}
+                    disabled={isCurrentPlan}
                   >
-                    {loadingPlan === plan.name ? (
+                    {isCurrentPlan ? (
                       <>
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        Processing Payment...
-                      </>
-                    ) : isCurrentPlan ? (
-                      <>
-                        <Check className="h-3 w-3 mr-1" />
+                        <Check className="h-4 w-4 mr-2" />
                         Current Plan
                       </>
                     ) : (
                       <>
-                        <Crown className="h-3 w-3 mr-1" />
+                        <Icon className="h-4 w-4 mr-2" />
                         Upgrade to {plan.name}
                       </>
                     )}
@@ -531,6 +281,39 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
           })}
           </div>
         </div>
+
+        {/* Payment Gateway Selection Dialog */}
+        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                Upgrade Your Subscription
+              </DialogTitle>
+              {selectedPlan && (
+                <div className="text-center space-y-2">
+                  <div className="p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold">{selectedPlan.name}</h4>
+                    <p className="text-sm text-muted-foreground">{selectedPlan.description}</p>
+                    <div className="text-2xl font-bold text-primary mt-2">
+                      ₹{selectedPlan.price}
+                      <span className="text-sm font-normal text-muted-foreground">/{selectedPlan.duration}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      + {getRemainingDays()} days from current plan
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogHeader>
+            
+            {selectedPlan && (
+              <PaymentGatewaySelector 
+                plan={selectedPlan}
+                onSuccess={handlePaymentSuccess}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         <div className="flex-shrink-0 mt-6 pt-4 border-t text-center text-sm text-muted-foreground">
           <p>Secure payments powered by Razorpay • Cancel anytime • Instant access</p>
