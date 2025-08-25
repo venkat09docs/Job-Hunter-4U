@@ -32,20 +32,30 @@ const LevelUp = () => {
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
-  // Get LinkedIn profile progress from networking category tasks
-  const linkedinProfileTasks = !careerLoading ? assignments.filter(a => 
-    a.career_task_templates?.category === 'networking' &&
-    (a.career_task_templates?.title?.toLowerCase().includes('linkedin') ||
-     a.career_task_templates?.description?.toLowerCase().includes('linkedin') ||
-     a.career_task_templates?.sub_category_id === '1f6bd7f0-117c-4167-8719-f55525b362e2') // LinkedIn profile subcategory
-  ) : [];
-  
-  const completedLinkedInTasks = linkedinProfileTasks.filter(task => task.status === 'verified').length;
-  const linkedinProfileProgress = linkedinProfileTasks.length > 0 
-    ? Math.round((completedLinkedInTasks / linkedinProfileTasks.length) * 100) 
+  // Get LinkedIn profile progress using the same logic as Career Assignments page
+  const getTasksBySubCategoryName = (categoryName: string) => {
+    if (careerLoading || !assignments) return [];
+    
+    // First get sub-categories for profile parent category
+    const profileSubCategories = assignments
+      .map(a => a.career_task_templates?.sub_category_id)
+      .filter(id => id) // Remove null/undefined
+      .filter((id, index, arr) => arr.indexOf(id) === index); // Remove duplicates
+    
+    // For now, filter by tasks that have linkedin in their title/description 
+    // This matches the Career Assignments page behavior
+    return assignments.filter(a => 
+      a.career_task_templates?.title?.toLowerCase().includes(categoryName.toLowerCase()) ||
+      a.career_task_templates?.description?.toLowerCase().includes(categoryName.toLowerCase())
+    );
+  };
+
+  const linkedinTasks = getTasksBySubCategoryName('linkedin');
+  const linkedinProfileProgress = linkedinTasks.length > 0 
+    ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
     : 0;
     
-  console.log('🔍 LinkedIn Profile Tasks:', linkedinProfileTasks.length, 'Completed:', completedLinkedInTasks, 'Progress:', linkedinProfileProgress + '%');
+  console.log('🔍 LinkedIn Profile Tasks (Level Up):', linkedinTasks.length, 'Completed:', linkedinTasks.filter(t => t.status === 'verified').length, 'Progress:', linkedinProfileProgress + '%');
   
   // Get completed profile assignments count for badge unlocking
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
