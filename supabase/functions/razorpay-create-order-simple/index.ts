@@ -114,13 +114,10 @@ serve(async (req) => {
     const paymentRecord = {
       user_id: user.id,
       razorpay_order_id: razorpayOrder.id,
-      razorpay_payment_id: null,
-      razorpay_signature: null,
       amount: parseInt(amount),
-      currency: 'INR',
-      status: 'pending',
       plan_name: plan_name,
       plan_duration: plan_duration
+      // razorpay_payment_id, razorpay_signature, currency, status, created_at, updated_at will use defaults
     };
     
     console.log('Payment record data:', paymentRecord);
