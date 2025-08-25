@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
-import { TestPointsButton } from '@/components/TestPointsButton';
 
 interface SubmittedAssignment {
   id: string;
@@ -973,7 +972,6 @@ const VerifyAssignments = () => {
             </div>
           </div>
           <div className="flex gap-3">
-            <TestPointsButton />
             <AdminReenableRequestsDialog />
             <Badge variant="secondary" className="text-lg px-3 py-1">
               {filteredAssignments.length} Pending
@@ -1562,11 +1560,11 @@ const VerifyAssignments = () => {
                           <Label className="text-xs text-muted-foreground">Submission Details:</Label>
                           <div className="mt-1 bg-muted p-3 rounded space-y-2">
                             {/* Display description/text */}
-                            {(evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes) && (
+                            {(evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes || evidence.evidence_data.textInput || evidence.evidence_data.content || evidence.evidence_data.message) && (
                               <div>
                                 <Label className="text-xs font-medium">Description:</Label>
                                 <p className="text-sm whitespace-pre-wrap mt-1">
-                                  {evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes}
+                                  {evidence.evidence_data.description || evidence.evidence_data.text || evidence.evidence_data.notes || evidence.evidence_data.textInput || evidence.evidence_data.content || evidence.evidence_data.message}
                                 </p>
                               </div>
                             )}
