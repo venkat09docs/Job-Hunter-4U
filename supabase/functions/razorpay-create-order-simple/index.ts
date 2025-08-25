@@ -109,9 +109,15 @@ serve(async (req) => {
     );
 
     console.log('Creating payment record in database...');
+    console.log('Payment details:', {
+      user_id: user.id,
+      order_id: razorpayOrder.id,
+      amount: parseInt(amount),
+      plan_name: plan_name,
+      plan_duration: plan_duration
+    });
     
     // Use the dedicated database function to create payment record
-    // This bypasses validation triggers that cause insertion conflicts
     const { data: paymentData, error: insertError } = await supabaseService
       .rpc('create_payment_record', {
         p_user_id: user.id,
@@ -121,12 +127,14 @@ serve(async (req) => {
         p_plan_duration: plan_duration
       });
 
+    console.log('Database function response:', { data: paymentData, error: insertError });
+
     if (insertError) {
       console.error('CRITICAL: Database function error:', insertError);
-      console.error('This will cause verification to fail!');
-      throw new Error(`Failed to create payment record: ${insertError.message}. Please try again.`);
+      console.error('Error details:', JSON.stringify(insertError, null, 2));
+      throw new Error(`Failed to create payment record: ${insertError.message || 'Database error'}. Please try again.`);
     } else {
-      console.log('✅ Payment record created successfully:', paymentData);
+      console.log('✅ Payment record created successfully with ID:', paymentData);
     }
 
     // Return success response

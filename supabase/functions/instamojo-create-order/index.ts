@@ -191,6 +191,13 @@ serve(async (req) => {
 
     // Store payment record in database using the helper function
     console.log('Creating payment record in database...');
+    console.log('Payment details:', {
+      user_id: user.user.id,
+      payment_request_id: paymentRequest.id,
+      amount: amount,
+      plan_name: plan_name,
+      plan_duration: plan_duration
+    });
     
     const { data: paymentData, error: insertError } = await supabaseService
       .rpc('create_payment_record', {
@@ -201,12 +208,14 @@ serve(async (req) => {
         p_plan_duration: plan_duration
       });
 
+    console.log('Database function response:', { data: paymentData, error: insertError });
+
     if (insertError) {
       console.error('CRITICAL: Database function error:', insertError);
-      console.error('This will cause verification to fail!');
-      throw new Error(`Failed to create payment record: ${insertError.message}`);
+      console.error('Error details:', JSON.stringify(insertError, null, 2));
+      throw new Error(`Failed to create payment record: ${insertError.message || 'Database error'}`);
     } else {
-      console.log('✅ Payment record created successfully:', paymentData);
+      console.log('✅ Payment record created successfully with ID:', paymentData);
     }
 
     // Return successful response with payment URL
