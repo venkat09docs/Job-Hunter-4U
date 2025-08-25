@@ -132,7 +132,7 @@ const InstituteMembershipPlans = () => {
       });
 
       try {
-        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order-simple', {
           body: {
             amount: Math.round(plan.price * 100), // Convert rupees to paisa
             plan_name: plan.name,

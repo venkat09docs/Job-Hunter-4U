@@ -208,7 +208,7 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
       console.log('Creating payment order...', { amount: plan.price, amountInPaisa, plan_name: plan.name });
       
       try {
-        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order-simple', {
           body: {
             amount: amountInPaisa, // Send amount in paisa
             plan_name: plan.name,

@@ -1,0 +1,157 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    console.log('=== SIMPLE RAZORPAY ORDER CREATION STARTED ===');
+    
+    // Parse request body
+    const body = await req.json();
+    console.log('Request body:', body);
+    
+    const { amount, plan_name, plan_duration } = body;
+    
+    // Basic validation
+    if (!amount || !plan_name || !plan_duration) {
+      console.error('Missing required fields:', { amount, plan_name, plan_duration });
+      throw new Error('Missing required fields: amount, plan_name, plan_duration');
+    }
+
+    // Get user from auth header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      throw new Error('Authentication failed');
+    }
+
+    console.log('User authenticated:', user.id);
+
+    // Get Razorpay credentials
+    const keyId = Deno.env.get('RAZORPAY_TEST_KEY_ID');
+    const keySecret = Deno.env.get('RAZORPAY_TEST_KEY_SECRET');
+    
+    if (!keyId || !keySecret) {
+      console.error('Missing Razorpay credentials');
+      throw new Error('Razorpay credentials not configured');
+    }
+
+    console.log('Creating Razorpay order with amount:', amount);
+
+    // Create Razorpay order
+    const orderPayload = {
+      amount: amount, // Already in paisa from frontend
+      currency: 'INR',
+      receipt: `order_${Date.now()}`,
+      notes: {
+        plan_name,
+        plan_duration,
+        user_id: user.id
+      }
+    };
+
+    console.log('Razorpay order payload:', orderPayload);
+
+    const razorpayResponse = await fetch('https://api.razorpay.com/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${btoa(`${keyId}:${keySecret}`)}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderPayload),
+    });
+
+    console.log('Razorpay response status:', razorpayResponse.status);
+
+    if (!razorpayResponse.ok) {
+      const errorText = await razorpayResponse.text();
+      console.error('Razorpay error:', errorText);
+      throw new Error(`Razorpay API error: ${errorText}`);
+    }
+
+    const razorpayOrder = await razorpayResponse.json();
+    console.log('Razorpay order created:', razorpayOrder.id);
+
+    // Create payment record using service role client
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Simple direct insert without select
+    const { error: insertError } = await supabaseService
+      .from('payments')
+      .insert({
+        user_id: user.id,
+        razorpay_order_id: razorpayOrder.id,
+        amount: amount,
+        plan_name: plan_name,
+        plan_duration: plan_duration,
+        status: 'pending',
+        currency: 'INR'
+      });
+
+    if (insertError) {
+      console.error('Database insert error:', insertError);
+      // Don't fail the entire operation if DB insert fails
+      console.log('Continuing without payment record...');
+    } else {
+      console.log('Payment record created successfully');
+    }
+
+    // Return success response
+    const responseData = {
+      order_id: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      key: keyId,
+    };
+
+    console.log('=== SUCCESS ===', responseData);
+
+    return new Response(
+      JSON.stringify(responseData),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+
+  } catch (error) {
+    console.error('=== SIMPLE ORDER CREATION FAILED ===');
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
+  }
+});
