@@ -28,34 +28,10 @@ const LevelUp = () => {
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [subCategories, setSubCategories] = useState<any[]>([]);
   
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
-  
-  // Get LinkedIn profile progress using the same logic as Career Assignments page
-  const getTasksBySubCategoryName = (categoryName: string) => {
-    if (careerLoading || !assignments) return [];
-    
-    // First get sub-categories for profile parent category
-    const profileSubCategories = assignments
-      .map(a => a.career_task_templates?.sub_category_id)
-      .filter(id => id) // Remove null/undefined
-      .filter((id, index, arr) => arr.indexOf(id) === index); // Remove duplicates
-    
-    // For now, filter by tasks that have linkedin in their title/description 
-    // This matches the Career Assignments page behavior
-    return assignments.filter(a => 
-      a.career_task_templates?.title?.toLowerCase().includes(categoryName.toLowerCase()) ||
-      a.career_task_templates?.description?.toLowerCase().includes(categoryName.toLowerCase())
-    );
-  };
-
-  const linkedinTasks = getTasksBySubCategoryName('linkedin');
-  const linkedinProfileProgress = linkedinTasks.length > 0 
-    ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
-    : 0;
-    
-  console.log('🔍 LinkedIn Profile Tasks (Level Up):', linkedinTasks.length, 'Completed:', linkedinTasks.filter(t => t.status === 'verified').length, 'Progress:', linkedinProfileProgress + '%');
   
   // Get completed profile assignments count for badge unlocking
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
@@ -68,13 +44,6 @@ const LevelUp = () => {
       checkAndAwardBadges();
     }
   }, [resumeProgress, careerLoading, checkAndAwardBadges]);
-
-  // Also check when LinkedIn profile progress changes (for silver/gold progression)
-  useEffect(() => {
-    if (!careerLoading && linkedinProfileProgress >= 100) {
-      checkAndAwardBadges();
-    }
-  }, [linkedinProfileProgress, careerLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -114,6 +83,67 @@ const LevelUp = () => {
   useEffect(() => {
     fetchJobData();
   }, [user]);
+
+  // Fetch sub-categories to match Career Assignments page logic
+  useEffect(() => {
+    if (user) {
+      fetchSubCategories();
+    }
+  }, [user]);
+
+  const fetchSubCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sub_categories')
+        .select('*')
+        .eq('parent_category', 'profile')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setSubCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching sub categories:', error);
+    }
+  };
+
+  // Use exact same logic as Career Assignments page
+  const getTasksBySubCategory = (subCategoryId: string) => {
+    if (careerLoading || !assignments) return [];
+    
+    return assignments
+      .filter(assignment => assignment.career_task_templates?.sub_category_id === subCategoryId)
+      .sort((a, b) => {
+        const orderA = a.career_task_templates?.display_order || 0;
+        const orderB = b.career_task_templates?.display_order || 0;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+  };
+
+  const getTasksBySubCategoryName = (categoryName: string) => {
+    const subCategory = subCategories.find(sc => 
+      sc.name.toLowerCase().includes(categoryName.toLowerCase())
+    );
+    return subCategory ? getTasksBySubCategory(subCategory.id) : [];
+  };
+
+  // Calculate LinkedIn profile progress using exact same logic as Career Assignments page
+  const linkedinTasks = getTasksBySubCategoryName('linkedin');
+  const linkedinProfileProgress = linkedinTasks.length > 0 
+    ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
+    : 0;
+    
+   console.log('🔍 LinkedIn Profile Tasks (Level Up):', linkedinTasks.length, 'Completed:', linkedinTasks.filter(t => t.status === 'verified').length, 'Progress:', linkedinProfileProgress + '%');
+
+  // Also check when LinkedIn profile progress changes (for silver/gold progression)
+  useEffect(() => {
+    if (!careerLoading && linkedinProfileProgress >= 100) {
+      checkAndAwardBadges();
+    }
+  }, [linkedinProfileProgress, careerLoading, checkAndAwardBadges]);
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
