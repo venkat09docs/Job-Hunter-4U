@@ -275,6 +275,7 @@ export const useBadgeLeaders = () => {
   };
 
   useEffect(() => {
+    console.log('🏆 useBadgeLeaders: Starting effect');
     fetchBadgeLeaders();
   }, []);
 

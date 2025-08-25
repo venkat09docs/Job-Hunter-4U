@@ -50,13 +50,20 @@ const Dashboard = () => {
   const { isInstituteAdmin, isAdmin } = useRole();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
-  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const eligiblePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
   // Check if user has eligible subscription
   const hasEligibleSubscription = () => {
-    return hasActiveSubscription() && 
-           profile?.subscription_plan && 
-           eligiblePlans.includes(profile.subscription_plan);
+    const hasActive = hasActiveSubscription();
+    const hasPlan = profile?.subscription_plan && eligiblePlans.includes(profile.subscription_plan);
+    console.log('🔍 Badge Leaders eligibility check:', {
+      hasActiveSubscription: hasActive,
+      currentPlan: profile?.subscription_plan,
+      eligiblePlans,
+      hasPlan,
+      canAccess: hasActive && hasPlan
+    });
+    return hasActive && hasPlan;
   };
 
   // Check if user can access Badge Leaders and Leaderboard (admin or eligible subscription)
