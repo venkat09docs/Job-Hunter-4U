@@ -273,7 +273,27 @@ const CareerActivities = () => {
                   <h3 className="text-xl font-semibold">Week {currentPeriod} ({getWeekDateRange(currentPeriod)}) - LinkedIn Growth Tasks</h3>
                   <div className="flex items-center gap-2">
                     {(isAdmin || isInstituteAdmin) && (
-                      <AdminReenableRequestsDialog />
+                      <>
+                        <AdminReenableRequestsDialog />
+                        <Button
+                          onClick={handleInitializeWeek}
+                          disabled={isInitializing}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {isInitializing ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Regenerating...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                              Reset Week
+                            </>
+                          )}
+                        </Button>
+                      </>
                     )}
                     <Badge variant="outline" className="text-sm">
                       {stats.completed} of {stats.total} completed
@@ -326,11 +346,6 @@ const CareerActivities = () => {
 
                 {!tasksLoading && userTasks.length > 0 && (
                   <div className="space-y-4">
-                    {/* Debug info */}
-                    <div className="text-xs text-muted-foreground p-2 bg-muted/50 rounded">
-                      Debug: {userTasks.length} tasks loaded for period {currentPeriod}
-                    </div>
-                    
                     {userTasks.map((task) => (
                       <LinkedInTaskCard
                         key={task.id}
