@@ -29,6 +29,9 @@ const LevelUp = () => {
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   
+  // Get LinkedIn profile progress from career assignments (not general LinkedIn activities)
+  const linkedinProfileProgress = !careerLoading ? getModuleProgress('LINKEDIN') : 0;
+  
   // Get resume progress from career assignments (task-based calculation)
   const resumeProgress = !careerLoading ? getModuleProgress('RESUME') : 0;
   
@@ -44,12 +47,12 @@ const LevelUp = () => {
     }
   }, [resumeProgress, careerLoading, checkAndAwardBadges]);
 
-  // Also check when LinkedIn progress changes (for silver/gold progression)
+  // Also check when LinkedIn profile progress changes (for silver/gold progression)
   useEffect(() => {
-    if (!linkedinLoading && linkedinProgress >= 100) {
+    if (!careerLoading && linkedinProfileProgress >= 100) {
       checkAndAwardBadges();
     }
-  }, [linkedinProgress, linkedinLoading, checkAndAwardBadges]);
+  }, [linkedinProfileProgress, careerLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -227,6 +230,7 @@ const LevelUp = () => {
               resumeProgress={resumeProgress}
               completedProfileTasks={completedProfileTasks}
               linkedinProgress={linkedinProgress}
+              linkedinProfileProgress={linkedinProfileProgress}
               githubProgress={githubProgress}
               jobApplicationsCount={totalJobApplications}
               networkConnections={networkMetrics?.totalConnections || 0}
