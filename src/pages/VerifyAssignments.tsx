@@ -52,7 +52,7 @@ const VerifyAssignments = () => {
   const { role, isAdmin, isInstituteAdmin, isRecruiter, loading } = useRole();
   const navigate = useNavigate();
 
-  // States
+  // All state hooks - must be called unconditionally
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
   const [verifiedAssignments, setVerifiedAssignments] = useState<SubmittedAssignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<SubmittedAssignment[]>([]);
@@ -75,7 +75,7 @@ const VerifyAssignments = () => {
   const [verifiedCurrentPage, setVerifiedCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Fetch assignments on component mount
+  // All useEffect hooks - must be called unconditionally
   useEffect(() => {
     if (!loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
       fetchSubmittedAssignments();
@@ -83,11 +83,9 @@ const VerifyAssignments = () => {
     }
   }, [user?.id, isAdmin, isInstituteAdmin, loading]);
 
-  // Filter pending assignments based on search and filters
   useEffect(() => {
     let filtered = assignments;
 
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(assignment =>
         assignment.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -97,27 +95,27 @@ const VerifyAssignments = () => {
       );
     }
 
-    // Module filter
     if (moduleFilter !== 'all') {
-      filtered = filtered.filter(assignment => 
-        assignment.career_task_templates.module === moduleFilter
-      );
+      filtered = filtered.filter(assignment => {
+        const displayModule = assignment.career_task_templates.sub_categories?.name || 
+                              assignment.career_task_templates.module || 
+                              assignment.career_task_templates.category || 
+                              'GENERAL';
+        return displayModule === moduleFilter;
+      });
     }
 
-    // User filter
     if (userFilter !== 'all') {
       filtered = filtered.filter(assignment => assignment.user_id === userFilter);
     }
 
     setFilteredAssignments(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   }, [assignments, searchTerm, moduleFilter, userFilter]);
 
-  // Filter verified assignments based on search and filters
   useEffect(() => {
     let filtered = verifiedAssignments;
 
-    // Search filter
     if (verifiedSearchTerm) {
       filtered = filtered.filter(assignment =>
         assignment.profiles.full_name.toLowerCase().includes(verifiedSearchTerm.toLowerCase()) ||
@@ -127,27 +125,28 @@ const VerifyAssignments = () => {
       );
     }
 
-    // Module filter
     if (verifiedModuleFilter !== 'all') {
-      filtered = filtered.filter(assignment => 
-        assignment.career_task_templates.module === verifiedModuleFilter
-      );
+      filtered = filtered.filter(assignment => {
+        const displayModule = assignment.career_task_templates.sub_categories?.name || 
+                              assignment.career_task_templates.module || 
+                              assignment.career_task_templates.category || 
+                              'GENERAL';
+        return displayModule === verifiedModuleFilter;
+      });
     }
 
-    // User filter
     if (verifiedUserFilter !== 'all') {
       filtered = filtered.filter(assignment => assignment.user_id === verifiedUserFilter);
     }
 
     setFilteredVerifiedAssignments(filtered);
-    setVerifiedCurrentPage(1); // Reset to first page when filters change
+    setVerifiedCurrentPage(1);
   }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedUserFilter]);
 
+  // Function definitions
   const fetchVerifiedAssignments = async () => {
     try {
-      // Only fetch if user has proper permissions
       if (isAdmin) {
-        // Super admins can view all verified assignments
         const { data, error } = await supabase
           .from('career_task_assignments')
           .select(`
@@ -175,13 +174,12 @@ const VerifyAssignments = () => {
   };
 
   const processVerifiedAssignments = async (data: any[]) => {
-    // Fetch user profiles separately
-    const userIds = data?.map(assignment => assignment.user_id) || [];
-    if (userIds.length === 0) {
+    if (!data || data.length === 0) {
       setVerifiedAssignments([]);
       return;
     }
 
+    const userIds = data.map(assignment => assignment.user_id);
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, full_name, username, profile_image_url')
@@ -189,7 +187,6 @@ const VerifyAssignments = () => {
 
     if (profilesError) throw profilesError;
 
-    // Combine assignments with profiles and fetch evidence
     const assignmentsWithProfiles = data.map(assignment => {
       const profile = profilesData?.find(p => p.user_id === assignment.user_id);
       return {
@@ -198,7 +195,6 @@ const VerifyAssignments = () => {
       };
     });
 
-    // Fetch evidence for each assignment
     const assignmentsWithEvidence = await Promise.all(
       assignmentsWithProfiles.map(async (assignment) => {
         const { data: evidenceData, error: evidenceError } = await supabase
@@ -209,7 +205,6 @@ const VerifyAssignments = () => {
 
         if (evidenceError) {
           console.error('Error fetching evidence:', evidenceError);
-          return { ...assignment, evidence: [] };
         }
 
         return { ...assignment, evidence: evidenceData || [] };
@@ -220,106 +215,34 @@ const VerifyAssignments = () => {
   };
 
   const fetchCareerAssignments = async () => {
-    // If institute admin, filter by their institute's students
-    if (isInstituteAdmin && !isAdmin) {
-      console.log('Fetching career assignments for institute admin:', user?.id);
-      
-      // First get the institute(s) this admin manages
-      const { data: institutes, error: instituteError } = await supabase
-        .from('institute_admin_assignments')
-        .select('institute_id')
-        .eq('user_id', user?.id)
-        .eq('is_active', true);
-
-      if (instituteError) throw instituteError;
-
-      if (institutes && institutes.length > 0) {
-        const instituteIds = institutes.map(i => i.institute_id);
-        
-        // Get students assigned to these institutes
-        const { data: studentAssignments, error: studentsError } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .in('institute_id', instituteIds)
-          .eq('is_active', true);
-
-        if (studentsError) throw studentsError;
-
-        if (studentAssignments && studentAssignments.length > 0) {
-          const studentIds = studentAssignments.map(s => s.user_id);
-          
-          const { data, error } = await supabase
-            .from('career_task_assignments')
-            .select(`
-              id,
-              user_id,
-              template_id,
-              status,
-              submitted_at,
-              verified_at,
-              points_earned,
-              score_awarded,
-              career_task_templates (
-                title,
-                module,
-                points_reward,
-                category,
-                sub_categories (
-                  name
-                )
-              )
-            `)
-            .eq('status', 'submitted')
-            .in('user_id', studentIds)
-            .order('submitted_at', { ascending: false });
-
-          if (error) throw error;
-          return data || [];
-        }
-      }
-      return [];
-    } else {
-      // For super admins and recruiters, fetch all career assignments
-      const { data, error } = await supabase
-        .from('career_task_assignments')
-        .select(`
-          *,
-          career_task_templates (
-            title,
-            module,
-            points_reward,
-            category,
-            sub_categories (
-              name
-            )
+    const { data, error } = await supabase
+      .from('career_task_assignments')
+      .select(`
+        *,
+        career_task_templates (
+          title,
+          module,
+          points_reward,
+          category,
+          sub_categories (
+            name
           )
-        `)
-        .eq('status', 'submitted')
-        .order('submitted_at', { ascending: false });
+        )
+      `)
+      .eq('status', 'submitted')
+      .order('submitted_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
-    }
-  };
-
-  const fetchLinkedInAssignments = async () => {
-    try {
-      // Similar logic for LinkedIn assignments - simplified for brevity
-      return [];
-    } catch (error) {
-      console.error('Error fetching LinkedIn assignments:', error);
-      return [];
-    }
+    if (error) throw error;
+    return data || [];
   };
 
   const processAssignments = async (data: any[]) => {
-    // Fetch user profiles separately
-    const userIds = data?.map(assignment => assignment.user_id) || [];
-    if (userIds.length === 0) {
+    if (!data || data.length === 0) {
       setAssignments([]);
       return;
     }
 
+    const userIds = data.map(assignment => assignment.user_id);
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, full_name, username, profile_image_url')
@@ -327,7 +250,6 @@ const VerifyAssignments = () => {
 
     if (profilesError) throw profilesError;
 
-    // Combine assignments with profiles and fetch evidence
     const assignmentsWithProfiles = data.map(assignment => {
       const profile = profilesData?.find(p => p.user_id === assignment.user_id);
       return {
@@ -336,53 +258,30 @@ const VerifyAssignments = () => {
       };
     });
 
-    // Fetch evidence for each assignment (handle both career and LinkedIn assignments)
     const assignmentsWithEvidence = await Promise.all(
       assignmentsWithProfiles.map(async (assignment) => {
-        let evidenceData = [];
-        
-        if (assignment._isLinkedInAssignment) {
-          // Handle LinkedIn evidence if needed
-          evidenceData = [];
-        } else {
-          // Fetch all career task evidence - ordered by most recent first
-          const { data: careerEvidenceData, error: careerEvidenceError } = await supabase
-            .from('career_task_evidence')
-            .select('*')
-            .eq('assignment_id', assignment.id)
-            .order('created_at', { ascending: false });
+        const { data: evidenceData, error: evidenceError } = await supabase
+          .from('career_task_evidence')
+          .select('*')
+          .eq('assignment_id', assignment.id)
+          .order('created_at', { ascending: false });
 
-          if (careerEvidenceError) {
-            console.error('Error fetching career evidence:', careerEvidenceError);
-          } else {
-            evidenceData = careerEvidenceData || [];
-          }
+        if (evidenceError) {
+          console.error('Error fetching evidence:', evidenceError);
         }
 
-        console.log('🔍 Evidence for assignment', assignment.id, ':', evidenceData);
-        return { ...assignment, evidence: evidenceData };
+        return { ...assignment, evidence: evidenceData || [] };
       })
     );
 
-    console.log('🔍 Final assignments with evidence:', assignmentsWithEvidence);
     setAssignments(assignmentsWithEvidence);
   };
 
   const fetchSubmittedAssignments = async () => {
     try {
       setLoadingAssignments(true);
-      
-      // Fetch both career assignments and LinkedIn assignments
-      const careerAssignments = await fetchCareerAssignments();
-      const linkedinAssignments = await fetchLinkedInAssignments();
-      
-      // Combine both types of assignments
-      const allAssignments = [...careerAssignments, ...linkedinAssignments];
-      
-      // Sort by submission time
-      allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
-      
-      await processAssignments(allAssignments);
+      const assignments = await fetchCareerAssignments();
+      await processAssignments(assignments);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to load assignments');
@@ -391,16 +290,49 @@ const VerifyAssignments = () => {
     }
   };
 
-  // Check access permissions after hooks are defined
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleVerifyAssignment = async (assignment: SubmittedAssignment, approved: boolean) => {
+    if (!selectedAssignment) return;
 
-  if (!isAdmin && !isInstituteAdmin && !isRecruiter) {
-    return <Navigate to="/dashboard" replace />;
-  }
+    setProcessing(true);
+    
+    try {
+      const updateData: any = {
+        status: approved ? 'verified' : 'rejected',
+        verified_at: new Date().toISOString(),
+        verified_by: user?.id,
+        verification_notes: verificationNotes
+      };
 
-  // Get unique users for filter dropdown
+      if (approved) {
+        updateData.points_earned = selectedAssignment.career_task_templates.points_reward;
+        updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
+      }
+
+      const { error } = await supabase
+        .from('career_task_assignments')
+        .update(updateData)
+        .eq('id', selectedAssignment.id);
+
+      if (error) throw error;
+
+      toast.success(`Assignment ${approved ? 'approved' : 'rejected'} successfully`);
+      
+      if (isAdmin) {
+        await fetchVerifiedAssignments();
+      }
+      await fetchSubmittedAssignments();
+      
+      setSelectedAssignment(null);
+      setVerificationNotes('');
+    } catch (error) {
+      console.error('Error processing assignment:', error);
+      toast.error('Failed to process assignment');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Computed values
   const uniqueUsers = Array.from(
     new Map(
       assignments.map(assignment => [
@@ -410,15 +342,6 @@ const VerifyAssignments = () => {
     ).values()
   );
 
-  // Get unique modules for filter dropdown
-  const uniqueModules = [...new Set(assignments.map(assignment => 
-    assignment.career_task_templates.sub_categories?.name || 
-    assignment.career_task_templates.module || 
-    assignment.career_task_templates.category || 
-    'GENERAL'
-  ))];
-
-  // Get unique users for verified assignments filter dropdown
   const uniqueVerifiedUsers = Array.from(
     new Map(
       verifiedAssignments.map(assignment => [
@@ -428,191 +351,63 @@ const VerifyAssignments = () => {
     ).values()
   );
 
-  // Get unique modules for verified assignments filter dropdown
-  const uniqueVerifiedModules = [...new Set(verifiedAssignments.map(assignment => 
-    assignment.career_task_templates.sub_categories?.name || 
-    assignment.career_task_templates.module || 
-    assignment.career_task_templates.category || 
-    'GENERAL'
-  ))];
-
-  const handleVerifyAssignment = async (assignmentId: string, action: 'approve' | 'deny') => {
-    if (!selectedAssignment) return;
-    
-    console.log('🔍 Selected assignment for verification:', selectedAssignment);
-    console.log('🔍 Evidence to display:', selectedAssignment.evidence);
-
-    try {
-      setProcessing(true);
-
-      if (selectedAssignment._isLinkedInAssignment) {
-        // Handle LinkedIn assignments
-        if (action === 'approve') {
-          // Update LinkedIn user task status to VERIFIED
-          const { error: updateError } = await supabase
-            .from('linkedin_user_tasks')
-            .update({
-              status: 'VERIFIED',
-              score_awarded: selectedAssignment.career_task_templates.points_reward,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', assignmentId);
-
-          if (updateError) throw updateError;
-
-          // Call the LinkedIn verification function
-          const { data, error: verifyError } = await supabase.functions.invoke('verify-linkedin-tasks', {
-            body: { period: selectedAssignment._originalLinkedInTask?.period }
-          });
-
-          if (verifyError) throw verifyError;
-
-          toast.success(`LinkedIn assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
-        } else {
-          // Deny LinkedIn assignment - reset to STARTED so user can resubmit
-          const { error: updateError } = await supabase
-            .from('linkedin_user_tasks')
-            .update({
-              status: 'STARTED',
-              score_awarded: 0,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', assignmentId);
-
-          if (updateError) throw updateError;
-
-          toast.success('LinkedIn assignment rejected. User can now resubmit.');
-        }
-      } else {
-        // Handle regular career assignments
-        if (action === 'approve') {
-          // Approve the assignment and award points
-          const { error: updateError } = await supabase
-            .from('career_task_assignments')
-            .update({
-              status: 'verified',
-              verified_at: new Date().toISOString(),
-              points_earned: selectedAssignment.career_task_templates.points_reward,
-              score_awarded: 100
-            })
-            .eq('id', assignmentId);
-
-          if (updateError) throw updateError;
-
-          // Update evidence status
-          for (const evidence of selectedAssignment.evidence) {
-            await supabase
-              .from('career_task_evidence')
-              .update({
-                verification_status: 'approved',
-                verified_at: new Date().toISOString(),
-                verified_by: user?.id,
-                verification_notes: verificationNotes
-              })
-              .eq('id', evidence.id);
-          }
-
-          // Award points to user
-          const pointsToAward = selectedAssignment.career_task_templates.points_reward;
-          const today = new Date().toISOString().split('T')[0];
-          const pointsData = {
-            user_id: selectedAssignment.user_id,
-            activity_type: 'career_task_completion',
-            activity_id: `career_task_${selectedAssignment.template_id}`,
-            points_earned: pointsToAward,
-            activity_date: today
-          };
-
-          const { error: pointsError } = await supabase
-            .from('user_activity_points')
-            .insert([pointsData]);
-
-          if (pointsError) {
-            console.error('Error awarding points:', pointsError);
-          }
-
-          toast.success(`Assignment approved and ${pointsToAward} points awarded!`);
-        } else {
-          // Deny the assignment
-          const { error: updateError } = await supabase
-            .from('career_task_assignments')
-            .update({
-              status: 'submitted', // Keep as submitted so user can see feedback
-              score_awarded: 0
-            })
-            .eq('id', assignmentId);
-
-          if (updateError) throw updateError;
-
-          // Update evidence status
-          for (const evidence of selectedAssignment.evidence) {
-            await supabase
-              .from('career_task_evidence')
-              .update({
-                verification_status: 'rejected',
-                verified_at: new Date().toISOString(),
-                verified_by: user?.id,
-                verification_notes: verificationNotes
-              })
-              .eq('id', evidence.id);
-          }
-
-          toast.success('Assignment rejected with feedback provided.');
-        }
-      }
-
-      // Refresh the assignments list
-      await fetchSubmittedAssignments();
-      if (isAdmin) {
-        await fetchVerifiedAssignments();
-      }
-      
-      // Close the dialog
-      setSelectedAssignment(null);
-      setVerificationNotes('');
-      
-    } catch (error) {
-      console.error('Error processing assignment:', error);
-      toast.error('Failed to process assignment');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  // Pagination logic
-  const paginatedAssignments = filteredAssignments.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const uniqueModules = Array.from(
+    new Set(
+      assignments.map(assignment => {
+        return assignment.career_task_templates.sub_categories?.name || 
+               assignment.career_task_templates.module || 
+               assignment.career_task_templates.category || 
+               'GENERAL';
+      })
+    )
   );
 
-  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
-
-  const paginatedVerifiedAssignments = filteredVerifiedAssignments.slice(
-    (verifiedCurrentPage - 1) * itemsPerPage,
-    verifiedCurrentPage * itemsPerPage
+  const uniqueVerifiedModules = Array.from(
+    new Set(
+      verifiedAssignments.map(assignment => {
+        return assignment.career_task_templates.sub_categories?.name || 
+               assignment.career_task_templates.module || 
+               assignment.career_task_templates.category || 
+               'GENERAL';
+      })
+    )
   );
 
-  const verifiedTotalPages = Math.ceil(filteredVerifiedAssignments.length / itemsPerPage);
+  const totalPendingPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAssignments = filteredAssignments.slice(startIndex, endIndex);
+
+  const totalVerifiedPages = Math.ceil(filteredVerifiedAssignments.length / itemsPerPage);
+  const verifiedStartIndex = (verifiedCurrentPage - 1) * itemsPerPage;
+  const verifiedEndIndex = verifiedStartIndex + itemsPerPage;
+  const currentVerifiedAssignments = filteredVerifiedAssignments.slice(verifiedStartIndex, verifiedEndIndex);
+
+  // Early returns after all hooks are called
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAdmin && !isInstituteAdmin && !isRecruiter) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Verify Assignments</h1>
-          <p className="text-muted-foreground">Review and verify submitted assignments</p>
+          <h1 className="text-3xl font-bold">Verify Assignments</h1>
+          <p className="text-muted-foreground mt-2">
+            Review and verify submitted assignments from students
+          </p>
         </div>
-        <div className="flex gap-3">
-          <AdminReenableRequestsDialog />
-          <Badge variant="secondary" className="text-lg px-3 py-1">
-            {filteredAssignments.length} Pending
-          </Badge>
-        </div>
+        {isAdmin && <AdminReenableRequestsDialog />}
       </div>
 
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="pending" className="space-y-4">
+        <TabsList>
           <TabsTrigger value="pending">
-            Pending Review ({filteredAssignments.length})
+            Pending ({filteredAssignments.length})
           </TabsTrigger>
           <TabsTrigger value="verified">
             Verified ({filteredVerifiedAssignments.length})
@@ -620,23 +415,17 @@ const VerifyAssignments = () => {
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4">
-          {/* Filters for Pending Assignments */}
-          <div className="flex flex-wrap gap-4 items-center bg-muted/30 p-4 rounded-lg">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search students or tasks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search by name, username, or task..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
             </div>
-
             <Select value={moduleFilter} onValueChange={setModuleFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Filter by module" />
               </SelectTrigger>
               <SelectContent>
@@ -646,97 +435,93 @@ const VerifyAssignments = () => {
                 ))}
               </SelectContent>
             </Select>
-
             <Select value={userFilter} onValueChange={setUserFilter}>
-              <SelectTrigger className="w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by student" />
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by user" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Students</SelectItem>
+                <SelectItem value="all">All Users</SelectItem>
                 {uniqueUsers.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name} (@{user.username})
-                  </SelectItem>
+                  <SelectItem key={user.id} value={user.id}>{user.name} ({user.username})</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Pending Assignments List */}
           {loadingAssignments ? (
-            <div className="text-center py-8">Loading assignments...</div>
-          ) : paginatedAssignments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No pending assignments found.
+            <div className="grid gap-4">
+              {[...Array(3)].map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                    <div className="h-4 bg-muted rounded w-1/3"></div>
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : (
             <>
               <div className="grid gap-4">
-                {paginatedAssignments.map((assignment) => (
-                  <Card key={assignment.id} className="p-4 hover:shadow-md transition-shadow">
+                {currentAssignments.map((assignment) => (
+                  <Card key={assignment.id} className="p-6 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={assignment.profiles.profile_image_url} />
-                            <AvatarFallback>
-                              {assignment.profiles.full_name?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold">{assignment.profiles.full_name}</h3>
-                            <p className="text-sm text-muted-foreground">@{assignment.profiles.username}</p>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className="font-medium">{assignment.career_task_templates.title}</h4>
-                          <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-start space-x-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage 
+                            src={assignment.profiles.profile_image_url} 
+                            alt={assignment.profiles.full_name} 
+                          />
+                          <AvatarFallback>
+                            {assignment.profiles.full_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-lg">
+                              {assignment.profiles.full_name}
+                            </h3>
                             <Badge variant="outline">
+                              @{assignment.profiles.username}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {assignment.career_task_templates.title}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-4 w-4" />
                               {assignment.career_task_templates.sub_categories?.name || 
                                assignment.career_task_templates.module || 
-                               assignment.career_task_templates.category}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              Submitted {format(new Date(assignment.submitted_at), 'MMM dd, yyyy hh:mm a')}
+                               assignment.career_task_templates.category || 'GENERAL'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Award className="h-4 w-4" />
+                              {assignment.career_task_templates.points_reward} points
+                            </span>
+                            <span>
+                              Submitted: {format(new Date(assignment.submitted_at), 'MMM dd, yyyy HH:mm')}
                             </span>
                           </div>
                         </div>
-
-                        {assignment.evidence && assignment.evidence.length > 0 && (
-                          <div className="text-sm text-muted-foreground">
-                            {assignment.evidence.length} evidence submission{assignment.evidence.length !== 1 ? 's' : ''}
-                          </div>
-                        )}
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-sm">
-                          <Award className="h-4 w-4 text-yellow-500" />
-                          <span className="font-medium">{assignment.career_task_templates.points_reward}</span>
-                        </div>
-                        <Button
-                          onClick={() => setSelectedAssignment(assignment)}
-                          size="sm"
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Review
-                        </Button>
-                      </div>
+                      <Button 
+                        onClick={() => setSelectedAssignment(assignment)}
+                        size="sm"
+                      >
+                        Review
+                      </Button>
                     </div>
                   </Card>
                 ))}
               </div>
 
-              {/* Pagination for Pending */}
-              {totalPages > 1 && (
+              {totalPendingPages > 1 && (
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">
-                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredAssignments.length)} of {filteredAssignments.length} assignments
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1} to {Math.min(endIndex, filteredAssignments.length)} of {filteredAssignments.length} assignments
+                  </p>
+                  <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -746,20 +531,9 @@ const VerifyAssignments = () => {
                       <ChevronLeft className="h-4 w-4" />
                       Previous
                     </Button>
-                    
-                    <div className="flex gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
-                        
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, totalPendingPages) }, (_, i) => {
+                        const pageNum = i + 1;
                         return (
                           <Button
                             key={pageNum}
@@ -772,12 +546,11 @@ const VerifyAssignments = () => {
                         );
                       })}
                     </div>
-                    
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(Math.min(totalPendingPages, currentPage + 1))}
+                      disabled={currentPage === totalPendingPages}
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />
@@ -790,96 +563,164 @@ const VerifyAssignments = () => {
         </TabsContent>
 
         <TabsContent value="verified" className="space-y-4">
-          {/* Similar structure for verified assignments - simplified for brevity */}
           {verifiedAssignments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No verified assignments found.
-            </div>
+            <Card className="p-8 text-center">
+              <p className="text-muted-foreground">No verified assignments yet.</p>
+            </Card>
           ) : (
-            <div className="text-center py-4">
-              {verifiedAssignments.length} verified assignments found.
-            </div>
+            <>
+              <div className="grid gap-4">
+                {currentVerifiedAssignments.map((assignment) => (
+                  <Card key={assignment.id} className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage 
+                            src={assignment.profiles.profile_image_url} 
+                            alt={assignment.profiles.full_name} 
+                          />
+                          <AvatarFallback>
+                            {assignment.profiles.full_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-lg">
+                              {assignment.profiles.full_name}
+                            </h3>
+                            <Badge variant="outline">
+                              @{assignment.profiles.username}
+                            </Badge>
+                            <Badge variant="default" className="bg-green-500">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            {assignment.career_task_templates.title}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>
+                              Verified: {assignment.verified_at ? format(new Date(assignment.verified_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Award className="h-4 w-4" />
+                              {assignment.points_earned || assignment.career_task_templates.points_reward} points earned
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setSelectedAssignment(assignment)}
+                        size="sm"
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
 
-      {/* Review Dialog */}
-      <Dialog 
-        open={!!selectedAssignment} 
-        onOpenChange={() => setSelectedAssignment(null)}
-      >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Review Assignment: {selectedAssignment?.career_task_templates.title}
-            </DialogTitle>
+            <DialogTitle>Review Assignment</DialogTitle>
           </DialogHeader>
           
           {selectedAssignment && (
             <div className="space-y-6">
-              {/* Assignment Details */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Student</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={selectedAssignment.profiles.profile_image_url} />
-                      <AvatarFallback>
-                        {selectedAssignment.profiles.full_name?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">
-                      {selectedAssignment.profiles.full_name} (@{selectedAssignment.profiles.username})
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Points Reward</Label>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Award className="h-4 w-4 text-yellow-500" />
-                    <span className="font-semibold">
-                      {selectedAssignment.career_task_templates.points_reward} points
-                    </span>
+              <div className="flex items-start space-x-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage 
+                    src={selectedAssignment.profiles.profile_image_url} 
+                    alt={selectedAssignment.profiles.full_name} 
+                  />
+                  <AvatarFallback>
+                    {selectedAssignment.profiles.full_name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold">
+                    {selectedAssignment.profiles.full_name}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    @{selectedAssignment.profiles.username}
+                  </p>
+                  <div className="mt-2">
+                    <Badge variant="outline">
+                      {selectedAssignment.career_task_templates.sub_categories?.name || 
+                       selectedAssignment.career_task_templates.module || 
+                       selectedAssignment.career_task_templates.category || 'GENERAL'}
+                    </Badge>
                   </div>
                 </div>
               </div>
 
-              {/* Evidence */}
-              <EvidenceDisplay evidence={selectedAssignment.evidence} />
-
-              {/* Verification Notes */}
               <div>
-                <Label htmlFor="notes" className="text-sm font-medium">
-                  Verification Notes (Optional)
-                </Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Enter any verification notes..."
-                  value={verificationNotes}
-                  onChange={(e) => setVerificationNotes(e.target.value)}
-                  className="mt-1"
-                />
+                <h4 className="font-semibold mb-2">Task Details</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {selectedAssignment.career_task_templates.title}
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Award className="h-4 w-4" />
+                    {selectedAssignment.career_task_templates.points_reward} points
+                  </span>
+                  <span>
+                    Submitted: {format(new Date(selectedAssignment.submitted_at), 'MMM dd, yyyy HH:mm')}
+                  </span>
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-4">
-                <Button
-                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'approve')}
-                  disabled={processing}
-                  className="flex-1"
-                >
-                  {processing ? 'Processing...' : 'Approve & Award Points'}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleVerifyAssignment(selectedAssignment.id, 'deny')}
-                  disabled={processing}
-                  className="flex-1"
-                >
-                  {processing ? 'Processing...' : 'Deny'}
-                </Button>
+              <div>
+                <h4 className="font-semibold mb-4">Submitted Evidence</h4>
+                <EvidenceDisplay evidence={selectedAssignment.evidence} />
               </div>
+
+              {selectedAssignment.status === 'submitted' && (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="verification-notes">Verification Notes (Optional)</Label>
+                    <Textarea
+                      id="verification-notes"
+                      placeholder="Add any notes about this verification..."
+                      value={verificationNotes}
+                      onChange={(e) => setVerificationNotes(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedAssignment(null)}
+                      disabled={processing}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleVerifyAssignment(selectedAssignment, false)}
+                      disabled={processing}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                    <Button
+                      onClick={() => handleVerifyAssignment(selectedAssignment, true)}
+                      disabled={processing}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
