@@ -36,12 +36,15 @@ const LevelUp = () => {
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
   const completedProfileTasks = profileTasks.filter(task => task.status === 'verified').length;
 
-  // Check for badge awards when profile tasks are completed
+  // Check for badge awards when profile progress milestones are reached
   useEffect(() => {
-    if (!careerLoading && completedProfileTasks > 0) {
-      checkAndAwardBadges();
+    if (!careerLoading && resumeProgress > 0) {
+      // Award badges when reaching 100% milestones
+      if (resumeProgress >= 100 || resumeProgress >= 50 || resumeProgress >= 80) {
+        checkAndAwardBadges();
+      }
     }
-  }, [completedProfileTasks, careerLoading, checkAndAwardBadges]);
+  }, [resumeProgress, careerLoading, checkAndAwardBadges]);
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();

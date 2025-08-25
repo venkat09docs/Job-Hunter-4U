@@ -62,10 +62,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'profile':
         // Profile Build (Bronze) - Always unlocked (default)
         if (tier === 'bronze') return true;
-        // Profile Complete (Silver) - Unlocked when all 9 profile assignments are completed
-        if (tier === 'silver') return completedProfileTasks >= 9;
-        // Profile Perfectionist (Gold) - Unlocked when Silver prerequisites are met
-        if (tier === 'gold') return completedProfileTasks >= 9 && calculateProfileProgress('silver') >= 100;
+        // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
+        if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
+        // Profile Perfectionist (Gold) - Unlocked only when silver reaches 100%
+        if (tier === 'gold') return calculateProfileProgress('silver') >= 100 && calculateProfileProgress('bronze') >= 100;
         return false;
       
       case 'jobs':
