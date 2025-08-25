@@ -50,7 +50,7 @@ const Dashboard = () => {
   const { isInstituteAdmin, isAdmin } = useRole();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
-  const eligiblePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
   // Check if user has eligible subscription
   const hasEligibleSubscription = () => {
@@ -68,7 +68,9 @@ const Dashboard = () => {
 
   // Check if user can access Badge Leaders and Leaderboard (admin or eligible subscription)
   const canAccessLeaderboards = () => {
-    return isAdmin || hasEligibleSubscription();
+    const result = isAdmin || hasEligibleSubscription();
+    console.log('🔍 canAccessLeaderboards result:', result, 'isAdmin:', isAdmin);
+    return result;
   };
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
@@ -268,6 +270,20 @@ const Dashboard = () => {
 
     const channel = supabase
       .channel('dashboard-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔔 Profile updated, refreshing...', payload);
+          // Refresh profile data when subscription changes
+          window.location.reload(); // Force full refresh to get updated profile
+        }
+      )
       .on(
         'postgres_changes',
         {
@@ -501,8 +517,17 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {canAccessLeaderboards() ? (
-                  <BadgeLeadersSlider />
+                {(() => {
+                  const canAccess = canAccessLeaderboards();
+                  console.log('🔍 Rendering Badge Leaders, canAccess:', canAccess);
+                  return canAccess;
+                })() ? (
+                  <div>
+                    <div className="mb-2 text-xs text-muted-foreground">
+                      ✅ Access granted - Plan: {profile?.subscription_plan} | Active: {profile?.subscription_active ? 'Yes' : 'No'}
+                    </div>
+                    <BadgeLeadersSlider />
+                  </div>
                 ) : (
                   <div className="text-center py-8">
                     <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -510,6 +535,20 @@ const Dashboard = () => {
                     <p className="text-muted-foreground mb-4">
                       Badge Leaders is available with 3 Months, 6 Months, or 1 Year plans
                     </p>
+                    <div className="text-xs text-muted-foreground mb-4 p-2 bg-muted/20 rounded">
+                      <div>Current plan: <strong>{profile?.subscription_plan || 'None'}</strong></div>
+                      <div>Active: <strong>{hasActiveSubscription() ? 'Yes' : 'No'}</strong></div>
+                      <div>Profile Active: <strong>{profile?.subscription_active ? 'Yes' : 'No'}</strong></div>
+                      <div>Admin: <strong>{isAdmin ? 'Yes' : 'No'}</strong></div>
+                    </div>
+                    <Button 
+                      onClick={() => window.location.reload()} 
+                      variant="outline" 
+                      size="sm" 
+                      className="mb-4"
+                    >
+                      Refresh Profile Data
+                    </Button>
                     <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
