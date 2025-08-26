@@ -249,7 +249,7 @@ const VerifyAssignments = () => {
           description,
           points_base
         ),
-        linkedin_users!inner (
+        linkedin_users (
           id,
           auth_uid,
           name,
@@ -268,7 +268,8 @@ const VerifyAssignments = () => {
       id: d.id,
       user_id: d.user_id,
       auth_uid: d.linkedin_users?.auth_uid,
-      task_title: d.linkedin_tasks?.title
+      task_title: d.linkedin_tasks?.title,
+      has_linkedin_user: !!d.linkedin_users
     })));
     
     return data || [];
