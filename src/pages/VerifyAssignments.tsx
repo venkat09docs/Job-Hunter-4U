@@ -146,7 +146,7 @@ const VerifyAssignments = () => {
   // Function definitions
   const fetchVerifiedAssignments = async () => {
     try {
-      if (isAdmin) {
+      if (isAdmin || isRecruiter) {
         const { data, error } = await supabase
           .from('career_task_assignments')
           .select(`
@@ -363,7 +363,7 @@ const VerifyAssignments = () => {
       }
       
       console.log('🔍 Refreshing assignment lists');
-      if (isAdmin) {
+      if (isAdmin || isRecruiter) {
         await fetchVerifiedAssignments();
       }
       await fetchSubmittedAssignments();
