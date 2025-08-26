@@ -89,25 +89,14 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from('career_task_assignments')
         .select(`
           *,
-          career_task_templates (*),
-          profiles (
-            full_name,
-            username,
-            profile_image_url
-          )
-        `);
-
-      // For regular users, only fetch their own assignments
-      // For recruiters, admins, and institute admins, fetch all assignments (RLS handles permissions)
-      if (!isRecruiter && !isAdmin && !isInstituteAdmin) {
-        query = query.eq('user_id', user.id);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+          career_task_templates (*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       // Add assigned_at to match interface
@@ -126,20 +115,15 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      let query = supabase
+      // Get evidence through assignments
+      const { data, error } = await supabase
         .from('career_task_evidence')
         .select(`
           *,
           career_task_assignments!inner (user_id)
-        `);
-
-      // For regular users, only fetch evidence for their own assignments
-      // For recruiters, admins, and institute admins, fetch all evidence (RLS handles permissions)
-      if (!isRecruiter && !isAdmin && !isInstituteAdmin) {
-        query = query.eq('career_task_assignments.user_id', user.id);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+        `)
+        .eq('career_task_assignments.user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setEvidence(data || []);
