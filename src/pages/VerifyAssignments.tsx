@@ -312,7 +312,10 @@ const VerifyAssignments = () => {
 
     // Process LinkedIn assignments
     if (linkedInData && linkedInData.length > 0) {
+      console.log('🔍 Processing LinkedIn assignments, count:', linkedInData.length);
+      
       const authUids = linkedInData.map(assignment => assignment.linkedin_users?.auth_uid).filter(Boolean);
+      console.log('🔍 LinkedIn auth UIDs:', authUids);
       
       if (authUids.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
@@ -320,10 +323,21 @@ const VerifyAssignments = () => {
           .select('user_id, full_name, username, profile_image_url')
           .in('user_id', authUids);
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('🔍 Error fetching LinkedIn profiles:', profilesError);
+          throw profilesError;
+        }
+
+        console.log('🔍 LinkedIn profiles data:', profilesData);
 
         const linkedInAssignmentsWithProfiles = linkedInData.map(assignment => {
           const profile = profilesData?.find(p => p.user_id === assignment.linkedin_users?.auth_uid);
+          console.log('🔍 Processing LinkedIn assignment:', {
+            assignmentId: assignment.id,
+            authUid: assignment.linkedin_users?.auth_uid,
+            profile: profile ? 'found' : 'not found'
+          });
+          
           return {
             id: assignment.id,
             user_id: assignment.linkedin_users?.auth_uid || assignment.user_id,
@@ -347,43 +361,80 @@ const VerifyAssignments = () => {
           };
         });
 
-        // Fetch LinkedIn evidence for these assignments
+        console.log('🔍 LinkedIn assignments with profiles:', linkedInAssignmentsWithProfiles.length);
+
+        // Fetch LinkedIn evidence for these assignments (but don't fail if evidence fetch fails)
         const linkedInAssignmentsWithEvidence = await Promise.all(
           linkedInAssignmentsWithProfiles.map(async (assignment) => {
-            const { data: evidenceData, error: evidenceError } = await supabase
-              .from('linkedin_evidence')
-              .select('*')
-              .eq('user_task_id', assignment._originalLinkedInTask.id)
-              .order('created_at', { ascending: false });
+            try {
+              const { data: evidenceData, error: evidenceError } = await supabase
+                .from('linkedin_evidence')
+                .select('*')
+                .eq('user_task_id', assignment._originalLinkedInTask.id)
+                .order('created_at', { ascending: false });
 
-            if (evidenceError) {
-              console.error('Error fetching LinkedIn evidence:', evidenceError);
+              if (evidenceError) {
+                console.error('🔍 Error fetching LinkedIn evidence for assignment:', assignment.id, evidenceError);
+                // Don't throw - just continue without evidence
+                return { ...assignment, evidence: [] };
+              }
+
+              // Transform LinkedIn evidence to match career evidence structure
+              const transformedEvidence = (evidenceData || []).map(evidence => ({
+                id: evidence.id,
+                assignment_id: assignment.id,
+                evidence_type: evidence.kind?.toLowerCase() || 'url',
+                evidence_data: evidence.evidence_data || {},
+                url: evidence.url,
+                file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
+                verification_status: 'pending',
+                created_at: evidence.created_at,
+                submitted_at: evidence.created_at,
+                verification_notes: null,
+                verified_at: null,
+                verified_by: null,
+                kind: evidence.kind,
+                email_meta: evidence.email_meta,
+                parsed_json: evidence.parsed_json
+              }));
+
+              return { ...assignment, evidence: transformedEvidence };
+            } catch (error) {
+              console.error('🔍 Error processing LinkedIn evidence for assignment:', assignment.id, error);
+              // Don't fail the entire process - just return assignment without evidence
+              return { ...assignment, evidence: [] };
             }
-
-            // Transform LinkedIn evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => ({
-              id: evidence.id,
-              assignment_id: assignment.id,
-              evidence_type: evidence.kind?.toLowerCase() || 'url',
-              evidence_data: evidence.evidence_data || {},
-              url: evidence.url,
-              file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
-              verification_status: 'pending',
-              created_at: evidence.created_at,
-              submitted_at: evidence.created_at,
-              verification_notes: null,
-              verified_at: null,
-              verified_by: null,
-              kind: evidence.kind,
-              email_meta: evidence.email_meta,
-              parsed_json: evidence.parsed_json
-            }));
-
-            return { ...assignment, evidence: transformedEvidence };
           })
         );
 
+        console.log('🔍 LinkedIn assignments with evidence:', linkedInAssignmentsWithEvidence.length);
         allAssignments.push(...linkedInAssignmentsWithEvidence);
+      } else {
+        console.log('🔍 No valid auth UIDs found in LinkedIn data');
+        // Even if no auth UIDs, still process the assignments with basic info
+        const basicLinkedInAssignments = linkedInData.map(assignment => ({
+          id: assignment.id,
+          user_id: assignment.user_id, // fallback to original user_id
+          template_id: assignment.task_id,
+          status: assignment.status.toLowerCase(),
+          submitted_at: assignment.updated_at,
+          verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+          points_earned: assignment.score_awarded,
+          score_awarded: assignment.score_awarded,
+          career_task_templates: {
+            title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
+            module: 'LINKEDIN',
+            points_reward: assignment.linkedin_tasks?.points_base || 0,
+            category: 'LinkedIn Profile',
+            sub_categories: { name: 'LinkedIn Profile' }
+          },
+          profiles: { full_name: 'LinkedIn User', username: 'linkedin_user', profile_image_url: '' },
+          evidence: [],
+          _isLinkedInAssignment: true,
+          _originalLinkedInTask: assignment
+        }));
+        
+        allAssignments.push(...basicLinkedInAssignments);
       }
     }
 
