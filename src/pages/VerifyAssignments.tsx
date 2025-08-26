@@ -264,6 +264,8 @@ const VerifyAssignments = () => {
     const linkedInUserIds = linkedInTasks?.map(task => task.user_id) || [];
     let profilesData: any[] = [];
     
+    console.log('🔍 LinkedIn user IDs to fetch profiles for:', linkedInUserIds);
+    
     if (linkedInUserIds.length > 0) {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -272,9 +274,16 @@ const VerifyAssignments = () => {
       
       if (profilesError) {
         console.error('❌ Error fetching profiles for LinkedIn tasks:', profilesError);
+        console.error('❌ Profile fetch error details:', {
+          code: profilesError.code,
+          message: profilesError.message,
+          details: profilesError.details,
+          hint: profilesError.hint
+        });
       } else {
         profilesData = profiles || [];
         console.log('🔍 Successfully fetched profiles for LinkedIn tasks:', profilesData.length);
+        console.log('🔍 Profile data details:', profilesData);
       }
     }
 
