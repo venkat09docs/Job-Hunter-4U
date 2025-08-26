@@ -237,6 +237,7 @@ const VerifyAssignments = () => {
   };
 
   const fetchLinkedInAssignments = async () => {
+    console.log('🔍 Fetching LinkedIn assignments...');
     const { data, error } = await supabase
       .from('linkedin_user_tasks')
       .select(`
@@ -248,14 +249,28 @@ const VerifyAssignments = () => {
           description,
           points_base
         ),
-        linkedin_users (
-          auth_uid
+        linkedin_users!inner (
+          id,
+          auth_uid,
+          name,
+          email
         )
       `)
       .eq('status', 'SUBMITTED')
       .order('updated_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('🔍 Error fetching LinkedIn assignments:', error);
+      throw error;
+    }
+    
+    console.log('🔍 Raw LinkedIn data:', data?.map(d => ({
+      id: d.id,
+      user_id: d.user_id,
+      auth_uid: d.linkedin_users?.auth_uid,
+      task_title: d.linkedin_tasks?.title
+    })));
+    
     return data || [];
   };
 
