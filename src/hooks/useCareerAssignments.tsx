@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { useRole } from './useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -56,6 +57,7 @@ export const useCareerAssignments = () => {
   const [loading, setLoading] = useState(true);
   const [submittingEvidence, setSubmittingEvidence] = useState(false);
   const { user } = useAuth();
+  const { isRecruiter, isAdmin, isInstituteAdmin } = useRole();
 
   useEffect(() => {
     if (user) {
@@ -87,14 +89,25 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('career_task_assignments')
         .select(`
           *,
-          career_task_templates (*)
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+          career_task_templates (*),
+          profiles (
+            full_name,
+            username,
+            profile_image_url
+          )
+        `);
+
+      // For regular users, only fetch their own assignments
+      // For recruiters, admins, and institute admins, fetch all assignments (RLS handles permissions)
+      if (!isRecruiter && !isAdmin && !isInstituteAdmin) {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       // Add assigned_at to match interface
@@ -113,15 +126,20 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      // Get evidence through assignments
-      const { data, error } = await supabase
+      let query = supabase
         .from('career_task_evidence')
         .select(`
           *,
           career_task_assignments!inner (user_id)
-        `)
-        .eq('career_task_assignments.user_id', user.id)
-        .order('created_at', { ascending: false });
+        `);
+
+      // For regular users, only fetch evidence for their own assignments
+      // For recruiters, admins, and institute admins, fetch all evidence (RLS handles permissions)
+      if (!isRecruiter && !isAdmin && !isInstituteAdmin) {
+        query = query.eq('career_task_assignments.user_id', user.id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setEvidence(data || []);
