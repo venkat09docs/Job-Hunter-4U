@@ -267,10 +267,27 @@ const VerifyAssignments = () => {
     console.log('🔍 LinkedIn user IDs to fetch profiles for:', linkedInUserIds);
     
     if (linkedInUserIds.length > 0) {
+      console.log('🔍 About to fetch profiles with current user role...');
+      
+      // First, let's check what role we have
+      const { data: roleCheck, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+      
+      console.log('🔍 Current user role check:', { roleCheck, roleError });
+
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, username, full_name')
         .in('user_id', linkedInUserIds);
+      
+      console.log('🔍 Profile fetch attempt result:', {
+        profiles: profiles,
+        error: profilesError,
+        profileCount: profiles?.length || 0
+      });
       
       if (profilesError) {
         console.error('❌ Error fetching profiles for LinkedIn tasks:', profilesError);
