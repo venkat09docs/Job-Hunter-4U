@@ -169,7 +169,14 @@ export const useBadgeLeaders = () => {
       return [];
     }
 
-    const userBadgesMap = new Map<string, { user_id: string; profile: any; badges: any[]; maxTier: string; currentPoints: number }>();
+    // Group badges by user and find their highest tier badge
+    const userBadgesMap = new Map<string, { 
+      user_id: string; 
+      profile: any; 
+      badges: any[]; 
+      highestBadge: any;
+      currentPoints: number;
+    }>();
     
     badgeData.forEach((item: any) => {
       const key = item.user_id;
@@ -178,21 +185,26 @@ export const useBadgeLeaders = () => {
           user_id: item.user_id,
           profile: item.profiles,
           badges: [],
-          maxTier: 'bronze',
-          currentPoints: item.current_points || 0 // Use current total points (matches dashboard)
+          highestBadge: item.profile_badges,
+          currentPoints: item.current_points || 0
         });
       }
       
       const current = userBadgesMap.get(key)!;
       current.badges.push(item.profile_badges);
-      // Don't add badge requirements to points - use current total points
       
-      // Determine highest tier
-      const tier = item.profile_badges.tier;
-      if (tier === 'gold') current.maxTier = 'gold';
-      else if (tier === 'silver' && current.maxTier !== 'gold') current.maxTier = 'silver';
+      // Update to highest tier badge
+      const currentTier = item.profile_badges.tier;
+      const existingTier = current.highestBadge.tier;
+      
+      // Gold > Silver > Bronze priority
+      if (currentTier === 'gold' || 
+          (currentTier === 'silver' && existingTier === 'bronze')) {
+        current.highestBadge = item.profile_badges;
+      }
     });
 
+    // Sort by total points and return top users
     const result = Array.from(userBadgesMap.values())
       .sort((a, b) => b.currentPoints - a.currentPoints)
       .slice(0, 3)
@@ -201,8 +213,8 @@ export const useBadgeLeaders = () => {
         username: item.profile?.username || '',
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
-        total_points: item.currentPoints, // Now shows current total points (matches dashboard)
-        badge_type: getBadgeTypeFromTier(item.maxTier) as 'Bronze' | 'Silver' | 'Gold' | 'Diamond'
+        total_points: item.currentPoints,
+        badge_type: getBadgeTypeFromTier(item.highestBadge.tier) as 'Bronze' | 'Silver' | 'Gold' | 'Diamond'
       }));
 
     return result;
