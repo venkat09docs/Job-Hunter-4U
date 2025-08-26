@@ -392,12 +392,19 @@ const Dashboard = () => {
     );
   }
   
-  if (!user || !profile) {
-    console.log('Dashboard: No user or profile, redirecting...');
+  if (!user) {
+    console.log('Dashboard: No user, redirecting to auth...');
+    navigate('/auth');
+    return null;
+  }
+
+  if (!profile) {
+    console.log('Dashboard: Profile loading...');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Please log in to access the dashboard.</p>
+          <div className="w-8 h-8 animate-spin mx-auto border-2 border-primary border-t-transparent rounded-full mb-4" />
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
