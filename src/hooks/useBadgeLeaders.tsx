@@ -120,13 +120,34 @@ export const useBadgeLeaders = () => {
         .from('github_progress')
         .select(`
           user_id,
-          completed,
-          profiles!inner(username, full_name, profile_image_url, industry)
+          completed
         `)
         .eq('completed', true)
         .order('updated_at', { ascending: false });
 
       if (githubError) console.error('❌ Error fetching GitHub data:', githubError);
+
+      // Get profile data for GitHub users separately
+      const githubUserIds = githubActivityData?.map(item => item.user_id) || [];
+      let githubProfileData = [];
+      if (githubUserIds.length > 0) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, username, full_name, profile_image_url, industry')
+          .in('user_id', githubUserIds);
+        
+        if (profileError) {
+          console.error('❌ Error fetching GitHub profiles:', profileError);
+        } else {
+          githubProfileData = profileData || [];
+        }
+      }
+
+      // Combine GitHub progress with profile data
+      const githubActivityWithProfiles = githubActivityData?.map(item => ({
+        ...item,
+        profiles: githubProfileData.find(profile => profile.user_id === item.user_id)
+      })).filter(item => item.profiles) || [];
 
       // Process Profile Build Champions (users with profile badges)
       const profileBuildLeaders = processProfileBadgeLeaders(processedProfileBadgeData || []);
@@ -138,7 +159,7 @@ export const useBadgeLeaders = () => {
       const linkedinLeaders = processLinkedInLeaders(linkedinActivityData || []);
       
       // Process GitHub Repository Experts (IT users only)
-      const githubLeaders = processGitHubLeaders(githubActivityData || []);
+      const githubLeaders = processGitHubLeaders(githubActivityWithProfiles || []);
 
       console.log('🏆 Final badge leaders processed:', {
         profileBuild: profileBuildLeaders.length,

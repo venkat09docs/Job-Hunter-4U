@@ -414,6 +414,13 @@ const Dashboard = () => {
 
   // GitHub Activities tracker metrics
   const githubProgress = isIT() ? getGitHubProgress() : 0;
+  console.log('🔍 Dashboard GitHub Debug:', {
+    isIT: isIT(),
+    industry: profile?.industry,
+    githubProgress,
+    githubTasks: githubTasks?.length || 0,
+    githubLoading
+  });
 
   const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
