@@ -7,7 +7,7 @@ interface BadgeLeader {
   full_name: string;
   profile_image_url: string;
   total_points: number;
-  badge_type: 'Silver' | 'Gold' | 'Diamond';
+  badge_type: 'Bronze' | 'Silver' | 'Gold' | 'Diamond';
 }
 
 interface BadgeLeadersData {
@@ -202,7 +202,7 @@ export const useBadgeLeaders = () => {
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
         total_points: item.currentPoints, // Now shows current total points (matches dashboard)
-        badge_type: getBadgeTypeFromTier(item.maxTier) as 'Silver' | 'Gold' | 'Diamond'
+        badge_type: getBadgeTypeFromTier(item.maxTier) as 'Bronze' | 'Silver' | 'Gold' | 'Diamond'
       }));
 
     return result;
@@ -305,15 +305,16 @@ export const useBadgeLeaders = () => {
     switch (tier) {
       case 'gold': return 'Gold';
       case 'silver': return 'Silver';
-      case 'bronze': return 'Silver'; // Show bronze as Silver for display
-      default: return 'Silver';
+      case 'bronze': return 'Bronze'; // Show bronze as Bronze
+      default: return 'Bronze';
     }
   };
 
-  const getBadgeType = (points: number): 'Silver' | 'Gold' | 'Diamond' => {
+  const getBadgeType = (points: number): 'Bronze' | 'Silver' | 'Gold' | 'Diamond' => {
     if (points >= 500) return 'Diamond';
     if (points >= 200) return 'Gold';
-    return 'Silver';
+    if (points >= 100) return 'Silver';
+    return 'Bronze';
   };
 
   useEffect(() => {

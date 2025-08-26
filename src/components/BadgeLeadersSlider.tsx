@@ -70,6 +70,7 @@ export const BadgeLeadersSlider = () => {
       case 'Diamond': return 'hsl(var(--chart-diamond))';
       case 'Gold': return 'hsl(var(--chart-gold))';
       case 'Silver': return 'hsl(var(--chart-silver))';
+      case 'Bronze': return 'hsl(var(--chart-bronze))';
       default: return 'hsl(var(--muted))';
     }
   };
