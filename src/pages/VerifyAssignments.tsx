@@ -81,7 +81,7 @@ const VerifyAssignments = () => {
       fetchSubmittedAssignments();
       fetchVerifiedAssignments();
     }
-  }, [user?.id, isAdmin, isInstituteAdmin, loading]);
+  }, [user?.id, isAdmin, isInstituteAdmin, isRecruiter, loading]);
 
   useEffect(() => {
     let filtered = assignments;
@@ -260,7 +260,13 @@ const VerifyAssignments = () => {
   };
 
   const processAssignments = async (careerData: any[], linkedInData: any[]) => {
+    console.log('🔍 Processing assignments:', { 
+      careerDataLength: careerData?.length || 0, 
+      linkedInDataLength: linkedInData?.length || 0 
+    });
+    
     if ((!careerData || careerData.length === 0) && (!linkedInData || linkedInData.length === 0)) {
+      console.log('🔍 No assignments found, setting empty array');
       setAssignments([]);
       return;
     }
@@ -384,16 +390,32 @@ const VerifyAssignments = () => {
     // Sort all assignments by submitted_at date
     allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
 
+    console.log('🔍 Final processed assignments:', { 
+      totalCount: allAssignments.length,
+      careerAssignments: allAssignments.filter(a => !a._isLinkedInAssignment).length,
+      linkedInAssignments: allAssignments.filter(a => a._isLinkedInAssignment).length
+    });
+
     setAssignments(allAssignments);
   };
 
   const fetchSubmittedAssignments = async () => {
     try {
       setLoadingAssignments(true);
+      console.log('🔍 Fetching assignments for role:', { role, isAdmin, isRecruiter, isInstituteAdmin });
+      
       const [careerAssignments, linkedInAssignments] = await Promise.all([
         fetchCareerAssignments(),
         fetchLinkedInAssignments()
       ]);
+      
+      console.log('🔍 Fetched assignments:', { 
+        careerCount: careerAssignments?.length || 0, 
+        linkedInCount: linkedInAssignments?.length || 0,
+        careerAssignments: careerAssignments?.map(a => ({ id: a.id, user_id: a.user_id, title: a.career_task_templates?.title })),
+        linkedInAssignments: linkedInAssignments?.map(a => ({ id: a.id, user_id: a.user_id, title: a.linkedin_tasks?.title }))
+      });
+      
       await processAssignments(careerAssignments, linkedInAssignments);
     } catch (error) {
       console.error('Error fetching assignments:', error);
