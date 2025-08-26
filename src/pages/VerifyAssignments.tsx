@@ -236,52 +236,165 @@ const VerifyAssignments = () => {
     return data || [];
   };
 
-  const processAssignments = async (data: any[]) => {
-    if (!data || data.length === 0) {
+  const fetchLinkedInAssignments = async () => {
+    const { data, error } = await supabase
+      .from('linkedin_user_tasks')
+      .select(`
+        *,
+        linkedin_tasks (
+          id,
+          code,
+          title,
+          description,
+          points_base
+        ),
+        linkedin_users (
+          auth_uid
+        )
+      `)
+      .eq('status', 'SUBMITTED')
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  };
+
+  const processAssignments = async (careerData: any[], linkedInData: any[]) => {
+    if ((!careerData || careerData.length === 0) && (!linkedInData || linkedInData.length === 0)) {
       setAssignments([]);
       return;
     }
 
-    const userIds = data.map(assignment => assignment.user_id);
-    const { data: profilesData, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, username, profile_image_url')
-      .in('user_id', userIds);
+    const allAssignments = [];
 
-    if (profilesError) throw profilesError;
+    // Process career assignments
+    if (careerData && careerData.length > 0) {
+      const userIds = careerData.map(assignment => assignment.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
 
-    const assignmentsWithProfiles = data.map(assignment => {
-      const profile = profilesData?.find(p => p.user_id === assignment.user_id);
-      return {
-        ...assignment,
-        profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
-      };
-    });
+      if (profilesError) throw profilesError;
 
-    const assignmentsWithEvidence = await Promise.all(
-      assignmentsWithProfiles.map(async (assignment) => {
-        const { data: evidenceData, error: evidenceError } = await supabase
-          .from('career_task_evidence')
-          .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
-          .eq('assignment_id', assignment.id)
-          .order('created_at', { ascending: false });
+      const assignmentsWithProfiles = careerData.map(assignment => {
+        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+        return {
+          ...assignment,
+          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+        };
+      });
 
-        if (evidenceError) {
-          console.error('Error fetching evidence:', evidenceError);
-        }
+      const assignmentsWithEvidence = await Promise.all(
+        assignmentsWithProfiles.map(async (assignment) => {
+          const { data: evidenceData, error: evidenceError } = await supabase
+            .from('career_task_evidence')
+            .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
+            .eq('assignment_id', assignment.id)
+            .order('created_at', { ascending: false });
 
-        return { ...assignment, evidence: evidenceData || [] };
-      })
-    );
+          if (evidenceError) {
+            console.error('Error fetching evidence:', evidenceError);
+          }
 
-    setAssignments(assignmentsWithEvidence);
+          return { ...assignment, evidence: evidenceData || [] };
+        })
+      );
+
+      allAssignments.push(...assignmentsWithEvidence);
+    }
+
+    // Process LinkedIn assignments
+    if (linkedInData && linkedInData.length > 0) {
+      const authUids = linkedInData.map(assignment => assignment.linkedin_users?.auth_uid).filter(Boolean);
+      
+      if (authUids.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, username, profile_image_url')
+          .in('user_id', authUids);
+
+        if (profilesError) throw profilesError;
+
+        const linkedInAssignmentsWithProfiles = linkedInData.map(assignment => {
+          const profile = profilesData?.find(p => p.user_id === assignment.linkedin_users?.auth_uid);
+          return {
+            id: assignment.id,
+            user_id: assignment.linkedin_users?.auth_uid || assignment.user_id,
+            template_id: assignment.task_id,
+            status: assignment.status.toLowerCase(),
+            submitted_at: assignment.updated_at,
+            verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+            points_earned: assignment.score_awarded,
+            score_awarded: assignment.score_awarded,
+            career_task_templates: {
+              title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
+              module: 'LINKEDIN',
+              points_reward: assignment.linkedin_tasks?.points_base || 0,
+              category: 'LinkedIn Profile',
+              sub_categories: { name: 'LinkedIn Profile' }
+            },
+            profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' },
+            evidence: [],
+            _isLinkedInAssignment: true,
+            _originalLinkedInTask: assignment
+          };
+        });
+
+        // Fetch LinkedIn evidence for these assignments
+        const linkedInAssignmentsWithEvidence = await Promise.all(
+          linkedInAssignmentsWithProfiles.map(async (assignment) => {
+            const { data: evidenceData, error: evidenceError } = await supabase
+              .from('linkedin_evidence')
+              .select('*')
+              .eq('user_task_id', assignment._originalLinkedInTask.id)
+              .order('created_at', { ascending: false });
+
+            if (evidenceError) {
+              console.error('Error fetching LinkedIn evidence:', evidenceError);
+            }
+
+            // Transform LinkedIn evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => ({
+              id: evidence.id,
+              assignment_id: assignment.id,
+              evidence_type: evidence.kind?.toLowerCase() || 'url',
+              evidence_data: evidence.evidence_data || {},
+              url: evidence.url,
+              file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
+              verification_status: 'pending',
+              created_at: evidence.created_at,
+              submitted_at: evidence.created_at,
+              verification_notes: null,
+              verified_at: null,
+              verified_by: null,
+              kind: evidence.kind,
+              email_meta: evidence.email_meta,
+              parsed_json: evidence.parsed_json
+            }));
+
+            return { ...assignment, evidence: transformedEvidence };
+          })
+        );
+
+        allAssignments.push(...linkedInAssignmentsWithEvidence);
+      }
+    }
+
+    // Sort all assignments by submitted_at date
+    allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+
+    setAssignments(allAssignments);
   };
 
   const fetchSubmittedAssignments = async () => {
     try {
       setLoadingAssignments(true);
-      const assignments = await fetchCareerAssignments();
-      await processAssignments(assignments);
+      const [careerAssignments, linkedInAssignments] = await Promise.all([
+        fetchCareerAssignments(),
+        fetchLinkedInAssignments()
+      ]);
+      await processAssignments(careerAssignments, linkedInAssignments);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to load assignments');
@@ -296,70 +409,113 @@ const VerifyAssignments = () => {
     setProcessing(true);
     
     try {
-      console.log('🔍 Processing assignment:', { approved, selectedAssignment: selectedAssignment.id });
+      console.log('🔍 Processing assignment:', { approved, selectedAssignment: selectedAssignment.id, isLinkedIn: selectedAssignment._isLinkedInAssignment });
       
-      // Create base update data - only include fields that are safe to update
-      const updateData: any = {
-        status: approved ? 'verified' : 'rejected',
-        verified_at: new Date().toISOString(),
-        verified_by: user?.id
-      };
+      if (selectedAssignment._isLinkedInAssignment) {
+        // Handle LinkedIn assignment verification
+        const linkedInTask = selectedAssignment._originalLinkedInTask;
+        
+        const updateData: any = {
+          status: approved ? 'VERIFIED' : 'REJECTED',
+          updated_at: new Date().toISOString()
+        };
 
-      // Only add verification_notes if it's not empty
-      if (verificationNotes && verificationNotes.trim()) {
-        updateData.verification_notes = verificationNotes.trim();
-      }
+        if (approved) {
+          updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
+        }
 
-      if (approved) {
-        updateData.points_earned = selectedAssignment.career_task_templates.points_reward;
-        updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
-      }
-      // For rejected assignments, don't modify points fields to avoid constraint issues
+        const { error } = await supabase
+          .from('linkedin_user_tasks')
+          .update(updateData)
+          .eq('id', linkedInTask.id);
 
-      console.log('🔍 Update data:', updateData);
+        if (error) {
+          console.error('🔍 LinkedIn assignment update error:', error);
+          throw error;
+        }
 
-      const { error } = await supabase
-        .from('career_task_assignments')
-        .update(updateData)
-        .eq('id', selectedAssignment.id);
+        console.log('🔍 LinkedIn assignment updated successfully');
 
-      if (error) {
-        console.error('🔍 Database update error:', error);
-        console.error('🔍 Error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        });
-        throw error;
-      }
+        // If approved, add points to user_activity_points table
+        if (approved) {
+          console.log('🔍 Adding points to user_activity_points for LinkedIn task');
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_id: selectedAssignment.id,
+              activity_type: 'linkedin_task_completion',
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              activity_date: new Date().toISOString().split('T')[0]
+            });
 
-      console.log('🔍 Assignment updated successfully');
-
-      // If approved, add points to user_activity_points table
-      if (approved) {
-        console.log('🔍 Adding points to user_activity_points');
-        const { error: pointsError } = await supabase
-          .from('user_activity_points')
-          .insert({
-            user_id: selectedAssignment.user_id,
-            activity_id: selectedAssignment.id,
-            activity_type: 'career_task_completion',
-            points_earned: selectedAssignment.career_task_templates.points_reward,
-            activity_date: new Date().toISOString().split('T')[0]
-          });
-
-        if (pointsError) {
-          console.error('🔍 Error adding points:', pointsError);
-          // Still show success for assignment approval, but log the points error
-          toast.success(`Assignment approved successfully, but there was an issue recording points`);
+          if (pointsError) {
+            console.error('🔍 Error adding points for LinkedIn task:', pointsError);
+            toast.success(`LinkedIn assignment approved successfully, but there was an issue recording points`);
+          } else {
+            console.log('🔍 Points added successfully for LinkedIn task');
+            toast.success(`LinkedIn assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+          }
         } else {
-          console.log('🔍 Points added successfully');
-          toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+          console.log('🔍 LinkedIn assignment rejected successfully');
+          toast.success(`LinkedIn assignment rejected successfully`);
         }
       } else {
-        console.log('🔍 Assignment rejected successfully');
-        toast.success(`Assignment rejected successfully`);
+        // Handle regular career assignment verification
+        const updateData: any = {
+          status: approved ? 'verified' : 'rejected',
+          verified_at: new Date().toISOString(),
+          verified_by: user?.id
+        };
+
+        // Only add verification_notes if it's not empty
+        if (verificationNotes && verificationNotes.trim()) {
+          updateData.verification_notes = verificationNotes.trim();
+        }
+
+        if (approved) {
+          updateData.points_earned = selectedAssignment.career_task_templates.points_reward;
+          updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
+        }
+
+        console.log('🔍 Update data:', updateData);
+
+        const { error } = await supabase
+          .from('career_task_assignments')
+          .update(updateData)
+          .eq('id', selectedAssignment.id);
+
+        if (error) {
+          console.error('🔍 Database update error:', error);
+          throw error;
+        }
+
+        console.log('🔍 Assignment updated successfully');
+
+        // If approved, add points to user_activity_points table
+        if (approved) {
+          console.log('🔍 Adding points to user_activity_points');
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_id: selectedAssignment.id,
+              activity_type: 'career_task_completion',
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              activity_date: new Date().toISOString().split('T')[0]
+            });
+
+          if (pointsError) {
+            console.error('🔍 Error adding points:', pointsError);
+            toast.success(`Assignment approved successfully, but there was an issue recording points`);
+          } else {
+            console.log('🔍 Points added successfully');
+            toast.success(`Assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+          }
+        } else {
+          console.log('🔍 Assignment rejected successfully');
+          toast.success(`Assignment rejected successfully`);
+        }
       }
       
       console.log('🔍 Refreshing assignment lists');
@@ -372,9 +528,6 @@ const VerifyAssignments = () => {
       setVerificationNotes('');
     } catch (error: any) {
       console.error('🔍 Complete error details:', error);
-      console.error('🔍 Error message:', error?.message);
-      console.error('🔍 Error code:', error?.code);
-      console.error('🔍 Error details:', error?.details);
       
       let errorMessage = 'Failed to process assignment';
       if (error?.message) {
