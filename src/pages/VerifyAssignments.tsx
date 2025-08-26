@@ -264,10 +264,11 @@ const VerifyAssignments = () => {
       throw error;
     }
     
-    console.log('🔍 Raw LinkedIn data:', data?.map(d => ({
+    console.log('🔍 Raw LinkedIn data with users:', data?.map(d => ({
       id: d.id,
       user_id: d.user_id,
       auth_uid: d.linkedin_users?.auth_uid,
+      linkedin_user_name: d.linkedin_users?.name,
       task_title: d.linkedin_tasks?.title,
       has_linkedin_user: !!d.linkedin_users
     })));
