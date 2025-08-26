@@ -882,7 +882,7 @@ const Dashboard = () => {
                         }}
                       ></div>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-primary">{resumeProgress}%</span>
+                        <span className="text-lg font-bold text-white">{resumeProgress}%</span>
                       </div>
                     </div>
                     <h3 className="font-semibold">Resume</h3>
@@ -909,7 +909,7 @@ const Dashboard = () => {
                         }}
                       ></div>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-primary">{linkedinProgress}%</span>
+                        <span className="text-lg font-bold text-white">{linkedinProgress}%</span>
                       </div>
                     </div>
                     <h3 className="font-semibold">LinkedIn Profile</h3>
@@ -928,7 +928,7 @@ const Dashboard = () => {
                           }}
                         ></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-primary">{githubProgress}%</span>
+                          <span className="text-lg font-bold text-white">{githubProgress}%</span>
                         </div>
                       </div>
                       <h3 className="font-semibold">GitHub</h3>
