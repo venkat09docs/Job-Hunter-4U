@@ -330,10 +330,15 @@ const VerifyAssignments = () => {
     if (linkedInData && linkedInData.length > 0) {
       console.log('🔍 Processing LinkedIn assignments, count:', linkedInData.length);
       
-      const authUids = linkedInData.map(assignment => assignment.linkedin_users?.auth_uid).filter(Boolean);
-      console.log('🔍 LinkedIn auth UIDs:', authUids);
+      // Extract auth UIDs from LinkedIn data
+      const authUids = linkedInData
+        .map(assignment => assignment.linkedin_users?.auth_uid)
+        .filter(Boolean);
+      
+      console.log('🔍 LinkedIn auth UIDs extracted:', authUids);
       
       if (authUids.length > 0) {
+        // Fetch profiles for these auth UIDs
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('user_id, full_name, username, profile_image_url')
@@ -346,17 +351,22 @@ const VerifyAssignments = () => {
 
         console.log('🔍 LinkedIn profiles data:', profilesData);
 
+        // Process each LinkedIn assignment
         const linkedInAssignmentsWithProfiles = linkedInData.map(assignment => {
-          const profile = profilesData?.find(p => p.user_id === assignment.linkedin_users?.auth_uid);
+          const authUid = assignment.linkedin_users?.auth_uid;
+          const profile = profilesData?.find(p => p.user_id === authUid);
+          
           console.log('🔍 Processing LinkedIn assignment:', {
             assignmentId: assignment.id,
-            authUid: assignment.linkedin_users?.auth_uid,
-            profile: profile ? 'found' : 'not found'
+            authUid: authUid,
+            linkedInUserExists: !!assignment.linkedin_users,
+            profileFound: !!profile,
+            profileData: profile ? { full_name: profile.full_name, username: profile.username } : null
           });
           
           return {
             id: assignment.id,
-            user_id: assignment.linkedin_users?.auth_uid || assignment.user_id,
+            user_id: authUid || assignment.user_id,
             template_id: assignment.task_id,
             status: assignment.status.toLowerCase(),
             submitted_at: assignment.updated_at,
@@ -370,7 +380,11 @@ const VerifyAssignments = () => {
               category: 'LinkedIn Profile',
               sub_categories: { name: 'LinkedIn Profile' }
             },
-            profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' },
+            profiles: profile || { 
+              full_name: assignment.linkedin_users?.name || 'Unknown LinkedIn User', 
+              username: assignment.linkedin_users?.name?.toLowerCase().replace(/\s+/g, '') || 'linkedin_user', 
+              profile_image_url: '' 
+            },
             evidence: [],
             _isLinkedInAssignment: true,
             _originalLinkedInTask: assignment
@@ -426,11 +440,11 @@ const VerifyAssignments = () => {
         console.log('🔍 LinkedIn assignments with evidence:', linkedInAssignmentsWithEvidence.length);
         allAssignments.push(...linkedInAssignmentsWithEvidence);
       } else {
-        console.log('🔍 No valid auth UIDs found in LinkedIn data');
-        // Even if no auth UIDs, still process the assignments with basic info
+        console.log('🔍 No valid auth UIDs found in LinkedIn data - using fallback processing');
+        // Fallback processing for assignments without proper LinkedIn user links
         const basicLinkedInAssignments = linkedInData.map(assignment => ({
           id: assignment.id,
-          user_id: assignment.user_id, // fallback to original user_id
+          user_id: assignment.user_id,
           template_id: assignment.task_id,
           status: assignment.status.toLowerCase(),
           submitted_at: assignment.updated_at,
@@ -444,7 +458,11 @@ const VerifyAssignments = () => {
             category: 'LinkedIn Profile',
             sub_categories: { name: 'LinkedIn Profile' }
           },
-          profiles: { full_name: 'LinkedIn User', username: 'linkedin_user', profile_image_url: '' },
+          profiles: { 
+            full_name: assignment.linkedin_users?.name || 'LinkedIn User', 
+            username: assignment.linkedin_users?.name?.toLowerCase().replace(/\s+/g, '') || 'linkedin_user', 
+            profile_image_url: '' 
+          },
           evidence: [],
           _isLinkedInAssignment: true,
           _originalLinkedInTask: assignment
