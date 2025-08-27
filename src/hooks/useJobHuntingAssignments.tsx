@@ -116,15 +116,17 @@ export const useJobHuntingAssignments = () => {
     try {
       console.log('Fetching job hunting assignments for user:', user.id);
       
-      // Calculate current week start date (Monday) to filter assignments
+      // Use the same date calculation logic as the edge function
       const now = new Date();
-      const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dayOfWeek = currentDate.getDay();
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      const weekStart = new Date(currentDate);
-      weekStart.setDate(currentDate.getDate() - daysToSubtract);
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday (0) to 6, others to dayOfWeek - 1
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - daysToSubtract);
       const currentWeekStart = weekStart.toISOString().split('T')[0];
       
+      console.log('Current date:', now.toISOString());
+      console.log('Day of week:', dayOfWeek);
+      console.log('Days to subtract to get Monday:', daysToSubtract);
       console.log('Calculated current week start:', currentWeekStart);
 
       const { data, error } = await supabase
@@ -142,7 +144,8 @@ export const useJobHuntingAssignments = () => {
         throw error;
       }
       
-      console.log('Fetched assignments:', data);
+      console.log('Fetched assignments for week', currentWeekStart, ':', data);
+      console.log('Number of assignments found:', data ? data.length : 0);
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
