@@ -285,10 +285,105 @@ export const JobHuntingAssignments: React.FC = () => {
                 </Card>
               </div>
 
-              {/* Quick Links Sidebar - Right Side */}
+              {/* Right Sidebar */}
               <div className="xl:col-span-1 space-y-6">
                 <div className="sticky top-4 space-y-6">
-                  {/* Job Weekly Status - Top Section */}
+                  {/* Quick Links - First Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <ExternalLink className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Quick Links</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Access your job search profiles and tools
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* LinkedIn Profile */}
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <div 
+                            className="flex items-center gap-3"
+                            onClick={() => {
+                              const linkedinUrl = profile?.linkedin_url || 'https://linkedin.com/in/';
+                              window.open(linkedinUrl, '_blank');
+                            }}
+                          >
+                            <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                              <Linkedin className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">LinkedIn Profile</p>
+                              <p className="text-xs text-muted-foreground">Visit your profile</p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Naukri Profile */}
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <div 
+                            className="flex items-center gap-3"
+                            onClick={() => {
+                              const naukriUrl = (profile as any)?.naukri_url || 'https://www.naukri.com/';
+                              window.open(naukriUrl, '_blank');
+                            }}
+                          >
+                            <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+                              <Briefcase className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">Naukri Profile</p>
+                              <p className="text-xs text-muted-foreground">Visit Naukri.com</p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Glassdoor */}
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <div 
+                            className="flex items-center gap-3"
+                            onClick={() => {
+                              const glassdoorUrl = (profile as any)?.glassdoor_url || 'https://www.glassdoor.com/';
+                              window.open(glassdoorUrl, '_blank');
+                            }}
+                          >
+                            <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                              <Globe className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">Glassdoor</p>
+                              <p className="text-xs text-muted-foreground">Company reviews</p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Find Your Next Role */}
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <Link to="/dashboard/find-your-next-role" className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                              <Search className="h-5 w-5 text-purple-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">Find Your Next Role</p>
+                              <p className="text-xs text-muted-foreground">Job search tools</p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </Link>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Job Weekly Status - Second Section */}
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <Target className="h-5 w-5 text-primary" />
@@ -424,93 +519,6 @@ export const JobHuntingAssignments: React.FC = () => {
                         </CardContent>
                       </Card>
                     </div>
-                  </div>
-
-                  {/* Quick Links - Bottom Section */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-                  
-                  {/* LinkedIn Profile */}
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group mb-4">
-                    <CardContent className="p-4">
-                      <div 
-                        className="flex items-center gap-3"
-                        onClick={() => {
-                          const linkedinUrl = profile?.linkedin_url || 'https://linkedin.com/in/';
-                          window.open(linkedinUrl, '_blank');
-                        }}
-                      >
-                        <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
-                          <Linkedin className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">LinkedIn Profile</p>
-                          <p className="text-xs text-muted-foreground">Visit your profile</p>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Naukri Profile */}
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group mb-4">
-                    <CardContent className="p-4">
-                      <div 
-                        className="flex items-center gap-3"
-                        onClick={() => {
-                          const naukriUrl = (profile as any)?.naukri_url || 'https://www.naukri.com/';
-                          window.open(naukriUrl, '_blank');
-                        }}
-                      >
-                        <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
-                          <Briefcase className="h-5 w-5 text-orange-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">Naukri Profile</p>
-                          <p className="text-xs text-muted-foreground">Visit Naukri.com</p>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Glassdoor */}
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group mb-4">
-                    <CardContent className="p-4">
-                      <div 
-                        className="flex items-center gap-3"
-                        onClick={() => {
-                          const glassdoorUrl = (profile as any)?.glassdoor_url || 'https://www.glassdoor.com/';
-                          window.open(glassdoorUrl, '_blank');
-                        }}
-                      >
-                        <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                          <Globe className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">Glassdoor</p>
-                          <p className="text-xs text-muted-foreground">Company reviews</p>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Find Your Next Role */}
-                  <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
-                    <CardContent className="p-4">
-                      <Link to="/dashboard/find-your-next-role" className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
-                          <Search className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">Find Your Next Role</p>
-                          <p className="text-xs text-muted-foreground">Job search tools</p>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </Link>
-                    </CardContent>
-                  </Card>
                   </div>
                 </div>
               </div>
