@@ -220,7 +220,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: isIT() ? (isBadgeAwarded('profile_elite') ? 100 : calculateProfileProgress('diamond')) : 0,
           criteria: isIT() ? '50+ connections + 5+ job applications' : 'GitHub profile available only for IT professionals',
           nextAction: isIT() ? 'Build Network' : 'Not Available',
-          link: isIT() ? '/career-activities' : '#',
+          link: isIT() ? '/dashboard/career-assignments' : '#',
           code: 'profile_elite'
         }
       ]
