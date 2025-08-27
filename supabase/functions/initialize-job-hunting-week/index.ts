@@ -63,19 +63,21 @@ serve(async (req) => {
       );
     }
 
-    // Get active templates
+    // Get active templates - include ALL weekly templates
     const { data: templates, error: templatesError } = await supabase
       .from('job_hunting_task_templates')
       .select('*')
       .eq('is_active', true)
-      .eq('cadence', 'weekly');
+      .eq('cadence', 'weekly')
+      .order('title');
 
     if (templatesError) {
       console.error('Error fetching templates:', templatesError);
       throw templatesError;
     }
 
-    console.log(`Found ${templates?.length || 0} active weekly templates`);
+    console.log(`Found ${templates?.length || 0} active weekly templates:`);
+    console.log('Template titles:', templates?.map(t => t.title) || []);
 
     if (!templates || templates.length === 0) {
       throw new Error('No active weekly templates found');
@@ -127,12 +129,15 @@ serve(async (req) => {
       throw scheduleError;
     }
 
-    console.log(`Created ${assignments.length} assignments for user ${user_id}`);
+    console.log(`Created ${assignments.length} assignments for user ${user_id} for week ${weekStartDate}`);
+    console.log('Assignment titles:', assignments.map((_, i) => templates[i]?.title || 'Unknown'));
 
     return new Response(
       JSON.stringify({ 
         message: 'Weekly assignments initialized successfully',
-        assignments_created: assignments.length
+        assignments_created: assignments.length,
+        week_start_date: weekStartDate,
+        template_titles: templates.map(t => t.title)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

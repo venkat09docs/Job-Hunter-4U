@@ -71,7 +71,9 @@ export const JobHuntingAssignments: React.FC = () => {
   console.log('Templates categories:', templates.map(t => ({ title: t.title, category: t.category })));
   
   // All assignments are already job hunting specific since we're using useJobHuntingAssignments
-  const jobHuntingAssignments = assignments;
+  // But filter to show only current week assignments to avoid duplicates
+  const currentWeekProgress = getWeekProgress();
+  const jobHuntingAssignments = currentWeekProgress.assignments;
   
   console.log('Filtered job hunting assignments:', jobHuntingAssignments);
 
