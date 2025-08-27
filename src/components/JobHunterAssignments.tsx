@@ -21,6 +21,11 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
+  console.log('=== JobHunterAssignments Component Debug ===');
+  console.log('Props - weekProgress:', weekProgress);
+  console.log('Props - assignments:', assignments);
+  console.log('Props - assignments length:', assignments.length);
+
   // Filter assignments based on active filter
   const filteredAssignments = assignments.filter(assignment => {
     switch (activeFilter) {
@@ -31,6 +36,9 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
       default: return true;
     }
   });
+
+  console.log('Filtered assignments:', filteredAssignments);
+  console.log('Filtered assignments length:', filteredAssignments.length);
 
   // Weekly quotas - these would come from templates/settings
   const weeklyQuotas = [

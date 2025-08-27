@@ -186,9 +186,9 @@ export const useJobHuntingAssignments = () => {
       console.log('Fetched assignments for week', currentWeekStart, ':', data);
       console.log('Number of assignments found:', data ? data.length : 0);
       
-      // If no assignments found for calculated week, let's try the most recent week
+      // If no assignments found for calculated week, use the most recent week
       if (!data || data.length === 0) {
-        console.log('=== NO ASSIGNMENTS FOUND FOR CALCULATED WEEK, TRYING MOST RECENT ===');
+        console.log('=== NO ASSIGNMENTS FOR CALCULATED WEEK, USING MOST RECENT ===');
         if (allAssignments && allAssignments.length > 0) {
           const mostRecentWeek = allAssignments[0].week_start_date;
           console.log('Most recent week found:', mostRecentWeek);
@@ -203,17 +203,19 @@ export const useJobHuntingAssignments = () => {
             .eq('week_start_date', mostRecentWeek)
             .order('due_date', { ascending: true });
             
-          if (!recentError && recentData) {
+          if (!recentError && recentData && recentData.length > 0) {
             console.log('Found assignments for most recent week:', recentData);
             setAssignments(recentData);
-            return;
+            return; // Exit early with recent data
           }
         }
       }
       
+      // Set the data (either current week assignments or empty array)
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
+      setAssignments([]); // Set empty array on error
     }
   };
 
@@ -387,21 +389,16 @@ export const useJobHuntingAssignments = () => {
   };
 
   const getWeekProgress = () => {
-    // Use the same date calculation logic as fetchAssignments
-    const now = new Date();
-    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const dayOfWeek = weekStart.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    weekStart.setDate(weekStart.getDate() - daysToSubtract);
-    const currentWeekStart = weekStart.toISOString().split('T')[0];
-    
-    // Filter assignments by the calculated week start date
-    const currentWeek = assignments.filter(a => a.week_start_date === currentWeekStart);
+    // Don't filter by date calculation - just use all current assignments
+    // since fetchAssignments already handles getting the right week's data
+    const currentWeek = assignments;
 
     const completed = currentWeek.filter(a => a.status === 'verified').length;
     const total = currentWeek.length;
     const totalPoints = currentWeek.reduce((sum, a) => sum + (a.points_earned || 0), 0);
     const maxPoints = currentWeek.reduce((sum, a) => sum + (a.template?.points_reward || 0), 0);
+
+    console.log('getWeekProgress - assignments:', currentWeek.length, 'completed:', completed, 'total:', total);
 
     return { completed, total, totalPoints, maxPoints, assignments: currentWeek };
   };
