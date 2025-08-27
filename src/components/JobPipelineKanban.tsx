@@ -63,17 +63,15 @@ export const JobPipelineKanban: React.FC = () => {
   });
 
   // Map job_tracker statuses to pipeline stages for consistent display
-  const pipelineStages = ['wishlist', 'applying', 'applied', 'interviewing', 'accepted'];
+  const pipelineStages = ['wishlist', 'applied', 'interviewing', 'accepted'];
   const stageLabels = {
-    wishlist: 'Leads',
-    applying: 'Applying', 
+    wishlist: 'Wish List',
     applied: 'Applied',
     interviewing: 'Interviewing',
     accepted: 'Offers'
   };
   const stageColors = {
     wishlist: 'bg-gray-500',
-    applying: 'bg-blue-500', 
     applied: 'bg-yellow-500',
     interviewing: 'bg-orange-500',
     accepted: 'bg-green-500'
@@ -410,8 +408,7 @@ export const JobPipelineKanban: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="wishlist">Lead</SelectItem>
-                    <SelectItem value="applying">Applying</SelectItem>
+                    <SelectItem value="wishlist">Wish List</SelectItem>
                     <SelectItem value="applied">Applied</SelectItem>
                     <SelectItem value="interviewing">Interviewing</SelectItem>
                     <SelectItem value="accepted">Offer</SelectItem>
@@ -454,7 +451,7 @@ export const JobPipelineKanban: React.FC = () => {
 
       {/* Kanban Board */}
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {pipelineStages.map((stage) => (
             <DroppableStatusColumn
               key={stage}
