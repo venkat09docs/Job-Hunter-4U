@@ -159,13 +159,19 @@ export const useJobHuntingAssignments = () => {
       
       // Call the job hunting specific edge function
       const { data, error } = await supabase.functions.invoke('initialize-job-hunting-week', {
-        body: { userId: user?.id }
+        body: { user_id: user?.id }  // Fixed: changed from userId to user_id
       });
       
       if (error) throw error;
       
       console.log('Job hunting week initialization response:', data);
-      toast.success('Job hunting tasks initialized successfully!');
+      
+      // Handle different response cases
+      if (data?.message?.includes('already exist')) {
+        toast.success('Job hunting assignments are already set up for this week!');
+      } else {
+        toast.success(`Job hunting tasks initialized successfully! Created ${data?.assignments_created || 0} assignments.`);
+      }
       
       // Refresh assignments
       await fetchData();

@@ -18,6 +18,8 @@ serve(async (req) => {
     );
 
     const { user_id } = await req.json();
+    
+    console.log('Initialize job hunting week called for user:', user_id);
 
     if (!user_id) {
       throw new Error('User ID is required');
@@ -33,16 +35,31 @@ serve(async (req) => {
     const weekStartDate = weekStart.toISOString().split('T')[0];
 
     // Check if assignments already exist for this week
-    const { data: existingAssignments } = await supabase
+    const { data: existingAssignments, error: existingError } = await supabase
       .from('job_hunting_assignments')
       .select('id')
       .eq('user_id', user_id)
       .eq('week_start_date', weekStartDate);
 
+    if (existingError) {
+      console.error('Error checking existing assignments:', existingError);
+      throw existingError;
+    }
+
+    console.log(`Found ${existingAssignments?.length || 0} existing assignments for week ${weekStartDate}`);
+
     if (existingAssignments && existingAssignments.length > 0) {
+      console.log('Assignments already exist, returning success message');
       return new Response(
-        JSON.stringify({ message: 'Assignments already exist for this week' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          message: 'Assignments already exist for this week',
+          assignments_count: existingAssignments.length,
+          week_start_date: weekStartDate
+        }),
+        { 
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
     }
 
@@ -53,7 +70,12 @@ serve(async (req) => {
       .eq('is_active', true)
       .eq('cadence', 'weekly');
 
-    if (templatesError) throw templatesError;
+    if (templatesError) {
+      console.error('Error fetching templates:', templatesError);
+      throw templatesError;
+    }
+
+    console.log(`Found ${templates?.length || 0} active weekly templates`);
 
     if (!templates || templates.length === 0) {
       throw new Error('No active weekly templates found');
@@ -81,7 +103,12 @@ serve(async (req) => {
       .insert(assignments)
       .select();
 
-    if (assignmentsError) throw assignmentsError;
+    if (assignmentsError) {
+      console.error('Error creating assignments:', assignmentsError);
+      throw assignmentsError;
+    }
+
+    console.log(`Successfully created ${createdAssignments?.length || 0} assignments`);
 
     // Create or update weekly schedule
     const { error: scheduleError } = await supabase
@@ -95,7 +122,10 @@ serve(async (req) => {
         total_points_possible: templates.reduce((sum, t) => sum + t.points_reward, 0)
       });
 
-    if (scheduleError) throw scheduleError;
+    if (scheduleError) {
+      console.error('Error creating/updating schedule:', scheduleError);
+      throw scheduleError;
+    }
 
     console.log(`Created ${assignments.length} assignments for user ${user_id}`);
 
