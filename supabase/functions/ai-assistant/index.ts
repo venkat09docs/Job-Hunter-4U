@@ -77,7 +77,7 @@ serve(async (req) => {
     try {
       const profileResult = await supabase
         .from('profiles')
-        .select('user_id, subscription_status, subscription_active, subscription_plan, industry')
+        .select('user_id, subscription_active, subscription_plan, industry')
         .eq('user_id', userId)
         .single();
       
@@ -88,12 +88,10 @@ serve(async (req) => {
       
       if (profileResult.data) {
         profile = profileResult.data;
-        hasActiveSubscription = profile.subscription_active === true || 
-                               profile.subscription_status === 'active';
+        hasActiveSubscription = profile.subscription_active === true;
         console.log('✅ Profile found:', { 
           hasActiveSubscription, 
           subscriptionActive: profile.subscription_active, 
-          subscriptionStatus: profile.subscription_status,
           subscriptionPlan: profile.subscription_plan
         });
       } else if (profileResult.error) {
@@ -124,7 +122,7 @@ serve(async (req) => {
           isAdmin: false,
           hasActiveSubscription: false,
           profileFound: !!profile,
-          subscriptionStatus: profile?.subscription_status || 'unknown'
+          subscriptionPlan: profile?.subscription_plan || 'none'
         }
       }), {
         status: 403,

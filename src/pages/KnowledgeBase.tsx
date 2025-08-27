@@ -7,10 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, FileText, Clock, User, ArrowLeft, Trophy, Star, Edit, Trash2, Plus, Upload, Eye, EyeOff } from "lucide-react";
+import { Play, FileText, Clock, User, ArrowLeft, Edit, Trash2, Plus, Upload, Eye, EyeOff } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
-import { useActivityPointSettings } from "@/hooks/useActivityPointSettings";
 import { useRole } from "@/hooks/useRole";
 import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
 import { toast } from "sonner";
@@ -19,7 +18,6 @@ export default function KnowledgeBase() {
   const { videoData, docData, toggleVideoPublishStatus, toggleDocPublishStatus, loading } = useKnowledgeBase();
   const [activeVideoCategory, setActiveVideoCategory] = useState<string>("");
   const [activeDocCategory, setActiveDocCategory] = useState<string>("");
-  const { settings, loading: pointsLoading, getSettingsByCategory } = useActivityPointSettings();
   const { isAdmin, role } = useRole();
   const navigate = useNavigate();
 
@@ -206,128 +204,6 @@ export default function KnowledgeBase() {
         </div>
 
         <div className="space-y-8">
-          {/* Reward Points Section */}
-          {(isAdmin || getSettingsByCategory('resume').length > 0 || getSettingsByCategory('linkedin').length > 0 || getSettingsByCategory('LinkedIn Growth').length > 0) && (
-            <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                Reward Points
-              </CardTitle>
-              <CardDescription>
-                Understand how you earn points for various activities in your career development journey
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="profile-building">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="profile-building" className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4" />
-                    Profile Building
-                  </TabsTrigger>
-                  <TabsTrigger value="linkedin-growth" className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4" />
-                    LinkedIn Growth
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="profile-building">
-                  <ScrollArea className="h-[400px] pr-4">
-                    {pointsLoading ? (
-                      <div className="space-y-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {getSettingsByCategory('resume').map((activity) => (
-                          <Card key={activity.id} className="border-l-4 border-l-blue-500/50">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
-                                    <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
-                                      {activity.is_active ? "Active" : "Inactive"}
-                                    </Badge>
-                                  </div>
-                                  {activity.description && (
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                      {activity.description}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
-                                    {activity.points} points
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        {getSettingsByCategory('resume').length === 0 && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No profile building activities configured yet.</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-                
-                <TabsContent value="linkedin-growth">
-                  <ScrollArea className="h-[400px] pr-4">
-                    {pointsLoading ? (
-                      <div className="space-y-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {[...getSettingsByCategory('linkedin'), ...getSettingsByCategory('LinkedIn Growth')].map((activity) => (
-                          <Card key={activity.id} className="border-l-4 border-l-primary/50">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-semibold text-sm">{activity.activity_name}</h3>
-                                    <Badge variant={activity.is_active ? "default" : "secondary"} className="text-xs">
-                                      {activity.is_active ? "Active" : "Inactive"}
-                                    </Badge>
-                                  </div>
-                                  {activity.description && (
-                                    <p className="text-xs text-muted-foreground mb-2">
-                                      {activity.description}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                                    {activity.points} points
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        {(getSettingsByCategory('linkedin').length === 0 && getSettingsByCategory('LinkedIn Growth').length === 0) && (
-                          <div className="text-center py-8 text-muted-foreground">
-                            <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p>No LinkedIn growth activities configured yet.</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </ScrollArea>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Videos Section */}
