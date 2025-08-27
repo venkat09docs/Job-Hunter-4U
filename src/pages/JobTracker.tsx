@@ -135,15 +135,35 @@ const JobTracker = () => {
     if (staleJobs.length === 0) return;
 
     try {
-      // First, delete existing stale job notifications to avoid duplicates
-      await supabase
+      // Get existing notifications for stale jobs to avoid duplicates
+      const { data: existingNotifications } = await supabase
         .from('notifications')
-        .delete()
+        .select('related_id, created_at')
         .eq('user_id', user?.id)
-        .eq('type', 'job_status_stale');
+        .eq('type', 'job_status_stale')
+        .in('related_id', staleJobs.map(job => job.id));
 
-      // Create new notifications for each stale job
-      const notifications = staleJobs.map(job => {
+      const today = new Date();
+      const existingNotificationMap = new Map(
+        existingNotifications?.map(n => [
+          n.related_id,
+          new Date(n.created_at)
+        ]) || []
+      );
+
+      // Only create notifications for jobs that don't have a recent notification (within last 24 hours)
+      const jobsNeedingNotification = staleJobs.filter(job => {
+        const lastNotificationDate = existingNotificationMap.get(job.id);
+        if (!lastNotificationDate) return true; // No previous notification
+        
+        const hoursSinceLastNotification = Math.floor((today.getTime() - lastNotificationDate.getTime()) / (1000 * 60 * 60));
+        return hoursSinceLastNotification >= 24; // Only create new notification if last one was 24+ hours ago
+      });
+
+      if (jobsNeedingNotification.length === 0) return;
+
+      // Create new notifications only for jobs that need them
+      const notifications = jobsNeedingNotification.map(job => {
         const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
         return {
           user_id: user?.id,
