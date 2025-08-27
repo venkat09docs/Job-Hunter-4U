@@ -128,10 +128,8 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
     setPaymentDialogOpen(false);
     setSelectedPlan(null);
     onOpenChange(false);
-    // Refresh the page to show updated subscription status
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
+    // Refresh profile data to show updated subscription status
+    refreshProfile();
   };
 
   const currentPlan = plans.find(plan => plan.name === profile?.subscription_plan);

@@ -289,7 +289,10 @@ const Dashboard = () => {
         (payload) => {
           console.log('🔔 Profile updated, refreshing...', payload);
           // Refresh profile data when subscription changes
-          window.location.reload(); // Force full refresh to get updated profile
+          fetchJobData();
+          refreshLinkedInProgress();
+          refreshGitHubProgress();
+          refreshNetworkMetrics();
         }
       )
       .on(

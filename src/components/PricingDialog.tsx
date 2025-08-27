@@ -117,10 +117,6 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
   const handlePaymentSuccess = () => {
     setPaymentDialogOpen(false);
     setSelectedPlan(null);
-    // Refresh the page to show updated subscription status
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
   };
 
   return (

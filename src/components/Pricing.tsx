@@ -119,7 +119,7 @@ const Pricing = () => {
     if (!user) {
       // Store the selected plan in sessionStorage to show after login
       sessionStorage.setItem('selectedPlan', JSON.stringify(plan));
-      // Navigate to auth page instead of showing error
+      // Navigate to auth page using React Router
       window.location.href = '/auth';
       return;
     }
@@ -194,11 +194,6 @@ const Pricing = () => {
             
             // Remove body class when successful
             document.body.classList.remove('razorpay-open');
-            
-            // Refresh the page to show updated subscription status
-            setTimeout(() => {
-              window.location.reload();
-            }, 1500);
             
           } catch (error) {
             toast({

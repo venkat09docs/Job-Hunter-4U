@@ -20,6 +20,7 @@ import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useProfile } from '@/hooks/useProfile';
+import { useNavigate } from 'react-router-dom';
 
 interface SubCategory {
   id: string;
@@ -35,6 +36,7 @@ const CareerAssignments = () => {
   const { user } = useAuth();
   const { inputs, saveInput, getInput } = useUserInputs();
   const { profile } = useProfile();
+  const navigate = useNavigate();
   
   // Use the proper hook instead of local state
   const {
@@ -400,7 +402,7 @@ const CareerAssignments = () => {
           <div className="flex items-center gap-4">
             <Button 
               variant="outline" 
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => navigate('/dashboard')}
               className="mr-4"
             >
               <Home className="w-4 h-4 mr-2" />
