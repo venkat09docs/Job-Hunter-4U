@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JobHunterAssignments } from '@/components/JobHunterAssignments';
 import { JobHunterHistory } from '@/components/JobHunterHistory';
 import { JobHunterSettings } from '@/components/JobHunterSettings';
+import { JobPipelineKanban } from '@/components/JobPipelineKanban';
 import PremiumProtectedRoute from '@/components/PremiumProtectedRoute';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { AssignmentCardSkeleton } from '@/components/SkeletonLoaders';
@@ -432,10 +433,26 @@ export const JobHuntingAssignments: React.FC = () => {
                           initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
                         />
                       </CardContent>
-                    </Card>
-                  )}
-                </div>
-              </TabsContent>
+                     </Card>
+                   )}
+
+                   {/* Job Pipeline - Single Instance */}
+                   <Card className="shadow-elegant">
+                     <CardHeader>
+                       <CardTitle className="text-lg flex items-center gap-2">
+                         <Briefcase className="h-5 w-5 text-orange-600" />
+                         Job Pipeline
+                       </CardTitle>
+                       <CardDescription>
+                         Track your job applications through different stages of the hiring process
+                       </CardDescription>
+                     </CardHeader>
+                     <CardContent>
+                       <JobPipelineKanban />
+                     </CardContent>
+                   </Card>
+                 </div>
+               </TabsContent>
 
               {/* History Tab - Period summaries, audit trail */}
               <TabsContent value="history" className="space-y-6">

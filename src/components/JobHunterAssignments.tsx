@@ -275,18 +275,6 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
         </Card>
       </div>
 
-      {/* Job Pipeline Kanban */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Job Pipeline</CardTitle>
-          <CardDescription>
-            Track your job applications through different stages
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <JobPipelineKanban />
-        </CardContent>
-      </Card>
     </div>
   );
 };
