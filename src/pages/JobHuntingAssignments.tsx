@@ -228,7 +228,6 @@ export const JobHuntingAssignments: React.FC = () => {
                 </CardContent>
               </Card>
             </div>
-            
             {/* Premium Feature Notice */}
             {!canAccessFeature("job_hunting_assignments") && (
               <Card className="border-orange-200 bg-orange-50">
@@ -245,75 +244,6 @@ export const JobHuntingAssignments: React.FC = () => {
                 </CardContent>
               </Card>
             )}
-            
-            {/* Progress Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Target className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Week Progress</p>
-                      <p className="text-2xl font-bold">
-                        {weekProgress.completed}/{weekProgress.total}
-                      </p>
-                      <Progress 
-                        value={weekProgress.total > 0 ? (weekProgress.completed / weekProgress.total) * 100 : 0} 
-                        className="mt-2 h-2"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <TrendingUp className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Application Streak</p>
-                      <p className="text-2xl font-bold">
-                        {getStreakByType('daily_application')?.current_streak || 0}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Best: {getStreakByType('daily_application')?.longest_streak || 0} days
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Calendar className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Current Week</p>
-                      <p className="text-sm font-bold">
-                        {format(currentWeek, 'MMM d')} - {format(weekEnd, 'MMM d')}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2 h-7 text-xs"
-                        onClick={initializeUserWeek}
-                        disabled={!canAccessFeature("job_hunting_assignments")}
-                      >
-                        <RefreshCw className="h-3 w-3 mr-1" />
-                        Generate Tasks
-                        {!canAccessFeature("job_hunting_assignments") && <Lock className="h-3 w-3 ml-1" />}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="assignments" className="space-y-6">
@@ -325,24 +255,6 @@ export const JobHuntingAssignments: React.FC = () => {
 
               {/* Assignments Tab - Weekly quotas + Per-job tasks + Pipeline */}
               <TabsContent value="assignments" className="space-y-6">
-                {/* Total Points Card - Moved from Progress Overview */}
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-yellow-100 rounded-lg">
-                        <Trophy className="h-6 w-6 text-yellow-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                        <p className="text-2xl font-bold">{totalPoints}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          +{weekProgress.totalPoints} this week
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Job Pipeline Section */}
                 <Card>
                   <CardHeader>
@@ -365,7 +277,7 @@ export const JobHuntingAssignments: React.FC = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                       <div className="p-4 border rounded-lg">
                         <div className="flex items-center gap-2 mb-3">
                           <Briefcase className="h-5 w-5 text-primary" />
@@ -465,6 +377,24 @@ export const JobHuntingAssignments: React.FC = () => {
                           
                           <Badge variant="secondary" className="text-xs">
                             67% Complete
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Total Points - Added as 5th board */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Trophy className="h-5 w-5 text-yellow-600" />
+                          <h4 className="font-medium text-sm">Total Points</h4>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold">{totalPoints}</span>
+                          </div>
+                          
+                          <Badge variant="secondary" className="text-xs">
+                            +{weekProgress.totalPoints} this week
                           </Badge>
                         </div>
                       </div>
