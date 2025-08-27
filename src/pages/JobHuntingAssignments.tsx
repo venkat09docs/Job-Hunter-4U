@@ -167,154 +167,7 @@ export const JobHuntingAssignments: React.FC = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
                   {/* Main Content - Left Side */}
                   <div className="xl:col-span-3 space-y-6">
-                    {/* Job Pipeline Section */}
-                    <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="h-5 w-5" />
-                          Job Weekly Status
-                        </CardTitle>
-                        <CardDescription>
-                          Current week progress and targets ({format(currentWeek, 'MMM d')} - {format(weekEnd, 'MMM d')})
-                        </CardDescription>
-                      </div>
-                      <Link to="/dashboard/job-tracker">
-                        <Button variant="outline" size="sm" className="flex items-center gap-2">
-                          <ExternalLink className="h-4 w-4" />
-                          Job Hunter Pro
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Briefcase className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium text-sm">Job Applications</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold">3</span>
-                            <span className="text-sm text-muted-foreground">/ 5</span>
-                          </div>
-                          
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: '60%' }}
-                            />
-                          </div>
-                          
-                          <Badge variant="secondary" className="text-xs">
-                            60% Complete
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* Referral Requests */}
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Target className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium text-sm">Referral Requests</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold">1</span>
-                            <span className="text-sm text-muted-foreground">/ 3</span>
-                          </div>
-                          
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: '33%' }}
-                            />
-                          </div>
-                          
-                          <Badge variant="outline" className="text-xs">
-                            33% Complete
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* Follow-ups */}
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <TrendingUp className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium text-sm">Follow-ups</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold">4</span>
-                            <span className="text-sm text-muted-foreground">/ 5</span>
-                          </div>
-                          
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: '80%' }}
-                            />
-                          </div>
-                          
-                          <Badge variant="secondary" className="text-xs">
-                            80% Complete
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* New Conversations */}
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <BarChart3 className="h-5 w-5 text-primary" />
-                          <h4 className="font-medium text-sm">New Conversations</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold">2</span>
-                            <span className="text-sm text-muted-foreground">/ 3</span>
-                          </div>
-                          
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all"
-                              style={{ width: '67%' }}
-                            />
-                          </div>
-                          
-                          <Badge variant="secondary" className="text-xs">
-                            67% Complete
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Total Points - Added as 5th board */}
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Trophy className="h-5 w-5 text-yellow-600" />
-                          <h4 className="font-medium text-sm">Total Points</h4>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-2xl font-bold">{totalPoints}</span>
-                          </div>
-                          
-                          <Badge variant="secondary" className="text-xs">
-                            +{weekProgress.totalPoints} this week
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Weekly Progress Overview */}
+                    {/* Weekly Progress Overview */}
                 <Card className="shadow-elegant border-primary/20">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
@@ -433,9 +286,149 @@ export const JobHuntingAssignments: React.FC = () => {
               </div>
 
               {/* Quick Links Sidebar - Right Side */}
-              <div className="xl:col-span-1 space-y-4">
-                <div className="sticky top-4">
-                  <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <div className="xl:col-span-1 space-y-6">
+                <div className="sticky top-4 space-y-6">
+                  {/* Job Weekly Status - Top Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Target className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Job Weekly Status</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Current week progress ({format(currentWeek, 'MMM d')} - {format(weekEnd, 'MMM d')})
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* Job Applications */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Briefcase className="h-4 w-4 text-primary" />
+                            <h4 className="font-medium text-sm">Job Applications</h4>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold">3</span>
+                              <span className="text-sm text-muted-foreground">/ 5</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: '60%' }}
+                              />
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              60% Complete
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Referral Requests */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Target className="h-4 w-4 text-primary" />
+                            <h4 className="font-medium text-sm">Referral Requests</h4>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold">1</span>
+                              <span className="text-sm text-muted-foreground">/ 3</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: '33%' }}
+                              />
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              33% Complete
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* Follow-ups */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            <h4 className="font-medium text-sm">Follow-ups</h4>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold">4</span>
+                              <span className="text-sm text-muted-foreground">/ 5</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: '80%' }}
+                              />
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              80% Complete
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      {/* New Conversations */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <BarChart3 className="h-4 w-4 text-primary" />
+                            <h4 className="font-medium text-sm">New Conversations</h4>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold">2</span>
+                              <span className="text-sm text-muted-foreground">/ 3</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full transition-all"
+                                style={{ width: '67%' }}
+                              />
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              67% Complete
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Total Points */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Trophy className="h-4 w-4 text-yellow-600" />
+                            <h4 className="font-medium text-sm">Total Points</h4>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold">{weekProgress.totalPoints}</span>
+                              <span className="text-sm text-muted-foreground">/ {weekProgress.maxPoints}</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div 
+                                className="bg-yellow-500 h-2 rounded-full transition-all"
+                                style={{ width: weekProgress.maxPoints > 0 ? `${Math.round((weekProgress.totalPoints / weekProgress.maxPoints) * 100)}%` : '0%' }}
+                              />
+                            </div>
+                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                              {weekProgress.maxPoints > 0 ? Math.round((weekProgress.totalPoints / weekProgress.maxPoints) * 100) : 0}% Earned
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Quick Links - Bottom Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
                   
                   {/* LinkedIn Profile */}
                   <Card className="cursor-pointer hover:shadow-lg transition-shadow group mb-4">
@@ -518,6 +511,7 @@ export const JobHuntingAssignments: React.FC = () => {
                       </Link>
                     </CardContent>
                   </Card>
+                  </div>
                 </div>
               </div>
             </div>
