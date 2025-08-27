@@ -36,7 +36,6 @@ import {
   Globe,
   Search
 } from 'lucide-react';
-import { DailyJobHuntingSessions } from '@/components/DailyJobHuntingSessions';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -444,9 +443,6 @@ export const JobHuntingAssignments: React.FC = () => {
                     )}
                   </CardContent>
                 </Card>
-
-                {/* Daily Job Hunting Activities Section */}
-                <DailyJobHuntingSessions />
 
                 {/* Weekly Assignments Section */}
                 <Card>
