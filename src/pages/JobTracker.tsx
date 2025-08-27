@@ -181,9 +181,12 @@ const JobTracker = () => {
             .eq('is_active', true)
             .order('display_order');
 
-          if (templatesError) throw templatesError;
+          if (templatesError) {
+            console.error('Error fetching templates:', templatesError);
+            throw templatesError;
+          }
           
-          console.log('DEBUG: Interview prep templates found:', templates);
+          console.log('DEBUG: Interview prep templates found:', templates?.length || 0, templates);
 
           if (templates && templates.length > 0) {
             // Create assignments for each template
@@ -194,6 +197,8 @@ const JobTracker = () => {
               week_start_date: new Date().toISOString().split('T')[0], // Current date as YYYY-MM-DD
               due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
             }));
+
+            console.log('DEBUG: Creating assignments:', newAssignments);
 
             const { data: createdAssignments, error: createError } = await supabase
               .from('career_task_assignments')
@@ -214,12 +219,22 @@ const JobTracker = () => {
               throw createError;
             }
 
-            console.log('DEBUG: Created interview prep assignments:', createdAssignments);
+            console.log('DEBUG: Successfully created', createdAssignments?.length || 0, 'interview prep assignments:', createdAssignments);
+            
+            // Validate that assignments were created with proper data
+            const validAssignments = createdAssignments?.filter(assignment => 
+              assignment.career_task_templates && 
+              assignment.career_task_templates.title
+            ) || [];
+
+            console.log('DEBUG: Valid assignments with templates:', validAssignments);
             
             return {
               hasUncompleted: true,
-              assignments: createdAssignments || []
+              assignments: validAssignments
             };
+          } else {
+            console.warn('DEBUG: No interview preparation templates found in database');
           }
         }
 

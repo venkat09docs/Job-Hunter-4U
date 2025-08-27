@@ -31,6 +31,7 @@ interface Assignment {
   updated_at?: string;
   sub_category_id?: string;
   display_order?: number;
+  source?: string; // Track which table this comes from
 }
 
 interface SubCategory {
@@ -59,7 +60,8 @@ const VALID_PROFILE_CATEGORIES = [
   'resume_building',
   'resume_optimization',
   'resume_management',
-  'cover_letter'
+  'cover_letter',
+  'interview_preparation'
 ];
 
 export default function ManageAssignments() {
@@ -159,13 +161,24 @@ export default function ManageAssignments() {
           display_order: item.display_order
         }));
       } else if (activeCategory === 'job_hunter') {
-        const { data: jobHunterData, error } = await supabase
-          .from('job_hunting_task_templates')
-          .select('*')
-          .order('display_order', { ascending: true });
+        // Fetch both job hunting task templates and interview preparation tasks
+        const [jobHunterResponse, interviewPrepResponse] = await Promise.all([
+          supabase
+            .from('job_hunting_task_templates')
+            .select('*')
+            .order('display_order', { ascending: true }),
+          supabase
+            .from('career_task_templates')
+            .select('*')
+            .eq('category', 'interview_preparation')
+            .order('display_order', { ascending: true })
+        ]);
         
-        if (error) throw error;
-        data = (jobHunterData || []).map(item => ({
+        if (jobHunterResponse.error) throw jobHunterResponse.error;
+        if (interviewPrepResponse.error) throw interviewPrepResponse.error;
+
+        // Combine both datasets
+        const jobHunterData = (jobHunterResponse.data || []).map(item => ({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -176,8 +189,29 @@ export default function ManageAssignments() {
           is_active: item.is_active,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          display_order: item.display_order
+          display_order: item.display_order,
+          source: 'job_hunting_task_templates'
         }));
+
+        const interviewPrepData = (interviewPrepResponse.data || []).map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
+          category: item.category,
+          points_reward: item.points_reward,
+          difficulty: item.difficulty,
+          is_active: item.is_active,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          display_order: item.display_order,
+          source: 'career_task_templates'
+        }));
+
+        // Combine and sort by display_order
+        data = [...jobHunterData, ...interviewPrepData].sort((a, b) => 
+          (a.display_order || 0) - (b.display_order || 0)
+        );
       } else if (activeCategory === 'github') {
         const { data: githubData, error } = await supabase
           .from('github_tasks')
@@ -273,22 +307,47 @@ export default function ManageAssignments() {
           
           if (error) throw error;
         } else if (activeCategory === 'job_hunter') {
-          const { error } = await supabase
-            .from('job_hunting_task_templates')
-            .update({
-              title: assignmentForm.title,
-              description: assignmentForm.description,
-              instructions: assignmentForm.instructions,
-              category: assignmentForm.category,
-              points_reward: assignmentForm.points_reward,
-              difficulty: assignmentForm.difficulty,
-              is_active: assignmentForm.is_active,
-              display_order: assignmentForm.display_order,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', editingAssignment.id);
+          // Determine which table to update based on source or category
+          const isInterviewPrep = editingAssignment.source === 'career_task_templates' || 
+                                  editingAssignment.category === 'interview_preparation';
           
-          if (error) throw error;
+          if (isInterviewPrep) {
+            // Update interview preparation assignment in career_task_templates
+            const { error } = await supabase
+              .from('career_task_templates')
+              .update({
+                title: assignmentForm.title,
+                description: assignmentForm.description,
+                instructions: assignmentForm.instructions,
+                category: 'interview_preparation', // Keep as interview_preparation
+                points_reward: assignmentForm.points_reward,
+                difficulty: assignmentForm.difficulty,
+                is_active: assignmentForm.is_active,
+                display_order: assignmentForm.display_order,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', editingAssignment.id);
+            
+            if (error) throw error;
+          } else {
+            // Update regular job hunter assignment
+            const { error } = await supabase
+              .from('job_hunting_task_templates')
+              .update({
+                title: assignmentForm.title,
+                description: assignmentForm.description,
+                instructions: assignmentForm.instructions,
+                category: assignmentForm.category,
+                points_reward: assignmentForm.points_reward,
+                difficulty: assignmentForm.difficulty,
+                is_active: assignmentForm.is_active,
+                display_order: assignmentForm.display_order,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', editingAssignment.id);
+            
+            if (error) throw error;
+          }
         } else if (activeCategory === 'github') {
           const { error } = await supabase
             .from('github_tasks')
@@ -428,12 +487,28 @@ export default function ManageAssignments() {
         
         if (error) throw error;
       } else if (activeCategory === 'job_hunter') {
-        const { error } = await supabase
-          .from('job_hunting_task_templates')
-          .delete()
-          .eq('id', assignmentId);
+        // Determine which table to delete from based on the assignment
+        const assignmentToDelete = assignments.find(a => a.id === assignmentId);
+        const isInterviewPrep = assignmentToDelete?.source === 'career_task_templates' || 
+                                assignmentToDelete?.category === 'interview_preparation';
         
-        if (error) throw error;
+        if (isInterviewPrep) {
+          // Delete interview preparation assignment from career_task_templates
+          const { error } = await supabase
+            .from('career_task_templates')
+            .delete()
+            .eq('id', assignmentId);
+          
+          if (error) throw error;
+        } else {
+          // Delete regular job hunter assignment
+          const { error } = await supabase
+            .from('job_hunting_task_templates')
+            .delete()
+            .eq('id', assignmentId);
+          
+          if (error) throw error;
+        }
       } else if (activeCategory === 'github') {
         const { error } = await supabase
           .from('github_tasks')
@@ -736,44 +811,56 @@ export default function ManageAssignments() {
                     ) : (
                        <div className="space-y-4">
                          {assignments.map((assignment) => (
-                          <div key={assignment.id} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex-1">
-                                <h4 className="font-medium mb-1">{assignment.title}</h4>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                  {assignment.description}
-                                </p>
-                                <div className="flex gap-2">
-                                  <Badge variant="outline">{assignment.category}</Badge>
-                                  {assignment.points_reward && (
-                                    <Badge variant="secondary">{assignment.points_reward} pts</Badge>
-                                  )}
-                                  {assignment.difficulty && (
-                                    <Badge variant="outline">{assignment.difficulty}</Badge>
-                                  )}
-                                  <Badge variant={assignment.is_active ? "default" : "secondary"}>
-                                    {assignment.is_active ? "Active" : "Inactive"}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => startEditAssignment(assignment)}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleDeleteAssignment(assignment.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+                           <div key={assignment.id} className="p-4 border rounded-lg">
+                             <div className="flex justify-between items-start mb-2">
+                               <div className="flex-1">
+                                 <div className="flex items-center gap-2 mb-1">
+                                   <h4 className="font-medium">{assignment.title}</h4>
+                                   {assignment.category === 'interview_preparation' && (
+                                     <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                       Interview Prep
+                                     </Badge>
+                                   )}
+                                 </div>
+                                 <p className="text-sm text-muted-foreground mb-2">
+                                   {assignment.description}
+                                 </p>
+                                 <div className="flex gap-2 flex-wrap">
+                                   <Badge variant="outline">{assignment.category}</Badge>
+                                   {assignment.points_reward && (
+                                     <Badge variant="secondary">{assignment.points_reward} pts</Badge>
+                                   )}
+                                   {assignment.difficulty && (
+                                     <Badge variant="outline">{assignment.difficulty}</Badge>
+                                   )}
+                                   <Badge variant={assignment.is_active ? "default" : "secondary"}>
+                                     {assignment.is_active ? "Active" : "Inactive"}
+                                   </Badge>
+                                   {assignment.source && (
+                                     <Badge variant="outline" className="text-xs">
+                                       {assignment.source === 'career_task_templates' ? 'Career Tasks' : 'Job Hunter Tasks'}
+                                     </Badge>
+                                   )}
+                                 </div>
+                               </div>
+                               <div className="flex gap-2">
+                                 <Button 
+                                   size="sm" 
+                                   variant="outline"
+                                   onClick={() => startEditAssignment(assignment)}
+                                 >
+                                   <Edit className="h-3 w-3" />
+                                 </Button>
+                                 <Button 
+                                   size="sm" 
+                                   variant="outline"
+                                   onClick={() => handleDeleteAssignment(assignment.id)}
+                                 >
+                                   <Trash2 className="h-3 w-3" />
+                                 </Button>
+                               </div>
+                             </div>
+                           </div>
                         ))}
                          {assignments.length === 0 && (
                            <div className="text-center py-8 text-muted-foreground">
