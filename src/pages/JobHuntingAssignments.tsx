@@ -265,7 +265,7 @@ export const JobHuntingAssignments: React.FC = () => {
                           Job Weekly Status
                         </CardTitle>
                         <CardDescription>
-                          Current week progress and targets (Monday to Sunday)
+                          Current week progress and targets ({format(currentWeek, 'MMM d')} - {format(weekEnd, 'MMM d')})
                         </CardDescription>
                       </div>
                       <Link to="/dashboard/job-tracker">
