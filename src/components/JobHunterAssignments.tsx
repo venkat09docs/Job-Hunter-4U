@@ -43,6 +43,9 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Daily Job Hunting Sessions */}
+      <DailyJobHuntingSessions />
+
       {/* Weekly Quotas Section */}
       <Card>
         <CardHeader>
