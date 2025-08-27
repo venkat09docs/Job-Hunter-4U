@@ -65,11 +65,26 @@ export const JobHuntingAssignments: React.FC = () => {
   const currentWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weekEnd = addDays(currentWeek, 6);
 
-  // Filter assignments for Job Hunting category/subcategory
-  const jobHuntingAssignments = assignments.filter(assignment => 
-    assignment.template?.category?.toLowerCase() === 'job hunting' ||
-    assignment.template?.title?.toLowerCase().includes('job hunting')
-  );
+  // Debug: Check what assignments and categories we have
+  console.log('All assignments:', assignments);
+  console.log('Templates categories:', templates.map(t => t.category));
+  
+  // Filter assignments for Job Hunting related tasks (more flexible filtering)
+  const jobHuntingAssignments = assignments.filter(assignment => {
+    const category = assignment.template?.category?.toLowerCase() || '';
+    const title = assignment.template?.title?.toLowerCase() || '';
+    
+    return category.includes('job') || 
+           category.includes('hunt') || 
+           category.includes('application') ||
+           category.includes('network') ||
+           title.includes('job') ||
+           title.includes('hunt') ||
+           title.includes('application') ||
+           title.includes('network');
+  });
+  
+  console.log('Filtered job hunting assignments:', jobHuntingAssignments);
 
   const getStreakByType = (type: string) => {
     return streaks.find(s => s.streak_type === type);
