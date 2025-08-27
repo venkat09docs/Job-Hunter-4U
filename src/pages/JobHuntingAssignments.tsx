@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,11 @@ import {
   ExternalLink,
   Linkedin,
   Globe,
-  Search
+  Search,
+  FileText,
+  CheckSquare,
+  XCircle,
+  Archive
 } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -57,6 +62,16 @@ export const JobHuntingAssignments: React.FC = () => {
   } = useJobHuntingAssignments();
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [jobTrackerStats, setJobTrackerStats] = useState<Record<string, number>>({
+    wishlist: 0,
+    applied: 0,
+    interviewing: 0,
+    negotiating: 0,
+    accepted: 0,
+    not_selected: 0,
+    no_response: 0
+  });
+  const [jobTrackerLoading, setJobTrackerLoading] = useState(true);
 
   const weekProgress = getWeekProgress();
   const taskCategories = getTasksByCategory();
@@ -73,6 +88,48 @@ export const JobHuntingAssignments: React.FC = () => {
   const getStreakByType = (type: string) => {
     return streaks.find(s => s.streak_type === type);
   };
+
+  // Fetch job tracker statistics
+  useEffect(() => {
+    const fetchJobTrackerStats = async () => {
+      if (!user) return;
+      
+      try {
+        setJobTrackerLoading(true);
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('status')
+          .eq('user_id', user.id)
+          .eq('is_archived', false);
+
+        if (error) throw error;
+
+        const statusCounts = {
+          wishlist: 0,
+          applied: 0,
+          interviewing: 0,
+          negotiating: 0,
+          accepted: 0,
+          not_selected: 0,
+          no_response: 0
+        };
+
+        (data || []).forEach((job: any) => {
+          if (statusCounts.hasOwnProperty(job.status)) {
+            statusCounts[job.status as keyof typeof statusCounts]++;
+          }
+        });
+
+        setJobTrackerStats(statusCounts);
+      } catch (error) {
+        console.error('Error fetching job tracker stats:', error);
+      } finally {
+        setJobTrackerLoading(false);
+      }
+    };
+
+    fetchJobTrackerStats();
+  }, [user]);
 
   if (loading || premiumLoading) {
     return (
@@ -153,6 +210,120 @@ export const JobHuntingAssignments: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Job Tracker Statistics Overview */}
+            <Card className="shadow-elegant border-primary/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Job Application Pipeline
+                    </CardTitle>
+                    <CardDescription>
+                      Current status of your job applications from Job Status Tracker
+                    </CardDescription>
+                  </div>
+                  <Link to="/dashboard/job-tracker">
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Tracker
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {jobTrackerLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    {Array.from({ length: 7 }).map((_, i) => (
+                      <div key={i} className="p-4 border rounded-lg animate-pulse">
+                        <div className="h-4 bg-muted rounded mb-2"></div>
+                        <div className="h-8 bg-muted rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    {/* Wishlist */}
+                    <Card className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <FileText className="h-4 w-4 text-gray-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-gray-700 dark:text-gray-300">{jobTrackerStats.wishlist}</div>
+                        <div className="text-xs text-muted-foreground">Wishlist</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Applied */}
+                    <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Briefcase className="h-4 w-4 text-yellow-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{jobTrackerStats.applied}</div>
+                        <div className="text-xs text-muted-foreground">Applied</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Interviewing */}
+                    <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <CheckSquare className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{jobTrackerStats.interviewing}</div>
+                        <div className="text-xs text-muted-foreground">Interviewing</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Negotiating */}
+                    <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <TrendingUp className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">{jobTrackerStats.negotiating}</div>
+                        <div className="text-xs text-muted-foreground">Negotiating</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Accepted */}
+                    <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-green-700 dark:text-green-300">{jobTrackerStats.accepted}</div>
+                        <div className="text-xs text-muted-foreground">Accepted</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Not Selected */}
+                    <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <XCircle className="h-4 w-4 text-red-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-red-700 dark:text-red-300">{jobTrackerStats.not_selected}</div>
+                        <div className="text-xs text-muted-foreground">Not Selected</div>
+                      </CardContent>
+                    </Card>
+
+                    {/* No Response */}
+                    <Card className="bg-slate-50 dark:bg-slate-900/20 border-slate-200 dark:border-slate-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          <Clock className="h-4 w-4 text-slate-600" />
+                        </div>
+                        <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">{jobTrackerStats.no_response}</div>
+                        <div className="text-xs text-muted-foreground">No Response</div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="assignments" className="space-y-6">
@@ -307,19 +478,23 @@ export const JobHuntingAssignments: React.FC = () => {
                             <h4 className="font-medium text-sm">Job Applications</h4>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold">3</span>
-                              <span className="text-sm text-muted-foreground">/ 5</span>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-primary">3</div>
+                                <div className="text-sm text-muted-foreground">of 5 completed</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
+                            <div className="w-full bg-muted rounded-full h-3">
                               <div 
-                                className="bg-primary h-2 rounded-full transition-all"
+                                className="bg-primary h-3 rounded-full transition-all"
                                 style={{ width: '60%' }}
                               />
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              60% Complete
-                            </Badge>
+                            <div className="text-center">
+                              <Badge variant="secondary" className="text-sm font-medium">
+                                60% Complete
+                              </Badge>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -332,19 +507,23 @@ export const JobHuntingAssignments: React.FC = () => {
                             <h4 className="font-medium text-sm">Referral Requests</h4>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold">1</span>
-                              <span className="text-sm text-muted-foreground">/ 3</span>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-primary">1</div>
+                                <div className="text-sm text-muted-foreground">of 3 completed</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
+                            <div className="w-full bg-muted rounded-full h-3">
                               <div 
-                                className="bg-primary h-2 rounded-full transition-all"
+                                className="bg-primary h-3 rounded-full transition-all"
                                 style={{ width: '33%' }}
                               />
                             </div>
-                            <Badge variant="outline" className="text-xs">
-                              33% Complete
-                            </Badge>
+                            <div className="text-center">
+                              <Badge variant="outline" className="text-sm font-medium">
+                                33% Complete
+                              </Badge>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -357,19 +536,23 @@ export const JobHuntingAssignments: React.FC = () => {
                             <h4 className="font-medium text-sm">Follow-ups</h4>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold">4</span>
-                              <span className="text-sm text-muted-foreground">/ 5</span>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-primary">4</div>
+                                <div className="text-sm text-muted-foreground">of 5 completed</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
+                            <div className="w-full bg-muted rounded-full h-3">
                               <div 
-                                className="bg-primary h-2 rounded-full transition-all"
+                                className="bg-primary h-3 rounded-full transition-all"
                                 style={{ width: '80%' }}
                               />
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              80% Complete
-                            </Badge>
+                            <div className="text-center">
+                              <Badge variant="secondary" className="text-sm font-medium">
+                                80% Complete
+                              </Badge>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -382,19 +565,23 @@ export const JobHuntingAssignments: React.FC = () => {
                             <h4 className="font-medium text-sm">New Conversations</h4>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold">2</span>
-                              <span className="text-sm text-muted-foreground">/ 3</span>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-primary">2</div>
+                                <div className="text-sm text-muted-foreground">of 3 completed</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
+                            <div className="w-full bg-muted rounded-full h-3">
                               <div 
-                                className="bg-primary h-2 rounded-full transition-all"
+                                className="bg-primary h-3 rounded-full transition-all"
                                 style={{ width: '67%' }}
                               />
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              67% Complete
-                            </Badge>
+                            <div className="text-center">
+                              <Badge variant="secondary" className="text-sm font-medium">
+                                67% Complete
+                              </Badge>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -407,19 +594,23 @@ export const JobHuntingAssignments: React.FC = () => {
                             <h4 className="font-medium text-sm">Total Points</h4>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xl font-bold">{weekProgress.totalPoints}</span>
-                              <span className="text-sm text-muted-foreground">/ {weekProgress.maxPoints}</span>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold text-yellow-600">{weekProgress.totalPoints}</div>
+                                <div className="text-sm text-muted-foreground">of {weekProgress.maxPoints} possible</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-muted rounded-full h-2">
+                            <div className="w-full bg-muted rounded-full h-3">
                               <div 
-                                className="bg-yellow-500 h-2 rounded-full transition-all"
+                                className="bg-yellow-500 h-3 rounded-full transition-all"
                                 style={{ width: weekProgress.maxPoints > 0 ? `${Math.round((weekProgress.totalPoints / weekProgress.maxPoints) * 100)}%` : '0%' }}
                               />
                             </div>
-                            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                              {weekProgress.maxPoints > 0 ? Math.round((weekProgress.totalPoints / weekProgress.maxPoints) * 100) : 0}% Earned
-                            </Badge>
+                            <div className="text-center">
+                              <Badge variant="outline" className="text-sm font-medium bg-yellow-50 text-yellow-700 border-yellow-200">
+                                {weekProgress.maxPoints > 0 ? Math.round((weekProgress.totalPoints / weekProgress.maxPoints) * 100) : 0}% Earned
+                              </Badge>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
