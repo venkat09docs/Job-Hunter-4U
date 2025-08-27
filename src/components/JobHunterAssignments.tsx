@@ -1,26 +1,16 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { JobHuntingAssignmentCard } from '@/components/JobHuntingAssignmentCard';
-import { JobPipelineKanban } from '@/components/JobPipelineKanban';
-import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
+import { JobPipelineKanban } from './JobPipelineKanban';
+import { JobLeadForm } from './JobLeadForm';
 import { useJobHuntingPipeline } from '@/hooks/useJobHuntingPipeline';
-import { 
-  Target, 
-  Plus,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Zap,
-  Briefcase,
-  Users,
-  MessageSquare,
-  TrendingUp
-} from 'lucide-react';
+import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
+import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Plus, Target, Zap } from 'lucide-react';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { JobHuntingAssignmentCard } from './JobHuntingAssignmentCard';
 
 interface JobHunterAssignmentsProps {
   weekProgress: any;
@@ -35,11 +25,10 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [showAddJobDialog, setShowAddJobDialog] = useState(false);
-  const [newJobTitle, setNewJobTitle] = useState('');
-  const [newJobCompany, setNewJobCompany] = useState('');
-  const [newJobUrl, setNewJobUrl] = useState('');
+  const [isAddingJob, setIsAddingJob] = useState(false);
   
   const { addPipelineItem } = useJobHuntingPipeline();
+  const { instantiateJobTasks } = useJobHuntingAssignments();
 
   // Filter assignments based on active filter
   const filteredAssignments = assignments.filter(assignment => {
@@ -60,31 +49,25 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
     { id: 'conversations', label: 'New Conversations', target: 3, current: 2, icon: TrendingUp }
   ];
 
-  const handleAddJobLead = async () => {
-    if (!newJobTitle || !newJobCompany) return;
-    
+  const handleAddJobLead = async (jobData: any) => {
     try {
-      // Add to pipeline
-      const newJob = await addPipelineItem({
-        job_title: newJobTitle,
-        company_name: newJobCompany,
-        job_url: newJobUrl || undefined,
-        pipeline_stage: 'leads',
-        priority: 'medium',
-        source: 'manual'
-      });
+      setIsAddingJob(true);
+      
+      // Add to pipeline with comprehensive data
+      const newJob = await addPipelineItem(jobData);
+      
+      // Instantiate job-specific tasks
+      if (newJob?.id) {
+        await instantiateJobTasks(newJob.id);
+      }
 
-      // TODO: Call instantiate_job_tasks edge function to create per-job tasks
-      // await supabase.functions.invoke('instantiate-job-tasks', {
-      //   body: { userId: user.id, jobId: newJob.id }
-      // });
-
-      setNewJobTitle('');
-      setNewJobCompany('');
-      setNewJobUrl('');
       setShowAddJobDialog(false);
+      toast.success('Job lead added successfully with assigned tasks!');
     } catch (error) {
       console.error('Error adding job lead:', error);
+      toast.error('Failed to add job lead');
+    } finally {
+      setIsAddingJob(false);
     }
   };
 
@@ -159,51 +142,19 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
                     Add Job Lead
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-4xl">
                   <DialogHeader>
                     <DialogTitle>Add New Job Lead</DialogTitle>
                     <DialogDescription>
-                      Add a job opportunity to automatically generate per-job tasks
+                      Add a comprehensive job opportunity to automatically generate per-job tasks and track your application progress
                     </DialogDescription>
                   </DialogHeader>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium">Job Title *</label>
-                      <Input 
-                        value={newJobTitle}
-                        onChange={(e) => setNewJobTitle(e.target.value)}
-                        placeholder="e.g., Senior Software Engineer"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium">Company Name *</label>
-                      <Input 
-                        value={newJobCompany}
-                        onChange={(e) => setNewJobCompany(e.target.value)}
-                        placeholder="e.g., TechCorp Inc."
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium">Job URL (optional)</label>
-                      <Input 
-                        value={newJobUrl}
-                        onChange={(e) => setNewJobUrl(e.target.value)}
-                        placeholder="https://company.com/jobs/123"
-                      />
-                    </div>
-                    
-                    <div className="flex gap-2 pt-4">
-                      <Button onClick={handleAddJobLead} disabled={!newJobTitle || !newJobCompany}>
-                        Add Job Lead
-                      </Button>
-                      <Button variant="outline" onClick={() => setShowAddJobDialog(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
+                  <JobLeadForm
+                    onSubmit={handleAddJobLead}
+                    onCancel={() => setShowAddJobDialog(false)}
+                    isLoading={isAddingJob}
+                  />
                 </DialogContent>
               </Dialog>
             </div>
