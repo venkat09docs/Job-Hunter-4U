@@ -36,6 +36,7 @@ interface BadgeProgressionMapProps {
   linkedinProgress?: number;
   linkedinProfileProgress?: number; // LinkedIn profile progress from career assignments
   digitalProfileProgress?: number; // Digital Profile progress from career assignments
+  githubProfileProgress?: number; // GitHub Profile progress from career assignments
   githubProgress?: number;
   jobApplicationsCount?: number;
   networkConnections?: number;
@@ -51,6 +52,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   linkedinProgress = 0,
   linkedinProfileProgress = 0, // LinkedIn profile progress from career assignments
   digitalProfileProgress = 0, // Digital Profile progress from career assignments
+  githubProfileProgress = 0, // GitHub Profile progress from career assignments
   githubProgress = 0,
   jobApplicationsCount = 0,
   networkConnections = 0,
@@ -136,12 +138,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Gold progress is based on Digital Profile completion (same as Career Assignments page)
         return Math.min(100, digitalProfileProgress);
       case 'diamond':
-        // Diamond: Only progresses after gold is 100% AND network activity + job applications
+        // Diamond: Only progresses after gold is 100% AND based on GitHub profile completion from career assignments
         if (calculateProfileProgress('gold') < 100) return 0;
-        // Diamond requires network activity (50+ connections) and job applications (5+)
-        const networkReq = networkConnections >= 50 ? 50 : (networkConnections / 50) * 50;
-        const jobReq = jobApplicationsCount >= 5 ? 50 : (jobApplicationsCount / 5) * 50;
-        return Math.min(100, networkReq + jobReq);
+        // Diamond progress is based on GitHub Profile completion (same as Career Assignments page)
+        return Math.min(100, githubProfileProgress);
       default: return 0;
     }
   };
@@ -218,7 +218,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           description: 'GitHub profile mastery',
           tier: 'diamond',
           progress: isIT() ? (isBadgeAwarded('profile_elite') ? 100 : calculateProfileProgress('diamond')) : 0,
-          criteria: isIT() ? '50+ connections + 5+ job applications' : 'GitHub profile available only for IT professionals',
+          criteria: isIT() ? 'Complete GitHub Profile tasks (100%)' : 'GitHub profile available only for IT professionals',
           nextAction: isIT() ? 'Build Network' : 'Not Available',
           link: isIT() ? '/dashboard/career-assignments' : '#',
           code: 'profile_elite'

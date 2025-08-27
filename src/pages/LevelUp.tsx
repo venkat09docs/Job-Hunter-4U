@@ -146,6 +146,14 @@ const LevelUp = () => {
     
    console.log('🔍 Digital Profile Tasks (Level Up):', digitalProfileTasks.length, 'Completed:', digitalProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', digitalProfileProgress + '%');
 
+  // Calculate GitHub Profile progress using exact same logic as Career Assignments page  
+  const githubProfileTasks = getTasksBySubCategoryName('github');
+  const githubProfileProgress = githubProfileTasks.length > 0 
+    ? Math.round((githubProfileTasks.filter(t => t.status === 'verified').length / githubProfileTasks.length) * 100)
+    : 0;
+    
+   console.log('🔍 GitHub Profile Tasks (Level Up):', githubProfileTasks.length, 'Completed:', githubProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', githubProfileProgress + '%');
+
   // Also check when LinkedIn profile progress changes (for silver/gold progression)
   useEffect(() => {
     if (!careerLoading && linkedinProfileProgress >= 100) {
@@ -299,6 +307,7 @@ const LevelUp = () => {
             linkedinProgress={linkedinProgress}
             linkedinProfileProgress={linkedinProfileProgress}
             digitalProfileProgress={digitalProfileProgress}
+            githubProfileProgress={githubProfileProgress}
             githubProgress={githubProgress}
             jobApplicationsCount={totalJobApplications}
             networkConnections={networkMetrics?.totalConnections || 0}
