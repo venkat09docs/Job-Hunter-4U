@@ -295,44 +295,6 @@ export const JobHuntingAssignments: React.FC = () => {
 
                 {/* Task Categories */}
                 <div className="space-y-6">
-                  {/* Application Activities */}
-                  <Card className="shadow-elegant">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Target className="h-5 w-5 text-blue-600" />
-                        Application Activities
-                        <Badge variant="outline" className="ml-auto">
-                          {filteredAssignments.filter(a => a.template?.category === 'application' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'application').length}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        Weekly job application quotas and application-related tasks
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {filteredAssignments.filter(a => a.template?.category === 'application').length > 0 ? (
-                        <JobHunterAssignments 
-                          weekProgress={weekProgress}
-                          assignments={filteredAssignments.filter(a => a.template?.category === 'application')}
-                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
-                        />
-                      ) : (
-                        <div className="text-center py-8">
-                          <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">No application tasks assigned this week</p>
-                          <Button
-                            onClick={initializeUserWeek}
-                            disabled={!canAccessFeature("job_hunting_assignments")}
-                            className="mt-4"
-                          >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Generate Weekly Tasks
-                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
 
 
                   {/* All Tasks Section (fallback) */}
