@@ -85,31 +85,31 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'bronze') return true;
         // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
-        // Profile Perfectionist (Gold) - Unlocked only when Silver is completed AND user has premium plan
+        // Profile Perfectionist (Gold) - ONLY for profile section: requires Silver completion AND premium plan
         if (tier === 'gold') return calculateProfileProgress('silver') >= 100 && hasPremiumPlan();
         // Profile Elite (Diamond) - Unlocked when gold reaches 100%
         if (tier === 'diamond') return calculateProfileProgress('gold') >= 100;
         return false;
       
       case 'jobs':
-        // First badge always unlocked, others unlock progressively
+        // Jobs section: No premium restrictions, standard progression
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return jobApplicationsCount >= 1;
-        if (badgeIndex === 2) return jobApplicationsCount >= 14;
+        if (badgeIndex === 2) return jobApplicationsCount >= 14; // Gold badge unlocks normally
         return false;
       
       case 'network':
-        // First badge always unlocked, others unlock progressively  
+        // Network section: No premium restrictions, standard progression
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return networkConnections >= 25;
-        if (badgeIndex === 2) return networkConnections >= 50;
+        if (badgeIndex === 2) return networkConnections >= 50; // Gold badge unlocks normally
         return false;
       
       case 'github':
-        // First badge always unlocked, others unlock progressively
+        // GitHub section: No premium restrictions, standard progression
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5;
-        if (badgeIndex === 2) return githubCommits >= 30;
+        if (badgeIndex === 2) return githubCommits >= 30; // Gold badge unlocks normally
         return false;
       
       default:
@@ -471,7 +471,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               {badge.title} {isAwarded ? '🏆' : ''}
                             </h4>
                              <p className="text-xs text-muted-foreground">
-                               {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (!hasPremiumPlan() && badge.tier === 'gold' && category.id === 'profile') ? 'Requires 6-month or 1-year subscription plan' : 'Complete previous badge to unlock')}
+                               {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Requires 6-month or 1-year subscription plan' : 'Complete previous badge to unlock')}
                              </p>
                           </div>
 
@@ -485,7 +485,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               } as React.CSSProperties}
                             />
                              <p className="text-xs text-muted-foreground">
-                               {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (!hasPremiumPlan() && badge.tier === 'gold' && category.id === 'profile') ? 'Requires 6-month or 1-year subscription plan' : 'Unlock requirements not met')}
+                               {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Requires 6-month or 1-year subscription plan' : 'Unlock requirements not met')}
                              </p>
                           </div>
 
