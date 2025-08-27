@@ -22,12 +22,13 @@ interface JobEntry {
   contact_person?: string;
   contact_email?: string;
   notes?: string;
+  next_follow_up?: string;
 }
 
 interface ApplicationRequirementsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onComplete: (updatedJob: Partial<JobEntry>) => void;
+  onComplete: (updatedJob: Partial<JobEntry>, assignmentDetails: any) => void;
   job: JobEntry;
 }
 
@@ -124,16 +125,31 @@ export const ApplicationRequirementsModal: React.FC<ApplicationRequirementsModal
   const handleComplete = () => {
     const updatedJob: Partial<JobEntry> = {
       ...jobData,
-      notes: applicationStrategy + (jobData.notes ? '\n\n' + jobData.notes : '')
+      notes: jobData.notes // Keep original notes separate
     };
     
+    // Create assignment details structure
+    const assignmentDetails = {
+      requirements_completed: true,
+      application_strategy: applicationStrategy,
+      follow_up_date: followUpDate?.toISOString().split('T')[0] || null,
+      resume_ready: requirements.added_resume_or_cover_letter,
+      contact_added: !!(jobData.contact_person || jobData.contact_email),
+      job_details_verified: !!(jobData.job_url && jobData.salary_range && jobData.location),
+      completed_date: new Date().toISOString()
+    };
+
+    // Add follow-up date to job data if set
     if (followUpDate) {
-      // You might want to store this in a separate follow-up system
-      // For now, we'll add it to notes
-      updatedJob.notes += `\n\nFollow-up reminder: ${format(followUpDate, 'PPP')}`;
+      updatedJob.next_follow_up = followUpDate.toISOString().split('T')[0];
     }
 
-    onComplete(updatedJob);
+    // Update notes to include application strategy if provided
+    if (applicationStrategy.trim()) {
+      updatedJob.notes = applicationStrategy + (jobData.notes ? '\n\n--- Original Notes ---\n' + jobData.notes : '');
+    }
+
+    onComplete(updatedJob, assignmentDetails);
   };
 
   const handleCancel = () => {

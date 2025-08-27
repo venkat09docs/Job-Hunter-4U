@@ -44,6 +44,7 @@ interface JobEntry {
   is_archived: boolean;
   created_at: string;
   updated_at: string;
+  assignment_details?: any;
 }
 
 const JobTracker = () => {
@@ -592,7 +593,7 @@ const JobTracker = () => {
     await performStatusUpdate(jobId, newStatus, job.status);
   };
 
-  const handleRequirementsComplete = async (updatedJobData: Partial<JobEntry>) => {
+  const handleRequirementsComplete = async (updatedJobData: Partial<JobEntry>, assignmentDetails: any) => {
     if (!pendingJobMove) return;
     
     try {
@@ -602,6 +603,7 @@ const JobTracker = () => {
         .update({
           status: pendingJobMove.newStatus,
           ...updatedJobData,
+          assignment_details: assignmentDetails,
           updated_at: new Date().toISOString()
         })
         .eq('id', pendingJobMove.jobId)
@@ -1045,6 +1047,53 @@ const JobTracker = () => {
                       <p className="text-sm font-medium text-muted-foreground mb-2">Notes</p>
                       <div className="bg-muted p-3 rounded-md">
                         <p className="whitespace-pre-wrap">{selectedJob.notes}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Assignment Details Section */}
+                  {selectedJob.assignment_details && (
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-medium text-muted-foreground mb-3">Application Assignment Details</p>
+                      <div className="bg-muted p-4 rounded-md space-y-3">
+                        {selectedJob.assignment_details.application_strategy && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Application Strategy</p>
+                            <p className="text-sm whitespace-pre-wrap">{selectedJob.assignment_details.application_strategy}</p>
+                          </div>
+                        )}
+                        
+                        {selectedJob.assignment_details.follow_up_date && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Follow-up Date</p>
+                            <p className="text-sm">{new Date(selectedJob.assignment_details.follow_up_date).toLocaleDateString()}</p>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${selectedJob.assignment_details.job_details_verified ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <p className="text-xs">Job Details Verified</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${selectedJob.assignment_details.resume_ready ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <p className="text-xs">Resume Ready</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${selectedJob.assignment_details.contact_added ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <p className="text-xs">Contact Added</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${selectedJob.assignment_details.requirements_completed ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <p className="text-xs">Requirements Completed</p>
+                          </div>
+                        </div>
+
+                        {selectedJob.assignment_details.completed_date && (
+                          <div className="text-xs text-muted-foreground pt-2 border-t">
+                            Completed on: {new Date(selectedJob.assignment_details.completed_date).toLocaleDateString()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

@@ -1629,6 +1629,7 @@ export type Database = {
       job_tracker: {
         Row: {
           application_date: string
+          assignment_details: Json | null
           company_name: string
           contact_email: string | null
           contact_person: string | null
@@ -1647,6 +1648,7 @@ export type Database = {
         }
         Insert: {
           application_date?: string
+          assignment_details?: Json | null
           company_name: string
           contact_email?: string | null
           contact_person?: string | null
@@ -1665,6 +1667,7 @@ export type Database = {
         }
         Update: {
           application_date?: string
+          assignment_details?: Json | null
           company_name?: string
           contact_email?: string | null
           contact_person?: string | null

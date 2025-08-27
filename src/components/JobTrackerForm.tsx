@@ -23,6 +23,7 @@ interface JobEntry {
   contact_email?: string;
   next_follow_up?: string;
   is_archived?: boolean;
+  assignment_details?: any;
 }
 
 interface JobTrackerFormProps {
