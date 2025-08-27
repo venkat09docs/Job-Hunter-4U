@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { JobLeadForm } from './JobLeadForm';
-import { useJobHuntingPipeline } from '@/hooks/useJobHuntingPipeline';
 import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Plus, Target, Zap } from 'lucide-react';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Target, Zap } from 'lucide-react';
 import { JobHuntingAssignmentCard } from './JobHuntingAssignmentCard';
 
 interface JobHunterAssignmentsProps {
@@ -23,11 +19,6 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
   initializeUserWeek 
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [showAddJobDialog, setShowAddJobDialog] = useState(false);
-  const [isAddingJob, setIsAddingJob] = useState(false);
-  
-  const { addPipelineItem } = useJobHuntingPipeline();
-  const { instantiateJobTasks } = useJobHuntingAssignments();
 
   // Filter assignments based on active filter
   const filteredAssignments = assignments.filter(assignment => {
@@ -48,27 +39,6 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
     { id: 'conversations', label: 'New Conversations', target: 3, current: 2, icon: TrendingUp }
   ];
 
-  const handleAddJobLead = async (jobData: any) => {
-    try {
-      setIsAddingJob(true);
-      
-      // Add to pipeline with comprehensive data
-      const newJob = await addPipelineItem(jobData);
-      
-      // Instantiate job-specific tasks
-      if (newJob?.id) {
-        await instantiateJobTasks(newJob.id);
-      }
-
-      setShowAddJobDialog(false);
-      toast.success('Job lead added successfully with assigned tasks!');
-    } catch (error) {
-      console.error('Error adding job lead:', error);
-      toast.error('Failed to add job lead');
-    } finally {
-      setIsAddingJob(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -123,54 +93,8 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Job Leads and Per-Job Tasks */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Job Leads & Per-Job Tasks</CardTitle>
-                <CardDescription>
-                  Add job opportunities and track specific tasks for each job
-                </CardDescription>
-              </div>
-              <Dialog open={showAddJobDialog} onOpenChange={setShowAddJobDialog}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Job Lead
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl">
-                  <DialogHeader>
-                    <DialogTitle>Add New Job Lead</DialogTitle>
-                    <DialogDescription>
-                      Add a comprehensive job opportunity to automatically generate per-job tasks and track your application progress
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <JobLeadForm
-                    onSubmit={handleAddJobLead}
-                    onCancel={() => setShowAddJobDialog(false)}
-                    isLoading={isAddingJob}
-                  />
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* This will show per-job tasks */}
-            <div className="text-center py-8">
-              <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Add job leads to see per-job tasks here
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Weekly Assignments */}
-        <Card>
+      {/* Weekly Assignments */}
+      <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -222,8 +146,7 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
+      </Card>
 
     </div>
   );
