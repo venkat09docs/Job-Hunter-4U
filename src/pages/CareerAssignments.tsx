@@ -186,7 +186,7 @@ const CareerAssignments = () => {
   const getSubCategoryProgress = (subCategoryId: string) => {
     const tasks = getTasksBySubCategory(subCategoryId);
     if (tasks.length === 0) return 0;
-    const completed = tasks.filter(task => task.status === 'completed').length;
+    const completed = tasks.filter(task => task.status === 'verified').length;
     return Math.round((completed / tasks.length) * 100);
   };
 
