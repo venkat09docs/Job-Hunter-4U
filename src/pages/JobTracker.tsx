@@ -15,6 +15,7 @@ import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { DraggableKanbanCard } from '@/components/DraggableKanbanCard';
 import { DroppableStatusColumn } from '@/components/DroppableStatusColumn';
 import { ApplicationRequirementsModal } from '@/components/ApplicationRequirementsModal';
+import { AssignmentsRequiredDialog } from '@/components/AssignmentsRequiredDialog';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
@@ -23,7 +24,7 @@ import {
   MapPin, Building, Clock, ExternalLink, DollarSign
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 
@@ -49,6 +50,7 @@ const JobTracker = () => {
   const { user } = useAuth();
   const { profile, hasActiveSubscription } = useProfile();
   const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -552,6 +554,20 @@ const JobTracker = () => {
     setPendingJobMove(null);
   };
 
+  const handleAssignmentsComplete = () => {
+    // Navigate to assignments page
+    navigate('/dashboard/career-assignments');
+    setShowAssignmentsDialog(false);
+    setPendingAssignments([]);
+    setPendingStatusMove(null);
+  };
+
+  const handleAssignmentsCancel = () => {
+    setShowAssignmentsDialog(false);
+    setPendingAssignments([]);
+    setPendingStatusMove(null);
+  };
+
   const exportToCSV = () => {
     const csvContent = [
       ['Company', 'Job Title', 'Status', 'Application Date', 'Location', 'Salary Range', 'Notes'].join(','),
@@ -961,6 +977,19 @@ const JobTracker = () => {
             onClose={handleRequirementsCancel}
             onComplete={handleRequirementsComplete}
             job={pendingJobMove.job}
+          />
+        )}
+
+        {/* Assignments Required Dialog */}
+        {pendingStatusMove && (
+          <AssignmentsRequiredDialog
+            open={showAssignmentsDialog}
+            onOpenChange={setShowAssignmentsDialog}
+            assignments={pendingAssignments}
+            jobTitle={pendingStatusMove.job.job_title}
+            companyName={pendingStatusMove.job.company_name}
+            onComplete={handleAssignmentsComplete}
+            onCancel={handleAssignmentsCancel}
           />
         )}
 
