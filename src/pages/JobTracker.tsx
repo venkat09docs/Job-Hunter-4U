@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { DraggableKanbanCard } from '@/components/DraggableKanbanCard';
 import { DroppableStatusColumn } from '@/components/DroppableStatusColumn';
+import { ApplicationRequirementsModal } from '@/components/ApplicationRequirementsModal';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { toast } from 'sonner';
@@ -55,6 +56,12 @@ const JobTracker = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<JobEntry | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobEntry | null>(null);
+  const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
+  const [pendingJobMove, setPendingJobMove] = useState<{
+    jobId: string;
+    job: JobEntry;
+    newStatus: string;
+  } | null>(null);
 
   const { incrementActivity } = useJobApplicationActivities();
 
@@ -249,8 +256,25 @@ const JobTracker = () => {
   };
 
   const handleStatusChange = async (jobId: string, newStatus: string) => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return;
+    
+    // Check if moving from wishlist to applied - require completion of requirements
+    if (job.status === 'wishlist' && newStatus === 'applied') {
+      setPendingJobMove({ jobId, job, newStatus });
+      setIsRequirementsModalOpen(true);
+      return;
+    }
+    
+    // For other moves, proceed with direct status update
+    await performStatusUpdate(jobId, newStatus, job.status);
+  };
+
+  const performStatusUpdate = async (jobId: string, newStatus: string, prevStatus?: string) => {
     try {
-      const prevStatus = jobs.find(j => j.id === jobId)?.status;
+      if (!prevStatus) {
+        prevStatus = jobs.find(j => j.id === jobId)?.status;
+      }
 
       const { data, error } = await supabase
         .from('job_tracker')
@@ -302,8 +326,57 @@ const JobTracker = () => {
       return;
     }
     
-    // Update the job status
-    await handleStatusChange(jobId, newStatus);
+    // Check if moving from wishlist to applied - require completion of requirements
+    if (job.status === 'wishlist' && newStatus === 'applied') {
+      setPendingJobMove({ jobId, job, newStatus });
+      setIsRequirementsModalOpen(true);
+      return;
+    }
+    
+    // For other moves, proceed normally
+    await performStatusUpdate(jobId, newStatus, job.status);
+  };
+
+  const handleRequirementsComplete = async (updatedJobData: Partial<JobEntry>) => {
+    if (!pendingJobMove) return;
+    
+    try {
+      // Update the job with the additional data first
+      const { data, error } = await supabase
+        .from('job_tracker')
+        .update({
+          status: pendingJobMove.newStatus,
+          ...updatedJobData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', pendingJobMove.jobId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setJobs(prev => prev.map(job => job.id === pendingJobMove.jobId ? data : job));
+      
+      // Auto-track the application activity
+      try {
+        await incrementActivity('apply_quality_jobs');
+      } catch (e) {
+        console.error('Failed to increment daily job application metrics', e);
+      }
+      
+      toast.success('Application requirements completed! Job moved to Applied.');
+      
+      // Close modal and clear pending move
+      setIsRequirementsModalOpen(false);
+      setPendingJobMove(null);
+    } catch (error: any) {
+      toast.error('Failed to complete application: ' + error.message);
+    }
+  };
+
+  const handleRequirementsCancel = () => {
+    setIsRequirementsModalOpen(false);
+    setPendingJobMove(null);
   };
 
   const exportToCSV = () => {
@@ -738,6 +811,16 @@ const JobTracker = () => {
             </Dialog>
           )}
         </div>
+
+        {/* Application Requirements Modal */}
+        {pendingJobMove && (
+          <ApplicationRequirementsModal
+            isOpen={isRequirementsModalOpen}
+            onClose={handleRequirementsCancel}
+            onComplete={handleRequirementsComplete}
+            job={pendingJobMove.job}
+          />
+        )}
       </main>
     </div>
   );
