@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,13 +30,18 @@ import {
   Filter,
   BarChart3,
   Lock,
-  Briefcase
+  Briefcase,
+  ExternalLink,
+  Linkedin,
+  Globe,
+  Search
 } from 'lucide-react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { toast } from 'sonner';
 
 export const JobHuntingAssignments: React.FC = () => {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const { t } = useTranslation();
   const { canAccessFeature, loading: premiumLoading } = usePremiumFeatures();
   const { 
@@ -137,6 +143,91 @@ export const JobHuntingAssignments: React.FC = () => {
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto space-y-6">
+            
+            {/* Quick Links Board - At the very top */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* LinkedIn */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                <CardContent className="p-4">
+                  <div 
+                    className="flex items-center gap-3"
+                    onClick={() => {
+                      const linkedinUrl = profile?.linkedin_url || 'https://linkedin.com/in/';
+                      window.open(linkedinUrl, '_blank');
+                    }}
+                  >
+                    <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                      <Linkedin className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">LinkedIn Profile</p>
+                      <p className="text-xs text-muted-foreground">Visit your profile</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Naukri */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                <CardContent className="p-4">
+                  <div 
+                    className="flex items-center gap-3"
+                    onClick={() => {
+                      const naukriUrl = (profile as any)?.naukri_url || 'https://www.naukri.com/';
+                      window.open(naukriUrl, '_blank');
+                    }}
+                  >
+                    <div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+                      <Briefcase className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Naukri Profile</p>
+                      <p className="text-xs text-muted-foreground">Visit Naukri.com</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Glassdoor */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                <CardContent className="p-4">
+                  <div 
+                    className="flex items-center gap-3"
+                    onClick={() => {
+                      const glassdoorUrl = (profile as any)?.glassdoor_url || 'https://www.glassdoor.com/';
+                      window.open(glassdoorUrl, '_blank');
+                    }}
+                  >
+                    <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                      <Globe className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Glassdoor</p>
+                      <p className="text-xs text-muted-foreground">Company reviews</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Find Your Next Role */}
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                <CardContent className="p-4">
+                  <Link to="/dashboard/find-your-next-role" className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                      <Search className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Find Your Next Role</p>
+                      <p className="text-xs text-muted-foreground">Job search tools</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground ml-auto" />
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
             
             {/* Premium Feature Notice */}
             {!canAccessFeature("job_hunting_assignments") && (
@@ -254,13 +345,23 @@ export const JobHuntingAssignments: React.FC = () => {
                 {/* Job Pipeline - Moved to very top */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Job Pipeline
-                    </CardTitle>
-                    <CardDescription>
-                      Your weekly job hunting targets and progress
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Target className="h-5 w-5" />
+                          Job Pipeline
+                        </CardTitle>
+                        <CardDescription>
+                          Your weekly job hunting targets and progress
+                        </CardDescription>
+                      </div>
+                      <Link to="/dashboard/job-tracker">
+                        <Button variant="outline" size="sm" className="flex items-center gap-2">
+                          <ExternalLink className="h-4 w-4" />
+                          Job Hunter Pro
+                        </Button>
+                      </Link>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
