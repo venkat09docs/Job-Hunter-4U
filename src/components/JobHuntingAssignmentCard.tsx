@@ -45,6 +45,8 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const [submitting, setSubmitting] = useState(false);
   const [fileValidationErrors, setFileValidationErrors] = useState<string[]>([]);
 
+  console.log('🔄 JobHuntingAssignmentCard render - Assignment:', assignment.id, 'Status:', assignment.status, 'Title:', assignment.template?.title);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'verified': return 'bg-green-500';
@@ -88,11 +90,13 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   };
 
   const handleStartAssignment = async () => {
+    console.log('🚀 Starting assignment:', assignment.id, 'Current status:', assignment.status);
     try {
       await updateAssignmentStatus(assignment.id, 'started');
+      console.log('✅ Assignment status update completed');
       toast.success('Assignment started!');
     } catch (error) {
-      console.error('Error starting assignment:', error);
+      console.error('❌ Error starting assignment:', error);
       toast.error('Failed to start assignment');
     }
   };

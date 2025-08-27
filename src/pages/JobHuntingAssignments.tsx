@@ -71,11 +71,10 @@ export const JobHuntingAssignments: React.FC = () => {
   console.log('Templates categories:', templates.map(t => ({ title: t.title, category: t.category })));
   
   // All assignments are already job hunting specific since we're using useJobHuntingAssignments
-  // But filter to show only current week assignments to avoid duplicates
-  const currentWeekProgress = getWeekProgress();
-  const jobHuntingAssignments = currentWeekProgress.assignments;
+  // Use assignments directly from the hook to ensure reactivity
+  const jobHuntingAssignments = assignments;
   
-  console.log('Filtered job hunting assignments:', jobHuntingAssignments);
+  console.log('Direct job hunting assignments from hook:', jobHuntingAssignments);
 
   const getStreakByType = (type: string) => {
     return streaks.find(s => s.streak_type === type);

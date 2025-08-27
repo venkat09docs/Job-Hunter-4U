@@ -374,14 +374,18 @@ export const useJobHuntingAssignments = () => {
 
   const updateAssignmentStatus = async (assignmentId: string, status: string) => {
     try {
+      console.log('🔄 updateAssignmentStatus - Starting optimistic update for:', assignmentId, 'to status:', status);
+      
       // Optimistic update: Update local state immediately
-      setAssignments(prevAssignments => 
-        prevAssignments.map(assignment => 
+      setAssignments(prevAssignments => {
+        const updatedAssignments = prevAssignments.map(assignment => 
           assignment.id === assignmentId 
             ? { ...assignment, status }
             : assignment
-        )
-      );
+        );
+        console.log('✅ Optimistic update applied. Updated assignments:', updatedAssignments.map(a => ({ id: a.id, title: a.template?.title, status: a.status })));
+        return updatedAssignments;
+      });
       
       // Update database in background
       const { error } = await supabase
@@ -390,13 +394,16 @@ export const useJobHuntingAssignments = () => {
         .eq('id', assignmentId);
 
       if (error) {
+        console.log('❌ Database update failed, reverting optimistic update');
         // Revert optimistic update on error
         await fetchAssignments();
         throw error;
       }
       
+      console.log('✅ Database update successful');
       toast.success('Assignment status updated!');
     } catch (error: any) {
+      console.error('❌ updateAssignmentStatus failed:', error);
       toast.error('Failed to update status: ' + error.message);
     }
   };
