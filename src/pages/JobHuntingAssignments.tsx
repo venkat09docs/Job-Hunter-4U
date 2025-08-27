@@ -65,16 +65,11 @@ export const JobHuntingAssignments: React.FC = () => {
   const currentWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
   const weekEnd = addDays(currentWeek, 6);
 
-  // Filter assignments based on active filter
-  const filteredAssignments = assignments.filter(assignment => {
-    switch (activeFilter) {
-      case 'pending': return assignment.status === 'assigned' || assignment.status === 'in_progress';
-      case 'submitted': return assignment.status === 'submitted';
-      case 'completed': return assignment.status === 'verified';
-      case 'overdue': return new Date(assignment.due_date) < new Date() && assignment.status !== 'verified';
-      default: return true;
-    }
-  });
+  // Filter assignments for Job Hunting category/subcategory
+  const jobHuntingAssignments = assignments.filter(assignment => 
+    assignment.template?.category?.toLowerCase() === 'job hunting' ||
+    assignment.template?.title?.toLowerCase().includes('job hunting')
+  );
 
   const getStreakByType = (type: string) => {
     return streaks.find(s => s.streak_type === type);
@@ -455,16 +450,16 @@ export const JobHuntingAssignments: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {assignments.length === 0 ? (
+                    {jobHuntingAssignments.length === 0 ? (
                       <div className="text-center py-8">
                         <div className="flex flex-col items-center gap-4">
                           <div className="p-4 bg-muted rounded-full">
                             <Target className="h-8 w-8 text-muted-foreground" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-lg mb-2">No Tasks Initialized</h3>
+                            <h3 className="font-semibold text-lg mb-2">No Job Hunting Tasks Initialized</h3>
                             <p className="text-muted-foreground mb-4">
-                              Click the button below to initialize your weekly job hunting tasks
+                              Click the button below to initialize your weekly job hunting tasks from Manage Assignments
                             </p>
                           </div>
                           <Button 
@@ -492,11 +487,7 @@ export const JobHuntingAssignments: React.FC = () => {
                         ) : (
                           <JobHunterAssignments 
                             weekProgress={weekProgress}
-                            assignments={assignments.filter(assignment => 
-                              ['networking', 'follow-up', 'research', 'application'].includes(
-                                assignment.template?.category?.toLowerCase() || ''
-                              )
-                            )}
+                            assignments={jobHuntingAssignments}
                             initializeUserWeek={initializeUserWeek}
                           />
                         )}
