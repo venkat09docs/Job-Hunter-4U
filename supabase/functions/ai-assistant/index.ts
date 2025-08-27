@@ -20,9 +20,10 @@ serve(async (req) => {
   try {
     const { message, userId, context } = await req.json();
     
-    console.log('AI assistant request:', { message, userId, context });
+    console.log('AI assistant request received:', { message, userId, context });
 
     if (!userId) {
+      console.log('Error: No userId provided');
       return new Response(JSON.stringify({ 
         error: 'User authentication required to use AI Assistant.' 
       }), {
@@ -31,27 +32,50 @@ serve(async (req) => {
       });
     }
 
-    // Check user subscription status
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_status, subscription_tier, industry')
-      .eq('id', userId)
-      .single();
+    console.log('Fetching user profile and role...');
+    
+    // Check user subscription status and role
+    let profile, userRole;
+    
+    try {
+      const profileResult = await supabase
+        .from('profiles')
+        .select('subscription_status, subscription_tier, industry, resume_completion_percentage')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      profile = profileResult.data;
+      console.log('Profile fetch result:', { data: profile, error: profileResult.error });
+      
+      if (profileResult.error) {
+        console.error('Profile fetch error:', profileResult.error);
+      }
+    } catch (error) {
+      console.error('Profile fetch exception:', error);
+    }
 
-    console.log('User profile data:', profile);
-
-    // Check if user has admin role first
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
-    console.log('User role data:', userRole);
+    try {
+      const roleResult = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      userRole = roleResult.data;
+      console.log('User role fetch result:', { data: userRole, error: roleResult.error });
+      
+      if (roleResult.error) {
+        console.error('Role fetch error:', roleResult.error);
+      }
+    } catch (error) {
+      console.error('Role fetch exception:', error);
+    }
 
     // Allow access for admins or users with active subscription
     const isAdmin = userRole?.role === 'admin';
     const hasActiveSubscription = profile?.subscription_status === 'active';
+
+    console.log('Access check:', { isAdmin, hasActiveSubscription, userRole: userRole?.role, subscriptionStatus: profile?.subscription_status });
 
     if (!isAdmin && (!profile || !hasActiveSubscription)) {
       console.log('Access denied - not admin and no active subscription');
@@ -63,68 +87,75 @@ serve(async (req) => {
       });
     }
 
-    console.log('Access granted - admin or active subscription');
+    console.log('Access granted, fetching user data...');
 
-    // Fetch user data for contextual responses
-    const [userPointsRes, jobsRes, linkedinProgressRes, resumeProgressRes, githubProgressRes, assignmentsRes] = await Promise.all([
-      // User points
-      supabase
+    // Fetch user data for contextual responses with individual try-catch
+    let userPointsRes = { data: [] };
+    let jobsRes = { data: [] };
+    let linkedinProgressRes = { data: [] };
+    let githubProgressRes = { data: [] };
+    let assignmentsRes = { data: [] };
+
+    try {
+      userPointsRes = await supabase
         .from('user_activity_points')
         .select('points_earned')
-        .eq('user_id', userId),
-      
-      // Job applications - using job_hunting_pipeline instead
-      supabase
+        .eq('user_id', userId);
+      console.log('User points fetched:', userPointsRes.data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching user points:', error);
+    }
+
+    try {
+      jobsRes = await supabase
         .from('job_hunting_pipeline')
-        .select('pipeline_stage as status, company_name as company, job_title as position')
+        .select('pipeline_stage, company_name, job_title')
         .eq('user_id', userId)
-        .limit(10),
-      
-      // LinkedIn progress
-      supabase
+        .limit(10);
+      console.log('Jobs fetched:', jobsRes.data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
+
+    try {
+      linkedinProgressRes = await supabase
         .from('linkedin_progress')
         .select('*')
-        .eq('user_id', userId),
-      
-      // Resume progress - using profiles table instead
-      supabase
-        .from('profiles')
-        .select('resume_completion_percentage')
-        .eq('id', userId)
-        .maybeSingle(),
-      
-      // GitHub progress
-      supabase
+        .eq('user_id', userId);
+      console.log('LinkedIn progress fetched:', linkedinProgressRes.data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching LinkedIn progress:', error);
+    }
+
+    try {
+      githubProgressRes = await supabase
         .from('github_progress')
         .select('*')
-        .eq('user_id', userId),
-      
-      // Career assignments - using career_task_assignments instead
-      supabase
+        .eq('user_id', userId);
+      console.log('GitHub progress fetched:', githubProgressRes.data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching GitHub progress:', error);
+    }
+
+    try {
+      assignmentsRes = await supabase
         .from('career_task_assignments')
         .select(`
           id,
           status,
           due_date,
-          career_task_templates(title, category)
+          career_task_templates!inner(title, category)
         `)
         .eq('user_id', userId)
-        .limit(5)
-    ]);
-
-    console.log('Data fetch results:', {
-      userPoints: userPointsRes.data?.length || 0,
-      jobs: jobsRes.data?.length || 0,
-      linkedinProgress: linkedinProgressRes.data?.length || 0,
-      resumeProgress: resumeProgressRes.data,
-      githubProgress: githubProgressRes.data?.length || 0,
-      assignments: assignmentsRes.data?.length || 0
-    });
+        .limit(5);
+      console.log('Assignments fetched:', assignmentsRes.data?.length || 0);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
 
     const totalPoints = userPointsRes.data?.reduce((sum, record) => sum + (record.points_earned || 0), 0) || 0;
     const jobs = jobsRes.data || [];
     const linkedinProgress = linkedinProgressRes.data || [];
-    const resumeProgress = resumeProgressRes.data;
     const githubProgress = githubProgressRes.data || [];
     const assignments = assignmentsRes.data || [];
 
@@ -133,15 +164,25 @@ serve(async (req) => {
     const totalLinkedInTasks = linkedinProgress.length;
     const linkedinProgressPercent = totalLinkedInTasks > 0 ? Math.round((completedLinkedInTasks / totalLinkedInTasks) * 100) : 0;
     
-    const resumeProgressPercent = resumeProgress?.resume_completion_percentage || 0;
+    const resumeProgressPercent = profile?.resume_completion_percentage || 0;
     
     const completedAssignments = assignments.filter(a => a.status === 'completed' || a.status === 'verified').length;
     const totalAssignments = assignments.length;
     
     const jobsByStatus = jobs.reduce((acc, job) => {
-      acc[job.status] = (acc[job.status] || 0) + 1;
+      const status = job.pipeline_stage || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, {});
+
+    console.log('Calculated statistics:', {
+      totalPoints,
+      resumeProgressPercent,
+      linkedinProgressPercent,
+      totalJobs: jobs.length,
+      jobsByStatus,
+      assignmentStats: { completed: completedAssignments, total: totalAssignments }
+    });
 
     const lowerMessage = message.toLowerCase();
     let aiResponse = '';
@@ -171,7 +212,7 @@ serve(async (req) => {
       } else {
         aiResponse = `💼 **LinkedIn Optimization Help:**\n\n**Your Progress:** ${linkedinProgressPercent}% LinkedIn tasks completed\n\n**Our LinkedIn Tools:**\n• Daily activity tracker\n• Weekly networking assignments\n• Connection growth monitoring\n• Content engagement metrics\n\n**Optimization Checklist:**\n✓ Professional headshot (14x more profile views)\n✓ Compelling headline with keywords\n✓ Detailed summary (3-5 sentences)\n✓ Complete work experience\n✓ Skills and endorsements\n✓ Regular content posting\n\n**Daily Activities:** Use our tracker to monitor networking progress!`;
       }
-    } else if (lowerMessage.includes('github') && profile.industry === 'IT') {
+    } else if (lowerMessage.includes('github') && profile?.industry === 'IT') {
       const completedGitHubTasks = githubProgress.filter(task => task.completed).length;
       const githubProgressPercent = githubProgress.length > 0 ? Math.round((completedGitHubTasks / githubProgress.length) * 100) : 0;
       
@@ -188,7 +229,7 @@ serve(async (req) => {
         
         aiResponse += `\n**Recent Applications:**\n`;
         jobs.slice(0, 3).forEach(job => {
-          aiResponse += `• ${job.position} at ${job.company} - ${job.status}\n`;
+          aiResponse += `• ${job.job_title} at ${job.company_name} - ${job.pipeline_stage}\n`;
         });
         
         if (totalJobs < 10) {
@@ -233,10 +274,10 @@ serve(async (req) => {
       
       aiResponse += `\n\n**Quick Point Boosters:**\n• Complete resume to 100% (+50 points)\n• Connect with 10 professionals (+20 points)\n• Apply to 5 jobs in one day (+25 points)\n• Finish all weekly assignments (+100 points)`;
     } else if (lowerMessage.includes('help') || lowerMessage.includes('features') || lowerMessage.includes('what can')) {
-      aiResponse = `🤖 **Career Growth Platform - Complete Feature Guide:**\n\n**📊 Your Dashboard Overview:**\n• Total Points: ${totalPoints}\n• Resume Progress: ${resumeProgressPercent}%\n• Job Applications: ${totalJobs}\n• LinkedIn Progress: ${linkedinProgressPercent}%\n\n**🛠️ Platform Features:**\n\n**📝 Resume Builder:**\n• ATS-friendly templates\n• Real-time completion tracking\n• Multiple export formats\n• Industry-specific guidance\n\n**💼 LinkedIn Optimization:**\n• Daily activity tracking\n• Weekly networking assignments\n• Connection growth monitoring\n• Content engagement tools\n\n**🎯 Job Tracker:**\n• Application status management\n• Follow-up reminders\n• Internal job opportunities\n• Interview tracking\n• Points for status transitions (20 points each)\n\n**📈 Career Growth:**\n• Daily activities and challenges\n• Weekly assignments\n• Skill development tracking\n• Learning goals management\n\n**🏆 Gamification:**\n• Points system for all activities\n• Leaderboards and rankings\n• Achievement badges\n• Progress visualization\n\n${profile.industry === 'IT' ? '**💻 GitHub Tools:**\n• Repository tracking\n• Contribution monitoring\n• Profile optimization\n• Weekly coding challenges\n\n' : ''}**💡 AI Assistant (Premium):**\n• Personalized career guidance\n• Progress-based recommendations\n• Feature explanations\n• Strategic advice\n\n**🎓 Learning Resources:**\n• Industry-specific tips\n• Best practice guides\n• Template libraries\n• Success stories\n\n**Ask me anything about:** Resume building, LinkedIn optimization, job searching, career growth, platform features, progress tracking, assignments, or specific guidance!`;
+      aiResponse = `🤖 **Career Growth Platform - Complete Feature Guide:**\n\n**📊 Your Dashboard Overview:**\n• Total Points: ${totalPoints}\n• Resume Progress: ${resumeProgressPercent}%\n• Job Applications: ${totalJobs}\n• LinkedIn Progress: ${linkedinProgressPercent}%\n\n**🛠️ Platform Features:**\n\n**📝 Resume Builder:**\n• ATS-friendly templates\n• Real-time completion tracking\n• Multiple export formats\n• Industry-specific guidance\n\n**💼 LinkedIn Optimization:**\n• Daily activity tracking\n• Weekly networking assignments\n• Connection growth monitoring\n• Content engagement tools\n\n**🎯 Job Tracker:**\n• Application status management\n• Follow-up reminders\n• Internal job opportunities\n• Interview tracking\n• Points for status transitions (20 points each)\n\n**📈 Career Growth:**\n• Daily activities and challenges\n• Weekly assignments\n• Skill development tracking\n• Learning goals management\n\n**🏆 Gamification:**\n• Points system for all activities\n• Leaderboards and rankings\n• Achievement badges\n• Progress visualization\n\n${profile?.industry === 'IT' ? '**💻 GitHub Tools:**\n• Repository tracking\n• Contribution monitoring\n• Profile optimization\n• Weekly coding challenges\n\n' : ''}**💡 AI Assistant (Premium):**\n• Personalized career guidance\n• Progress-based recommendations\n• Feature explanations\n• Strategic advice\n\n**🎓 Learning Resources:**\n• Industry-specific tips\n• Best practice guides\n• Template libraries\n• Success stories\n\n**Ask me anything about:** Resume building, LinkedIn optimization, job searching, career growth, platform features, progress tracking, assignments, or specific guidance!`;
     } else {
       // Generic helpful response
-      aiResponse = `🤖 **I'm here to help with your career growth!**\n\n**Your Current Status:**\n• Points: ${totalPoints}\n• Resume: ${resumeProgressPercent}% complete\n• LinkedIn: ${linkedinProgressPercent}% tasks done\n• Job Applications: ${totalJobs} tracked\n\n**I can help you with:**\n• Resume building and optimization\n• LinkedIn profile enhancement\n• Job search strategies\n• Career development planning\n• Platform feature explanations\n• Progress tracking and goals${profile.industry === 'IT' ? '\n• GitHub profile optimization' : ''}\n\n**Your Question:** "${message}"\n\n**How can I assist you specifically?** Ask about:\n✓ Resume progress and tips\n✓ LinkedIn networking strategies\n✓ Job application tracking\n✓ Assignment completion\n✓ Points and achievements\n✓ Platform features\n✓ Career growth advice\n\nI'm designed to help only with career development topics related to our platform. Let me know what specific area you'd like guidance on!`;
+      aiResponse = `🤖 **I'm here to help with your career growth!**\n\n**Your Current Status:**\n• Points: ${totalPoints}\n• Resume: ${resumeProgressPercent}% complete\n• LinkedIn: ${linkedinProgressPercent}% tasks done\n• Job Applications: ${totalJobs} tracked\n\n**I can help you with:**\n• Resume building and optimization\n• LinkedIn profile enhancement\n• Job search strategies\n• Career development planning\n• Platform feature explanations\n• Progress tracking and goals${profile?.industry === 'IT' ? '\n• GitHub profile optimization' : ''}\n\n**Your Question:** "${message}"\n\n**How can I assist you specifically?** Ask about:\n✓ Resume progress and tips\n✓ LinkedIn networking strategies\n✓ Job application tracking\n✓ Assignment completion\n✓ Points and achievements\n✓ Platform features\n✓ Career growth advice\n\nI'm designed to help only with career development topics related to our platform. Let me know what specific area you'd like guidance on!`;
     }
 
     const response = {
