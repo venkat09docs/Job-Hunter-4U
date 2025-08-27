@@ -143,8 +143,8 @@ const JobTracker = () => {
     // Check if this is the specific transition we need to validate
     if (currentStatus === 'applied' && newStatus === 'interviewing') {
       try {
-        // Fetch career task assignments that are not completed
-        const { data: assignments, error } = await supabase
+        // First, check if interview preparation assignments already exist for this user
+        const { data: existingAssignments, error: existingError } = await supabase
           .from('career_task_assignments')
           .select(`
             *,
@@ -157,54 +157,85 @@ const JobTracker = () => {
             )
           `)
           .eq('user_id', user.id)
-          .in('status', ['assigned', 'pending']);
+          .in('status', ['assigned', 'pending', 'verified']);
 
-        console.log('DEBUG: Non-completed assignments:', assignments);
+        if (existingError) throw existingError;
 
-        if (error) throw error;
-
-        // For Applied -> Interviewing transition, require resume building tasks to be completed
-        // as having a complete resume is essential before interviews
-        const relevantAssignments = (assignments || []).filter((assignment: any) => {
+        // Check if user has interview preparation assignments
+        const interviewPrepAssignments = (existingAssignments || []).filter((assignment: any) => {
           const category = assignment.career_task_templates?.category?.toLowerCase() || '';
-          const title = assignment.career_task_templates?.title?.toLowerCase() || '';
-          const description = assignment.career_task_templates?.description?.toLowerCase() || '';
-          const code = assignment.career_task_templates?.code || '';
-          
-          // Check for resume building category or specific interview preparation tasks
-          const isResumeBuilding = category === 'resume_building';
-          const isInterviewPrep = title.includes('interview') ||
-                                 title.includes('preparation') ||
-                                 description.includes('interview') ||
-                                 description.includes('preparation');
-          
-          // Also include cover letter tasks as they're often required for interviews
-          const isCoverLetter = title.includes('cover letter') ||
-                               code.includes('COVER_LETTER');
-          
-          const isRelevant = isResumeBuilding || isInterviewPrep || isCoverLetter;
-          
-          console.log('DEBUG: Assignment relevance check:', {
-            title: assignment.career_task_templates?.title,
-            category,
-            code,
-            isResumeBuilding,
-            isInterviewPrep,
-            isCoverLetter,
-            isRelevant
-          });
-          
-          return isRelevant;
+          return category === 'interview_preparation';
         });
 
-        console.log('DEBUG: Relevant assignments for Applied->Interviewing:', relevantAssignments);
+        console.log('DEBUG: Existing interview prep assignments:', interviewPrepAssignments);
+
+        // If no interview prep assignments exist, create them
+        if (interviewPrepAssignments.length === 0) {
+          console.log('DEBUG: No interview prep assignments found, creating them...');
+          
+          // Get all interview preparation task templates
+          const { data: templates, error: templatesError } = await supabase
+            .from('career_task_templates')
+            .select('*')
+            .eq('category', 'interview_preparation')
+            .eq('is_active', true)
+            .order('display_order');
+
+          if (templatesError) throw templatesError;
+          
+          console.log('DEBUG: Interview prep templates found:', templates);
+
+          if (templates && templates.length > 0) {
+            // Create assignments for each template
+            const newAssignments = templates.map((template: any) => ({
+              user_id: user.id,
+              template_id: template.id,
+              status: 'assigned',
+              week_start_date: new Date().toISOString().split('T')[0], // Current date as YYYY-MM-DD
+              due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+            }));
+
+            const { data: createdAssignments, error: createError } = await supabase
+              .from('career_task_assignments')
+              .insert(newAssignments)
+              .select(`
+                *,
+                career_task_templates (
+                  title,
+                  description,
+                  instructions,
+                  category,
+                  code
+                )
+              `);
+
+            if (createError) {
+              console.error('Failed to create interview prep assignments:', createError);
+              throw createError;
+            }
+
+            console.log('DEBUG: Created interview prep assignments:', createdAssignments);
+            
+            return {
+              hasUncompleted: true,
+              assignments: createdAssignments || []
+            };
+          }
+        }
+
+        // Check for uncompleted interview preparation assignments
+        const uncompletedInterviewPrep = interviewPrepAssignments.filter((assignment: any) => 
+          assignment.status === 'assigned' || assignment.status === 'pending'
+        );
+
+        console.log('DEBUG: Uncompleted interview prep assignments:', uncompletedInterviewPrep);
 
         return {
-          hasUncompleted: relevantAssignments.length > 0,
-          assignments: relevantAssignments
+          hasUncompleted: uncompletedInterviewPrep.length > 0,
+          assignments: uncompletedInterviewPrep
         };
       } catch (error) {
-        console.error('Error checking assignments:', error);
+        console.error('Error checking/creating assignments:', error);
         return { hasUncompleted: false, assignments: [] };
       }
     }

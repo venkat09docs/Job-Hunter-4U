@@ -60,6 +60,8 @@ export function AssignmentsRequiredDialog({
   };
 
   const getDueDateColor = (dateString: string) => {
+    if (!dateString) return "outline";
+    
     const date = new Date(dateString);
     const now = new Date();
     const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
@@ -115,11 +117,19 @@ export function AssignmentsRequiredDialog({
                       <p className="text-sm font-medium text-muted-foreground mb-2">Instructions:</p>
                       <div className="text-sm space-y-1">
                         {typeof assignment.career_task_templates.instructions === 'object' ? (
-                          <ul className="list-disc pl-4 space-y-1">
-                            {Object.values(assignment.career_task_templates.instructions).map((instruction: any, index) => (
-                              <li key={index}>{instruction}</li>
-                            ))}
-                          </ul>
+                          assignment.career_task_templates.instructions.steps ? (
+                            <ul className="list-disc pl-4 space-y-1">
+                              {assignment.career_task_templates.instructions.steps.map((step: string, stepIndex: number) => (
+                                <li key={stepIndex}>{step}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <ul className="list-disc pl-4 space-y-1">
+                              {Object.values(assignment.career_task_templates.instructions).map((instruction: any, index) => (
+                                <li key={index}>{instruction}</li>
+                              ))}
+                            </ul>
+                          )
                         ) : (
                           <p>{assignment.career_task_templates.instructions}</p>
                         )}
