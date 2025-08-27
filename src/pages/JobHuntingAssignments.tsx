@@ -518,6 +518,22 @@ export const JobHuntingAssignments: React.FC = () => {
                           </Link>
                         </CardContent>
                       </Card>
+
+                      {/* Job Status Tracker */}
+                      <Card className="cursor-pointer hover:shadow-lg transition-shadow group">
+                        <CardContent className="p-4">
+                          <Link to="/dashboard/job-tracker" className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+                              <Target className="h-5 w-5 text-indigo-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">Job Status Tracker</p>
+                              <p className="text-xs text-muted-foreground">Track applications</p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </Link>
+                        </CardContent>
+                      </Card>
                     </div>
                   </div>
                 </div>
