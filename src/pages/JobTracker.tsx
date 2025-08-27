@@ -69,6 +69,13 @@ const JobTracker = () => {
     job: JobEntry;
     newStatus: string;
   } | null>(null);
+  const [showAssignmentsDialog, setShowAssignmentsDialog] = useState(false);
+  const [pendingAssignments, setPendingAssignments] = useState<any[]>([]);
+  const [pendingStatusMove, setPendingStatusMove] = useState<{
+    jobId: string;
+    job: JobEntry;
+    newStatus: string;
+  } | null>(null);
 
   const { incrementActivity } = useJobApplicationActivities();
 
@@ -125,6 +132,49 @@ const JobTracker = () => {
       createStaleJobNotifications();
     }
   }, [jobs, user]);
+
+  const checkRequiredAssignments = async (currentStatus: string, newStatus: string) => {
+    if (!user) return { hasUncompleted: false, assignments: [] };
+    
+    // Check if this is the specific transition we need to validate
+    if (currentStatus === 'applied' && newStatus === 'interviewing') {
+      try {
+        // Fetch career task assignments that need to be completed for 'applied' status
+        const { data: assignments, error } = await supabase
+          .from('career_task_assignments')
+          .select(`
+            *,
+            career_task_templates (
+              title,
+              description,
+              instructions
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'assigned')
+          .gte('due_date', new Date().toISOString());
+
+        if (error) throw error;
+
+        // Filter assignments related to job application process
+        const relevantAssignments = (assignments || []).filter((assignment: any) => 
+          assignment.career_task_templates?.title?.toLowerCase().includes('interview') ||
+          assignment.career_task_templates?.title?.toLowerCase().includes('preparation') ||
+          assignment.career_task_templates?.description?.toLowerCase().includes('interview')
+        );
+
+        return {
+          hasUncompleted: relevantAssignments.length > 0,
+          assignments: relevantAssignments
+        };
+      } catch (error) {
+        console.error('Error checking assignments:', error);
+        return { hasUncompleted: false, assignments: [] };
+      }
+    }
+    
+    return { hasUncompleted: false, assignments: [] };
+  };
 
   const createStaleJobNotifications = async () => {
     const staleJobs = jobs.filter(job => {
@@ -358,6 +408,18 @@ const JobTracker = () => {
       return;
     }
     
+    // Check if moving from applied to interviewing - check for required assignments
+    if (job.status === 'applied' && newStatus === 'interviewing') {
+      const { hasUncompleted, assignments } = await checkRequiredAssignments(job.status, newStatus);
+      
+      if (hasUncompleted) {
+        setPendingAssignments(assignments);
+        setPendingStatusMove({ jobId, job, newStatus });
+        setShowAssignmentsDialog(true);
+        return;
+      }
+    }
+    
     // For other moves, proceed with direct status update
     await performStatusUpdate(jobId, newStatus, job.status);
   };
@@ -430,6 +492,18 @@ const JobTracker = () => {
       setPendingJobMove({ jobId, job, newStatus });
       setIsRequirementsModalOpen(true);
       return;
+    }
+    
+    // Check if moving from applied to interviewing - check for required assignments
+    if (job.status === 'applied' && newStatus === 'interviewing') {
+      const { hasUncompleted, assignments } = await checkRequiredAssignments(job.status, newStatus);
+      
+      if (hasUncompleted) {
+        setPendingAssignments(assignments);
+        setPendingStatusMove({ jobId, job, newStatus });
+        setShowAssignmentsDialog(true);
+        return;
+      }
     }
     
     // For other moves, proceed normally
