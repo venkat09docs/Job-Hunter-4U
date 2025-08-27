@@ -49,9 +49,10 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     switch (status) {
       case 'verified': return 'bg-green-500';
       case 'submitted': return 'bg-yellow-500';
-      case 'in_progress': return 'bg-blue-500';
+      case 'started': return 'bg-blue-500';
+      case 'in_progress': return 'bg-blue-500'; // Keep for backward compatibility
       case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-gray-500'; // assigned or other statuses
     }
   };
 
@@ -59,8 +60,10 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     switch (status) {
       case 'verified': return <CheckCircle className="h-4 w-4" />;
       case 'submitted': return <AlertCircle className="h-4 w-4" />;
+      case 'started': return <Clock className="h-4 w-4" />;
+      case 'in_progress': return <Clock className="h-4 w-4" />; // Keep for backward compatibility  
       case 'rejected': return <XCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+      default: return <Clock className="h-4 w-4" />; // assigned or other statuses
     }
   };
 
@@ -84,8 +87,14 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     }
   };
 
-  const handleStartTask = async () => {
-    await updateAssignmentStatus(assignment.id, 'in_progress');
+  const handleStartAssignment = async () => {
+    try {
+      await updateAssignmentStatus(assignment.id, 'started');
+      toast.success('Assignment started!');
+    } catch (error) {
+      console.error('Error starting assignment:', error);
+      toast.error('Failed to start assignment');
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,124 +229,141 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          {assignment.status === 'assigned' && (
-            <Button onClick={handleStartTask} size="sm">
-              Start Task
-            </Button>
-          )}
-          
-          {(assignment.status === 'in_progress' || assignment.status === 'assigned') && (
-            <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Submit Evidence
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Submit Evidence</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="evidenceType">Evidence Type</Label>
-                    <Select value={evidenceType} onValueChange={setEvidenceType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select evidence type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {assignment.template?.evidence_types?.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            <div className="flex items-center gap-2">
-                              {type === 'url' && <LinkIcon className="h-4 w-4" />}
-                              {type === 'screenshot' && <Camera className="h-4 w-4" />}
-                              {type === 'file' && <FileText className="h-4 w-4" />}
-                              {type === 'text' && <FileText className="h-4 w-4" />}
-                              {type === 'email' && <FileText className="h-4 w-4" />}
-                              <span className="capitalize">{type}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {evidenceType === 'url' && (
-                    <div>
-                      <Label htmlFor="evidenceUrl">URL</Label>
-                      <Input
-                        id="evidenceUrl"
-                        value={evidenceUrl}
-                        onChange={(e) => setEvidenceUrl(e.target.value)}
-                        placeholder="https://..."
-                      />
-                    </div>
-                  )}
-
-                  {(evidenceType === 'text' || evidenceType === 'email') && (
-                    <div>
-                      <Label htmlFor="evidenceText">Description</Label>
-                      <Textarea
-                        id="evidenceText"
-                        value={evidenceText}
-                        onChange={(e) => setEvidenceText(e.target.value)}
-                        placeholder="Provide details about your completed task..."
-                        rows={4}
-                      />
-                    </div>
-                  )}
-
-                  {(evidenceType === 'file' || evidenceType === 'screenshot') && (
-                    <div>
-                      <Label htmlFor="files">{t('actions.uploadFiles')}</Label>
-                      <Input
-                        id="files"
-                        type="file"
-                        multiple
-                        accept={evidenceType === 'screenshot' ? 'image/*' : '*'}
-                        onChange={handleFileChange}
-                      />
-                      {fileValidationErrors.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {fileValidationErrors.map((error, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm text-red-600">
-                              <AlertTriangle className="h-4 w-4" />
-                              {error}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <Button 
-                    onClick={handleSubmitEvidence} 
-                    disabled={submitting}
-                    className="w-full"
-                  >
-                    {submitting ? 'Submitting...' : 'Submit Evidence'}
+        {/* Action Buttons - Following LinkedIn/CareerTaskCard Assignment Flow */}
+        {assignment.status !== 'verified' && (
+          <>
+            {/* Start Assignment Button */}
+            {assignment.status === 'assigned' && (
+              <Button onClick={handleStartAssignment} className="w-full">
+                <Upload className="w-4 h-4 mr-2" />
+                Start Assignment
+              </Button>
+            )}
+            
+            {/* Submit Assignment Button */}
+            {(assignment.status === 'started' || assignment.status === 'rejected') && (
+              <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
                   </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>{assignment.template?.title}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="evidenceType">Evidence Type</Label>
+                      <Select value={evidenceType} onValueChange={setEvidenceType}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select evidence type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {assignment.template?.evidence_types?.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center gap-2">
+                                {type === 'url' && <LinkIcon className="h-4 w-4" />}
+                                {type === 'screenshot' && <Camera className="h-4 w-4" />}
+                                {type === 'file' && <FileText className="h-4 w-4" />}
+                                {type === 'text' && <FileText className="h-4 w-4" />}
+                                {type === 'email' && <FileText className="h-4 w-4" />}
+                                <span className="capitalize">{type}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {evidenceType === 'url' && (
+                      <div>
+                        <Label htmlFor="evidenceUrl">URL</Label>
+                        <Input
+                          id="evidenceUrl"
+                          value={evidenceUrl}
+                          onChange={(e) => setEvidenceUrl(e.target.value)}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    )}
+
+                    {(evidenceType === 'text' || evidenceType === 'email') && (
+                      <div>
+                        <Label htmlFor="evidenceText">Description</Label>
+                        <Textarea
+                          id="evidenceText"
+                          value={evidenceText}
+                          onChange={(e) => setEvidenceText(e.target.value)}
+                          placeholder="Provide details about your completed task..."
+                          rows={4}
+                        />
+                      </div>
+                    )}
+
+                    {(evidenceType === 'file' || evidenceType === 'screenshot') && (
+                      <div>
+                        <Label htmlFor="files">{t('actions.uploadFiles')}</Label>
+                        <Input
+                          id="files"
+                          type="file"
+                          multiple
+                          accept={evidenceType === 'screenshot' ? 'image/*' : '*'}
+                          onChange={handleFileChange}
+                        />
+                        {fileValidationErrors.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {fileValidationErrors.map((error, index) => (
+                              <div key={index} className="flex items-center gap-2 text-sm text-red-600">
+                                <AlertTriangle className="h-4 w-4" />
+                                {error}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <Button 
+                      onClick={handleSubmitEvidence} 
+                      disabled={submitting}
+                      className="w-full"
+                    >
+                      {submitting ? 'Submitting...' : 'Submit Evidence'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+            
+            {/* Under Review State */}
+            {assignment.status === 'submitted' && (
+              <div className="w-full p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md text-center">
+                <div className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-200">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="font-medium">Under Review</span>
                 </div>
-              </DialogContent>
-            </Dialog>
-          )}
+                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                  Your submission is being verified
+                </p>
+              </div>
+            )}
+          </>
+        )}
 
-          {assignment.status === 'verified' && (
-            <Badge variant="outline" className="bg-green-100 text-green-800">
-              <CheckCircle className="h-4 w-4 mr-1" />
-              Completed - {assignment.points_earned} points earned
-            </Badge>
-          )}
-
-          {assignment.status === 'submitted' && (
-            <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              Under Review
-            </Badge>
-          )}
-        </div>
+        {/* Completed State */}
+        {assignment.status === 'verified' && (
+          <div className="w-full p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md text-center">
+            <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-200">
+              <CheckCircle className="w-4 h-4" />
+              <span className="font-medium">Assignment Completed</span>
+            </div>
+            <p className="text-xs text-green-600 dark:text-green-300 mt-1">
+              {assignment.points_earned} points earned
+            </p>
+          </div>
+        )}
 
         {/* Verification Criteria */}
         {assignment.template?.verification_criteria?.required && (
