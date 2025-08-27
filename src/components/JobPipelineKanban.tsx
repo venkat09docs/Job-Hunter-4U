@@ -519,54 +519,6 @@ export const JobPipelineKanban: React.FC = () => {
         </Dialog>
       </div>
 
-      {/* Kanban Board */}
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {pipelineStages.map((stage) => (
-            <DroppableStatusColumn
-              key={stage}
-              status={stage}
-              statusColor={stageColors[stage as keyof typeof stageColors]}
-              statusLabel={stageLabels[stage as keyof typeof stageLabels]}
-              count={stageCounts[stage] || 0}
-            >
-              <div className="space-y-3">
-                {getJobsByStage(stage).map((job) => (
-                  <DraggableKanbanCard
-                    key={job.id}
-                    job={job}
-                    statusOptions={pipelineStages}
-                    statusLabels={stageLabels}
-                    hasActiveSubscription={true}
-                    onStatusChange={(jobId, newStatus) => handleStatusChange(jobId, newStatus)}
-                    onCardClick={() => {}}
-                  />
-                ))}
-                {getJobsByStage(stage).length === 0 && (
-                  <div className="text-center text-muted-foreground text-xs py-4">
-                    No jobs in this stage
-                  </div>
-                )}
-              </div>
-            </DroppableStatusColumn>
-          ))}
-        </div>
-      </DndContext>
-      
-      {jobs.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center space-y-4">
-            <p className="text-muted-foreground">
-              No jobs in your pipeline yet. Start by adding your first job opportunity!
-            </p>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Your First Job
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Application Requirements Modal */}
       {pendingJobMove && (
         <ApplicationRequirementsModal
