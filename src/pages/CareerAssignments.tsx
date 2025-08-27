@@ -217,7 +217,12 @@ const CareerAssignments = () => {
       
       // Additional checks for Digital profile (subscription required)
       if (categoryName.includes('digital')) {
-        const hasValidSubscription = profile?.subscription_plan === '6-month' || profile?.subscription_plan === '1-year';
+        const hasValidSubscription = profile?.subscription_active && (
+          profile?.subscription_plan?.includes('Month') || 
+          profile?.subscription_plan?.includes('Year') ||
+          profile?.subscription_plan === '6-month' || 
+          profile?.subscription_plan === '1-year'
+        );
         return prerequisitesMet && hasValidSubscription;
       }
       
@@ -256,7 +261,12 @@ const CareerAssignments = () => {
       }
       
       if (categoryName.includes('digital')) {
-        const hasValidSubscription = profile?.subscription_plan === '6-month' || profile?.subscription_plan === '1-year';
+        const hasValidSubscription = profile?.subscription_active && (
+          profile?.subscription_plan?.includes('Month') || 
+          profile?.subscription_plan?.includes('Year') ||
+          profile?.subscription_plan === '6-month' || 
+          profile?.subscription_plan === '1-year'
+        );
         if (!hasValidSubscription) {
           return 'Subscription is required either 6 months or 1 year plan for the digital profile';
         }
