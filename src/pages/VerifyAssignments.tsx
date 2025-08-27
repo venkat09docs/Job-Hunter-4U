@@ -191,7 +191,11 @@ const VerifyAssignments = () => {
       const profile = profilesData?.find(p => p.user_id === assignment.user_id);
       return {
         ...assignment,
-        profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+        profiles: profile || { 
+          full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+          username: `missing_${assignment.user_id.slice(0, 8)}`, 
+          profile_image_url: '' 
+        }
       };
     });
 
@@ -350,7 +354,11 @@ const VerifyAssignments = () => {
         const profile = profilesData?.find(p => p.user_id === assignment.user_id);
         return {
           ...assignment,
-          profiles: profile || { full_name: 'Unknown', username: 'unknown', profile_image_url: '' }
+          profiles: profile || { 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          }
         };
       });
 
@@ -405,8 +413,8 @@ const VerifyAssignments = () => {
             sub_categories: { name: 'LinkedIn Profile' }
           },
           profiles: profile || { 
-            full_name: 'Unknown User', 
-            username: 'unknown_user', 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
             profile_image_url: '' 
           },
           evidence: [],
