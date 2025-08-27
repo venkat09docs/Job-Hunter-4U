@@ -155,21 +155,23 @@ export const useJobHuntingAssignments = () => {
     try {
       setLoading(true);
       
-      // Call the instantiate-week edge function
-      const { data, error } = await supabase.functions.invoke('instantiate-week', {
+      console.log('Initializing job hunting week for user:', user?.id);
+      
+      // Call the job hunting specific edge function
+      const { data, error } = await supabase.functions.invoke('initialize-job-hunting-week', {
         body: { userId: user?.id }
       });
       
       if (error) throw error;
       
-      console.log('Week initialization response:', data);
-      toast.success('Weekly tasks generated successfully!');
+      console.log('Job hunting week initialization response:', data);
+      toast.success('Job hunting tasks initialized successfully!');
       
       // Refresh assignments
       await fetchData();
     } catch (error: any) {
-      console.error('Error initializing week:', error);
-      toast.error(error.message || 'Failed to generate weekly tasks');
+      console.error('Error initializing job hunting week:', error);
+      toast.error(error.message || 'Failed to initialize job hunting tasks');
     } finally {
       setLoading(false);
     }

@@ -66,23 +66,12 @@ export const JobHuntingAssignments: React.FC = () => {
   const weekEnd = addDays(currentWeek, 6);
 
   // Debug: Check what assignments and categories we have
-  console.log('All assignments:', assignments);
-  console.log('Templates categories:', templates.map(t => t.category));
+  console.log('Job hunting assignments:', assignments);
+  console.log('Job hunting templates:', templates);
+  console.log('Templates categories:', templates.map(t => ({ title: t.title, category: t.category })));
   
-  // Filter assignments for Job Hunting related tasks (more flexible filtering)
-  const jobHuntingAssignments = assignments.filter(assignment => {
-    const category = assignment.template?.category?.toLowerCase() || '';
-    const title = assignment.template?.title?.toLowerCase() || '';
-    
-    return category.includes('job') || 
-           category.includes('hunt') || 
-           category.includes('application') ||
-           category.includes('network') ||
-           title.includes('job') ||
-           title.includes('hunt') ||
-           title.includes('application') ||
-           title.includes('network');
-  });
+  // All assignments are already job hunting specific since we're using useJobHuntingAssignments
+  const jobHuntingAssignments = assignments;
   
   console.log('Filtered job hunting assignments:', jobHuntingAssignments);
 
@@ -465,32 +454,47 @@ export const JobHuntingAssignments: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {jobHuntingAssignments.length === 0 ? (
-                      <div className="text-center py-8">
-                        <div className="flex flex-col items-center gap-4">
-                          <div className="p-4 bg-muted rounded-full">
-                            <Target className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg mb-2">No Job Hunting Tasks Initialized</h3>
-                            <p className="text-muted-foreground mb-4">
-                              Click the button below to initialize your weekly job hunting tasks from Manage Assignments
-                            </p>
-                          </div>
-                          <Button 
-                            onClick={initializeUserWeek}
-                            disabled={loading}
-                            className="flex items-center gap-2"
-                          >
-                            {loading ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Zap className="h-4 w-4" />
-                            )}
-                            Initialize Tasks
-                          </Button>
-                        </div>
-                      </div>
+                     {jobHuntingAssignments.length === 0 ? (
+                       <div className="text-center py-8">
+                         <div className="flex flex-col items-center gap-4">
+                           <div className="p-4 bg-muted rounded-full">
+                             <Target className="h-8 w-8 text-muted-foreground" />
+                           </div>
+                           <div>
+                             <h3 className="font-semibold text-lg mb-2">No Job Hunting Tasks Found</h3>
+                             <p className="text-muted-foreground mb-2">
+                               Initialize your job hunting assignments to see tasks like:
+                             </p>
+                             <div className="text-sm text-muted-foreground mb-4 space-y-1">
+                               <p>• Day 5/6/7 follow-up tasks</p>
+                               <p>• Job application tasks</p>
+                               <p>• Networking assignments</p>
+                               <p>• Interview preparation tasks</p>
+                             </div>
+                             <p className="text-xs text-muted-foreground mb-4">
+                               {templates.length > 0 
+                                 ? `Found ${templates.length} available templates ready to be assigned`
+                                 : 'Loading templates...'
+                               }
+                             </p>
+                           </div>
+                           <Button 
+                             onClick={() => {
+                               console.log('Initialize button clicked, calling initializeUserWeek...');
+                               initializeUserWeek();
+                             }}
+                             disabled={loading}
+                             className="flex items-center gap-2"
+                           >
+                             {loading ? (
+                               <RefreshCw className="h-4 w-4 animate-spin" />
+                             ) : (
+                               <Zap className="h-4 w-4" />
+                             )}
+                             Initialize Job Hunting Tasks
+                           </Button>
+                         </div>
+                       </div>
                     ) : (
                       <div className="space-y-4">
                         {loading ? (
