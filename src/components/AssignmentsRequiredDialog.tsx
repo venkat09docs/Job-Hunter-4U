@@ -9,7 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Clock, CheckCircle2, AlertTriangle, Save, ArrowRight, BookOpen } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle2, AlertTriangle, Save, ArrowRight, BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface Assignment {
   id: string;
@@ -41,33 +43,28 @@ export function AssignmentsRequiredDialog({
   onSave,
   onCompleteAndMove,
 }: AssignmentsRequiredDialogProps) {
-  const formatDueDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return `Overdue by ${Math.abs(diffDays)} days`;
-    } else if (diffDays === 0) {
-      return "Due today";
-    } else if (diffDays === 1) {
-      return "Due tomorrow";
-    } else {
-      return `Due in ${diffDays} days`;
-    }
+  const [completedAssignments, setCompletedAssignments] = useState<Set<string>>(new Set());
+
+  const handleAssignmentToggle = (assignmentId: string, checked: boolean) => {
+    setCompletedAssignments(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(assignmentId);
+      } else {
+        newSet.delete(assignmentId);
+      }
+      return newSet;
+    });
   };
 
-  const getDueDateColor = (dateString: string) => {
-    if (!dateString) return "outline";
-    
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return "destructive";
-    if (diffDays <= 1) return "secondary";
-    return "outline";
-  };
+  const allAssignmentsCompleted = completedAssignments.size === assignments.length;
+
+  // Reset completed assignments when dialog opens/closes
+  useEffect(() => {
+    if (!open) {
+      setCompletedAssignments(new Set());
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -124,13 +121,17 @@ export function AssignmentsRequiredDialog({
                            "Complete this task to prepare for your interview process."}
                         </CardDescription>
                       </div>
-                      <Badge 
-                        variant={getDueDateColor(assignment.due_date)}
-                        className="flex-shrink-0 whitespace-nowrap"
-                      >
-                        <Clock className="w-3 h-3 mr-1" />
-                        {formatDueDate(assignment.due_date)}
-                      </Badge>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Checkbox
+                          id={`assignment-${assignment.id}`}
+                          checked={completedAssignments.has(assignment.id)}
+                          onCheckedChange={(checked) => handleAssignmentToggle(assignment.id, checked as boolean)}
+                          className="h-5 w-5"
+                        />
+                        <label htmlFor={`assignment-${assignment.id}`} className="text-sm font-medium cursor-pointer">
+                          Mark Complete
+                        </label>
+                      </div>
                     </div>
                   </CardHeader>
                   
@@ -192,14 +193,18 @@ export function AssignmentsRequiredDialog({
             </Button>
             <Button 
               onClick={onCompleteAndMove}
-              className="flex-1 sm:flex-none h-11 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              disabled={!allAssignmentsCompleted}
+              className="flex-1 sm:flex-none h-11 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowRight className="w-4 h-4 mr-2" />
               Complete & Move to Interviewing
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-3 text-center">
-            You can work on these assignments and return to move the job later, or complete them now to advance to interviewing stage.
+            {allAssignmentsCompleted 
+              ? "All assignments completed! You can now move to the interviewing stage."
+              : `Mark all assignments as complete (${completedAssignments.size}/${assignments.length}) to move to interviewing stage.`
+            }
           </p>
         </div>
       </DialogContent>
