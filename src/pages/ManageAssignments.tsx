@@ -184,20 +184,26 @@ export default function ManageAssignments() {
         if (interviewPrepResponse.error) throw interviewPrepResponse.error;
 
         // Combine both datasets
-        const jobHunterData = (jobHunterResponse.data || []).map(item => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
-          category: item.category,
-          points_reward: item.points_reward,
-          difficulty: item.difficulty,
-          is_active: item.is_active,
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-          display_order: item.display_order,
-          source: 'job_hunting_task_templates'
-        }));
+        const jobHunterData = (jobHunterResponse.data || []).map(item => {
+          // Check if category is a UUID (subcategory ID) or a string name
+          const isUuidCategory = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.category);
+          
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
+            category: isUuidCategory ? 'job_hunting' : item.category, // Use generic category if UUID
+            sub_category_id: isUuidCategory ? item.category : undefined, // Set subcategory ID if UUID
+            points_reward: item.points_reward,
+            difficulty: item.difficulty,
+            is_active: item.is_active,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            display_order: item.display_order,
+            source: 'job_hunting_task_templates'
+          };
+        });
 
         const interviewPrepData = (interviewPrepResponse.data || []).map(item => ({
           id: item.id,
@@ -205,6 +211,7 @@ export default function ManageAssignments() {
           description: item.description,
           instructions: typeof item.instructions === 'string' ? item.instructions : JSON.stringify(item.instructions || ''),
           category: item.category,
+          sub_category_id: item.sub_category_id, // Include subcategory ID for interview prep tasks
           points_reward: item.points_reward,
           difficulty: item.difficulty,
           is_active: item.is_active,
