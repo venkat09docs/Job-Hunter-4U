@@ -33,16 +33,20 @@ serve(async (req) => {
     const now = new Date();
     console.log('Current date:', now.toISOString());
     
-    // Calculate Monday of current week
-    const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    // Calculate Monday of current week using UTC to avoid timezone issues
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayOfWeek = currentDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
     console.log('Day of week:', dayOfWeek);
     
-    const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    console.log('Days to Monday:', daysToMonday);
+    // Calculate days to subtract to get to Monday
+    // If today is Sunday (0), we need to go back 6 days to get Monday
+    // If today is Monday (1), we need to go back 0 days
+    // If today is Tuesday (2), we need to go back 1 day, etc.
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    console.log('Days to subtract to get Monday:', daysToSubtract);
     
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() + daysToMonday);
-    weekStart.setHours(0, 0, 0, 0);
+    const weekStart = new Date(currentDate);
+    weekStart.setDate(currentDate.getDate() - daysToSubtract);
     const weekStartDate = weekStart.toISOString().split('T')[0];
     
     console.log('Calculated week start:', weekStartDate);

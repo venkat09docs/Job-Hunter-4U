@@ -103,6 +103,15 @@ export const useJobHuntingAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
+      // Calculate current week start date (Monday) to filter assignments
+      const now = new Date();
+      const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dayOfWeek = currentDate.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const weekStart = new Date(currentDate);
+      weekStart.setDate(currentDate.getDate() - daysToSubtract);
+      const currentWeekStart = weekStart.toISOString().split('T')[0];
+
       const { data, error } = await supabase
         .from('job_hunting_assignments')
         .select(`
@@ -110,6 +119,7 @@ export const useJobHuntingAssignments = () => {
           template:job_hunting_task_templates(*)
         `)
         .eq('user_id', user?.id)
+        .eq('week_start_date', currentWeekStart) // Only fetch current week assignments
         .order('due_date', { ascending: true });
 
       if (error) throw error;
