@@ -12,8 +12,8 @@ interface PremiumFeature {
 
 const usePremiumFeatures = () => {
   const [premiumFeatures, setPremiumFeatures] = useState<PremiumFeature[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { hasActiveSubscription } = useProfile();
+  const [featuresLoading, setFeaturesLoading] = useState(true);
+  const { hasActiveSubscription, loading: profileLoading } = useProfile();
 
   useEffect(() => {
     fetchPremiumFeatures();
@@ -31,7 +31,7 @@ const usePremiumFeatures = () => {
     } catch (error) {
       console.error('Error fetching premium features:', error);
     } finally {
-      setLoading(false);
+      setFeaturesLoading(false);
     }
   };
 
@@ -52,7 +52,7 @@ const usePremiumFeatures = () => {
 
   return {
     premiumFeatures,
-    loading,
+    loading: featuresLoading || profileLoading,
     isFeaturePremium,
     canAccessFeature,
     getFeatureInfo,
