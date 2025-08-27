@@ -102,7 +102,14 @@ export const useJobHuntingAssignments = () => {
   };
 
   const fetchAssignments = async () => {
+    if (!user?.id) {
+      console.log('No user ID available for fetching assignments');
+      return;
+    }
+
     try {
+      console.log('Fetching job hunting assignments for user:', user.id);
+      
       // Calculate current week start date (Monday) to filter assignments
       const now = new Date();
       const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -111,6 +118,8 @@ export const useJobHuntingAssignments = () => {
       const weekStart = new Date(currentDate);
       weekStart.setDate(currentDate.getDate() - daysToSubtract);
       const currentWeekStart = weekStart.toISOString().split('T')[0];
+      
+      console.log('Calculated current week start:', currentWeekStart);
 
       const { data, error } = await supabase
         .from('job_hunting_assignments')
@@ -118,11 +127,16 @@ export const useJobHuntingAssignments = () => {
           *,
           template:job_hunting_task_templates(*)
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('week_start_date', currentWeekStart) // Only fetch current week assignments
         .order('due_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching assignments:', error);
+        throw error;
+      }
+      
+      console.log('Fetched assignments:', data);
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
@@ -169,7 +183,7 @@ export const useJobHuntingAssignments = () => {
       
       // Call the job hunting specific edge function
       const { data, error } = await supabase.functions.invoke('initialize-job-hunting-week', {
-        body: { user_id: user?.id }  // Fixed: changed from userId to user_id
+        body: { user_id: user?.id }
       });
       
       if (error) {
@@ -193,8 +207,12 @@ export const useJobHuntingAssignments = () => {
         toast.success('Job hunting tasks initialized successfully!');
       }
       
-      // Refresh assignments
-      await fetchData();
+      // Always refresh assignments after initialization
+      console.log('Refreshing assignments after initialization...');
+      await fetchAssignments();
+      await fetchEvidence();
+      await fetchStreaks();
+      
     } catch (error: any) {
       console.error('Error initializing job hunting week:', error);
       
