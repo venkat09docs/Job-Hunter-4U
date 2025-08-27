@@ -38,7 +38,23 @@ serve(async (req) => {
       .eq('id', userId)
       .single();
 
-    if (!profile || !profile.subscription_status || profile.subscription_status === 'inactive') {
+    console.log('User profile data:', profile);
+
+    // Check if user has admin role first
+    const { data: userRole } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+
+    console.log('User role data:', userRole);
+
+    // Allow access for admins or users with active subscription
+    const isAdmin = userRole?.role === 'admin';
+    const hasActiveSubscription = profile?.subscription_status === 'active';
+
+    if (!isAdmin && (!profile || !hasActiveSubscription)) {
+      console.log('Access denied - not admin and no active subscription');
       return new Response(JSON.stringify({ 
         error: 'AI Assistant is available only for subscribed users. Please upgrade your plan to access this feature.' 
       }), {
@@ -46,6 +62,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('Access granted - admin or active subscription');
 
     // Fetch user data for contextual responses
     const [userPointsRes, jobsRes, linkedinProgressRes, resumeProgressRes, githubProgressRes, assignmentsRes] = await Promise.all([
@@ -55,10 +73,10 @@ serve(async (req) => {
         .select('points_earned')
         .eq('user_id', userId),
       
-      // Job applications
+      // Job applications - using job_hunting_pipeline instead
       supabase
-        .from('job_applications')
-        .select('status, company, position')
+        .from('job_hunting_pipeline')
+        .select('pipeline_stage as status, company_name as company, job_title as position')
         .eq('user_id', userId)
         .limit(10),
       
@@ -68,12 +86,12 @@ serve(async (req) => {
         .select('*')
         .eq('user_id', userId),
       
-      // Resume progress
+      // Resume progress - using profiles table instead
       supabase
-        .from('resume_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .single(),
+        .from('profiles')
+        .select('resume_completion_percentage')
+        .eq('id', userId)
+        .maybeSingle(),
       
       // GitHub progress
       supabase
@@ -81,13 +99,27 @@ serve(async (req) => {
         .select('*')
         .eq('user_id', userId),
       
-      // Career assignments
+      // Career assignments - using career_task_assignments instead
       supabase
-        .from('career_assignments')
-        .select('title, category, completed, due_date')
+        .from('career_task_assignments')
+        .select(`
+          id,
+          status,
+          due_date,
+          career_task_templates(title, category)
+        `)
         .eq('user_id', userId)
         .limit(5)
     ]);
+
+    console.log('Data fetch results:', {
+      userPoints: userPointsRes.data?.length || 0,
+      jobs: jobsRes.data?.length || 0,
+      linkedinProgress: linkedinProgressRes.data?.length || 0,
+      resumeProgress: resumeProgressRes.data,
+      githubProgress: githubProgressRes.data?.length || 0,
+      assignments: assignmentsRes.data?.length || 0
+    });
 
     const totalPoints = userPointsRes.data?.reduce((sum, record) => sum + (record.points_earned || 0), 0) || 0;
     const jobs = jobsRes.data || [];
@@ -101,9 +133,9 @@ serve(async (req) => {
     const totalLinkedInTasks = linkedinProgress.length;
     const linkedinProgressPercent = totalLinkedInTasks > 0 ? Math.round((completedLinkedInTasks / totalLinkedInTasks) * 100) : 0;
     
-    const resumeProgressPercent = resumeProgress?.completion_percentage || 0;
+    const resumeProgressPercent = resumeProgress?.resume_completion_percentage || 0;
     
-    const completedAssignments = assignments.filter(a => a.completed).length;
+    const completedAssignments = assignments.filter(a => a.status === 'completed' || a.status === 'verified').length;
     const totalAssignments = assignments.length;
     
     const jobsByStatus = jobs.reduce((acc, job) => {
@@ -172,12 +204,14 @@ serve(async (req) => {
       if (assignments.length > 0) {
         aiResponse += "**Current Tasks:**\n";
         assignments.forEach(assignment => {
-          const status = assignment.completed ? "✅" : "⏳";
+          const statusIcon = (assignment.status === 'completed' || assignment.status === 'verified') ? "✅" : "⏳";
           const dueDate = assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : "No deadline";
-          aiResponse += `${status} ${assignment.title} (${assignment.category}) - Due: ${dueDate}\n`;
+          const title = assignment.career_task_templates?.title || 'Unknown Task';
+          const category = assignment.career_task_templates?.category || 'General';
+          aiResponse += `${statusIcon} ${title} (${category}) - Due: ${dueDate}\n`;
         });
         
-        const pendingTasks = assignments.filter(a => !a.completed);
+        const pendingTasks = assignments.filter(a => a.status !== 'completed' && a.status !== 'verified');
         if (pendingTasks.length > 0) {
           aiResponse += `\n🎯 **Priority Actions:**\n• Complete ${pendingTasks.length} pending assignments\n• Focus on upcoming deadlines\n• Earn points for each completion\n\n**Categories:** LinkedIn Growth, Networking, Job Hunting, Content Creation, Interview Prep`;
         } else {
