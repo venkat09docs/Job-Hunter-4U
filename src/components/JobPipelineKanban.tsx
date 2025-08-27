@@ -187,6 +187,21 @@ export const JobPipelineKanban: React.FC = () => {
   };
 
   const handleStatusChange = async (jobId: string, newStatus: string) => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return;
+    
+    // Check if moving from wishlist to applied - require completion of requirements
+    if (job.status === 'wishlist' && newStatus === 'applied') {
+      setPendingJobMove({ jobId, job, newStatus });
+      setIsRequirementsModalOpen(true);
+      return;
+    }
+    
+    // For other moves, proceed with direct status update
+    await performStatusUpdate(jobId, newStatus);
+  };
+
+  const performStatusUpdate = async (jobId: string, newStatus: string) => {
     try {
       const { data, error } = await supabase
         .from('job_tracker')
@@ -230,7 +245,7 @@ export const JobPipelineKanban: React.FC = () => {
     }
     
     // For other moves, proceed normally
-    await handleStatusChange(jobId, newStatus);
+    await performStatusUpdate(jobId, newStatus);
   };
 
   const handleRequirementsComplete = async (updatedJobData: Partial<JobEntry>) => {
