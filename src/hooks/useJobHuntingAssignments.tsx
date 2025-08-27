@@ -162,22 +162,47 @@ export const useJobHuntingAssignments = () => {
         body: { user_id: user?.id }  // Fixed: changed from userId to user_id
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
       
       console.log('Job hunting week initialization response:', data);
       
       // Handle different response cases
-      if (data?.message?.includes('already exist')) {
-        toast.success('Job hunting assignments are already set up for this week!');
+      if (data?.success === true) {
+        if (data?.message?.includes('already exist')) {
+          toast.success(`Job hunting assignments are already set up for this week! (${data.assignments_count} tasks)`);
+        } else {
+          toast.success(`Job hunting tasks initialized successfully! Created ${data?.assignments_created || 0} assignments.`);
+        }
+      } else if (data?.success === false) {
+        throw new Error(data?.error || 'Unknown error occurred');
       } else {
-        toast.success(`Job hunting tasks initialized successfully! Created ${data?.assignments_created || 0} assignments.`);
+        // Handle old response format
+        toast.success('Job hunting tasks initialized successfully!');
       }
       
       // Refresh assignments
       await fetchData();
     } catch (error: any) {
       console.error('Error initializing job hunting week:', error);
-      toast.error(error.message || 'Failed to initialize job hunting tasks');
+      
+      // Enhanced error handling
+      let errorMessage = 'Failed to initialize job hunting tasks';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      // Show specific error for edge function failures
+      if (error?.message?.includes('edge function')) {
+        errorMessage = 'Edge function error. Please check the logs and try again.';
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

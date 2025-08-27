@@ -1,5 +1,8 @@
 project_id = "moirryvajzyriagqihbe"
 
+[functions.initialize-job-hunting-week]
+verify_jwt = true
+
 [functions.daily-progress-capture]
 verify_jwt = false
 

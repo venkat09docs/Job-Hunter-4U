@@ -17,33 +17,47 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { user_id } = await req.json();
+    const requestBody = await req.json();
+    const { user_id } = requestBody;
     
-    console.log('Initialize job hunting week called for user:', user_id);
+    console.log('=== INITIALIZE JOB HUNTING WEEK ===');
+    console.log('Request body:', requestBody);
+    console.log('User ID:', user_id);
 
     if (!user_id) {
+      console.error('Missing user_id in request');
       throw new Error('User ID is required');
     }
 
-    // Get current week start date (Monday)
+    // Get current week start date (Monday) - Fixed calculation
     const now = new Date();
-    const dayOfWeek = now.getDay();
+    console.log('Current date:', now.toISOString());
+    
+    // Calculate Monday of current week
+    const dayOfWeek = now.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    console.log('Day of week:', dayOfWeek);
+    
     const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    console.log('Days to Monday:', daysToMonday);
+    
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() + daysToMonday);
     weekStart.setHours(0, 0, 0, 0);
     const weekStartDate = weekStart.toISOString().split('T')[0];
+    
+    console.log('Calculated week start:', weekStartDate);
 
     // Check if assignments already exist for this week
+    console.log('Checking for existing assignments...');
     const { data: existingAssignments, error: existingError } = await supabase
       .from('job_hunting_assignments')
-      .select('id')
+      .select('id, template_id, status')
       .eq('user_id', user_id)
       .eq('week_start_date', weekStartDate);
 
     if (existingError) {
       console.error('Error checking existing assignments:', existingError);
-      throw existingError;
+      throw new Error(`Failed to check existing assignments: ${existingError.message}`);
     }
 
     console.log(`Found ${existingAssignments?.length || 0} existing assignments for week ${weekStartDate}`);
@@ -52,9 +66,11 @@ serve(async (req) => {
       console.log('Assignments already exist, returning success message');
       return new Response(
         JSON.stringify({ 
+          success: true,
           message: 'Assignments already exist for this week',
           assignments_count: existingAssignments.length,
-          week_start_date: weekStartDate
+          week_start_date: weekStartDate,
+          existing_assignments: existingAssignments.map(a => ({ id: a.id, status: a.status }))
         }),
         { 
           status: 200,
@@ -134,18 +150,30 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
+        success: true,
         message: 'Weekly assignments initialized successfully',
         assignments_created: assignments.length,
         week_start_date: weekStartDate,
         template_titles: templates.map(t => t.title)
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
     );
 
   } catch (error: any) {
-    console.error('Error initializing week:', error);
+    console.error('=== ERROR IN INITIALIZE JOB HUNTING WEEK ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error object:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message,
+        details: error.stack || 'No stack trace available'
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
