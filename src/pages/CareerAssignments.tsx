@@ -20,6 +20,7 @@ import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useProfile } from '@/hooks/useProfile';
+import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { useNavigate } from 'react-router-dom';
 
 interface SubCategory {
@@ -36,6 +37,7 @@ const CareerAssignments = () => {
   const { user } = useAuth();
   const { inputs, saveInput, getInput } = useUserInputs();
   const { profile } = useProfile();
+  const { industry, isIT } = useUserIndustry();
   const navigate = useNavigate();
   
   // Use the proper hook instead of local state
@@ -186,6 +188,88 @@ const CareerAssignments = () => {
     if (tasks.length === 0) return 0;
     const completed = tasks.filter(task => task.status === 'completed').length;
     return Math.round((completed / tasks.length) * 100);
+  };
+
+  // Helper function to check if a subcategory should be enabled
+  const isSubCategoryEnabled = (subCategory: SubCategory) => {
+    const categoryName = subCategory.name.toLowerCase();
+    
+    // Resume building is always enabled (first in sequence)
+    if (categoryName.includes('resume')) {
+      return true;
+    }
+    
+    // Find Resume subcategory and check if it's completed
+    const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
+    const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
+    
+    // LinkedIn profile requires Resume to be 100% complete
+    if (categoryName.includes('linkedin')) {
+      return resumeProgress >= 100;
+    }
+    
+    // Digital profile and GitHub profile require both Resume and LinkedIn to be 100% complete
+    if (categoryName.includes('digital') || categoryName.includes('github')) {
+      const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+      const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+      
+      const prerequisitesMet = resumeProgress >= 100 && linkedinProgress >= 100;
+      
+      // Additional checks for Digital profile (subscription required)
+      if (categoryName.includes('digital')) {
+        const hasValidSubscription = profile?.subscription_plan === '6-month' || profile?.subscription_plan === '1-year';
+        return prerequisitesMet && hasValidSubscription;
+      }
+      
+      // Additional checks for GitHub profile (IT industry required)
+      if (categoryName.includes('github')) {
+        return prerequisitesMet && isIT();
+      }
+      
+      return prerequisitesMet;
+    }
+    
+    return true;
+  };
+
+  // Helper function to get disabled message for subcategory
+  const getDisabledMessage = (subCategory: SubCategory) => {
+    const categoryName = subCategory.name.toLowerCase();
+    
+    const resumeSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('resume'));
+    const resumeProgress = resumeSubCat ? getSubCategoryProgress(resumeSubCat.id) : 0;
+    
+    if (categoryName.includes('linkedin') && resumeProgress < 100) {
+      return 'Complete Resume Building tasks first to unlock LinkedIn Profile';
+    }
+    
+    if (categoryName.includes('digital') || categoryName.includes('github')) {
+      const linkedinSubCat = subCategories.find(sc => sc.name.toLowerCase().includes('linkedin'));
+      const linkedinProgress = linkedinSubCat ? getSubCategoryProgress(linkedinSubCat.id) : 0;
+      
+      if (resumeProgress < 100) {
+        return 'Complete Resume Building tasks first';
+      }
+      
+      if (linkedinProgress < 100) {
+        return 'Complete LinkedIn Profile tasks first';
+      }
+      
+      if (categoryName.includes('digital')) {
+        const hasValidSubscription = profile?.subscription_plan === '6-month' || profile?.subscription_plan === '1-year';
+        if (!hasValidSubscription) {
+          return 'Subscription is required either 6 months or 1 year plan for the digital profile';
+        }
+      }
+      
+      if (categoryName.includes('github')) {
+        if (!isIT()) {
+          return 'GitHub profile is available only for IT professionals';
+        }
+      }
+    }
+    
+    return 'Prerequisites not met';
   };
 
   const initializeSubCategoryTasks = async (subCategoryId: string) => {
@@ -604,55 +688,74 @@ const CareerAssignments = () => {
                   {subCategories.map((subCategory) => {
                      const categoryTasks = getTasksBySubCategory(subCategory.id);
                      const categoryProgress = getSubCategoryProgress(subCategory.id);
+                     const isEnabled = isSubCategoryEnabled(subCategory);
+                     const disabledMessage = !isEnabled ? getDisabledMessage(subCategory) : '';
                     
                     return (
-                      <AccordionItem key={subCategory.id} value={subCategory.id}>
-                        <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                      <AccordionItem key={subCategory.id} value={subCategory.id} className={!isEnabled ? 'opacity-60' : ''}>
+                        <AccordionTrigger className="text-lg font-semibold hover:no-underline" disabled={!isEnabled}>
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-3">
-                              <Target className="w-5 h-5 text-primary" />
-                              <span>{subCategory.name} ({categoryTasks.length} tasks)</span>
+                              {isEnabled ? (
+                                <Target className="w-5 h-5 text-primary" />
+                              ) : (
+                                <Lock className="w-5 h-5 text-muted-foreground" />
+                              )}
+                              <span className={!isEnabled ? 'text-muted-foreground' : ''}>
+                                {subCategory.name} ({categoryTasks.length} tasks)
+                              </span>
                               <Progress value={categoryProgress} className="w-24 h-2" />
                             </div>
                             <Button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                initializeSubCategoryTasks(subCategory.id);
+                                if (isEnabled) {
+                                  initializeSubCategoryTasks(subCategory.id);
+                                }
                               }}
                               size="sm"
                               variant="outline"
-                              disabled={!canAccessFeature("career_assignments")}
+                              disabled={!canAccessFeature("career_assignments") || !isEnabled}
                               className="ml-4"
                             >
                               Initialize Tasks
-                              {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                              {(!canAccessFeature("career_assignments") || !isEnabled) && <Lock className="w-4 h-4 ml-2" />}
                             </Button>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="space-y-4 pt-4">
-                          {categoryTasks.map(assignment => (
-                            <CareerTaskCard
-                              key={assignment.id}
-                              assignment={assignment}
-                              evidence={evidence.filter(e => e.assignment_id === assignment.id)}
-                              onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
-                              onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
-                              isSubmitting={submittingEvidence}
-                            />
-                          ))}
-                          {categoryTasks.length === 0 && (
+                          {!isEnabled ? (
                             <div className="text-center py-8 text-muted-foreground">
-                              <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                              <p>No {subCategory.name.toLowerCase()} tasks assigned yet</p>
-                              <Button 
-                                onClick={handleInitialize} 
-                                className="mt-3"
-                                disabled={!canAccessFeature("career_assignments")}
-                              >
-                                Initialize Tasks
-                                {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
-                              </Button>
+                              <Lock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                              <p className="font-medium">{disabledMessage}</p>
                             </div>
+                          ) : (
+                            <>
+                              {categoryTasks.map(assignment => (
+                                <CareerTaskCard
+                                  key={assignment.id}
+                                  assignment={assignment}
+                                  evidence={evidence.filter(e => e.assignment_id === assignment.id)}
+                                  onSubmitEvidence={canAccessFeature("career_assignments") ? submitEvidence : () => {}}
+                                  onUpdateStatus={canAccessFeature("career_assignments") ? updateAssignmentStatus : () => {}}
+                                  isSubmitting={submittingEvidence}
+                                />
+                              ))}
+                              {categoryTasks.length === 0 && (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                  <p>No {subCategory.name.toLowerCase()} tasks assigned yet</p>
+                                  <Button 
+                                    onClick={handleInitialize} 
+                                    className="mt-3"
+                                    disabled={!canAccessFeature("career_assignments")}
+                                  >
+                                    Initialize Tasks
+                                    {!canAccessFeature("career_assignments") && <Lock className="w-4 h-4 ml-2" />}
+                                  </Button>
+                                </div>
+                              )}
+                            </>
                           )}
                         </AccordionContent>
                       </AccordionItem>
