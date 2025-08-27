@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { JobPipelineKanban } from './JobPipelineKanban';
 import { JobLeadForm } from './JobLeadForm';
 import { useJobHuntingPipeline } from '@/hooks/useJobHuntingPipeline';
 import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JobHunterAssignments } from '@/components/JobHunterAssignments';
 import { JobHunterHistory } from '@/components/JobHunterHistory';
 import { JobHunterSettings } from '@/components/JobHunterSettings';
-import { JobPipelineKanban } from '@/components/JobPipelineKanban';
+import { JobPipelineStats } from '@/components/JobPipelineStats';
 import PremiumProtectedRoute from '@/components/PremiumProtectedRoute';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { AssignmentCardSkeleton } from '@/components/SkeletonLoaders';
@@ -295,47 +295,31 @@ export const JobHuntingAssignments: React.FC = () => {
 
                 {/* Task Categories */}
                 <div className="space-y-6">
+                  {/* Job Pipeline Stats - Moved to top */}
+                  <div className="mb-6">
+                    <JobPipelineStats />
+                  </div>
 
-
-                  {/* All Tasks Section (fallback) */}
-                  {filteredAssignments.length > 0 && (
-                    <Card className="shadow-elegant">
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Briefcase className="h-5 w-5 text-gray-600" />
-                          All Weekly Tasks
-                        </CardTitle>
-                        <CardDescription>
-                          Complete overview of all assigned tasks for this week
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
+                  {/* Assignments List */}
+                  <div className="grid gap-6">
+                    {loading ? (
+                      <div className="grid gap-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <AssignmentCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : (
+                      weekProgress && (
                         <JobHunterAssignments 
                           weekProgress={weekProgress}
-                          assignments={filteredAssignments}
-                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
+                          assignments={assignments}
+                          initializeUserWeek={initializeUserWeek}
                         />
-                      </CardContent>
-                     </Card>
-                   )}
-
-                   {/* Job Pipeline - Single Instance */}
-                   <Card className="shadow-elegant">
-                     <CardHeader>
-                       <CardTitle className="text-lg flex items-center gap-2">
-                         <Briefcase className="h-5 w-5 text-orange-600" />
-                         Job Pipeline
-                       </CardTitle>
-                       <CardDescription>
-                         Track your job applications through different stages of the hiring process
-                       </CardDescription>
-                     </CardHeader>
-                     <CardContent>
-                       <JobPipelineKanban />
-                     </CardContent>
-                   </Card>
-                 </div>
-               </TabsContent>
+                      )
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
 
               {/* History Tab - Period summaries, audit trail */}
               <TabsContent value="history" className="space-y-6">
