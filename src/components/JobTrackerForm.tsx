@@ -33,11 +33,12 @@ interface JobTrackerFormProps {
 
 const statusOptions = [
   { value: 'wishlist', label: 'Wishlist' },
-  { value: 'applying', label: 'Applying' },
   { value: 'applied', label: 'Applied' },
   { value: 'interviewing', label: 'Interviewing' },
   { value: 'negotiating', label: 'Negotiating' },
-  { value: 'accepted', label: 'Accepted' }
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'not_selected', label: 'Not Selected' },
+  { value: 'no_response', label: 'No Response' }
 ];
 
 export const JobTrackerForm = ({ initialData, onSubmit, onCancel }: JobTrackerFormProps) => {

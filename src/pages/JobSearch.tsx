@@ -473,7 +473,7 @@ const JobSearch = () => {
                   const jobStatus = getJobStatus(job);
                   const isInTracker = jobStatus !== null;
                   const isWishlisted = jobStatus === 'wishlist';
-                  const isApplied = jobStatus === 'applied' || jobStatus === 'applying' || jobStatus === 'interviewing' || jobStatus === 'negotiating';
+                  const isApplied = jobStatus === 'applied' || jobStatus === 'interviewing' || jobStatus === 'negotiating';
                   
                   return (
                     <Card key={job.id} className={`hover:shadow-md transition-shadow ${isInTracker ? 'ring-2 ring-primary/20 bg-primary/5' : ''}`}>

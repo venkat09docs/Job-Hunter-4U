@@ -485,7 +485,6 @@ const Dashboard = () => {
       case 'interview':
         return 'default';
       case 'applied':
-      case 'applying':
         return 'secondary';
       case 'rejected':
         return 'destructive';

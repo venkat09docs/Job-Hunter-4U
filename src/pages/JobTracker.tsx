@@ -58,10 +58,9 @@ const JobTracker = () => {
 
   const { incrementActivity } = useJobApplicationActivities();
 
-  const statusOptions = ['wishlist', 'applying', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
+  const statusOptions = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
   const statusColors = {
     wishlist: 'bg-gray-500',
-    applying: 'bg-blue-500',
     applied: 'bg-yellow-500',
     interviewing: 'bg-orange-500',
     negotiating: 'bg-purple-500',
@@ -72,7 +71,6 @@ const JobTracker = () => {
   };
   const statusLabels = {
     wishlist: 'Wishlist',
-    applying: 'Applying',
     applied: 'Applied',
     interviewing: 'Interviewing',
     negotiating: 'Negotiating',
@@ -168,7 +166,7 @@ const JobTracker = () => {
         if (data.status === 'wishlist') {
           await incrementActivity('save_potential_opportunities');
         }
-        if (data.status === 'applying' || data.status === 'applied') {
+        if (data.status === 'applied') {
           await incrementActivity('apply_quality_jobs');
         }
       } catch (e) {
@@ -269,8 +267,8 @@ const JobTracker = () => {
         if (newStatus === 'wishlist' && prevStatus !== 'wishlist') {
           await incrementActivity('save_potential_opportunities');
         }
-        const isApplyNew = (newStatus === 'applying' || newStatus === 'applied');
-        const wasApply = (prevStatus === 'applying' || prevStatus === 'applied');
+        const isApplyNew = (newStatus === 'applied');
+        const wasApply = (prevStatus === 'applied');
         if (isApplyNew && !wasApply) {
           await incrementActivity('apply_quality_jobs');
         }
