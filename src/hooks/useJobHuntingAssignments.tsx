@@ -73,7 +73,13 @@ export const useJobHuntingAssignments = () => {
 
   // Add effect to log assignments changes
   useEffect(() => {
-    console.log('Assignments updated:', assignments);
+    console.log('Assignments updated in hook:', assignments.length, 'assignments');
+    console.log('Assignment details:', assignments.map(a => ({ 
+      id: a.id, 
+      week: a.week_start_date, 
+      title: a.template?.title,
+      status: a.status 
+    })));
   }, [assignments]);
 
   const fetchData = async () => {
@@ -114,21 +120,54 @@ export const useJobHuntingAssignments = () => {
     }
 
     try {
+      console.log('=== FETCH ASSIGNMENTS DEBUG ===');
       console.log('Fetching job hunting assignments for user:', user.id);
       
-      // Use date-fns to get consistent Monday start of week (same as backend should use)
+      // Use exact same logic as backend
       const now = new Date();
-      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dayOfWeek = weekStart.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      console.log('Frontend - Current date:', now.toISOString());
+      console.log('Frontend - Current date local:', now.toString());
+      
+      // Use the same calculation as backend
+      const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dayOfWeek = currentDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      console.log('Frontend - Day of week:', dayOfWeek);
+      
       const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      weekStart.setDate(weekStart.getDate() - daysToSubtract);
+      console.log('Frontend - Days to subtract to get Monday:', daysToSubtract);
+      
+      const weekStart = new Date(currentDate);
+      weekStart.setDate(currentDate.getDate() - daysToSubtract);
       const currentWeekStart = weekStart.toISOString().split('T')[0];
       
-      console.log('Current date:', now.toISOString());
-      console.log('Day of week:', dayOfWeek);
-      console.log('Days to subtract to get Monday:', daysToSubtract);
-      console.log('Calculated current week start (Monday):', currentWeekStart);
+      console.log('Frontend - Calculated week start (Monday):', currentWeekStart);
 
+      // First, let's check ALL assignments for this user to debug
+      console.log('=== CHECKING ALL ASSIGNMENTS FOR USER ===');
+      const { data: allAssignments, error: allError } = await supabase
+        .from('job_hunting_assignments')
+        .select(`
+          id,
+          week_start_date,
+          status,
+          template:job_hunting_task_templates(title)
+        `)
+        .eq('user_id', user.id)
+        .order('week_start_date', { ascending: false });
+
+      if (allError) {
+        console.error('Error fetching all assignments:', allError);
+      } else {
+        console.log('All assignments for user:', allAssignments);
+        if (allAssignments) {
+          allAssignments.forEach(assignment => {
+            console.log(`Assignment ID: ${assignment.id}, Week: ${assignment.week_start_date}, Status: ${assignment.status}, Title: ${assignment.template?.title || 'No title'}`);
+          });
+        }
+      }
+
+      // Now fetch assignments for the calculated week
+      console.log('=== FETCHING ASSIGNMENTS FOR CALCULATED WEEK ===');
       const { data, error } = await supabase
         .from('job_hunting_assignments')
         .select(`
@@ -146,6 +185,32 @@ export const useJobHuntingAssignments = () => {
       
       console.log('Fetched assignments for week', currentWeekStart, ':', data);
       console.log('Number of assignments found:', data ? data.length : 0);
+      
+      // If no assignments found for calculated week, let's try the most recent week
+      if (!data || data.length === 0) {
+        console.log('=== NO ASSIGNMENTS FOUND FOR CALCULATED WEEK, TRYING MOST RECENT ===');
+        if (allAssignments && allAssignments.length > 0) {
+          const mostRecentWeek = allAssignments[0].week_start_date;
+          console.log('Most recent week found:', mostRecentWeek);
+          
+          const { data: recentData, error: recentError } = await supabase
+            .from('job_hunting_assignments')
+            .select(`
+              *,
+              template:job_hunting_task_templates(*)
+            `)
+            .eq('user_id', user.id)
+            .eq('week_start_date', mostRecentWeek)
+            .order('due_date', { ascending: true });
+            
+          if (!recentError && recentData) {
+            console.log('Found assignments for most recent week:', recentData);
+            setAssignments(recentData);
+            return;
+          }
+        }
+      }
+      
       setAssignments(data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);

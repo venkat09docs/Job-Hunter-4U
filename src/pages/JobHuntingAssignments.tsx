@@ -469,14 +469,19 @@ export const JobHuntingAssignments: React.FC = () => {
                            <div>
                              <h3 className="font-semibold text-lg mb-2">No Job Hunting Tasks Found</h3>
                              <p className="text-muted-foreground mb-2">
-                               Initialize your job hunting assignments to see tasks like:
+                               {assignments.length > 0 
+                                 ? `Found ${assignments.length} total assignments, but none for current week. Click Initialize to create new tasks.`
+                                 : 'Initialize your job hunting assignments to see tasks like:'
+                               }
                              </p>
-                             <div className="text-sm text-muted-foreground mb-4 space-y-1">
-                               <p>• Day 5/6/7 follow-up tasks</p>
-                               <p>• Job application tasks</p>
-                               <p>• Networking assignments</p>
-                               <p>• Interview preparation tasks</p>
-                             </div>
+                             {assignments.length === 0 && (
+                               <div className="text-sm text-muted-foreground mb-4 space-y-1">
+                                 <p>• Day 5/6/7 follow-up tasks</p>
+                                 <p>• Job application tasks</p>
+                                 <p>• Networking assignments</p>
+                                 <p>• Interview preparation tasks</p>
+                               </div>
+                             )}
                              <p className="text-xs text-muted-foreground mb-4">
                                {templates.length > 0 
                                  ? `Found ${templates.length} available templates ready to be assigned`
