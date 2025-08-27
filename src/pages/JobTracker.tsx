@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { JobTrackerForm } from '@/components/JobTrackerForm';
 import { DraggableKanbanCard } from '@/components/DraggableKanbanCard';
@@ -62,6 +63,12 @@ const JobTracker = () => {
     job: JobEntry;
     newStatus: string;
   } | null>(null);
+  const [showBackwardMoveAlert, setShowBackwardMoveAlert] = useState(false);
+  const [backwardMoveData, setBackwardMoveData] = useState<{
+    jobId: string;
+    job: JobEntry;
+    newStatus: string;
+  } | null>(null);
 
   const { incrementActivity } = useJobApplicationActivities();
 
@@ -85,6 +92,18 @@ const JobTracker = () => {
     not_selected: 'Not Selected',
     no_response: 'No Response',
     archived: 'Archived'
+  };
+
+  // Helper function to check if backward movement to wishlist is prohibited
+  const isBackwardMoveProhibited = (currentStatus: string, newStatus: string): boolean => {
+    // Prevent moving back to wishlist from any status that comes after applied
+    const progressiveStatuses = ['applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
+    return newStatus === 'wishlist' && progressiveStatuses.includes(currentStatus);
+  };
+
+  // Helper function to get friendly status name for messages
+  const getStatusDisplayName = (status: string): string => {
+    return statusLabels[status as keyof typeof statusLabels] || status;
   };
 
   const getStatusCounts = () => {
@@ -259,6 +278,13 @@ const JobTracker = () => {
     const job = jobs.find(j => j.id === jobId);
     if (!job) return;
     
+    // Check for prohibited backward movement to wishlist
+    if (isBackwardMoveProhibited(job.status, newStatus)) {
+      setBackwardMoveData({ jobId, job, newStatus });
+      setShowBackwardMoveAlert(true);
+      return;
+    }
+    
     // Check if moving from wishlist to applied - require completion of requirements
     if (job.status === 'wishlist' && newStatus === 'applied') {
       setPendingJobMove({ jobId, job, newStatus });
@@ -323,6 +349,13 @@ const JobTracker = () => {
     // Find the job being dragged
     const job = jobs.find(j => j.id === jobId);
     if (!job || job.status === newStatus) {
+      return;
+    }
+    
+    // Check for prohibited backward movement to wishlist
+    if (isBackwardMoveProhibited(job.status, newStatus)) {
+      setBackwardMoveData({ jobId, job, newStatus });
+      setShowBackwardMoveAlert(true);
       return;
     }
     
@@ -822,6 +855,42 @@ const JobTracker = () => {
             job={pendingJobMove.job}
           />
         )}
+
+        {/* Backward Move Warning Alert */}
+        <AlertDialog open={showBackwardMoveAlert} onOpenChange={setShowBackwardMoveAlert}>
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <span className="text-destructive text-lg">⚠️</span>
+                </div>
+                Invalid Status Change
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm text-muted-foreground">
+                {backwardMoveData && (
+                  <>
+                    You cannot move the job <strong>{backwardMoveData.job.job_title}</strong> at{" "}
+                    <strong>{backwardMoveData.job.company_name}</strong> from{" "}
+                    <strong>{getStatusDisplayName(backwardMoveData.job.status)}</strong> back to{" "}
+                    <strong>{getStatusDisplayName(backwardMoveData.newStatus)}</strong>.
+                    <br /><br />
+                    Once a job application has progressed beyond the wishlist stage, it cannot be moved backward to maintain data integrity and proper tracking of your application progress.
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                onClick={() => {
+                  setShowBackwardMoveAlert(false);
+                  setBackwardMoveData(null);
+                }}
+              >
+                Got it, thanks!
+              </AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
