@@ -443,27 +443,67 @@ export const JobHuntingAssignments: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* Task Categories */}
-                <div className="space-y-6">
-                  {/* Assignments List */}
-                  <div className="grid gap-6">
-                    {loading ? (
-                      <div className="grid gap-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <AssignmentCardSkeleton key={i} />
-                        ))}
+                {/* Weekly Assignments Section */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Weekly Assignments
+                    </CardTitle>
+                    <CardDescription>
+                      Initialize and manage your weekly job hunting tasks
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {assignments.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="p-4 bg-muted rounded-full">
+                            <Target className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg mb-2">No Tasks Initialized</h3>
+                            <p className="text-muted-foreground mb-4">
+                              Click the button below to initialize your weekly job hunting tasks
+                            </p>
+                          </div>
+                          <Button 
+                            onClick={initializeUserWeek}
+                            disabled={loading}
+                            className="flex items-center gap-2"
+                          >
+                            {loading ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Zap className="h-4 w-4" />
+                            )}
+                            Initialize Tasks
+                          </Button>
+                        </div>
                       </div>
                     ) : (
-                      weekProgress && (
-                        <JobHunterAssignments 
-                          weekProgress={weekProgress}
-                          assignments={assignments}
-                          initializeUserWeek={initializeUserWeek}
-                        />
-                      )
+                      <div className="space-y-4">
+                        {loading ? (
+                          <div className="grid gap-4">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                              <AssignmentCardSkeleton key={i} />
+                            ))}
+                          </div>
+                        ) : (
+                          <JobHunterAssignments 
+                            weekProgress={weekProgress}
+                            assignments={assignments.filter(assignment => 
+                              ['networking', 'follow-up', 'research', 'application'].includes(
+                                assignment.template?.category?.toLowerCase() || ''
+                              )
+                            )}
+                            initializeUserWeek={initializeUserWeek}
+                          />
+                        )}
+                      </div>
                     )}
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* History Tab - Period summaries, audit trail */}
