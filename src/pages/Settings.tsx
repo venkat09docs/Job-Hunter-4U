@@ -28,6 +28,8 @@ const professionalDetailsSchema = z.object({
   linkedin_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   github_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   leetcode_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  naukri_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  glassdoor_url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
 const usernameSchema = z.object({
@@ -72,6 +74,8 @@ const Settings = () => {
       linkedin_url: profile?.linkedin_url || '',
       github_url: profile?.github_url || '',
       leetcode_url: profile?.leetcode_url || '',
+      naukri_url: (profile as any)?.naukri_url || '',
+      glassdoor_url: (profile as any)?.glassdoor_url || '',
     },
   });
 
@@ -91,6 +95,8 @@ const Settings = () => {
         linkedin_url: profile.linkedin_url || '',
         github_url: profile.github_url || '',
         leetcode_url: profile.leetcode_url || '',
+        naukri_url: (profile as any).naukri_url || '',
+        glassdoor_url: (profile as any).glassdoor_url || '',
       });
       const currentUsername = profile.username || '';
       setOriginalUsername(currentUsername);
@@ -260,6 +266,8 @@ const Settings = () => {
           linkedin_url: data.linkedin_url || null,
           github_url: data.github_url || null,
           leetcode_url: data.leetcode_url || null,
+          naukri_url: data.naukri_url || null,
+          glassdoor_url: data.glassdoor_url || null,
         } as any)
         .eq('user_id', user.id);
 
@@ -514,6 +522,38 @@ const Settings = () => {
                             <FormControl>
                               <Input 
                                 placeholder="https://leetcode.com/your-username" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="naukri_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Naukri URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://www.naukri.com/mnjuser/profile" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={professionalForm.control}
+                        name="glassdoor_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Glassdoor URL</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://www.glassdoor.com/profile/your-profile" 
                                 {...field}
                               />
                             </FormControl>
