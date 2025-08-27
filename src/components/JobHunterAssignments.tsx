@@ -6,6 +6,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Target, Zap } from 'lucide-react';
 import { JobHuntingAssignmentCard } from './JobHuntingAssignmentCard';
+import { DailyJobHuntingSessions } from './DailyJobHuntingSessions';
 
 interface JobHunterAssignmentsProps {
   weekProgress: any;
