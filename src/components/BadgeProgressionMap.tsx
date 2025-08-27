@@ -42,6 +42,7 @@ interface BadgeProgressionMapProps {
   profileViews?: number;
   githubCommits?: number;
   githubRepos?: number;
+  subscriptionPlan?: string | null;
 }
 
 const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
@@ -56,6 +57,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   profileViews = 0,
   githubCommits = 0,
   githubRepos = 0,
+  subscriptionPlan = null,
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
@@ -70,6 +72,11 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
     return awarded;
   };
 
+  // Check if user has premium subscription plan (6-month or 1-year)
+  const hasPremiumPlan = () => {
+    return subscriptionPlan === '6 Months Plan' || subscriptionPlan === '1 Year Plan';
+  };
+
   // Badge unlock logic - progressive unlocking system
   const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
     switch (categoryId) {
@@ -78,8 +85,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (tier === 'bronze') return true;
         // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
         if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
-        // Profile Perfectionist (Gold) - Unlocked only when Silver is completed
-        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
+        // Profile Perfectionist (Gold) - Unlocked only when Silver is completed AND user has premium plan
+        if (tier === 'gold') return calculateProfileProgress('silver') >= 100 && hasPremiumPlan();
         // Profile Elite (Diamond) - Unlocked when gold reaches 100%
         if (tier === 'diamond') return calculateProfileProgress('gold') >= 100;
         return false;
@@ -198,7 +205,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           description: 'Complete your digital profile portfolio',
           tier: 'gold',
           progress: calculateProfileProgress('gold'), // Always show actual progress, not awarded status
-          criteria: 'Complete Digital Profile tasks (100%)',
+          criteria: hasPremiumPlan() ? 'Complete Digital Profile tasks (100%)' : 'Requires 6-month or 1-year plan',
           nextAction: 'Build Portfolio',
           link: '/dashboard/career-assignments',
           code: 'profile_perfectionist'
@@ -463,9 +470,9 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                             <h4 className={`font-semibold text-sm ${isAwarded ? 'text-primary' : (!isUnlocked ? 'text-muted-foreground' : '')}`}>
                               {badge.title} {isAwarded ? '🏆' : ''}
                             </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : 'Complete previous badge to unlock')}
-                            </p>
+                             <p className="text-xs text-muted-foreground">
+                               {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (!hasPremiumPlan() && badge.tier === 'gold' && category.id === 'profile') ? 'Requires 6-month or 1-year subscription plan' : 'Complete previous badge to unlock')}
+                             </p>
                           </div>
 
                           {/* Progress Ring */}
@@ -477,9 +484,9 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                                 '--progress-background': isAwarded || isUnlocked ? tierColor : '#E5E5E5',
                               } as React.CSSProperties}
                             />
-                            <p className="text-xs text-muted-foreground">
-                              {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : 'Unlock requirements not met')}
-                            </p>
+                             <p className="text-xs text-muted-foreground">
+                               {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (!hasPremiumPlan() && badge.tier === 'gold' && category.id === 'profile') ? 'Requires 6-month or 1-year subscription plan' : 'Unlock requirements not met')}
+                             </p>
                           </div>
 
                           {/* Next Action Button */}

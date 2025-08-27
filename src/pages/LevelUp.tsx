@@ -293,19 +293,20 @@ const LevelUp = () => {
 
           {/* Badge Progression Map */}
           <div className="mb-8">
-            <BadgeProgressionMap 
-              resumeProgress={resumeProgress}
-              completedProfileTasks={completedProfileTasks}
-              linkedinProgress={linkedinProgress}
-              linkedinProfileProgress={linkedinProfileProgress}
-              digitalProfileProgress={digitalProfileProgress}
-              githubProgress={githubProgress}
-              jobApplicationsCount={totalJobApplications}
-              networkConnections={networkMetrics?.totalConnections || 0}
-              profileViews={0} // Profile views not available in current metrics
-              githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
-              githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
-            />
+          <BadgeProgressionMap 
+            resumeProgress={resumeProgress}
+            completedProfileTasks={completedProfileTasks}
+            linkedinProgress={linkedinProgress}
+            linkedinProfileProgress={linkedinProfileProgress}
+            digitalProfileProgress={digitalProfileProgress}
+            githubProgress={githubProgress}
+            jobApplicationsCount={totalJobApplications}
+            networkConnections={networkMetrics?.totalConnections || 0}
+            profileViews={0} // Profile views not available in current metrics
+            githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
+            githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
+            subscriptionPlan={profile?.subscription_plan}
+          />
           </div>
         </div>
       </main>
