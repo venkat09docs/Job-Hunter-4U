@@ -138,10 +138,29 @@ const JobTracker = () => {
   const checkRequiredAssignments = async (currentStatus: string, newStatus: string) => {
     if (!user) return { hasUncompleted: false, assignments: [] };
     
+    console.log('DEBUG: Checking assignments for transition:', currentStatus, 'to', newStatus);
+    
     // Check if this is the specific transition we need to validate
     if (currentStatus === 'applied' && newStatus === 'interviewing') {
       try {
-        // Fetch career task assignments that need to be completed for 'applied' status
+        // First, let's check all assignments for this user (more inclusive query for debugging)
+        const { data: allAssignments, error: allError } = await supabase
+          .from('career_task_assignments')
+          .select(`
+            *,
+            career_task_templates (
+              title,
+              description,
+              instructions
+            )
+          `)
+          .eq('user_id', user.id);
+
+        console.log('DEBUG: All assignments found:', allAssignments);
+
+        if (allError) throw allError;
+
+        // Fetch career task assignments that are not completed
         const { data: assignments, error } = await supabase
           .from('career_task_assignments')
           .select(`
@@ -153,17 +172,33 @@ const JobTracker = () => {
             )
           `)
           .eq('user_id', user.id)
-          .eq('status', 'assigned')
-          .gte('due_date', new Date().toISOString());
+          .in('status', ['assigned', 'pending']);
+
+        console.log('DEBUG: Non-completed assignments:', assignments);
 
         if (error) throw error;
 
-        // Filter assignments related to job application process
-        const relevantAssignments = (assignments || []).filter((assignment: any) => 
-          assignment.career_task_templates?.title?.toLowerCase().includes('interview') ||
-          assignment.career_task_templates?.title?.toLowerCase().includes('preparation') ||
-          assignment.career_task_templates?.description?.toLowerCase().includes('interview')
-        );
+        // Filter assignments related to job application process or interview preparation
+        const relevantAssignments = (assignments || []).filter((assignment: any) => {
+          const title = assignment.career_task_templates?.title?.toLowerCase() || '';
+          const description = assignment.career_task_templates?.description?.toLowerCase() || '';
+          
+          const isRelevant = title.includes('interview') ||
+                            title.includes('preparation') ||
+                            title.includes('apply') ||
+                            title.includes('application') ||
+                            description.includes('interview') ||
+                            description.includes('preparation');
+          
+          console.log('DEBUG: Assignment relevance check:', {
+            title: assignment.career_task_templates?.title,
+            isRelevant
+          });
+          
+          return isRelevant;
+        });
+
+        console.log('DEBUG: Relevant assignments:', relevantAssignments);
 
         return {
           hasUncompleted: relevantAssignments.length > 0,
