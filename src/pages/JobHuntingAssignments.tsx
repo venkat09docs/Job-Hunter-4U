@@ -247,7 +247,7 @@ export const JobHuntingAssignments: React.FC = () => {
             )}
             
             {/* Progress Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
@@ -263,23 +263,6 @@ export const JobHuntingAssignments: React.FC = () => {
                         value={weekProgress.total > 0 ? (weekProgress.completed / weekProgress.total) * 100 : 0} 
                         className="mt-2 h-2"
                       />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Trophy className="h-6 w-6 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                      <p className="text-2xl font-bold">{totalPoints}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        +{weekProgress.totalPoints} this week
-                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -342,7 +325,25 @@ export const JobHuntingAssignments: React.FC = () => {
 
               {/* Assignments Tab - Weekly quotas + Per-job tasks + Pipeline */}
               <TabsContent value="assignments" className="space-y-6">
-                {/* Job Pipeline - Moved to very top */}
+                {/* Total Points Card - Moved from Progress Overview */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-100 rounded-lg">
+                        <Trophy className="h-6 w-6 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Total Points</p>
+                        <p className="text-2xl font-bold">{totalPoints}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          +{weekProgress.totalPoints} this week
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Job Pipeline Section */}
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
