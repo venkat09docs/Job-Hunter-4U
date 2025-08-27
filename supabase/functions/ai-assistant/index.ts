@@ -20,10 +20,15 @@ serve(async (req) => {
   try {
     const { message, userId, context } = await req.json();
     
-    console.log('AI assistant request received:', { message, userId, context });
+    console.log('🎯 AI Assistant Request:', { 
+      message: message?.substring(0, 100) + '...', 
+      userId, 
+      context,
+      timestamp: new Date().toISOString()
+    });
 
     if (!userId) {
-      console.log('Error: No userId provided');
+      console.error('❌ No userId provided in request');
       return new Response(JSON.stringify({ 
         error: 'User authentication required to use AI Assistant.' 
       }), {
@@ -32,78 +37,102 @@ serve(async (req) => {
       });
     }
 
-    console.log('Fetching user profile and role...');
+    console.log('🔍 Starting user verification for:', userId);
     
-    // Check user subscription status and role with better error handling
+    // Initialize variables
     let profile = null;
     let userRole = null;
-    let hasActiveSubscription = false;
     let isAdmin = false;
-    
-    try {
-      console.log('Attempting to fetch profile...');
-      const profileResult = await supabase
-        .from('profiles')
-        .select('subscription_status, subscription_tier, subscription_active, industry, resume_completion_percentage')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      console.log('Profile query result:', { data: profileResult.data, error: profileResult.error });
-      
-      if (profileResult.error) {
-        console.error('Profile fetch error:', profileResult.error);
-        // Continue without profile data rather than failing
-      } else {
-        profile = profileResult.data;
-        // Check subscription status from multiple possible fields
-        hasActiveSubscription = profile?.subscription_active === true || 
-                               profile?.subscription_status === 'active';
-        console.log('Profile found:', { hasActiveSubscription, subscriptionActive: profile?.subscription_active, subscriptionStatus: profile?.subscription_status });
-      }
-    } catch (error) {
-      console.error('Profile fetch exception:', error);
-      // Continue without profile data
-    }
+    let hasActiveSubscription = false;
 
+    // Step 1: Check user role (admin check)
+    console.log('📋 Checking user role...');
     try {
-      console.log('Attempting to fetch user role...');
       const roleResult = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .maybeSingle();
+        .single();
       
-      console.log('Role query result:', { data: roleResult.data, error: roleResult.error });
+      console.log('📋 Role query result:', { 
+        data: roleResult.data, 
+        error: roleResult.error?.message || 'none' 
+      });
       
-      if (roleResult.error) {
-        console.error('Role fetch error:', roleResult.error);
-        // Continue without role data
-      } else {
+      if (roleResult.data?.role) {
         userRole = roleResult.data;
-        isAdmin = userRole?.role === 'admin';
-        console.log('Role found:', { role: userRole?.role, isAdmin });
+        isAdmin = roleResult.data.role === 'admin';
+        console.log('✅ User role found:', { role: userRole.role, isAdmin });
+      } else if (roleResult.error) {
+        console.warn('⚠️ Role query error:', roleResult.error.message);
+      } else {
+        console.log('ℹ️ No role found for user, treating as regular user');
       }
     } catch (error) {
-      console.error('Role fetch exception:', error);
-      // Continue without role data
+      console.error('❌ Role fetch exception:', error);
     }
 
-    console.log('Final access check:', { 
+    // Step 2: Check user profile and subscription
+    console.log('👤 Checking user profile and subscription...');
+    try {
+      const profileResult = await supabase
+        .from('profiles')
+        .select('user_id, subscription_status, subscription_active, subscription_plan, industry')
+        .eq('user_id', userId)
+        .single();
+      
+      console.log('👤 Profile query result:', { 
+        data: profileResult.data, 
+        error: profileResult.error?.message || 'none' 
+      });
+      
+      if (profileResult.data) {
+        profile = profileResult.data;
+        hasActiveSubscription = profile.subscription_active === true || 
+                               profile.subscription_status === 'active';
+        console.log('✅ Profile found:', { 
+          hasActiveSubscription, 
+          subscriptionActive: profile.subscription_active, 
+          subscriptionStatus: profile.subscription_status,
+          subscriptionPlan: profile.subscription_plan
+        });
+      } else if (profileResult.error) {
+        console.warn('⚠️ Profile query error:', profileResult.error.message);
+      }
+    } catch (error) {
+      console.error('❌ Profile fetch exception:', error);
+    }
+
+    // Step 3: Access control decision
+    console.log('🔐 Making access control decision:', { 
       isAdmin, 
-      hasActiveSubscription, 
+      hasActiveSubscription,
       profileExists: !!profile,
       roleExists: !!userRole 
     });
 
-    // Allow access for admins OR users with active subscription OR as fallback for any authenticated user
-    if (!isAdmin && !hasActiveSubscription) {
-      console.log('Access granted as fallback for authenticated user (will be limited)');
-      // Don't block access, but provide limited functionality
+    // Allow access for admins OR users with active subscription
+    if (isAdmin) {
+      console.log('✅ Access granted: User is admin');
+    } else if (hasActiveSubscription) {
+      console.log('✅ Access granted: User has active subscription');
     } else {
-      console.log('Access granted - admin or active subscription confirmed');
+      console.log('❌ Access denied: Not admin and no active subscription');
+      return new Response(JSON.stringify({ 
+        error: 'AI Assistant is available only for subscribed users. Please upgrade your plan to access this feature.',
+        details: {
+          isAdmin: false,
+          hasActiveSubscription: false,
+          profileFound: !!profile,
+          subscriptionStatus: profile?.subscription_status || 'unknown'
+        }
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('Proceeding to fetch user data...');
+    console.log('📊 Proceeding to fetch user data for contextual responses...');
 
     // Fetch user data for contextual responses with individual try-catch
     let userPointsRes = { data: [] };
