@@ -22,8 +22,6 @@ import {
   Trophy, 
   Calendar, 
   TrendingUp,
-  Users,
-  Award,
   Zap,
   RefreshCw,
   CheckCircle,
@@ -336,83 +334,6 @@ export const JobHuntingAssignments: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Networking Activities */}
-                  <Card className="shadow-elegant">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Users className="h-5 w-5 text-green-600" />
-                        Networking Activities
-                        <Badge variant="outline" className="ml-auto">
-                          {filteredAssignments.filter(a => a.template?.category === 'networking' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'networking').length}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        Professional networking and relationship building tasks
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {filteredAssignments.filter(a => a.template?.category === 'networking').length > 0 ? (
-                        <JobHunterAssignments 
-                          weekProgress={weekProgress}
-                          assignments={filteredAssignments.filter(a => a.template?.category === 'networking')}
-                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
-                        />
-                      ) : (
-                        <div className="text-center py-8">
-                          <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">No networking tasks assigned this week</p>
-                          <Button
-                            onClick={initializeUserWeek}
-                            disabled={!canAccessFeature("job_hunting_assignments")}
-                            className="mt-4"
-                          >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Generate Weekly Tasks
-                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Profile Optimization */}
-                  <Card className="shadow-elegant">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Award className="h-5 w-5 text-purple-600" />
-                        Profile Optimization
-                        <Badge variant="outline" className="ml-auto">
-                          {filteredAssignments.filter(a => a.template?.category === 'profile' && a.status === 'verified').length} / {filteredAssignments.filter(a => a.template?.category === 'profile').length}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        Improve your online presence and professional profiles
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {filteredAssignments.filter(a => a.template?.category === 'profile').length > 0 ? (
-                        <JobHunterAssignments 
-                          weekProgress={weekProgress}
-                          assignments={filteredAssignments.filter(a => a.template?.category === 'profile')}
-                          initializeUserWeek={canAccessFeature("job_hunting_assignments") ? initializeUserWeek : () => {}}
-                        />
-                      ) : (
-                        <div className="text-center py-8">
-                          <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">No profile optimization tasks assigned this week</p>
-                          <Button
-                            onClick={initializeUserWeek}
-                            disabled={!canAccessFeature("job_hunting_assignments")}
-                            className="mt-4"
-                          >
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                            Generate Weekly Tasks
-                            {!canAccessFeature("job_hunting_assignments") && <Lock className="h-4 w-4 ml-2" />}
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
 
                   {/* All Tasks Section (fallback) */}
                   {filteredAssignments.length > 0 && (
