@@ -67,6 +67,7 @@ const VALID_PROFILE_CATEGORIES = [
 export default function ManageAssignments() {
   const { isAdmin, loading } = useRole();
   const [activeCategory, setActiveCategory] = useState('profile');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +101,11 @@ export default function ManageAssignments() {
       fetchData();
     }
   }, [isAdmin, activeCategory]);
+
+  useEffect(() => {
+    // Reset sub-category filter when changing main category
+    setSelectedSubCategory('all');
+  }, [activeCategory]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -800,9 +806,33 @@ export default function ManageAssignments() {
                 {/* Assignments Section */}
                 <Card>
                    <CardHeader>
-                     <CardTitle>Assignments</CardTitle>
+                     <div className="flex justify-between items-center">
+                       <CardTitle>Assignments</CardTitle>
+                       {/* Show subcategory filter only for job_hunter */}
+                       {activeCategory === 'job_hunter' && subCategories.length > 0 && (
+                         <div className="flex items-center gap-2">
+                           <Label htmlFor="subcategory-filter" className="text-sm font-medium">Filter by:</Label>
+                           <Select
+                             value={selectedSubCategory}
+                             onValueChange={setSelectedSubCategory}
+                           >
+                             <SelectTrigger className="w-[180px]">
+                               <SelectValue placeholder="All Categories" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="all">All Categories</SelectItem>
+                               {subCategories.map((subCategory) => (
+                                 <SelectItem key={subCategory.id} value={subCategory.id}>
+                                   {subCategory.name}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                       )}
+                     </div>
                    </CardHeader>
-                  <CardContent>
+                   <CardContent>
                     {isLoading ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -810,64 +840,84 @@ export default function ManageAssignments() {
                       </div>
                     ) : (
                        <div className="space-y-4">
-                         {assignments.map((assignment) => (
-                           <div key={assignment.id} className="p-4 border rounded-lg">
-                             <div className="flex justify-between items-start mb-2">
-                               <div className="flex-1">
-                                 <div className="flex items-center gap-2 mb-1">
-                                   <h4 className="font-medium">{assignment.title}</h4>
-                                   {assignment.category === 'interview_preparation' && (
-                                     <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                       Interview Prep
-                                     </Badge>
-                                   )}
-                                 </div>
-                                 <p className="text-sm text-muted-foreground mb-2">
-                                   {assignment.description}
-                                 </p>
-                                 <div className="flex gap-2 flex-wrap">
-                                   <Badge variant="outline">{assignment.category}</Badge>
-                                   {assignment.points_reward && (
-                                     <Badge variant="secondary">{assignment.points_reward} pts</Badge>
-                                   )}
-                                   {assignment.difficulty && (
-                                     <Badge variant="outline">{assignment.difficulty}</Badge>
-                                   )}
-                                   <Badge variant={assignment.is_active ? "default" : "secondary"}>
-                                     {assignment.is_active ? "Active" : "Inactive"}
-                                   </Badge>
-                                   {assignment.source && (
-                                     <Badge variant="outline" className="text-xs">
-                                       {assignment.source === 'career_task_templates' ? 'Career Tasks' : 'Job Hunter Tasks'}
-                                     </Badge>
-                                   )}
-                                 </div>
-                               </div>
-                               <div className="flex gap-2">
-                                 <Button 
-                                   size="sm" 
-                                   variant="outline"
-                                   onClick={() => startEditAssignment(assignment)}
-                                 >
-                                   <Edit className="h-3 w-3" />
-                                 </Button>
-                                 <Button 
-                                   size="sm" 
-                                   variant="outline"
-                                   onClick={() => handleDeleteAssignment(assignment.id)}
-                                 >
-                                   <Trash2 className="h-3 w-3" />
-                                 </Button>
-                               </div>
-                             </div>
-                           </div>
-                        ))}
-                         {assignments.length === 0 && (
+                         {assignments
+                           .filter(assignment => {
+                             // Filter by selected subcategory for job_hunter
+                             if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
+                               return assignment.sub_category_id === selectedSubCategory;
+                             }
+                             return true;
+                           })
+                           .map((assignment) => (
+                            <div key={assignment.id} className="p-4 border rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-medium">{assignment.title}</h4>
+                                    {assignment.category === 'interview_preparation' && (
+                                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                        Interview Prep
+                                      </Badge>
+                                    )}
+                                    {/* Show subcategory badge for job_hunter assignments */}
+                                    {activeCategory === 'job_hunter' && assignment.sub_category_id && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        {subCategories.find(sc => sc.id === assignment.sub_category_id)?.name || 'Uncategorized'}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    {assignment.description}
+                                  </p>
+                                  <div className="flex gap-2 flex-wrap">
+                                    <Badge variant="outline">{assignment.category}</Badge>
+                                    {assignment.points_reward && (
+                                      <Badge variant="secondary">{assignment.points_reward} pts</Badge>
+                                    )}
+                                    {assignment.difficulty && (
+                                      <Badge variant="outline">{assignment.difficulty}</Badge>
+                                    )}
+                                    <Badge variant={assignment.is_active ? "default" : "secondary"}>
+                                      {assignment.is_active ? "Active" : "Inactive"}
+                                    </Badge>
+                                    {assignment.source && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {assignment.source === 'career_task_templates' ? 'Career Tasks' : 'Job Hunter Tasks'}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => startEditAssignment(assignment)}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => handleDeleteAssignment(assignment.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                         ))}
+                         {assignments
+                           .filter(assignment => {
+                             if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
+                               return assignment.sub_category_id === selectedSubCategory;
+                             }
+                             return true;
+                           }).length === 0 && (
                            <div className="text-center py-8 text-muted-foreground">
-                             No assignments found. Create one to get started.
+                             {selectedSubCategory !== 'all' ? 'No assignments found in this category.' : 'No assignments found. Create one to get started.'}
                            </div>
                          )}
-                      </div>
+                       </div>
                     )}
                   </CardContent>
                 </Card>
