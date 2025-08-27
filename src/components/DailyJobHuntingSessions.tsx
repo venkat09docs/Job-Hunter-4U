@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target, MapPin } from 'lucide-react';
+import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { useDailyJobHuntingSessions } from '@/hooks/useDailyJobHuntingSessions';
 
 interface SessionTask {
   id: string;
@@ -34,15 +34,17 @@ interface DailyActivity {
 
 export const DailyJobHuntingSessions: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const { getDailyStats, getSessionStatus, completeSession, loading } = useDailyJobHuntingSessions();
 
-  // Generate current week (Mon-Sat)
+  // Generate current week (Mon-Sat) with real session data
   const currentWeek = React.useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const days: DailyActivity[] = [];
     
-    for (let i = 0; i < 6; i++) { // Mon-Sat
+    for (let i = 0; i < 6; i++) {
       const date = addDays(weekStart, i);
       const dayKey = format(date, 'yyyy-MM-dd');
+      const dailyStats = getDailyStats(dayKey);
       
       const sessions: DailySession[] = [
         {
@@ -51,6 +53,10 @@ export const DailyJobHuntingSessions: React.FC = () => {
           timeRange: '9:00 - 10:00 AM',
           duration: '30-45 min',
           icon: Sun,
+          completed: !!getSessionStatus(dayKey, 'morning')?.completed,
+          completedAt: getSessionStatus(dayKey, 'morning')?.completed_at 
+            ? new Date(getSessionStatus(dayKey, 'morning')!.completed_at!) 
+            : undefined,
           tasks: [
             { id: 'check-portals', description: 'Check all job portals (Naukri, Indeed, Foundit, LinkedIn Jobs)' },
             { id: 'apply-jobs', description: 'Apply to relevant jobs with customized resume/cover letter' },
@@ -63,6 +69,10 @@ export const DailyJobHuntingSessions: React.FC = () => {
           timeRange: '2:00 - 2:20 PM',
           duration: '15-20 min',
           icon: Sunset,
+          completed: !!getSessionStatus(dayKey, 'afternoon')?.completed,
+          completedAt: getSessionStatus(dayKey, 'afternoon')?.completed_at 
+            ? new Date(getSessionStatus(dayKey, 'afternoon')!.completed_at!) 
+            : undefined,
           tasks: [
             { id: 'recheck-portals', description: 'Re-check for new job postings since morning' },
             { id: 'apply-new', description: 'Apply immediately to any new relevant jobs' },
@@ -75,6 +85,10 @@ export const DailyJobHuntingSessions: React.FC = () => {
           timeRange: '6:00 - 6:20 PM',
           duration: '15-20 min',
           icon: Moon,
+          completed: !!getSessionStatus(dayKey, 'evening')?.completed,
+          completedAt: getSessionStatus(dayKey, 'evening')?.completed_at 
+            ? new Date(getSessionStatus(dayKey, 'evening')!.completed_at!) 
+            : undefined,
           tasks: [
             { id: 'review-applications', description: 'Review all applications done today' },
             { id: 'add-recruiter', description: 'Add recruiter details if available' },
@@ -83,19 +97,21 @@ export const DailyJobHuntingSessions: React.FC = () => {
         }
       ];
       
-      const completedSessions = sessions.filter(s => s.completed).length;
-      
       days.push({
         date,
         dayName: format(date, 'EEEE'),
         sessions,
         totalSessions: 3,
-        completedSessions
+        completedSessions: dailyStats.completed
       });
     }
     
     return days;
-  }, []);
+  }, [getDailyStats, getSessionStatus]);
+
+  const handleCompleteSession = async (dayKey: string, sessionType: 'morning' | 'afternoon' | 'evening') => {
+    await completeSession(dayKey, sessionType);
+  };
 
   const toggleDay = (dayKey: string) => {
     const newExpanded = new Set(expandedDays);

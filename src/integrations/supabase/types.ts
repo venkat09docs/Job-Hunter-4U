@@ -555,6 +555,45 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_job_hunting_sessions: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          session_date: string
+          session_type: string
+          tasks_completed: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date: string
+          session_type: string
+          tasks_completed?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          session_date?: string
+          session_type?: string
+          tasks_completed?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_progress_snapshots: {
         Row: {
           created_at: string
