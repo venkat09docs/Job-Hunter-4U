@@ -1,10 +1,15 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -17,53 +22,202 @@ serve(async (req) => {
     
     console.log('AI assistant request:', { message, userId, context });
 
-    // Enhanced AI assistant with comprehensive career guidance
-    let aiResponse = '';
+    if (!userId) {
+      return new Response(JSON.stringify({ 
+        error: 'User authentication required to use AI Assistant.' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check user subscription status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status, subscription_tier, industry')
+      .eq('id', userId)
+      .single();
+
+    if (!profile || !profile.subscription_status || profile.subscription_status === 'inactive') {
+      return new Response(JSON.stringify({ 
+        error: 'AI Assistant is available only for subscribed users. Please upgrade your plan to access this feature.' 
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Fetch user data for contextual responses
+    const [userPointsRes, jobsRes, linkedinProgressRes, resumeProgressRes, githubProgressRes, assignmentsRes] = await Promise.all([
+      // User points
+      supabase
+        .from('user_activity_points')
+        .select('points_earned')
+        .eq('user_id', userId),
+      
+      // Job applications
+      supabase
+        .from('job_applications')
+        .select('status, company, position')
+        .eq('user_id', userId)
+        .limit(10),
+      
+      // LinkedIn progress
+      supabase
+        .from('linkedin_progress')
+        .select('*')
+        .eq('user_id', userId),
+      
+      // Resume progress
+      supabase
+        .from('resume_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .single(),
+      
+      // GitHub progress
+      supabase
+        .from('github_progress')
+        .select('*')
+        .eq('user_id', userId),
+      
+      // Career assignments
+      supabase
+        .from('career_assignments')
+        .select('title, category, completed, due_date')
+        .eq('user_id', userId)
+        .limit(5)
+    ]);
+
+    const totalPoints = userPointsRes.data?.reduce((sum, record) => sum + (record.points_earned || 0), 0) || 0;
+    const jobs = jobsRes.data || [];
+    const linkedinProgress = linkedinProgressRes.data || [];
+    const resumeProgress = resumeProgressRes.data;
+    const githubProgress = githubProgressRes.data || [];
+    const assignments = assignmentsRes.data || [];
+
+    // Calculate progress statistics
+    const completedLinkedInTasks = linkedinProgress.filter(task => task.completed).length;
+    const totalLinkedInTasks = linkedinProgress.length;
+    const linkedinProgressPercent = totalLinkedInTasks > 0 ? Math.round((completedLinkedInTasks / totalLinkedInTasks) * 100) : 0;
     
+    const resumeProgressPercent = resumeProgress?.completion_percentage || 0;
+    
+    const completedAssignments = assignments.filter(a => a.completed).length;
+    const totalAssignments = assignments.length;
+    
+    const jobsByStatus = jobs.reduce((acc, job) => {
+      acc[job.status] = (acc[job.status] || 0) + 1;
+      return acc;
+    }, {});
+
     const lowerMessage = message.toLowerCase();
-    
+    let aiResponse = '';
+
+    // Enhanced AI responses with contextual data
     if (lowerMessage.includes('resume') || lowerMessage.includes('cv')) {
-      if (lowerMessage.includes('build') || lowerMessage.includes('create')) {
-        aiResponse = "🚀 **Resume Building Tips:**\n\n**Using our Resume Builder:**\n• Navigate to 'Resume Builder' in your dashboard\n• Use our templates for ATS-friendly formatting\n• Include sections: Contact, Summary, Experience, Education, Skills\n\n**Content Tips:**\n• Use action verbs (achieved, implemented, led)\n• Quantify achievements (increased sales by 25%)\n• Tailor keywords for each job application\n• Keep it 1-2 pages maximum\n\n**Pro Tip:** Use our 'Build My Profile' section to track completion percentage and earn points!";
-      } else if (lowerMessage.includes('optimize') || lowerMessage.includes('improve')) {
-        aiResponse = "📈 **Resume Optimization:**\n\n• Use our Resume Progress tracking in 'Build My Profile'\n• Include relevant keywords from job descriptions\n• Use bullet points with measurable results\n• Ensure consistent formatting and no typos\n• Add relevant certifications and projects\n\n**ATS Tips:**\n• Use standard section headers\n• Avoid graphics and complex formatting\n• Save as both PDF and Word formats\n\n**Track Progress:** Check your resume completion percentage in the dashboard!";
+      if (lowerMessage.includes('progress') || lowerMessage.includes('status')) {
+        aiResponse = `📝 **Your Resume Progress:**\n\n**Current Status:** ${resumeProgressPercent}% complete\n\n`;
+        if (resumeProgressPercent < 50) {
+          aiResponse += "🚨 **Action Required:** Your resume needs attention!\n• Visit 'Resume Builder' to continue building\n• Complete missing sections for better ATS compatibility\n• Aim for at least 80% completion\n\n**Next Steps:**\n• Add work experience details\n• Include relevant skills and certifications\n• Write a compelling summary";
+        } else if (resumeProgressPercent < 80) {
+          aiResponse += "📈 **Good Progress!** You're halfway there!\n• Complete remaining sections\n• Review and optimize existing content\n• Add quantifiable achievements\n\n**Tips:**\n• Use action verbs and numbers\n• Tailor keywords for your target roles\n• Proofread for errors";
+        } else {
+          aiResponse += "🎉 **Excellent Work!** Your resume is almost complete!\n• Review all sections for accuracy\n• Customize for each job application\n• Download in multiple formats\n\n**Pro Tips:**\n• Create role-specific versions\n• Update regularly with new achievements\n• Test ATS compatibility";
+        }
       } else {
-        aiResponse = "📝 **Resume Help:**\n\nI can help you with:\n• Building a resume using our Resume Builder\n• Optimizing content for ATS systems\n• Formatting and structure advice\n• Industry-specific tips\n\nWhat specific aspect would you like help with? (building, optimizing, formatting, or reviewing)";
+        aiResponse = `📝 **Resume Building Help:**\n\n**Your Current Progress:** ${resumeProgressPercent}% complete\n\n**Our Resume Builder Features:**\n• ATS-friendly templates\n• Real-time completion tracking\n• Multiple export formats (PDF, Word)\n• Industry-specific guidance\n\n**Best Practices:**\n• Use bullet points with measurable results\n• Include relevant keywords from job descriptions\n• Keep it 1-2 pages maximum\n• Professional formatting and layout\n\n**Track Progress:** Visit 'Build My Profile' to see your completion percentage and earn points!`;
       }
     } else if (lowerMessage.includes('linkedin')) {
-      if (lowerMessage.includes('profile') || lowerMessage.includes('optimize')) {
-        aiResponse = "💼 **LinkedIn Profile Optimization:**\n\n**Using our LinkedIn Tools:**\n• Visit 'LinkedIn Optimization' in your dashboard\n• Use our LinkedIn task tracker for daily activities\n• Complete weekly assignments for networking growth\n\n**Profile Essentials:**\n• Professional headshot (increases profile views by 14x)\n• Compelling headline with keywords\n• Detailed summary showcasing your value\n• Complete all sections (education, experience, skills)\n• Get recommendations and endorsements\n\n**Daily Activities (track in our app):**\n• Post industry-relevant content\n• Engage with others' posts\n• Send personalized connection requests\n• Join relevant groups and participate";
-      } else if (lowerMessage.includes('network') || lowerMessage.includes('connect')) {
-        aiResponse = "🤝 **LinkedIn Networking Strategy:**\n\n**Use our LinkedIn Growth Tools:**\n• Track daily networking activities in your dashboard\n• Complete weekly networking assignments\n• Monitor connection growth metrics\n\n**Effective Networking:**\n• Send 5-10 personalized connection requests daily\n• Engage with posts before connecting\n• Follow up with valuable content or insights\n• Attend virtual events and connect with speakers\n• Join industry-specific LinkedIn groups\n\n**Message Templates:** Use our saved templates in the LinkedIn section for consistent outreach!";
+      if (lowerMessage.includes('progress') || lowerMessage.includes('status')) {
+        aiResponse = `💼 **Your LinkedIn Progress:**\n\n**Tasks Completed:** ${completedLinkedInTasks}/${totalLinkedInTasks} (${linkedinProgressPercent}%)\n\n`;
+        if (linkedinProgressPercent < 50) {
+          aiResponse += "🚨 **Needs Attention:** Your LinkedIn profile needs work!\n• Complete daily LinkedIn activities\n• Optimize profile sections\n• Start networking consistently\n\n**Immediate Actions:**\n• Update headline and summary\n• Add professional photo\n• Complete experience section\n• Start connecting with industry professionals";
+        } else {
+          aiResponse += "📈 **Great Progress!** Keep up the momentum!\n• Continue daily networking activities\n• Engage with industry content\n• Share valuable insights\n\n**Advanced Tips:**\n• Join relevant LinkedIn groups\n• Publish articles in your expertise area\n• Request recommendations from colleagues\n• Use LinkedIn messaging for warm outreach";
+        }
       } else {
-        aiResponse = "🔗 **LinkedIn Assistance:**\n\nI can help you with:\n• Profile optimization strategies\n• Networking and connection building\n• Content creation tips\n• Job search through LinkedIn\n• Using our LinkedIn tracking tools\n\nWhat aspect of LinkedIn would you like to focus on?";
+        aiResponse = `💼 **LinkedIn Optimization Help:**\n\n**Your Progress:** ${linkedinProgressPercent}% LinkedIn tasks completed\n\n**Our LinkedIn Tools:**\n• Daily activity tracker\n• Weekly networking assignments\n• Connection growth monitoring\n• Content engagement metrics\n\n**Optimization Checklist:**\n✓ Professional headshot (14x more profile views)\n✓ Compelling headline with keywords\n✓ Detailed summary (3-5 sentences)\n✓ Complete work experience\n✓ Skills and endorsements\n✓ Regular content posting\n\n**Daily Activities:** Use our tracker to monitor networking progress!`;
       }
-    } else if (lowerMessage.includes('github')) {
-      aiResponse = "💻 **GitHub Profile Enhancement:**\n\n**Using our GitHub Tools:**\n• Access 'GitHub Optimization' for profile tracking\n• Complete weekly coding assignments\n• Track repository contributions in your dashboard\n\n**Profile Optimization:**\n• Create a compelling README for your profile\n• Pin your best repositories (max 6)\n• Use descriptive repository names and descriptions\n• Include live demo links and screenshots\n• Write clear documentation and setup instructions\n\n**Activity Tips:**\n• Commit code regularly (green squares matter!)\n• Contribute to open-source projects\n• Create diverse projects showcasing different skills\n• Use meaningful commit messages\n\n**Track Progress:** Monitor your GitHub activity and earn points in our GitHub tracking section!";
+    } else if (lowerMessage.includes('github') && profile.industry === 'IT') {
+      const completedGitHubTasks = githubProgress.filter(task => task.completed).length;
+      const githubProgressPercent = githubProgress.length > 0 ? Math.round((completedGitHubTasks / githubProgress.length) * 100) : 0;
+      
+      aiResponse = `💻 **GitHub Profile Enhancement:**\n\n**Your Progress:** ${githubProgressPercent}% GitHub tasks completed\n\n**Our GitHub Tools:**\n• Weekly coding assignments\n• Repository tracking\n• Contribution monitoring\n• Profile optimization guidance\n\n**Profile Optimization:**\n• Create compelling profile README\n• Pin your best 6 repositories\n• Use descriptive repo names and descriptions\n• Include live demo links\n• Write clear documentation\n\n**Activity Tips:**\n• Commit code regularly (green squares!)\n• Contribute to open-source projects\n• Showcase diverse skill sets\n• Use meaningful commit messages\n\n**Track Progress:** Monitor your GitHub activity in our dashboard!`;
     } else if (lowerMessage.includes('job') && (lowerMessage.includes('search') || lowerMessage.includes('hunt') || lowerMessage.includes('application'))) {
-      if (lowerMessage.includes('track') || lowerMessage.includes('manage')) {
-        aiResponse = "📊 **Job Application Tracking:**\n\n**Use our Job Tracker:**\n• Navigate to 'Job Tracker' in your dashboard\n• Track applications through different stages\n• Set follow-up reminders\n• Monitor application success rates\n\n**Application Strategy:**\n• Apply to 5-10 jobs daily\n• Customize resume for each application\n• Write tailored cover letters\n• Follow up after 1 week if no response\n• Track metrics: applications sent, interviews, offers\n\n**Internal Opportunities:** Check 'Find Your Next Role' for exclusive job postings from partner companies!";
-      } else if (lowerMessage.includes('internal') || lowerMessage.includes('opportunity')) {
-        aiResponse = "🎯 **Internal Job Opportunities:**\n\n**Access Exclusive Jobs:**\n• Visit 'Find Your Next Role' → 'Internal Job Opportunities'\n• Browse curated positions from our partner network\n• Apply directly through our platform\n• Track application status in real-time\n\n**Application Tips:**\n• Read job descriptions carefully\n• Note application deadlines\n• Tailor your application to each role\n• Use our resume builder for consistent formatting\n\n**Advantage:** These positions often have higher response rates and faster hiring processes!";
+      const totalJobs = jobs.length;
+      if (lowerMessage.includes('progress') || lowerMessage.includes('status')) {
+        aiResponse = `📊 **Your Job Search Progress:**\n\n**Applications Submitted:** ${totalJobs}\n`;
+        if (jobsByStatus.wishlist) aiResponse += `• Wishlist: ${jobsByStatus.wishlist}\n`;
+        if (jobsByStatus.applied) aiResponse += `• Applied: ${jobsByStatus.applied}\n`;
+        if (jobsByStatus.interviewing) aiResponse += `• Interviewing: ${jobsByStatus.interviewing}\n`;
+        if (jobsByStatus.offered) aiResponse += `• Offers: ${jobsByStatus.offered}\n`;
+        if (jobsByStatus.rejected) aiResponse += `• Rejected: ${jobsByStatus.rejected}\n`;
+        
+        aiResponse += `\n**Recent Applications:**\n`;
+        jobs.slice(0, 3).forEach(job => {
+          aiResponse += `• ${job.position} at ${job.company} - ${job.status}\n`;
+        });
+        
+        if (totalJobs < 10) {
+          aiResponse += `\n🚨 **Action Needed:** Apply to more positions!\n• Target: 5-10 applications daily\n• Use our Job Tracker to organize\n• Check internal opportunities section`;
+        } else {
+          aiResponse += `\n📈 **Good Activity!** Keep applying consistently!\n• Follow up on pending applications\n• Prepare for upcoming interviews\n• Network to unlock hidden opportunities`;
+        }
       } else {
-        aiResponse = "🎯 **Job Search Strategy:**\n\n**Use our Platform Features:**\n• Job Tracker for application management\n• Internal job opportunities in 'Find Your Next Role'\n• Resume Builder for ATS-optimized resumes\n• LinkedIn tools for networking\n\n**Search Strategy:**\n• Set up job alerts on multiple platforms\n• Apply within 24-48 hours of posting\n• Network your way to opportunities\n• Follow up professionally\n• Prepare for interviews using our resources\n\n**Daily Goals:** Apply to 5+ jobs, make 10+ LinkedIn connections, update your tracker!";
+        aiResponse = `🎯 **Job Search Strategy:**\n\n**Your Current Activity:** ${totalJobs} applications tracked\n\n**Our Job Search Tools:**\n• Job Tracker for application management\n• Internal job opportunities database\n• Resume Builder for ATS optimization\n• LinkedIn networking tools\n• Interview preparation resources\n\n**Strategy Tips:**\n• Apply to 5-10 jobs daily\n• Customize resume for each application\n• Use our internal job board first\n• Network your way to opportunities\n• Track all interactions\n\n**Points System:** Earn 20 points for wishlist→applied, 20 more for applied→interviewing!`;
       }
-    } else if (lowerMessage.includes('interview')) {
-      aiResponse = "🎤 **Interview Preparation:**\n\n**Preparation Steps:**\n• Research the company thoroughly (website, recent news, culture)\n• Prepare STAR method examples (Situation, Task, Action, Result)\n• Practice common questions for your industry\n• Prepare thoughtful questions to ask them\n\n**Technical Interviews:**\n• Practice coding problems on platforms like LeetCode\n• Review fundamental concepts in your field\n• Prepare to explain your GitHub projects\n• Practice whiteboarding or screen sharing\n\n**Follow-up:**\n• Send thank-you emails within 24 hours\n• Track interview progress in our Job Tracker\n• Connect with interviewers on LinkedIn\n\n**Use our tools:** Update your interview status in the Job Tracker and prepare using our career activities section!";
-    } else if (lowerMessage.includes('career') || lowerMessage.includes('growth') || lowerMessage.includes('development')) {
-      aiResponse = "📈 **Career Development:**\n\n**Use our Career Tools:**\n• Complete daily activities in 'Career Growth Activities'\n• Set learning goals in our goal-setting section\n• Track skill development progress\n• Participate in weekly assignments\n\n**Growth Strategies:**\n• Identify skill gaps in your target roles\n• Take online courses and certifications\n• Build projects to demonstrate new skills\n• Seek mentorship and feedback\n• Network within your industry\n\n**Track Progress:**\n• Monitor your points and achievements\n• Complete profile building activities\n• Engage with our leaderboard for motivation\n\n**Pro Tip:** Consistent daily activities lead to significant career growth over time!";
-    } else if (lowerMessage.includes('points') || lowerMessage.includes('level') || lowerMessage.includes('progress')) {
-      aiResponse = "🏆 **Points & Progress System:**\n\n**How to Earn Points:**\n• Complete daily activities (LinkedIn, GitHub, Job Applications)\n• Build and optimize your resume (80% completion = bonus points)\n• Participate in weekly assignments\n• Network and make connections\n• Apply to jobs and track progress\n\n**Track Your Progress:**\n• View points history in your profile\n• Check leaderboard rankings\n• Monitor completion percentages\n• Set and achieve learning goals\n\n**Benefits:**\n• Gamified learning experience\n• Track career development\n• Compare progress with peers\n• Unlock achievements and milestones\n\n**Tip:** Consistency is key! Small daily actions compound into significant career growth!";
-    } else if (lowerMessage.includes('tips') || lowerMessage.includes('advice') || lowerMessage.includes('help')) {
-      aiResponse = "💡 **Career Success Tips:**\n\n**Daily Habits:**\n• Complete activities in our Career Growth section\n• Make 5-10 LinkedIn connections\n• Apply to 3-5 relevant job positions\n• Commit code to GitHub (if applicable)\n• Update your job tracker\n\n**Weekly Goals:**\n• Complete all assigned weekly tasks\n• Network at virtual events\n• Learn a new skill or technology\n• Optimize one section of your resume/LinkedIn\n\n**Platform Features to Use:**\n• Job Tracker for application management\n• Resume Builder for professional resumes\n• LinkedIn/GitHub optimization tools\n• Internal job opportunities\n• Progress tracking and points system\n\n**Success Formula:** Consistency + Our Tools + Networking = Career Success!";
+    } else if (lowerMessage.includes('assignment') || lowerMessage.includes('task')) {
+      aiResponse = `📋 **Your Career Assignments:**\n\n**Active Assignments:** ${totalAssignments}\n**Completed:** ${completedAssignments}/${totalAssignments}\n\n`;
+      if (assignments.length > 0) {
+        aiResponse += "**Current Tasks:**\n";
+        assignments.forEach(assignment => {
+          const status = assignment.completed ? "✅" : "⏳";
+          const dueDate = assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : "No deadline";
+          aiResponse += `${status} ${assignment.title} (${assignment.category}) - Due: ${dueDate}\n`;
+        });
+        
+        const pendingTasks = assignments.filter(a => !a.completed);
+        if (pendingTasks.length > 0) {
+          aiResponse += `\n🎯 **Priority Actions:**\n• Complete ${pendingTasks.length} pending assignments\n• Focus on upcoming deadlines\n• Earn points for each completion\n\n**Categories:** LinkedIn Growth, Networking, Job Hunting, Content Creation, Interview Prep`;
+        } else {
+          aiResponse += `\n🎉 **All Caught Up!** Excellent work!\n• Check for new weekly assignments\n• Maintain consistency in daily activities\n• Help others in the community`;
+        }
+      } else {
+        aiResponse += "**No active assignments found.**\n\n🚀 **Get Started:**\n• Visit Career Assignments to begin\n• Complete weekly tasks for points\n• Build your professional profile\n• Track progress in your dashboard";
+      }
+    } else if (lowerMessage.includes('points') || lowerMessage.includes('score') || lowerMessage.includes('progress')) {
+      aiResponse = `🏆 **Your Progress Overview:**\n\n**Total Points Earned:** ${totalPoints}\n**Resume Progress:** ${resumeProgressPercent}%\n**LinkedIn Tasks:** ${linkedinProgressPercent}% complete\n**Job Applications:** ${totalJobs} tracked\n**Active Assignments:** ${totalAssignments} (${completedAssignments} completed)\n\n`;
+      
+      if (totalPoints < 100) {
+        aiResponse += "🚀 **Getting Started!** Here's how to earn more points:\n• Complete daily LinkedIn activities (5-10 points each)\n• Apply to jobs and track progress (20 points per status change)\n• Build your resume (points for completion milestones)\n• Complete weekly assignments (10-50 points each)\n• Engage with platform features consistently";
+      } else if (totalPoints < 500) {
+        aiResponse += "📈 **Building Momentum!** Great progress so far:\n• Continue daily activities for consistent points\n• Focus on completing pending assignments\n• Optimize your profiles for bonus points\n• Help others and engage in community features\n• Maintain streak bonuses for extra rewards";
+      } else {
+        aiResponse += "🌟 **Excellent Performance!** You're a top performer:\n• Maintain your consistency streak\n• Mentor newcomers for leadership points\n• Explore advanced features and challenges\n• Share your success stories\n• Aim for leaderboard positions";
+      }
+      
+      aiResponse += `\n\n**Quick Point Boosters:**\n• Complete resume to 100% (+50 points)\n• Connect with 10 professionals (+20 points)\n• Apply to 5 jobs in one day (+25 points)\n• Finish all weekly assignments (+100 points)`;
+    } else if (lowerMessage.includes('help') || lowerMessage.includes('features') || lowerMessage.includes('what can')) {
+      aiResponse = `🤖 **Career Growth Platform - Complete Feature Guide:**\n\n**📊 Your Dashboard Overview:**\n• Total Points: ${totalPoints}\n• Resume Progress: ${resumeProgressPercent}%\n• Job Applications: ${totalJobs}\n• LinkedIn Progress: ${linkedinProgressPercent}%\n\n**🛠️ Platform Features:**\n\n**📝 Resume Builder:**\n• ATS-friendly templates\n• Real-time completion tracking\n• Multiple export formats\n• Industry-specific guidance\n\n**💼 LinkedIn Optimization:**\n• Daily activity tracking\n• Weekly networking assignments\n• Connection growth monitoring\n• Content engagement tools\n\n**🎯 Job Tracker:**\n• Application status management\n• Follow-up reminders\n• Internal job opportunities\n• Interview tracking\n• Points for status transitions (20 points each)\n\n**📈 Career Growth:**\n• Daily activities and challenges\n• Weekly assignments\n• Skill development tracking\n• Learning goals management\n\n**🏆 Gamification:**\n• Points system for all activities\n• Leaderboards and rankings\n• Achievement badges\n• Progress visualization\n\n${profile.industry === 'IT' ? '**💻 GitHub Tools:**\n• Repository tracking\n• Contribution monitoring\n• Profile optimization\n• Weekly coding challenges\n\n' : ''}**💡 AI Assistant (Premium):**\n• Personalized career guidance\n• Progress-based recommendations\n• Feature explanations\n• Strategic advice\n\n**🎓 Learning Resources:**\n• Industry-specific tips\n• Best practice guides\n• Template libraries\n• Success stories\n\n**Ask me anything about:** Resume building, LinkedIn optimization, job searching, career growth, platform features, progress tracking, assignments, or specific guidance!`;
     } else {
-      aiResponse = `🤖 **Career Assistant Help:**\n\nI can provide specific guidance on:\n\n**📝 Resume:** Building, optimizing, formatting tips\n**💼 LinkedIn:** Profile optimization, networking strategies\n**💻 GitHub:** Profile enhancement, repository management\n**🎯 Job Search:** Application strategies, tracking, internal opportunities\n**🎤 Interviews:** Preparation, follow-up strategies\n**📈 Career Growth:** Skill development, goal setting\n**🏆 Platform Features:** Points system, progress tracking\n\n**Your Question:** "${message}"\n\nCould you be more specific about which area you'd like help with? I'll provide detailed, actionable advice using our platform's features!`;
+      // Generic helpful response
+      aiResponse = `🤖 **I'm here to help with your career growth!**\n\n**Your Current Status:**\n• Points: ${totalPoints}\n• Resume: ${resumeProgressPercent}% complete\n• LinkedIn: ${linkedinProgressPercent}% tasks done\n• Job Applications: ${totalJobs} tracked\n\n**I can help you with:**\n• Resume building and optimization\n• LinkedIn profile enhancement\n• Job search strategies\n• Career development planning\n• Platform feature explanations\n• Progress tracking and goals${profile.industry === 'IT' ? '\n• GitHub profile optimization' : ''}\n\n**Your Question:** "${message}"\n\n**How can I assist you specifically?** Ask about:\n✓ Resume progress and tips\n✓ LinkedIn networking strategies\n✓ Job application tracking\n✓ Assignment completion\n✓ Points and achievements\n✓ Platform features\n✓ Career growth advice\n\nI'm designed to help only with career development topics related to our platform. Let me know what specific area you'd like guidance on!`;
     }
 
     const response = {
       response: aiResponse,
       timestamp: new Date().toISOString(),
-      context: context
+      context: {
+        ...context,
+        userStats: {
+          totalPoints,
+          resumeProgress: resumeProgressPercent,
+          linkedinProgress: linkedinProgressPercent,
+          jobApplications: totalJobs,
+          assignments: { completed: completedAssignments, total: totalAssignments }
+        }
+      }
     };
 
     return new Response(JSON.stringify(response), {
@@ -72,7 +226,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in ai-assistant function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: 'Sorry, I encountered an error. Please try again or contact support if the issue persists.' 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
