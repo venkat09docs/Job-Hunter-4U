@@ -40,6 +40,7 @@ export function NotificationBell() {
         navigate('/dashboard/job-search');
         break;
       case 'follow_up_reminder':
+      case 'job_status_stale':
         navigate('/dashboard/job-tracker');
         break;
       case 'interview_preparation':

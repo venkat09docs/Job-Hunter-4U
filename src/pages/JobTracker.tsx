@@ -119,6 +119,52 @@ const JobTracker = () => {
     }
   }, [user, showArchived]);
 
+  // Create notifications for stale job applications
+  useEffect(() => {
+    if (jobs.length > 0 && user) {
+      createStaleJobNotifications();
+    }
+  }, [jobs, user]);
+
+  const createStaleJobNotifications = async () => {
+    const staleJobs = jobs.filter(job => {
+      const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+      return daysSinceUpdate > 1 && !job.is_archived;
+    });
+
+    if (staleJobs.length === 0) return;
+
+    try {
+      // First, delete existing stale job notifications to avoid duplicates
+      await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user?.id)
+        .eq('type', 'job_status_stale');
+
+      // Create new notifications for each stale job
+      const notifications = staleJobs.map(job => {
+        const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          user_id: user?.id,
+          title: 'Job Application Needs Update',
+          message: `${job.job_title} at ${job.company_name} hasn't been updated for ${daysSinceUpdate} days. Please verify and update the status.`,
+          type: 'job_status_stale',
+          related_id: job.id,
+          is_read: false
+        };
+      });
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error creating stale job notifications:', error);
+    }
+  };
+
   const fetchJobs = async () => {
     try {
       setLoading(true);
@@ -653,49 +699,17 @@ const JobTracker = () => {
                       statusLabel={statusLabels[status as keyof typeof statusLabels]}
                       count={count}
                     >
-                    {statusJobs.map(job => {
-                      const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
-                      const showWarning = daysSinceUpdate > 1;
-                      
-                      if (showWarning) {
-                        return (
-                          <TooltipProvider key={job.id}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <DraggableKanbanCard
-                                    job={job}
-                                    statusOptions={statusOptions}
-                                    statusLabels={statusLabels}
-                                    hasActiveSubscription={hasActiveSubscription()}
-                                    showWarning={true}
-                                    onStatusChange={handleStatusChange}
-                                    onCardClick={setSelectedJob}
-                                  />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-sm">
-                                  ⚠️ The status of this job application was changed {daysSinceUpdate} days ago. Please verify and update the status.
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      } else {
-                        return (
-                          <DraggableKanbanCard
-                            key={job.id}
-                            job={job}
-                            statusOptions={statusOptions}
-                            statusLabels={statusLabels}
-                            hasActiveSubscription={hasActiveSubscription()}
-                            onStatusChange={handleStatusChange}
-                            onCardClick={setSelectedJob}
-                          />
-                        );
-                      }
-                    })}
+                     {statusJobs.map(job => (
+                       <DraggableKanbanCard
+                         key={job.id}
+                         job={job}
+                         statusOptions={statusOptions}
+                         statusLabels={statusLabels}
+                         hasActiveSubscription={hasActiveSubscription()}
+                         onStatusChange={handleStatusChange}
+                         onCardClick={setSelectedJob}
+                       />
+                     ))}
                     {statusJobs.length === 0 && (
                       <div className="text-center text-muted-foreground text-[9px] sm:text-xs py-2 sm:py-4">
                         No applications
