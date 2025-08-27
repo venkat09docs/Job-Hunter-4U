@@ -32,6 +32,7 @@ import {
 import { useLinkedInTasks } from '@/hooks/useLinkedInTasks';
 import { LinkedInTaskCard } from '@/components/LinkedInTaskCard';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
+import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LinkedInHistoryTab } from '@/components/LinkedInHistoryTab';
@@ -42,10 +43,10 @@ import { format } from 'date-fns';
 const CareerActivities = () => {
   const { canAccessFeature } = usePremiumFeatures();
   const { isAdmin, isInstituteAdmin } = useRole();
+  const { metrics: networkMetrics, loading: networkMetricsLoading } = useNetworkGrowthMetrics();
   const {
     userTasks,
     evidence,
-    allEvidence, // Use this for cumulative stats
     signals,
     userBadges,
     weeklyScore,
@@ -81,28 +82,12 @@ const CareerActivities = () => {
     return { completed, submitted, total, progress, totalPoints, maxPoints };
   };
 
-  // Calculate cumulative statistics from ALL evidence across all time periods
-  const getCumulativeStats = () => {
-    const stats = {
-      connections: 0,
-      posts: 0,
-      views: 0
-    };
-    
-    // Use allEvidence instead of evidence to get cumulative stats across all weeks
-    allEvidence.forEach(ev => {
-      if (ev.evidence_data?.tracking_metrics) {
-        const metrics = ev.evidence_data.tracking_metrics;
-        stats.connections += metrics.connections_accepted || 0;
-        stats.posts += metrics.posts_count || 0;
-        stats.views += metrics.profile_views || 0;
-      }
-    });
-    
-    return stats;
+  // Use network metrics for LinkedIn growth stats
+  const cumulativeStats = {
+    connections: networkMetrics.totalConnections,
+    posts: networkMetrics.totalPosts,
+    views: networkMetrics.totalConnections, // Using connections as profile views since that's the closest metric we have
   };
-
-  const cumulativeStats = getCumulativeStats();
   const stats = getTaskStats();
 
   const copyToClipboard = (text: string) => {

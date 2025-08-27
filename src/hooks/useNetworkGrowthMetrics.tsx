@@ -141,12 +141,12 @@ export const useNetworkGrowthMetrics = () => {
       const monthlyTotal = monthlyMetrics?.reduce((sum, metric) => sum + metric.value, 0) || 0;
 
       setMetrics({
-        // Use current week totals instead of all-time for individual activities
-        totalConnections: weeklyTotals.totalConnections,
-        totalLikes: weeklyTotals.totalLikes,
-        totalComments: weeklyTotals.totalComments,
-        totalShares: weeklyTotals.totalShares,
-        totalPosts: weeklyTotals.totalPosts,
+        // Use all-time totals for individual activities (not weekly)
+        totalConnections: totals.totalConnections,
+        totalLikes: totals.totalLikes,
+        totalComments: totals.totalComments,
+        totalShares: totals.totalShares,
+        totalPosts: totals.totalPosts,
         weeklyProgress: weeklyTotal,
         monthlyProgress: monthlyTotal,
       });
