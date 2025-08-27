@@ -48,6 +48,13 @@ interface TaskEvidence {
   evidence_data: any;
   verification_status: string;
   created_at: string;
+  career_task_assignments?: {
+    user_id: string;
+    career_task_templates?: {
+      title: string;
+      category: string;
+    };
+  };
 }
 
 export const useCareerAssignments = () => {
@@ -115,12 +122,18 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      // Get evidence through assignments
+      // Get evidence through assignments with task template information
       const { data, error } = await supabase
         .from('career_task_evidence')
         .select(`
           *,
-          career_task_assignments!inner (user_id)
+          career_task_assignments!inner (
+            user_id,
+            career_task_templates (
+              title,
+              category
+            )
+          )
         `)
         .eq('career_task_assignments.user_id', user.id)
         .order('created_at', { ascending: false });

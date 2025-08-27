@@ -740,19 +740,26 @@ const CareerAssignments = () => {
                         <p className="text-sm">No activity yet</p>
                       </div>
                     ) : (
-                       <div className="space-y-3">
-                         {evidence.slice(0, 5).map(e => (
-                           <div key={e.id} className="flex items-center gap-3 text-sm">
-                             <div className="w-2 h-2 bg-primary rounded-full" />
-                             <div className="flex-1">
-                               <p className="font-medium">Evidence submitted</p>
-                               <p className="text-muted-foreground text-xs">
-                                 {new Date(e.created_at).toLocaleDateString()}
-                               </p>
-                             </div>
-                           </div>
-                         ))}
-                       </div>
+                        <div className="space-y-3">
+                          {evidence.slice(0, 5).map(e => (
+                            <div key={e.id} className="flex items-center gap-3 text-sm">
+                              <div className="w-2 h-2 bg-primary rounded-full" />
+                              <div className="flex-1">
+                                <p className="font-medium">
+                                  {e.career_task_assignments?.career_task_templates?.title || 'Evidence submitted'}
+                                </p>
+                                <p className="text-muted-foreground text-xs">
+                                  {e.career_task_assignments?.career_task_templates?.category && (
+                                    <span className="mr-2">
+                                      {e.career_task_assignments.career_task_templates.category} •
+                                    </span>
+                                  )}
+                                  {new Date(e.created_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                     )}
                   </CardContent>
                 </Card>
