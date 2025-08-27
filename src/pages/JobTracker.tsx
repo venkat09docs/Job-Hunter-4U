@@ -607,19 +607,19 @@ const JobTracker = () => {
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <div className="grid grid-cols-8 gap-1 sm:gap-2 md:gap-3">
+            <div className="flex gap-1 md:gap-2 overflow-x-auto min-h-[300px]">
               {getVisibleStatusOptions().map(status => {
                 const statusJobs = filteredJobs.filter(job => job.status === status);
                 const count = !showArchived ? getStatusCounts()[status] || 0 : statusJobs.length;
                 
                 return (
-                  <DroppableStatusColumn
-                    key={status}
-                    status={status}
-                    statusColor={statusColors[status as keyof typeof statusColors]}
-                    statusLabel={statusLabels[status as keyof typeof statusLabels]}
-                    count={count}
-                  >
+                  <div key={status} className="flex-1 min-w-[140px] max-w-[200px]">
+                    <DroppableStatusColumn
+                      status={status}
+                      statusColor={statusColors[status as keyof typeof statusColors]}
+                      statusLabel={statusLabels[status as keyof typeof statusLabels]}
+                      count={count}
+                    >
                     {statusJobs.map(job => {
                       const daysSinceUpdate = Math.floor((Date.now() - new Date(job.updated_at).getTime()) / (1000 * 60 * 60 * 24));
                       const showWarning = daysSinceUpdate > 1;
@@ -668,7 +668,8 @@ const JobTracker = () => {
                         No applications
                       </div>
                     )}
-                  </DroppableStatusColumn>
+                    </DroppableStatusColumn>
+                  </div>
                 );
               })}
             </div>
