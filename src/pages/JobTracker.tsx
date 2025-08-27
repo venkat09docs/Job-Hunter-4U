@@ -634,18 +634,46 @@ const JobTracker = () => {
     setPendingJobMove(null);
   };
 
-  const handleAssignmentsComplete = () => {
-    // Navigate to assignments page
-    navigate('/dashboard/career-assignments');
+  const handleAssignmentsSave = () => {
+    // Just close dialog and keep job in current status
     setShowAssignmentsDialog(false);
     setPendingAssignments([]);
     setPendingStatusMove(null);
+    toast.success('Assignments saved. You can complete them and return to move the job later.');
   };
 
-  const handleAssignmentsCancel = () => {
-    setShowAssignmentsDialog(false);
-    setPendingAssignments([]);
-    setPendingStatusMove(null);
+  const handleAssignmentsCompleteAndMove = async () => {
+    if (!pendingStatusMove) return;
+    
+    try {
+      // Move the job to the next status
+      const { error } = await supabase
+        .from('job_tracker')
+        .update({ 
+          status: pendingStatusMove.newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', pendingStatusMove.job.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setJobs(jobs.map(job => 
+        job.id === pendingStatusMove.job.id 
+          ? { ...job, status: pendingStatusMove.newStatus, updated_at: new Date().toISOString() }
+          : job
+      ));
+
+      // Close dialog and reset state
+      setShowAssignmentsDialog(false);
+      setPendingAssignments([]);
+      setPendingStatusMove(null);
+
+      toast.success(`${pendingStatusMove.job.job_title} moved to ${pendingStatusMove.newStatus} stage`);
+    } catch (error: any) {
+      console.error('Error moving job:', error);
+      toast.error('Failed to move job: ' + error.message);
+    }
   };
 
   const exportToCSV = () => {
@@ -1068,8 +1096,8 @@ const JobTracker = () => {
             assignments={pendingAssignments}
             jobTitle={pendingStatusMove.job.job_title}
             companyName={pendingStatusMove.job.company_name}
-            onComplete={handleAssignmentsComplete}
-            onCancel={handleAssignmentsCancel}
+            onSave={handleAssignmentsSave}
+            onCompleteAndMove={handleAssignmentsCompleteAndMove}
           />
         )}
 
