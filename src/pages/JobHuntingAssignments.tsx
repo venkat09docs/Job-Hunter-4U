@@ -262,10 +262,10 @@ export const JobHuntingAssignments: React.FC = () => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <Target className="h-5 w-5" />
-                          Job Pipeline
+                          Job Weekly Status
                         </CardTitle>
                         <CardDescription>
-                          Your weekly job hunting targets and progress
+                          Current week progress and targets (Monday to Sunday)
                         </CardDescription>
                       </div>
                       <Link to="/dashboard/job-tracker">
