@@ -43,15 +43,12 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Daily Job Hunting Sessions */}
-      <DailyJobHuntingSessions />
-
-      {/* Weekly Quotas Section */}
+      {/* Job Pipeline Section - Weekly Quotas */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Weekly Quotas
+            Job Pipeline
           </CardTitle>
           <CardDescription>
             Your weekly job hunting targets and progress
@@ -96,6 +93,9 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Daily Job Hunting Sessions */}
+      <DailyJobHuntingSessions />
 
       {/* Weekly Assignments */}
       <Card>
