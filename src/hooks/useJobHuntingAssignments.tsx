@@ -374,14 +374,27 @@ export const useJobHuntingAssignments = () => {
 
   const updateAssignmentStatus = async (assignmentId: string, status: string) => {
     try {
+      // Optimistic update: Update local state immediately
+      setAssignments(prevAssignments => 
+        prevAssignments.map(assignment => 
+          assignment.id === assignmentId 
+            ? { ...assignment, status }
+            : assignment
+        )
+      );
+      
+      // Update database in background
       const { error } = await supabase
         .from('job_hunting_assignments')
         .update({ status })
         .eq('id', assignmentId);
 
-      if (error) throw error;
+      if (error) {
+        // Revert optimistic update on error
+        await fetchAssignments();
+        throw error;
+      }
       
-      await fetchAssignments();
       toast.success('Assignment status updated!');
     } catch (error: any) {
       toast.error('Failed to update status: ' + error.message);
