@@ -507,6 +507,45 @@ const JobTracker = () => {
     await performStatusUpdate(jobId, newStatus, job.status);
   };
 
+  const awardJobStatusPoints = async (prevStatus: string, newStatus: string) => {
+    if (!user?.id) return;
+
+    try {
+      let pointsToAward = 0;
+      let activityType = '';
+
+      // Award points for specific status transitions
+      if (prevStatus === 'wishlist' && newStatus === 'applied') {
+        pointsToAward = 20;
+        activityType = 'job_wishlist_to_applied';
+      } else if (prevStatus === 'applied' && newStatus === 'interviewing') {
+        pointsToAward = 20;
+        activityType = 'job_applied_to_interviewing';
+      }
+
+      if (pointsToAward > 0) {
+        const { error } = await supabase
+          .from('user_activity_points')
+          .insert({
+            user_id: user.id,
+            activity_id: activityType,
+            activity_type: activityType,
+            points_earned: pointsToAward,
+            activity_date: new Date().toISOString().split('T')[0]
+          });
+
+        if (error) {
+          console.error('Failed to award job status points:', error);
+        } else {
+          console.log(`Awarded ${pointsToAward} points for ${prevStatus} -> ${newStatus}`);
+          toast.success(`Great job! You earned ${pointsToAward} points for progressing your job application!`);
+        }
+      }
+    } catch (error) {
+      console.error('Error awarding job status points:', error);
+    }
+  };
+
   const performStatusUpdate = async (jobId: string, newStatus: string, prevStatus?: string) => {
     try {
       if (!prevStatus) {
@@ -522,6 +561,11 @@ const JobTracker = () => {
 
       if (error) throw error;
       setJobs(prev => prev.map(job => job.id === jobId ? data : job));
+
+      // Award points for status transitions
+      if (prevStatus) {
+        await awardJobStatusPoints(prevStatus, newStatus);
+      }
 
       // Auto-track transitions into key stages for daily metrics
       try {
@@ -614,6 +658,9 @@ const JobTracker = () => {
       
       setJobs(prev => prev.map(job => job.id === pendingJobMove.jobId ? data : job));
       
+      // Award points for status transition (from wishlist to applied)
+      await awardJobStatusPoints(pendingJobMove.job.status, pendingJobMove.newStatus);
+      
       // Auto-track the application activity
       try {
         await incrementActivity('apply_quality_jobs');
@@ -665,6 +712,9 @@ const JobTracker = () => {
           ? { ...job, status: pendingStatusMove.newStatus, updated_at: new Date().toISOString() }
           : job
       ));
+
+      // Award points for status transition (from applied to interviewing)
+      await awardJobStatusPoints(pendingStatusMove.job.status, pendingStatusMove.newStatus);
 
       // Close dialog and reset state
       setShowAssignmentsDialog(false);
