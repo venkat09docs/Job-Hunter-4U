@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { DroppableStatusColumn } from '@/components/DroppableStatusColumn';
 import { DraggableKanbanCard } from '@/components/DraggableKanbanCard';
+import { ApplicationRequirementsModal } from '@/components/ApplicationRequirementsModal';
 import { 
   Plus, 
   Building, 
@@ -50,6 +51,12 @@ export const JobPipelineKanban: React.FC = () => {
   const [jobs, setJobs] = useState<JobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isRequirementsModalOpen, setIsRequirementsModalOpen] = useState(false);
+  const [pendingJobMove, setPendingJobMove] = useState<{
+    jobId: string;
+    job: JobEntry;
+    newStatus: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     company_name: '',
     job_title: '',
@@ -215,7 +222,49 @@ export const JobPipelineKanban: React.FC = () => {
       return;
     }
     
+    // Check if moving from wishlist to applied - require completion of requirements
+    if (job.status === 'wishlist' && newStatus === 'applied') {
+      setPendingJobMove({ jobId, job, newStatus });
+      setIsRequirementsModalOpen(true);
+      return;
+    }
+    
+    // For other moves, proceed normally
     await handleStatusChange(jobId, newStatus);
+  };
+
+  const handleRequirementsComplete = async (updatedJobData: Partial<JobEntry>) => {
+    if (!pendingJobMove) return;
+    
+    try {
+      // Update the job with the additional data first
+      const { data, error } = await supabase
+        .from('job_tracker')
+        .update({
+          status: pendingJobMove.newStatus,
+          ...updatedJobData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', pendingJobMove.jobId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setJobs(prev => prev.map(job => job.id === pendingJobMove.jobId ? data : job));
+      toast.success('Application requirements completed! Job moved to Applied.');
+      
+      // Close modal and clear pending move
+      setIsRequirementsModalOpen(false);
+      setPendingJobMove(null);
+    } catch (error: any) {
+      toast.error('Failed to complete application: ' + error.message);
+    }
+  };
+
+  const handleRequirementsCancel = () => {
+    setIsRequirementsModalOpen(false);
+    setPendingJobMove(null);
   };
 
   const getStageCounts = () => {
@@ -501,6 +550,16 @@ export const JobPipelineKanban: React.FC = () => {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Application Requirements Modal */}
+      {pendingJobMove && (
+        <ApplicationRequirementsModal
+          isOpen={isRequirementsModalOpen}
+          onClose={handleRequirementsCancel}
+          onComplete={handleRequirementsComplete}
+          job={pendingJobMove.job}
+        />
       )}
     </div>
   );
