@@ -444,6 +444,72 @@ export const JobHuntingAssignments: React.FC = () => {
                   </CardContent>
                 </Card>
 
+                {/* Daily Activities Section - Monday to Saturday with Morning/Afternoon/Evening Sessions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Daily Job Hunting Activities
+                    </CardTitle>
+                    <CardDescription>
+                      Track your daily progress with morning, afternoon, and evening job hunting sessions (Monday - Saturday)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, dayIndex) => {
+                        const currentDate = new Date();
+                        const dayDate = addDays(currentWeek, dayIndex);
+                        const isToday = format(dayDate, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd');
+                        const isPast = dayDate < currentDate;
+                        
+                        return (
+                          <Card key={day} className={`${isToday ? 'border-primary' : ''}`}>
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm font-medium">{day}</CardTitle>
+                                <Badge variant={isToday ? "default" : "outline"} className="text-xs">
+                                  {format(dayDate, 'MMM d')}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              {['morning', 'afternoon', 'evening'].map((session) => {
+                                // Mock session data for now - this should come from daily_job_hunting_sessions
+                                const isCompleted = isPast || Math.random() > 0.5; // Temporary logic
+                                
+                                return (
+                                  <div key={session} className="flex items-center justify-between p-2 rounded-lg border">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                      <span className="text-sm font-medium capitalize">{session}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      {isCompleted ? (
+                                        <CheckCircle className="h-4 w-4 text-green-500" />
+                                      ) : (
+                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              <div className="pt-2 border-t">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-muted-foreground">Progress</span>
+                                  <span className="text-xs font-medium">
+                                    {Math.floor(Math.random() * 4)}/3
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Weekly Assignments Section */}
                 <Card>
                   <CardHeader>
@@ -456,7 +522,7 @@ export const JobHuntingAssignments: React.FC = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                     {jobHuntingAssignments.length === 0 ? (
+                     {assignments.length === 0 ? (
                        <div className="text-center py-8">
                          <div className="flex flex-col items-center gap-4">
                            <div className="p-4 bg-muted rounded-full">
@@ -506,9 +572,9 @@ export const JobHuntingAssignments: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                          <JobHunterAssignments 
+                           <JobHunterAssignments 
                             weekProgress={weekProgress}
-                            assignments={jobHuntingAssignments}
+                            assignments={assignments}
                             initializeUserWeek={initializeUserWeek}
                           />
                         )}

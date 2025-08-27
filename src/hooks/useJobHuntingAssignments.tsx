@@ -66,9 +66,15 @@ export const useJobHuntingAssignments = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('User changed, fetching data for:', user.id);
       fetchData();
     }
   }, [user]);
+
+  // Add effect to log assignments changes
+  useEffect(() => {
+    console.log('Assignments updated:', assignments);
+  }, [assignments]);
 
   const fetchData = async () => {
     try {
