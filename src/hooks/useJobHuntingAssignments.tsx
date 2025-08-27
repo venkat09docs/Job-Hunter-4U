@@ -116,18 +116,18 @@ export const useJobHuntingAssignments = () => {
     try {
       console.log('Fetching job hunting assignments for user:', user.id);
       
-      // Use the same date calculation logic as the edge function
+      // Use date-fns to get consistent Monday start of week (same as backend should use)
       const now = new Date();
-      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday (0) to 6, others to dayOfWeek - 1
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - daysToSubtract);
+      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dayOfWeek = weekStart.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      weekStart.setDate(weekStart.getDate() - daysToSubtract);
       const currentWeekStart = weekStart.toISOString().split('T')[0];
       
       console.log('Current date:', now.toISOString());
       console.log('Day of week:', dayOfWeek);
       console.log('Days to subtract to get Monday:', daysToSubtract);
-      console.log('Calculated current week start:', currentWeekStart);
+      console.log('Calculated current week start (Monday):', currentWeekStart);
 
       const { data, error } = await supabase
         .from('job_hunting_assignments')
@@ -136,7 +136,7 @@ export const useJobHuntingAssignments = () => {
           template:job_hunting_task_templates(*)
         `)
         .eq('user_id', user.id)
-        .eq('week_start_date', currentWeekStart) // Only fetch current week assignments
+        .eq('week_start_date', currentWeekStart)
         .order('due_date', { ascending: true });
 
       if (error) {
@@ -322,13 +322,16 @@ export const useJobHuntingAssignments = () => {
   };
 
   const getWeekProgress = () => {
-    const currentWeek = assignments.filter(a => {
-      const weekStart = new Date(a.week_start_date);
-      const now = new Date();
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekEnd.getDate() + 6);
-      return now >= weekStart && now <= weekEnd;
-    });
+    // Use the same date calculation logic as fetchAssignments
+    const now = new Date();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dayOfWeek = weekStart.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    weekStart.setDate(weekStart.getDate() - daysToSubtract);
+    const currentWeekStart = weekStart.toISOString().split('T')[0];
+    
+    // Filter assignments by the calculated week start date
+    const currentWeek = assignments.filter(a => a.week_start_date === currentWeekStart);
 
     const completed = currentWeek.filter(a => a.status === 'verified').length;
     const total = currentWeek.length;
