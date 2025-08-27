@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Target, TrendingUp, Users, Award } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, TrendingUp, Users, Award, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 interface JobEntry {
   id: string;
@@ -125,54 +127,71 @@ export const JobPipelineStats: React.FC = () => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-blue-600" />
-            <div>
-              <p className="text-sm font-medium">Total Pipeline</p>
-              <p className="text-2xl font-bold">{jobs.length}</p>
+    <div className="space-y-4">
+      {/* Job Pipeline Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold">Job Pipeline</h2>
+          <p className="text-sm text-muted-foreground">Track your job applications through different stages</p>
+        </div>
+        <Link to="/dashboard/job-tracker">
+          <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <ExternalLink className="h-4 w-4" />
+            Open Job Hunter Pro
+          </Button>
+        </Link>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium">Total Pipeline</p>
+                <p className="text-2xl font-bold">{jobs.length}</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium">This Week</p>
-              <p className="text-2xl font-bold">{weeklyProgress.totalAdded}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm font-medium">This Week</p>
+                <p className="text-2xl font-bold">{weeklyProgress.totalAdded}</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-purple-600" />
-            <div>
-              <p className="text-sm font-medium">Interviewing</p>
-              <p className="text-2xl font-bold">{stageCounts.interviewing || 0}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm font-medium">Interviewing</p>
+                <p className="text-2xl font-bold">{stageCounts.interviewing || 0}</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-yellow-600" />
-            <div>
-              <p className="text-sm font-medium">Offers</p>
-              <p className="text-2xl font-bold">{stageCounts.accepted || 0}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="text-sm font-medium">Offers</p>
+                <p className="text-2xl font-bold">{stageCounts.accepted || 0}</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
