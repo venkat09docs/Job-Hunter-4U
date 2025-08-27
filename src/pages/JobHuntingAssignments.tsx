@@ -52,7 +52,8 @@ export const JobHuntingAssignments: React.FC = () => {
     initializeUserWeek,
     getWeekProgress,
     getTasksByCategory,
-    getTotalPoints
+    getTotalPoints,
+    updateAssignmentStatus
   } = useJobHuntingAssignments();
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
@@ -510,11 +511,12 @@ export const JobHuntingAssignments: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                           <JobHunterAssignments 
-                            weekProgress={weekProgress}
-                            assignments={jobHuntingAssignments}
-                            initializeUserWeek={initializeUserWeek}
-                          />
+                            <JobHunterAssignments 
+                             weekProgress={weekProgress}
+                             assignments={jobHuntingAssignments}
+                             initializeUserWeek={initializeUserWeek}
+                             onUpdateStatus={updateAssignmentStatus}
+                           />
                         )}
                       </div>
                     )}

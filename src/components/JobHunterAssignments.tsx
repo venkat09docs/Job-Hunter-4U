@@ -12,12 +12,14 @@ interface JobHunterAssignmentsProps {
   weekProgress: any;
   assignments: any[];
   initializeUserWeek: () => void;
+  onUpdateStatus: (assignmentId: string, status: string) => void;
 }
 
 export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({ 
   weekProgress, 
   assignments, 
-  initializeUserWeek 
+  initializeUserWeek,
+  onUpdateStatus
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
@@ -109,12 +111,13 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
               </div>
             ) : (
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {filteredAssignments.map((assignment) => (
-                  <JobHuntingAssignmentCard 
-                    key={assignment.id} 
-                    assignment={assignment}
-                  />
-                ))}
+                 {filteredAssignments.map((assignment) => (
+                   <JobHuntingAssignmentCard 
+                     key={assignment.id} 
+                     assignment={assignment}
+                     onUpdateStatus={onUpdateStatus}
+                   />
+                 ))}
               </div>
             )}
           </CardContent>

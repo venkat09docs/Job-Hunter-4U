@@ -30,12 +30,14 @@ import { useTranslation } from '@/i18n';
 
 interface JobHuntingAssignmentCardProps {
   assignment: JobHuntingAssignment;
+  onUpdateStatus: (assignmentId: string, status: string) => void;
 }
 
 export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> = ({
-  assignment
+  assignment,
+  onUpdateStatus
 }) => {
-  const { submitEvidence, updateAssignmentStatus } = useJobHuntingAssignments();
+  const { submitEvidence } = useJobHuntingAssignments();
   const { t } = useTranslation();
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [evidenceType, setEvidenceType] = useState<string>('');
@@ -44,8 +46,6 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const [files, setFiles] = useState<FileList | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fileValidationErrors, setFileValidationErrors] = useState<string[]>([]);
-
-  console.log('🔄 JobHuntingAssignmentCard render - Assignment:', assignment.id, 'Status:', assignment.status, 'Title:', assignment.template?.title);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,16 +89,9 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     }
   };
 
-  const handleStartAssignment = async () => {
-    console.log('🚀 Starting assignment:', assignment.id, 'Current status:', assignment.status);
-    try {
-      await updateAssignmentStatus(assignment.id, 'started');
-      console.log('✅ Assignment status update completed');
-      toast.success('Assignment started!');
-    } catch (error) {
-      console.error('❌ Error starting assignment:', error);
-      toast.error('Failed to start assignment');
-    }
+  const handleStartAssignment = () => {
+    onUpdateStatus(assignment.id, 'started');
+    toast.success('Assignment started!');
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
