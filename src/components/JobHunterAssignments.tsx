@@ -43,57 +43,6 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Job Pipeline Section - Weekly Quotas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Job Pipeline
-          </CardTitle>
-          <CardDescription>
-            Your weekly job hunting targets and progress
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {weeklyQuotas.map((quota) => {
-              const IconComponent = quota.icon;
-              const percentage = Math.round((quota.current / quota.target) * 100);
-              
-              return (
-                <div key={quota.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-3">
-                    <IconComponent className="h-5 w-5 text-primary" />
-                    <h4 className="font-medium text-sm">{quota.label}</h4>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold">{quota.current}</span>
-                      <span className="text-sm text-muted-foreground">/ {quota.target}</span>
-                    </div>
-                    
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                      />
-                    </div>
-                    
-                    <Badge 
-                      variant={percentage >= 100 ? "default" : percentage >= 50 ? "secondary" : "outline"}
-                      className="text-xs"
-                    >
-                      {percentage}% Complete
-                    </Badge>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Daily Job Hunting Sessions */}
       <DailyJobHuntingSessions />
 

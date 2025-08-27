@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { JobHunterAssignments } from '@/components/JobHunterAssignments';
 import { JobHunterHistory } from '@/components/JobHunterHistory';
 import { JobHunterSettings } from '@/components/JobHunterSettings';
-import { JobPipelineStats } from '@/components/JobPipelineStats';
 import PremiumProtectedRoute from '@/components/PremiumProtectedRoute';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { AssignmentCardSkeleton } from '@/components/SkeletonLoaders';
@@ -252,6 +251,125 @@ export const JobHuntingAssignments: React.FC = () => {
 
               {/* Assignments Tab - Weekly quotas + Per-job tasks + Pipeline */}
               <TabsContent value="assignments" className="space-y-6">
+                {/* Job Pipeline - Moved to very top */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Job Pipeline
+                    </CardTitle>
+                    <CardDescription>
+                      Your weekly job hunting targets and progress
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Briefcase className="h-5 w-5 text-primary" />
+                          <h4 className="font-medium text-sm">Job Applications</h4>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold">3</span>
+                            <span className="text-sm text-muted-foreground">/ 5</span>
+                          </div>
+                          
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: '60%' }}
+                            />
+                          </div>
+                          
+                          <Badge variant="secondary" className="text-xs">
+                            60% Complete
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Referral Requests */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Target className="h-5 w-5 text-primary" />
+                          <h4 className="font-medium text-sm">Referral Requests</h4>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold">1</span>
+                            <span className="text-sm text-muted-foreground">/ 3</span>
+                          </div>
+                          
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: '33%' }}
+                            />
+                          </div>
+                          
+                          <Badge variant="outline" className="text-xs">
+                            33% Complete
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Follow-ups */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                          <h4 className="font-medium text-sm">Follow-ups</h4>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold">4</span>
+                            <span className="text-sm text-muted-foreground">/ 5</span>
+                          </div>
+                          
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: '80%' }}
+                            />
+                          </div>
+                          
+                          <Badge variant="secondary" className="text-xs">
+                            80% Complete
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* New Conversations */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <BarChart3 className="h-5 w-5 text-primary" />
+                          <h4 className="font-medium text-sm">New Conversations</h4>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold">2</span>
+                            <span className="text-sm text-muted-foreground">/ 3</span>
+                          </div>
+                          
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div 
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: '67%' }}
+                            />
+                          </div>
+                          
+                          <Badge variant="secondary" className="text-xs">
+                            67% Complete
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Weekly Progress Overview */}
                 <Card className="shadow-elegant border-primary/20">
                   <CardHeader>
@@ -295,11 +413,6 @@ export const JobHuntingAssignments: React.FC = () => {
 
                 {/* Task Categories */}
                 <div className="space-y-6">
-                  {/* Job Pipeline Stats - Moved to top */}
-                  <div className="mb-6">
-                    <JobPipelineStats />
-                  </div>
-
                   {/* Assignments List */}
                   <div className="grid gap-6">
                     {loading ? (
