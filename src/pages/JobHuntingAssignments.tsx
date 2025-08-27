@@ -456,31 +456,13 @@ export const JobHuntingAssignments: React.FC = () => {
                 {/* Weekly Assignments Section */}
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          <Calendar className="h-5 w-5" />
-                          Weekly Assignments
-                        </CardTitle>
-                        <CardDescription>
-                          Initialize and manage your weekly job hunting tasks
-                        </CardDescription>
-                      </div>
-                      <Button 
-                        onClick={initializeUserWeek}
-                        disabled={loading}
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        {loading ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Zap className="h-4 w-4" />
-                        )}
-                        Initialize Tasks
-                      </Button>
-                    </div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Weekly Assignments
+                    </CardTitle>
+                    <CardDescription>
+                      Initialize and manage your weekly job hunting tasks
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {jobHuntingAssignments.length === 0 ? (

@@ -238,7 +238,12 @@ export const DailyJobHuntingSessions: React.FC = () => {
                               )}
                             </div>
                           ) : (
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleCompleteSession(dayKey, session.id.includes('-morning') ? 'morning' : session.id.includes('-afternoon') ? 'afternoon' : 'evening')}
+                              disabled={loading}
+                            >
                               Mark Complete
                             </Button>
                           )}

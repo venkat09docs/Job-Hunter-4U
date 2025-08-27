@@ -51,7 +51,18 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Weekly Assignments</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Weekly Assignments
+                  <Button 
+                    onClick={initializeUserWeek}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Initialize Tasks
+                  </Button>
+                </CardTitle>
                 <CardDescription>
                   General job hunting tasks for this week
                 </CardDescription>
