@@ -143,23 +143,6 @@ const JobTracker = () => {
     // Check if this is the specific transition we need to validate
     if (currentStatus === 'applied' && newStatus === 'interviewing') {
       try {
-        // First, let's check all assignments for this user (more inclusive query for debugging)
-        const { data: allAssignments, error: allError } = await supabase
-          .from('career_task_assignments')
-          .select(`
-            *,
-            career_task_templates (
-              title,
-              description,
-              instructions
-            )
-          `)
-          .eq('user_id', user.id);
-
-        console.log('DEBUG: All assignments found:', allAssignments);
-
-        if (allError) throw allError;
-
         // Fetch career task assignments that are not completed
         const { data: assignments, error } = await supabase
           .from('career_task_assignments')
@@ -168,7 +151,9 @@ const JobTracker = () => {
             career_task_templates (
               title,
               description,
-              instructions
+              instructions,
+              category,
+              code
             )
           `)
           .eq('user_id', user.id)
@@ -178,27 +163,41 @@ const JobTracker = () => {
 
         if (error) throw error;
 
-        // Filter assignments related to job application process or interview preparation
+        // For Applied -> Interviewing transition, require resume building tasks to be completed
+        // as having a complete resume is essential before interviews
         const relevantAssignments = (assignments || []).filter((assignment: any) => {
+          const category = assignment.career_task_templates?.category?.toLowerCase() || '';
           const title = assignment.career_task_templates?.title?.toLowerCase() || '';
           const description = assignment.career_task_templates?.description?.toLowerCase() || '';
+          const code = assignment.career_task_templates?.code || '';
           
-          const isRelevant = title.includes('interview') ||
-                            title.includes('preparation') ||
-                            title.includes('apply') ||
-                            title.includes('application') ||
-                            description.includes('interview') ||
-                            description.includes('preparation');
+          // Check for resume building category or specific interview preparation tasks
+          const isResumeBuilding = category === 'resume_building';
+          const isInterviewPrep = title.includes('interview') ||
+                                 title.includes('preparation') ||
+                                 description.includes('interview') ||
+                                 description.includes('preparation');
+          
+          // Also include cover letter tasks as they're often required for interviews
+          const isCoverLetter = title.includes('cover letter') ||
+                               code.includes('COVER_LETTER');
+          
+          const isRelevant = isResumeBuilding || isInterviewPrep || isCoverLetter;
           
           console.log('DEBUG: Assignment relevance check:', {
             title: assignment.career_task_templates?.title,
+            category,
+            code,
+            isResumeBuilding,
+            isInterviewPrep,
+            isCoverLetter,
             isRelevant
           });
           
           return isRelevant;
         });
 
-        console.log('DEBUG: Relevant assignments:', relevantAssignments);
+        console.log('DEBUG: Relevant assignments for Applied->Interviewing:', relevantAssignments);
 
         return {
           hasUncompleted: relevantAssignments.length > 0,
