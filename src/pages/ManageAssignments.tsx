@@ -523,6 +523,15 @@ export default function ManageAssignments() {
           if (error) throw error;
         }
       } else if (activeCategory === 'github') {
+        // First delete all related github_user_tasks
+        const { error: userTasksError } = await supabase
+          .from('github_user_tasks')
+          .delete()
+          .eq('task_id', assignmentId);
+        
+        if (userTasksError) throw userTasksError;
+        
+        // Then delete the github_tasks record
         const { error } = await supabase
           .from('github_tasks')
           .delete()
