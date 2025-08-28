@@ -402,31 +402,54 @@ const GitHubWeekly = () => {
             </div>
           </div>
 
-          {/* Generated Instructions */}
-          {task.github_tasks?.bonus_rules && (
+          {/* Instructions */}
+          {task.github_tasks?.bonus_rules && Object.keys(task.github_tasks.bonus_rules).length > 0 ? (
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-blue-600" />
-                Generated Instructions
+                Instructions
               </h4>
               <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
                 <div className="text-sm text-blue-800">
-                  {typeof task.github_tasks.bonus_rules === 'object' ? (
-                    <div className="space-y-2">
-                      {Object.entries(task.github_tasks.bonus_rules).map(([key, value]) => (
-                        <div key={key} className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                          <span><strong>{key}:</strong> {String(value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>{String(task.github_tasks.bonus_rules)}</p>
-                  )}
+                  <div className="space-y-2">
+                    {Object.entries(task.github_tasks.bonus_rules).map(([key, value]) => (
+                      <div key={key} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                        <span><strong>{key}:</strong> {String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          ) : task.github_tasks?.description ? (
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-blue-600" />
+                Instructions
+              </h4>
+              <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
+                <div className="text-sm text-blue-800 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                    <span>Follow the assignment tasks listed above for {dayPart.toLowerCase()}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                    <span>Submit URL evidence of your GitHub commits and repository changes</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                    <span>Complete all tasks within the 48-hour deadline from {dayPart} start</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                    <span>Ensure your repository is public and accessible for verification</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {/* Evidence Types Accepted */}
           {task.github_tasks?.evidence_types && task.github_tasks.evidence_types.length > 0 && (
