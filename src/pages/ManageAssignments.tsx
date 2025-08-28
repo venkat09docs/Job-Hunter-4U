@@ -531,45 +531,81 @@ export default function ManageAssignments() {
       } else if (activeCategory === 'github') {
         console.log('Deleting GitHub assignment with ID:', assignmentId);
         
-        // First, delete all github_evidence records for user tasks related to this assignment
-        // We need to do this via a join since evidence references user_task_id
-        const { data: userTasksForEvidence } = await supabase
+        // Step 1: Get all user tasks that reference this assignment
+        const { data: userTasksToDelete, error: fetchError } = await supabase
+          .from('github_user_tasks')
+          .select('id, user_id')
+          .eq('task_id', assignmentId);
+        
+        if (fetchError) {
+          console.error('Error fetching user tasks:', fetchError);
+          throw fetchError;
+        }
+        
+        console.log('Found user tasks to delete:', userTasksToDelete?.length || 0, userTasksToDelete);
+        
+        // Step 2: Delete all records in sequence with verification
+        if (userTasksToDelete && userTasksToDelete.length > 0) {
+          // First delete all evidence records
+          for (const userTask of userTasksToDelete) {
+            const { error: evidenceError } = await supabase
+              .from('github_evidence')
+              .delete()
+              .eq('user_task_id', userTask.id);
+            
+            if (evidenceError) {
+              console.error('Error deleting evidence for user task:', userTask.id, evidenceError);
+              throw evidenceError;
+            }
+          }
+          console.log('Successfully deleted all evidence records');
+          
+          // Then delete all user tasks with individual verification
+          for (const userTask of userTasksToDelete) {
+            console.log('Attempting to delete user task:', userTask.id);
+            
+            // Delete the user task
+            const { error: deleteError } = await supabase
+              .from('github_user_tasks')
+              .delete()
+              .eq('id', userTask.id);
+            
+            if (deleteError) {
+              console.error('Error deleting user task:', userTask.id, deleteError);
+              throw deleteError;
+            }
+            
+            // Verify it was actually deleted
+            const { data: verifyDeleted } = await supabase
+              .from('github_user_tasks')
+              .select('id')
+              .eq('id', userTask.id);
+            
+            if (verifyDeleted && verifyDeleted.length > 0) {
+              console.error('User task still exists after deletion:', userTask.id);
+              throw new Error(`Failed to delete user task ${userTask.id}`);
+            }
+            
+            console.log('Successfully verified deletion of user task:', userTask.id);
+          }
+        }
+        
+        // Step 3: Final verification - ensure no user tasks remain for this assignment
+        const { data: finalCheck } = await supabase
           .from('github_user_tasks')
           .select('id')
           .eq('task_id', assignmentId);
         
-        if (userTasksForEvidence && userTasksForEvidence.length > 0) {
-          const userTaskIds = userTasksForEvidence.map(task => task.id);
-          console.log('Deleting evidence for user task IDs:', userTaskIds);
-          
-          const { error: evidenceError } = await supabase
-            .from('github_evidence')
-            .delete()
-            .in('user_task_id', userTaskIds);
-          
-          if (evidenceError) {
-            console.error('Error deleting github_evidence:', evidenceError);
-            throw evidenceError;
-          }
-          console.log('Successfully deleted evidence records');
+        if (finalCheck && finalCheck.length > 0) {
+          console.error('CRITICAL: User tasks still exist after all deletions:', finalCheck);
+          throw new Error(`Cannot proceed: ${finalCheck.length} user tasks still reference assignment ${assignmentId}`);
         }
         
-        // Then delete all github_user_tasks that reference this task
-        console.log('Deleting github_user_tasks for task_id:', assignmentId);
-        const { error: userTasksError } = await supabase
-          .from('github_user_tasks')
-          .delete()
-          .eq('task_id', assignmentId);
+        console.log('✅ All user tasks successfully deleted and verified');
         
-        if (userTasksError) {
-          console.error('Error deleting github_user_tasks:', userTasksError);
-          throw userTasksError;
-        }
-        console.log('Successfully deleted github_user_tasks');
-        
-        // Finally delete the github_tasks record
+        // Step 4: Now delete the github_tasks record
         console.log('Deleting github_tasks record with ID:', assignmentId);
-        const { error } = await supabase
+        const { error, count } = await supabase
           .from('github_tasks')
           .delete()
           .eq('id', assignmentId);
@@ -579,7 +615,7 @@ export default function ManageAssignments() {
           throw error;
         }
         
-        console.log('Successfully deleted GitHub assignment');
+        console.log('✅ Successfully deleted GitHub assignment, count:', count);
       }
       
       toast.success('Assignment deleted successfully');
