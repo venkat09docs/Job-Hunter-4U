@@ -255,6 +255,31 @@ const GitHubWeekly = () => {
     return new Date() > dueDate;
   };
 
+  // Helper function to format description with bullet points
+  const formatDescription = (description: string) => {
+    if (!description) return null;
+    
+    // Split by lines and filter out empty lines
+    const lines = description.split('\n').filter(line => line.trim());
+    
+    return (
+      <ul className="space-y-2 mt-3">
+        {lines.map((line, index) => {
+          // Remove ✅ emoji and clean up the text
+          const cleanLine = line.replace(/^✅\s*/, '').trim();
+          if (!cleanLine) return null;
+          
+          return (
+            <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
+              <span>{cleanLine}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   const TaskCard = ({ task, repo = null }: { task: any; repo?: any }) => {
     const StatusIcon = statusConfig[task.status]?.icon || Circle;
     const statusColor = statusConfig[task.status]?.color || 'text-muted-foreground';
@@ -271,57 +296,84 @@ const GitHubWeekly = () => {
     const timeDiff = dueDate.getTime() - now.getTime();
     const hoursUntilDue = Math.ceil(timeDiff / (1000 * 60 * 60));
     
+    // Parse title to get day number and activity name
+    const titleParts = (task.github_tasks?.title || task.title || '').split(' – ');
+    const dayPart = titleParts[0] || `Day ${displayOrder}`;
+    const activityName = titleParts[1] || 'GitHub Activity';
+    
     return (
-      <Card className={`relative transition-all hover:shadow-lg ${task.status === 'VERIFIED' ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''} ${isExpired && task.status !== 'VERIFIED' ? 'opacity-75 bg-muted/30' : ''}`}>
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {task.github_tasks?.title?.split(' – ')[0] || `Day ${displayOrder}`}
-                  </Badge>
-                  <Github className="h-5 w-5" />
-                </div>
-                <span className="flex-1">{task.github_tasks?.title || task.title}</span>
-                <Badge variant="outline" className="ml-auto">
-                  {task.github_tasks?.points_base || 0} pts
-                </Badge>
-              </CardTitle>
-              <CardDescription className="mt-2 text-sm">
-                {task.github_tasks?.description || task.description}
-              </CardDescription>
+      <Card className={`relative transition-all duration-300 hover:shadow-xl border-l-4 ${
+        task.status === 'VERIFIED' 
+          ? 'border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50/30' 
+          : task.status === 'SUBMITTED' 
+          ? 'border-l-blue-500 bg-gradient-to-br from-blue-50 to-sky-50/30'
+          : isExpired && task.status !== 'VERIFIED'
+          ? 'border-l-red-500 bg-gradient-to-br from-red-50 to-rose-50/30 opacity-80'
+          : 'border-l-primary bg-gradient-to-br from-background to-muted/20'
+      } group hover:border-l-primary/80`}>
+        
+        {/* Status Badge - Top Right Corner */}
+        <div className="absolute top-4 right-4 z-10">
+          <Badge className={`${statusBg} ${statusColor} shadow-sm`}>
+            <StatusIcon className="h-3 w-3 mr-1" />
+            {statusConfig[task.status]?.label || task.status}
+          </Badge>
+        </div>
+
+        <CardHeader className="pb-4 pr-20"> {/* Add right padding to avoid status overlap */}
+          {/* Day Badge and Activity Title */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-sm font-medium px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                <Calendar className="h-3 w-3 mr-1" />
+                {dayPart}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                <Trophy className="h-3 w-3 mr-1" />
+                {task.github_tasks?.points_base || 0} pts
+              </Badge>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Github className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {activityName}
+                </CardTitle>
+                <CardDescription className="text-sm text-muted-foreground mt-1">
+                  GitHub development activity for {dayPart.toLowerCase()}
+                </CardDescription>
+              </div>
             </div>
           </div>
-          
-          {/* Due Date Display */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t">
-            <Badge className={`${statusBg} ${statusColor}`}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {statusConfig[task.status]?.label || task.status}
-            </Badge>
+
+          {/* Due Date Information */}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
+            <div className={`flex items-center gap-2 text-sm ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+              <Clock className="h-4 w-4" />
+              <span>
+                Due: {dueDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
             
             <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1 text-xs ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
-                <Calendar className="h-3 w-3" />
-                <span>
-                  Due: {dueDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
-              </div>
-              
               {isExpired && task.status !== 'VERIFIED' && (
-                <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
                   Expired
                 </Badge>
               )}
               
               {!isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
-                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
+                  <Clock className="h-3 w-3 mr-1" />
                   {hoursUntilDue}h left
                 </Badge>
               )}
@@ -331,48 +383,61 @@ const GitHubWeekly = () => {
         
         <CardContent className="pt-0">
           {repo && (
-            <div className="flex items-center gap-2 mb-3 text-sm">
-              <GitBranch className="h-4 w-4" />
-              <span className="font-mono">{repo.full_name}</span>
+            <div className="flex items-center gap-2 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+              <GitBranch className="h-4 w-4 text-primary" />
+              <span className="font-mono text-sm">{repo.full_name}</span>
             </div>
           )}
           
+          {/* Assignment Description with Bullet Points */}
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" />
+              Assignment Tasks
+            </h4>
+            <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+              {formatDescription(task.github_tasks?.description || task.description)}
+            </div>
+          </div>
+          
           {/* Expiration Notice */}
           {isExpired && task.status !== 'VERIFIED' && (
-            <div className="mb-3 p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
-              <div className="flex items-center gap-2 font-medium">
-                <AlertTriangle className="w-4 h-4" />
+            <div className="mb-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 font-semibold mb-1">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
                 Assignment Expired
               </div>
-              <p className="text-xs mt-1">
+              <p className="text-sm">
                 This task expired after the 48-hour window and can no longer be submitted.
               </p>
             </div>
           )}
           
-          <div className="flex gap-2">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 pt-4 border-t border-border/50">
             <Dialog 
               open={evidenceDialog.open && evidenceDialog.taskId === task.id}
               onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
             >
               <DialogTrigger asChild>
                 <Button 
-                  variant={canInteract ? "outline" : "secondary"}
+                  variant={canInteract ? "default" : "secondary"}
                   size="sm"
                   disabled={!canAccessFeature("github_weekly") || !canInteract}
+                  className="flex-1"
                 >
-                  <Upload className="h-4 w-4 mr-1" />
-                  {canInteract ? 'Submit Evidence' : 'Expired'}
-                  {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-1" />}
+                  <Upload className="h-4 w-4 mr-2" />
+                  {canInteract ? 'Submit Evidence' : 'Assignment Expired'}
+                  {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
                 </Button>
               </DialogTrigger>
               <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
             </Dialog>
             
             {task.status === 'VERIFIED' && (
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                <Trophy className="h-3 w-3 mr-1" />
-                +{task.score_awarded} pts
+              <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white px-3 py-1">
+                <Trophy className="h-4 w-4 mr-1" />
+                +{task.score_awarded} pts Earned
               </Badge>
             )}
           </div>
