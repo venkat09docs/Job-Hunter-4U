@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
+import { clearSubscriptionCache } from '@/utils/cacheManager';
 
 interface Profile {
   id: string;
@@ -67,7 +68,6 @@ export const useProfile = () => {
 
       // If no profile exists, create one
       if (!data) {
-        console.log('No profile found, creating one...');
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
@@ -81,7 +81,6 @@ export const useProfile = () => {
           .single();
 
         if (createError) {
-          console.error('Error creating profile:', createError);
           setProfile(null);
         } else {
           setProfile(newProfile);
@@ -90,7 +89,6 @@ export const useProfile = () => {
         setProfile(data);
       }
     } catch (error: any) {
-      console.error('Error fetching profile:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -110,7 +108,7 @@ export const useProfile = () => {
       if (error) throw error;
       setAnalytics(data || []);
     } catch (error: any) {
-      console.error('Error fetching analytics:', error);
+      // Ignore analytics errors - they're not critical
     }
   };
 
@@ -126,7 +124,6 @@ export const useProfile = () => {
       fetchProfile();
       fetchAnalytics();
     } catch (error: any) {
-      console.error('Error incrementing analytics:', error);
       toast({
         title: 'Error',
         description: 'Failed to update analytics',
@@ -149,6 +146,9 @@ export const useProfile = () => {
 
       if (error) throw error;
       
+      // Clear cache to ensure fresh data
+      clearSubscriptionCache(user?.id);
+      
       setProfile(prev => prev ? { 
         ...prev, 
         subscription_plan: plan,
@@ -157,7 +157,6 @@ export const useProfile = () => {
         subscription_active: true
       } : null);
     } catch (error: any) {
-      console.error('Error updating subscription:', error);
       toast({
         title: 'Error',
         description: 'Failed to update subscription',

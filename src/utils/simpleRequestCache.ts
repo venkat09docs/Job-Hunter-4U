@@ -52,6 +52,15 @@ class SimpleRequestCache {
     // Don't cache real-time subscriptions
     if (url.includes('realtime')) return false;
 
+    // Don't cache subscription-critical data
+    if (url.includes('profiles') && url.includes('user_id=eq.')) return false;
+    
+    // Don't cache user roles (affects permission checks)
+    if (url.includes('user_roles')) return false;
+    
+    // Don't cache premium features (affects subscription checks)
+    if (url.includes('premium_features')) return false;
+
     return true;
   }
 

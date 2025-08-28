@@ -29,7 +29,7 @@ const usePremiumFeatures = () => {
       if (error) throw error;
       setPremiumFeatures(data || []);
     } catch (error) {
-      console.error('Error fetching premium features:', error);
+      // Ignore premium features errors - they're not critical
     } finally {
       setFeaturesLoading(false);
     }
