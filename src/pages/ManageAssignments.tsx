@@ -236,6 +236,11 @@ export default function ManageAssignments() {
           id: item.id,
           title: item.title,
           description: item.description || '',
+          instructions: item.bonus_rules && Object.keys(item.bonus_rules).length > 0 
+            ? (typeof item.bonus_rules === 'object' 
+                ? Object.entries(item.bonus_rules).map(([key, value]) => `${key}: ${value}`).join('\n')
+                : String(item.bonus_rules))
+            : '',
           category: item.scope || 'general',
           points_reward: item.points_base,
           difficulty: 'medium',
@@ -362,6 +367,25 @@ export default function ManageAssignments() {
             if (error) throw error;
           }
         } else if (activeCategory === 'github') {
+          // Parse instructions as JSON for bonus_rules field  
+          let bonusRules = {};
+          if (assignmentForm.instructions) {
+            try {
+              // Try to parse as JSON first
+              bonusRules = JSON.parse(assignmentForm.instructions);
+            } catch {
+              // If not JSON, convert text instructions to structured format
+              const instructionLines = assignmentForm.instructions.split('\n').filter(line => line.trim());
+              bonusRules = instructionLines.reduce((acc, line, index) => {
+                acc[`instruction_${index + 1}`] = line.trim();
+                return acc;
+              }, {});
+            }
+          }
+
+          console.log('🔍 GitHub Assignment Update - Instructions:', assignmentForm.instructions);
+          console.log('🔍 GitHub Assignment Update - Parsed bonus_rules:', bonusRules);
+
           const { error } = await supabase
             .from('github_tasks')
             .update({
@@ -371,11 +395,17 @@ export default function ManageAssignments() {
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order,
+              bonus_rules: bonusRules, // Save instructions to bonus_rules
               updated_at: new Date().toISOString()
             })
             .eq('id', editingAssignment.id);
           
-          if (error) throw error;
+          if (error) {
+            console.error('🔍 GitHub Assignment Update Error:', error);
+            throw error;
+          }
+          
+          console.log('🔍 GitHub Assignment Updated successfully');
         }
         
         toast.success('Assignment updated successfully');
@@ -447,20 +477,49 @@ export default function ManageAssignments() {
           
           if (error) throw error;
         } else if (activeCategory === 'github') {
+          // Parse instructions as JSON for bonus_rules field  
+          let bonusRules = {};
+          if (assignmentForm.instructions) {
+            try {
+              // Try to parse as JSON first
+              bonusRules = JSON.parse(assignmentForm.instructions);
+            } catch {
+              // If not JSON, convert text instructions to structured format
+              const instructionLines = assignmentForm.instructions.split('\n').filter(line => line.trim());
+              bonusRules = instructionLines.reduce((acc, line, index) => {
+                acc[`instruction_${index + 1}`] = line.trim();
+                return acc;
+              }, {});
+            }
+          }
+
+          console.log('🔍 GitHub Assignment Create - Instructions:', assignmentForm.instructions);
+          console.log('🔍 GitHub Assignment Create - Parsed bonus_rules:', bonusRules);
+
           const { error } = await supabase
             .from('github_tasks')
             .insert({
               title: assignmentForm.title,
               description: assignmentForm.description,
+              code: assignmentForm.title
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '_')
+                .slice(0, 30) + '_' + Date.now(),
               scope: assignmentForm.category,
               points_base: assignmentForm.points_reward,
               active: assignmentForm.is_active,
               display_order: assignmentForm.display_order,
-              code: assignmentForm.title.toLowerCase().replace(/\s+/g, '_'),
+              bonus_rules: bonusRules, // Save instructions to bonus_rules
               evidence_types: ['URL_REQUIRED']
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('🔍 GitHub Assignment Create Error:', error);
+            throw error;
+          }
+          
+          console.log('🔍 GitHub Assignment Created successfully');
         }
         
         toast.success('Assignment created successfully');
