@@ -409,7 +409,7 @@ const GitHubWeekly = () => {
                   <GitCommit className="h-5 w-5 text-green-600" />
                   Development Activity
                   <Badge variant="outline" className="ml-auto">
-                    {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly' && task.status === 'VERIFIED').length} / {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').length}
+                    {weeklyTasks.filter(task => task.status === 'VERIFIED').length} / {weeklyTasks.length}
                   </Badge>
                 </CardTitle>
                 <CardDescription>
@@ -418,10 +418,10 @@ const GitHubWeekly = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').map((task) => (
+                  {weeklyTasks.map((task) => (
                     <TaskCard key={task.id} task={task} />
                   ))}
-                  {weeklyTasks.filter(task => task.github_tasks?.scope === 'weekly').length === 0 && (
+                  {weeklyTasks.length === 0 && (
                     <div className="text-center py-8">
                       <GitCommit className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">No weekly development tasks assigned</p>
