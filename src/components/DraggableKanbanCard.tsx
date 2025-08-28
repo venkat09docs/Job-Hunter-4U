@@ -61,16 +61,9 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    console.log('Card clicked:', job.company_name, 'isDragging:', isDragging);
-    console.log('Target element:', e.target);
-    console.log('Closest combobox:', (e.target as HTMLElement).closest('[role="combobox"]'));
-    
     // Only trigger card click if not clicking on the select dropdown and not dragging
     if (!(e.target as HTMLElement).closest('[role="combobox"]') && !isDragging) {
-      console.log('Opening job details for:', job.company_name);
       onCardClick(job);
-    } else {
-      console.log('Click blocked - either on dropdown or dragging');
     }
   };
 

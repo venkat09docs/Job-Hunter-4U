@@ -39,8 +39,6 @@ interface JobEntry {
 }
 
 const Dashboard = () => {
-  console.log('Dashboard component rendering...');
-  
   // Constants - MUST be defined before hooks
   const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
   const WEEKLY_TARGET = 3;
@@ -70,7 +68,6 @@ const Dashboard = () => {
   // Check if user can access Badge Leaders and Leaderboard (admin or eligible subscription)
   const canAccessLeaderboards = () => {
     const result = isAdmin || hasEligibleSubscription();
-    console.log('🔍 canAccessLeaderboards result:', result, 'isAdmin:', isAdmin);
     return result;
   };
 
@@ -217,7 +214,7 @@ const Dashboard = () => {
       
       setJobStatusCounts(statusCounts);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      // Error fetching data
     } finally {
       setJobsLoading(false);
     }

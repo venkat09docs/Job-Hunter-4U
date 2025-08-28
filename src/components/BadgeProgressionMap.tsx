@@ -70,7 +70,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
     const awarded = userBadges.some(userBadge => 
       userBadge.profile_badges.code === badgeCode
     );
-    console.log(`🏆 Badge ${badgeCode} awarded:`, awarded, 'User badges:', userBadges.length);
+    
     return awarded;
   };
 

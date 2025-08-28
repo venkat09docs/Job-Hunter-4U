@@ -58,33 +58,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
     return parsedData?.file_name || null;
   };
 
-  // Debug logging
-  React.useEffect(() => {
-    evidence.forEach((evidenceItem, index) => {
-      console.log(`🔍 Evidence ${index}:`, evidenceItem);
-      console.log(`🔍 Raw evidence_data ${index}:`, evidenceItem.evidence_data);
-      console.log(`🔍 evidence_data type ${index}:`, typeof evidenceItem.evidence_data);
-      console.log(`🔍 evidence_data JSON stringified ${index}:`, JSON.stringify(evidenceItem.evidence_data));
-      
-      // Try to extract URL from different possible locations
-      let possibleUrls = {
-        'direct_url': evidenceItem.url,
-        'evidence_data_as_object_url': evidenceItem.evidence_data?.url,
-        'evidence_data_parsed_url': null
-      };
-      
-      if (typeof evidenceItem.evidence_data === 'string') {
-        try {
-          const parsed = JSON.parse(evidenceItem.evidence_data);
-          possibleUrls.evidence_data_parsed_url = parsed?.url;
-        } catch (e) {
-          console.log(`🔍 Cannot parse evidence_data as JSON ${index}`);
-        }
-      }
-      
-      console.log(`🔍 All possible URL sources ${index}:`, possibleUrls);
-    });
-  }, [evidence]);
 
   const handleFileClick = async (filePath: string) => {
     try {
@@ -162,14 +135,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
             }
           }
           
-          // Debug logging for this specific item
-          console.log(`🔍 Evidence ${index} final extracted values:`, {
-            'url': url,
-            'description': description,
-            'fileName': fileName,
-            'raw evidence_data': evidenceItem.evidence_data,
-            'evidence_data type': typeof evidenceItem.evidence_data
-          });
           
           return (
             <Card key={evidenceItem.id} className={`p-4 ${!isLatest ? 'opacity-75 border-muted' : 'border-primary/20'}`}>

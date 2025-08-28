@@ -12,9 +12,7 @@ const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('InstituteAdminRedirect useEffect: loading =', loading, 'isInstituteAdmin =', isInstituteAdmin);
     if (!loading && isInstituteAdmin) {
-      console.log('InstituteAdminRedirect: Redirecting to /admin');
       navigate('/admin', { replace: true });
     }
   }, [isInstituteAdmin, loading, navigate]);
@@ -23,19 +21,15 @@ const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
-        console.warn('InstituteAdminRedirect: Loading timeout reached, forcing render');
+        // Loading timeout
       }
     }, 5000); // 5 second timeout
     
     return () => clearTimeout(timeoutId);
   }, [loading]);
 
-  console.log('InstituteAdminRedirect: loading =', loading);
-  console.log('InstituteAdminRedirect: isInstituteAdmin =', isInstituteAdmin);
-
   // If loading or is institute admin (will redirect), don't render children
   if (loading) {
-    console.log('InstituteAdminRedirect: Showing loading state');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -48,7 +42,6 @@ const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
   }
   
   if (isInstituteAdmin) {
-    console.log('InstituteAdminRedirect: User is institute admin, showing redirect message');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -59,7 +52,6 @@ const InstituteAdminRedirect = ({ children }: InstituteAdminRedirectProps) => {
     );
   }
 
-  console.log('InstituteAdminRedirect: Rendering children (Dashboard)');
   return <>{children}</>;
 };
 
