@@ -43,7 +43,8 @@ import {
   BookOpen,
   Target,
   Home,
-  Lock
+  Lock,
+  AlertTriangle
 } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 
@@ -225,41 +226,106 @@ const GitHubWeekly = () => {
     );
   };
 
+  // Helper function to calculate day-based due date with 48-hour window
+  const calculateDayDueDate = (displayOrder: number) => {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Calculate this week's Monday (start of week)
+    const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Sunday is 6 days from Monday
+    const thisMonday = new Date(today);
+    thisMonday.setDate(today.getDate() - daysFromMonday);
+    
+    // Calculate due date for the specific day (48 hours after Monday)
+    const taskDueDate = new Date(thisMonday);
+    taskDueDate.setDate(thisMonday.getDate() + (displayOrder - 1)); // Day 1 = Monday, Day 2 = Tuesday, etc.
+    taskDueDate.setHours(23, 59, 59, 999); // End of day
+    
+    // Add 48 hours buffer
+    const dueWith48Hours = new Date(taskDueDate);
+    dueWith48Hours.setDate(taskDueDate.getDate() + 2);
+    
+    return dueWith48Hours;
+  };
+
+  // Helper function to check if task is expired (past 48-hour window)
+  const isTaskExpired = (displayOrder: number) => {
+    const dueDate = calculateDayDueDate(displayOrder);
+    return new Date() > dueDate;
+  };
+
   const TaskCard = ({ task, repo = null }: { task: any; repo?: any }) => {
     const StatusIcon = statusConfig[task.status]?.icon || Circle;
     const statusColor = statusConfig[task.status]?.color || 'text-muted-foreground';
     const statusBg = statusConfig[task.status]?.bg || 'bg-muted';
     
+    // Get display order from task
+    const displayOrder = task.github_tasks?.display_order || 1;
+    const dueDate = calculateDayDueDate(displayOrder);
+    const isExpired = isTaskExpired(displayOrder);
+    const canInteract = !isExpired || task.status === 'VERIFIED';
+    
+    // Calculate days until due
+    const now = new Date();
+    const timeDiff = dueDate.getTime() - now.getTime();
+    const hoursUntilDue = Math.ceil(timeDiff / (1000 * 60 * 60));
+    
     return (
-      <Card className="relative">
+      <Card className={`relative transition-all hover:shadow-lg ${task.status === 'VERIFIED' ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''} ${isExpired && task.status !== 'VERIFIED' ? 'opacity-75 bg-muted/30' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Github className="h-5 w-5" />
-                {task.github_tasks?.title || task.title}
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {task.github_tasks?.title?.split(' – ')[0] || `Day ${displayOrder}`}
+                  </Badge>
+                  <Github className="h-5 w-5" />
+                </div>
+                <span className="flex-1">{task.github_tasks?.title || task.title}</span>
                 <Badge variant="outline" className="ml-auto">
                   {task.github_tasks?.points_base || 0} pts
                 </Badge>
               </CardTitle>
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-2 text-sm">
                 {task.github_tasks?.description || task.description}
               </CardDescription>
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
+          {/* Due Date Display */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t">
             <Badge className={`${statusBg} ${statusColor}`}>
               <StatusIcon className="h-3 w-3 mr-1" />
               {statusConfig[task.status]?.label || task.status}
             </Badge>
             
-            {task.due_at && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1 text-xs ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
                 <Calendar className="h-3 w-3" />
-                Due {new Date(task.due_at).toLocaleDateString()}
+                <span>
+                  Due: {dueDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
               </div>
-            )}
+              
+              {isExpired && task.status !== 'VERIFIED' && (
+                <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                  Expired
+                </Badge>
+              )}
+              
+              {!isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
+                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                  {hoursUntilDue}h left
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
         
@@ -271,6 +337,19 @@ const GitHubWeekly = () => {
             </div>
           )}
           
+          {/* Expiration Notice */}
+          {isExpired && task.status !== 'VERIFIED' && (
+            <div className="mb-3 p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <AlertTriangle className="w-4 h-4" />
+                Assignment Expired
+              </div>
+              <p className="text-xs mt-1">
+                This task expired after the 48-hour window and can no longer be submitted.
+              </p>
+            </div>
+          )}
+          
           <div className="flex gap-2">
             <Dialog 
               open={evidenceDialog.open && evidenceDialog.taskId === task.id}
@@ -278,13 +357,13 @@ const GitHubWeekly = () => {
             >
               <DialogTrigger asChild>
                 <Button 
-                  variant="outline" 
+                  variant={canInteract ? "outline" : "secondary"}
                   size="sm"
-                  disabled={!canAccessFeature("github_weekly")}
+                  disabled={!canAccessFeature("github_weekly") || !canInteract}
                 >
                   <Upload className="h-4 w-4 mr-1" />
-                  Submit Evidence
-                  {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-1" />}
+                  {canInteract ? 'Submit Evidence' : 'Expired'}
+                  {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-1" />}
                 </Button>
               </DialogTrigger>
               <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
@@ -418,13 +497,19 @@ const GitHubWeekly = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {weeklyTasks.map((task) => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
+                  {/* Sort tasks by display_order to ensure Day 1-7 ordering */}
+                  {weeklyTasks
+                    .sort((a, b) => (a.github_tasks?.display_order || 999) - (b.github_tasks?.display_order || 999))
+                    .map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
                   {weeklyTasks.length === 0 && (
                     <div className="text-center py-8">
                       <GitCommit className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">No weekly development tasks assigned</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Generate your Day 1-7 GitHub activities for this week
+                      </p>
                       <Button 
                         onClick={() => instantiateWeek()}
                         disabled={!canAccessFeature("github_weekly")}
