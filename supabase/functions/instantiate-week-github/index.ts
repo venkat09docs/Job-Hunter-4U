@@ -108,11 +108,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get all active weekly tasks
+    // Get all active GitHub tasks created in manage assignments
     const { data: weeklyTasks, error: tasksError } = await supabaseClient
       .from('github_tasks')
       .select('*')
-      .eq('scope', 'WEEKLY')
       .eq('active', true);
 
     if (tasksError) {
@@ -125,12 +124,12 @@ Deno.serve(async (req) => {
 
     if (!weeklyTasks || weeklyTasks.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No active weekly tasks found' }),
+        JSON.stringify({ message: 'No active GitHub assignments found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Found weekly tasks:', weeklyTasks.length);
+    console.log('Found GitHub assignments:', weeklyTasks.length);
 
     // Calculate due date (end of current week - Sunday 23:59:59 IST)
     const startOfWeek = new Date(now);
@@ -170,7 +169,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Created weekly tasks:', createdTasks?.length);
+    console.log('Created GitHub user tasks:', createdTasks?.length);
 
     return new Response(
       JSON.stringify({
