@@ -529,9 +529,30 @@ export default function ManageAssignments() {
           if (error) throw error;
         }
       } else if (activeCategory === 'github') {
-        console.log('Deleting GitHub assignment, first clearing related user tasks...');
+        console.log('Deleting GitHub assignment, first clearing all related records...');
         
-        // First delete all related github_user_tasks
+        // First, delete all github_evidence records related to user tasks for this assignment
+        const { data: userTasksToDelete } = await supabase
+          .from('github_user_tasks')
+          .select('id')
+          .eq('task_id', assignmentId);
+        
+        if (userTasksToDelete && userTasksToDelete.length > 0) {
+          const userTaskIds = userTasksToDelete.map(task => task.id);
+          
+          // Delete evidence records
+          const { error: evidenceError } = await supabase
+            .from('github_evidence')
+            .delete()
+            .in('user_task_id', userTaskIds);
+          
+          if (evidenceError) {
+            console.error('Error deleting github_evidence:', evidenceError);
+            throw evidenceError;
+          }
+        }
+        
+        // Then delete all related github_user_tasks
         const { error: userTasksError } = await supabase
           .from('github_user_tasks')
           .delete()
@@ -542,9 +563,9 @@ export default function ManageAssignments() {
           throw userTasksError;
         }
         
-        console.log('Successfully deleted related github_user_tasks, now deleting main task...');
+        console.log('Successfully deleted all related records, now deleting main task...');
         
-        // Then delete the github_tasks record
+        // Finally delete the github_tasks record
         const { error } = await supabase
           .from('github_tasks')
           .delete()
