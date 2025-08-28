@@ -149,6 +149,11 @@ const GitHubWeekly = () => {
     const [url, setUrl] = useState('');
     const [description, setDescription] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    
+    // Weekly metrics state
+    const [commits, setCommits] = useState<number>(0);
+    const [projectsUpdated, setProjectsUpdated] = useState<number>(0);
+    const [readmeUpdates, setReadmeUpdates] = useState<number>(0);
 
     const handleSubmit = () => {
       const evidenceData = {
@@ -156,6 +161,12 @@ const GitHubWeekly = () => {
         url: evidenceType === 'URL' ? url : undefined,
         description,
         file: evidenceType !== 'URL' ? file : undefined,
+        // Include weekly metrics
+        weeklyMetrics: {
+          commits,
+          projectsUpdated,
+          readmeUpdates
+        }
       };
       handleSubmitEvidence(taskId!, evidenceData);
     };
@@ -226,6 +237,55 @@ const GitHubWeekly = () => {
             </div>
           )}
 
+          {/* Weekly Metrics Section */}
+          <div className="bg-muted/30 p-4 rounded-lg space-y-4">
+            <h4 className="font-medium flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Weekly Activity Metrics
+            </h4>
+            
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="commits">Number of Commits</Label>
+                <Input
+                  id="commits"
+                  type="number"
+                  min="0"
+                  value={commits}
+                  onChange={(e) => setCommits(Number(e.target.value))}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Target: 10+ commits this week</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="projects">Projects Updated</Label>
+                <Input
+                  id="projects"
+                  type="number"
+                  min="0"
+                  value={projectsUpdated}
+                  onChange={(e) => setProjectsUpdated(Number(e.target.value))}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Target: 2 projects this week</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="readme">README/Docs Updates</Label>
+                <Input
+                  id="readme"
+                  type="number"
+                  min="0"
+                  value={readmeUpdates}
+                  onChange={(e) => setReadmeUpdates(Number(e.target.value))}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Target: 2-3 documentation updates this week</p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="description">Description (Optional)</Label>
             <Textarea
@@ -246,7 +306,7 @@ const GitHubWeekly = () => {
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmittingEvidence || (evidenceType === 'URL' && !url.trim())}
+            disabled={isSubmittingEvidence || (evidenceType === 'URL' && !url.trim()) || (commits === 0 && projectsUpdated === 0 && readmeUpdates === 0)}
           >
             {isSubmittingEvidence ? 'Submitting...' : 'Submit Evidence'}
           </Button>
@@ -690,6 +750,28 @@ const GitHubWeekly = () => {
                 <CardDescription>
                   Weekly coding activities to maintain consistent development habits
                 </CardDescription>
+                
+                {/* Weekly Targets */}
+                <div className="bg-primary/5 p-4 rounded-lg mt-4">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Weekly Targets
+                  </h4>
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="text-center p-3 bg-background rounded-lg border">
+                      <div className="font-bold text-lg text-green-600">10+</div>
+                      <div className="text-muted-foreground">Commits</div>
+                    </div>
+                    <div className="text-center p-3 bg-background rounded-lg border">
+                      <div className="font-bold text-lg text-blue-600">2</div>
+                      <div className="text-muted-foreground">Projects Updated</div>
+                    </div>
+                    <div className="text-center p-3 bg-background rounded-lg border">
+                      <div className="font-bold text-lg text-purple-600">2-3</div>
+                      <div className="text-muted-foreground">README/Docs</div>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
