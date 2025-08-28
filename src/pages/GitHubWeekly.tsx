@@ -312,15 +312,48 @@ const GitHubWeekly = () => {
           : 'border-l-primary bg-gradient-to-br from-background to-muted/20'
       } group hover:border-l-primary/80`}>
         
-        {/* Status Badge - Top Right Corner */}
-        <div className="absolute top-4 right-4 z-10">
+        {/* Status and Due Date - Top Right Corner */}
+        <div className="absolute top-4 right-4 z-10 text-right space-y-2">
+          {/* Status Badge */}
           <Badge className={`${statusBg} ${statusColor} shadow-sm`}>
             <StatusIcon className="h-3 w-3 mr-1" />
             {statusConfig[task.status]?.label || task.status}
           </Badge>
+          
+          {/* Due Date */}
+          <div className="text-xs text-right">
+            <div className={`flex items-center gap-1 justify-end ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+              <Clock className="h-3 w-3" />
+              <span>
+                Due: {dueDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+            
+            {/* Additional Status Indicators */}
+            <div className="flex items-center gap-1 justify-end mt-1">
+              {isExpired && task.status !== 'VERIFIED' && (
+                <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Expired
+                </Badge>
+              )}
+              
+              {!isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
+                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {hoursUntilDue}h left
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
 
-        <CardHeader className="pb-4 pr-20"> {/* Add right padding to avoid status overlap */}
+        <CardHeader className="pb-4 pr-32"> {/* Increase right padding for status/due date */}
           {/* Day Badge and Activity Title */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -348,37 +381,6 @@ const GitHubWeekly = () => {
               </div>
             </div>
           </div>
-
-          {/* Due Date Information */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/50">
-            <div className={`flex items-center gap-2 text-sm ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
-              <Clock className="h-4 w-4" />
-              <span>
-                Due: {dueDate.toLocaleDateString('en-US', { 
-                  month: 'short', 
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {isExpired && task.status !== 'VERIFIED' && (
-                <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  Expired
-                </Badge>
-              )}
-              
-              {!isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
-                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {hoursUntilDue}h left
-                </Badge>
-              )}
-            </div>
-          </div>
         </CardHeader>
         
         <CardContent className="pt-0">
@@ -389,7 +391,7 @@ const GitHubWeekly = () => {
             </div>
           )}
           
-          {/* Assignment Description with Bullet Points */}
+          {/* Assignment Tasks */}
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
               <Target className="h-4 w-4 text-primary" />
@@ -399,6 +401,49 @@ const GitHubWeekly = () => {
               {formatDescription(task.github_tasks?.description || task.description)}
             </div>
           </div>
+
+          {/* Generated Instructions */}
+          {task.github_tasks?.bonus_rules && (
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-blue-600" />
+                Generated Instructions
+              </h4>
+              <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
+                <div className="text-sm text-blue-800">
+                  {typeof task.github_tasks.bonus_rules === 'object' ? (
+                    <div className="space-y-2">
+                      {Object.entries(task.github_tasks.bonus_rules).map(([key, value]) => (
+                        <div key={key} className="flex items-start gap-2">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                          <span><strong>{key}:</strong> {String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>{String(task.github_tasks.bonus_rules)}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Evidence Types Accepted */}
+          {task.github_tasks?.evidence_types && task.github_tasks.evidence_types.length > 0 && (
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-purple-600" />
+                Accepted Evidence Types
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {task.github_tasks.evidence_types.map((type: string) => (
+                  <Badge key={type} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                    {type.replace(/_/g, ' ')}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Expiration Notice */}
           {isExpired && task.status !== 'VERIFIED' && (
