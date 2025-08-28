@@ -475,7 +475,13 @@ export default function ManageAssignments() {
   };
 
   const handleDeleteAssignment = async (assignmentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this assignment?')) {
+      return;
+    }
+
     try {
+      console.log('Deleting assignment with ID:', assignmentId, 'Category:', activeCategory);
+      
       if (activeCategory === 'profile') {
         const { error } = await supabase
           .from('career_task_templates')
@@ -523,13 +529,20 @@ export default function ManageAssignments() {
           if (error) throw error;
         }
       } else if (activeCategory === 'github') {
+        console.log('Deleting GitHub assignment, first clearing related user tasks...');
+        
         // First delete all related github_user_tasks
         const { error: userTasksError } = await supabase
           .from('github_user_tasks')
           .delete()
           .eq('task_id', assignmentId);
         
-        if (userTasksError) throw userTasksError;
+        if (userTasksError) {
+          console.error('Error deleting github_user_tasks:', userTasksError);
+          throw userTasksError;
+        }
+        
+        console.log('Successfully deleted related github_user_tasks, now deleting main task...');
         
         // Then delete the github_tasks record
         const { error } = await supabase
@@ -537,7 +550,10 @@ export default function ManageAssignments() {
           .delete()
           .eq('id', assignmentId);
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error deleting github_tasks:', error);
+          throw error;
+        }
       }
       
       toast.success('Assignment deleted successfully');
