@@ -45,6 +45,8 @@ interface SubmittedAssignment {
   evidence: any[];
   _isLinkedInAssignment?: boolean;
   _originalLinkedInTask?: any;
+  _isJobHuntingAssignment?: boolean;
+  _originalJobHuntingTask?: any;
 }
 
 const VerifyAssignments = () => {
@@ -326,13 +328,83 @@ const VerifyAssignments = () => {
     return combinedData;
   };
 
-  const processAssignments = async (careerData: any[], linkedInData: any[]) => {
+  const fetchJobHuntingAssignments = async () => {
+    console.log('🔍 Fetching Job Hunting assignments...');
+    
+    const { data: jobHuntingTasks, error: jobHuntingError } = await supabase
+      .from('job_hunting_assignments')
+      .select(`
+        *,
+        template:job_hunting_task_templates (
+          id,
+          title,
+          description,
+          points_reward,
+          category
+        )
+      `)
+      .eq('status', 'submitted')
+      .order('submitted_at', { ascending: false });
+
+    if (jobHuntingError) {
+      console.error('🔍 Error fetching Job Hunting assignments:', jobHuntingError);
+      throw jobHuntingError;
+    }
+
+    // Get user profiles for the job hunting task user_ids
+    const jobHuntingUserIds = jobHuntingTasks?.map(task => task.user_id) || [];
+    let profilesData: any[] = [];
+    
+    console.log('🔍 Job Hunting user IDs to fetch profiles for:', jobHuntingUserIds);
+    
+    if (jobHuntingUserIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, full_name, profile_image_url')
+        .in('user_id', jobHuntingUserIds);
+      
+      console.log('🔍 Profile fetch attempt result for Job Hunting:', {
+        profiles: profiles,
+        error: profilesError,
+        profileCount: profiles?.length || 0
+      });
+      
+      if (profilesError) {
+        console.error('❌ Error fetching profiles for Job Hunting tasks:', profilesError);
+      } else {
+        profilesData = profiles || [];
+        console.log('🔍 Successfully fetched profiles for Job Hunting tasks:', profilesData.length);
+      }
+    }
+
+    // Combine the data
+    const combinedData = jobHuntingTasks?.map(task => ({
+      ...task,
+      user_profile: profilesData.find(p => p.user_id === task.user_id)
+    })) || [];
+
+    console.log('🔍 Combined Job Hunting data with profiles:', combinedData.map(d => ({
+      id: d.id,
+      user_id: d.user_id,
+      username: d.user_profile?.username,
+      full_name: d.user_profile?.full_name,
+      task_title: d.template?.title,
+      has_profile: !!d.user_profile
+    })));
+    
+    return combinedData;
+  };
+
+  const processAssignments = async (careerData: any[], linkedInData: any[], jobHuntingData: any[]) => {
     console.log('🔍 Processing assignments:', { 
       careerDataLength: careerData?.length || 0, 
-      linkedInDataLength: linkedInData?.length || 0 
+      linkedInDataLength: linkedInData?.length || 0,
+      jobHuntingDataLength: jobHuntingData?.length || 0
     });
     
-    if ((!careerData || careerData.length === 0) && (!linkedInData || linkedInData.length === 0)) {
+    if ((!careerData || careerData.length === 0) && 
+        (!linkedInData || linkedInData.length === 0) && 
+        (!jobHuntingData || jobHuntingData.length === 0)) {
       console.log('🔍 No assignments found, setting empty array');
       setAssignments([]);
       return;
@@ -471,39 +543,110 @@ const VerifyAssignments = () => {
       allAssignments.push(...linkedInAssignmentsWithEvidence);
     }
 
-    // Sort all assignments by submitted_at date
-    allAssignments.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime());
+    // Process Job Hunting assignments
+    if (jobHuntingData && jobHuntingData.length > 0) {
+      console.log('🔍 Processing Job Hunting assignments, count:', jobHuntingData.length);
+      
+      const jobHuntingAssignmentsWithProfiles = jobHuntingData.map(assignment => {
+        const profile = assignment.user_profile;
+        
+        console.log('🔍 Processing Job Hunting assignment:', {
+          assignmentId: assignment.id,
+          userId: assignment.user_id,
+          profileFound: !!profile,
+          profileData: profile ? { full_name: profile.full_name, username: profile.username } : null
+        });
+        
+        return {
+          id: assignment.id,
+          user_id: assignment.user_id,
+          template_id: assignment.template_id,
+          status: assignment.status,
+          submitted_at: assignment.submitted_at,
+          verified_at: assignment.verified_at,
+          points_earned: assignment.points_earned,
+          score_awarded: assignment.score_awarded,
+          career_task_templates: {
+            title: assignment.template?.title || 'Job Hunting Task',
+            module: 'JOB_HUNTING',
+            points_reward: assignment.template?.points_reward || 0,
+            category: 'Job Hunting',
+            sub_categories: { name: 'Job Hunting' }
+          },
+          profiles: profile || { 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          },
+          evidence: [],
+          _isJobHuntingAssignment: true,
+          _originalJobHuntingTask: assignment
+        };
+      });
 
-    console.log('🔍 Final processed assignments:', { 
-      totalCount: allAssignments.length,
-      careerAssignments: allAssignments.filter(a => !a._isLinkedInAssignment).length,
-      linkedInAssignments: allAssignments.filter(a => a._isLinkedInAssignment).length
-    });
+      console.log('🔍 Job Hunting assignments with profiles:', jobHuntingAssignmentsWithProfiles.length);
 
+      // Fetch Job Hunting evidence for these assignments
+      const jobHuntingAssignmentsWithEvidence = await Promise.all(
+        jobHuntingAssignmentsWithProfiles.map(async (assignment) => {
+          try {
+            const { data: evidenceData, error: evidenceError } = await supabase
+              .from('job_hunting_evidence')
+              .select('*')
+              .eq('assignment_id', assignment._originalJobHuntingTask.id)
+              .order('created_at', { ascending: false });
+
+            if (evidenceError) {
+              console.error('🔍 Error fetching Job Hunting evidence for assignment:', assignment.id, evidenceError);
+              return { ...assignment, evidence: [] };
+            }
+
+            // Transform Job Hunting evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => ({
+              id: evidence.id,
+              assignment_id: assignment.id,
+              evidence_type: evidence.evidence_type,
+              evidence_data: evidence.evidence_data || {},
+              url: (evidence.evidence_data as any)?.url,
+              file_urls: evidence.file_urls,
+              verification_status: evidence.verification_status,
+              created_at: evidence.created_at,
+              submitted_at: evidence.submitted_at,
+              verification_notes: evidence.verification_notes,
+              verified_at: evidence.verified_at,
+              verified_by: evidence.verified_by
+            }));
+
+            return { ...assignment, evidence: transformedEvidence };
+          } catch (error) {
+            console.error('🔍 Error processing Job Hunting evidence for assignment:', assignment.id, error);
+            return { ...assignment, evidence: [] };
+          }
+        })
+      );
+
+      console.log('🔍 Job Hunting assignments with evidence:', jobHuntingAssignmentsWithEvidence.length);
+      allAssignments.push(...jobHuntingAssignmentsWithEvidence);
+    }
+
+    console.log('🔍 Total processed assignments:', allAssignments.length);
     setAssignments(allAssignments);
   };
 
   const fetchSubmittedAssignments = async () => {
     try {
       setLoadingAssignments(true);
-      console.log('🔍 Fetching assignments for role:', { role, isAdmin, isRecruiter, isInstituteAdmin });
       
-      const [careerAssignments, linkedInAssignments] = await Promise.all([
+      const [careerData, linkedInData, jobHuntingData] = await Promise.all([
         fetchCareerAssignments(),
-        fetchLinkedInAssignments()
+        fetchLinkedInAssignments(),
+        fetchJobHuntingAssignments()
       ]);
       
-      console.log('🔍 Fetched assignments:', { 
-        careerCount: careerAssignments?.length || 0, 
-        linkedInCount: linkedInAssignments?.length || 0,
-        careerAssignments: careerAssignments?.map(a => ({ id: a.id, user_id: a.user_id, title: a.career_task_templates?.title })),
-        linkedInAssignments: linkedInAssignments?.map(a => ({ id: a.id, user_id: a.user_id, title: a.linkedin_tasks?.title }))
-      });
-      
-      await processAssignments(careerAssignments, linkedInAssignments);
+      await processAssignments(careerData, linkedInData, jobHuntingData);
     } catch (error) {
-      console.error('Error fetching assignments:', error);
-      toast.error('Failed to load assignments');
+      console.error('Error fetching submitted assignments:', error);
+      toast.error('Failed to load submitted assignments');
     } finally {
       setLoadingAssignments(false);
     }
@@ -565,6 +708,60 @@ const VerifyAssignments = () => {
         } else {
           console.log('🔍 LinkedIn assignment rejected successfully');
           toast.success(`LinkedIn assignment rejected successfully`);
+        }
+      } else if (selectedAssignment._isJobHuntingAssignment) {
+        // Handle Job Hunting assignment verification
+        const { error } = await supabase
+          .from('job_hunting_assignments')
+          .update({
+            status: approved ? 'verified' : 'rejected',
+            verified_at: new Date().toISOString(),
+            verified_by: user?.id
+          })
+          .eq('id', selectedAssignment._originalJobHuntingTask.id);
+
+        if (error) throw error;
+
+        // Also update the evidence status
+        if (selectedAssignment.evidence && selectedAssignment.evidence.length > 0) {
+          const { error: evidenceError } = await supabase
+            .from('job_hunting_evidence')
+            .update({
+              verification_status: approved ? 'verified' : 'rejected',
+              verification_notes: verificationNotes.trim() || null,
+              verified_at: new Date().toISOString(),
+              verified_by: user?.id
+            })
+            .eq('assignment_id', selectedAssignment._originalJobHuntingTask.id);
+
+          if (evidenceError) {
+            console.error('Error updating job hunting evidence status:', evidenceError);
+          }
+        }
+
+        // If approved, add points to user_activity_points table
+        if (approved) {
+          console.log('🔍 Adding points to user_activity_points for Job Hunting task');
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_id: selectedAssignment.id,
+              activity_type: 'job_hunting_task_completion',
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              activity_date: new Date().toISOString().split('T')[0]
+            });
+
+          if (pointsError) {
+            console.error('🔍 Error adding points for Job Hunting task:', pointsError);
+            toast.success(`Job Hunting assignment approved successfully, but there was an issue recording points`);
+          } else {
+            console.log('🔍 Points added successfully for Job Hunting task');
+            toast.success(`Job Hunting assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+          }
+        } else {
+          console.log('🔍 Job Hunting assignment rejected successfully');
+          toast.success(`Job Hunting assignment rejected successfully`);
         }
       } else {
         // Handle regular career assignment verification
