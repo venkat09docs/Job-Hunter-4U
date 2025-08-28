@@ -40,7 +40,6 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const { submitEvidence } = useJobHuntingAssignments();
   const { t } = useTranslation();
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
-  const [evidenceType, setEvidenceType] = useState<string>('');
   const [evidenceText, setEvidenceText] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
@@ -98,12 +97,13 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
     const selectedFiles = event.target.files;
     if (!selectedFiles) return;
 
-    const validation = validateEvidenceFiles(Array.from(selectedFiles), evidenceType);
+    // For the new combined approach, we'll do basic validation without requiring evidenceType
+    const validation = validateEvidenceFiles(Array.from(selectedFiles), 'file');
     
     if (validation.invalid.length > 0) {
       const errors = validation.invalid.map(v => `${v.file.name}: ${v.error}`);
       setFileValidationErrors(errors);
-      toast.error(t('fileValidation.hasErrors'));
+      toast.error('Some files have validation errors');
     } else {
       setFileValidationErrors([]);
     }
@@ -116,8 +116,9 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   };
 
   const handleSubmitEvidence = async () => {
-    if (!evidenceType || (!evidenceText && !evidenceUrl && !files)) {
-      toast.error(t('messages.provideEvidence'));
+    // Check if at least one evidence type is provided
+    if (!evidenceUrl && !evidenceText && !files) {
+      toast.error('Please provide at least one form of evidence (URL, description, or file).');
       return;
     }
 
@@ -128,21 +129,31 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
 
     setSubmitting(true);
     try {
+      // Create evidence data object with all provided information
       const evidenceData = {
-        text: evidenceText || null,
-        url: evidenceUrl || null,
+        url: evidenceUrl.trim() || null,
+        text: evidenceText.trim() || null,
         notes: `Evidence submitted for: ${assignment.template?.title}`,
-        submission_date: new Date().toISOString()
+        submission_date: new Date().toISOString(),
+        evidence_types: []
       };
+
+      // Add evidence types based on what was provided
+      if (evidenceUrl.trim()) evidenceData.evidence_types.push('url');
+      if (evidenceText.trim()) evidenceData.evidence_types.push('text');
+      if (files && files.length > 0) evidenceData.evidence_types.push('file');
 
       const filesArray = files ? Array.from(files) : undefined;
       
+      // Determine primary evidence type for compatibility
+      const primaryEvidenceType = evidenceData.evidence_types[0] || 'text';
+      
       await retryWithBackoff(async () => {
-        await submitEvidence(assignment.id, evidenceType, evidenceData, filesArray);
+        await submitEvidence(assignment.id, primaryEvidenceType, evidenceData, filesArray);
       });
       
+      toast.success('Evidence submitted successfully!');
       setIsSubmissionOpen(false);
-      setEvidenceType('');
       setEvidenceText('');
       setEvidenceUrl('');
       setFiles(null);
@@ -248,83 +259,98 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>{assignment.template?.title}</DialogTitle>
+                    <DialogTitle>Submit Evidence - {assignment.template?.title}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="evidenceType">Evidence Type</Label>
-                      <Select value={evidenceType} onValueChange={setEvidenceType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select evidence type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {assignment.template?.evidence_types?.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              <div className="flex items-center gap-2">
-                                {type === 'url' && <LinkIcon className="h-4 w-4" />}
-                                {type === 'screenshot' && <Camera className="h-4 w-4" />}
-                                {type === 'file' && <FileText className="h-4 w-4" />}
-                                {type === 'text' && <FileText className="h-4 w-4" />}
-                                {type === 'email' && <FileText className="h-4 w-4" />}
-                                <span className="capitalize">{type}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="text-sm text-muted-foreground">
+                      Provide evidence of your completed assignment. You can submit any combination of the options below.
                     </div>
 
-                    {evidenceType === 'url' && (
-                      <div>
-                        <Label htmlFor="evidenceUrl">URL</Label>
-                        <Input
-                          id="evidenceUrl"
-                          value={evidenceUrl}
-                          onChange={(e) => setEvidenceUrl(e.target.value)}
-                          placeholder="https://..."
-                        />
-                      </div>
-                    )}
+                    {/* URL Input - Always Available */}
+                    <div className="space-y-2">
+                      <Label htmlFor="evidenceUrl" className="flex items-center gap-2">
+                        <LinkIcon className="h-4 w-4" />
+                        URL Evidence (Optional)
+                      </Label>
+                      <Input
+                        id="evidenceUrl"
+                        value={evidenceUrl}
+                        onChange={(e) => setEvidenceUrl(e.target.value)}
+                        placeholder="https://example.com/your-proof"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Share a link to your completed work or relevant proof
+                      </p>
+                    </div>
 
-                    {(evidenceType === 'text' || evidenceType === 'email') && (
-                      <div>
-                        <Label htmlFor="evidenceText">Description</Label>
-                        <Textarea
-                          id="evidenceText"
-                          value={evidenceText}
-                          onChange={(e) => setEvidenceText(e.target.value)}
-                          placeholder="Provide details about your completed task..."
-                          rows={4}
-                        />
-                      </div>
-                    )}
+                    {/* File Upload - Always Available */}
+                    <div className="space-y-2">
+                      <Label htmlFor="files" className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        File Attachment (Optional)
+                      </Label>
+                      <Input
+                        id="files"
+                        type="file"
+                        multiple
+                        accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,.zip"
+                        onChange={handleFileChange}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Upload screenshots, documents, or other proof files
+                      </p>
+                      {fileValidationErrors.length > 0 && (
+                        <div className="space-y-1">
+                          {fileValidationErrors.map((error, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm text-red-600">
+                              <AlertTriangle className="h-4 w-4" />
+                              {error}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                    {(evidenceType === 'file' || evidenceType === 'screenshot') && (
-                      <div>
-                        <Label htmlFor="files">{t('actions.uploadFiles')}</Label>
-                        <Input
-                          id="files"
-                          type="file"
-                          multiple
-                          accept={evidenceType === 'screenshot' ? 'image/*' : '*'}
-                          onChange={handleFileChange}
-                        />
-                        {fileValidationErrors.length > 0 && (
-                          <div className="mt-2 space-y-1">
-                            {fileValidationErrors.map((error, index) => (
-                              <div key={index} className="flex items-center gap-2 text-sm text-red-600">
-                                <AlertTriangle className="h-4 w-4" />
-                                {error}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                    {/* Description - Always Available */}
+                    <div className="space-y-2">
+                      <Label htmlFor="evidenceText" className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Description (Optional)
+                      </Label>
+                      <Textarea
+                        id="evidenceText"
+                        value={evidenceText}
+                        onChange={(e) => setEvidenceText(e.target.value)}
+                        placeholder="Describe what you completed, provide additional context, or explain your submission..."
+                        rows={4}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Provide details about your completed task or additional context
+                      </p>
+                    </div>
+
+                    {/* Accepted Evidence Types Display */}
+                    {assignment.template?.evidence_types?.length > 0 && (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <h5 className="text-sm font-medium mb-2">Accepted Evidence Types:</h5>
+                        <div className="flex flex-wrap gap-2">
+                          {assignment.template.evidence_types.map((type) => (
+                            <Badge key={type} variant="outline" className="text-xs">
+                              {type === 'url' && <LinkIcon className="h-3 w-3 mr-1" />}
+                              {type === 'screenshot' && <Camera className="h-3 w-3 mr-1" />}
+                              {type === 'file' && <FileText className="h-3 w-3 mr-1" />}
+                              {type === 'text' && <FileText className="h-3 w-3 mr-1" />}
+                              {type === 'email' && <FileText className="h-3 w-3 mr-1" />}
+                              <span className="capitalize">{type}</span>
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
 
                     <Button 
                       onClick={handleSubmitEvidence} 
-                      disabled={submitting}
+                      disabled={submitting || (!evidenceUrl && !evidenceText && !files)}
                       className="w-full"
                     >
                       {submitting ? 'Submitting...' : 'Submit Evidence'}
