@@ -34,7 +34,7 @@ interface DailyActivity {
 
 export const DailyJobHuntingSessions: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-  const { getDailyStats, getSessionStatus, completeSession, loading } = useDailyJobHuntingSessions();
+  const { getDailyStats, getSessionStatus, completeSession, loading, sessions } = useDailyJobHuntingSessions();
 
   // Generate current week (Mon-Sat) with real session data
   const currentWeek = React.useMemo(() => {
@@ -147,6 +147,11 @@ export const DailyJobHuntingSessions: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">Loading daily sessions...</div>
+          </div>
+        )}
         {currentWeek.map((day) => {
           const dayKey = format(day.date, 'yyyy-MM-dd');
           const isExpanded = expandedDays.has(dayKey);

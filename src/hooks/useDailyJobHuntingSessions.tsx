@@ -26,7 +26,10 @@ export const useDailyJobHuntingSessions = () => {
 
   // Fetch sessions for the current week
   const fetchSessions = async () => {
-    if (!user) return;
+    if (!user?.id) {
+      console.warn('No user ID available for fetching daily sessions');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -41,11 +44,19 @@ export const useDailyJobHuntingSessions = () => {
         .lte('session_date', format(weekEnd, 'yyyy-MM-dd'))
         .order('session_date', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching daily sessions:', error);
+        throw error;
+      }
+      
       setSessions((data as DailySession[]) || []);
     } catch (error) {
       console.error('Error fetching daily sessions:', error);
-      toast.error('Failed to load daily sessions');
+      // Only show toast error if it's not a table doesn't exist error
+      if (error?.code !== 'PGRST116') {
+        toast.error('Failed to load daily sessions');
+      }
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -176,8 +187,10 @@ export const useDailyJobHuntingSessions = () => {
   };
 
   useEffect(() => {
-    fetchSessions();
-  }, [user]);
+    if (user) {
+      fetchSessions();
+    }
+  }, [user?.id]);
 
   return {
     sessions,
