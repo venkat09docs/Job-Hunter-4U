@@ -61,6 +61,12 @@ class SimpleRequestCache {
     // Don't cache premium features (affects subscription checks)
     if (url.includes('premium_features')) return false;
 
+    // Temporarily disable caching for user points and notifications to fix stream issues
+    if (url.includes('user_activity_points')) return false;
+    if (url.includes('notifications')) return false;
+    if (url.includes('job_hunting_assignments')) return false;
+    if (url.includes('job_hunting_evidence')) return false;
+
     return true;
   }
 
