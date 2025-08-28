@@ -462,6 +462,29 @@ const VerifyAssignments = () => {
     return combinedData;
   };
 
+  const fetchSubmittedAssignments = async () => {
+    try {
+      setLoadingAssignments(true);
+      
+      // Fetch all types of assignments in parallel
+      const [careerData, linkedInData, jobHuntingData, gitHubData] = await Promise.all([
+        fetchCareerAssignments(),
+        fetchLinkedInAssignments(),
+        fetchJobHuntingAssignments(),
+        fetchGitHubAssignments()
+      ]);
+      
+      // Process all the data together
+      await processAssignments(careerData, linkedInData, jobHuntingData, gitHubData);
+      
+    } catch (error) {
+      console.error('Error fetching submitted assignments:', error);
+      toast.error('Failed to load submitted assignments');
+    } finally {
+      setLoadingAssignments(false);
+    }
+  };
+
   const processAssignments = async (careerData: any[], linkedInData: any[], jobHuntingData: any[], gitHubData: any[]) => {
     console.log('🔍 Processing assignments:', { 
       careerDataLength: careerData?.length || 0, 
