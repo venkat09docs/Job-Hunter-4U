@@ -46,6 +46,7 @@ import {
   Lock,
   AlertTriangle
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 
 const GitHubWeekly = () => {
@@ -93,6 +94,34 @@ const GitHubWeekly = () => {
       toast({
         title: "Error adding repository",
         description: "Failed to add repository. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStartAssignment = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('github_user_tasks')
+        .update({ 
+          status: 'STARTED',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Assignment started",
+        description: "You can now submit evidence for this assignment.",
+      });
+      
+      // Refresh data after status update
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Error starting assignment",
+        description: "Failed to start assignment. Please try again.",
         variant: "destructive",
       });
     }
@@ -483,24 +512,58 @@ const GitHubWeekly = () => {
           
           {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-4 border-t border-border/50">
-            <Dialog 
-              open={evidenceDialog.open && evidenceDialog.taskId === task.id}
-              onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
-            >
-              <DialogTrigger asChild>
-                <Button 
-                  variant={canInteract ? "default" : "secondary"}
-                  size="sm"
-                  disabled={!canAccessFeature("github_weekly") || !canInteract}
-                  className="flex-1"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {canInteract ? 'Submit Evidence' : 'Assignment Expired'}
-                  {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
-                </Button>
-              </DialogTrigger>
-              <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
-            </Dialog>
+            {task.status === 'NOT_STARTED' ? (
+              <Button 
+                variant="default"
+                size="sm"
+                disabled={!canAccessFeature("github_weekly") || !canInteract}
+                className="flex-1"
+                onClick={() => handleStartAssignment(task.id)}
+              >
+                <Circle className="h-4 w-4 mr-2" />
+                Start Assignment
+                {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
+              </Button>
+            ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
+              <Dialog 
+                open={evidenceDialog.open && evidenceDialog.taskId === task.id}
+                onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
+              >
+                <DialogTrigger asChild>
+                  <Button 
+                    variant={task.status === 'REJECTED' ? "destructive" : "default"}
+                    size="sm"
+                    disabled={!canAccessFeature("github_weekly") || !canInteract}
+                    className="flex-1"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Assignment'}
+                    {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
+                  </Button>
+                </DialogTrigger>
+                <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
+              </Dialog>
+            ) : task.status === 'SUBMITTED' ? (
+              <Button 
+                variant="outline"
+                size="sm"
+                disabled
+                className="flex-1"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                Submitted - Awaiting Review
+              </Button>
+            ) : (
+              <Button 
+                variant="outline"
+                size="sm"
+                disabled
+                className="flex-1"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Completed
+              </Button>
+            )}
             
             {task.status === 'VERIFIED' && (
               <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white px-3 py-1">

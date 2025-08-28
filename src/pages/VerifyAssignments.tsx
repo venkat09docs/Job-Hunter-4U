@@ -395,16 +395,85 @@ const VerifyAssignments = () => {
     return combinedData;
   };
 
-  const processAssignments = async (careerData: any[], linkedInData: any[], jobHuntingData: any[]) => {
+  const fetchGitHubAssignments = async () => {
+    console.log('🔍 Fetching GitHub assignments...');
+    
+    const { data: gitHubTasks, error: gitHubError } = await supabase
+      .from('github_user_tasks')
+      .select(`
+        *,
+        github_tasks (
+          id,
+          code,
+          title,
+          description,
+          points_base
+        )
+      `)
+      .eq('status', 'SUBMITTED')
+      .order('updated_at', { ascending: false });
+
+    if (gitHubError) {
+      console.error('🔍 Error fetching GitHub assignments:', gitHubError);
+      throw gitHubError;
+    }
+
+    // Get user profiles for the GitHub task user_ids
+    const gitHubUserIds = gitHubTasks?.map(task => task.user_id) || [];
+    let profilesData: any[] = [];
+    
+    console.log('🔍 GitHub user IDs to fetch profiles for:', gitHubUserIds);
+    
+    if (gitHubUserIds.length > 0) {
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, full_name, profile_image_url')
+        .in('user_id', gitHubUserIds);
+      
+      console.log('🔍 Profile fetch attempt result for GitHub:', {
+        profiles: profiles,
+        error: profilesError,
+        profileCount: profiles?.length || 0
+      });
+      
+      if (profilesError) {
+        console.error('❌ Error fetching profiles for GitHub tasks:', profilesError);
+      } else {
+        profilesData = profiles || [];
+        console.log('🔍 Successfully fetched profiles for GitHub tasks:', profilesData.length);
+      }
+    }
+
+    // Combine the data
+    const combinedData = gitHubTasks?.map(task => ({
+      ...task,
+      user_profile: profilesData.find(p => p.user_id === task.user_id)
+    })) || [];
+
+    console.log('🔍 Combined GitHub data with profiles:', combinedData.map(d => ({
+      id: d.id,
+      user_id: d.user_id,
+      username: d.user_profile?.username,
+      full_name: d.user_profile?.full_name,
+      task_title: d.github_tasks?.title,
+      has_profile: !!d.user_profile
+    })));
+    
+    return combinedData;
+  };
+
+  const processAssignments = async (careerData: any[], linkedInData: any[], jobHuntingData: any[], gitHubData: any[]) => {
     console.log('🔍 Processing assignments:', { 
       careerDataLength: careerData?.length || 0, 
       linkedInDataLength: linkedInData?.length || 0,
-      jobHuntingDataLength: jobHuntingData?.length || 0
+      jobHuntingDataLength: jobHuntingData?.length || 0,
+      gitHubDataLength: gitHubData?.length || 0
     });
     
     if ((!careerData || careerData.length === 0) && 
         (!linkedInData || linkedInData.length === 0) && 
-        (!jobHuntingData || jobHuntingData.length === 0)) {
+        (!jobHuntingData || jobHuntingData.length === 0) &&
+        (!gitHubData || gitHubData.length === 0)) {
       console.log('🔍 No assignments found, setting empty array');
       setAssignments([]);
       return;
@@ -629,27 +698,96 @@ const VerifyAssignments = () => {
       allAssignments.push(...jobHuntingAssignmentsWithEvidence);
     }
 
+    // Process GitHub assignments
+    if (gitHubData && gitHubData.length > 0) {
+      console.log('🔍 Processing GitHub assignments, count:', gitHubData.length);
+      
+      const gitHubAssignmentsWithProfiles = gitHubData.map(assignment => {
+        const profile = assignment.user_profile;
+        
+        console.log('🔍 Processing GitHub assignment:', {
+          assignmentId: assignment.id,
+          userId: assignment.user_id,
+          profileFound: !!profile,
+          profileData: profile ? { full_name: profile.full_name, username: profile.username } : null
+        });
+        
+        return {
+          id: assignment.id,
+          user_id: assignment.user_id,
+          template_id: assignment.task_id,
+          status: assignment.status.toLowerCase(),
+          submitted_at: assignment.updated_at,
+          verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+          points_earned: assignment.score_awarded,
+          score_awarded: assignment.score_awarded,
+          career_task_templates: {
+            title: assignment.github_tasks?.title || 'GitHub Task',
+            module: 'GITHUB',
+            points_reward: assignment.github_tasks?.points_base || 0,
+            category: 'GitHub',
+            sub_categories: { name: 'GitHub Weekly' }
+          },
+          profiles: profile || { 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          },
+          evidence: [],
+          _isGitHubAssignment: true,
+          _originalGitHubTask: assignment
+        };
+      });
+
+      console.log('🔍 GitHub assignments with profiles:', gitHubAssignmentsWithProfiles.length);
+
+      // Fetch GitHub evidence for these assignments
+      const gitHubAssignmentsWithEvidence = await Promise.all(
+        gitHubAssignmentsWithProfiles.map(async (assignment) => {
+          try {
+            const { data: evidenceData, error: evidenceError } = await supabase
+              .from('github_evidence')
+              .select('*')
+              .eq('user_task_id', assignment._originalGitHubTask.id)
+              .order('created_at', { ascending: false });
+
+            if (evidenceError) {
+              console.error('🔍 Error fetching GitHub evidence for assignment:', assignment.id, evidenceError);
+              return { ...assignment, evidence: [] };
+            }
+
+            // Transform GitHub evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => ({
+              id: evidence.id,
+              assignment_id: assignment.id,
+              evidence_type: evidence.kind?.toLowerCase() || 'url',
+              evidence_data: evidence.parsed_json || {},
+              url: evidence.url,
+              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
+              verification_status: 'pending',
+              created_at: evidence.created_at,
+              submitted_at: evidence.created_at,
+              verification_notes: null,
+              verified_at: null,
+              verified_by: null,
+              kind: evidence.kind,
+              parsed_json: evidence.parsed_json
+            }));
+
+            return { ...assignment, evidence: transformedEvidence };
+          } catch (error) {
+            console.error('🔍 Error processing GitHub evidence for assignment:', assignment.id, error);
+            return { ...assignment, evidence: [] };
+          }
+        })
+      );
+
+      console.log('🔍 GitHub assignments with evidence:', gitHubAssignmentsWithEvidence.length);
+      allAssignments.push(...gitHubAssignmentsWithEvidence);
+    }
+
     console.log('🔍 Total processed assignments:', allAssignments.length);
     setAssignments(allAssignments);
-  };
-
-  const fetchSubmittedAssignments = async () => {
-    try {
-      setLoadingAssignments(true);
-      
-      const [careerData, linkedInData, jobHuntingData] = await Promise.all([
-        fetchCareerAssignments(),
-        fetchLinkedInAssignments(),
-        fetchJobHuntingAssignments()
-      ]);
-      
-      await processAssignments(careerData, linkedInData, jobHuntingData);
-    } catch (error) {
-      console.error('Error fetching submitted assignments:', error);
-      toast.error('Failed to load submitted assignments');
-    } finally {
-      setLoadingAssignments(false);
-    }
   };
 
   const handleVerifyAssignment = async (assignment: SubmittedAssignment, approved: boolean) => {
