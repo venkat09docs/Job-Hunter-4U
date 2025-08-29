@@ -176,7 +176,14 @@ export function AppSidebar() {
     // Special handling for GitHub Weekly - show subscription dialog instead of navigating
     const isGitHubWeekly = item.title === "GitHub Weekly" && isPremium;
     
-    const handleGitHubWeeklyClick = (e: React.MouseEvent) => {
+    // Special handling for Job Hunter premium features - show subscription dialog instead of navigating
+    const isJobHunterPremium = isPremium && (
+      item.title === "Find Your Next Role" || 
+      item.title === "Job Tracker" || 
+      item.title === "Job Search History"
+    );
+    
+    const handlePremiumFeatureClick = (e: React.MouseEvent) => {
       e.preventDefault();
       setSubscriptionDialogOpen(true);
     };
@@ -199,9 +206,9 @@ export function AppSidebar() {
           </div>
         )}
       </a>
-    ) : isGitHubWeekly ? (
+    ) : (isGitHubWeekly || isJobHunterPremium) ? (
       <div 
-        onClick={handleGitHubWeeklyClick}
+        onClick={handlePremiumFeatureClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
       >
         <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
@@ -460,18 +467,18 @@ export function AppSidebar() {
         </Button>
       </div>
       
-      {/* Subscription Dialog for GitHub Weekly */}
+      {/* Subscription Dialog for Premium Features */}
       <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-center">
-              Upgrade Required for GitHub Weekly
+              Upgrade to Access Premium Features
             </DialogTitle>
             <p className="text-center text-muted-foreground">
-              GitHub Weekly is available with our premium plans: 3 Months, 6 Months, or 1 Year Plan.
+              Get access to all premium job hunting tools and career growth features.
             </p>
           </DialogHeader>
-          <PricingDialog eligiblePlans={["3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+          <PricingDialog />
         </DialogContent>
       </Dialog>
     </div>
