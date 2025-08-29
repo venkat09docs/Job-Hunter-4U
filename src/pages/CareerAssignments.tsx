@@ -236,13 +236,20 @@ const CareerAssignments = () => {
       
       // Additional checks for Digital profile (subscription required)
       if (categoryName.includes('digital')) {
+        // Digital profile is only available for 6-month or 1-year plans, not 3-month
         const hasValidSubscription = profile?.subscription_active && (
-          profile?.subscription_plan?.includes('Month') || 
-          profile?.subscription_plan?.includes('Year') ||
           profile?.subscription_plan === '6-month' || 
-          profile?.subscription_plan === '1-year'
+          profile?.subscription_plan === '1-year' ||
+          profile?.subscription_plan?.includes('6-month') ||
+          profile?.subscription_plan?.includes('1-year') ||
+          (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
         );
-        return prerequisitesMet && hasValidSubscription;
+        // Explicitly exclude 3-month plans
+        const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                                profile?.subscription_plan?.includes('3-month') ||
+                                profile?.subscription_plan?.includes('3 month');
+        
+        return prerequisitesMet && hasValidSubscription && !isThreeMonthPlan;
       }
       
       // Additional checks for GitHub profile (IT industry required)
@@ -280,12 +287,23 @@ const CareerAssignments = () => {
       }
       
       if (categoryName.includes('digital')) {
+        // Check if user has 3-month plan (should be excluded)
+        const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                                profile?.subscription_plan?.includes('3-month') ||
+                                profile?.subscription_plan?.includes('3 month');
+        
+        if (isThreeMonthPlan) {
+          return 'Digital profile is only available for 6-month or 1-year subscription plans';
+        }
+        
         const hasValidSubscription = profile?.subscription_active && (
-          profile?.subscription_plan?.includes('Month') || 
-          profile?.subscription_plan?.includes('Year') ||
           profile?.subscription_plan === '6-month' || 
-          profile?.subscription_plan === '1-year'
+          profile?.subscription_plan === '1-year' ||
+          profile?.subscription_plan?.includes('6-month') ||
+          profile?.subscription_plan?.includes('1-year') ||
+          (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
         );
+        
         if (!hasValidSubscription) {
           return 'Subscription is required either 6 months or 1 year plan for the digital profile';
         }
