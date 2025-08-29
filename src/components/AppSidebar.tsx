@@ -125,6 +125,7 @@ export function AppSidebar() {
   const [githubOpen, setGitHubOpen] = useState(false);
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [careerGrowthDialogOpen, setCareerGrowthDialogOpen] = useState(false);
+  const [githubToolsDialogOpen, setGithubToolsDialogOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -190,6 +191,12 @@ export function AppSidebar() {
       item.title === "Career Growth Report"
     );
     
+    // Special handling for GitHub Tools - show dialog with 1-week and 1-month plans only
+    const isGitHubToolsPremium = isPremium && (
+      item.title === "GitHub Optimization" || 
+      item.title === "GitHub Activity Tracker"
+    );
+    
     const handlePremiumFeatureClick = (e: React.MouseEvent) => {
       e.preventDefault();
       setSubscriptionDialogOpen(true);
@@ -198,6 +205,11 @@ export function AppSidebar() {
     const handleCareerGrowthClick = (e: React.MouseEvent) => {
       e.preventDefault();
       setCareerGrowthDialogOpen(true);
+    };
+    
+    const handleGitHubToolsClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setGithubToolsDialogOpen(true);
     };
     
     const handleAICareerToolsClick = (e: React.MouseEvent) => {
@@ -249,6 +261,21 @@ export function AppSidebar() {
     ) : isCareerGrowthPremium ? (
       <div 
         onClick={handleCareerGrowthClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />}
+          </div>
+        )}
+      </div>
+    ) : isGitHubToolsPremium ? (
+      <div 
+        onClick={handleGitHubToolsClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
       >
         <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
@@ -461,21 +488,42 @@ export function AppSidebar() {
                         </>
                       )}
                     </button>
-                    {githubOpen && !isCollapsed && (
-                      <div className="space-y-1 mt-1">
-                        {githubItems.map((item) => {
-                          const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                          return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
-                        })}
-                      </div>
-                    )}
-                    {isCollapsed && (
-                      <div className="space-y-1">
-                        {githubItems.map((item) => (
-                          <MenuItem key={item.title} item={item} />
-                        ))}
-                      </div>
-                    )}
+                     {githubOpen && !isCollapsed && (
+                       <div className="space-y-1 mt-1">
+                         {githubItems.map((item) => {
+                           // Check for high tier subscription plans
+                           const subscriberPlan = profile?.subscription_plan;
+                           const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                           
+                           // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
+                           if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
+                               && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
+                             return null;
+                           }
+                           
+                           const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                           return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
+                         })}
+                       </div>
+                     )}
+                     {isCollapsed && (
+                       <div className="space-y-1">
+                         {githubItems.map((item) => {
+                           // Check for high tier subscription plans
+                           const subscriberPlan = profile?.subscription_plan;
+                           const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                           
+                           // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
+                           if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
+                               && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
+                             return null;
+                           }
+                           
+                           const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                           return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={isCollapsed} />;
+                         })}
+                       </div>
+                     )}
                   </div>
                 )}
               </div>
@@ -531,6 +579,21 @@ export function AppSidebar() {
             </DialogTitle>
             <p className="text-center text-muted-foreground">
               Career Growth Activities and Reports are available with our starter plans.
+            </p>
+          </DialogHeader>
+          <PricingDialog eligiblePlans={["One Week Plan", "One Month Plan"]} />
+        </DialogContent>
+      </Dialog>
+      
+      {/* GitHub Tools Dialog for 1-week and 1-month plans only */}
+      <Dialog open={githubToolsDialogOpen} onOpenChange={setGithubToolsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade for GitHub Tools
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              GitHub Optimization and GitHub Activity Tracker are available with our starter plans.
             </p>
           </DialogHeader>
           <PricingDialog eligiblePlans={["One Week Plan", "One Month Plan"]} />
