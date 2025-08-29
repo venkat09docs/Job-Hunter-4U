@@ -546,49 +546,22 @@ const Dashboard = () => {
                     <BadgeLeadersSlider />
                   </div>
                 ) : hasRestrictedPlan() ? (
-                  <div className="text-center py-8">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" className="flex flex-col items-center gap-3 h-auto p-6 hover:bg-muted/50">
-                          <div className="relative inline-block">
-                            <Trophy className="h-12 w-12 text-muted-foreground" />
-                            <div className="absolute -top-2 -right-2 bg-background rounded-full p-1 border-2 border-muted shadow-sm">
-                              <Lock className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold mb-1">Badge Leaders</h3>
-                            <p className="text-sm text-muted-foreground">Tap to learn more</p>
-                          </div>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <Lock className="h-5 w-5" />
-                            Premium Feature
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">
-                            Badge Leaders is available only for users with 3 Months, 6 Months, or 1 Year plans.
-                          </p>
-                          <div className="p-3 bg-muted/50 rounded-lg">
-                            <p className="text-sm font-medium">Your current plan: {profile?.subscription_plan || 'None'}</p>
-                          </div>
-                          <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
-                            <Button className="w-full">Upgrade Plan</Button>
-                          </SubscriptionUpgrade>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Badge Leaders is available with 3 Months, 6 Months, or 1 Year plans
+                      Available with 3 Months, 6 Months, or 1 Year plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Available with 3 Months, 6 Months, or 1 Year plans
                     </p>
                     <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
@@ -610,49 +583,22 @@ const Dashboard = () => {
                 {canAccessLeaderboards() ? (
                   isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />
                 ) : hasRestrictedPlan() ? (
-                  <div className="text-center py-8">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" className="flex flex-col items-center gap-3 h-auto p-6 hover:bg-muted/50">
-                          <div className="relative inline-block">
-                            <BarChart3 className="h-12 w-12 text-muted-foreground" />
-                            <div className="absolute -top-2 -right-2 bg-background rounded-full p-1 border-2 border-muted shadow-sm">
-                              <Lock className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold mb-1">Leaderboard</h3>
-                            <p className="text-sm text-muted-foreground">Tap to learn more</p>
-                          </div>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <Lock className="h-5 w-5" />
-                            Premium Feature
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <p className="text-muted-foreground">
-                            Leaderboard is available only for users with 3 Months, 6 Months, or 1 Year plans.
-                          </p>
-                          <div className="p-3 bg-muted/50 rounded-lg">
-                            <p className="text-sm font-medium">Your current plan: {profile?.subscription_plan || 'None'}</p>
-                          </div>
-                          <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
-                            <Button className="w-full">Upgrade Plan</Button>
-                          </SubscriptionUpgrade>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
                     <p className="text-muted-foreground mb-4">
-                      Leaderboard is available with 3 Months, 6 Months, or 1 Year plans
+                      Available with 3 Months, 6 Months, or 1 Year plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Available with 3 Months, 6 Months, or 1 Year plans
                     </p>
                     <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
