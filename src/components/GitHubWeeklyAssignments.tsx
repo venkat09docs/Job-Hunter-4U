@@ -250,7 +250,7 @@ export const GitHubWeeklyAssignments = () => {
                   )}
 
                   {/* Admin Review Section for GitHub Weekly Tasks */}
-                  {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+                  {(task.status === 'VERIFIED' || task.status === 'REJECTED') && (task as any).verification_notes && (
                     <div className="mt-3 space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
                         <Shield className="w-4 h-4" />
@@ -270,7 +270,7 @@ export const GitHubWeeklyAssignments = () => {
                           )}
                         </div>
                         <p className="whitespace-pre-line leading-relaxed">
-                          {task.verification_notes}
+                          {(task as any).verification_notes}
                         </p>
                       </div>
                     </div>
@@ -384,7 +384,7 @@ export const GitHubWeeklyAssignments = () => {
                             )}
 
                             {/* Admin Review Section for Repo Tasks */}
-                            {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+                            {(task.status === 'VERIFIED' || task.status === 'REJECTED') && (task as any).verification_notes && (
                               <div className="mt-3 space-y-2">
                                 <Label className="text-sm font-medium flex items-center gap-2">
                                   <Shield className="w-4 h-4" />
@@ -404,7 +404,7 @@ export const GitHubWeeklyAssignments = () => {
                                     )}
                                   </div>
                                   <p className="whitespace-pre-line leading-relaxed">
-                                    {task.verification_notes}
+                                    {(task as any).verification_notes}
                                   </p>
                                 </div>
                               </div>
