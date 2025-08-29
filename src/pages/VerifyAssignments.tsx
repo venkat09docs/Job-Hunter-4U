@@ -850,8 +850,8 @@ const VerifyAssignments = () => {
           throw error;
         }
 
-        // If approved, process tracking metrics from evidence and add to linkedin_network_metrics
-        if (approved && selectedAssignment.evidence) {
+        // If verified/completed, process tracking metrics from evidence and add to linkedin_network_metrics
+        if (approved && updateData.status === 'VERIFIED' && selectedAssignment.evidence) {
           for (const evidenceItem of selectedAssignment.evidence) {
             if (evidenceItem.evidence_data && evidenceItem.evidence_data.tracking_metrics) {
               const metrics = evidenceItem.evidence_data.tracking_metrics;
