@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { useRole } from './useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLocation } from 'react-router-dom';
 
 interface TaskTemplate {
   id: string;
@@ -65,6 +66,9 @@ export const useCareerAssignments = () => {
   const [submittingEvidence, setSubmittingEvidence] = useState(false);
   const { user } = useAuth();
   const { isRecruiter, isAdmin, isInstituteAdmin } = useRole();
+  const location = useLocation();
+  const lastLocationRef = useRef(location.pathname);
+  const isInitializedRef = useRef(false);
 
   // Debug logging for state changes
   useEffect(() => {
@@ -81,28 +85,48 @@ export const useCareerAssignments = () => {
 
   // Main data fetching effect - triggers on user change and navigation
   useEffect(() => {
-    console.log('🔍 useCareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
+    console.log('🔍 useCareerAssignments useEffect triggered', { 
+      user: user?.id, 
+      hasUser: !!user,
+      currentPath: location.pathname,
+      lastPath: lastLocationRef.current,
+      isNavigationChange: location.pathname !== lastLocationRef.current
+    });
+    
     if (user) {
-      setLoading(true);
-      setAssignments([]); // Clear previous assignments
-      console.log('🔍 Starting data fetch...');
+      const isNavigationChange = location.pathname !== lastLocationRef.current;
+      lastLocationRef.current = location.pathname;
       
-      // Fetch all data together to avoid race conditions
-      fetchAllData();
+      // Clear data and force reload on navigation or initial load
+      if (isNavigationChange || !isInitializedRef.current) {
+        console.log('🔍 Navigation detected or initial load, clearing data and fetching fresh');
+        setLoading(true);
+        setAssignments([]);
+        setTemplates([]);
+        setEvidence([]);
+        
+        // Add a small delay to ensure state is cleared before fetching
+        setTimeout(() => {
+          fetchAllData();
+          isInitializedRef.current = true;
+        }, 100);
+      }
     } else {
       console.log('🔍 No user available, skipping data fetch');
       setLoading(false);
+      isInitializedRef.current = false;
     }
-  }, [user]);
+  }, [user, location.pathname]);
 
-  // Additional effect to handle navigation-specific loading
+  // Additional effect to handle component mount scenarios
   useEffect(() => {
-    console.log('🔍 Component mounted, checking user availability');
+    console.log('🔍 Component mounted, checking initialization state');
     // If component mounts and user is already available, ensure data is loaded
-    if (user && assignments.length === 0 && !loading) {
-      console.log('🔍 Component mounted with user but no assignments, triggering fetch');
+    if (user && assignments.length === 0 && !loading && !isInitializedRef.current) {
+      console.log('🔍 Component mounted with user but not initialized, triggering fetch');
       setLoading(true);
       fetchAllData();
+      isInitializedRef.current = true;
     }
   }, []); // Only run once on mount
 
