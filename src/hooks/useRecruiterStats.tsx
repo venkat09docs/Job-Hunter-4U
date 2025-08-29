@@ -64,15 +64,15 @@ export const useRecruiterStats = () => {
         })) || [];
 
         // Fetch assignment statistics
-        // Get pending assignments from career_task_assignments
+        // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
         const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
           .from('career_task_assignments')
           .select('id')
-          .in('status', ['assigned', 'submitted']);
+          .eq('status', 'submitted');
 
         if (pendingCareerError) throw pendingCareerError;
 
-        console.log('🔍 Recruiter Stats - Pending Career Assignments:', pendingCareerAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Pending Career Assignments (submitted):', pendingCareerAssignments?.length || 0);
 
         // Get verified assignments from career_task_assignments
         const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
@@ -84,15 +84,15 @@ export const useRecruiterStats = () => {
 
         console.log('🔍 Recruiter Stats - Verified Career Assignments:', verifiedCareerAssignments?.length || 0);
 
-        // Get pending assignments from job_hunting_assignments
+        // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
         const { data: pendingJobAssignments, error: pendingJobError } = await supabase
           .from('job_hunting_assignments')
           .select('id')
-          .in('status', ['assigned', 'submitted']);
+          .eq('status', 'submitted');
 
         if (pendingJobError) throw pendingJobError;
 
-        console.log('🔍 Recruiter Stats - Pending Job Assignments:', pendingJobAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Pending Job Assignments (submitted):', pendingJobAssignments?.length || 0);
 
         // Get verified assignments from job_hunting_assignments
         const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
@@ -118,7 +118,7 @@ export const useRecruiterStats = () => {
         const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + (verifiedJobAssignments?.length || 0);
         const totalExtensionRequests = extensionRequests?.length || 0;
 
-        console.log('🔍 Recruiter Stats - Final Totals:', {
+        console.log('🔍 Recruiter Stats - Final Totals (fixed):', {
           pending: totalPendingAssignments,
           verified: totalVerifiedAssignments, 
           extensions: totalExtensionRequests
@@ -176,11 +176,11 @@ export const useRecruiterStats = () => {
       })) || [];
 
       // Fetch assignment statistics
-      // Get pending assignments from career_task_assignments
+      // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
       const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
         .from('career_task_assignments')
         .select('id')
-        .in('status', ['assigned', 'submitted']);
+        .eq('status', 'submitted');
 
       if (pendingCareerError) throw pendingCareerError;
 
@@ -192,11 +192,11 @@ export const useRecruiterStats = () => {
 
       if (verifiedCareerError) throw verifiedCareerError;
 
-      // Get pending assignments from job_hunting_assignments
+      // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
       const { data: pendingJobAssignments, error: pendingJobError } = await supabase
         .from('job_hunting_assignments')
         .select('id')
-        .in('status', ['assigned', 'submitted']);
+        .eq('status', 'submitted');
 
       if (pendingJobError) throw pendingJobError;
 

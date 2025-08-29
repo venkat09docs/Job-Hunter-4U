@@ -62,7 +62,7 @@ export default function RecruiterDashboard() {
                   ) : (
                     <div className="text-2xl font-bold">{stats.pendingAssignments}</div>
                   )}
-                  <p className="text-xs text-muted-foreground">Assignments awaiting completion</p>
+                  <p className="text-xs text-muted-foreground">Assignments submitted and awaiting review</p>
                 </CardContent>
               </Card>
 

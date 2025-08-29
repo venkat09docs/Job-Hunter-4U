@@ -249,11 +249,11 @@ export const SuperAdminDashboard = () => {
          : 0;
 
       // Fetch assignment statistics
-      // Get pending assignments from career_task_assignments
+      // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
       const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
         .from('career_task_assignments')
         .select('id')
-        .in('status', ['assigned', 'submitted']);
+        .eq('status', 'submitted');
 
       if (pendingCareerError) throw pendingCareerError;
 
@@ -265,11 +265,11 @@ export const SuperAdminDashboard = () => {
 
       if (verifiedCareerError) throw verifiedCareerError;
 
-      // Get pending assignments from job_hunting_assignments
+      // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
       const { data: pendingJobAssignments, error: pendingJobError } = await supabase
         .from('job_hunting_assignments')
         .select('id')
-        .in('status', ['assigned', 'submitted']);
+        .eq('status', 'submitted');
 
       if (pendingJobError) throw pendingJobError;
 
@@ -446,7 +446,7 @@ export const SuperAdminDashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold text-warning">{overallMetrics.pending_assignments}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Assignments awaiting completion
+                Assignments submitted and awaiting review
               </p>
             </CardContent>
           </Card>
