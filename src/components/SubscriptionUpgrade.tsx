@@ -96,7 +96,7 @@ export const SubscriptionUpgrade = ({
         )}
       </DialogTrigger>
       <DialogContent 
-        className="max-w-5xl max-h-[90vh] overflow-y-auto p-6"
+        className="max-w-7xl max-h-[95vh] overflow-y-auto p-6"
         onCloseAutoFocus={(e) => {
           // Prevent focus issues that might affect scroll
           e.preventDefault();
@@ -132,7 +132,7 @@ export const SubscriptionStatus = () => {
             </Button>
           </DialogTrigger>
           <DialogContent 
-            className="max-w-5xl max-h-[90vh] overflow-y-auto p-6"
+            className="max-w-7xl max-h-[95vh] overflow-y-auto p-6"
             onCloseAutoFocus={(e) => {
               e.preventDefault();
             }}
