@@ -91,7 +91,7 @@ const Dashboard = () => {
   };
 
   // All available subscription plans for upgrade dialog
-  const allSubscriptionPlans = ['1-Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
