@@ -86,29 +86,90 @@ export const useCareerAssignments = () => {
       setAssignments([]); // Clear previous assignments
       console.log('🔍 Starting data fetch...');
       
-      // Fetch templates first, then assignments that depend on templates
-      fetchTemplates()
-        .then(() => {
-          console.log('🔍 Templates loaded, now fetching assignments...');
-          return fetchAssignments();
-        })
-        .then(() => {
-          console.log('🔍 Assignments loaded, now fetching evidence...');
-          return fetchEvidence();
-        })
-        .finally(() => {
-          console.log('🔍 All data fetching completed');
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error('🔍 Error in data fetching chain:', error);
-          setLoading(false);
-        });
+      // Fetch all data together to avoid race conditions
+      fetchAllData();
     } else {
       console.log('🔍 No user available, skipping data fetch');
       setLoading(false);
     }
   }, [user]);
+
+  const fetchAllData = async () => {
+    try {
+      console.log('🔍 fetchAllData started');
+      
+      // First fetch templates
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('career_task_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('module', { ascending: true });
+
+      if (templatesError) throw templatesError;
+      console.log('🔍 Templates fetched:', templatesData?.length || 0);
+      
+      // Update templates state immediately
+      setTemplates(templatesData || []);
+      
+      // Now fetch assignments using the fresh templates data
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('career_task_assignments')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (assignmentsError) throw assignmentsError;
+      console.log('🔍 Assignments fetched:', assignmentsData?.length || 0);
+
+      if (!assignmentsData || assignmentsData.length === 0) {
+        console.log('🔍 No assignments found for user');
+        setAssignments([]);
+        setLoading(false);
+        return;
+      }
+
+      // Join assignments with templates using fresh data
+      const assignmentsWithTemplates = assignmentsData.map(assignment => {
+        const template = templatesData?.find(t => t.id === assignment.template_id);
+        console.log('🔍 Joining assignment:', assignment.id, 'with template:', template?.title || 'NOT FOUND');
+        return {
+          ...assignment,
+          assigned_at: assignment.created_at,
+          career_task_templates: template || {
+            id: '',
+            code: '',
+            module: 'RESUME' as const,
+            title: 'Unknown Template',
+            description: '',
+            category: '',
+            sub_category_id: null,
+            evidence_types: [],
+            points_reward: 0,
+            cadence: '',
+            difficulty: '',
+            estimated_duration: 0,
+            instructions: {},
+            verification_criteria: {},
+            bonus_rules: {}
+          }
+        };
+      });
+      
+      console.log('🔍 Setting assignments with templates:', assignmentsWithTemplates.length);
+      setAssignments(assignmentsWithTemplates);
+
+      // Finally fetch evidence
+      await fetchEvidenceWithAssignments(assignmentsData);
+      
+      console.log('🔍 ✅ All data loaded successfully');
+    } catch (error) {
+      console.error('🔍 ❌ fetchAllData error:', error);
+      setAssignments([]);
+      setTemplates([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchTemplates = async () => {
     console.log('🔍 fetchTemplates started');
@@ -210,26 +271,16 @@ export const useCareerAssignments = () => {
     }
   };
 
-  const fetchEvidence = async () => {
-    if (!user) return;
-
+  const fetchEvidenceWithAssignments = async (userAssignments: any[]) => {
     try {
-      // Get user's assignment IDs first, then filter evidence
-      const { data: userAssignments, error: assignmentsError } = await supabase
-        .from('career_task_assignments')
-        .select('id, user_id, template_id')
-        .eq('user_id', user.id);
-
-      if (assignmentsError) throw assignmentsError;
-
-      const assignmentIds = userAssignments?.map(a => a.id) || [];
+      const assignmentIds = userAssignments.map(a => a.id);
       
       if (assignmentIds.length === 0) {
         setEvidence([]);
         return;
       }
 
-      // Now get evidence for those assignments
+      // Get evidence for those assignments
       const { data: evidenceData, error } = await supabase
         .from('career_task_evidence')
         .select('*')
@@ -265,7 +316,24 @@ export const useCareerAssignments = () => {
       setEvidence(evidenceWithDetails);
     } catch (error) {
       console.error('Error fetching evidence:', error);
-      // Don't show error toast for missing evidence - just set empty array
+      setEvidence([]);
+    }
+  };
+
+  const fetchEvidence = async () => {
+    if (!user) return;
+
+    try {
+      // Get user's assignment IDs first, then filter evidence
+      const { data: userAssignments, error: assignmentsError } = await supabase
+        .from('career_task_assignments')
+        .select('id, user_id, template_id')
+        .eq('user_id', user.id);
+
+      if (assignmentsError) throw assignmentsError;
+      await fetchEvidenceWithAssignments(userAssignments || []);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
       setEvidence([]);
     }
   };
