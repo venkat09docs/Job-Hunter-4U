@@ -150,9 +150,8 @@ const GitHubWeekly = () => {
     const [description, setDescription] = useState('');
     const [file, setFile] = useState<File | null>(null);
     
-    // Weekly metrics state
+    // Weekly metrics state (removed projectsUpdated)
     const [commits, setCommits] = useState<number>(0);
-    const [projectsUpdated, setProjectsUpdated] = useState<number>(0);
     const [readmeUpdates, setReadmeUpdates] = useState<number>(0);
 
     const handleSubmit = () => {
@@ -161,10 +160,9 @@ const GitHubWeekly = () => {
         url: evidenceType === 'URL' ? url : undefined,
         description,
         file: evidenceType !== 'URL' ? file : undefined,
-        // Include weekly metrics
+        // Include weekly metrics (removed projectsUpdated)
         weeklyMetrics: {
           commits,
-          projectsUpdated,
           readmeUpdates
         }
       };
@@ -264,8 +262,7 @@ const GitHubWeekly = () => {
             </div>
           )}
 
-          {/* Weekly Metrics Section */}
-          <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 space-y-4">
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 space-y-4">
             <h4 className="font-semibold flex items-center gap-2 text-primary">
               <Target className="h-5 w-5" />
               Weekly Activity Metrics
@@ -297,35 +294,6 @@ const GitHubWeekly = () => {
                   </div>
                   {commits >= 10 && (
                     <Badge variant="default" className="text-xs bg-green-100 text-green-700 border-green-300">
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                      Target Met!
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="projects" className="text-sm font-medium cursor-pointer flex items-center gap-2">
-                  <GitBranch className="h-4 w-4" />
-                  Projects Updated
-                </Label>
-                <Input
-                  id="projects"
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={projectsUpdated}
-                  onChange={(e) => setProjectsUpdated(Number(e.target.value))}
-                  placeholder="Enter number of projects"
-                  className={inputClassName}
-                />
-                <div className="flex items-center gap-2 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-muted-foreground">Target: 2 projects</span>
-                  </div>
-                  {projectsUpdated >= 2 && (
-                    <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Target Met!
                     </Badge>
@@ -393,7 +361,7 @@ const GitHubWeekly = () => {
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={isSubmittingEvidence || (evidenceType === 'URL' && !url.trim()) || (commits === 0 && projectsUpdated === 0 && readmeUpdates === 0)}
+            disabled={isSubmittingEvidence || (evidenceType === 'URL' && !url.trim()) || (commits === 0 && readmeUpdates === 0)}
             className="cursor-pointer hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed"
           >
             {isSubmittingEvidence ? (
@@ -881,7 +849,7 @@ const GitHubWeekly = () => {
                     <Target className="h-4 w-4" />
                     Weekly Targets & Progress
                   </h4>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2">
@@ -903,33 +871,6 @@ const GitHubWeekly = () => {
                           ) : (
                             <div className="text-xs text-orange-600">
                               {10 - currentMetrics.totalCommits} more needed
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <GitBranch className="h-4 w-4 text-blue-600" />
-                          <span className="font-semibold text-blue-600">Projects</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-lg font-bold text-blue-600">{currentMetrics.totalProjects}</span>
-                            <span className="text-muted-foreground">/</span>
-                            <span className="text-lg font-bold text-blue-600">2</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">Current / Target</div>
-                          {currentMetrics.totalProjects >= 2 ? (
-                            <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Target Met!
-                            </Badge>
-                          ) : (
-                            <div className="text-xs text-orange-600">
-                              {2 - currentMetrics.totalProjects} more needed
                             </div>
                           )}
                         </div>
@@ -971,17 +912,15 @@ const GitHubWeekly = () => {
                       <span className="text-sm text-muted-foreground">
                         {[
                           currentMetrics.totalCommits >= 10,
-                          currentMetrics.totalProjects >= 2,
                           currentMetrics.totalReadmeUpdates >= 2
-                        ].filter(Boolean).length} / 3 goals achieved
+                        ].filter(Boolean).length} / 2 goals achieved
                       </span>
                     </div>
                     <Progress 
                       value={[
                         currentMetrics.totalCommits >= 10,
-                        currentMetrics.totalProjects >= 2,
                         currentMetrics.totalReadmeUpdates >= 2
-                      ].filter(Boolean).length / 3 * 100}
+                      ].filter(Boolean).length / 2 * 100}
                       className="h-2"
                     />
                   </div>
