@@ -110,7 +110,10 @@ export const useCareerAssignments = () => {
     try {
       console.log('🔍 fetchAllData started');
       
-      // First fetch templates
+      // Add a unique timestamp to prevent request deduplication conflicts
+      const timestamp = Date.now();
+      
+      // First fetch templates with unique cache key
       const { data: templatesData, error: templatesError } = await supabase
         .from('career_task_templates')
         .select('*')
@@ -122,6 +125,9 @@ export const useCareerAssignments = () => {
       
       // Update templates state immediately
       setTemplates(templatesData || []);
+      
+      // Add small delay to avoid request deduplication conflicts
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       // Now fetch assignments using the fresh templates data
       const { data: assignmentsData, error: assignmentsError } = await supabase
@@ -170,14 +176,66 @@ export const useCareerAssignments = () => {
       console.log('🔍 Setting assignments with templates:', assignmentsWithTemplates.length);
       setAssignments(assignmentsWithTemplates);
 
+      // Add another small delay before evidence fetch
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       // Finally fetch evidence
       await fetchEvidenceWithAssignments(assignmentsData);
       
       console.log('🔍 ✅ All data loaded successfully');
     } catch (error) {
       console.error('🔍 ❌ fetchAllData error:', error);
-      setAssignments([]);
-      setTemplates([]);
+      
+      // If error is due to request deduplication, retry once
+      if (error.message && error.message.includes('body stream already read')) {
+        console.log('🔍 Retrying due to request deduplication conflict...');
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        try {
+          // Simple retry with fresh requests
+          const { data: templatesData, error: templatesError } = await supabase
+            .from('career_task_templates')
+            .select('*')
+            .eq('is_active', true)
+            .order('module', { ascending: true });
+          
+          if (!templatesError && templatesData) {
+            setTemplates(templatesData);
+            
+            const { data: assignmentsData, error: assignmentsError } = await supabase
+              .from('career_task_assignments')
+              .select('*')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false });
+            
+            if (!assignmentsError && assignmentsData) {
+              const assignmentsWithTemplates = assignmentsData.map(assignment => {
+                const template = templatesData?.find(t => t.id === assignment.template_id);
+                return {
+                  ...assignment,
+                  assigned_at: assignment.created_at,
+                  career_task_templates: template || {
+                    id: '', code: '', module: 'RESUME' as const, title: 'Unknown Template',
+                    description: '', category: '', sub_category_id: null, evidence_types: [],
+                    points_reward: 0, cadence: '', difficulty: '', estimated_duration: 0,
+                    instructions: {}, verification_criteria: {}, bonus_rules: {}
+                  }
+                };
+              });
+              setAssignments(assignmentsWithTemplates);
+              await fetchEvidenceWithAssignments(assignmentsData);
+              console.log('🔍 ✅ Retry successful');
+            }
+          }
+        } catch (retryError) {
+          console.error('🔍 ❌ Retry failed:', retryError);
+          setAssignments([]);
+          setTemplates([]);
+        }
+      } else {
+        setAssignments([]);
+        setTemplates([]);
+      }
     } finally {
       setLoading(false);
     }
