@@ -79,6 +79,7 @@ export const useCareerAssignments = () => {
     console.log('🔍 LOADING STATE CHANGED:', loading);
   }, [loading]);
 
+  // Main data fetching effect - triggers on user change and navigation
   useEffect(() => {
     console.log('🔍 useCareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user) {
@@ -93,6 +94,17 @@ export const useCareerAssignments = () => {
       setLoading(false);
     }
   }, [user]);
+
+  // Additional effect to handle navigation-specific loading
+  useEffect(() => {
+    console.log('🔍 Component mounted, checking user availability');
+    // If component mounts and user is already available, ensure data is loaded
+    if (user && assignments.length === 0 && !loading) {
+      console.log('🔍 Component mounted with user but no assignments, triggering fetch');
+      setLoading(true);
+      fetchAllData();
+    }
+  }, []); // Only run once on mount
 
   const fetchAllData = async () => {
     try {
