@@ -167,10 +167,11 @@ export function AppSidebar() {
     return 'U';
   };
 
-  const MenuItem = ({ item, isPremium = false, isSubItem = false }: { 
+  const MenuItem = ({ item, isPremium = false, isSubItem = false, isDisabled = false }: { 
     item: any, 
     isPremium?: boolean, 
-    isSubItem?: boolean 
+    isSubItem?: boolean,
+    isDisabled?: boolean 
   }) => {
     // Special handling for AI-Powered Career Tools to check subscription before opening
     const isAICareerTools = item.title === "AI-Powered Career Tools";
@@ -223,7 +224,28 @@ export function AppSidebar() {
       }
     };
     
-    const menuItem = isAICareerTools ? (
+    // Handle disabled items
+    const handleDisabledClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      // Do nothing for disabled items
+    };
+    
+    const menuItem = isDisabled ? (
+      <div
+        onClick={handleDisabledClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-not-allowed opacity-50 text-muted-foreground`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />
+          </div>
+        )}
+      </div>
+    ) : isAICareerTools ? (
       <div
         onClick={handleAICareerToolsClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
@@ -426,8 +448,17 @@ export function AppSidebar() {
                     }
                   }
                   
+                  // Check if item should be disabled for high tier subscription users
+                  const subscriberPlan = profile?.subscription_plan;
+                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const disabledItems = ["Build Profile", "Career Growth Activities", "Career Growth Report"];
+                  
+                  const isDisabled = subscriberPlan && 
+                    highTierPlans.includes(subscriberPlan) && 
+                    disabledItems.includes(item.title);
+                  
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                  return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
+                  return <MenuItem key={item.title} item={item} isPremium={isPremium} isDisabled={isDisabled} />;
                 })}
 
                 {/* Job Hunter Section */}
