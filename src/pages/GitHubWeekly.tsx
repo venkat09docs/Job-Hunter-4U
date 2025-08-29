@@ -849,7 +849,7 @@ const GitHubWeekly = () => {
                     <Target className="h-4 w-4" />
                     Weekly Targets & Progress
                   </h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
                     <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2">
@@ -871,6 +871,33 @@ const GitHubWeekly = () => {
                           ) : (
                             <div className="text-xs text-orange-600">
                               {10 - currentMetrics.totalCommits} more needed
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <Star className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold text-blue-600">Pinned Repositories</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-lg font-bold text-blue-600">{repos?.length || 0}</span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-lg font-bold text-blue-600">3+</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Current / Target</div>
+                          {(repos?.length || 0) >= 3 ? (
+                            <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Target Met!
+                            </Badge>
+                          ) : (
+                            <div className="text-xs text-orange-600">
+                              {3 - (repos?.length || 0)} more needed
                             </div>
                           )}
                         </div>
