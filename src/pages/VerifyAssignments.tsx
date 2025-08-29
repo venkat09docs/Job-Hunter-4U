@@ -268,6 +268,8 @@ const VerifyAssignments = () => {
       throw linkedInError;
     }
 
+    console.log('🔍 LinkedIn tasks fetched:', linkedInTasks?.length || 0);
+
     // Get user profiles for the LinkedIn task user_ids
     const linkedInUserIds = linkedInTasks?.map(task => task.user_id) || [];
     let profilesData: any[] = [];
@@ -275,23 +277,14 @@ const VerifyAssignments = () => {
     console.log('🔍 LinkedIn user IDs to fetch profiles for:', linkedInUserIds);
     
     if (linkedInUserIds.length > 0) {
-      console.log('🔍 About to fetch profiles with current user role...');
-      
-      // First, let's check what role we have
-      const { data: roleCheck, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-      
-      console.log('🔍 Current user role check:', { roleCheck, roleError });
+      console.log('🔍 About to fetch profiles...');
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, username, full_name')
+        .select('user_id, username, full_name, profile_image_url')
         .in('user_id', linkedInUserIds);
       
-      console.log('🔍 Profile fetch attempt result:', {
+      console.log('🔍 Profile fetch result:', {
         profiles: profiles,
         error: profilesError,
         profileCount: profiles?.length || 0
@@ -299,16 +292,9 @@ const VerifyAssignments = () => {
       
       if (profilesError) {
         console.error('❌ Error fetching profiles for LinkedIn tasks:', profilesError);
-        console.error('❌ Profile fetch error details:', {
-          code: profilesError.code,
-          message: profilesError.message,
-          details: profilesError.details,
-          hint: profilesError.hint
-        });
       } else {
         profilesData = profiles || [];
         console.log('🔍 Successfully fetched profiles for LinkedIn tasks:', profilesData.length);
-        console.log('🔍 Profile data details:', profilesData);
       }
     }
 
