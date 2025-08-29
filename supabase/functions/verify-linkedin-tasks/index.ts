@@ -158,6 +158,63 @@ serve(async (req) => {
         } else {
           verifiedCount++;
           totalPointsAwarded += pointsAwarded;
+          
+          // Process tracking metrics from evidence and add to linkedin_network_metrics
+          for (const evidenceItem of taskEvidence) {
+            if (evidenceItem.evidence_data && evidenceItem.evidence_data.tracking_metrics) {
+              const metrics = evidenceItem.evidence_data.tracking_metrics;
+              const evidenceDate = new Date(evidenceItem.created_at).toISOString().split('T')[0];
+              
+              console.log('Processing tracking metrics:', metrics, 'for date:', evidenceDate);
+              
+              // Insert/update metrics in linkedin_network_metrics
+              const metricsToInsert = [];
+              
+              if (metrics.connections_accepted && metrics.connections_accepted > 0) {
+                metricsToInsert.push({
+                  user_id: user.id, // Use auth user ID
+                  date: evidenceDate,
+                  activity_id: 'connections_accepted',
+                  value: metrics.connections_accepted
+                });
+              }
+              
+              if (metrics.posts_count && metrics.posts_count > 0) {
+                metricsToInsert.push({
+                  user_id: user.id, // Use auth user ID
+                  date: evidenceDate,
+                  activity_id: 'create_post',
+                  value: metrics.posts_count
+                });
+              }
+              
+              if (metrics.profile_views && metrics.profile_views > 0) {
+                metricsToInsert.push({
+                  user_id: user.id, // Use auth user ID
+                  date: evidenceDate,
+                  activity_id: 'profile_views',
+                  value: metrics.profile_views
+                });
+              }
+              
+              if (metricsToInsert.length > 0) {
+                console.log(`Inserting ${metricsToInsert.length} metrics for user ${user.id}:`, metricsToInsert);
+                
+                const { error: metricsError } = await supabase
+                  .from('linkedin_network_metrics')
+                  .upsert(metricsToInsert, {
+                    onConflict: 'user_id,date,activity_id'
+                  });
+                
+                if (metricsError) {
+                  console.error('Error inserting LinkedIn network metrics:', metricsError);
+                } else {
+                  console.log(`✅ Successfully added LinkedIn metrics for user ${user.id}`);
+                }
+              }
+            }
+          }
+          
           // Track newly verified tasks for points allocation
           newlyVerifiedTasks.push({
             ...task,
