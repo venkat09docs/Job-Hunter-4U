@@ -381,15 +381,15 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
               </>
             )}
             
-            {/* Submit Assignment Button - Only when STARTED */}
-            {task.status === 'STARTED' && (
+            {/* Submit Assignment Button - Only when STARTED or REJECTED */}
+            {(task.status === 'STARTED' || task.status === 'REJECTED') && (
               <>
                 {canInteract ? (
                   <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogTrigger asChild>
                       <Button className="w-full">
                         <Upload className="w-4 h-4 mr-2" />
-                        Submit Assignment
+                        {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Assignment'}
                       </Button>
                     </DialogTrigger>
                 <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
@@ -535,7 +535,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                       disabled
                     >
                       <Clock className="w-4 h-4 mr-2" />
-                      Submission Expired
+                      {task.status === 'REJECTED' ? 'Cannot Resubmit - Expired' : 'Submission Expired'}
                     </Button>
                     {availabilityStatus.status === 'expired' && (
                       <RequestReenableDialog
