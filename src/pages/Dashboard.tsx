@@ -65,10 +65,23 @@ const Dashboard = () => {
     return hasActive && hasPlan;
   };
 
-  // Check if user can access Badge Leaders and Leaderboard (admin or any active subscription)
-  const canAccessLeaderboards = () => {
+  // Check if user can access Badge Leaders (admin or eligible subscription: 3M, 6M, 1Y)
+  const canAccessBadgeLeaders = () => {
+    const result = isAdmin || hasEligibleSubscription();
+    return result;
+  };
+
+  // Check if user can access Leaderboard (admin or any active subscription)
+  const canAccessLeaderboard = () => {
     const result = isAdmin || hasActiveSubscription();
     return result;
+  };
+
+  // Check if user has restricted plan for Badge Leaders (not 3M, 6M, 1Y)
+  const hasRestrictedPlanForBadgeLeaders = () => {
+    if (isAdmin) return false;
+    if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
+    return ['1-Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
 
   // Check if user has no active subscription
@@ -540,21 +553,21 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {canAccessLeaderboards() ? (
+                {canAccessBadgeLeaders() ? (
                   <div>
                     <div className="mb-2 text-xs text-muted-foreground">
                       ✅ Access granted - Plan: {profile?.subscription_plan} | Active: {profile?.subscription_active ? 'Yes' : 'No'}
                     </div>
                     <BadgeLeadersSlider />
                   </div>
-                ) : hasNoActiveSubscription() ? (
+                ) : hasRestrictedPlanForBadgeLeaders() ? (
                   <div className="text-center py-12">
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Subscription required to access Badge Leaders
+                      Available with 3 Months, 6 Months, or 1 Year plans
                     </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={allSubscriptionPlans}>
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -563,9 +576,9 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Subscription required to access Badge Leaders
+                      Available with 3 Months, 6 Months, or 1 Year plans
                     </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={allSubscriptionPlans}>
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -582,7 +595,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {canAccessLeaderboards() ? (
+                {canAccessLeaderboard() ? (
                   isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />
                 ) : hasNoActiveSubscription() ? (
                   <div className="text-center py-12">
