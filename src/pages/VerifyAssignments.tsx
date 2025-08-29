@@ -1133,7 +1133,7 @@ const VerifyAssignments = () => {
             </p>
           </div>
         </div>
-        {isAdmin && <AdminReenableRequestsDialog />}
+        {(isAdmin || isRecruiter) && <AdminReenableRequestsDialog />}
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
