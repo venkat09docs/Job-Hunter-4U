@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRole } from "@/hooks/useRole";
@@ -49,6 +50,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
@@ -121,6 +123,7 @@ export function AppSidebar() {
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
   const [githubOpen, setGitHubOpen] = useState(false);
+  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -170,6 +173,14 @@ export function AppSidebar() {
     // Special handling for AI-Powered Career Tools to open in new tab
     const isAICareerTools = item.title === "AI-Powered Career Tools";
     
+    // Special handling for GitHub Weekly - show subscription dialog instead of navigating
+    const isGitHubWeekly = item.title === "GitHub Weekly" && isPremium;
+    
+    const handleGitHubWeeklyClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setSubscriptionDialogOpen(true);
+    };
+    
     const menuItem = isAICareerTools ? (
       <a 
         href={item.url}
@@ -188,6 +199,21 @@ export function AppSidebar() {
           </div>
         )}
       </a>
+    ) : isGitHubWeekly ? (
+      <div 
+        onClick={handleGitHubWeeklyClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />}
+          </div>
+        )}
+      </div>
     ) : (
       <NavLink 
         to={item.url} 
@@ -433,6 +459,21 @@ export function AppSidebar() {
           <Menu className="h-4 w-4" />
         </Button>
       </div>
+      
+      {/* Subscription Dialog for GitHub Weekly */}
+      <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade Required for GitHub Weekly
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              GitHub Weekly is available with our premium plans: 3 Months, 6 Months, or 1 Year Plan.
+            </p>
+          </DialogHeader>
+          <PricingDialog eligiblePlans={["3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+        </DialogContent>
+      </Dialog>
     </div>
     </TooltipProvider>
   );
