@@ -877,7 +877,10 @@ const GitHubWeekly = () => {
                       </div>
                     </div>
 
-                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                    <div 
+                      className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:border-blue-300 hover:bg-blue-50/50"
+                      onClick={() => setActiveTab("repos")}
+                    >
                       <div className="space-y-2">
                         <div className="flex items-center justify-center gap-2">
                           <Star className="h-4 w-4 text-blue-600" />
@@ -900,6 +903,7 @@ const GitHubWeekly = () => {
                               {3 - (repos?.length || 0)} more needed
                             </div>
                           )}
+                          <div className="text-xs text-blue-600 font-medium mt-1">Click to manage repositories →</div>
                         </div>
                       </div>
                     </div>
