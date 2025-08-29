@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { ResizableLayout } from "@/components/ResizableLayout";
+import { BadgeLeadersSlider } from "@/components/BadgeLeadersSlider";
+import LeaderBoard from "@/components/LeaderBoard";
 
 export default function RecruiterDashboard() {
   const navigate = useNavigate();
@@ -231,6 +233,16 @@ export default function RecruiterDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Badge Leaders</h2>
+              <p className="text-muted-foreground">Top performers across different skill categories</p>
+            </div>
+            <BadgeLeadersSlider />
+          </div>
+
+          <LeaderBoard />
         </div>
       </main>
     </ResizableLayout>
