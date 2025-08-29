@@ -20,7 +20,8 @@ import {
   Clock, 
   CheckCircle, 
   AlertCircle,
-  Trophy
+  Trophy,
+  Shield
 } from 'lucide-react';
 import { LinkedInUserTask, Evidence } from '@/hooks/useLinkedInTasks';
 import { format } from 'date-fns';
@@ -71,6 +72,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       case 'VERIFIED': return 'bg-green-500';
       case 'PARTIALLY_VERIFIED': return 'bg-yellow-500'; 
       case 'SUBMITTED': return 'bg-blue-500';
+      case 'REJECTED': return 'bg-red-500';
       case 'STARTED': return 'bg-orange-500';
       case 'NOT_STARTED': return 'bg-gray-400';
       default: return 'bg-gray-400';
@@ -82,6 +84,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       case 'VERIFIED': return 'Completed';
       case 'PARTIALLY_VERIFIED': return 'Partially Verified';
       case 'SUBMITTED': return 'Under Review';
+      case 'REJECTED': return 'Rejected - Resubmit';
       case 'STARTED': return 'Started';
       case 'NOT_STARTED': return 'Not Yet Started';
       default: return 'Not Yet Started';
@@ -94,6 +97,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       case 'STARTED': return <AlertCircle className="w-4 h-4 text-orange-500" />;
       case 'SUBMITTED': return <AlertCircle className="w-4 h-4 text-blue-500" />;
       case 'PARTIALLY_VERIFIED': return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      case 'REJECTED': return <AlertCircle className="w-4 h-4 text-red-500" />;
       case 'VERIFIED': return <CheckCircle className="w-4 h-4 text-green-500" />;
       default: return <Clock className="w-4 h-4" />;
     }
@@ -314,6 +318,33 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Admin Review Section */}
+        {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Admin Review:
+            </Label>
+            <div className={`p-3 rounded-md text-sm border-l-4 ${
+              task.status === 'VERIFIED' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : 'bg-red-50 border-red-500 text-red-800'
+            }`}>
+              <div className="font-medium mb-1">
+                {task.status === 'VERIFIED' ? 'Approved' : 'Rejected'}
+                {task.updated_at && (
+                  <span className="text-xs font-normal ml-2">
+                    on {new Date(task.updated_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-line leading-relaxed">
+                {task.verification_notes}
+              </p>
             </div>
           </div>
         )}

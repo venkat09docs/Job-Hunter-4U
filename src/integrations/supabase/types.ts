@@ -2415,6 +2415,7 @@ export type Database = {
           task_id: string | null
           updated_at: string | null
           user_id: string | null
+          verification_notes: string | null
         }
         Insert: {
           admin_extended?: boolean | null
@@ -2430,6 +2431,7 @@ export type Database = {
           task_id?: string | null
           updated_at?: string | null
           user_id?: string | null
+          verification_notes?: string | null
         }
         Update: {
           admin_extended?: boolean | null
@@ -2445,6 +2447,7 @@ export type Database = {
           task_id?: string | null
           updated_at?: string | null
           user_id?: string | null
+          verification_notes?: string | null
         }
         Relationships: [
           {

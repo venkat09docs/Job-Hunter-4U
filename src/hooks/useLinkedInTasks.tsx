@@ -20,10 +20,11 @@ export interface LinkedInUserTask {
   task_id: string;
   period: string;
   due_at: string;
-  status: 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED';
+  status: 'NOT_STARTED' | 'STARTED' | 'SUBMITTED' | 'PARTIALLY_VERIFIED' | 'VERIFIED' | 'REJECTED';
   score_awarded: number;
   created_at: string;
   updated_at: string;
+  verification_notes?: string;
   admin_extended?: boolean;
   extended_by?: string;
   extended_at?: string;
