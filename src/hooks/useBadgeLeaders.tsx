@@ -30,12 +30,13 @@ export const useBadgeLeaders = () => {
     try {
       setLoading(true);
 
-      // Use RPC function for safer profile data access
-      const { data: rpcProfileData, error: rpcError } = await supabase
-        .rpc('get_safe_leaderboard_profiles');
+      // Get all profiles directly since recruiters should see all user details
+      const { data: allProfilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, username, full_name, profile_image_url, industry');
 
-      if (rpcError) {
-        console.error('❌ Error fetching profiles:', rpcError);
+      if (profilesError) {
+        console.error('❌ Error fetching all profiles:', profilesError);
       }
 
       // Get users who have earned profile badges
@@ -78,9 +79,9 @@ export const useBadgeLeaders = () => {
 
       // Combine badge data with profile data and current total points
       let processedProfileBadgeData = [];
-      if (profileBadgeData && profileBadgeData.length > 0 && rpcProfileData && rpcProfileData.length > 0) {
+      if (profileBadgeData && profileBadgeData.length > 0 && allProfilesData && allProfilesData.length > 0) {
         processedProfileBadgeData = profileBadgeData.map(badge => {
-          const profile = rpcProfileData.find(p => p.user_id === badge.user_id);
+          const profile = allProfilesData.find(p => p.user_id === badge.user_id);
           return {
             ...badge,
             profiles: profile,

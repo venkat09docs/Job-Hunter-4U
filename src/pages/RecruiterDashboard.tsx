@@ -35,6 +35,16 @@ export default function RecruiterDashboard() {
             </Button>
           </div>
 
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Badge Leaders</h2>
+              <p className="text-muted-foreground">Top performers across different skill categories</p>
+            </div>
+            <BadgeLeadersSlider />
+          </div>
+
+          <LeaderBoard />
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -233,16 +243,6 @@ export default function RecruiterDashboard() {
               </CardContent>
             </Card>
           </div>
-
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight">Badge Leaders</h2>
-              <p className="text-muted-foreground">Top performers across different skill categories</p>
-            </div>
-            <BadgeLeadersSlider />
-          </div>
-
-          <LeaderBoard />
         </div>
       </main>
     </ResizableLayout>
