@@ -65,18 +65,20 @@ const Dashboard = () => {
     return hasActive && hasPlan;
   };
 
-  // Check if user can access Badge Leaders and Leaderboard (admin or eligible subscription)
+  // Check if user can access Badge Leaders and Leaderboard (admin or any active subscription)
   const canAccessLeaderboards = () => {
-    const result = isAdmin || hasEligibleSubscription();
+    const result = isAdmin || hasActiveSubscription();
     return result;
   };
 
-  // Check if user has restricted plan (1-week or 1-month)
-  const hasRestrictedPlan = () => {
+  // Check if user has no active subscription
+  const hasNoActiveSubscription = () => {
     if (isAdmin) return false;
-    if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
-    return ['1-Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
+    return !hasActiveSubscription();
   };
+
+  // All available subscription plans for upgrade dialog
+  const allSubscriptionPlans = ['1-Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
@@ -545,14 +547,14 @@ const Dashboard = () => {
                     </div>
                     <BadgeLeadersSlider />
                   </div>
-                ) : hasRestrictedPlan() ? (
+                ) : hasNoActiveSubscription() ? (
                   <div className="text-center py-12">
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      Subscription required to access Badge Leaders
                     </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={allSubscriptionPlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -561,9 +563,9 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      Subscription required to access Badge Leaders
                     </p>
-                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={allSubscriptionPlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -582,14 +584,14 @@ const Dashboard = () => {
               <CardContent>
                 {canAccessLeaderboards() ? (
                   isInstituteAdmin ? <InstituteLeaderBoard /> : <LeaderBoard />
-                ) : hasRestrictedPlan() ? (
+                ) : hasNoActiveSubscription() ? (
                   <div className="text-center py-12">
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      Subscription required to access Leaderboard
                     </p>
-                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={allSubscriptionPlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
@@ -598,9 +600,9 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Leaderboard</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      Subscription required to access Leaderboard
                     </p>
-                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={eligiblePlans}>
+                    <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={allSubscriptionPlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
                   </div>
