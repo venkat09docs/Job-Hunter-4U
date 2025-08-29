@@ -160,6 +160,18 @@ const CareerAssignments = () => {
     };
   };
 
+  // Show loading state while data is being fetched
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <p className="mt-4 text-lg">Loading your assignments...</p>
+        </div>
+      </div>
+    );
+  }
+
   const getTasksBySubCategory = (subCategoryId: string) => {
     console.log('getTasksBySubCategory called with:', subCategoryId);
     console.log('assignments available:', assignments?.length || 0);

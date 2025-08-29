@@ -66,6 +66,19 @@ export const useCareerAssignments = () => {
   const { user } = useAuth();
   const { isRecruiter, isAdmin, isInstituteAdmin } = useRole();
 
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('🔍 ASSIGNMENTS STATE CHANGED:', assignments.length, 'assignments');
+  }, [assignments]);
+
+  useEffect(() => {
+    console.log('🔍 TEMPLATES STATE CHANGED:', templates.length, 'templates');
+  }, [templates]);
+
+  useEffect(() => {
+    console.log('🔍 LOADING STATE CHANGED:', loading);
+  }, [loading]);
+
   useEffect(() => {
     console.log('🔍 useCareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user) {
@@ -83,6 +96,7 @@ export const useCareerAssignments = () => {
       });
     } else {
       console.log('🔍 No user available, skipping data fetch');
+      setLoading(false);
     }
   }, [user]);
 
@@ -142,6 +156,7 @@ export const useCareerAssignments = () => {
       // Manually join the data
       const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
         const template = templatesData?.find(t => t.id === assignment.template_id);
+        console.log('🔍 Mapping assignment:', assignment.id, 'to template:', template?.title || 'NOT FOUND');
         return {
           ...assignment,
           assigned_at: assignment.created_at,
@@ -152,6 +167,7 @@ export const useCareerAssignments = () => {
             title: 'Unknown Template',
             description: '',
             category: '',
+            sub_category_id: null,
             evidence_types: [],
             points_reward: 0,
             cadence: '',
@@ -165,10 +181,16 @@ export const useCareerAssignments = () => {
       });
       
       console.log('🔍 Final assignments with templates:', assignmentsWithTemplates.length);
-      setAssignments(assignmentsWithTemplates);
+      console.log('🔍 Sample assignment with sub_category_id:', assignmentsWithTemplates[0]?.career_task_templates?.sub_category_id);
+      
+      // Force a small delay to ensure state updates properly
+      setTimeout(() => {
+        setAssignments(assignmentsWithTemplates);
+        console.log('🔍 Assignments set in state');
+      }, 10);
+      
     } catch (error) {
       console.error('🔍 fetchAssignments error:', error);
-      // Don't show error toast for missing assignments - just set empty array
       setAssignments([]);
     }
   };
@@ -555,7 +577,10 @@ export const useCareerAssignments = () => {
     getModuleProgress,
     getTotalPoints,
     getMaxPoints,
-    refreshData: () => Promise.all([fetchAssignments(), fetchEvidence()])
+    refreshData: () => {
+      console.log('🔍 Refreshing data manually...');
+      return Promise.all([fetchAssignments(), fetchEvidence()]);
+    }
   };
 };
 
