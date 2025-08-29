@@ -208,6 +208,29 @@ export const useGitHubWeekly = () => {
     enabled: !!user?.id,
   });
 
+  // Fetch historical assignments (all periods)
+  const { data: historicalAssignments = [] } = useQuery({
+    queryKey: ['github-historical-assignments', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('github_user_tasks')
+        .select(`
+          *,
+          github_tasks (*)
+        `)
+        .eq('user_id', user.id)
+        .not('period', 'is', null) // Only get period-based tasks (assignments)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 60 * 1000, // 1 minute
+  });
+
   // Add repository mutation
   const addRepoMutation = useMutation({
     mutationFn: async (repoFullName: string) => {
@@ -367,6 +390,7 @@ export const useGitHubWeekly = () => {
     signals,
     scores,
     badges,
+    historicalAssignments,
 
     // Loading states
     isLoading: weeklyLoading || reposLoading || repoTasksLoading,
