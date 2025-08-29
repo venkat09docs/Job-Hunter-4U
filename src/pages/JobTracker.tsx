@@ -204,26 +204,38 @@ const JobTracker = () => {
             const { data: createdAssignments, error: createError } = await supabase
               .from('career_task_assignments')
               .insert(newAssignments)
-              .select(`
-                *,
-                career_task_templates (
-                  title,
-                  description,
-                  instructions,
-                  category,
-                  code
-                )
-              `);
+              .select('*');
 
             if (createError) {
               console.error('Failed to create interview prep assignments:', createError);
               throw createError;
             }
 
-            console.log('DEBUG: Successfully created', createdAssignments?.length || 0, 'interview prep assignments:', createdAssignments);
+            // Fetch templates separately to avoid join issues
+            const templateIds = templates.map((t: any) => t.id);
+            const { data: templatesData, error: templatesError } = await supabase
+              .from('career_task_templates')
+              .select('id, title, description, instructions, category, code')
+              .in('id', templateIds);
+
+            if (templatesError) {
+              console.error('Error fetching template details:', templatesError);
+              throw templatesError;
+            }
+
+            // Manually join the data
+            const assignmentsWithTemplates = (createdAssignments || []).map(assignment => {
+              const template = templatesData?.find(t => t.id === assignment.template_id);
+              return {
+                ...assignment,
+                career_task_templates: template || null
+              };
+            });
+
+            console.log('DEBUG: Successfully created', assignmentsWithTemplates?.length || 0, 'interview prep assignments:', assignmentsWithTemplates);
             
             // Validate that assignments were created with proper data
-            const validAssignments = createdAssignments?.filter(assignment => 
+            const validAssignments = assignmentsWithTemplates?.filter(assignment => 
               assignment.career_task_templates && 
               assignment.career_task_templates.title
             ) || [];

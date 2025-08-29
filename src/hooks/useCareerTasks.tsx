@@ -79,20 +79,50 @@ export const useCareerTasks = () => {
     try {
       const targetWeek = weekStartDate || getCurrentWeekStart();
       
-      const { data, error } = await supabase
+      // Fetch assignments separately to avoid join issues
+      const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('career_task_assignments')
-        .select(`
-          *,
-          career_task_templates(*),
-          evidence:career_task_evidence(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('week_start_date', targetWeek)
         .order('assigned_at', { ascending: true });
 
-      if (error) throw error;
+      if (assignmentsError) throw assignmentsError;
 
-      setAssignments(data || []);
+      // Fetch templates separately
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('career_task_templates')
+        .select('*')
+        .eq('is_active', true);
+
+      if (templatesError) throw templatesError;
+
+      // Fetch evidence separately
+      const assignmentIds = (assignmentsData || []).map(a => a.id);
+      let evidenceData = [];
+      
+      if (assignmentIds.length > 0) {
+        const { data: evidence, error: evidenceError } = await supabase
+          .from('career_task_evidence')
+          .select('*')
+          .in('assignment_id', assignmentIds);
+
+        if (evidenceError) throw evidenceError;
+        evidenceData = evidence || [];
+      }
+
+      // Manually join the data
+      const assignmentsWithDetails = (assignmentsData || []).map(assignment => {
+        const template = templatesData?.find(t => t.id === assignment.template_id);
+        const evidence = evidenceData.filter(e => e.assignment_id === assignment.id);
+        return {
+          ...assignment,
+          career_task_templates: template || null,
+          evidence: evidence
+        };
+      });
+
+      setAssignments(assignmentsWithDetails);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to fetch assignments');

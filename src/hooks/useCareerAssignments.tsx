@@ -96,33 +96,15 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      // Use explicit join instead of nested query to avoid foreign key issues
-      const { data, error } = await supabase
+      // Fetch assignments and templates separately to avoid join issues
+      const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('career_task_assignments')
-        .select(`
-          id,
-          user_id,
-          template_id,
-          period,
-          due_date,
-          week_start_date,
-          status,
-          score_awarded,
-          points_earned,
-          created_at,
-          updated_at,
-          assigned_at,
-          submitted_at,
-          verified_at,
-          verified_by,
-          verification_notes
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (assignmentsError) throw assignmentsError;
 
-      // Fetch templates separately to avoid join issues
       const { data: templatesData, error: templatesError } = await supabase
         .from('career_task_templates')
         .select('*')
@@ -130,8 +112,8 @@ export const useCareerAssignments = () => {
 
       if (templatesError) throw templatesError;
 
-      // Merge the data manually
-      const assignmentsWithTemplates = (data || []).map(assignment => {
+      // Manually join the data
+      const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
         const template = templatesData?.find(t => t.id === assignment.template_id);
         return {
           ...assignment,
@@ -139,7 +121,7 @@ export const useCareerAssignments = () => {
           career_task_templates: template || null
         };
       });
-
+      
       setAssignments(assignmentsWithTemplates);
     } catch (error) {
       console.error('Error fetching assignments:', error);
@@ -151,15 +133,7 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      // Get evidence with explicit queries to avoid join issues
-      const { data, error } = await supabase
-        .from('career_task_evidence')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Filter evidence for user's assignments
+      // Get user's assignment IDs first, then filter evidence
       const { data: userAssignments, error: assignmentsError } = await supabase
         .from('career_task_assignments')
         .select('id, user_id, template_id')
@@ -167,7 +141,23 @@ export const useCareerAssignments = () => {
 
       if (assignmentsError) throw assignmentsError;
 
-      // Get templates for context
+      const assignmentIds = userAssignments?.map(a => a.id) || [];
+      
+      if (assignmentIds.length === 0) {
+        setEvidence([]);
+        return;
+      }
+
+      // Now get evidence for those assignments
+      const { data: evidenceData, error } = await supabase
+        .from('career_task_evidence')
+        .select('*')
+        .in('assignment_id', assignmentIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Get template details for context
       const { data: templatesData, error: templatesError } = await supabase
         .from('career_task_templates')
         .select('id, title, category')
@@ -175,26 +165,23 @@ export const useCareerAssignments = () => {
 
       if (templatesError) throw templatesError;
 
-      // Filter evidence for user's assignments and add template info
-      const userAssignmentIds = new Set(userAssignments?.map(a => a.id) || []);
-      const filteredEvidence = (data || [])
-        .filter(evidence => userAssignmentIds.has(evidence.assignment_id))
-        .map(evidence => {
-          const assignment = userAssignments?.find(a => a.id === evidence.assignment_id);
-          const template = templatesData?.find(t => t.id === assignment?.template_id);
-          return {
-            ...evidence,
-            career_task_assignments: assignment ? {
-              user_id: assignment.user_id,
-              career_task_templates: template ? {
-                title: template.title,
-                category: template.category
-              } : null
-            } : null
-          };
-        });
+      // Map evidence with assignment and template info
+      const evidenceWithDetails = (evidenceData || []).map(evidence => {
+        const assignment = userAssignments?.find(a => a.id === evidence.assignment_id);
+        const template = templatesData?.find(t => t.id === assignment?.template_id);
+        return {
+          ...evidence,
+          career_task_assignments: assignment ? {
+            user_id: assignment.user_id,
+            career_task_templates: template ? {
+              title: template.title,
+              category: template.category
+            } : undefined
+          } : undefined
+        };
+      });
 
-      setEvidence(filteredEvidence);
+      setEvidence(evidenceWithDetails);
     } catch (error) {
       console.error('Error fetching evidence:', error);
       toast.error('Failed to load evidence');
