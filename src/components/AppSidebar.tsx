@@ -70,7 +70,7 @@ const jobHunterItems = [
 const githubItems = [
   { title: "GitHub Optimization", url: "/dashboard/github-optimization", icon: Github, featureKey: "page_github_optimization" },
   { title: "GitHub Activity Tracker", url: "/dashboard/github-activity-tracker", icon: BarChart3, featureKey: "page_github_activity_tracker" },
-  { title: "GitHub Weekly", url: "/github-weekly", icon: Target, featureKey: null },
+  { title: "GitHub Weekly", url: "/github-weekly", icon: Target, featureKey: "github_weekly" },
 ];
 
 const recruiterItems = [
