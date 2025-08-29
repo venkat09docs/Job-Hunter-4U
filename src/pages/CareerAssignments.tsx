@@ -66,6 +66,7 @@ const CareerAssignments = () => {
   const [completedTasks, setCompletedTasks] = useState(0);
 
   useEffect(() => {
+    console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user) {
       fetchData();
       setupRealtimeSubscription();
@@ -101,11 +102,13 @@ const CareerAssignments = () => {
 
   // Calculate stats when assignments change
   useEffect(() => {
+    console.log('🔍 CareerAssignments stats calculation triggered', { assignmentsLength: assignments?.length || 0 });
     if (assignments) {
       const completed = assignments.filter(a => a.status === 'verified').length;
       const points = assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
       const maxPts = assignments.reduce((sum, a) => sum + (a.career_task_templates?.points_reward || 0), 0);
       
+      console.log('🔍 Calculated stats:', { completed, points, maxPts });
       setCompletedTasks(completed);
       setTotalPoints(points);
       setMaxPoints(maxPts);

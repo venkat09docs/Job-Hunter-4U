@@ -67,16 +67,25 @@ export const useCareerAssignments = () => {
   const { isRecruiter, isAdmin, isInstituteAdmin } = useRole();
 
   useEffect(() => {
+    console.log('🔍 useCareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user) {
+      setLoading(true);
+      console.log('🔍 Starting data fetch...');
       Promise.all([
         fetchTemplates(),
-        fetchAssignments(),
+        fetchAssignments(), 
         fetchEvidence()
-      ]).finally(() => setLoading(false));
+      ]).finally(() => {
+        console.log('🔍 All data fetching completed');
+        setLoading(false);
+      });
+    } else {
+      console.log('🔍 No user available, skipping data fetch');
     }
   }, [user]);
 
   const fetchTemplates = async () => {
+    console.log('🔍 fetchTemplates started');
     try {
       const { data, error } = await supabase
         .from('career_task_templates')
@@ -85,19 +94,25 @@ export const useCareerAssignments = () => {
         .order('module', { ascending: true });
 
       if (error) throw error;
+      console.log('🔍 fetchTemplates success:', data?.length || 0, 'templates');
       setTemplates(data || []);
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      console.error('🔍 fetchTemplates error:', error);
       // Don't show error toast for missing templates - just set empty array
       setTemplates([]);
     }
   };
 
   const fetchAssignments = async () => {
-    if (!user) return;
+    console.log('🔍 fetchAssignments started', { userId: user?.id });
+    if (!user) {
+      console.log('🔍 fetchAssignments aborted - no user');
+      return;
+    }
 
     try {
       // Fetch assignments and templates separately to avoid join issues
+      console.log('🔍 Fetching assignments for user:', user.id);
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('career_task_assignments')
         .select('*')
@@ -105,13 +120,16 @@ export const useCareerAssignments = () => {
         .order('created_at', { ascending: false });
 
       if (assignmentsError) throw assignmentsError;
+      console.log('🔍 Raw assignments fetched:', assignmentsData?.length || 0);
 
+      console.log('🔍 Fetching templates for joining...');
       const { data: templatesData, error: templatesError } = await supabase
         .from('career_task_templates')
         .select('*')
         .eq('is_active', true);
 
       if (templatesError) throw templatesError;
+      console.log('🔍 Templates for joining fetched:', templatesData?.length || 0);
 
       // Manually join the data
       const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
@@ -138,9 +156,10 @@ export const useCareerAssignments = () => {
         };
       });
       
+      console.log('🔍 Final assignments with templates:', assignmentsWithTemplates.length);
       setAssignments(assignmentsWithTemplates);
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      console.error('🔍 fetchAssignments error:', error);
       // Don't show error toast for missing assignments - just set empty array
       setAssignments([]);
     }
