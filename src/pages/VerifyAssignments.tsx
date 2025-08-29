@@ -850,6 +850,64 @@ const VerifyAssignments = () => {
           throw error;
         }
 
+        // If approved, process tracking metrics from evidence and add to linkedin_network_metrics
+        if (approved && selectedAssignment.evidence) {
+          for (const evidenceItem of selectedAssignment.evidence) {
+            if (evidenceItem.evidence_data && evidenceItem.evidence_data.tracking_metrics) {
+              const metrics = evidenceItem.evidence_data.tracking_metrics;
+              const evidenceDate = new Date(evidenceItem.created_at).toISOString().split('T')[0];
+              
+              console.log('🔍 Processing LinkedIn tracking metrics for approval:', metrics, 'for date:', evidenceDate);
+              
+              // Insert/update metrics in linkedin_network_metrics
+              const metricsToInsert = [];
+              
+              if (metrics.connections_accepted && metrics.connections_accepted > 0) {
+                metricsToInsert.push({
+                  user_id: selectedAssignment.user_id, // Use user_id from assignment
+                  date: evidenceDate,
+                  activity_id: 'connections_accepted',
+                  value: metrics.connections_accepted
+                });
+              }
+              
+              if (metrics.posts_count && metrics.posts_count > 0) {
+                metricsToInsert.push({
+                  user_id: selectedAssignment.user_id, // Use user_id from assignment
+                  date: evidenceDate,
+                  activity_id: 'create_post',
+                  value: metrics.posts_count
+                });
+              }
+              
+              if (metrics.profile_views && metrics.profile_views > 0) {
+                metricsToInsert.push({
+                  user_id: selectedAssignment.user_id, // Use user_id from assignment
+                  date: evidenceDate,
+                  activity_id: 'profile_views',
+                  value: metrics.profile_views
+                });
+              }
+              
+              if (metricsToInsert.length > 0) {
+                console.log(`🔍 Inserting ${metricsToInsert.length} LinkedIn metrics:`, metricsToInsert);
+                
+                const { error: metricsError } = await supabase
+                  .from('linkedin_network_metrics')
+                  .upsert(metricsToInsert, {
+                    onConflict: 'user_id,date,activity_id'
+                  });
+                
+                if (metricsError) {
+                  console.error('🔍 Error inserting LinkedIn network metrics:', metricsError);
+                } else {
+                  console.log(`✅ Successfully added LinkedIn metrics to growth stats for user ${selectedAssignment.user_id}`);
+                }
+              }
+            }
+          }
+        }
+
         console.log('🔍 LinkedIn assignment updated successfully');
 
         // If approved, add points to user_activity_points table
