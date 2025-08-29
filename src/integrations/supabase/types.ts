@@ -4046,6 +4046,7 @@ export type Database = {
         | "SUBMITTED"
         | "PARTIALLY_VERIFIED"
         | "VERIFIED"
+        | "REJECTED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4196,6 +4197,7 @@ export const Constants = {
         "SUBMITTED",
         "PARTIALLY_VERIFIED",
         "VERIFIED",
+        "REJECTED",
       ],
     },
   },
