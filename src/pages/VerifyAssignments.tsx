@@ -47,6 +47,8 @@ interface SubmittedAssignment {
   _originalLinkedInTask?: any;
   _isJobHuntingAssignment?: boolean;
   _originalJobHuntingTask?: any;
+  _isGitHubAssignment?: boolean;
+  _originalGitHubTask?: any;
 }
 
 const VerifyAssignments = () => {
@@ -923,6 +925,48 @@ const VerifyAssignments = () => {
         } else {
           console.log('🔍 Job Hunting assignment rejected successfully');
           toast.success(`Job Hunting assignment rejected successfully`);
+        }
+      } else if (selectedAssignment._isGitHubAssignment) {
+        // Handle GitHub assignment verification
+        console.log('🔍 Processing GitHub assignment verification');
+        const { error } = await supabase
+          .from('github_user_tasks')
+          .update({
+            status: approved ? 'VERIFIED' : 'NOT_STARTED', // Reset to NOT_STARTED for resubmission
+            score_awarded: approved ? selectedAssignment.career_task_templates.points_reward : 0
+          })
+          .eq('id', selectedAssignment._originalGitHubTask.id);
+
+        if (error) {
+          console.error('🔍 Error updating GitHub task status:', error);
+          throw error;
+        }
+
+        console.log('🔍 GitHub assignment updated successfully');
+
+        // If approved, add points to user_activity_points table
+        if (approved) {
+          console.log('🔍 Adding points to user_activity_points for GitHub task');
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_id: selectedAssignment.id,
+              activity_type: 'github_task_completion',
+              points_earned: selectedAssignment.career_task_templates.points_reward,
+              activity_date: new Date().toISOString().split('T')[0]
+            });
+
+          if (pointsError) {
+            console.error('🔍 Error adding points for GitHub task:', pointsError);
+            toast.success(`GitHub assignment approved successfully, but there was an issue recording points`);
+          } else {
+            console.log('🔍 Points added successfully for GitHub task');
+            toast.success(`GitHub assignment approved and ${selectedAssignment.career_task_templates.points_reward} points awarded!`);
+          }
+        } else {
+          console.log('🔍 GitHub assignment rejected successfully');
+          toast.success(`GitHub assignment rejected successfully`);
         }
       } else {
         // Handle regular career assignment verification
