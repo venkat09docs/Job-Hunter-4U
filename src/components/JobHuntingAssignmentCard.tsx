@@ -19,7 +19,8 @@ import {
   XCircle,
   AlertCircle,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  Shield
 } from 'lucide-react';
 import { JobHuntingAssignment, useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { toast } from 'sonner';
@@ -385,6 +386,33 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
             <p className="text-xs text-green-600 dark:text-green-300 mt-1">
               {assignment.points_earned} points earned
             </p>
+          </div>
+        )}
+
+        {/* Admin Review Section */}
+        {(assignment.status === 'verified' || assignment.status === 'rejected') && assignment.verification_notes && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Admin Review:
+            </Label>
+            <div className={`p-3 rounded-md text-sm border-l-4 ${
+              assignment.status === 'verified' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : 'bg-red-50 border-red-500 text-red-800'
+            }`}>
+              <div className="font-medium mb-1">
+                {assignment.status === 'verified' ? 'Approved' : 'Rejected'}
+                {assignment.verified_at && (
+                  <span className="text-xs font-normal ml-2">
+                    on {new Date(assignment.verified_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-line leading-relaxed">
+                {assignment.verification_notes}
+              </p>
+            </div>
           </div>
         )}
 

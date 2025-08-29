@@ -40,6 +40,7 @@ interface GitHubUserTask {
   score_awarded: number;
   created_at: string;
   updated_at: string;
+  verification_notes?: string;
   github_tasks?: GitHubTask;
 }
 

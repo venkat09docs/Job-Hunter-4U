@@ -28,6 +28,7 @@ export interface JobHuntingAssignment {
   submitted_at?: string;
   verified_at?: string;
   verified_by?: string;
+  verification_notes?: string;
   points_earned: number;
   score_awarded: number;
   due_date: string;

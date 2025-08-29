@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -241,6 +241,40 @@ export const GitHubWeeklyAssignments = () => {
                       {task.status === 'VERIFIED' ? 'Completed!' : 'Partially completed'}
                     </div>
                   )}
+
+                  {task.status === 'REJECTED' && (
+                    <div className="flex items-center gap-2 text-sm text-red-600">
+                      <AlertCircle className="h-4 w-4" />
+                      Rejected - Please resubmit
+                    </div>
+                  )}
+
+                  {/* Admin Review Section for GitHub Weekly Tasks */}
+                  {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+                    <div className="mt-3 space-y-2">
+                      <Label className="text-sm font-medium flex items-center gap-2">
+                        <Shield className="w-4 h-4" />
+                        Admin Review:
+                      </Label>
+                      <div className={`p-3 rounded-md text-sm border-l-4 ${
+                        task.status === 'VERIFIED' 
+                          ? 'bg-green-50 border-green-500 text-green-800' 
+                          : 'bg-red-50 border-red-500 text-red-800'
+                      }`}>
+                        <div className="font-medium mb-1">
+                          {task.status === 'VERIFIED' ? 'Approved' : 'Rejected'}
+                          {task.updated_at && (
+                            <span className="text-xs font-normal ml-2">
+                              on {new Date(task.updated_at).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        <p className="whitespace-pre-line leading-relaxed">
+                          {task.verification_notes}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -340,6 +374,40 @@ export const GitHubWeeklyAssignments = () => {
                                   
                                 </DialogContent>
                               </Dialog>
+                            )}
+
+                            {task.status === 'REJECTED' && (
+                              <div className="flex items-center gap-2 text-sm text-red-600 mt-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Rejected - Please resubmit
+                              </div>
+                            )}
+
+                            {/* Admin Review Section for Repo Tasks */}
+                            {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+                              <div className="mt-3 space-y-2">
+                                <Label className="text-sm font-medium flex items-center gap-2">
+                                  <Shield className="w-4 h-4" />
+                                  Admin Review:
+                                </Label>
+                                <div className={`p-3 rounded-md text-sm border-l-4 ${
+                                  task.status === 'VERIFIED' 
+                                    ? 'bg-green-50 border-green-500 text-green-800' 
+                                    : 'bg-red-50 border-red-500 text-red-800'
+                                }`}>
+                                  <div className="font-medium mb-1">
+                                    {task.status === 'VERIFIED' ? 'Approved' : 'Rejected'}
+                                    {task.updated_at && (
+                                      <span className="text-xs font-normal ml-2">
+                                        on {new Date(task.updated_at).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="whitespace-pre-line leading-relaxed">
+                                    {task.verification_notes}
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </AccordionContent>
                         </AccordionItem>
