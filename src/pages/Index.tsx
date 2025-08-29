@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
@@ -14,14 +15,21 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   const { user, loading, hasLoggedOut } = useAuth();
+  const { isRecruiter, isAdmin, isInstituteAdmin } = useRole();
   const navigate = useNavigate();
 
   useEffect(() => {
     // Don't redirect if still loading, if user has just logged out, or to avoid premature redirects
     if (!loading && user && !hasLoggedOut) {
+      // Redirect recruiters to their dashboard
+      if (isRecruiter && !isAdmin && !isInstituteAdmin) {
+        navigate('/recruiter');
+        return;
+      }
+      // Default dashboard redirect for regular users
       navigate('/dashboard');
     }
-  }, [user, loading, hasLoggedOut, navigate]);
+  }, [user, loading, hasLoggedOut, navigate, isRecruiter, isAdmin, isInstituteAdmin]);
 
   return (
     <div className="min-h-screen">

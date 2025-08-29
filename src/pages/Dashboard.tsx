@@ -44,7 +44,7 @@ const Dashboard = () => {
   const WEEKLY_TARGET = 3;
   
   // ALL HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
-  const { user, signOut } = useAuth();
+  const { user, signOut, hasLoggedOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
   
@@ -375,6 +375,13 @@ const Dashboard = () => {
       supabase.removeChannel(channel);
     };
   }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData, refreshWeeklyFlow]);
+
+  // Early redirect for recruiters to their specific dashboard
+  useEffect(() => {
+    if (!loading && user && !hasLoggedOut && isRecruiter && !isAdmin && !isInstituteAdmin) {
+      navigate('/recruiter');
+    }
+  }, [user, loading, hasLoggedOut, navigate, isRecruiter, isAdmin, isInstituteAdmin]);
 
   // AFTER ALL HOOKS - Now safe to do conditional rendering
   console.log('Dashboard: user =', user);
