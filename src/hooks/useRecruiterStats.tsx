@@ -72,6 +72,8 @@ export const useRecruiterStats = () => {
 
         if (pendingCareerError) throw pendingCareerError;
 
+        console.log('🔍 Recruiter Stats - Pending Career Assignments:', pendingCareerAssignments?.length || 0);
+
         // Get verified assignments from career_task_assignments
         const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
           .from('career_task_assignments')
@@ -79,6 +81,8 @@ export const useRecruiterStats = () => {
           .eq('status', 'verified');
 
         if (verifiedCareerError) throw verifiedCareerError;
+
+        console.log('🔍 Recruiter Stats - Verified Career Assignments:', verifiedCareerAssignments?.length || 0);
 
         // Get pending assignments from job_hunting_assignments
         const { data: pendingJobAssignments, error: pendingJobError } = await supabase
@@ -88,6 +92,8 @@ export const useRecruiterStats = () => {
 
         if (pendingJobError) throw pendingJobError;
 
+        console.log('🔍 Recruiter Stats - Pending Job Assignments:', pendingJobAssignments?.length || 0);
+
         // Get verified assignments from job_hunting_assignments
         const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
           .from('job_hunting_assignments')
@@ -95,6 +101,8 @@ export const useRecruiterStats = () => {
           .eq('status', 'verified');
 
         if (verifiedJobError) throw verifiedJobError;
+
+        console.log('🔍 Recruiter Stats - Verified Job Assignments:', verifiedJobAssignments?.length || 0);
 
         // Get extension requests
         const { data: extensionRequests, error: extensionError } = await supabase
@@ -104,9 +112,17 @@ export const useRecruiterStats = () => {
 
         if (extensionError) throw extensionError;
 
+        console.log('🔍 Recruiter Stats - Extension Requests:', extensionRequests?.length || 0);
+
         const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + (pendingJobAssignments?.length || 0);
         const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + (verifiedJobAssignments?.length || 0);
         const totalExtensionRequests = extensionRequests?.length || 0;
+
+        console.log('🔍 Recruiter Stats - Final Totals:', {
+          pending: totalPendingAssignments,
+          verified: totalVerifiedAssignments, 
+          extensions: totalExtensionRequests
+        });
 
         // For now, we'll set applications and views to 0 since we don't have those tables yet
         // These can be implemented later when application tracking is added
