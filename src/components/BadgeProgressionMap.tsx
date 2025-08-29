@@ -45,6 +45,7 @@ interface BadgeProgressionMapProps {
   githubRepos?: number;
   subscriptionPlan?: string | null;
   careerLoading?: boolean;
+  onGoldBadgeUpgradeRequired?: () => void; // Callback for 3-months plan users clicking gold badge
 }
 
 const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
@@ -62,6 +63,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   githubRepos = 0,
   subscriptionPlan = null,
   careerLoading = false,
+  onGoldBadgeUpgradeRequired,
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
@@ -88,6 +90,11 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   // Check if user has premium subscription plan (6-month or 1-year)
   const hasPremiumPlan = () => {
     return subscriptionPlan === '6 Months Plan' || subscriptionPlan === '1 Year Plan';
+  };
+
+  // Check if user has 3-months plan
+  const hasThreeMonthsPlan = () => {
+    return subscriptionPlan === '3 Months Plan';
   };
 
   // Badge unlock logic - progressive unlocking system
@@ -514,17 +521,24 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                               color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
                               backgroundColor: isAwarded ? `${tierColor}05` : 'transparent'
                             }}
-                            disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
+                            disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
                             onClick={async (e) => {
                               e.stopPropagation();
-                              if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
+                              
+                              // Special handling for gold badge clicks by 3-months plan users
+                              if (badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan() && onGoldBadgeUpgradeRequired) {
+                                onGoldBadgeUpgradeRequired();
+                                return;
+                              }
+                              
+                              if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
                                 // Temporarily disabled badge checking due to data conflicts
                                 // await checkAndAwardBadges();
                                 navigate(badge.link);
                               }
                             }}
                           >
-                            {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
+                            {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan()) ? 'Upgrade to Continue' : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
                           </Button>
                         </CardContent>
 

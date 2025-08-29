@@ -27,6 +27,7 @@ const LevelUp = () => {
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [goldBadgeUpgradeDialogOpen, setGoldBadgeUpgradeDialogOpen] = useState(false);
   const [subCategories, setSubCategories] = useState<any[]>([]);
   
   // Get resume progress from career assignments (task-based calculation)
@@ -149,6 +150,9 @@ const LevelUp = () => {
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  
+  // Define eligible plans for gold badge upgrade (6-month and 1-year only)
+  const goldBadgeUpgradePlans = ['6 Months Plan', '1 Year Plan'];
   
   // Check if user has eligible subscription
   const hasEligibleSubscription = () => {
@@ -295,9 +299,28 @@ const LevelUp = () => {
             githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
             subscriptionPlan={profile?.subscription_plan}
             careerLoading={careerLoading}
+            onGoldBadgeUpgradeRequired={() => setGoldBadgeUpgradeDialogOpen(true)}
           />
           </div>
         </div>
+
+        {/* Gold Badge Upgrade Dialog for 3-Months Plan Users */}
+        <Dialog open={goldBadgeUpgradeDialogOpen} onOpenChange={setGoldBadgeUpgradeDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-6">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+                <Crown className="h-6 w-6 text-yellow-500" />
+                Upgrade to Access Gold Badge
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mb-6">
+              <p className="text-muted-foreground text-center">
+                Unlock the Gold Badge - Profile Perfectionist with our premium plans:
+              </p>
+            </div>
+            <PricingDialog eligiblePlans={goldBadgeUpgradePlans} />
+          </DialogContent>
+        </Dialog>
       </main>
     </ResizableLayout>
   );
