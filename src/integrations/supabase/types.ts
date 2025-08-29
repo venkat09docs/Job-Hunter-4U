@@ -375,6 +375,13 @@ export type Database = {
             referencedRelation: "career_task_templates"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_career_task_assignments_template_id"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "career_task_templates"
+            referencedColumns: ["id"]
+          },
         ]
       }
       career_task_evidence: {
@@ -435,6 +442,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "career_task_evidence_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "career_task_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_career_task_evidence_assignment_id"
             columns: ["assignment_id"]
             isOneToOne: false
             referencedRelation: "career_task_assignments"
