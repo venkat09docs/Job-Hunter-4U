@@ -729,15 +729,8 @@ const CareerAssignments = () => {
               {/* Main Content */}
               <div className="lg:col-span-2">
                 <Accordion type="multiple" className="space-y-4" defaultValue={categoryFilter ? [subCategories.find(sc => sc.name.toLowerCase().includes(categoryFilter))?.id].filter(Boolean) : []}>
-                  {/* Dynamic Sub-Categories */}
+                  {/* Dynamic Sub-Categories - Show all subcategories in assignments tab */}
                   {subCategories
-                    .filter(subCategory => {
-                      // If category filter is provided, only show matching subcategory
-                      if (categoryFilter) {
-                        return subCategory.name.toLowerCase().includes(categoryFilter.toLowerCase());
-                      }
-                      return true;
-                    })
                     .map((subCategory) => {
                      const categoryTasks = getTasksBySubCategory(subCategory.id);
                      const categoryProgress = getSubCategoryProgress(subCategory.id);
