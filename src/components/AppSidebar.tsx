@@ -124,6 +124,7 @@ export function AppSidebar() {
   const [jobHunterOpen, setJobHunterOpen] = useState(false);
   const [githubOpen, setGitHubOpen] = useState(false);
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
+  const [careerGrowthDialogOpen, setCareerGrowthDialogOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -183,9 +184,20 @@ export function AppSidebar() {
       item.title === "Job Search History"
     );
     
+    // Special handling for Career Growth features - show dialog with 1-week and 1-month plans only
+    const isCareerGrowthPremium = isPremium && (
+      item.title === "Career Growth Activities" || 
+      item.title === "Career Growth Report"
+    );
+    
     const handlePremiumFeatureClick = (e: React.MouseEvent) => {
       e.preventDefault();
       setSubscriptionDialogOpen(true);
+    };
+    
+    const handleCareerGrowthClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      setCareerGrowthDialogOpen(true);
     };
     
     const handleAICareerToolsClick = (e: React.MouseEvent) => {
@@ -222,6 +234,21 @@ export function AppSidebar() {
     ) : (isGitHubWeekly || isJobHunterPremium) ? (
       <div 
         onClick={handlePremiumFeatureClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />}
+          </div>
+        )}
+      </div>
+    ) : isCareerGrowthPremium ? (
+      <div 
+        onClick={handleCareerGrowthClick}
         className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
       >
         <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
@@ -492,6 +519,21 @@ export function AppSidebar() {
             </p>
           </DialogHeader>
           <PricingDialog />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Career Growth Dialog for 1-week and 1-month plans only */}
+      <Dialog open={careerGrowthDialogOpen} onOpenChange={setCareerGrowthDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade for Career Growth Features
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              Career Growth Activities and Reports are available with our starter plans.
+            </p>
+          </DialogHeader>
+          <PricingDialog eligiblePlans={["One Week Plan", "One Month Plan"]} />
         </DialogContent>
       </Dialog>
     </div>
