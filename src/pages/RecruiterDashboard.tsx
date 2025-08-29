@@ -21,19 +21,31 @@ export default function RecruiterDashboard() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   return (
-    <ResizableLayout>
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Recruiter Dashboard</h1>
-              <p className="text-muted-foreground mt-2">Manage your job postings and find the perfect candidates</p>
-            </div>
-            <Button onClick={() => navigate('/recruiter/post-job')} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Post New Job
-            </Button>
+    <div className="min-h-screen flex flex-col">
+      {/* Top Header with User Profile */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center justify-between px-6">
+          <div className="flex items-center gap-2">
+            <LayoutDashboard className="h-6 w-6" />
+            <h2 className="text-lg font-semibold">Recruiter Dashboard</h2>
           </div>
+          <UserProfileDropdown />
+        </div>
+      </header>
+
+      <ResizableLayout>
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
+                <p className="text-muted-foreground mt-2">Manage your job postings and find the perfect candidates</p>
+              </div>
+              <Button onClick={() => navigate('/recruiter/post-job')} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Post New Job
+              </Button>
+            </div>
 
           <div className="space-y-4">
             <div>
@@ -296,8 +308,9 @@ export default function RecruiterDashboard() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </main>
-    </ResizableLayout>
+          </div>
+        </main>
+      </ResizableLayout>
+    </div>
   );
 }
