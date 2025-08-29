@@ -550,9 +550,11 @@ const Dashboard = () => {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="ghost" className="flex flex-col items-center gap-3 h-auto p-6 hover:bg-muted/50">
-                          <div className="relative">
+                          <div className="relative inline-block">
                             <Trophy className="h-12 w-12 text-muted-foreground" />
-                            <Lock className="h-5 w-5 absolute -bottom-1 -right-1 bg-background rounded-full p-1 border" />
+                            <div className="absolute -top-2 -right-2 bg-background rounded-full p-1 border-2 border-muted shadow-sm">
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            </div>
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold mb-1">Badge Leaders</h3>
@@ -612,9 +614,11 @@ const Dashboard = () => {
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="ghost" className="flex flex-col items-center gap-3 h-auto p-6 hover:bg-muted/50">
-                          <div className="relative">
+                          <div className="relative inline-block">
                             <BarChart3 className="h-12 w-12 text-muted-foreground" />
-                            <Lock className="h-5 w-5 absolute -bottom-1 -right-1 bg-background rounded-full p-1 border" />
+                            <div className="absolute -top-2 -right-2 bg-background rounded-full p-1 border-2 border-muted shadow-sm">
+                              <Lock className="h-4 w-4 text-muted-foreground" />
+                            </div>
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold mb-1">Leaderboard</h3>
