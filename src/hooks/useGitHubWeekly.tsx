@@ -224,7 +224,11 @@ export const useGitHubWeekly = () => {
         .not('period', 'is', null) // Only get period-based tasks (assignments)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching historical assignments:', error);
+        throw error;
+      }
+      console.log('Historical assignments fetched:', data);
       return data || [];
     },
     enabled: !!user?.id,
