@@ -46,7 +46,7 @@ const Dashboard = () => {
   // ALL HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
   const { user, signOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
-  const { isInstituteAdmin, isAdmin } = useRole();
+  const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
@@ -65,28 +65,28 @@ const Dashboard = () => {
     return hasActive && hasPlan;
   };
 
-  // Check if user can access Badge Leaders (admin or eligible subscription: 3M, 6M, 1Y)
+  // Check if user can access Badge Leaders (admin, recruiter, or eligible subscription: 3M, 6M, 1Y)
   const canAccessBadgeLeaders = () => {
-    const result = isAdmin || hasEligibleSubscription();
+    const result = isAdmin || isRecruiter || hasEligibleSubscription();
     return result;
   };
 
-  // Check if user can access Leaderboard (admin or any active subscription)
+  // Check if user can access Leaderboard (admin, recruiter, or any active subscription)
   const canAccessLeaderboard = () => {
-    const result = isAdmin || hasActiveSubscription();
+    const result = isAdmin || isRecruiter || hasActiveSubscription();
     return result;
   };
 
-  // Check if user has restricted plan for Badge Leaders (not 3M, 6M, 1Y)
+  // Check if user has restricted plan for Badge Leaders (not admin, recruiter, or eligible plans)
   const hasRestrictedPlanForBadgeLeaders = () => {
-    if (isAdmin) return false;
+    if (isAdmin || isRecruiter) return false;
     if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
-    return ['1-Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
+    return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
 
-  // Check if user has no active subscription
+  // Check if user has no active subscription (not admin or recruiter)
   const hasNoActiveSubscription = () => {
-    if (isAdmin) return false;
+    if (isAdmin || isRecruiter) return false;
     return !hasActiveSubscription();
   };
 
