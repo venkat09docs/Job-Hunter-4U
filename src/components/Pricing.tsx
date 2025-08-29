@@ -269,9 +269,6 @@ const Pricing = () => {
       <div className="container px-4">
         {/* Header with FOMO */}
         <div className="text-center space-y-6 mb-16">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-destructive/10 text-destructive text-sm font-medium">
-            ⚠️ Price increases to ₹1,999 after 100 more signups
-          </div>
           
           <h2 className="text-3xl md:text-4xl font-bold">
             Stop Competing. Start{" "}
@@ -282,7 +279,7 @@ const Pricing = () => {
           
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             While others send 100+ applications and get ghosted, our users get hired with 40% salary increases. 
-            <strong className="text-foreground">Your competition is already using AI. Don't get left behind.</strong>
+            <strong className="text-foreground">Your competitor is already using AI. Don't get left behind.</strong>
           </p>
           
           <div className="bg-gradient-card rounded-lg p-6 max-w-md mx-auto border border-primary/20">

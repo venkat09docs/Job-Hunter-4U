@@ -46,7 +46,7 @@ const Hero = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 md:w-5 md:h-5 text-success" />
-                  <span className="text-xs md:text-sm font-medium">95% Success Rate</span>
+                  <span className="text-xs md:text-sm font-medium">92% Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 md:w-5 md:h-5 text-success" />
