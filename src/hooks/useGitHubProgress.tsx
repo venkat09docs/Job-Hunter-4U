@@ -40,7 +40,7 @@ export const useGitHubProgress = () => {
       setTasks(data || []);
     } catch (error) {
       console.error('Error fetching GitHub progress:', error);
-      toast.error('Failed to load GitHub progress');
+      // Don't show error toast for missing GitHub progress - just set empty array
       setTasks([]);
     } finally {
       setLoading(false);

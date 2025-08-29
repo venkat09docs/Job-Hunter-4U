@@ -88,7 +88,8 @@ export const useCareerAssignments = () => {
       setTemplates(data || []);
     } catch (error) {
       console.error('Error fetching templates:', error);
-      toast.error('Failed to load task templates');
+      // Don't show error toast for missing templates - just set empty array
+      setTemplates([]);
     }
   };
 
@@ -125,7 +126,8 @@ export const useCareerAssignments = () => {
       setAssignments(assignmentsWithTemplates);
     } catch (error) {
       console.error('Error fetching assignments:', error);
-      toast.error('Failed to load assignments');
+      // Don't show error toast for missing assignments - just set empty array
+      setAssignments([]);
     }
   };
 
@@ -184,7 +186,8 @@ export const useCareerAssignments = () => {
       setEvidence(evidenceWithDetails);
     } catch (error) {
       console.error('Error fetching evidence:', error);
-      toast.error('Failed to load evidence');
+      // Don't show error toast for missing evidence - just set empty array
+      setEvidence([]);
     }
   };
 
