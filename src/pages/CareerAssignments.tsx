@@ -747,9 +747,22 @@ const CareerAssignments = () => {
               {/* Main Content */}
               <div className="lg:col-span-2">
                 <Accordion type="multiple" className="space-y-4" defaultValue={categoryFilter ? [subCategories.find(sc => sc.name.toLowerCase().includes(categoryFilter))?.id].filter(Boolean) : []}>
-                  {/* Dynamic Sub-Categories - Show all subcategories in assignments tab */}
-                  {subCategories
-                    .map((subCategory) => {
+                   {/* Dynamic Sub-Categories - Show all subcategories in assignments tab */}
+                   {subCategories
+                     .filter((subCategory) => {
+                       // Hide digital profile subcategory for 3-month subscription users
+                       const categoryName = subCategory.name.toLowerCase();
+                       if (categoryName.includes('digital')) {
+                         const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
+                                                profile?.subscription_plan?.includes('3-month') ||
+                                                profile?.subscription_plan?.includes('3 month');
+                         if (isThreeMonthPlan) {
+                           return false; // Hide digital profile for 3-month users
+                         }
+                       }
+                       return true; // Show all other subcategories
+                     })
+                     .map((subCategory) => {
                      const categoryTasks = getTasksBySubCategory(subCategory.id);
                      const categoryProgress = getSubCategoryProgress(subCategory.id);
                      const isEnabled = isSubCategoryEnabled(subCategory);
