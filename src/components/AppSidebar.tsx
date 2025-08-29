@@ -170,7 +170,7 @@ export function AppSidebar() {
     isPremium?: boolean, 
     isSubItem?: boolean 
   }) => {
-    // Special handling for AI-Powered Career Tools to open in new tab
+    // Special handling for AI-Powered Career Tools to check subscription before opening
     const isAICareerTools = item.title === "AI-Powered Career Tools";
     
     // Special handling for GitHub Weekly - show subscription dialog instead of navigating
@@ -188,12 +188,21 @@ export function AppSidebar() {
       setSubscriptionDialogOpen(true);
     };
     
+    const handleAICareerToolsClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      // Check if user has active subscription
+      if (!profile?.subscription_plan || profile.subscription_plan === "Free Plan") {
+        setSubscriptionDialogOpen(true);
+      } else {
+        // User has subscription, proceed to open in new tab
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+      }
+    };
+    
     const menuItem = isAICareerTools ? (
-      <a 
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+      <div
+        onClick={handleAICareerToolsClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
       >
         <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
         {!isCollapsed && (
@@ -201,11 +210,15 @@ export function AppSidebar() {
             <span className="text-sm truncate">
               {item.title}
             </span>
-            <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground ml-2" />
-            {isPremium && <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground ml-2" />}
+            <div className="flex items-center gap-2">
+              <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+              {(!profile?.subscription_plan || profile.subscription_plan === "Free Plan") && 
+                <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              }
+            </div>
           </div>
         )}
-      </a>
+      </div>
     ) : (isGitHubWeekly || isJobHunterPremium) ? (
       <div 
         onClick={handlePremiumFeatureClick}
