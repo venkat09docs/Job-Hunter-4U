@@ -28,7 +28,7 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join the Platform where already job seekers who landed their dream jobs 3x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
+                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join the Platform where already job seekers who landed their dream jobs 5x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">
@@ -50,7 +50,7 @@ const Hero = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 md:w-5 md:h-5 text-success" />
-                  <span className="text-xs md:text-sm font-medium">3x Faster Hiring</span>
+                  <span className="text-xs md:text-sm font-medium">5x Faster Hiring</span>
                 </div>
               </div>
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">

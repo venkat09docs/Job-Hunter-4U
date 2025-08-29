@@ -117,7 +117,7 @@ const ActivityFeaturesShowcase = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
-                <span className="text-2xl font-bold text-foreground">3x</span>
+                <span className="text-2xl font-bold text-foreground">5x</span>
               </div>
               <p className="text-sm text-muted-foreground">Faster Job Search</p>
             </div>
