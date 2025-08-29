@@ -29,25 +29,31 @@ const LeaderBoard = () => {
     return (
       <div 
         key={entry.user_id} 
-        className={`flex items-center gap-3 p-2 rounded-lg ${canViewDetails ? 'hover:bg-muted/50 cursor-pointer' : 'hover:bg-muted/50'}`}
+        className={`flex items-center gap-3 p-3 rounded-lg ${canViewDetails ? 'hover:bg-muted/50 cursor-pointer' : 'hover:bg-muted/50'}`}
         onClick={() => canViewDetails ? setSelectedUserId(entry.user_id) : undefined}
       >
-        <div className="flex items-center justify-center w-8">
+        <div className="flex items-center justify-center w-8 flex-shrink-0">
           {getRankIcon(entry.rank_position)}
         </div>
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-8 w-8 flex-shrink-0">
           <AvatarImage src={entry.profile_image_url} alt={entry.full_name} />
           <AvatarFallback className="text-xs">
             {entry.full_name?.charAt(0) || entry.username?.charAt(0) || '?'}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{entry.full_name || entry.username}</p>
-          <p className="text-xs text-muted-foreground">@{entry.username}</p>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p className="text-sm font-medium truncate leading-tight">
+            {entry.full_name || entry.username}
+          </p>
+          <p className="text-xs text-muted-foreground truncate leading-tight">
+            @{entry.username}
+          </p>
         </div>
-        <Badge variant="secondary" className="text-xs">
-          {entry.total_points} pts
-        </Badge>
+        <div className="flex-shrink-0 ml-2">
+          <Badge variant="secondary" className="text-xs font-medium">
+            {entry.total_points} pts
+          </Badge>
+        </div>
       </div>
     );
   };

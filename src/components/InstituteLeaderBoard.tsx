@@ -33,27 +33,31 @@ const getRankIcon = (rank: number) => {
 const renderLeaderboardEntry = (entry: LeaderboardEntry, index: number, canViewDetails: boolean, onUserClick: (userId: string) => void) => (
   <div 
     key={entry.user_id} 
-    className={`flex items-center justify-between p-3 rounded-lg transition-colors ${canViewDetails ? 'hover:bg-accent/50 cursor-pointer' : 'hover:bg-accent/50'}`}
+    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${canViewDetails ? 'hover:bg-accent/50 cursor-pointer' : 'hover:bg-accent/50'}`}
     onClick={() => canViewDetails ? onUserClick(entry.user_id) : undefined}
   >
-    <div className="flex items-center gap-3">
-      <div className="flex items-center justify-center w-8">
-        {getRankIcon(entry.rank_position)}
-      </div>
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={entry.profile_image_url} alt={entry.full_name} />
-        <AvatarFallback className="text-xs">
-          {entry.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col">
-        <span className="font-medium text-sm">{entry.full_name}</span>
-        <span className="text-xs text-muted-foreground">@{entry.username}</span>
-      </div>
+    <div className="flex items-center justify-center w-8 flex-shrink-0">
+      {getRankIcon(entry.rank_position)}
     </div>
-    <div className="text-right">
-      <span className="font-bold text-primary">{entry.total_points}</span>
-      <span className="text-xs text-muted-foreground ml-1">pts</span>
+    <Avatar className="h-8 w-8 flex-shrink-0">
+      <AvatarImage src={entry.profile_image_url} alt={entry.full_name} />
+      <AvatarFallback className="text-xs">
+        {entry.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+      </AvatarFallback>
+    </Avatar>
+    <div className="flex-1 min-w-0 overflow-hidden">
+      <p className="text-sm font-medium truncate leading-tight">
+        {entry.full_name}
+      </p>
+      <p className="text-xs text-muted-foreground truncate leading-tight">
+        @{entry.username}
+      </p>
+    </div>
+    <div className="flex-shrink-0 ml-2 text-right">
+      <div className="text-sm font-bold text-primary">
+        {entry.total_points}
+        <span className="text-xs text-muted-foreground ml-1">pts</span>
+      </div>
     </div>
   </div>
 );
