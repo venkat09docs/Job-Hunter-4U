@@ -270,39 +270,46 @@ const VerifyAssignments = () => {
 
     console.log('🔍 LinkedIn tasks fetched:', linkedInTasks?.length || 0);
 
-    // Get user profiles for the LinkedIn task user_ids
-    const linkedInUserIds = linkedInTasks?.map(task => task.user_id) || [];
+    // Get user profiles for the LinkedIn task user_ids  
+    const linkedInUserIds = [...new Set(linkedInTasks?.map(task => task.user_id) || [])];
     let profilesData: any[] = [];
     
     console.log('🔍 LinkedIn user IDs to fetch profiles for:', linkedInUserIds);
     
     if (linkedInUserIds.length > 0) {
-      console.log('🔍 About to fetch profiles...');
+      console.log('🔍 Fetching profiles for LinkedIn assignments...');
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, username, full_name, profile_image_url')
         .in('user_id', linkedInUserIds);
       
-      console.log('🔍 Profile fetch result:', {
+      console.log('🔍 Profile fetch result for LinkedIn:', {
         profiles: profiles,
         error: profilesError,
-        profileCount: profiles?.length || 0
+        profileCount: profiles?.length || 0,
+        userIds: linkedInUserIds
       });
       
       if (profilesError) {
         console.error('❌ Error fetching profiles for LinkedIn tasks:', profilesError);
+        console.error('❌ Full error object:', profilesError);
       } else {
         profilesData = profiles || [];
-        console.log('🔍 Successfully fetched profiles for LinkedIn tasks:', profilesData.length);
+        console.log('🔍 Successfully fetched profiles:', profilesData);
       }
     }
 
-    // Combine the data
-    const combinedData = linkedInTasks?.map(task => ({
-      ...task,
-      user_profile: profilesData.find(p => p.user_id === task.user_id)
-    })) || [];
+    // Combine the data with proper fallback
+    const combinedData = linkedInTasks?.map(task => {
+      const profile = profilesData.find(p => p.user_id === task.user_id);
+      console.log(`🔍 Matching profile for user ${task.user_id}:`, profile);
+      
+      return {
+        ...task,
+        user_profile: profile
+      };
+    }) || [];
 
     console.log('🔍 Combined LinkedIn data with profiles:', combinedData.map(d => ({
       id: d.id,
