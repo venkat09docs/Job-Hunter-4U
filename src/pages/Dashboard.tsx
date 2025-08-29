@@ -853,7 +853,9 @@ const Dashboard = () => {
                         }}
                       ></div>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{resumeProgress === 0 ? '0' : `${resumeProgress}%`}</span>
+                        <span className={`text-lg font-bold ${resumeProgress === 0 ? 'text-primary' : 'text-white'}`}>
+                          {resumeProgress === 0 ? '0' : `${resumeProgress}%`}
+                        </span>
                       </div>
                     </div>
                     <h3 className="font-semibold">Resume</h3>
@@ -880,7 +882,9 @@ const Dashboard = () => {
                         }}
                       ></div>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-white">{linkedinProgress === 0 ? '0' : `${linkedinProgress}%`}</span>
+                        <span className={`text-lg font-bold ${linkedinProgress === 0 ? 'text-primary' : 'text-white'}`}>
+                          {linkedinProgress === 0 ? '0' : `${linkedinProgress}%`}
+                        </span>
                       </div>
                     </div>
                     <h3 className="font-semibold">LinkedIn Profile</h3>
@@ -899,7 +903,9 @@ const Dashboard = () => {
                           }}
                         ></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold text-white">{githubProgress === 0 ? '0' : `${githubProgress}%`}</span>
+                          <span className={`text-lg font-bold ${githubProgress === 0 ? 'text-primary' : 'text-white'}`}>
+                            {githubProgress === 0 ? '0' : `${githubProgress}%`}
+                          </span>
                         </div>
                       </div>
                       <h3 className="font-semibold">GitHub</h3>
