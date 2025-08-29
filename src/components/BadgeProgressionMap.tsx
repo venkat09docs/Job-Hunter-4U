@@ -8,7 +8,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
-import { useProfileBadges } from '@/hooks/useProfileBadges';
+// Removed useProfileBadges import to prevent conflicts with LevelUp page
 import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal, Gem } from 'lucide-react';
 
 interface BadgeData {
@@ -65,23 +65,24 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
-  const { checkAndAwardBadges, userBadges, loading: badgesLoading } = useProfileBadges();
+  // Temporarily disabled badge awarding logic to prevent data conflicts
+  // const { checkAndAwardBadges, userBadges, loading: badgesLoading } = useProfileBadges();
 
-  // Check for badge awards when profile progress milestones are reached
-  useEffect(() => {
-    if (!careerLoading && resumeProgress >= 100) {
-      // Award badges when bronze reaches 100%
-      checkAndAwardBadges();
-    }
-  }, [resumeProgress, careerLoading, checkAndAwardBadges]);
+  // Temporarily disabled badge award checking
+  // useEffect(() => {
+  //   if (!careerLoading && resumeProgress >= 100) {
+  //     checkAndAwardBadges();
+  //   }
+  // }, [resumeProgress, careerLoading, checkAndAwardBadges]);
 
-  // Check if badge has been awarded to user
+  // Check if badge has been awarded to user - temporarily disabled
   const isBadgeAwarded = (badgeCode: string) => {
-    const awarded = userBadges.some(userBadge => 
-      userBadge.profile_badges.code === badgeCode
-    );
-    
-    return awarded;
+    // Temporarily return false to prevent badge data fetching conflicts
+    return false;
+    // const awarded = userBadges.some(userBadge => 
+    //   userBadge.profile_badges.code === badgeCode
+    // );
+    // return awarded;
   };
 
   // Check if user has premium subscription plan (6-month or 1-year)
@@ -517,10 +518,8 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
-                                // Check for badge awards when navigating to profile tasks
-                                if (category.id === 'profile') {
-                                  await checkAndAwardBadges();
-                                }
+                                // Temporarily disabled badge checking due to data conflicts
+                                // await checkAndAwardBadges();
                                 navigate(badge.link);
                               }
                             }}

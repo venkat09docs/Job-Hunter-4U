@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useProfile } from '@/hooks/useProfile';
 import { useCareerAssignments } from '@/hooks/useCareerAssignments';
-import { useProfileBadges } from '@/hooks/useProfileBadges';
+// Removed useProfileBadges to avoid conflicts - BadgeProgressionMap handles this internally
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
