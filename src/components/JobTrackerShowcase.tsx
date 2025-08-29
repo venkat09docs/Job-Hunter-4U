@@ -26,7 +26,7 @@ const JobTrackerShowcase = () => {
             onClick={handleClick}
           >
             <img 
-              src="/lovable-uploads/4f3c4e46-2e72-4083-a576-51cc0828a7ac.png" 
+              src="/lovable-uploads/d9e6e252-84fa-4d52-a418-b6f0762e75de.png" 
               alt="Job Status Tracker Dashboard" 
               className="w-full h-auto"
             />
