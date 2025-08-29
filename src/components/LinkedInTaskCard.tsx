@@ -350,15 +350,15 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
               </>
             )}
             
-            {/* Submit/Update Assignment Button */}
-            {(task.status === 'STARTED' || task.status === 'SUBMITTED') && (
+            {/* Submit Assignment Button - Only when STARTED */}
+            {task.status === 'STARTED' && (
               <>
                 {canInteract ? (
                   <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                     <DialogTrigger asChild>
                       <Button className="w-full">
                         <Upload className="w-4 h-4 mr-2" />
-                        {task.status === 'STARTED' ? 'Submit Assignment' : 'Update Assignment'}
+                        Submit Assignment
                       </Button>
                     </DialogTrigger>
                 <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
