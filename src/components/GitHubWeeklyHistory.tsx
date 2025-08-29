@@ -2,14 +2,74 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, GitCommit, GitPullRequest, AlertCircle, Trophy, ExternalLink, CheckCircle, Clock, Play, FileText } from 'lucide-react';
+import { Calendar, GitCommit, GitPullRequest, AlertCircle, Trophy, ExternalLink, CheckCircle, Clock, Play, FileText, BarChart3, TrendingUp, ChevronRight } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow, format, parseISO, startOfWeek, endOfWeek } from 'date-fns';
+import React, { useState, useMemo } from 'react';
+
+interface PeriodSummary {
+  period: string;
+  totalTasks: number;
+  completedTasks: number;
+  totalPoints: number;
+  maxPoints: number;
+  completionRate: number;
+}
 
 export const GitHubWeeklyHistory = () => {
   const { signals, scores, badges, historicalAssignments } = useGitHubWeekly();
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
   console.log('GitHubWeeklyHistory - historicalAssignments:', historicalAssignments);
+
+  // Group assignments by period and calculate summary statistics
+  const periodSummaries: PeriodSummary[] = useMemo(() => {
+    const grouped = historicalAssignments.reduce((acc, assignment) => {
+      const period = assignment.period || 'No Period';
+      if (!acc[period]) {
+        acc[period] = [];
+      }
+      acc[period].push(assignment);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    return Object.entries(grouped)
+      .map(([period, assignments]) => {
+        const completedTasks = assignments.filter(a => a.status === 'VERIFIED').length;
+        const totalPoints = assignments.reduce((sum, a) => sum + a.score_awarded, 0);
+        const maxPoints = assignments.reduce((sum, a) => sum + (a.github_tasks?.points_base || 0), 0);
+        
+        return {
+          period,
+          totalTasks: assignments.length,
+          completedTasks,
+          totalPoints,
+          maxPoints,
+          completionRate: assignments.length > 0 ? (completedTasks / assignments.length) * 100 : 0
+        };
+      })
+      .sort((a, b) => b.period.localeCompare(a.period)); // Sort by period descending
+  }, [historicalAssignments]);
+
+  const getWeekDateRange = (period: string): string => {
+    if (!period || period === 'No Period') return "Ongoing";
+    
+    try {
+      const [year, week] = period.split('-').map(Number);
+      if (!year || !week) return period;
+      
+      // Calculate the start of the week
+      const firstDayOfYear = new Date(year, 0, 1);
+      const days = (week - 1) * 7;
+      const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
+      const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+      
+      return `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd, yyyy')}`;
+    } catch (error) {
+      console.error('Error parsing week period:', error);
+      return period;
+    }
+  };
 
   // Group signals by date for better visualization
   const groupSignalsByDate = (signalsList: any[]) => {
@@ -69,30 +129,6 @@ export const GitHubWeeklyHistory = () => {
 
   const groupedSignals = groupSignalsByDate(signals);
 
-  // Group historical assignments by period
-  const groupAssignmentsByPeriod = (assignments: any[]) => {
-    console.log('Input assignments to grouping function:', assignments);
-    console.log('Length of assignments:', assignments?.length);
-    
-    if (!assignments || assignments.length === 0) {
-      console.log('No assignments to group');
-      return [];
-    }
-    
-    const grouped = assignments.reduce((acc, assignment) => {
-      const period = assignment.period || 'No Period';
-      console.log('Processing assignment:', assignment.id, 'period:', period);
-      if (!acc[period]) acc[period] = [];
-      acc[period].push(assignment);
-      return acc;
-    }, {} as Record<string, any[]>);
-    
-    console.log('Grouped object:', grouped);
-    const result = Object.entries(grouped).sort(([a], [b]) => b.localeCompare(a));
-    console.log('Final grouped result:', result);
-    return result;
-  };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'VERIFIED': return <CheckCircle className="h-4 w-4 text-green-600" />;
@@ -103,35 +139,6 @@ export const GitHubWeeklyHistory = () => {
       default: return <Clock className="h-4 w-4 text-gray-400" />;
     }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'VERIFIED': return 'bg-green-100 text-green-800 border-green-200';
-      case 'SUBMITTED': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'STARTED': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'NOT_STARTED': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'PARTIALLY_VERIFIED': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const formatPeriodDate = (period: string) => {
-    if (!period || period === 'No Period') return 'Ongoing';
-    
-    const [year, week] = period.split('-');
-    if (!year || !week) return period;
-    
-    // Calculate the start of the week
-    const firstDayOfYear = new Date(parseInt(year), 0, 1);
-    const days = (parseInt(week) - 1) * 7;
-    const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
-    const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
-    
-    return `Week ${week}, ${year} (${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd')})`;
-  };
-
-  const groupedAssignments = groupAssignmentsByPeriod(historicalAssignments);
-  console.log('Grouped assignments:', groupedAssignments);
 
   return (
     <div className="space-y-6">
@@ -151,76 +158,175 @@ export const GitHubWeeklyHistory = () => {
             </p>
           </div>
 
-          <div className="space-y-6">
-            {groupedAssignments.length > 0 ? (
-              groupedAssignments.map(([period, periodAssignments]: [string, any[]]) => (
-              <div key={period} className="space-y-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  {formatPeriodDate(period)}
-                  <Badge variant="outline" className="ml-auto">
-                    {periodAssignments.length} {periodAssignments.length === 1 ? 'assignment' : 'assignments'}
-                  </Badge>
+          {periodSummaries.length === 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6" />
+                  Assignment History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Assignment History Yet</h3>
+                  <p className="text-muted-foreground">
+                    Complete some GitHub assignments to see your activity history here.
+                  </p>
                 </div>
-                
-                <div className="space-y-2 pl-6 border-l border-border">
-                  {periodAssignments.map((assignment: any) => (
-                    <Card key={assignment.id} className="border-0 shadow-none bg-secondary/30">
-                      <CardContent className="p-3">
-                        <div className="flex items-start gap-3">
-                          <div className="mt-0.5">
-                            {getStatusIcon(assignment.status)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              {assignment.github_tasks?.title || 'Unknown Task'}
-                            </p>
-                            {assignment.github_tasks?.description && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                {assignment.github_tasks.description}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {/* Period Summaries */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <BarChart3 className="w-6 h-6" />
+                    Assignment History by Week
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {periodSummaries.map((summary) => (
+                      <div
+                        key={summary.period}
+                        className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={() => setSelectedPeriod(selectedPeriod === summary.period ? null : summary.period)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div>
+                              <h4 className="font-semibold">Week {summary.period}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {getWeekDateRange(summary.period)}
                               </p>
-                            )}
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                              <span>
-                                Created {formatDistanceToNow(new Date(assignment.created_at), { addSuffix: true })}
-                              </span>
-                              {assignment.due_at && (
-                                <span className="text-xs">
-                                  • Due {formatDistanceToNow(new Date(assignment.due_at), { addSuffix: true })}
-                                </span>
-                              )}
-                              {assignment.score_awarded > 0 && (
-                                <span className="text-xs font-medium text-green-600">
-                                  • +{assignment.score_awarded} points
-                                </span>
-                              )}
+                            </div>
+                            <div className="flex items-center gap-6">
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-primary">{summary.completedTasks}</p>
+                                <p className="text-xs text-muted-foreground">Completed</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-green-600">{summary.totalPoints}</p>
+                                <p className="text-xs text-muted-foreground">Points</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-blue-600">{Math.round(summary.completionRate)}%</p>
+                                <p className="text-xs text-muted-foreground">Rate</p>
+                              </div>
                             </div>
                           </div>
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${getStatusColor(assignment.status)}`}
-                          >
-                            {assignment.status.replace('_', ' ').toLowerCase()}
-                          </Badge>
+                          <ChevronRight 
+                            className={`w-5 h-5 text-muted-foreground transition-transform ${
+                              selectedPeriod === summary.period ? 'rotate-90' : ''
+                            }`} 
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))
-            ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Assignment History</h3>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Complete GitHub assignments to build your activity history
-                  </p>
+                        
+                        {/* Task Details for Selected Period */}
+                        {selectedPeriod === summary.period && (
+                          <div className="mt-6 pt-4 border-t">
+                            <h5 className="font-medium mb-4 flex items-center gap-2">
+                              <Trophy className="w-4 h-4" />
+                              Tasks for Week {summary.period}
+                            </h5>
+                            <div className="grid gap-3">
+                              {historicalAssignments
+                                .filter(assignment => assignment.period === summary.period)
+                                .map((assignment) => (
+                                <div
+                                  key={assignment.id}
+                                  className="flex items-center justify-between p-3 bg-background border rounded-lg"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {getStatusIcon(assignment.status)}
+                                    <div>
+                                      <p className="font-medium text-sm">{assignment.github_tasks?.title}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Updated: {format(new Date(assignment.updated_at), 'MMM dd, yyyy at h:mm a')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <div className="text-right">
+                                      <p className="text-sm font-medium">
+                                        {assignment.score_awarded} / {assignment.github_tasks?.points_base || 0} pts
+                                      </p>
+                                    </div>
+                                    <Badge variant={assignment.status === 'VERIFIED' ? 'default' : 'outline'}>
+                                      {assignment.status.replace('_', ' ')}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
+
+              {/* Overall Statistics */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-yellow-600" />
+                      Total Points
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-primary">
+                      {periodSummaries.reduce((sum, p) => sum + p.totalPoints, 0)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Across {periodSummaries.length} weeks
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      Tasks Completed
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-green-600">
+                      {periodSummaries.reduce((sum, p) => sum + p.completedTasks, 0)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Out of {periodSummaries.reduce((sum, p) => sum + p.totalTasks, 0)} total
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-blue-600" />
+                      Average Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-blue-600">
+                      {Math.round(
+                        periodSummaries.reduce((sum, p) => sum + p.completionRate, 0) / 
+                        (periodSummaries.length || 1)
+                      )}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Completion rate
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="activity" className="space-y-4">
