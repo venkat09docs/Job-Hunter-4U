@@ -67,27 +67,19 @@ const CareerAssignments = () => {
   const [maxPoints, setMaxPoints] = useState(0);
   const [completedTasks, setCompletedTasks] = useState(0);
 
+  // Fetch subcategories only - let useCareerAssignments handle the rest
   useEffect(() => {
     console.log('🔍 CareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
-    if (user) {
-      fetchData();
+    if (user && !isLoading) {
+      // Only fetch subcategories after assignments are loaded
+      fetchSubCategories();
       setupRealtimeSubscription();
     }
-  }, [user]);
-
-  const fetchData = async () => {
-    try {
-      await Promise.all([
-        fetchSubCategories()
-      ]);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
-    }
-  };
+  }, [user, isLoading]);
 
   const fetchSubCategories = async () => {
     try {
+      console.log('🔍 Fetching subcategories...');
       const { data, error } = await supabase
         .from('sub_categories')
         .select('*')
@@ -96,9 +88,11 @@ const CareerAssignments = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+      console.log('🔍 Subcategories loaded:', data?.length || 0);
       setSubCategories(data || []);
     } catch (error) {
       console.error('Error fetching sub categories:', error);
+      // Don't show toast error for this as it's secondary data
     }
   };
 
@@ -350,7 +344,7 @@ const CareerAssignments = () => {
       
       if (createdCount > 0) {
         toast.success(`Initialized ${createdCount} tasks for this category`);
-        await fetchData();
+        // Data will be refreshed automatically by the hook
       } else {
         toast.info('All tasks in this category are already initialized');
       }
@@ -466,7 +460,7 @@ const CareerAssignments = () => {
         toast.info('All tasks are already initialized');
       }
       
-      await fetchData();
+      // Data will be refreshed automatically by the hook
     } catch (error) {
       console.error('Error initializing tasks:', error);
       toast.error('Failed to initialize tasks');
@@ -490,7 +484,7 @@ const CareerAssignments = () => {
       if (!response.ok) throw new Error('Failed to verify assignments');
       
       toast.success('Assignments verified successfully');
-      await fetchData();
+      // Data will be refreshed automatically by the hook
     } catch (error) {
       console.error('Error verifying assignments:', error);
       toast.error('Failed to verify assignments');
