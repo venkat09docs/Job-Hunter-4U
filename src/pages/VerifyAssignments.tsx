@@ -831,6 +831,11 @@ const VerifyAssignments = () => {
           updated_at: new Date().toISOString()
         };
 
+        // Only add verification_notes if it's not empty
+        if (verificationNotes && verificationNotes.trim()) {
+          updateData.verification_notes = verificationNotes.trim();
+        }
+
         if (approved) {
           updateData.score_awarded = selectedAssignment.career_task_templates.points_reward;
         }

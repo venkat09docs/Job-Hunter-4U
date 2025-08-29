@@ -18,7 +18,8 @@ import {
   FileText,
   CheckCircle,
   AlertCircle,
-  Calendar
+  Calendar,
+  Shield
 } from 'lucide-react';
 
 interface CareerTaskAssignment {
@@ -27,6 +28,9 @@ interface CareerTaskAssignment {
   points_earned: number;
   due_date?: string;
   assigned_at: string;
+  verification_notes?: string;
+  verified_at?: string;
+  verified_by?: string;
   career_task_templates: {
     code: string;
     title: string;
@@ -324,6 +328,33 @@ export const CareerTaskCard: React.FC<CareerTaskCardProps> = ({
                   )}
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Admin Review Section */}
+        {(assignment.status === 'verified' || assignment.status === 'rejected') && assignment.verification_notes && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Admin Review:
+            </Label>
+            <div className={`p-3 rounded-md text-sm border-l-4 ${
+              assignment.status === 'verified' 
+                ? 'bg-green-50 border-green-500 text-green-800' 
+                : 'bg-red-50 border-red-500 text-red-800'
+            }`}>
+              <div className="font-medium mb-1">
+                {assignment.status === 'verified' ? 'Approved' : 'Rejected'}
+                {assignment.verified_at && (
+                  <span className="text-xs font-normal ml-2">
+                    on {new Date(assignment.verified_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-line leading-relaxed">
+                {assignment.verification_notes}
+              </p>
             </div>
           </div>
         )}
