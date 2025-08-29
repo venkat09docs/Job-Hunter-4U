@@ -32,7 +32,10 @@ import {
   Briefcase,
   Github,
   Linkedin,
-  Shield
+  Shield,
+  ClipboardList,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -65,6 +68,9 @@ interface OverallMetrics {
   total_batches: number;
   active_subscriptions: number;
   avg_institute_utilization: number;
+  pending_assignments: number;
+  verified_assignments: number;
+  extension_requests: number;
 }
 
 export const SuperAdminDashboard = () => {
@@ -74,7 +80,10 @@ export const SuperAdminDashboard = () => {
     total_students: 0,
     total_batches: 0,
     active_subscriptions: 0,
-    avg_institute_utilization: 0
+    avg_institute_utilization: 0,
+    pending_assignments: 0,
+    verified_assignments: 0,
+    extension_requests: 0
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -236,15 +245,63 @@ export const SuperAdminDashboard = () => {
         ? metrics.reduce((sum, metric) => {
             const utilization = metric.max_students > 0 ? (metric.student_count / metric.max_students) * 100 : 0;
             return sum + utilization;
-          }, 0) / metrics.length 
-        : 0;
+           }, 0) / metrics.length 
+         : 0;
+
+      // Fetch assignment statistics
+      // Get pending assignments from career_task_assignments
+      const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
+        .from('career_task_assignments')
+        .select('id')
+        .in('status', ['assigned', 'submitted']);
+
+      if (pendingCareerError) throw pendingCareerError;
+
+      // Get verified assignments from career_task_assignments
+      const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
+        .from('career_task_assignments')
+        .select('id')
+        .eq('status', 'verified');
+
+      if (verifiedCareerError) throw verifiedCareerError;
+
+      // Get pending assignments from job_hunting_assignments
+      const { data: pendingJobAssignments, error: pendingJobError } = await supabase
+        .from('job_hunting_assignments')
+        .select('id')
+        .in('status', ['assigned', 'submitted']);
+
+      if (pendingJobError) throw pendingJobError;
+
+      // Get verified assignments from job_hunting_assignments
+      const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
+        .from('job_hunting_assignments')
+        .select('id')
+        .eq('status', 'verified');
+
+      if (verifiedJobError) throw verifiedJobError;
+
+      // Get extension requests
+      const { data: extensionRequests, error: extensionError } = await supabase
+        .from('linkedin_task_renable_requests')
+        .select('id')
+        .eq('status', 'pending');
+
+      if (extensionError) throw extensionError;
+
+      const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + (pendingJobAssignments?.length || 0);
+      const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + (verifiedJobAssignments?.length || 0);
+      const totalExtensionRequests = extensionRequests?.length || 0;
 
       setOverallMetrics({
         total_institutes: institutes?.length || 0,
         total_students: totalStudents,
         total_batches: totalBatches,
         active_subscriptions: activeSubscriptions,
-        avg_institute_utilization: Math.round(avgUtilization)
+        avg_institute_utilization: Math.round(avgUtilization),
+        pending_assignments: totalPendingAssignments,
+        verified_assignments: totalVerifiedAssignments,
+        extension_requests: totalExtensionRequests
       });
 
     } catch (error) {
@@ -372,6 +429,54 @@ export const SuperAdminDashboard = () => {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Assignment Statuses Section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Assignment Statuses</h2>
+          <p className="text-muted-foreground">Overview of all assignment activities and requests across the system</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="shadow-elegant">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Assignments</CardTitle>
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">{overallMetrics.pending_assignments}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Assignments awaiting completion
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-elegant">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Verified Assignments</CardTitle>
+              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">{overallMetrics.verified_assignments}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Successfully completed assignments
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-elegant">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Extension Requests</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-accent">{overallMetrics.extension_requests}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Pending extension requests
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Charts Section */}

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Briefcase, Users, Eye, LayoutDashboard, Calendar, Edit, ExternalLink } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, LayoutDashboard, Calendar, Edit, ExternalLink, ClipboardList, CheckCircle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useRecruiterStats } from "@/hooks/useRecruiterStats";
@@ -44,6 +44,59 @@ export default function RecruiterDashboard() {
           </div>
 
           <LeaderBoard />
+
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Assignment Statuses</h2>
+              <p className="text-muted-foreground">Overview of all assignment activities and requests</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Assignments</CardTitle>
+                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <Skeleton className="h-8 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold">{stats.pendingAssignments}</div>
+                  )}
+                  <p className="text-xs text-muted-foreground">Assignments awaiting completion</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Verified Assignments</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <Skeleton className="h-8 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold">{stats.verifiedAssignments}</div>
+                  )}
+                  <p className="text-xs text-muted-foreground">Successfully completed assignments</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Extension Requests</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <Skeleton className="h-8 w-12" />
+                  ) : (
+                    <div className="text-2xl font-bold">{stats.extensionRequests}</div>
+                  )}
+                  <p className="text-xs text-muted-foreground">Pending extension requests</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
