@@ -98,14 +98,14 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Jobs section: No premium restrictions, standard progression
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return jobApplicationsCount >= 1;
-        if (badgeIndex === 2) return jobApplicationsCount >= 14; // Gold badge unlocks normally
+        if (badgeIndex === 2) return jobApplicationsCount >= 14; // Diamond badge unlocks normally
         return false;
       
       case 'network':
         // Network section: No premium restrictions, standard progression
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return networkConnections >= 25;
-        if (badgeIndex === 2) return networkConnections >= 50; // Gold badge unlocks normally
+        if (badgeIndex === 2) return networkConnections >= 50; // Diamond badge unlocks normally
         return false;
       
       case 'github':
@@ -113,7 +113,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         if (!isIT()) return false; // GitHub section disabled for non-IT users
         if (badgeIndex === 0) return true;
         if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5;
-        if (badgeIndex === 2) return githubCommits >= 30; // Gold badge unlocks normally
+        if (badgeIndex === 2) return githubCommits >= 30; // Diamond badge unlocks normally
         return false;
       
       default:
@@ -148,27 +148,27 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 
   const calculateJobsProgress = (tier: string) => {
     switch (tier) {
-      case 'bronze': return Math.min(100, jobApplicationsCount >= 1 ? 100 : 0);
-      case 'silver': return Math.min(100, jobApplicationsCount >= 14 ? 100 : (jobApplicationsCount / 14) * 100);
-      case 'gold': return Math.min(100, jobApplicationsCount >= 30 ? 100 : (jobApplicationsCount / 30) * 100);
+      case 'silver': return Math.min(100, jobApplicationsCount >= 1 ? 100 : 0);
+      case 'gold': return Math.min(100, jobApplicationsCount >= 14 ? 100 : (jobApplicationsCount / 14) * 100);
+      case 'diamond': return Math.min(100, jobApplicationsCount >= 30 ? 100 : (jobApplicationsCount / 30) * 100);
       default: return 0;
     }
   };
 
   const calculateNetworkProgress = (tier: string) => {
     switch (tier) {
-      case 'bronze': return Math.min(100, networkConnections >= 25 ? 100 : (networkConnections / 25) * 100);
-      case 'silver': return Math.min(100, networkConnections >= 50 ? 100 : (networkConnections / 50) * 100);
-      case 'gold': return Math.min(100, networkConnections >= 100 && profileViews >= 1000 ? 100 : Math.min((networkConnections / 100) * 50 + (profileViews / 1000) * 50, 100));
+      case 'silver': return Math.min(100, networkConnections >= 25 ? 100 : (networkConnections / 25) * 100);
+      case 'gold': return Math.min(100, networkConnections >= 50 ? 100 : (networkConnections / 50) * 100);
+      case 'diamond': return Math.min(100, networkConnections >= 100 && profileViews >= 1000 ? 100 : Math.min((networkConnections / 100) * 50 + (profileViews / 1000) * 50, 100));
       default: return 0;
     }
   };
 
   const calculateGithubProgress = (tier: string) => {
     switch (tier) {
-      case 'bronze': return Math.min(100, githubRepos >= 1 && githubCommits >= 5 ? 100 : Math.min((githubRepos / 1) * 50 + (githubCommits / 5) * 50, 100));
-      case 'silver': return Math.min(100, githubCommits >= 30 ? 100 : (githubCommits / 30) * 100);
-      case 'gold': return Math.min(100, githubProgress >= 80 ? 100 : (githubProgress / 80) * 100);
+      case 'silver': return Math.min(100, githubRepos >= 1 && githubCommits >= 5 ? 100 : Math.min((githubRepos / 1) * 50 + (githubCommits / 5) * 50, 100));
+      case 'gold': return Math.min(100, githubCommits >= 30 ? 100 : (githubCommits / 30) * 100);
+      case 'diamond': return Math.min(100, githubProgress >= 80 ? 100 : (githubProgress / 80) * 100);
       default: return 0;
     }
   };
@@ -231,31 +231,31 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       icon: Briefcase,
       badges: [
         {
-          id: 'jobs-bronze',
+          id: 'jobs-silver',
           title: 'First Step',
           description: 'Apply to your first job',
-          tier: 'bronze',
-          progress: calculateJobsProgress('bronze'),
+          tier: 'silver',
+          progress: calculateJobsProgress('silver'),
           criteria: 'Apply to 1 job',
           nextAction: 'Apply Now',
           link: '/dashboard/job-hunting-assignments'
         },
         {
-          id: 'jobs-silver',
+          id: 'jobs-gold',
           title: 'Consistency Champ',
           description: 'Apply to 2 jobs/day for 7 days',
-          tier: 'silver',
-          progress: calculateJobsProgress('silver'),
+          tier: 'gold',
+          progress: calculateJobsProgress('gold'),
           criteria: 'Apply to 14 jobs total',
           nextAction: 'Keep Applying',
           link: '/dashboard/job-hunting-assignments'
         },
         {
-          id: 'jobs-gold',
+          id: 'jobs-diamond',
           title: 'Interview Magnet',
           description: 'Apply to 30+ high-match jobs',
-          tier: 'gold',
-          progress: calculateJobsProgress('gold'),
+          tier: 'diamond',
+          progress: calculateJobsProgress('diamond'),
           criteria: 'Apply to 30+ jobs',
           nextAction: 'Scale Applications',
           link: '/dashboard/job-hunting-assignments'
@@ -268,31 +268,31 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       icon: Users,
       badges: [
         {
-          id: 'network-bronze',
+          id: 'network-silver',
           title: 'Connector',
           description: 'Build your network foundation',
-          tier: 'bronze',
-          progress: calculateNetworkProgress('bronze'),
+          tier: 'silver',
+          progress: calculateNetworkProgress('silver'),
           criteria: '25 new connections',
           nextAction: 'Connect More',
           link: '/career-activities'
         },
         {
-          id: 'network-silver',
+          id: 'network-gold',
           title: 'Networker',
           description: 'Active network engagement',
-          tier: 'silver',
-          progress: calculateNetworkProgress('silver'),
+          tier: 'gold',
+          progress: calculateNetworkProgress('gold'),
           criteria: '50 connections + 5 posts/week',
           nextAction: 'Engage More',
           link: '/career-activities'
         },
         {
-          id: 'network-gold',
+          id: 'network-diamond',
           title: 'Influencer in the Making',
           description: 'Established network presence',
-          tier: 'gold',
-          progress: calculateNetworkProgress('gold'),
+          tier: 'diamond',
+          progress: calculateNetworkProgress('diamond'),
           criteria: '100 connections + 1,000 profile views',
           nextAction: 'Build Influence',
           link: '/career-activities'
@@ -306,31 +306,31 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       icon: Github,
       badges: [
         {
-          id: 'github-bronze',
+          id: 'github-silver',
           title: 'Commit Cadet',
           description: 'Start your coding journey',
-          tier: 'bronze' as const,
-          progress: calculateGithubProgress('bronze'),
+          tier: 'silver' as const,
+          progress: calculateGithubProgress('silver'),
           criteria: 'First repo + 5 commits',
           nextAction: 'Start Coding',
           link: '/github-weekly'
         },
         {
-          id: 'github-silver',
+          id: 'github-gold',
           title: 'Project Maintainer',
           description: 'Maintain quality repositories',
-          tier: 'silver' as const,
-          progress: calculateGithubProgress('silver'),
+          tier: 'gold' as const,
+          progress: calculateGithubProgress('gold'),
           criteria: 'Repo with README + 30 commits',
           nextAction: 'Improve Projects',
           link: '/github-weekly'
         },
         {
-          id: 'github-gold',
+          id: 'github-diamond',
           title: 'Open Source Ally',
           description: 'Contribute to the community',
-          tier: 'gold' as const,
-          progress: calculateGithubProgress('gold'),
+          tier: 'diamond' as const,
+          progress: calculateGithubProgress('diamond'),
           criteria: 'Contribute to public projects',
           nextAction: 'Go Open Source',
           link: '/github-weekly'
