@@ -315,6 +315,17 @@ export function AppSidebar() {
               <div className="space-y-1">
                 {/* Main Menu Items */}
                 {mainItems.map((item) => {
+                  // Special condition for Level Up - only show for premium plan subscribers
+                  if (item.title === "Level Up") {
+                    const subscriberPlan = profile?.subscription_plan;
+                    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                    
+                    // Hide Level Up for users without eligible plans
+                    if (!subscriberPlan || !eligiblePlans.includes(subscriberPlan)) {
+                      return null;
+                    }
+                  }
+                  
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
                 })}
