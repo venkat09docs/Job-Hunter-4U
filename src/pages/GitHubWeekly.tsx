@@ -744,6 +744,32 @@ const GitHubWeekly = () => {
     );
   }
 
+  // Calculate current week's submitted metrics
+  const getCurrentWeekMetrics = () => {
+    const currentWeekTasks = weeklyTasks.filter(task => task.status === 'SUBMITTED' || task.status === 'VERIFIED');
+    let totalCommits = 0;
+    let totalProjects = 0;
+    let totalReadmeUpdates = 0;
+
+    // This would ideally come from the evidence submissions
+    // For now, we'll calculate based on completed/verified tasks as a proxy
+    // In a full implementation, you'd fetch the actual evidence data with weekly metrics
+
+    currentWeekTasks.forEach(task => {
+      // Since we don't have direct access to evidence metrics in this hook,
+      // we'll estimate based on task completion (this should be enhanced to fetch actual evidence data)
+      if (task.status === 'VERIFIED') {
+        totalCommits += 2; // Average commits per verified task
+        if (task.github_tasks?.code?.includes('project')) totalProjects += 1;
+        if (task.github_tasks?.code?.includes('readme') || task.github_tasks?.code?.includes('doc')) totalReadmeUpdates += 1;
+      }
+    });
+
+    return { totalCommits, totalProjects, totalReadmeUpdates };
+  };
+
+  const currentMetrics = getCurrentWeekMetrics();
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between mb-6">
@@ -853,21 +879,111 @@ const GitHubWeekly = () => {
                 <div className="bg-primary/5 p-4 rounded-lg mt-4">
                   <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
                     <Target className="h-4 w-4" />
-                    Weekly Targets
+                    Weekly Targets & Progress
                   </h4>
                   <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="text-center p-3 bg-background rounded-lg border">
-                      <div className="font-bold text-lg text-green-600">10+</div>
-                      <div className="text-muted-foreground">Commits</div>
+                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <GitCommit className="h-4 w-4 text-green-600" />
+                          <span className="font-semibold text-green-600">Commits</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-lg font-bold text-green-600">{currentMetrics.totalCommits}</span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-lg font-bold text-green-600">10+</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Current / Target</div>
+                          {currentMetrics.totalCommits >= 10 ? (
+                            <Badge variant="default" className="text-xs bg-green-100 text-green-700 border-green-300">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Target Met!
+                            </Badge>
+                          ) : (
+                            <div className="text-xs text-orange-600">
+                              {10 - currentMetrics.totalCommits} more needed
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-center p-3 bg-background rounded-lg border">
-                      <div className="font-bold text-lg text-blue-600">2</div>
-                      <div className="text-muted-foreground">Projects Updated</div>
+                    
+                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <GitBranch className="h-4 w-4 text-blue-600" />
+                          <span className="font-semibold text-blue-600">Projects</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-lg font-bold text-blue-600">{currentMetrics.totalProjects}</span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-lg font-bold text-blue-600">2</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Current / Target</div>
+                          {currentMetrics.totalProjects >= 2 ? (
+                            <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Target Met!
+                            </Badge>
+                          ) : (
+                            <div className="text-xs text-orange-600">
+                              {2 - currentMetrics.totalProjects} more needed
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-center p-3 bg-background rounded-lg border">
-                      <div className="font-bold text-lg text-purple-600">2-3</div>
-                      <div className="text-muted-foreground">README/Docs</div>
+                    
+                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center gap-2">
+                          <BookOpen className="h-4 w-4 text-purple-600" />
+                          <span className="font-semibold text-purple-600">README/Docs</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-lg font-bold text-purple-600">{currentMetrics.totalReadmeUpdates}</span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="text-lg font-bold text-purple-600">2-3</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">Current / Target</div>
+                          {currentMetrics.totalReadmeUpdates >= 2 ? (
+                            <Badge variant="default" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Target Met!
+                            </Badge>
+                          ) : (
+                            <div className="text-xs text-orange-600">
+                              {2 - currentMetrics.totalReadmeUpdates} more needed
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  
+                  {/* Overall Progress Bar */}
+                  <div className="mt-4 p-3 bg-background rounded-lg border">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Weekly Goals Progress</span>
+                      <span className="text-sm text-muted-foreground">
+                        {[
+                          currentMetrics.totalCommits >= 10,
+                          currentMetrics.totalProjects >= 2,
+                          currentMetrics.totalReadmeUpdates >= 2
+                        ].filter(Boolean).length} / 3 goals achieved
+                      </span>
+                    </div>
+                    <Progress 
+                      value={[
+                        currentMetrics.totalCommits >= 10,
+                        currentMetrics.totalProjects >= 2,
+                        currentMetrics.totalReadmeUpdates >= 2
+                      ].filter(Boolean).length / 3 * 100}
+                      className="h-2"
+                    />
                   </div>
                 </div>
               </CardHeader>
