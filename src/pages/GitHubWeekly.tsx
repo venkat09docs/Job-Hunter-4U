@@ -171,39 +171,46 @@ const GitHubWeekly = () => {
       handleSubmitEvidence(taskId!, evidenceData);
     };
 
+    // Enhanced cursor and interaction styles
+    const inputClassName = "cursor-text transition-all duration-200 border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-lg hover:border-primary/50 hover:shadow-md";
+    const textareaClassName = "cursor-text min-h-[100px] resize-y transition-all duration-200 border-2 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-lg hover:border-primary/50 hover:shadow-md";
+
     return (
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
+        <DialogHeader className="flex-shrink-0 pb-4 border-b">
+          <DialogTitle className="flex items-center gap-3 text-xl font-semibold">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Upload className="h-5 w-5 text-primary" />
+            </div>
             Submit Evidence
           </DialogTitle>
-          <DialogDescription>
-            Provide evidence to verify task completion
+          <DialogDescription className="text-muted-foreground mt-2">
+            Provide evidence and metrics to verify your GitHub task completion
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="evidence-type">Evidence Type</Label>
+        <div className="flex-1 overflow-y-auto py-4 space-y-6 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+          {/* Evidence Type Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="evidence-type" className="text-sm font-medium cursor-pointer">Evidence Type</Label>
             <Select value={evidenceType} onValueChange={(value: any) => setEvidenceType(value)}>
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer hover:bg-muted/50 transition-colors duration-200">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="URL">
+                <SelectItem value="URL" className="cursor-pointer hover:bg-muted">
                   <div className="flex items-center gap-2">
                     <LinkIcon className="h-4 w-4" />
                     URL Link
                   </div>
                 </SelectItem>
-                <SelectItem value="SCREENSHOT">
+                <SelectItem value="SCREENSHOT" className="cursor-pointer hover:bg-muted">
                   <div className="flex items-center gap-2">
                     <Camera className="h-4 w-4" />
                     Screenshot
                   </div>
                 </SelectItem>
-                <SelectItem value="DATA_EXPORT">
+                <SelectItem value="DATA_EXPORT" className="cursor-pointer hover:bg-muted">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     File Upload
@@ -213,102 +220,193 @@ const GitHubWeekly = () => {
             </Select>
           </div>
 
+          {/* URL Input */}
           {evidenceType === 'URL' && (
-            <div>
-              <Label htmlFor="url">URL</Label>
+            <div className="space-y-2 animate-fade-in">
+              <Label htmlFor="url" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                <LinkIcon className="h-4 w-4" />
+                GitHub URL
+              </Label>
               <Input
                 id="url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://github.com/username/repo/..."
+                placeholder="https://github.com/username/repo/commit/abc123..."
+                className={inputClassName}
+                autoFocus
               />
+              <p className="text-xs text-muted-foreground">Paste the GitHub URL for your commit, PR, or repository</p>
             </div>
           )}
 
+          {/* File Upload */}
           {evidenceType !== 'URL' && (
-            <div>
-              <Label htmlFor="file">File</Label>
-              <Input
-                id="file"
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                accept={evidenceType === 'SCREENSHOT' ? 'image/*' : '*'}
-              />
+            <div className="space-y-2 animate-fade-in">
+              <Label htmlFor="file" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                {evidenceType === 'SCREENSHOT' ? <Camera className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                {evidenceType === 'SCREENSHOT' ? 'Screenshot' : 'File'}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="file"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  accept={evidenceType === 'SCREENSHOT' ? 'image/*' : '*'}
+                  className="cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all duration-200"
+                />
+                {file && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-700">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Selected: {file.name}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Weekly Metrics Section */}
-          <div className="bg-muted/30 p-4 rounded-lg space-y-4">
-            <h4 className="font-medium flex items-center gap-2">
-              <Target className="h-4 w-4" />
+          <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 space-y-4">
+            <h4 className="font-semibold flex items-center gap-2 text-primary">
+              <Target className="h-5 w-5" />
               Weekly Activity Metrics
             </h4>
+            <p className="text-sm text-muted-foreground">
+              Track your GitHub activity for this week. At least one metric must be greater than zero.
+            </p>
             
             <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="commits">Number of Commits</Label>
+              <div className="space-y-2">
+                <Label htmlFor="commits" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                  <GitCommit className="h-4 w-4" />
+                  Number of Commits
+                </Label>
                 <Input
                   id="commits"
                   type="number"
                   min="0"
+                  max="999"
                   value={commits}
                   onChange={(e) => setCommits(Number(e.target.value))}
-                  placeholder="0"
+                  placeholder="Enter number of commits"
+                  className={inputClassName}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Target: 10+ commits this week</p>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Target: 10+ commits</span>
+                  </div>
+                  {commits >= 10 && (
+                    <Badge variant="default" className="text-xs bg-green-100 text-green-700 border-green-300">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Target Met!
+                    </Badge>
+                  )}
+                </div>
               </div>
               
-              <div>
-                <Label htmlFor="projects">Projects Updated</Label>
+              <div className="space-y-2">
+                <Label htmlFor="projects" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                  <GitBranch className="h-4 w-4" />
+                  Projects Updated
+                </Label>
                 <Input
                   id="projects"
                   type="number"
                   min="0"
+                  max="50"
                   value={projectsUpdated}
                   onChange={(e) => setProjectsUpdated(Number(e.target.value))}
-                  placeholder="0"
+                  placeholder="Enter number of projects"
+                  className={inputClassName}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Target: 2 projects this week</p>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Target: 2 projects</span>
+                  </div>
+                  {projectsUpdated >= 2 && (
+                    <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Target Met!
+                    </Badge>
+                  )}
+                </div>
               </div>
               
-              <div>
-                <Label htmlFor="readme">README/Docs Updates</Label>
+              <div className="space-y-2">
+                <Label htmlFor="readme" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  README/Docs Updates
+                </Label>
                 <Input
                   id="readme"
                   type="number"
                   min="0"
+                  max="20"
                   value={readmeUpdates}
                   onChange={(e) => setReadmeUpdates(Number(e.target.value))}
-                  placeholder="0"
+                  placeholder="Enter number of documentation updates"
+                  className={inputClassName}
                 />
-                <p className="text-xs text-muted-foreground mt-1">Target: 2-3 documentation updates this week</p>
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Target: 2-3 updates</span>
+                  </div>
+                  {readmeUpdates >= 2 && (
+                    <Badge variant="default" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Target Met!
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="description">Description (Optional)</Label>
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Description (Optional)
+            </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Additional context or notes..."
+              placeholder="Add any additional context, notes, or explanations about your work..."
+              className={textareaClassName}
             />
+            <p className="text-xs text-muted-foreground">
+              Provide context about your work, challenges faced, or any other relevant details
+            </p>
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 pt-4 border-t bg-muted/20">
           <Button 
             variant="outline" 
             onClick={() => setEvidenceDialog({ open: false, taskId: null })}
+            className="cursor-pointer hover:bg-muted transition-colors duration-200"
           >
             Cancel
           </Button>
           <Button 
             onClick={handleSubmit}
             disabled={isSubmittingEvidence || (evidenceType === 'URL' && !url.trim()) || (commits === 0 && projectsUpdated === 0 && readmeUpdates === 0)}
+            className="cursor-pointer hover:shadow-lg transition-all duration-200 disabled:cursor-not-allowed"
           >
-            {isSubmittingEvidence ? 'Submitting...' : 'Submit Evidence'}
+            {isSubmittingEvidence ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Submitting...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Submit Evidence
+              </div>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
