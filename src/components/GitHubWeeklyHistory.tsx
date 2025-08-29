@@ -9,6 +9,8 @@ import { formatDistanceToNow, format, parseISO, startOfWeek, endOfWeek } from 'd
 export const GitHubWeeklyHistory = () => {
   const { signals, scores, badges, historicalAssignments } = useGitHubWeekly();
 
+  console.log('GitHubWeeklyHistory - historicalAssignments:', historicalAssignments);
+
   // Group signals by date for better visualization
   const groupSignalsByDate = (signalsList: any[]) => {
     const grouped = signalsList.reduce((acc, signal) => {
@@ -115,6 +117,7 @@ export const GitHubWeeklyHistory = () => {
   };
 
   const groupedAssignments = groupAssignmentsByPeriod(historicalAssignments);
+  console.log('Grouped assignments:', groupedAssignments);
 
   return (
     <div className="space-y-6">
@@ -192,7 +195,7 @@ export const GitHubWeeklyHistory = () => {
               </div>
             ))}
 
-            {historicalAssignments?.length === 0 && (
+            {(!historicalAssignments || historicalAssignments.length === 0) && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-8">
                   <FileText className="h-12 w-12 text-muted-foreground mb-4" />
