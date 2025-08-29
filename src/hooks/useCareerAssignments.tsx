@@ -71,11 +71,13 @@ export const useCareerAssignments = () => {
     if (user) {
       setLoading(true);
       console.log('🔍 Starting data fetch...');
-      Promise.all([
-        fetchTemplates(),
-        fetchAssignments(), 
-        fetchEvidence()
-      ]).finally(() => {
+      // Fetch templates first, then assignments that depend on templates
+      fetchTemplates().then(() => {
+        return Promise.all([
+          fetchAssignments(), 
+          fetchEvidence()
+        ]);
+      }).finally(() => {
         console.log('🔍 All data fetching completed');
         setLoading(false);
       });
@@ -104,14 +106,13 @@ export const useCareerAssignments = () => {
   };
 
   const fetchAssignments = async () => {
-    console.log('🔍 fetchAssignments started', { userId: user?.id });
+    console.log('🔍 fetchAssignments started', { userId: user?.id, templatesLength: templates.length });
     if (!user) {
       console.log('🔍 fetchAssignments aborted - no user');
       return;
     }
 
     try {
-      // Fetch assignments and templates separately to avoid join issues
       console.log('🔍 Fetching assignments for user:', user.id);
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('career_task_assignments')
@@ -122,14 +123,21 @@ export const useCareerAssignments = () => {
       if (assignmentsError) throw assignmentsError;
       console.log('🔍 Raw assignments fetched:', assignmentsData?.length || 0);
 
-      console.log('🔍 Fetching templates for joining...');
-      const { data: templatesData, error: templatesError } = await supabase
-        .from('career_task_templates')
-        .select('*')
-        .eq('is_active', true);
+      // Use existing templates from state, but fetch fresh ones if needed
+      let templatesData = templates;
+      if (templates.length === 0) {
+        console.log('🔍 No templates in state, fetching fresh...');
+        const { data: freshTemplates, error: templatesError } = await supabase
+          .from('career_task_templates')
+          .select('*')
+          .eq('is_active', true);
 
-      if (templatesError) throw templatesError;
-      console.log('🔍 Templates for joining fetched:', templatesData?.length || 0);
+        if (templatesError) throw templatesError;
+        templatesData = freshTemplates || [];
+        setTemplates(templatesData);
+      }
+      
+      console.log('🔍 Using templates for joining:', templatesData.length);
 
       // Manually join the data
       const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
