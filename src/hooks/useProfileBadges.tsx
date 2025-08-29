@@ -48,7 +48,7 @@ export const useProfileBadges = () => {
   };
 
   const fetchUserBadges = async () => {
-    if (!user) return;
+    if (!user || loading) return;
 
     try {
       const { data, error } = await supabase
@@ -104,9 +104,11 @@ export const useProfileBadges = () => {
     loadData();
   }, [user]);
 
-  // Set up real-time subscription for badge awards
+  // Set up real-time subscription for badge awards with debouncing
   useEffect(() => {
     if (!user) return;
+
+    let timeoutId: NodeJS.Timeout;
 
     const channel = supabase
       .channel('profile-badge-changes')
@@ -119,12 +121,17 @@ export const useProfileBadges = () => {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          fetchUserBadges();
+          // Debounce badge fetching to prevent race conditions
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            fetchUserBadges();
+          }, 500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [user]);

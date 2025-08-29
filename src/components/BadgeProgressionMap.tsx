@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -44,6 +44,7 @@ interface BadgeProgressionMapProps {
   githubCommits?: number;
   githubRepos?: number;
   subscriptionPlan?: string | null;
+  careerLoading?: boolean;
 }
 
 const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
@@ -60,10 +61,19 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   githubCommits = 0,
   githubRepos = 0,
   subscriptionPlan = null,
+  careerLoading = false,
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
   const { checkAndAwardBadges, userBadges, loading: badgesLoading } = useProfileBadges();
+
+  // Check for badge awards when profile progress milestones are reached
+  useEffect(() => {
+    if (!careerLoading && resumeProgress >= 100) {
+      // Award badges when bronze reaches 100%
+      checkAndAwardBadges();
+    }
+  }, [resumeProgress, careerLoading, checkAndAwardBadges]);
 
   // Check if badge has been awarded to user
   const isBadgeAwarded = (badgeCode: string) => {

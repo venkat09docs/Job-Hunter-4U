@@ -23,7 +23,6 @@ const LevelUp = () => {
   const { isAdmin } = useRole();
   const { profile, loading, hasActiveSubscription } = useProfile();
   const { getModuleProgress, loading: careerLoading, getTasksByModule, assignments } = useCareerAssignments();
-  const { checkAndAwardBadges } = useProfileBadges();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
@@ -37,13 +36,7 @@ const LevelUp = () => {
   const profileTasks = !careerLoading ? getTasksByModule('RESUME') : [];
   const completedProfileTasks = profileTasks.filter(task => task.status === 'verified').length;
 
-  // Check for badge awards when profile progress milestones are reached
-  useEffect(() => {
-    if (!careerLoading && resumeProgress >= 100) {
-      // Award badges when bronze reaches 100%
-      checkAndAwardBadges();
-    }
-  }, [resumeProgress, careerLoading, checkAndAwardBadges]);
+  // Badge awarding will be handled in BadgeProgressionMap component
   
   // Get the GitHub progress percentage
   const githubProgress = getGitHubProgress();
@@ -153,20 +146,6 @@ const LevelUp = () => {
     : 0;
     
    console.log('🔍 GitHub Profile Tasks (Level Up):', githubProfileTasks.length, 'Completed:', githubProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', githubProfileProgress + '%');
-
-  // Also check when LinkedIn profile progress changes (for silver/gold progression)
-  useEffect(() => {
-    if (!careerLoading && linkedinProfileProgress >= 100) {
-      checkAndAwardBadges();
-    }
-  }, [linkedinProfileProgress, careerLoading, checkAndAwardBadges]);
-
-  // Also check when Digital Profile progress changes (for gold progression)
-  useEffect(() => {
-    if (!careerLoading && digitalProfileProgress >= 100) {
-      checkAndAwardBadges();
-    }
-  }, [digitalProfileProgress, careerLoading, checkAndAwardBadges]);
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
@@ -301,7 +280,7 @@ const LevelUp = () => {
 
           {/* Badge Progression Map */}
           <div className="mb-8">
-          <BadgeProgressionMap 
+          <BadgeProgressionMap
             resumeProgress={resumeProgress}
             completedProfileTasks={completedProfileTasks}
             linkedinProgress={linkedinProgress}
@@ -315,6 +294,7 @@ const LevelUp = () => {
             githubCommits={repoMetrics.completed * 6} // Approximate commits based on completed tasks
             githubRepos={repoMetrics.completed > 0 ? 1 : 0} // Has at least one repo if any tasks completed
             subscriptionPlan={profile?.subscription_plan}
+            careerLoading={careerLoading}
           />
           </div>
         </div>
