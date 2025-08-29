@@ -3957,6 +3957,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      refresh_github_weekly_assignments: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       refresh_student_statistics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
