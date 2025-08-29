@@ -119,7 +119,22 @@ export const useCareerAssignments = () => {
         return {
           ...assignment,
           assigned_at: assignment.created_at,
-          career_task_templates: template || null
+          career_task_templates: template || {
+            id: '',
+            code: '',
+            module: 'RESUME' as const,
+            title: 'Unknown Template',
+            description: '',
+            category: '',
+            evidence_types: [],
+            points_reward: 0,
+            cadence: '',
+            difficulty: '',
+            estimated_duration: 0,
+            instructions: {},
+            verification_criteria: {},
+            bonus_rules: {}
+          }
         };
       });
       

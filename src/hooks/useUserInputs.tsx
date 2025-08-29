@@ -42,7 +42,8 @@ export const useUserInputs = () => {
       setInputs(inputsMap);
     } catch (error) {
       console.error('Error fetching user inputs:', error);
-      toast.error('Failed to load user settings');
+      // Don't show error toast for empty user inputs - just set empty object
+      setInputs({});
     } finally {
       setLoading(false);
     }
