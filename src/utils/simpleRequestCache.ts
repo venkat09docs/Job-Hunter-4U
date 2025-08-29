@@ -61,11 +61,16 @@ class SimpleRequestCache {
     // Don't cache premium features (affects subscription checks)
     if (url.includes('premium_features')) return false;
 
-    // Temporarily disable caching for user points and notifications to fix stream issues
+    // Disable caching for endpoints that cause "body stream already read" errors
     if (url.includes('user_activity_points')) return false;
     if (url.includes('notifications')) return false;
     if (url.includes('job_hunting_assignments')) return false;
     if (url.includes('job_hunting_evidence')) return false;
+    if (url.includes('career_task_assignments')) return false;
+    if (url.includes('career_task_evidence')) return false;
+    if (url.includes('github_progress')) return false;
+    if (url.includes('profile_badges')) return false;
+    if (url.includes('profile_user_badges')) return false;
 
     return true;
   }
