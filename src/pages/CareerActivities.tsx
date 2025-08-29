@@ -410,7 +410,7 @@ const CareerActivities = () => {
                   </CardContent>
                 </Card>
 
-                {/* Recent Signals */}
+                {/* Recent Activity - Signals & Submitted Assignments */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -419,32 +419,71 @@ const CareerActivities = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {signals.length === 0 && (
-                      <div className="text-center py-6 text-muted-foreground">
-                        <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No activity detected yet</p>
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      {signals.slice(0, 5).map((signal) => (
-                        <div key={signal.id} className="flex items-start gap-3 p-2 rounded">
-                          <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">
-                              {signal.kind.replace('_', ' ')}
-                            </p>
-                            {signal.actor && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                by {signal.actor}
-                              </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(signal.happened_at), 'MMM dd, h:mm a')}
-                            </p>
+                    {(() => {
+                      // Combine signals and evidence into one activity feed
+                      const recentActivities = [
+                        // LinkedIn signals
+                        ...signals.map(signal => ({
+                          id: signal.id,
+                          type: 'signal',
+                          title: signal.kind.replace('_', ' '),
+                          subtitle: signal.actor ? `by ${signal.actor}` : '',
+                          timestamp: new Date(signal.happened_at),
+                          icon: 'activity'
+                        })),
+                        // Submitted assignments (evidence)
+                        ...evidence.map(evidenceItem => {
+                          const task = userTasks.find(t => t.id === evidenceItem.user_task_id);
+                          return {
+                            id: evidenceItem.id,
+                            type: 'submission',
+                            title: task ? `Submitted: ${task.linkedin_tasks.title}` : 'Assignment Submitted',
+                            subtitle: `Evidence: ${evidenceItem.kind}`,
+                            timestamp: new Date(evidenceItem.created_at),
+                            icon: 'upload'
+                          };
+                        })
+                      ];
+
+                      // Sort by timestamp (newest first) and take latest 5
+                      const sortedActivities = recentActivities
+                        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+                        .slice(0, 5);
+
+                      if (sortedActivities.length === 0) {
+                        return (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No activity detected yet</p>
                           </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-3">
+                          {sortedActivities.map((activity) => (
+                            <div key={`${activity.type}-${activity.id}`} className="flex items-start gap-3 p-2 rounded">
+                              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                                activity.type === 'submission' ? 'bg-green-500' : 'bg-primary'
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">
+                                  {activity.title}
+                                </p>
+                                {activity.subtitle && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {activity.subtitle}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  {format(activity.timestamp, 'MMM dd, h:mm a')}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
 
