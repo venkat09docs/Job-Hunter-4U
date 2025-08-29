@@ -83,17 +83,27 @@ export const useCareerAssignments = () => {
     console.log('🔍 useCareerAssignments useEffect triggered', { user: user?.id, hasUser: !!user });
     if (user) {
       setLoading(true);
+      setAssignments([]); // Clear previous assignments
       console.log('🔍 Starting data fetch...');
+      
       // Fetch templates first, then assignments that depend on templates
-      fetchTemplates().then(() => {
-        return Promise.all([
-          fetchAssignments(), 
-          fetchEvidence()
-        ]);
-      }).finally(() => {
-        console.log('🔍 All data fetching completed');
-        setLoading(false);
-      });
+      fetchTemplates()
+        .then(() => {
+          console.log('🔍 Templates loaded, now fetching assignments...');
+          return fetchAssignments();
+        })
+        .then(() => {
+          console.log('🔍 Assignments loaded, now fetching evidence...');
+          return fetchEvidence();
+        })
+        .finally(() => {
+          console.log('🔍 All data fetching completed');
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('🔍 Error in data fetching chain:', error);
+          setLoading(false);
+        });
     } else {
       console.log('🔍 No user available, skipping data fetch');
       setLoading(false);
@@ -137,6 +147,12 @@ export const useCareerAssignments = () => {
       if (assignmentsError) throw assignmentsError;
       console.log('🔍 Raw assignments fetched:', assignmentsData?.length || 0);
 
+      if (!assignmentsData || assignmentsData.length === 0) {
+        console.log('🔍 No assignments found for user');
+        setAssignments([]);
+        return;
+      }
+
       // Use existing templates from state, but fetch fresh ones if needed
       let templatesData = templates;
       if (templates.length === 0) {
@@ -148,15 +164,16 @@ export const useCareerAssignments = () => {
 
         if (templatesError) throw templatesError;
         templatesData = freshTemplates || [];
+        console.log('🔍 Fresh templates fetched:', templatesData.length);
         setTemplates(templatesData);
       }
       
       console.log('🔍 Using templates for joining:', templatesData.length);
 
       // Manually join the data
-      const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
+      const assignmentsWithTemplates = assignmentsData.map(assignment => {
         const template = templatesData?.find(t => t.id === assignment.template_id);
-        console.log('🔍 Mapping assignment:', assignment.id, 'to template:', template?.title || 'NOT FOUND');
+        console.log('🔍 Mapping assignment:', assignment.id, 'to template:', template?.title || 'NOT FOUND', 'sub_category_id:', template?.sub_category_id);
         return {
           ...assignment,
           assigned_at: assignment.created_at,
@@ -181,16 +198,14 @@ export const useCareerAssignments = () => {
       });
       
       console.log('🔍 Final assignments with templates:', assignmentsWithTemplates.length);
-      console.log('🔍 Sample assignment with sub_category_id:', assignmentsWithTemplates[0]?.career_task_templates?.sub_category_id);
+      console.log('🔍 Sample assignment sub_category_id:', assignmentsWithTemplates[0]?.career_task_templates?.sub_category_id);
       
-      // Force a small delay to ensure state updates properly
-      setTimeout(() => {
-        setAssignments(assignmentsWithTemplates);
-        console.log('🔍 Assignments set in state');
-      }, 10);
+      // Set assignments directly without timeout
+      setAssignments(assignmentsWithTemplates);
+      console.log('🔍 ✅ Assignments successfully set in state');
       
     } catch (error) {
-      console.error('🔍 fetchAssignments error:', error);
+      console.error('🔍 ❌ fetchAssignments error:', error);
       setAssignments([]);
     }
   };
