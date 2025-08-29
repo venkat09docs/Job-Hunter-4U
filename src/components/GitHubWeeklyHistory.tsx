@@ -152,14 +152,6 @@ export const GitHubWeeklyHistory = () => {
           </div>
 
           <div className="space-y-6">
-            <div style={{border: '2px solid red', padding: '10px', margin: '10px'}}>
-              <p>DEBUG: historicalAssignments length: {historicalAssignments?.length || 0}</p>
-              <p>DEBUG: groupedAssignments length: {groupedAssignments?.length || 0}</p>
-              <pre style={{fontSize: '12px', background: '#f0f0f0', padding: '10px'}}>
-                {JSON.stringify(groupedAssignments.slice(0, 1), null, 2)}
-              </pre>
-            </div>
-            
             {groupedAssignments.length > 0 ? (
               groupedAssignments.map(([period, periodAssignments]: [string, any[]]) => (
               <div key={period} className="space-y-3">
@@ -218,18 +210,6 @@ export const GitHubWeeklyHistory = () => {
               </div>
             ))
             ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Assignment History</h3>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Complete GitHub assignments to build your activity history
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {(!historicalAssignments || historicalAssignments.length === 0) && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-8">
                   <FileText className="h-12 w-12 text-muted-foreground mb-4" />
