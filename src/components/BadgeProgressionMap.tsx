@@ -198,7 +198,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: isBadgeAwarded('profile_rookie') ? 100 : calculateProfileProgress('bronze'),
           criteria: 'Create your first profile',
           nextAction: 'Build Profile',
-          link: '/dashboard/career-assignments',
+          link: '/dashboard/career-assignments?category=resume',
           code: 'profile_rookie'
         },
         {
@@ -209,7 +209,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: isBadgeAwarded('profile_complete') ? 100 : calculateProfileProgress('silver'),
           criteria: 'Complete LinkedIn profile (100%)',
           nextAction: 'Complete LinkedIn',
-          link: '/dashboard/career-assignments',
+          link: '/dashboard/career-assignments?category=linkedin',
           code: 'profile_complete'
         },
         {
@@ -220,7 +220,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: hasPremiumPlan() ? calculateProfileProgress('gold') : 0, // Show progress only if subscription is valid
           criteria: hasPremiumPlan() ? 'Complete Digital Profile tasks (100%)' : 'Subscription required: 6-month or 1-year plan for digital profile',
           nextAction: hasPremiumPlan() ? 'Build Portfolio' : 'Upgrade Plan',
-          link: hasPremiumPlan() ? '/dashboard/career-assignments' : '#',
+          link: hasPremiumPlan() ? '/dashboard/career-assignments?category=digital' : '#',
           code: 'profile_perfectionist'
         },
         {
@@ -231,7 +231,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           progress: isIT() ? (isBadgeAwarded('profile_elite') ? 100 : calculateProfileProgress('diamond')) : 0,
           criteria: isIT() ? 'Complete GitHub Profile tasks (100%)' : 'GitHub profile available only for IT professionals',
           nextAction: isIT() ? 'Build Network' : 'Not Available',
-          link: isIT() ? '/dashboard/career-assignments' : '#',
+          link: isIT() ? '/dashboard/career-assignments?category=github' : '#',
           code: 'profile_elite'
         }
       ]

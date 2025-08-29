@@ -21,7 +21,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useProfile } from '@/hooks/useProfile';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface SubCategory {
   id: string;
@@ -39,6 +39,8 @@ const CareerAssignments = () => {
   const { profile } = useProfile();
   const { industry, isIT } = useUserIndustry();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryFilter = searchParams.get('category');
   
   // Use the proper hook instead of local state
   const {
@@ -528,7 +530,22 @@ const CareerAssignments = () => {
             <Target className="h-8 w-8 text-primary" />
             <div>
               <h1 className="text-4xl font-bold">Profile Assignments</h1>
-              <p className="text-muted-foreground mt-2">Complete tasks to build your professional profile</p>
+              <p className="text-muted-foreground mt-2">
+                {categoryFilter 
+                  ? `Complete ${categoryFilter} tasks to build your professional profile`
+                  : 'Complete tasks to build your professional profile'
+                }
+              </p>
+              {categoryFilter && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/dashboard/career-assignments')}
+                  className="mt-2 text-sm text-muted-foreground hover:text-primary"
+                >
+                  ← View all categories
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -717,9 +734,17 @@ const CareerAssignments = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Content */}
               <div className="lg:col-span-2">
-                <Accordion type="multiple" className="space-y-4">
+                <Accordion type="multiple" className="space-y-4" defaultValue={categoryFilter ? [subCategories.find(sc => sc.name.toLowerCase().includes(categoryFilter))?.id].filter(Boolean) : []}>
                   {/* Dynamic Sub-Categories */}
-                  {subCategories.map((subCategory) => {
+                  {subCategories
+                    .filter(subCategory => {
+                      // If category filter is provided, only show matching subcategory
+                      if (categoryFilter) {
+                        return subCategory.name.toLowerCase().includes(categoryFilter.toLowerCase());
+                      }
+                      return true;
+                    })
+                    .map((subCategory) => {
                      const categoryTasks = getTasksBySubCategory(subCategory.id);
                      const categoryProgress = getSubCategoryProgress(subCategory.id);
                      const isEnabled = isSubCategoryEnabled(subCategory);
