@@ -97,7 +97,7 @@ export function useSupabaseInterceptor(enable: boolean = true) {
   };
 }
 
-// Auto-install on import (can be disabled by setting environment variable)
-if (typeof window !== 'undefined' && !import.meta.env.DISABLE_SUPABASE_CACHE) {
-  installSupabaseInterceptor();
-}
+// Auto-install disabled to fix navigation issues
+// if (typeof window !== 'undefined' && !import.meta.env.DISABLE_SUPABASE_CACHE) {
+//   installSupabaseInterceptor();
+// }
