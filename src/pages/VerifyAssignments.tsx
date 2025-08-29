@@ -247,7 +247,7 @@ const VerifyAssignments = () => {
   const fetchLinkedInAssignments = async () => {
     console.log('🔍 Fetching LinkedIn assignments...');
     
-    // First fetch LinkedIn tasks
+    // Fetch LinkedIn tasks with proper join through linkedin_users to get profiles
     const { data: linkedInTasks, error: linkedInError } = await supabase
       .from('linkedin_user_tasks')
       .select(`
@@ -258,6 +258,12 @@ const VerifyAssignments = () => {
           title,
           description,
           points_base
+        ),
+        linkedin_users (
+          id,
+          auth_uid,
+          name,
+          email
         )
       `)
       .eq('status', 'SUBMITTED')
@@ -270,25 +276,25 @@ const VerifyAssignments = () => {
 
     console.log('🔍 LinkedIn tasks fetched:', linkedInTasks?.length || 0);
 
-    // Get user profiles for the LinkedIn task user_ids  
-    const linkedInUserIds = [...new Set(linkedInTasks?.map(task => task.user_id) || [])];
+    // Get user profiles using auth_uid from linkedin_users
+    const authUids = [...new Set(linkedInTasks?.map(task => task.linkedin_users?.auth_uid).filter(Boolean) || [])];
     let profilesData: any[] = [];
     
-    console.log('🔍 LinkedIn user IDs to fetch profiles for:', linkedInUserIds);
+    console.log('🔍 Auth UIDs to fetch profiles for:', authUids);
     
-    if (linkedInUserIds.length > 0) {
-      console.log('🔍 Fetching profiles for LinkedIn assignments...');
+    if (authUids.length > 0) {
+      console.log('🔍 Fetching profiles for LinkedIn assignments via auth_uid...');
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, username, full_name, profile_image_url')
-        .in('user_id', linkedInUserIds);
+        .in('user_id', authUids);
       
       console.log('🔍 Profile fetch result for LinkedIn:', {
         profiles: profiles,
         error: profilesError,
         profileCount: profiles?.length || 0,
-        userIds: linkedInUserIds
+        authUids: authUids
       });
       
       if (profilesError) {
@@ -300,10 +306,10 @@ const VerifyAssignments = () => {
       }
     }
 
-    // Combine the data with proper fallback
+    // Combine the data using auth_uid as the link
     const combinedData = linkedInTasks?.map(task => {
-      const profile = profilesData.find(p => p.user_id === task.user_id);
-      console.log(`🔍 Matching profile for user ${task.user_id}:`, profile);
+      const profile = profilesData.find(p => p.user_id === task.linkedin_users?.auth_uid);
+      console.log(`🔍 Matching profile for auth_uid ${task.linkedin_users?.auth_uid}:`, profile);
       
       return {
         ...task,
@@ -557,7 +563,7 @@ const VerifyAssignments = () => {
         
         return {
           id: assignment.id,
-          user_id: assignment.user_id,
+          user_id: assignment.linkedin_users?.auth_uid || assignment.user_id, // Use auth_uid for correct user identification
           template_id: assignment.task_id,
           status: assignment.status.toLowerCase(),
           submitted_at: assignment.updated_at,
@@ -572,8 +578,8 @@ const VerifyAssignments = () => {
             sub_categories: { name: 'LinkedIn Profile' }
           },
           profiles: profile || { 
-            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
-            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            full_name: `[Missing User: ${assignment.linkedin_users?.auth_uid?.slice(0, 8) || assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.linkedin_users?.auth_uid?.slice(0, 8) || assignment.user_id.slice(0, 8)}`, 
             profile_image_url: '' 
           },
           evidence: [],
