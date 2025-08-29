@@ -102,8 +102,8 @@ const CareerAssignments = () => {
 
   // Calculate stats when assignments change
   useEffect(() => {
-    console.log('🔍 CareerAssignments stats calculation triggered', { assignmentsLength: assignments?.length || 0 });
-    if (assignments) {
+    console.log('🔍 CareerAssignments stats calculation triggered', { assignmentsLength: assignments?.length || 0, isLoading });
+    if (!isLoading && assignments && assignments.length > 0) {
       const completed = assignments.filter(a => a.status === 'verified').length;
       const points = assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
       const maxPts = assignments.reduce((sum, a) => sum + (a.career_task_templates?.points_reward || 0), 0);
@@ -113,7 +113,7 @@ const CareerAssignments = () => {
       setTotalPoints(points);
       setMaxPoints(maxPts);
     }
-  }, [assignments]);
+  }, [assignments, isLoading]);
 
   const setupRealtimeSubscription = () => {
     const channel = supabase
@@ -162,7 +162,14 @@ const CareerAssignments = () => {
 
   const getTasksBySubCategory = (subCategoryId: string) => {
     console.log('getTasksBySubCategory called with:', subCategoryId);
-    console.log('assignments available:', assignments.length);
+    console.log('assignments available:', assignments?.length || 0);
+    console.log('isLoading:', isLoading);
+    
+    // Return empty array if still loading or no assignments
+    if (isLoading || !assignments || assignments.length === 0) {
+      console.log('Returning empty - still loading or no assignments');
+      return [];
+    }
     
     // Filter assignments by sub_category_id from the related template
     const filtered = assignments
@@ -187,6 +194,7 @@ const CareerAssignments = () => {
   };
 
   const getSubCategoryProgress = (subCategoryId: string) => {
+    if (isLoading) return 0;
     const tasks = getTasksBySubCategory(subCategoryId);
     if (tasks.length === 0) return 0;
     const completed = tasks.filter(task => task.status === 'verified').length;
@@ -558,6 +566,7 @@ const CareerAssignments = () => {
 
               // Get tasks by sub-category name (matching the actual assignment tabs)
               const getTasksBySubCategoryName = (categoryName: string) => {
+                if (isLoading) return [];
                 const subCategory = subCategories.find(sc => 
                   sc.name.toLowerCase().includes(categoryName.toLowerCase())
                 );
