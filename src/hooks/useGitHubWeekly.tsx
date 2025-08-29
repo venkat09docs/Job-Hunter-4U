@@ -208,7 +208,7 @@ export const useGitHubWeekly = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch historical assignments (all periods)
+  // Fetch historical assignments (all assignments regardless of status or period)
   const { data: historicalAssignments = [] } = useQuery({
     queryKey: ['github-historical-assignments', user?.id],
     queryFn: async () => {
@@ -221,7 +221,6 @@ export const useGitHubWeekly = () => {
           github_tasks (*)
         `)
         .eq('user_id', user.id)
-        .not('period', 'is', null) // Only get period-based tasks (assignments)
         .order('created_at', { ascending: false });
       
       if (error) {
