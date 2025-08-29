@@ -155,7 +155,7 @@ const VerifyAssignments = () => {
           .from('career_task_assignments')
           .select(`
             *,
-            career_task_templates (
+            career_task_templates!career_task_assignments_template_id_fkey (
               title,
               module,
               points_reward,
@@ -227,7 +227,7 @@ const VerifyAssignments = () => {
       .from('career_task_assignments')
       .select(`
         *,
-        career_task_templates (
+        career_task_templates!career_task_assignments_template_id_fkey (
           title,
           module,
           points_reward,
