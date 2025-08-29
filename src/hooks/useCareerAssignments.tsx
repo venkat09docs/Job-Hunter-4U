@@ -96,22 +96,51 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
+      // Use explicit join instead of nested query to avoid foreign key issues
       const { data, error } = await supabase
         .from('career_task_assignments')
         .select(`
-          *,
-          career_task_templates (*)
+          id,
+          user_id,
+          template_id,
+          period,
+          due_date,
+          week_start_date,
+          status,
+          score_awarded,
+          points_earned,
+          created_at,
+          updated_at,
+          assigned_at,
+          submitted_at,
+          verified_at,
+          verified_by,
+          verification_notes
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      // Add assigned_at to match interface
-      const assignmentsWithAssignedAt = (data || []).map(assignment => ({
-        ...assignment,
-        assigned_at: assignment.created_at
-      }));
-      setAssignments(assignmentsWithAssignedAt);
+
+      // Fetch templates separately to avoid join issues
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('career_task_templates')
+        .select('*')
+        .eq('is_active', true);
+
+      if (templatesError) throw templatesError;
+
+      // Merge the data manually
+      const assignmentsWithTemplates = (data || []).map(assignment => {
+        const template = templatesData?.find(t => t.id === assignment.template_id);
+        return {
+          ...assignment,
+          assigned_at: assignment.created_at,
+          career_task_templates: template || null
+        };
+      });
+
+      setAssignments(assignmentsWithTemplates);
     } catch (error) {
       console.error('Error fetching assignments:', error);
       toast.error('Failed to load assignments');
@@ -122,24 +151,50 @@ export const useCareerAssignments = () => {
     if (!user) return;
 
     try {
-      // Get evidence through assignments with task template information
+      // Get evidence with explicit queries to avoid join issues
       const { data, error } = await supabase
         .from('career_task_evidence')
-        .select(`
-          *,
-          career_task_assignments!inner (
-            user_id,
-            career_task_templates (
-              title,
-              category
-            )
-          )
-        `)
-        .eq('career_task_assignments.user_id', user.id)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEvidence(data || []);
+
+      // Filter evidence for user's assignments
+      const { data: userAssignments, error: assignmentsError } = await supabase
+        .from('career_task_assignments')
+        .select('id, user_id, template_id')
+        .eq('user_id', user.id);
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Get templates for context
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('career_task_templates')
+        .select('id, title, category')
+        .eq('is_active', true);
+
+      if (templatesError) throw templatesError;
+
+      // Filter evidence for user's assignments and add template info
+      const userAssignmentIds = new Set(userAssignments?.map(a => a.id) || []);
+      const filteredEvidence = (data || [])
+        .filter(evidence => userAssignmentIds.has(evidence.assignment_id))
+        .map(evidence => {
+          const assignment = userAssignments?.find(a => a.id === evidence.assignment_id);
+          const template = templatesData?.find(t => t.id === assignment?.template_id);
+          return {
+            ...evidence,
+            career_task_assignments: assignment ? {
+              user_id: assignment.user_id,
+              career_task_templates: template ? {
+                title: template.title,
+                category: template.category
+              } : null
+            } : null
+          };
+        });
+
+      setEvidence(filteredEvidence);
     } catch (error) {
       console.error('Error fetching evidence:', error);
       toast.error('Failed to load evidence');
