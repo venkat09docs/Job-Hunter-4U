@@ -466,27 +466,48 @@ const GitHubWeekly = () => {
     
     const assignmentDay = extractDayFromTitle(task.github_tasks?.title || '');
     
-    // Ensure taskStatus is always defined with a fallback
-    let taskStatus: {
-      canSubmit: boolean;
-      canRequestExtension: boolean;
-      status: 'active' | 'expired_can_extend' | 'week_expired';
-      message: string;
-    } = {
-      canSubmit: false,
-      canRequestExtension: false,
-      status: 'week_expired',
-      message: 'No due date set'
+    // Calculate conceptual due date based on day number instead of using database due_at
+    const calculateConceptualDueDate = (title: string): Date => {
+      const dayMatch = title.match(/Day (\d+)/i);
+      if (dayMatch) {
+        const dayNumber = parseInt(dayMatch[1]);
+        // Get the start of the current week (Monday)
+        const now = new Date();
+        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Adjust for Sunday
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - daysFromMonday);
+        startOfWeek.setHours(23, 59, 59, 999); // End of the day
+        
+        // Add days based on task day number (Day 1 = Monday, Day 2 = Tuesday, etc.)
+        const taskDueDate = new Date(startOfWeek);
+        taskDueDate.setDate(startOfWeek.getDate() + (dayNumber - 1));
+        
+        return taskDueDate;
+      }
+      return new Date(task.due_at); // Fallback to database due_at
     };
     
-    if (task.due_at) {
-      try {
-        taskStatus = getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended || false);
-      } catch (error) {
-        console.error('Error calculating task status:', error);
-        // Keep the default fallback values
-      }
-    }
+    const conceptualDueDate = calculateConceptualDueDate(task.github_tasks?.title || '');
+    
+    // Use GitHub-specific task status logic with conceptual due date
+    let taskStatus = getGitHubTaskStatus(
+      conceptualDueDate,
+      assignmentDay,
+      task.admin_extended || false
+    );
+    
+    // Debug logging to understand why status is not working correctly
+    console.log(`🔍 GitHub Task Status Debug: ${task.github_tasks?.title}`, {
+      taskId: task.id,
+      originalDueDate: task.due_at,
+      conceptualDueDate: conceptualDueDate.toISOString(),
+      assignmentDay,
+      currentTime: new Date().toISOString(),
+      isDuePassed: new Date() > conceptualDueDate,
+      taskStatus,
+      adminExtended: task.admin_extended
+    });
     
     // Calculate days until due
     const now = new Date();
