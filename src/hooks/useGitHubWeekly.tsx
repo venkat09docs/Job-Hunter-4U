@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -214,6 +214,78 @@ export const useGitHubWeekly = () => {
     enabled: !!user?.id,
     staleTime: 30 * 1000, // 30 seconds - refresh more frequently for recent activity
   });
+
+  // Fetch recent assignment activities to combine with GitHub signals
+  const { data: recentAssignmentActivities = [] } = useQuery({
+    queryKey: ['github-recent-assignment-activities', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      // Get last 30 days of assignment updates
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data, error } = await supabase
+        .from('github_user_tasks')
+        .select(`
+          *,
+          github_tasks (
+            id,
+            title,
+            code,
+            points_base
+          )
+        `)
+        .eq('user_id', user.id)
+        .gte('updated_at', thirtyDaysAgo.toISOString())
+        .order('updated_at', { ascending: false })
+        .limit(50);
+      
+      if (error) {
+        console.error('Error fetching recent assignment activities:', error);
+        throw error;
+      }
+      
+      // Transform assignment activities into signal-like format
+      const assignmentActivities = data?.map(task => ({
+        id: `assignment-${task.id}`,
+        user_id: task.user_id,
+        repo_id: undefined, // Assignment activities don't have repo_id
+        kind: `ASSIGNMENT_${task.status}`,
+        actor: 'You',
+        subject: task.github_tasks?.title || `Task ${task.github_tasks?.code}`,
+        link: null,
+        happened_at: task.updated_at,
+        raw_meta: {
+          task_id: task.id,
+          task_code: task.github_tasks?.code,
+          points_base: task.github_tasks?.points_base,
+          score_awarded: task.score_awarded,
+          period: task.period,
+          status: task.status
+        },
+        created_at: task.updated_at
+      })) || [];
+      
+      console.log('Recent assignment activities fetched:', assignmentActivities.length, 'activities in last 30 days');
+      return assignmentActivities;
+    },
+    enabled: !!user?.id,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  // Combine and sort all activities (GitHub signals + assignment activities)
+  const combinedActivities = useMemo(() => {
+    const allActivities = [
+      ...signals,
+      ...recentAssignmentActivities
+    ];
+    
+    // Sort by happened_at timestamp descending
+    return allActivities.sort((a, b) => 
+      new Date(b.happened_at).getTime() - new Date(a.happened_at).getTime()
+    );
+  }, [signals, recentAssignmentActivities]);
 
   // Fetch all historical scores for comprehensive weekly performance tracking
   const { data: allScores = [] } = useQuery({
@@ -507,7 +579,7 @@ export const useGitHubWeekly = () => {
     weeklyTasks,
     repos,
     repoTasks,
-    signals,
+    signals: combinedActivities, // Return combined activities instead of just GitHub signals
     scores,
     allScores, // Add all scores for comprehensive historical view
     badges,

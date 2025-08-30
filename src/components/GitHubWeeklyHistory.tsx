@@ -129,6 +129,13 @@ export const GitHubWeeklyHistory = () => {
       case 'PR_MERGED': return <GitPullRequest className="h-4 w-4" />;
       case 'ISSUE_OPENED':
       case 'ISSUE_CLOSED': return <AlertCircle className="h-4 w-4" />;
+      // Assignment activity icons
+      case 'ASSIGNMENT_STARTED': return <Play className="h-4 w-4" />;
+      case 'ASSIGNMENT_SUBMITTED': return <FileText className="h-4 w-4" />;
+      case 'ASSIGNMENT_VERIFIED': return <CheckCircle className="h-4 w-4" />;
+      case 'ASSIGNMENT_NOT_STARTED': return <Clock className="h-4 w-4" />;
+      case 'ASSIGNMENT_PARTIALLY_VERIFIED': return <Clock className="h-4 w-4" />;
+      case 'ASSIGNMENT_REJECTED': return <AlertCircle className="h-4 w-4" />;
       default: return <Calendar className="h-4 w-4" />;
     }
   };
@@ -141,6 +148,13 @@ export const GitHubWeeklyHistory = () => {
       case 'ISSUE_CLOSED': return 'text-green-600';
       case 'ISSUE_OPENED': return 'text-orange-600';
       case 'RELEASE_PUBLISHED': return 'text-yellow-600';
+      // Assignment activity colors
+      case 'ASSIGNMENT_STARTED': return 'text-blue-600';
+      case 'ASSIGNMENT_SUBMITTED': return 'text-purple-600';
+      case 'ASSIGNMENT_VERIFIED': return 'text-green-600';
+      case 'ASSIGNMENT_NOT_STARTED': return 'text-gray-600';
+      case 'ASSIGNMENT_PARTIALLY_VERIFIED': return 'text-orange-600';
+      case 'ASSIGNMENT_REJECTED': return 'text-red-600';
       default: return 'text-gray-600';
     }
   };
@@ -161,6 +175,19 @@ export const GitHubWeeklyHistory = () => {
         return `${actor} closed issue: ${subject}`;
       case 'RELEASE_PUBLISHED':
         return `${actor} published release: ${subject}`;
+      // Assignment activity titles
+      case 'ASSIGNMENT_STARTED':
+        return `You started assignment: ${subject}`;
+      case 'ASSIGNMENT_SUBMITTED':
+        return `You submitted assignment: ${subject}`;
+      case 'ASSIGNMENT_VERIFIED':
+        return `Assignment verified: ${subject}`;
+      case 'ASSIGNMENT_NOT_STARTED':
+        return `Assignment assigned: ${subject}`;
+      case 'ASSIGNMENT_PARTIALLY_VERIFIED':
+        return `Assignment partially verified: ${subject}`;
+      case 'ASSIGNMENT_REJECTED':
+        return `Assignment rejected: ${subject}`;
       default:
         return `${kind}: ${subject}`;
     }
@@ -414,9 +441,9 @@ export const GitHubWeeklyHistory = () => {
 
         <TabsContent value="activity" className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold">GitHub Activity Timeline</h3>
+            <h3 className="text-lg font-semibold">Recent Activity Timeline</h3>
             <p className="text-sm text-muted-foreground">
-              Real-time feed of your GitHub activities across tracked repositories
+              Complete timeline of your GitHub repository activities and assignment progress updates
             </p>
           </div>
 
@@ -475,9 +502,9 @@ export const GitHubWeeklyHistory = () => {
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-8">
                   <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Activity Yet</h3>
+                  <h3 className="font-semibold mb-2">No Recent Activity</h3>
                   <p className="text-sm text-muted-foreground text-center">
-                    Set up webhooks on your repositories to start tracking activity
+                    Start working on assignments or set up repository webhooks to track your GitHub activity
                   </p>
                 </CardContent>
               </Card>
