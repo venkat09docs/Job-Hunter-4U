@@ -44,7 +44,8 @@ import {
   Target,
   Home,
   Lock,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
@@ -79,6 +80,32 @@ const GitHubWeekly = () => {
     instantiateWeek,
     isSubmittingEvidence
   } = useGitHubWeekly();
+
+  // Fetch pending extension requests
+  const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
+  
+  React.useEffect(() => {
+    const fetchPendingRequests = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('github_task_reenable_requests')
+          .select('user_task_id')
+          .eq('user_id', user.id)
+          .eq('status', 'pending');
+          
+        if (error) throw error;
+        
+        const taskIds = new Set(data?.map(req => req.user_task_id) || []);
+        setPendingRequests(taskIds);
+      } catch (error) {
+        console.error('Error fetching pending requests:', error);
+      }
+    };
+    
+    fetchPendingRequests();
+  }, [user]);
 
   const statusConfig = {
     'NOT_STARTED': { icon: Circle, color: 'text-muted-foreground', bg: 'bg-muted', label: 'Not Started' },
@@ -497,18 +524,6 @@ const GitHubWeekly = () => {
       task.admin_extended || false
     );
     
-    // Debug logging to understand why status is not working correctly
-    console.log(`🔍 GitHub Task Status Debug: ${task.github_tasks?.title}`, {
-      taskId: task.id,
-      originalDueDate: task.due_at,
-      conceptualDueDate: conceptualDueDate.toISOString(),
-      assignmentDay,
-      currentTime: new Date().toISOString(),
-      isDuePassed: new Date() > conceptualDueDate,
-      taskStatus,
-      adminExtended: task.admin_extended
-    });
-    
     // Calculate days until due
     const now = new Date();
     const timeDiff = dueDate.getTime() - now.getTime();
@@ -732,25 +747,36 @@ const GitHubWeekly = () => {
                     Start Assignment
                     {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                   </Button>
-                ) : (
-                  <div className="space-y-2 w-full">
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      disabled
-                      className="w-full"
-                    >
-                      <Clock className="h-4 w-4 mr-2" />
-                      Assignment Expired
-                    </Button>
-                    {taskStatus.canRequestExtension && (
-                      <GitHubRequestReenableDialog
-                        taskId={task.id}
-                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                      />
-                    )}
-                  </div>
-                )}
+                 ) : (
+                   <div className="space-y-2 w-full">
+                     <Button 
+                       variant="secondary" 
+                       size="sm"
+                       disabled
+                       className="w-full"
+                     >
+                       <Clock className="h-4 w-4 mr-2" />
+                       Assignment Expired
+                     </Button>
+                     {pendingRequests.has(task.id) ? (
+                       <Button 
+                         variant="outline" 
+                         size="sm"
+                         disabled
+                         className="w-full"
+                       >
+                         <RefreshCw className="h-4 w-4 mr-2" />
+                         Request submitted, waiting for approval
+                       </Button>
+                     ) : taskStatus.canRequestExtension ? (
+                       <GitHubRequestReenableDialog
+                         taskId={task.id}
+                         taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                         onRequestSent={() => setPendingRequests(prev => new Set(prev).add(task.id))}
+                       />
+                     ) : null}
+                   </div>
+                 )}
               </>
             ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
               <>
@@ -784,12 +810,23 @@ const GitHubWeekly = () => {
                       <Clock className="h-4 w-4 mr-2" />
                       Assignment Expired
                     </Button>
-                    {taskStatus.canRequestExtension && (
+                    {pendingRequests.has(task.id) ? (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        disabled
+                        className="w-full"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Request submitted, waiting for approval
+                      </Button>
+                    ) : taskStatus.canRequestExtension ? (
                       <GitHubRequestReenableDialog
                         taskId={task.id}
                         taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                        onRequestSent={() => setPendingRequests(prev => new Set(prev).add(task.id))}
                       />
-                    )}
+                    ) : null}
                   </div>
                 )}
               </>
