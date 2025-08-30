@@ -92,11 +92,16 @@ export const GitHubWeeklyHistory = () => {
       const [year, week] = period.split('-').map(Number);
       if (!year || !week) return period;
       
-      // Calculate the start of the week
-      const firstDayOfYear = new Date(year, 0, 1);
-      const days = (week - 1) * 7;
-      const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
-      const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+      // Calculate Monday to Sunday week correctly
+      // Get January 4th of the year (always in week 1 according to ISO)
+      const jan4 = new Date(year, 0, 4);
+      // Find the Monday of week 1
+      const week1Monday = startOfWeek(jan4, { weekStartsOn: 1 });
+      // Calculate the start of the target week
+      const targetWeekStart = new Date(week1Monday.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
+      // Ensure it's Monday and get Sunday end
+      const weekStart = startOfWeek(targetWeekStart, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(targetWeekStart, { weekStartsOn: 1 });
       
       return `${format(weekStart, 'MMM dd')} - ${format(weekEnd, 'MMM dd, yyyy')}`;
     } catch (error) {
