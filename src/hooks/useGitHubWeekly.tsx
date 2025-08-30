@@ -62,6 +62,8 @@ interface EvidenceSubmission {
   url?: string;
   description?: string;
   file?: File;
+  numberOfCommits?: number;
+  numberOfReadmes?: number;
 }
 
 export const useGitHubWeekly = () => {
@@ -296,7 +298,11 @@ export const useGitHubWeekly = () => {
           kind: evidenceData.kind,
           url: evidenceData.url,
           file_key: fileKey,
-          parsed_json: { description: evidenceData.description },
+          parsed_json: { 
+            description: evidenceData.description,
+            numberOfCommits: evidenceData.numberOfCommits,
+            numberOfReadmes: evidenceData.numberOfReadmes
+          },
         })
         .select()
         .single();

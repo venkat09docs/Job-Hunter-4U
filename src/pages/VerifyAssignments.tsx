@@ -470,22 +470,56 @@ const VerifyAssignments = () => {
             }
 
             // Transform GitHub evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => ({
-              id: evidence.id,
-              assignment_id: assignment.id,
-              evidence_type: evidence.kind?.toLowerCase() || 'url',
-              evidence_data: evidence.parsed_json || {},
-              url: evidence.url,
-              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
-              verification_status: 'approved',
-              created_at: evidence.created_at,
-              submitted_at: evidence.created_at,
-              verification_notes: null,
-              verified_at: assignment.verified_at,
-              verified_by: assignment.verified_by,
-              kind: evidence.kind,
-              parsed_json: evidence.parsed_json
-            }));
+            const transformedEvidence = (evidenceData || []).map(evidence => {
+              // Extract GitHub-specific details from parsed_json - safely handle JSON type
+              const parsedData = (evidence.parsed_json as any) || {};
+              
+              const gitHubDetails = {
+                commits_count: parsedData.commits_count || parsedData.commit_count || parsedData.numberOfCommits || null,
+                readmes_count: parsedData.readmes_count || parsedData.readme_count || parsedData.numberOfReadmes || null,
+                repo_url: parsedData.repo_url || parsedData.repository_url || parsedData.repositoryUrl || evidence.url || null,
+                repository_name: parsedData.repository_name || parsedData.repo_name || parsedData.repositoryName || null,
+                branch: parsedData.branch || parsedData.defaultBranch || null,
+                files_changed: parsedData.files_changed || parsedData.filesChanged || null,
+                additions: parsedData.additions || null,
+                deletions: parsedData.deletions || null,
+                description: parsedData.description || parsedData.message || evidence.url || 'GitHub submission'
+              };
+
+              return {
+                id: evidence.id,
+                assignment_id: assignment.id,
+                evidence_type: evidence.kind?.toLowerCase() || 'url',
+                evidence_data: {
+                  ...parsedData,
+                  description: gitHubDetails.description,
+                  commits_count: gitHubDetails.commits_count,
+                  readmes_count: gitHubDetails.readmes_count,
+                  repo_url: gitHubDetails.repo_url,
+                  repository_name: gitHubDetails.repository_name,
+                  branch: gitHubDetails.branch,
+                  files_changed: gitHubDetails.files_changed,
+                  additions: gitHubDetails.additions,
+                  deletions: gitHubDetails.deletions,
+                  // Also add direct fields for easier access
+                  numberOfCommits: gitHubDetails.commits_count,
+                  numberOfReadmes: gitHubDetails.readmes_count,
+                  repositoryUrl: gitHubDetails.repo_url
+                },
+                url: evidence.url,
+                file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
+                verification_status: assignment._originalGitHubTask.status === 'VERIFIED' ? 'verified' : 
+                                    assignment._originalGitHubTask.status === 'REJECTED' ? 'rejected' : 'pending',
+                created_at: evidence.created_at,
+                submitted_at: evidence.created_at,
+                verification_notes: assignment._originalGitHubTask.verification_notes || null,
+                verified_at: assignment._originalGitHubTask.status === 'VERIFIED' || assignment._originalGitHubTask.status === 'REJECTED' ? 
+                            assignment._originalGitHubTask.updated_at : null,
+                verified_by: null,
+                kind: evidence.kind,
+                parsed_json: evidence.parsed_json
+              };
+            });
 
             return { ...assignment, evidence: transformedEvidence };
           } catch (error) {
@@ -1115,11 +1149,13 @@ const VerifyAssignments = () => {
                 },
                 url: evidence.url,
                 file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
-                verification_status: 'pending',
+                verification_status: assignment._originalGitHubTask.status === 'VERIFIED' ? 'verified' : 
+                                assignment._originalGitHubTask.status === 'REJECTED' ? 'rejected' : 'pending',
                 created_at: evidence.created_at,
                 submitted_at: evidence.created_at,
-                verification_notes: null,
-                verified_at: null,
+                verification_notes: assignment._originalGitHubTask.verification_notes || null,
+                verified_at: assignment._originalGitHubTask.status === 'VERIFIED' || assignment._originalGitHubTask.status === 'REJECTED' ? 
+                            assignment._originalGitHubTask.updated_at : null,
                 verified_by: null,
                 kind: evidence.kind,
                 parsed_json: evidence.parsed_json
