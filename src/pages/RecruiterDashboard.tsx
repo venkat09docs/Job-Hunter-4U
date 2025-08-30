@@ -55,7 +55,7 @@ export default function RecruiterDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/verify-assignments?tab=pending')}
+                onClick={() => navigate('/admin/verify-assignments?tab=pending')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Pending Assignments</CardTitle>
@@ -73,7 +73,7 @@ export default function RecruiterDashboard() {
 
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/verify-assignments?tab=verified')}
+                onClick={() => navigate('/admin/verify-assignments?tab=verified')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Verified Assignments</CardTitle>
@@ -91,7 +91,7 @@ export default function RecruiterDashboard() {
 
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/verify-assignments?tab=pending&dialog=extensions')}
+                onClick={() => navigate('/admin/verify-assignments?tab=pending&dialog=extensions')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Extension Requests</CardTitle>
@@ -109,7 +109,7 @@ export default function RecruiterDashboard() {
 
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/verify-assignments?tab=pending&dialog=github-extensions')}
+                onClick={() => navigate('/admin/verify-assignments?tab=pending&dialog=github-extensions')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">GitHub Extensions</CardTitle>
