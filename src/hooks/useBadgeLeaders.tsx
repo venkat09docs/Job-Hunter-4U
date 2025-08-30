@@ -159,8 +159,8 @@ export const useBadgeLeaders = () => {
       // Process LinkedIn Network Stars
       const linkedinLeaders = processLinkedInLeaders(linkedinActivityData || []);
       
-      // Process GitHub Repository Experts (IT users only)
-      const githubLeaders = processGitHubLeaders(githubActivityWithProfiles || []);
+      // Process GitHub Repository Experts (IT users only) - async
+      const githubLeaders = await processGitHubLeaders(githubActivityWithProfiles || []);
 
       console.log('🏆 Final badge leaders processed:', {
         profileBuild: profileBuildLeaders.length,
@@ -303,37 +303,102 @@ export const useBadgeLeaders = () => {
       }));
   };
 
-  // Process users with GitHub activity (IT users only)
-  const processGitHubLeaders = (githubData: any[]): BadgeLeader[] => {
-    const userGithubMap = new Map<string, { user_id: string; profile: any; completedTasks: number }>();
-    
-    githubData.forEach((item: any) => {
-      // Only include IT users
-      if (item.profiles?.industry !== 'IT') return;
-      
-      const key = item.user_id;
-      if (!userGithubMap.has(key)) {
-        userGithubMap.set(key, {
-          user_id: item.user_id,
-          profile: item.profiles,
-          completedTasks: 0
-        });
-      }
-      userGithubMap.get(key)!.completedTasks++;
-    });
+  // Process GitHub repository leaders - Level Up integration  
+  const processGitHubLeaders = async (githubData: any[]): Promise<BadgeLeader[]> => {
+    try {
+      // Get all IT user profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select(`
+          user_id,
+          username,
+          full_name,
+          profile_image_url,
+          industry
+        `)
+        .eq('industry', 'IT'); // Only IT users for GitHub badges
 
-    return Array.from(userGithubMap.values())
-      .filter(item => item.completedTasks > 0)
-      .sort((a, b) => b.completedTasks - a.completedTasks)
-      .slice(0, 3)
-      .map(item => ({
-        user_id: item.user_id,
-        username: item.profile?.username || '',
-        full_name: item.profile?.full_name || '',
-        profile_image_url: item.profile?.profile_image_url || '',
-        total_points: item.completedTasks * 20, // 20 points per completed GitHub task
-        badge_type: getBadgeType(item.completedTasks * 20)
-      }));
+      if (!profiles) return [];
+
+      const userGitHubMap = new Map<string, { 
+        user_id: string; 
+        profile: any; 
+        repoCount: number; 
+        commitCount: number; 
+      }>();
+
+      // Get repository counts for each user
+      const { data: repoData } = await supabase
+        .from('github_repos')
+        .select('user_id')
+        .eq('is_active', true);
+
+      // Get commit counts for each user from github_signals (use POST_PUBLISHED as closest match)
+      const { data: commitData } = await supabase
+        .from('github_signals')
+        .select('user_id')
+        .eq('kind', 'POST_PUBLISHED'); // Using available enum value
+
+      // Count repos per user
+      repoData?.forEach(repo => {
+        const userId = repo.user_id;
+        if (!userGitHubMap.has(userId)) {
+          const profile = profiles.find(p => p.user_id === userId);
+          if (profile) {
+            userGitHubMap.set(userId, {
+              user_id: userId,
+              profile,
+              repoCount: 0,
+              commitCount: 0
+            });
+          }
+        }
+        if (userGitHubMap.has(userId)) {
+          userGitHubMap.get(userId)!.repoCount++;
+        }
+      });
+
+      // Count commits per user (using signals as proxy for commits)
+      commitData?.forEach(commit => {
+        const userId = commit.user_id;
+        if (userGitHubMap.has(userId)) {
+          userGitHubMap.get(userId)!.commitCount++;
+        }
+      });
+
+      return Array.from(userGitHubMap.values())
+        .filter(item => {
+          // Only show users who have achieved at least Silver badge (1 repo + 5 commits)
+          return item.repoCount >= 1 && item.commitCount >= 5;
+        })
+        .sort((a, b) => {
+          // Sort by badge tier first, then by total activity
+          const aBadge = getGitHubBadgeType(a.repoCount, a.commitCount);
+          const bBadge = getGitHubBadgeType(b.repoCount, b.commitCount);
+          const badgeOrder = { 'Diamond': 4, 'Gold': 3, 'Silver': 2, 'Bronze': 1 };
+          
+          if (badgeOrder[aBadge] !== badgeOrder[bBadge]) {
+            return badgeOrder[bBadge] - badgeOrder[aBadge];
+          }
+          
+          // If same badge tier, sort by total activity (repos * 20 + commits)
+          const aActivity = a.repoCount * 20 + a.commitCount;
+          const bActivity = b.repoCount * 20 + b.commitCount;
+          return bActivity - aActivity;
+        })
+        .slice(0, 3)
+        .map(item => ({
+          user_id: item.user_id,
+          username: item.profile?.username || '',
+          full_name: item.profile?.full_name || '',
+          profile_image_url: item.profile?.profile_image_url || '',
+          total_points: item.repoCount * 20 + item.commitCount, // 20 points per repo + 1 point per commit
+          badge_type: getGitHubBadgeType(item.repoCount, item.commitCount)
+        }));
+    } catch (error) {
+      console.error('❌ Error fetching GitHub leaders:', error);
+      return [];
+    }
   };
 
   const getBadgeTypeFromTier = (tier: string): string => {
@@ -366,6 +431,14 @@ export const useBadgeLeaders = () => {
     if (connectionCount >= 25) return 'Gold';    // Growth Champion - 25+ connections
     if (connectionCount >= 10) return 'Silver';  // First Connections - 10+ connections
     return 'Bronze'; // Should not reach here as we filter for connectionCount >= 10
+  };
+
+  // Level Up GitHub repository badge logic - matches BadgeProgressionMap
+  const getGitHubBadgeType = (repoCount: number, commitCount: number): 'Bronze' | 'Silver' | 'Gold' | 'Diamond' => {
+    if (repoCount >= 5 && commitCount >= 100) return 'Diamond'; // Code Master - 5 repos + 100 commits
+    if (repoCount >= 3 && commitCount >= 30) return 'Gold';     // Repository Expert - 3 repos + 30 commits
+    if (repoCount >= 1 && commitCount >= 5) return 'Silver';   // First Repository - 1 repo + 5 commits
+    return 'Bronze'; // Should not reach here as we filter for repoCount >= 1 && commitCount >= 5
   };
 
   useEffect(() => {
