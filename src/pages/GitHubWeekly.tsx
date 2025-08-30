@@ -747,36 +747,7 @@ const GitHubWeekly = () => {
                     Start Assignment
                     {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                   </Button>
-                 ) : (
-                   <div className="space-y-2 w-full">
-                     <Button 
-                       variant="secondary" 
-                       size="sm"
-                       disabled
-                       className="w-full"
-                     >
-                       <Clock className="h-4 w-4 mr-2" />
-                       Assignment Expired
-                     </Button>
-                     {pendingRequests.has(task.id) ? (
-                       <Button 
-                         variant="outline" 
-                         size="sm"
-                         disabled
-                         className="w-full"
-                       >
-                         <RefreshCw className="h-4 w-4 mr-2" />
-                         Request submitted, waiting for approval
-                       </Button>
-                     ) : taskStatus.canRequestExtension ? (
-                       <GitHubRequestReenableDialog
-                         taskId={task.id}
-                         taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                         onRequestSent={() => setPendingRequests(prev => new Set(prev).add(task.id))}
-                       />
-                     ) : null}
-                   </div>
-                 )}
+                 ) : null}
               </>
             ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
               <>
