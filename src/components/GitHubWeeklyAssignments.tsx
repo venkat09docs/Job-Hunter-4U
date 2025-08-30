@@ -42,6 +42,7 @@ export const GitHubWeeklyAssignments = () => {
       case 'SUBMITTED': return 'outline';
       case 'PARTIALLY_VERIFIED': return 'outline';
       case 'VERIFIED': return 'default';
+      case 'REJECTED': return 'destructive';
       default: return 'secondary';
     }
   };
@@ -52,6 +53,7 @@ export const GitHubWeeklyAssignments = () => {
       case 'SUBMITTED': return 'Submitted';
       case 'PARTIALLY_VERIFIED': return 'Partially Verified';
       case 'VERIFIED': return 'Verified';
+      case 'REJECTED': return 'Rejected';
       default: return status;
     }
   };
@@ -142,7 +144,7 @@ export const GitHubWeeklyAssignments = () => {
                     )}
                   </div>
                   
-                  {task.status === 'NOT_STARTED' && (
+                  {(task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
                     <Dialog 
                       open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
                       onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
@@ -150,7 +152,7 @@ export const GitHubWeeklyAssignments = () => {
                       <DialogTrigger asChild>
                         <Button size="sm" className="w-full">
                           <Upload className="h-4 w-4 mr-2" />
-                          Submit Evidence
+                          {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -388,7 +390,7 @@ export const GitHubWeeklyAssignments = () => {
                               )}
                             </div>
 
-                            {task.status === 'NOT_STARTED' && (
+                            {(task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
                               <Dialog 
                                 open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
                                 onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
@@ -396,7 +398,7 @@ export const GitHubWeeklyAssignments = () => {
                                 <DialogTrigger asChild>
                                   <Button size="sm">
                                     <Upload className="h-4 w-4 mr-2" />
-                                    Submit Evidence
+                                    {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent>

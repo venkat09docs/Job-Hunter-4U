@@ -1326,8 +1326,9 @@ const VerifyAssignments = () => {
         const { error } = await supabase
           .from('github_user_tasks')
           .update({
-            status: approved ? 'VERIFIED' : 'NOT_STARTED', // Reset to NOT_STARTED for resubmission
-            score_awarded: approved ? selectedAssignment.career_task_templates.points_reward : 0
+            status: approved ? 'VERIFIED' : 'REJECTED', // Set to REJECTED for resubmission
+            score_awarded: approved ? selectedAssignment.career_task_templates.points_reward : 0,
+            verification_notes: verificationNotes.trim() || null
           })
           .eq('id', selectedAssignment._originalGitHubTask.id);
 
