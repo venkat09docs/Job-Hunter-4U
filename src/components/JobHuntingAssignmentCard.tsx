@@ -188,11 +188,6 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
               {getStatusIcon(assignment.status)}
               <span className="ml-1 capitalize">{assignment.status.replace('_', ' ')}</span>
             </Badge>
-            {assignment.template && (
-              <Badge variant="outline" className={getDifficultyColor(assignment.template.difficulty)}>
-                {assignment.template.difficulty}
-              </Badge>
-            )}
           </div>
         </div>
       </CardHeader>
