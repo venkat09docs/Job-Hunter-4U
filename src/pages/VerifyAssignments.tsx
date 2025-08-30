@@ -1055,6 +1055,8 @@ const VerifyAssignments = () => {
       const gitHubAssignmentsWithEvidence = await Promise.all(
         gitHubAssignmentsWithProfiles.map(async (assignment) => {
           try {
+            console.log('🔍 Fetching GitHub evidence for assignment:', assignment.id, 'original task:', assignment._originalGitHubTask.id);
+            
             const { data: evidenceData, error: evidenceError } = await supabase
               .from('github_evidence')
               .select('*')
@@ -1066,24 +1068,56 @@ const VerifyAssignments = () => {
               return { ...assignment, evidence: [] };
             }
 
-            // Transform GitHub evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => ({
-              id: evidence.id,
-              assignment_id: assignment.id,
-              evidence_type: evidence.kind?.toLowerCase() || 'url',
-              evidence_data: evidence.parsed_json || {},
-              url: evidence.url,
-              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
-              verification_status: 'pending',
-              created_at: evidence.created_at,
-              submitted_at: evidence.created_at,
-              verification_notes: null,
-              verified_at: null,
-              verified_by: null,
-              kind: evidence.kind,
-              parsed_json: evidence.parsed_json
-            }));
+            console.log('🔍 Found GitHub evidence for assignment:', assignment.id, 'evidence count:', evidenceData?.length || 0, 'evidence:', evidenceData);
 
+            // Transform GitHub evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => {
+              console.log('🔍 Transforming GitHub evidence:', evidence);
+              
+              // Extract GitHub-specific details from parsed_json - safely handle JSON type
+              const parsedData = (evidence.parsed_json as any) || {};
+              const gitHubDetails = {
+                commits_count: parsedData.commits_count || parsedData.commit_count || null,
+                readmes_count: parsedData.readmes_count || parsedData.readme_count || null,
+                repo_url: parsedData.repo_url || parsedData.repository_url || null,
+                repository_name: parsedData.repository_name || parsedData.repo_name || null,
+                branch: parsedData.branch || null,
+                files_changed: parsedData.files_changed || null,
+                additions: parsedData.additions || null,
+                deletions: parsedData.deletions || null,
+                description: parsedData.description || evidence.url || 'GitHub submission'
+              };
+
+              return {
+                id: evidence.id,
+                assignment_id: assignment.id,
+                evidence_type: evidence.kind?.toLowerCase() || 'url',
+                evidence_data: {
+                  ...parsedData,
+                  description: gitHubDetails.description,
+                  commits_count: gitHubDetails.commits_count,
+                  readmes_count: gitHubDetails.readmes_count,
+                  repo_url: gitHubDetails.repo_url,
+                  repository_name: gitHubDetails.repository_name,
+                  branch: gitHubDetails.branch,
+                  files_changed: gitHubDetails.files_changed,
+                  additions: gitHubDetails.additions,
+                  deletions: gitHubDetails.deletions
+                },
+                url: evidence.url,
+                file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
+                verification_status: 'pending',
+                created_at: evidence.created_at,
+                submitted_at: evidence.created_at,
+                verification_notes: null,
+                verified_at: null,
+                verified_by: null,
+                kind: evidence.kind,
+                parsed_json: evidence.parsed_json
+              };
+            });
+
+            console.log('🔍 Transformed GitHub evidence for assignment:', assignment.id, 'transformed:', transformedEvidence);
             return { ...assignment, evidence: transformedEvidence };
           } catch (error) {
             console.error('🔍 Error processing GitHub evidence for assignment:', assignment.id, error);
