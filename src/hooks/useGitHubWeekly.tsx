@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { retryWithBackoff } from '@/utils/retryWithBackoff';
 import { useOptimisticUpdates } from '@/utils/optimisticUpdates';
+import { startOfWeek } from 'date-fns';
 
 interface GitHubRepo {
   id: string;
@@ -455,11 +456,18 @@ export const useGitHubWeekly = () => {
   // Helper function to get current period (YYYY-WW format)
   const getCurrentPeriod = (): string => {
     const now = new Date();
+    // Use proper ISO week calculation
     const year = now.getFullYear();
-    const firstDayOfYear = new Date(year, 0, 1);
-    const pastDaysOfYear = (now.getTime() - firstDayOfYear.getTime()) / 86400000;
-    const week = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-    return `${year}-${week.toString().padStart(2, '0')}`;
+    // Calculate ISO week number correctly
+    const jan4 = new Date(year, 0, 4);
+    const week1Monday = startOfWeek(jan4, { weekStartsOn: 1 });
+    const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    
+    // Calculate the week number from the difference in days
+    const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const weekNumber = daysDiff + 1;
+    
+    return `${year}-${weekNumber.toString().padStart(2, '0')}`;
   };
 
   // Wrapper functions with retry logic
