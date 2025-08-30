@@ -225,29 +225,31 @@ const LevelUp = () => {
   };
 
   const getTotalCommitsAllTime = () => {
-    // Only count actual commits from GitHub signals - no artificial inflation
+    // Use same calculation logic as GitHub Weekly page for consistency
     const allSignals = Array.isArray(githubData.signals) ? githubData.signals : [];
+    const allWeeklyTasks = Array.isArray(githubData.weeklyTasks) ? githubData.weeklyTasks : [];
     
-    // Count commits from signals
-    let actualCommits = 0;
-    allSignals.forEach(signal => {
-      // Only count push signals which represent actual commits
-      if (signal.kind === 'PUSH') {
-        actualCommits++;
-      }
+    // Estimate total commits from verified tasks across all periods (same as GitHub Weekly page)
+    const allVerifiedTasks = allWeeklyTasks.filter(task => task.status === 'VERIFIED');
+    let estimatedTotalCommits = allVerifiedTasks.length * 2; // Average 2 commits per verified task
+    
+    // Add signals count as proxy for activity if available
+    estimatedTotalCommits += allSignals.length;
+    
+    // Fallback minimum based on verified tasks count
+    const totalCommits = Math.max(allVerifiedTasks.length, estimatedTotalCommits);
+    
+    // Show at least some activity if user has verified tasks (same logic as GitHub Weekly)
+    const finalCommits = totalCommits > 0 ? totalCommits : allVerifiedTasks.length > 0 ? 5 : 0;
+    
+    console.log('🔍 Synced GitHub Commits Calculation (Level Up):', {
+      allVerifiedTasks: allVerifiedTasks.length,
+      allSignals: allSignals.length,
+      estimatedTotal: estimatedTotalCommits,
+      finalCommits: finalCommits
     });
     
-    // Add weekly task commits (actual tracked commits)
-    actualCommits += getCurrentWeekCommits();
-    
-    console.log('🔍 Actual GitHub Commits Calculation:', {
-      pushSignals: allSignals.filter(s => s.kind === 'PUSH').length,
-      weeklyCommits: getCurrentWeekCommits(),
-      totalActualCommits: actualCommits,
-      allSignals: allSignals.map(s => ({ kind: s.kind, subject: s.subject }))
-    });
-    
-    return actualCommits;
+    return finalCommits;
   };
 
   const totalGitHubCommits = getTotalCommitsAllTime();
