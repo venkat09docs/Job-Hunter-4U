@@ -71,26 +71,36 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
 
   const handleFileClick = async (filePath: string) => {
     try {
+      console.log('🔍 EvidenceDisplay - Attempting to access file:', filePath);
+      
       // Determine the correct storage bucket based on the file path
       const bucket = filePath.includes('github-evidence') ? 'github-evidence' : 'career-evidence';
       const cleanPath = filePath.replace(/.*\/storage\/v1\/object\/public\/(github-evidence|career-evidence)\//, '');
+      
+      console.log('🔍 EvidenceDisplay - Bucket:', bucket);
+      console.log('🔍 EvidenceDisplay - Clean path:', cleanPath);
       
       const { data, error } = await supabase.storage
         .from(bucket)
         .createSignedUrl(cleanPath, 3600);
       
       if (error) {
-        console.error('Error creating signed URL:', error);
-        toast.error('Unable to access file');
+        console.error('🔍 EvidenceDisplay - Error creating signed URL:', error);
+        toast.error(`Unable to access file: ${error.message}`);
         return;
       }
       
+      console.log('🔍 EvidenceDisplay - Signed URL created successfully:', data?.signedUrl);
+      
       if (data?.signedUrl) {
         window.open(data.signedUrl, '_blank');
+      } else {
+        console.error('🔍 EvidenceDisplay - No signed URL returned');
+        toast.error('No signed URL returned from storage');
       }
     } catch (error) {
-      console.error('Error accessing file:', error);
-      toast.error('Unable to access file');
+      console.error('🔍 EvidenceDisplay - Error accessing file:', error);
+      toast.error(`Unable to access file: ${error}`);
     }
   };
 
