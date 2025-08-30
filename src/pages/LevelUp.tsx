@@ -225,31 +225,29 @@ const LevelUp = () => {
   };
 
   const getTotalCommitsAllTime = () => {
-    // Calculate from GitHub signals and verified tasks
+    // Only count actual commits from GitHub signals - no artificial inflation
     const allSignals = Array.isArray(githubData.signals) ? githubData.signals : [];
-    const allVerifiedTasks = Array.isArray(githubData.weeklyTasks) 
-      ? githubData.weeklyTasks.filter(task => task.status === 'VERIFIED')
-      : [];
     
     // Count commits from signals
-    let estimatedTotalCommits = 0;
+    let actualCommits = 0;
     allSignals.forEach(signal => {
-      if (signal.kind === 'PUSH' || signal.kind === 'POST_PUBLISHED') {
-        estimatedTotalCommits++;
+      // Only count push signals which represent actual commits
+      if (signal.kind === 'PUSH') {
+        actualCommits++;
       }
     });
     
-    // Add weekly task commits
-    estimatedTotalCommits += getCurrentWeekCommits();
+    // Add weekly task commits (actual tracked commits)
+    actualCommits += getCurrentWeekCommits();
     
-    // Add estimated commits from verified tasks
-    estimatedTotalCommits += allVerifiedTasks.length * 2; // Estimate 2 commits per verified task
+    console.log('🔍 Actual GitHub Commits Calculation:', {
+      pushSignals: allSignals.filter(s => s.kind === 'PUSH').length,
+      weeklyCommits: getCurrentWeekCommits(),
+      totalActualCommits: actualCommits,
+      allSignals: allSignals.map(s => ({ kind: s.kind, subject: s.subject }))
+    });
     
-    // Fallback minimum based on verified tasks count
-    const totalCommits = Math.max(allVerifiedTasks.length, estimatedTotalCommits);
-    
-    // Return actual calculated commits without hardcoded fallback
-    return totalCommits;
+    return actualCommits;
   };
 
   const totalGitHubCommits = getTotalCommitsAllTime();
