@@ -65,44 +65,45 @@ export const useRecruiterStats = () => {
 
         // Fetch assignment statistics
         // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
+        // The RLS policy will automatically filter to show only assignments from non-institute users for recruiters
         const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
           .from('career_task_assignments')
-          .select('id')
+          .select('id, user_id')
           .eq('status', 'submitted');
 
         if (pendingCareerError) throw pendingCareerError;
 
-        console.log('🔍 Recruiter Stats - Pending Career Assignments (submitted):', pendingCareerAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Pending Career Assignments (submitted) after RLS filtering:', pendingCareerAssignments?.length || 0);
 
         // Get verified assignments from career_task_assignments
         const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
           .from('career_task_assignments')
-          .select('id')
+          .select('id, user_id')
           .eq('status', 'verified');
 
         if (verifiedCareerError) throw verifiedCareerError;
 
-        console.log('🔍 Recruiter Stats - Verified Career Assignments:', verifiedCareerAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Verified Career Assignments after RLS filtering:', verifiedCareerAssignments?.length || 0);
 
         // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
         const { data: pendingJobAssignments, error: pendingJobError } = await supabase
           .from('job_hunting_assignments')
-          .select('id')
+          .select('id, user_id')
           .eq('status', 'submitted');
 
         if (pendingJobError) throw pendingJobError;
 
-        console.log('🔍 Recruiter Stats - Pending Job Assignments (submitted):', pendingJobAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Pending Job Assignments (submitted) after RLS filtering:', pendingJobAssignments?.length || 0);
 
         // Get verified assignments from job_hunting_assignments
         const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
           .from('job_hunting_assignments')
-          .select('id')
+          .select('id, user_id')
           .eq('status', 'verified');
 
         if (verifiedJobError) throw verifiedJobError;
 
-        console.log('🔍 Recruiter Stats - Verified Job Assignments:', verifiedJobAssignments?.length || 0);
+        console.log('🔍 Recruiter Stats - Verified Job Assignments after RLS filtering:', verifiedJobAssignments?.length || 0);
 
         // Get extension requests
         const { data: extensionRequests, error: extensionError } = await supabase
@@ -177,9 +178,10 @@ export const useRecruiterStats = () => {
 
       // Fetch assignment statistics
       // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
+      // The RLS policy will automatically filter to show only assignments from non-institute users for recruiters
       const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
         .from('career_task_assignments')
-        .select('id')
+        .select('id, user_id')
         .eq('status', 'submitted');
 
       if (pendingCareerError) throw pendingCareerError;
@@ -187,7 +189,7 @@ export const useRecruiterStats = () => {
       // Get verified assignments from career_task_assignments
       const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
         .from('career_task_assignments')
-        .select('id')
+        .select('id, user_id')
         .eq('status', 'verified');
 
       if (verifiedCareerError) throw verifiedCareerError;
@@ -195,7 +197,7 @@ export const useRecruiterStats = () => {
       // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
       const { data: pendingJobAssignments, error: pendingJobError } = await supabase
         .from('job_hunting_assignments')
-        .select('id')
+        .select('id, user_id')
         .eq('status', 'submitted');
 
       if (pendingJobError) throw pendingJobError;
@@ -203,7 +205,7 @@ export const useRecruiterStats = () => {
       // Get verified assignments from job_hunting_assignments
       const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
         .from('job_hunting_assignments')
-        .select('id')
+        .select('id, user_id')
         .eq('status', 'verified');
 
       if (verifiedJobError) throw verifiedJobError;
