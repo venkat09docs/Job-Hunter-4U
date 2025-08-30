@@ -48,6 +48,7 @@ export function NotificationBell() {
         break;
       case 'learning_goal_reminder':
       case 'skill_assessment_due':
+      case 'level_up_daily_reminder':
         navigate('/dashboard/level-up');
         break;
       case 'achievement_unlocked':
