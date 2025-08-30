@@ -800,34 +800,15 @@ const GitHubWeekly = () => {
                     <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
                   </Dialog>
                 ) : (
-                  <div className="space-y-2 w-full">
-                    <Button 
-                      variant="secondary"
-                      size="sm"
-                      disabled
-                      className="w-full"
-                    >
-                      <Clock className="h-4 w-4 mr-2" />
-                      Assignment Expired
-                    </Button>
-                    {pendingRequests.has(task.id) ? (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        disabled
-                        className="w-full"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Request submitted, waiting for approval
-                      </Button>
-                    ) : taskStatus.canRequestExtension ? (
-                      <GitHubRequestReenableDialog
-                        taskId={task.id}
-                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                        onRequestSent={() => setPendingRequests(prev => new Set(prev).add(task.id))}
-                      />
-                    ) : null}
-                  </div>
+                  <Button 
+                    variant="secondary"
+                    size="sm"
+                    disabled
+                    className="w-full"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Assignment Expired
+                  </Button>
                 )}
               </>
             ) : task.status === 'SUBMITTED' ? (
