@@ -209,25 +209,94 @@ const VerifyAssignments = () => {
   const fetchVerifiedAssignments = async () => {
     try {
       if (isAdmin || isRecruiter) {
-        const { data, error } = await supabase
-          .from('career_task_assignments')
-          .select(`
-            *,
-            career_task_templates!career_task_assignments_template_id_fkey (
-              title,
-              module,
-              points_reward,
-              category,
-              sub_categories (
-                name
+        // Fetch verified assignments from all sources to match recruiter dashboard count
+        const [careerVerifiedData, linkedInVerifiedData, jobHuntingVerifiedData, gitHubVerifiedData] = await Promise.all([
+          // 1. Career task assignments (verified)
+          supabase
+            .from('career_task_assignments')
+            .select(`
+              *,
+              career_task_templates!career_task_assignments_template_id_fkey (
+                title,
+                module,
+                points_reward,
+                category,
+                sub_categories (
+                  name
+                )
               )
-            )
-          `)
-          .eq('status', 'verified')
-          .order('verified_at', { ascending: false });
+            `)
+            .eq('status', 'verified')
+            .order('verified_at', { ascending: false }),
 
-        if (error) throw error;
-        await processVerifiedAssignments(data || []);
+          // 2. LinkedIn user tasks (VERIFIED)
+          supabase
+            .from('linkedin_user_tasks')
+            .select(`
+              *,
+              linkedin_tasks (
+                id,
+                code,
+                title,
+                description,
+                points_base
+              ),
+              linkedin_users (
+                id,
+                auth_uid,
+                name,
+                email
+              )
+            `)
+            .eq('status', 'VERIFIED')
+            .order('updated_at', { ascending: false }),
+
+          // 3. Job hunting assignments (verified)
+          supabase
+            .from('job_hunting_assignments')
+            .select(`
+              *,
+              template:job_hunting_task_templates (
+                id,
+                title,
+                description,
+                points_reward,
+                category
+              )
+            `)
+            .eq('status', 'verified')
+            .order('verified_at', { ascending: false }),
+
+          // 4. GitHub user tasks (VERIFIED)
+          supabase
+            .from('github_user_tasks')
+            .select(`
+              *,
+              github_tasks (
+                id,
+                code,
+                title,
+                description,
+                points_base
+              )
+            `)
+            .eq('status', 'VERIFIED')
+            .order('updated_at', { ascending: false })
+        ]);
+
+        // Check for errors
+        if (careerVerifiedData.error) throw careerVerifiedData.error;
+        if (linkedInVerifiedData.error) throw linkedInVerifiedData.error;
+        if (jobHuntingVerifiedData.error) throw jobHuntingVerifiedData.error;
+        if (gitHubVerifiedData.error) throw gitHubVerifiedData.error;
+
+        // Process all verified assignments together
+        await processVerifiedAssignments(
+          careerVerifiedData.data || [], 
+          linkedInVerifiedData.data || [], 
+          jobHuntingVerifiedData.data || [], 
+          gitHubVerifiedData.data || []
+        );
       }
     } catch (error) {
       console.error('Error fetching verified assignments:', error);
@@ -235,49 +304,166 @@ const VerifyAssignments = () => {
     }
   };
 
-  const processVerifiedAssignments = async (data: any[]) => {
-    if (!data || data.length === 0) {
-      setVerifiedAssignments([]);
-      return;
+  const processVerifiedAssignments = async (careerData: any[], linkedInData: any[], jobHuntingData: any[], gitHubData: any[]) => {
+    const allVerifiedAssignments = [];
+
+    // Process career task assignments
+    if (careerData && careerData.length > 0) {
+      const userIds = careerData.map(assignment => assignment.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const assignmentsWithProfiles = careerData.map(assignment => {
+        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+        return {
+          ...assignment,
+          profiles: profile || { 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          },
+          _assignmentType: 'career_task'
+        };
+      });
+
+      const assignmentsWithEvidence = await Promise.all(
+        assignmentsWithProfiles.map(async (assignment) => {
+          const { data: evidenceData, error: evidenceError } = await supabase
+            .from('career_task_evidence')
+            .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
+            .eq('assignment_id', assignment.id)
+            .order('created_at', { ascending: false });
+
+          if (evidenceError) {
+            console.error('Error fetching evidence:', evidenceError);
+          }
+
+          return { ...assignment, evidence: evidenceData || [] };
+        })
+      );
+
+      allVerifiedAssignments.push(...assignmentsWithEvidence);
     }
 
-    const userIds = data.map(assignment => assignment.user_id);
-    const { data: profilesData, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, username, profile_image_url')
-      .in('user_id', userIds);
-
-    if (profilesError) throw profilesError;
-
-    const assignmentsWithProfiles = data.map(assignment => {
-      const profile = profilesData?.find(p => p.user_id === assignment.user_id);
-      return {
-        ...assignment,
-        profiles: profile || { 
-          full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
-          username: `missing_${assignment.user_id.slice(0, 8)}`, 
-          profile_image_url: '' 
+    // Process LinkedIn assignments (similar structure to pending assignments)
+    if (linkedInData && linkedInData.length > 0) {
+      const authUids = [...new Set(linkedInData.map(task => task.linkedin_users?.auth_uid).filter(Boolean))];
+      let profilesData: any[] = [];
+      
+      if (authUids.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, username, full_name, profile_image_url')
+          .in('user_id', authUids);
+        
+        if (!profilesError) {
+          profilesData = profiles || [];
         }
-      };
+      }
+
+      const combinedLinkedInData = linkedInData.map(task => ({
+        ...task,
+        user_profile: profilesData.find(p => p.user_id === task.linkedin_users?.auth_uid),
+        _assignmentType: 'linkedin_task',
+        // Map LinkedIn task structure to match career task structure
+        career_task_templates: {
+          title: task.linkedin_tasks?.title || 'LinkedIn Task',
+          module: 'LINKEDIN',
+          category: 'LinkedIn Growth',
+          points_reward: task.linkedin_tasks?.points_base || 0,
+          sub_categories: { name: 'LinkedIn growth activities based' }
+        },
+        profiles: profilesData.find(p => p.user_id === task.linkedin_users?.auth_uid) || {
+          full_name: task.linkedin_users?.name || '[Missing User]',
+          username: task.linkedin_users?.email?.split('@')[0] || 'missing_user',
+          profile_image_url: ''
+        },
+        evidence: [] // LinkedIn tasks don't have evidence like career tasks
+      }));
+
+      allVerifiedAssignments.push(...combinedLinkedInData);
+    }
+
+    // Process Job Hunting assignments (similar structure)
+    if (jobHuntingData && jobHuntingData.length > 0) {
+      const userIds = jobHuntingData.map(assignment => assignment.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const combinedJobHuntingData = jobHuntingData.map(assignment => {
+        const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+        return {
+          ...assignment,
+          _assignmentType: 'job_hunting',
+          career_task_templates: {
+            title: assignment.template?.title || 'Job Hunting Task',
+            module: 'JOB_HUNTING',
+            category: assignment.template?.category || 'Job Hunting',
+            points_reward: assignment.template?.points_reward || 0,
+            sub_categories: { name: 'Job hunting based' }
+          },
+          profiles: profile || { 
+            full_name: `[Missing User: ${assignment.user_id.slice(0, 8)}...]`, 
+            username: `missing_${assignment.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          },
+          evidence: []
+        };
+      });
+
+      allVerifiedAssignments.push(...combinedJobHuntingData);
+    }
+
+    // Process GitHub assignments (similar structure)
+    if (gitHubData && gitHubData.length > 0) {
+      const userIds = gitHubData.map(task => task.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const combinedGitHubData = gitHubData.map(task => {
+        const profile = profilesData?.find(p => p.user_id === task.user_id);
+        return {
+          ...task,
+          _assignmentType: 'github_task',
+          career_task_templates: {
+            title: task.github_tasks?.title || 'GitHub Task',
+            module: 'GITHUB',
+            category: 'GitHub Repository',
+            points_reward: task.github_tasks?.points_base || 0,
+            sub_categories: { name: 'Daily digital profile based' }
+          },
+          profiles: profile || {
+            full_name: `[Missing User: ${task.user_id.slice(0, 8)}...]`, 
+            username: `missing_${task.user_id.slice(0, 8)}`, 
+            profile_image_url: '' 
+          },
+          evidence: []
+        };
+      });
+
+      allVerifiedAssignments.push(...combinedGitHubData);
+    }
+
+    // Sort all verified assignments by verified_at or updated_at
+    allVerifiedAssignments.sort((a, b) => {
+      const dateA = new Date(a.verified_at || a.updated_at || a.created_at);
+      const dateB = new Date(b.verified_at || b.updated_at || b.created_at);
+      return dateB.getTime() - dateA.getTime();
     });
 
-    const assignmentsWithEvidence = await Promise.all(
-      assignmentsWithProfiles.map(async (assignment) => {
-        const { data: evidenceData, error: evidenceError } = await supabase
-          .from('career_task_evidence')
-          .select('id, assignment_id, evidence_type, evidence_data, url, file_urls, verification_status, created_at, submitted_at, verification_notes, verified_at, verified_by, kind, email_meta, parsed_json')
-          .eq('assignment_id', assignment.id)
-          .order('created_at', { ascending: false });
-
-        if (evidenceError) {
-          console.error('Error fetching evidence:', evidenceError);
-        }
-
-        return { ...assignment, evidence: evidenceData || [] };
-      })
-    );
-
-    setVerifiedAssignments(assignmentsWithEvidence);
+    setVerifiedAssignments(allVerifiedAssignments);
   };
 
   const fetchCareerAssignments = async () => {
