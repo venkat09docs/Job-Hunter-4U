@@ -3,13 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Crown, Gem, Medal, Target, Trophy, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 // Removed useProfileBadges import to prevent conflicts with LevelUp page
-import { User, Briefcase, Users, Github, Target, Trophy, Crown, Medal, Gem } from 'lucide-react';
+import { Briefcase, Users, Github } from 'lucide-react';
 
 interface BadgeData {
   id: string;
@@ -67,24 +69,11 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
-  // Temporarily disabled badge awarding logic to prevent data conflicts
-  // const { checkAndAwardBadges, userBadges, loading: badgesLoading } = useProfileBadges();
-
-  // Temporarily disabled badge award checking
-  // useEffect(() => {
-  //   if (!careerLoading && resumeProgress >= 100) {
-  //     checkAndAwardBadges();
-  //   }
-  // }, [resumeProgress, careerLoading, checkAndAwardBadges]);
 
   // Check if badge has been awarded to user - temporarily disabled
   const isBadgeAwarded = (badgeCode: string) => {
     // Temporarily return false to prevent badge data fetching conflicts
     return false;
-    // const awarded = userBadges.some(userBadge => 
-    //   userBadge.profile_badges.code === badgeCode
-    // );
-    // return awarded;
   };
 
   // Check if user has premium subscription plan (6-month or 1-year)
@@ -95,49 +84,6 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   // Check if user has 3-months plan
   const hasThreeMonthsPlan = () => {
     return subscriptionPlan === '3 Months Plan';
-  };
-
-  // Badge unlock logic - progressive unlocking system
-  const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
-    switch (categoryId) {
-      case 'profile':
-        // Profile Build (Bronze) - Always unlocked (default)
-        if (tier === 'bronze') return true;
-        // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
-        if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
-        // Profile Perfectionist (Gold) - When Silver completes 100%, enable Gold AND Diamond boards
-        // Gold requires Silver completion AND premium plan (6-month or 1-year)
-        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
-        // Profile Elite (Diamond) - Enabled when Silver completes 100%, but only for IT users
-        if (tier === 'diamond') return calculateProfileProgress('silver') >= 100 && isIT();
-        return false;
-      
-      case 'jobs':
-        // Jobs section: No premium restrictions, standard progression
-        if (badgeIndex === 0) return true;
-        if (badgeIndex === 1) return jobApplicationsCount >= 1;
-        if (badgeIndex === 2) return jobApplicationsCount >= 14; // Diamond badge unlocks normally
-        return false;
-      
-      case 'network':
-        // Network section: No premium restrictions, standard progression
-        if (badgeIndex === 0) return true;
-        if (badgeIndex === 1) return networkConnections >= 25;
-        if (badgeIndex === 2) return networkConnections >= 50; // Diamond badge unlocks normally
-        return false;
-      
-      case 'github':
-        // GitHub section: Only for IT users, progressive unlock based on pinned repos and total commits from GitHub Weekly
-        if (!isIT()) return false; // GitHub section disabled for non-IT users
-        if (badgeIndex === 0) return true; // Silver always unlocked for IT users
-        // Gold badge: Must have Silver badge requirements (1 repo + 5 commits) AND at least 30 total commits
-        if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5 && githubCommits >= 30;
-        if (badgeIndex === 2) return githubCommits >= 100; // Diamond badge
-        return false;
-      
-      default:
-        return false;
-    }
   };
 
   // Calculate progress for each badge - progressive system
@@ -190,6 +136,136 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
       case 'diamond': return Math.min(100, githubProgress >= 80 ? 100 : (githubProgress / 80) * 100);
       default: return 0;
     }
+  };
+
+  // Badge unlock logic - progressive unlocking system
+  const isBadgeUnlocked = (categoryId: string, tier: string, badgeIndex: number) => {
+    switch (categoryId) {
+      case 'profile':
+        // Profile Build (Bronze) - Always unlocked (default)
+        if (tier === 'bronze') return true;
+        // Profile Complete (Silver) - Unlocked only when bronze reaches 100%
+        if (tier === 'silver') return calculateProfileProgress('bronze') >= 100;
+        // Profile Perfectionist (Gold) - When Silver completes 100%, enable Gold AND Diamond boards
+        // Gold requires Silver completion AND premium plan (6-month or 1-year)
+        if (tier === 'gold') return calculateProfileProgress('silver') >= 100;
+        // Profile Elite (Diamond) - Enabled when Silver completes 100%, but only for IT users
+        if (tier === 'diamond') return calculateProfileProgress('silver') >= 100 && isIT();
+        return false;
+      
+      case 'jobs':
+        // Jobs section: No premium restrictions, standard progression
+        if (badgeIndex === 0) return true;
+        if (badgeIndex === 1) return jobApplicationsCount >= 1;
+        if (badgeIndex === 2) return jobApplicationsCount >= 14; // Diamond badge unlocks normally
+        return false;
+      
+      case 'network':
+        // Network section: No premium restrictions, standard progression
+        if (badgeIndex === 0) return true;
+        if (badgeIndex === 1) return networkConnections >= 25;
+        if (badgeIndex === 2) return networkConnections >= 50; // Diamond badge unlocks normally
+        return false;
+      
+      case 'github':
+        // GitHub section: Only for IT users, progressive unlock based on pinned repos and total commits from GitHub Weekly
+        if (!isIT()) return false; // GitHub section disabled for non-IT users
+        if (badgeIndex === 0) return true; // Silver always unlocked for IT users
+        // Gold badge: Must have Silver badge requirements (1 repo + 5 commits) AND at least 30 total commits
+        if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5 && githubCommits >= 30;
+        if (badgeIndex === 2) return githubCommits >= 100; // Diamond badge
+        return false;
+      
+      default:
+        return false;
+    }
+  };
+
+  // Calculate remaining requirements for next level
+  const getRemainingRequirements = (categoryId: string, badge: BadgeData, badgeIndex: number) => {
+    if (!isBadgeUnlocked(categoryId, badge.tier, badgeIndex)) {
+      return "Complete previous badges first";
+    }
+    
+    if (badge.progress >= 100) {
+      return "Badge completed! 🎉";
+    }
+
+    switch (categoryId) {
+      case 'profile':
+        if (badge.tier === 'bronze') {
+          const remaining = 100 - resumeProgress;
+          return `Complete ${Math.ceil(remaining)}% more of resume tasks`;
+        }
+        if (badge.tier === 'silver') {
+          const remaining = 100 - linkedinProfileProgress;
+          return `Complete ${Math.ceil(remaining)}% more LinkedIn profile tasks`;
+        }
+        if (badge.tier === 'gold') {
+          const remaining = 100 - digitalProfileProgress;
+          return `Complete ${Math.ceil(remaining)}% more Digital Profile tasks`;
+        }
+        if (badge.tier === 'diamond') {
+          const remaining = 100 - githubProfileProgress;
+          return `Complete ${Math.ceil(remaining)}% more GitHub Profile tasks`;
+        }
+        break;
+        
+      case 'jobs':
+        if (badge.tier === 'silver') {
+          const remaining = 1 - jobApplicationsCount;
+          return remaining > 0 ? `Apply to ${remaining} more job(s)` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'gold') {
+          const remaining = 14 - jobApplicationsCount;
+          return remaining > 0 ? `Apply to ${remaining} more job(s)` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'diamond') {
+          const remaining = 30 - jobApplicationsCount;
+          return remaining > 0 ? `Apply to ${remaining} more job(s)` : "Badge completed! 🎉";
+        }
+        break;
+        
+      case 'network':
+        if (badge.tier === 'silver') {
+          const remaining = 25 - networkConnections;
+          return remaining > 0 ? `Gain ${remaining} more connection(s)` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'gold') {
+          const remaining = 50 - networkConnections;
+          return remaining > 0 ? `Gain ${remaining} more connection(s)` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'diamond') {
+          const connRemaining = 100 - networkConnections;
+          const viewsRemaining = 1000 - profileViews;
+          const requirements = [];
+          if (connRemaining > 0) requirements.push(`${connRemaining} more connections`);
+          if (viewsRemaining > 0) requirements.push(`${viewsRemaining} more profile views`);
+          return requirements.length > 0 ? `Need: ${requirements.join(' and ')}` : "Badge completed! 🎉";
+        }
+        break;
+        
+      case 'github':
+        if (badge.tier === 'silver') {
+          const repoRemaining = Math.max(0, 1 - githubRepos);
+          const commitRemaining = Math.max(0, 5 - githubCommits);
+          const requirements = [];
+          if (repoRemaining > 0) requirements.push(`${repoRemaining} more repo(s)`);
+          if (commitRemaining > 0) requirements.push(`${commitRemaining} more commit(s)`);
+          return requirements.length > 0 ? `Need: ${requirements.join(' and ')}` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'gold') {
+          const commitRemaining = Math.max(0, 30 - githubCommits);
+          return commitRemaining > 0 ? `Need ${commitRemaining} more commit(s)` : "Badge completed! 🎉";
+        }
+        if (badge.tier === 'diamond') {
+          const commitRemaining = Math.max(0, 100 - githubCommits);
+          return commitRemaining > 0 ? `Need ${commitRemaining} more commit(s)` : "Badge completed! 🎉";
+        }
+        break;
+    }
+    
+    return "Keep working towards your goal!";
   };
 
   const allCategories: BadgeCategory[] = [
@@ -432,125 +508,136 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                     const isAwarded = badge.code ? isBadgeAwarded(badge.code) : false;
                     
                     return (
-                      <Card 
-                        key={badge.id}
-                        className={`relative overflow-hidden transition-all duration-300 ${
-                          isUnlocked 
-                            ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' 
-                            : 'cursor-not-allowed opacity-50'
-                        } bg-gradient-to-br ${getTierGradient(badge.tier)} border-2 ${
-                          isAwarded ? 'ring-2 ring-primary/50 shadow-lg' : ''
-                        }`}
-                        style={{ 
-                          borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}20` : '#E5E5E5'),
-                          filter: isUnlocked ? 'none' : 'grayscale(50%)',
-                          boxShadow: isAwarded ? `0 0 20px ${tierColor}30` : undefined
-                        }}
-                        onClick={() => isUnlocked && navigate(badge.link)}
-                      >
-                        <CardContent className="p-4 space-y-4">
-                          {/* Badge Header with Award/Lock Indicator */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {isAwarded ? (
-                                <div className="h-5 w-5 flex items-center justify-center">
-                                  ✨
-                                </div>
-                              ) : isUnlocked ? (
-                                <TierIcon 
-                                  className="h-5 w-5" 
-                                  style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
-                                />
-                              ) : (
-                                <div className="h-5 w-5 flex items-center justify-center">
-                                  🔒
-                                </div>
-                              )}
-                              <Badge 
-                                variant="outline" 
-                                className="text-xs capitalize"
-                                style={{ 
-                                  borderColor: isAwarded ? tierColor : (isUnlocked ? tierColor : '#E5E5E5'), 
-                                  color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
-                                  backgroundColor: isAwarded ? `${tierColor}10` : 'transparent'
-                                }}
-                              >
-                                {isAwarded ? 'Earned!' : (isUnlocked ? badge.tier : 'Locked')}
-                              </Badge>
-                            </div>
-                            <div 
-                              className="text-sm font-medium" 
-                              style={{ color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF') }}
+                      <TooltipProvider key={badge.id}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Card 
+                              className={`relative overflow-hidden transition-all duration-300 ${
+                                isUnlocked 
+                                  ? 'hover:shadow-lg hover:-translate-y-1 cursor-pointer' 
+                                  : 'cursor-not-allowed opacity-50'
+                              } bg-gradient-to-br ${getTierGradient(badge.tier)} border-2 ${
+                                isAwarded ? 'ring-2 ring-primary/50 shadow-lg' : ''
+                              }`}
+                              style={{ 
+                                borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}20` : '#E5E5E5'),
+                                filter: isUnlocked ? 'none' : 'grayscale(50%)',
+                                boxShadow: isAwarded ? `0 0 20px ${tierColor}30` : undefined
+                              }}
+                              onClick={() => isUnlocked && navigate(badge.link)}
                             >
-                              {isAwarded ? '100%' : (isUnlocked ? Math.round(badge.progress) : 0)}%
+                              <CardContent className="p-4 space-y-4">
+                                {/* Badge Header with Award/Lock Indicator */}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    {isAwarded ? (
+                                      <div className="h-5 w-5 flex items-center justify-center">
+                                        ✨
+                                      </div>
+                                    ) : isUnlocked ? (
+                                      <TierIcon 
+                                        className="h-5 w-5" 
+                                        style={{ color: isUnlocked ? tierColor : '#9CA3AF' }}
+                                      />
+                                    ) : (
+                                      <div className="h-5 w-5 flex items-center justify-center">
+                                        🔒
+                                      </div>
+                                    )}
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs capitalize"
+                                      style={{ 
+                                        borderColor: isAwarded ? tierColor : (isUnlocked ? tierColor : '#E5E5E5'), 
+                                        color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
+                                        backgroundColor: isAwarded ? `${tierColor}10` : 'transparent'
+                                      }}
+                                    >
+                                      {isAwarded ? 'Earned!' : (isUnlocked ? badge.tier : 'Locked')}
+                                    </Badge>
+                                  </div>
+                                  <div 
+                                    className="text-sm font-medium" 
+                                    style={{ color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF') }}
+                                  >
+                                    {isAwarded ? '100%' : (isUnlocked ? Math.round(badge.progress) : 0)}%
+                                  </div>
+                                </div>
+
+                                {/* Badge Title & Description */}
+                                <div className="space-y-1">
+                                  <h4 className={`font-semibold text-sm ${isAwarded ? 'text-primary' : (!isUnlocked ? 'text-muted-foreground' : '')}`}>
+                                    {badge.title} {isAwarded ? '🏆' : ''}
+                                  </h4>
+                                   <p className="text-xs text-muted-foreground">
+                                      {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Complete previous badge to unlock')}
+                                    </p>
+                                </div>
+
+                                {/* Progress Ring */}
+                                <div className="space-y-2">
+                                  <Progress 
+                                    value={isAwarded ? 100 : (isUnlocked ? badge.progress : 0)} 
+                                    className="h-2"
+                                    style={{
+                                      '--progress-background': isAwarded || isUnlocked ? tierColor : '#E5E5E5',
+                                    } as React.CSSProperties}
+                                  />
+                                    <p className="text-xs text-muted-foreground">
+                                      {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Unlock requirements not met')}
+                                    </p>
+                                </div>
+
+                                {/* Next Action Button */}
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className={`w-full text-xs transition-transform ${
+                                    isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed'
+                                  }`}
+                                  style={{ 
+                                    borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}40` : '#E5E5E5'),
+                                    color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
+                                    backgroundColor: isAwarded ? `${tierColor}05` : 'transparent'
+                                  }}
+                                  disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    
+                                    // Special handling for gold badge clicks by 3-months plan users
+                                    if (badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan() && onGoldBadgeUpgradeRequired) {
+                                      onGoldBadgeUpgradeRequired();
+                                      return;
+                                    }
+                                    
+                                    if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
+                                      navigate(badge.link);
+                                    }
+                                  }}
+                                >
+                                  {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan()) ? 'Upgrade to Continue' : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
+                                </Button>
+                              </CardContent>
+
+                              {/* Tier Glow Effect */}
+                              <div 
+                                className="absolute inset-0 opacity-5 pointer-events-none"
+                                style={{
+                                  background: `radial-gradient(circle at 50% 50%, ${tierColor} 0%, transparent 70%)`
+                                }}
+                              />
+                            </Card>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <div className="space-y-2">
+                              <p className="font-semibold">{badge.title}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {getRemainingRequirements(category.id, badge, badgeIndex)}
+                              </p>
                             </div>
-                          </div>
-
-                          {/* Badge Title & Description */}
-                          <div className="space-y-1">
-                            <h4 className={`font-semibold text-sm ${isAwarded ? 'text-primary' : (!isUnlocked ? 'text-muted-foreground' : '')}`}>
-                              {badge.title} {isAwarded ? '🏆' : ''}
-                            </h4>
-                             <p className="text-xs text-muted-foreground">
-                                {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Complete previous badge to unlock')}
-                              </p>
-                          </div>
-
-                          {/* Progress Ring */}
-                          <div className="space-y-2">
-                            <Progress 
-                              value={isAwarded ? 100 : (isUnlocked ? badge.progress : 0)} 
-                              className="h-2"
-                              style={{
-                                '--progress-background': isAwarded || isUnlocked ? tierColor : '#E5E5E5',
-                              } as React.CSSProperties}
-                            />
-                              <p className="text-xs text-muted-foreground">
-                                {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Unlock requirements not met')}
-                              </p>
-                          </div>
-
-                          {/* Next Action Button */}
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className={`w-full text-xs transition-transform ${
-                              isUnlocked ? 'hover:scale-105' : 'cursor-not-allowed'
-                            }`}
-                            style={{ 
-                              borderColor: isAwarded ? tierColor : (isUnlocked ? `${tierColor}40` : '#E5E5E5'),
-                              color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
-                              backgroundColor: isAwarded ? `${tierColor}05` : 'transparent'
-                            }}
-                            disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              
-                              // Special handling for gold badge clicks by 3-months plan users
-                              if (badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan() && onGoldBadgeUpgradeRequired) {
-                                onGoldBadgeUpgradeRequired();
-                                return;
-                              }
-                              
-                              if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
-                                // Temporarily disabled badge checking due to data conflicts
-                                // await checkAndAwardBadges();
-                                navigate(badge.link);
-                              }
-                            }}
-                          >
-                            {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan()) ? 'Upgrade to Continue' : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
-                          </Button>
-                        </CardContent>
-
-                        {/* Tier Glow Effect */}
-                        <div 
-                          className="absolute inset-0 opacity-5 pointer-events-none"
-                          style={{
-                            background: `radial-gradient(circle at 50% 50%, ${tierColor} 0%, transparent 70%)`
-                          }}
-                        />
-                      </Card>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })}
                 </div>
