@@ -69,9 +69,11 @@ const VerifyAssignments = () => {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('all');
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('all');
   const [verifiedSearchTerm, setVerifiedSearchTerm] = useState('');
   const [verifiedModuleFilter, setVerifiedModuleFilter] = useState('all');
+  const [verifiedSubcategoryFilter, setVerifiedSubcategoryFilter] = useState('all');
   const [verifiedUserFilter, setVerifiedUserFilter] = useState('all');
 
   // Pagination states
@@ -109,13 +111,19 @@ const VerifyAssignments = () => {
       });
     }
 
+    if (subcategoryFilter !== 'all') {
+      filtered = filtered.filter(assignment => {
+        return getAssignmentSubcategory(assignment) === subcategoryFilter;
+      });
+    }
+
     if (userFilter !== 'all') {
       filtered = filtered.filter(assignment => assignment.user_id === userFilter);
     }
 
     setFilteredAssignments(filtered);
     setCurrentPage(1);
-  }, [assignments, searchTerm, moduleFilter, userFilter]);
+  }, [assignments, searchTerm, moduleFilter, subcategoryFilter, userFilter]);
 
   useEffect(() => {
     let filtered = verifiedAssignments;
@@ -139,15 +147,65 @@ const VerifyAssignments = () => {
       });
     }
 
+    if (verifiedSubcategoryFilter !== 'all') {
+      filtered = filtered.filter(assignment => {
+        return getAssignmentSubcategory(assignment) === verifiedSubcategoryFilter;
+      });
+    }
+
     if (verifiedUserFilter !== 'all') {
       filtered = filtered.filter(assignment => assignment.user_id === verifiedUserFilter);
     }
 
     setFilteredVerifiedAssignments(filtered);
     setVerifiedCurrentPage(1);
-  }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedUserFilter]);
+  }, [verifiedAssignments, verifiedSearchTerm, verifiedModuleFilter, verifiedSubcategoryFilter, verifiedUserFilter]);
 
-  // Function definitions
+  // Function to map assignment to subcategory
+  const getAssignmentSubcategory = (assignment: SubmittedAssignment) => {
+    // Handle LinkedIn assignments
+    if (assignment._isLinkedInAssignment) {
+      return 'LinkedIn growth activities based';
+    }
+    
+    // Handle Job Hunting assignments
+    if (assignment._isJobHuntingAssignment) {
+      return 'Job hunting based';
+    }
+    
+    // Handle GitHub assignments (Daily digital profile)
+    if (assignment._isGitHubAssignment) {
+      return 'Daily digital profile based';
+    }
+    
+    // Handle career task assignments based on module/category
+    const module = assignment.career_task_templates.module?.toLowerCase() || 
+                  assignment.career_task_templates.category?.toLowerCase() || '';
+    
+    if (module.includes('resume') || module === 'RESUME') {
+      return 'Resume based';
+    }
+    
+    if (module.includes('linkedin') || module.includes('profile')) {
+      return 'LinkedIn profile based';
+    }
+    
+    if (module.includes('github') || module.includes('digital')) {
+      return 'Daily digital profile based';
+    }
+    
+    // Default fallback
+    return 'Resume based';
+  };
+
+  // Available subcategories
+  const subcategoryOptions = [
+    'Resume based',
+    'LinkedIn profile based', 
+    'Daily digital profile based',
+    'LinkedIn growth activities based',
+    'Job hunting based'
+  ];
   const fetchVerifiedAssignments = async () => {
     try {
       if (isAdmin || isRecruiter) {
@@ -1229,6 +1287,17 @@ const VerifyAssignments = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={subcategoryFilter} onValueChange={setSubcategoryFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by subcategory" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subcategories</SelectItem>
+                {subcategoryOptions.map(subcategory => (
+                  <SelectItem key={subcategory} value={subcategory}>{subcategory}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={userFilter} onValueChange={setUserFilter}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Filter by user" />
@@ -1279,6 +1348,9 @@ const VerifyAssignments = () => {
                               {assignment.career_task_templates.sub_categories?.name || 
                                assignment.career_task_templates.module || 
                                assignment.career_task_templates.category || 'GENERAL'}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {getAssignmentSubcategory(assignment)}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
@@ -1359,6 +1431,50 @@ const VerifyAssignments = () => {
         </TabsContent>
 
         <TabsContent value="verified" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search by name, username, or task..."
+                value={verifiedSearchTerm}
+                onChange={(e) => setVerifiedSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <Select value={verifiedModuleFilter} onValueChange={setVerifiedModuleFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by module" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Modules</SelectItem>
+                {uniqueVerifiedModules.map(module => (
+                  <SelectItem key={module} value={module}>{module}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={verifiedSubcategoryFilter} onValueChange={setVerifiedSubcategoryFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by subcategory" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subcategories</SelectItem>
+                {subcategoryOptions.map(subcategory => (
+                  <SelectItem key={subcategory} value={subcategory}>{subcategory}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={verifiedUserFilter} onValueChange={setVerifiedUserFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filter by user" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                {uniqueVerifiedUsers.map(user => (
+                  <SelectItem key={user.id} value={user.id}>{user.name} ({user.username})</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {verifiedAssignments.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">No verified assignments yet.</p>
@@ -1391,6 +1507,9 @@ const VerifyAssignments = () => {
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Verified
                             </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {getAssignmentSubcategory(assignment)}
+                            </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">
                             {assignment.career_task_templates.title}
@@ -1417,6 +1536,49 @@ const VerifyAssignments = () => {
                   </Card>
                 ))}
               </div>
+
+              {totalVerifiedPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Showing {verifiedStartIndex + 1} to {Math.min(verifiedEndIndex, filteredVerifiedAssignments.length)} of {filteredVerifiedAssignments.length} assignments
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVerifiedCurrentPage(Math.max(1, verifiedCurrentPage - 1))}
+                      disabled={verifiedCurrentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: Math.min(5, totalVerifiedPages) }, (_, i) => {
+                        const pageNum = i + 1;
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={verifiedCurrentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setVerifiedCurrentPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVerifiedCurrentPage(Math.min(totalVerifiedPages, verifiedCurrentPage + 1))}
+                      disabled={verifiedCurrentPage === totalVerifiedPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </TabsContent>
