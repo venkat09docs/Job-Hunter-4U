@@ -18,6 +18,8 @@ interface EvidenceSubmissionData {
   url?: string;
   description?: string;
   file?: File;
+  numberOfCommits?: number;
+  numberOfReadmes?: number;
 }
 
 export const GitHubWeeklyAssignments = () => {
@@ -60,7 +62,7 @@ export const GitHubWeeklyAssignments = () => {
     try {
       await submitEvidence(evidenceDialog.taskId, evidenceForm);
       setEvidenceDialog({ open: false });
-      setEvidenceForm({ kind: 'URL' });
+      setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
     } catch (error) {
       console.error('Failed to submit evidence:', error);
     }
@@ -212,13 +214,48 @@ export const GitHubWeeklyAssignments = () => {
                             />
                           </div>
 
+                          {/* GitHub-specific fields */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="number-of-commits">Number of Commits</Label>
+                              <Input
+                                id="number-of-commits"
+                                type="number"
+                                placeholder="e.g. 5"
+                                min="0"
+                                value={evidenceForm.numberOfCommits || ''}
+                                onChange={(e) => setEvidenceForm(prev => ({ 
+                                  ...prev, 
+                                  numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+                                }))}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="number-of-readmes">Number of README Files</Label>
+                              <Input
+                                id="number-of-readmes"
+                                type="number"
+                                placeholder="e.g. 1"
+                                min="0"
+                                value={evidenceForm.numberOfReadmes || ''}
+                                onChange={(e) => setEvidenceForm(prev => ({ 
+                                  ...prev, 
+                                  numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+                                }))}
+                              />
+                            </div>
+                          </div>
+
                           <div className="flex gap-3 pt-4">
                             <Button onClick={handleSubmitEvidence} className="flex-1">
                               Submit Evidence
                             </Button>
                             <Button 
                               variant="outline" 
-                              onClick={() => setEvidenceDialog({ open: false })}
+                              onClick={() => {
+                                setEvidenceDialog({ open: false });
+                                setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
+                              }}
                             >
                               Cancel
                             </Button>
@@ -370,7 +407,107 @@ export const GitHubWeeklyAssignments = () => {
                                     </DialogDescription>
                                   </DialogHeader>
                                   
-                                  {/* ... same evidence form content as weekly tasks ... */}
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label htmlFor="evidence-type-showcase">Evidence Type</Label>
+                                      <Select 
+                                        value={evidenceForm.kind} 
+                                        onValueChange={(value: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT') => 
+                                          setEvidenceForm(prev => ({ ...prev, kind: value }))
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select evidence type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="URL">URL Link</SelectItem>
+                                          <SelectItem value="SCREENSHOT">Screenshot</SelectItem>
+                                          <SelectItem value="DATA_EXPORT">File Upload</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    {evidenceForm.kind === 'URL' && (
+                                      <div>
+                                        <Label htmlFor="evidence-url-showcase">URL</Label>
+                                        <Input
+                                          id="evidence-url-showcase"
+                                          placeholder="https://github.com/..."
+                                          value={evidenceForm.url || ''}
+                                          onChange={(e) => setEvidenceForm(prev => ({ ...prev, url: e.target.value }))}
+                                        />
+                                      </div>
+                                    )}
+
+                                    {evidenceForm.kind === 'DATA_EXPORT' && (
+                                      <div>
+                                        <Label htmlFor="evidence-file-showcase">File</Label>
+                                        <Input
+                                          id="evidence-file-showcase"
+                                          type="file"
+                                          accept=".png,.jpg,.jpeg,.pdf,.md"
+                                          onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+                                        />
+                                      </div>
+                                    )}
+
+                                    <div>
+                                      <Label htmlFor="evidence-description-showcase">Description (Optional)</Label>
+                                      <Textarea
+                                        id="evidence-description-showcase"
+                                        placeholder="Additional notes about your completion..."
+                                        value={evidenceForm.description || ''}
+                                        onChange={(e) => setEvidenceForm(prev => ({ ...prev, description: e.target.value }))}
+                                      />
+                                    </div>
+
+                                    {/* GitHub-specific fields */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <Label htmlFor="number-of-commits-showcase">Number of Commits</Label>
+                                        <Input
+                                          id="number-of-commits-showcase"
+                                          type="number"
+                                          placeholder="e.g. 5"
+                                          min="0"
+                                          value={evidenceForm.numberOfCommits || ''}
+                                          onChange={(e) => setEvidenceForm(prev => ({ 
+                                            ...prev, 
+                                            numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+                                          }))}
+                                        />
+                                      </div>
+                                      <div>
+                                        <Label htmlFor="number-of-readmes-showcase">Number of README Files</Label>
+                                        <Input
+                                          id="number-of-readmes-showcase"
+                                          type="number"
+                                          placeholder="e.g. 1"
+                                          min="0"
+                                          value={evidenceForm.numberOfReadmes || ''}
+                                          onChange={(e) => setEvidenceForm(prev => ({ 
+                                            ...prev, 
+                                            numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+                                          }))}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4">
+                                      <Button onClick={handleSubmitEvidence} className="flex-1">
+                                        Submit Evidence
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        onClick={() => {
+                                          setEvidenceDialog({ open: false });
+                                          setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
+                                        }}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
                                   
                                 </DialogContent>
                               </Dialog>
