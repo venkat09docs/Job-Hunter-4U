@@ -478,6 +478,18 @@ const GitHubWeekly = () => {
       }
     }
     
+    // Debug logging to track task status calculation
+    console.log(`🔍 GitHub Task Debug: ${task.github_tasks?.title}`, {
+      taskId: task.id,
+      dueDate: task.due_at,
+      assignmentDay,
+      adminExtended: task.admin_extended,
+      taskStatus,
+      period: task.period,
+      currentTime: new Date().toISOString(),
+      status: task.status
+    });
+    
     // Calculate days until due
     const now = new Date();
     const timeDiff = dueDate.getTime() - now.getTime();
