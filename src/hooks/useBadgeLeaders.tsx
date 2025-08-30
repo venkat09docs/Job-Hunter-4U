@@ -242,7 +242,7 @@ export const useBadgeLeaders = () => {
     return result;
   };
 
-  // Process users with job applications
+  // Process users with job applications - Level Up integration
   const processJobLeaders = (jobData: any[]): BadgeLeader[] => {
     const userJobsMap = new Map<string, { user_id: string; profile: any; count: number }>();
     
@@ -259,7 +259,7 @@ export const useBadgeLeaders = () => {
     });
 
     return Array.from(userJobsMap.values())
-      .filter(item => item.count > 0)
+      .filter(item => item.count > 0) // Only show users who have applied to at least 1 job (Silver badge)
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
       .map(item => ({
@@ -268,7 +268,7 @@ export const useBadgeLeaders = () => {
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
         total_points: item.count * 10, // 10 points per job application
-        badge_type: getBadgeType(item.count * 10)
+        badge_type: getJobApplicationBadgeType(item.count) // Use Level Up job badge logic
       }));
   };
 
@@ -349,6 +349,14 @@ export const useBadgeLeaders = () => {
     if (points >= 200) return 'Gold';
     if (points >= 100) return 'Silver';
     return 'Bronze';
+  };
+
+  // Level Up job application badge logic - matches BadgeProgressionMap
+  const getJobApplicationBadgeType = (jobCount: number): 'Bronze' | 'Silver' | 'Gold' | 'Diamond' => {
+    if (jobCount >= 30) return 'Diamond'; // Interview Magnet - 30+ jobs
+    if (jobCount >= 14) return 'Gold';    // Consistency Champ - 14 jobs
+    if (jobCount >= 1) return 'Silver';   // First Step - 1 job
+    return 'Bronze'; // Should not reach here as we filter for count > 0
   };
 
   useEffect(() => {
