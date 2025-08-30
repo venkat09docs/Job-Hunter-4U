@@ -130,8 +130,28 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   };
 
   const calculateGithubProgress = (tier: string) => {
+    // Debug logging for GitHub calculations
+    console.log('🔍 GitHub Progress Calculation:', {
+      tier,
+      githubRepos,
+      githubCommits,
+      calculation: tier === 'silver' ? 
+        `repos >= 1 (${githubRepos >= 1}) && commits >= 5 (${githubCommits >= 5})` : 
+        tier
+    });
+    
     switch (tier) {
-      case 'silver': return Math.min(100, githubRepos >= 1 && githubCommits >= 5 ? 100 : Math.min((githubRepos / 1) * 50 + (githubCommits / 5) * 50, 100));
+      case 'silver': {
+        const result = Math.min(100, githubRepos >= 1 && githubCommits >= 5 ? 100 : Math.min((githubRepos / 1) * 50 + (githubCommits / 5) * 50, 100));
+        console.log('🔍 Silver Badge Calculation:', {
+          githubRepos,
+          githubCommits,
+          repoPercentage: (githubRepos / 1) * 50,
+          commitPercentage: (githubCommits / 5) * 50,
+          finalResult: result
+        });
+        return result;
+      }
       case 'gold': return Math.min(100, githubCommits >= 30 ? 100 : (githubCommits / 30) * 100);
       case 'diamond': return Math.min(100, githubProgress >= 80 ? 100 : (githubProgress / 80) * 100);
       default: return 0;

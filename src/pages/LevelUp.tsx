@@ -253,6 +253,14 @@ const LevelUp = () => {
   };
 
   const totalGitHubCommits = getTotalCommitsAllTime();
+  
+  // Debug logging for GitHub data
+  console.log('🔍 GitHub Debug Data:', {
+    githubRepoCount,
+    totalGitHubCommits,
+    githubSignals: githubData.signals?.length || 0,
+    verifiedTasks: githubData.weeklyTasks?.filter(task => task.status === 'VERIFIED').length || 0
+  });
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
