@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Search, Filter, FileText, Award, ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { AdminGitHubReenableRequestsDialog } from '@/components/AdminGitHubReenableRequestsDialog';
 import { EvidenceDisplay } from '@/components/EvidenceDisplay';
@@ -56,6 +56,24 @@ const VerifyAssignments = () => {
   const { user } = useAuth();
   const { role, isAdmin, isInstituteAdmin, isRecruiter, loading } = useRole();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Get URL parameters
+  const tabParam = searchParams.get('tab') || 'pending';
+  const dialogParam = searchParams.get('dialog');
+
+  // State for dialog control
+  const [showExtensionsDialog, setShowExtensionsDialog] = useState(false);
+  const [showGitHubExtensionsDialog, setShowGitHubExtensionsDialog] = useState(false);
+
+  // Handle URL parameter-based dialog opening
+  useEffect(() => {
+    if (dialogParam === 'extensions') {
+      setShowExtensionsDialog(true);
+    } else if (dialogParam === 'github-extensions') {
+      setShowGitHubExtensionsDialog(true);
+    }
+  }, [dialogParam]);
 
   // All state hooks - must be called unconditionally
   const [assignments, setAssignments] = useState<SubmittedAssignment[]>([]);
@@ -1584,16 +1602,38 @@ const VerifyAssignments = () => {
             </p>
           </div>
         </div>
-        {(isAdmin || isRecruiter) && <AdminReenableRequestsDialog />}
-        {(isAdmin || isRecruiter) && <AdminGitHubReenableRequestsDialog />}
+        <div className="flex gap-2">
+          {(isAdmin || isRecruiter) && (
+            <div 
+              onClick={() => setShowExtensionsDialog(true)}
+              className="cursor-pointer"
+            >
+              <AdminReenableRequestsDialog />
+            </div>
+          )}
+          {(isAdmin || isRecruiter) && (
+            <div 
+              onClick={() => setShowGitHubExtensionsDialog(true)}
+              className="cursor-pointer"
+            >
+              <AdminGitHubReenableRequestsDialog />
+            </div>
+          )}
+        </div>
       </div>
 
-      <Tabs defaultValue="pending" className="space-y-4">
+      <Tabs value={tabParam} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pending">
+          <TabsTrigger 
+            value="pending"
+            onClick={() => navigate('/verify-assignments?tab=pending')}
+          >
             Pending ({filteredAssignments.length})
           </TabsTrigger>
-          <TabsTrigger value="verified">
+          <TabsTrigger 
+            value="verified"
+            onClick={() => navigate('/verify-assignments?tab=verified')}
+          >
             Verified ({filteredVerifiedAssignments.length})
           </TabsTrigger>
         </TabsList>
