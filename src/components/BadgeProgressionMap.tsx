@@ -127,11 +127,12 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         return false;
       
       case 'github':
-        // GitHub section: Only for IT users, standard progression
+        // GitHub section: Only for IT users, progressive unlock based on pinned repos and total commits from GitHub Weekly
         if (!isIT()) return false; // GitHub section disabled for non-IT users
-        if (badgeIndex === 0) return true;
-        if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5;
-        if (badgeIndex === 2) return githubCommits >= 30; // Diamond badge unlocks normally
+        if (badgeIndex === 0) return true; // Silver always unlocked for IT users
+        // Gold badge: Must have Silver badge requirements (1 repo + 5 commits) AND at least 30 total commits
+        if (badgeIndex === 1) return githubRepos >= 1 && githubCommits >= 5 && githubCommits >= 30;
+        if (badgeIndex === 2) return githubCommits >= 100; // Diamond badge
         return false;
       
       default:

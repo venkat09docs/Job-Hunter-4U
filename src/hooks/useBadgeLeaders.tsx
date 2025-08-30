@@ -303,10 +303,10 @@ export const useBadgeLeaders = () => {
       }));
   };
 
-  // Process GitHub repository leaders - Level Up integration  
+  // Process GitHub repository leaders - Use actual GitHub data from weekly page
   const processGitHubLeaders = async (githubData: any[]): Promise<BadgeLeader[]> => {
     try {
-      // Get all IT user profiles
+      // Get all IT user profiles with their GitHub statistics
       const { data: profiles } = await supabase
         .from('profiles')
         .select(`
@@ -325,19 +325,24 @@ export const useBadgeLeaders = () => {
         profile: any; 
         repoCount: number; 
         commitCount: number; 
+        points: number;
       }>();
 
-      // Get repository counts for each user
+      // Get repository counts for each user (pinned repositories)
       const { data: repoData } = await supabase
         .from('github_repos')
         .select('user_id')
         .eq('is_active', true);
 
-      // Get commit counts for each user from github_signals (use POST_PUBLISHED as closest match)
-      const { data: commitData } = await supabase
-        .from('github_signals')
-        .select('user_id')
-        .eq('kind', 'POST_PUBLISHED'); // Using available enum value
+      // Get commit counts from verified tasks and evidence
+      const { data: evidenceData } = await supabase
+        .from('github_evidence')
+        .select(`
+          user_task_id,
+          parsed_json,
+          github_user_tasks!inner(user_id)
+        `)
+        .eq('verification_status', 'verified');
 
       // Count repos per user
       repoData?.forEach(repo => {
@@ -349,7 +354,8 @@ export const useBadgeLeaders = () => {
               user_id: userId,
               profile,
               repoCount: 0,
-              commitCount: 0
+              commitCount: 0,
+              points: 0
             });
           }
         }
@@ -358,45 +364,50 @@ export const useBadgeLeaders = () => {
         }
       });
 
-      // Count commits per user (using signals as proxy for commits)
-      commitData?.forEach(commit => {
-        const userId = commit.user_id;
-        if (userGitHubMap.has(userId)) {
-          userGitHubMap.get(userId)!.commitCount++;
+      // Count commits from evidence
+      evidenceData?.forEach(evidence => {
+        const userId = evidence.github_user_tasks.user_id;
+        if (userGitHubMap.has(userId) && evidence.parsed_json) {
+          try {
+            const parsedData = evidence.parsed_json as any;
+            if (parsedData?.weeklyMetrics?.commits) {
+              userGitHubMap.get(userId)!.commitCount += parsedData.weeklyMetrics.commits;
+            }
+          } catch (error) {
+            // Skip invalid JSON data
+          }
         }
       });
 
+      // Calculate points and filter users who meet Silver badge criteria (1 repo + 5 commits)
       return Array.from(userGitHubMap.values())
-        .filter(item => {
-          // Only show users who have achieved at least Silver badge (1 repo + 5 commits)
-          return item.repoCount >= 1 && item.commitCount >= 5;
-        })
-        .sort((a, b) => {
-          // Sort by badge tier first, then by total activity
-          const aBadge = getGitHubBadgeType(a.repoCount, a.commitCount);
-          const bBadge = getGitHubBadgeType(b.repoCount, b.commitCount);
-          const badgeOrder = { 'Diamond': 4, 'Gold': 3, 'Silver': 2, 'Bronze': 1 };
+        .filter(item => item.repoCount >= 1 && item.commitCount >= 5) // Only show users who meet Silver badge criteria
+        .map(item => {
+          // Calculate points based on repos and commits
+          const repoPoints = item.repoCount * 50; // 50 points per repo
+          const commitPoints = item.commitCount * 10; // 10 points per commit
+          const totalPoints = repoPoints + commitPoints;
           
-          if (badgeOrder[aBadge] !== badgeOrder[bBadge]) {
-            return badgeOrder[bBadge] - badgeOrder[aBadge];
-          }
-          
-          // If same badge tier, sort by total activity (repos * 20 + commits)
-          const aActivity = a.repoCount * 20 + a.commitCount;
-          const bActivity = b.repoCount * 20 + b.commitCount;
-          return bActivity - aActivity;
+          return {
+            ...item,
+            points: totalPoints,
+            total_points: totalPoints,
+            badge_type: getGitHubBadgeType(item.repoCount, item.commitCount)
+          };
         })
-        .slice(0, 3)
+        .sort((a, b) => b.points - a.points)
+        .slice(0, 3) // Top 3 GitHub repository masters
         .map(item => ({
           user_id: item.user_id,
           username: item.profile?.username || '',
           full_name: item.profile?.full_name || '',
           profile_image_url: item.profile?.profile_image_url || '',
-          total_points: item.repoCount * 20 + item.commitCount, // 20 points per repo + 1 point per commit
-          badge_type: getGitHubBadgeType(item.repoCount, item.commitCount)
+          total_points: item.total_points,
+          badge_type: item.badge_type
         }));
+
     } catch (error) {
-      console.error('❌ Error fetching GitHub leaders:', error);
+      console.error('🏆 Error processing GitHub leaders:', error);
       return [];
     }
   };
