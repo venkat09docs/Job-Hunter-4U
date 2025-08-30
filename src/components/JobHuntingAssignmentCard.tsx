@@ -216,20 +216,51 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
           </div>
         </div>
 
-        {/* Instructions */}
-        {assignment.template?.instructions?.steps && (
+        {/* Instructions - Handle both structured and plain text formats */}
+        {assignment.template?.instructions && (
           <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium text-sm mb-2">Instructions:</h4>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              {assignment.template.instructions.steps.map((step: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center mt-0.5">
-                    {index + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ul>
+            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Instructions:
+            </h4>
+            
+            {/* Handle structured instructions with steps */}
+            {typeof assignment.template.instructions === 'object' && assignment.template.instructions.steps && (
+              <ul className="space-y-2 text-sm text-muted-foreground mb-3">
+                {assignment.template.instructions.steps.map((step: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center mt-0.5">
+                      {index + 1}
+                    </span>
+                    <span className="leading-relaxed">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Handle plain text instructions */}
+            {typeof assignment.template.instructions === 'string' && (
+              <div className="text-sm text-muted-foreground mb-3">
+                <div className="whitespace-pre-line leading-relaxed">
+                  {assignment.template.instructions}
+                </div>
+              </div>
+            )}
+
+            {/* Handle tips if available */}
+            {typeof assignment.template.instructions === 'object' && assignment.template.instructions.tips && (
+              <div className="border-t pt-3">
+                <h5 className="font-medium text-xs mb-2 text-primary">💡 Tips:</h5>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {assignment.template.instructions.tips.map((tip: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="flex-shrink-0 w-1 h-1 bg-primary rounded-full mt-2"></span>
+                      <span className="leading-relaxed">{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
