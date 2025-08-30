@@ -13,7 +13,10 @@ import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
-import { isDueDatePassed, isDueDateInCurrentWeek, canUserInteractWithTask } from '@/utils/dueDateValidation';
+import { 
+  getAssignmentDay,
+  getGitHubTaskStatus
+} from '@/utils/dueDateValidation';
 
 interface EvidenceSubmissionData {
   kind: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT';
@@ -91,16 +94,16 @@ export const GitHubWeeklyAssignments = () => {
     <div className="space-y-6">
       <Tabs defaultValue="weekly" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="weekly">Weekly Tasks</TabsTrigger>
+          <TabsTrigger value="weekly">Daily Tasks</TabsTrigger>
           <TabsTrigger value="showcase">Showcase Setup</TabsTrigger>
         </TabsList>
 
         <TabsContent value="weekly" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold">This Week's GitHub Tasks</h3>
+              <h3 className="text-lg font-semibold">Daily GitHub Assignments</h3>
               <p className="text-sm text-muted-foreground">
-                Complete weekly development activities to earn points and build consistency
+                Complete day-specific development activities with proper deadlines and earn points
               </p>
             </div>
             <Button 
@@ -109,275 +112,289 @@ export const GitHubWeeklyAssignments = () => {
               size="sm"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Generate Week
+              Generate Tasks
             </Button>
           </div>
 
           <div className="grid gap-4">
-            {weeklyTasks.map((task) => (
-              <Card key={task.id} className="border border-border">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base">
-                        {task.github_tasks?.title}
-                      </CardTitle>
-                      <CardDescription>
-                        {task.github_tasks?.description}
-                      </CardDescription>
+            {weeklyTasks.map((task) => {
+              const assignmentDay = getAssignmentDay(task.period);
+              const taskStatus = task.due_at ? 
+                getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended) : 
+                { canSubmit: false, canRequestExtension: false, status: 'week_expired' as const, message: 'No due date set' };
+              
+              return (
+                <Card key={task.id} className="border border-border">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base">
+                            {task.github_tasks?.title}
+                          </CardTitle>
+                          <Badge variant="outline" className="text-xs">
+                            {assignmentDay}
+                          </Badge>
+                        </div>
+                        <CardDescription>
+                          {task.github_tasks?.description}
+                        </CardDescription>
+                      </div>
+                      <Badge variant={getStatusColor(task.status)}>
+                        {getStatusLabel(task.status)}
+                      </Badge>
                     </div>
-                    <Badge variant={getStatusColor(task.status)}>
-                      {getStatusLabel(task.status)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {task.due_at ? formatDistanceToNow(new Date(task.due_at), { addSuffix: true }) : 'No due date'}
-                      </span>
-                      <span className="font-medium text-primary">
-                        {task.github_tasks?.points_base} points
-                      </span>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {task.due_at ? taskStatus.message : 'No due date'}
+                        </span>
+                        <span className="font-medium text-primary">
+                          {task.github_tasks?.points_base} points
+                        </span>
+                      </div>
+                      {task.score_awarded > 0 && (
+                        <span className="text-green-600 font-medium">
+                          +{task.score_awarded} earned
+                        </span>
+                      )}
                     </div>
-                    {task.score_awarded > 0 && (
-                      <span className="text-green-600 font-medium">
-                        +{task.score_awarded} earned
-                      </span>
-                    )}
-                  </div>
-                  
-                  {(task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
-                    <Dialog 
-                      open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
-                      onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
-                    >
-                      <DialogTrigger asChild>
-                        <Button size="sm" className="w-full">
-                          <Upload className="h-4 w-4 mr-2" />
-                          {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Submit Evidence</DialogTitle>
-                          <DialogDescription>
-                            Provide evidence for completing: {task.github_tasks?.title}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="evidence-type">Evidence Type</Label>
-                            <Select 
-                              value={evidenceForm.kind} 
-                              onValueChange={(value: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT') => 
-                                setEvidenceForm(prev => ({ ...prev, kind: value }))
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select evidence type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="URL">URL Link</SelectItem>
-                                <SelectItem value="SCREENSHOT">Screenshot</SelectItem>
-                                <SelectItem value="DATA_EXPORT">File Upload</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                    
+                    {/* Task Status-based Actions */}
+                    {task.status !== 'VERIFIED' && (
+                      <>
+                        {taskStatus.canSubmit && (task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
+                          <Dialog 
+                            open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
+                            onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
+                          >
+                            <DialogTrigger asChild>
+                              <Button size="sm" className="w-full mb-3">
+                                <Upload className="h-4 w-4 mr-2" />
+                                {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Submit Evidence</DialogTitle>
+                                <DialogDescription>
+                                  Provide evidence for completing: {task.github_tasks?.title} ({assignmentDay} Assignment)
+                                </DialogDescription>
+                              </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="evidence-type">Evidence Type</Label>
+                                <Select 
+                                  value={evidenceForm.kind} 
+                                  onValueChange={(value: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT') => 
+                                    setEvidenceForm(prev => ({ ...prev, kind: value }))
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select evidence type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="URL">URL Link</SelectItem>
+                                    <SelectItem value="SCREENSHOT">Screenshot</SelectItem>
+                                    <SelectItem value="DATA_EXPORT">File Upload</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
 
-                          {evidenceForm.kind === 'URL' && (
-                            <div>
-                              <Label htmlFor="evidence-url">URL</Label>
-                              <Input
-                                id="evidence-url"
-                                placeholder="https://github.com/..."
-                                value={evidenceForm.url || ''}
-                                onChange={(e) => setEvidenceForm(prev => ({ ...prev, url: e.target.value }))}
-                              />
+                              {evidenceForm.kind === 'URL' && (
+                                <div>
+                                  <Label htmlFor="evidence-url">URL</Label>
+                                  <Input
+                                    id="evidence-url"
+                                    placeholder="https://github.com/..."
+                                    value={evidenceForm.url || ''}
+                                    onChange={(e) => setEvidenceForm(prev => ({ ...prev, url: e.target.value }))}
+                                  />
+                                </div>
+                              )}
+
+                              {evidenceForm.kind === 'DATA_EXPORT' && (
+                                <div>
+                                  <Label htmlFor="evidence-file">File</Label>
+                                  <Input
+                                    id="evidence-file"
+                                    type="file"
+                                    accept=".png,.jpg,.jpeg,.pdf,.md"
+                                    onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+                                  />
+                                </div>
+                              )}
+
+                              <div>
+                                <Label htmlFor="evidence-description">Description (Optional)</Label>
+                                <Textarea
+                                  id="evidence-description"
+                                  placeholder="Additional notes about your completion..."
+                                  value={evidenceForm.description || ''}
+                                  onChange={(e) => setEvidenceForm(prev => ({ ...prev, description: e.target.value }))}
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label htmlFor="number-of-commits">Number of Weekly Commits</Label>
+                                  <Input
+                                    id="number-of-commits"
+                                    type="number"
+                                    placeholder="e.g. 5"
+                                    min="0"
+                                    value={evidenceForm.numberOfCommits || ''}
+                                    onChange={(e) => setEvidenceForm(prev => ({ 
+                                      ...prev, 
+                                      numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+                                    }))}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="number-of-readmes">Number of README or Docs Updates</Label>
+                                  <Input
+                                    id="number-of-readmes"
+                                    type="number"
+                                    placeholder="e.g. 1"
+                                    min="0"
+                                    value={evidenceForm.numberOfReadmes || ''}
+                                    onChange={(e) => setEvidenceForm(prev => ({ 
+                                      ...prev, 
+                                      numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+                                    }))}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex gap-3 pt-4">
+                                <Button onClick={handleSubmitEvidence} className="flex-1">
+                                  Submit Evidence
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => {
+                                    setEvidenceDialog({ open: false });
+                                    setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
                             </div>
-                          )}
-
-                          {evidenceForm.kind === 'DATA_EXPORT' && (
-                            <div>
-                              <Label htmlFor="evidence-file">File</Label>
-                              <Input
-                                id="evidence-file"
-                                type="file"
-                                accept=".png,.jpg,.jpeg,.pdf,.md"
-                                onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
-                              />
-                            </div>
-                          )}
-
-                          <div>
-                            <Label htmlFor="evidence-description">Description (Optional)</Label>
-                            <Textarea
-                              id="evidence-description"
-                              placeholder="Additional notes about your completion..."
-                              value={evidenceForm.description || ''}
-                              onChange={(e) => setEvidenceForm(prev => ({ ...prev, description: e.target.value }))}
+                          </DialogContent>
+                        </Dialog>
+                       )}
+                        
+                        {/* Show extension request if needed */}
+                        {taskStatus.canRequestExtension && (
+                          <div className="mt-3">
+                            <GitHubRequestReenableDialog
+                              taskId={task.id}
+                              taskTitle={task.github_tasks?.title || 'GitHub Task'}
                             />
                           </div>
+                        )}
+                      </>
+                    )}
+                     
+                    {task.status === 'SUBMITTED' && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <AlertCircle className="h-4 w-4" />
+                        Awaiting verification...
+                      </div>
+                    )}
+                    
+                    {(task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED') && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        {task.status === 'VERIFIED' ? 'Completed!' : 'Partially completed'}
+                      </div>
+                    )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="number-of-commits">Number of Weekly Commits</Label>
-            <Input
-              id="number-of-commits"
-              type="number"
-              placeholder="e.g. 5"
-              min="0"
-              value={evidenceForm.numberOfCommits || ''}
-              onChange={(e) => setEvidenceForm(prev => ({ 
-                ...prev, 
-                numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
-              }))}
-            />
-          </div>
-          <div>
-            <Label htmlFor="number-of-readmes">Number of README or Docs Updates</Label>
-            <Input
-              id="number-of-readmes"
-              type="number"
-              placeholder="e.g. 1"
-              min="0"
-              value={evidenceForm.numberOfReadmes || ''}
-              onChange={(e) => setEvidenceForm(prev => ({ 
-                ...prev, 
-                numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
-              }))}
-            />
-          </div>
-        </div>
+                    {task.status === 'REJECTED' && (
+                      <div className="flex items-center gap-2 text-sm text-red-600">
+                        <AlertCircle className="h-4 w-4" />
+                        Rejected - Please resubmit
+                      </div>
+                    )}
 
-                          <div className="flex gap-3 pt-4">
-                            <Button onClick={handleSubmitEvidence} className="flex-1">
-                              Submit Evidence
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setEvidenceDialog({ open: false });
-                                setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                     {/* Admin Review Section for GitHub Weekly Tasks */}
+                     {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
+                       <div className="mt-3 space-y-2 p-3 rounded-lg border">
+                         <Label className="text-sm font-medium flex items-center gap-2">
+                           <Shield className="w-4 h-4" />
+                           Admin Review Notes:
+                         </Label>
+                         <div className={`p-3 rounded-md text-sm border-l-4 ${
+                           task.status === 'VERIFIED' 
+                             ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-900/20 dark:text-green-200' 
+                             : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+                         }`}>
+                           <div className="font-medium mb-1">
+                             Status: {task.status === 'VERIFIED' ? 'Approved ✓' : 'Rejected ✗'}
+                             {task.evidence_verified_at && (
+                               <span className="text-xs font-normal ml-2 opacity-75">
+                                 on {new Date(task.evidence_verified_at).toLocaleDateString()}
+                               </span>
+                             )}
+                           </div>
+                           <p className="whitespace-pre-line leading-relaxed">
+                             {task.verification_notes}
+                           </p>
+                         </div>
+                       </div>
+                     )}
 
-                  {/* Extension Request Button */}
-                  {task.due_at && isDueDatePassed(task.due_at) && 
-                   isDueDateInCurrentWeek(task.due_at) && 
-                   !canUserInteractWithTask(task.due_at, task.admin_extended) && 
-                   task.status !== 'VERIFIED' && (
-                    <div className="mt-3">
-                      <GitHubRequestReenableDialog
-                        taskId={task.id}
-                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                      />
-                    </div>
-                  )}
-                   
-                  {task.status === 'SUBMITTED' && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <AlertCircle className="h-4 w-4" />
-                      Awaiting verification...
-                    </div>
-                  )}
-                  
-                  {(task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED') && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      {task.status === 'VERIFIED' ? 'Completed!' : 'Partially completed'}
-                    </div>
-                  )}
-
-                  {task.status === 'REJECTED' && (
-                    <div className="flex items-center gap-2 text-sm text-red-600">
-                      <AlertCircle className="h-4 w-4" />
-                      Rejected - Please resubmit
-                    </div>
-                  )}
-
-                   {/* Admin Review Section for GitHub Weekly Tasks */}
-                   {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
-                     <div className="mt-3 space-y-2 p-3 rounded-lg border">
-                       <Label className="text-sm font-medium flex items-center gap-2">
-                         <Shield className="w-4 h-4" />
-                         Admin Review Notes:
-                       </Label>
-                       <div className={`p-3 rounded-md text-sm border-l-4 ${
-                         task.status === 'VERIFIED' 
-                           ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-900/20 dark:text-green-200' 
-                           : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-900/20 dark:text-red-200'
-                       }`}>
-                         <div className="font-medium mb-1">
-                           Status: {task.status === 'VERIFIED' ? 'Approved ✓' : 'Rejected ✗'}
-                           {task.evidence_verified_at && (
-                             <span className="text-xs font-normal ml-2 opacity-75">
-                               on {new Date(task.evidence_verified_at).toLocaleDateString()}
-                             </span>
+                     {/* Evidence Information Display */}
+                     {task.latestEvidence && task.latestEvidence.parsed_json && (
+                       <div className="mt-3 space-y-2 p-3 rounded-lg bg-muted/50">
+                         <Label className="text-sm font-medium">Submitted Evidence:</Label>
+                         <div className="text-sm space-y-1">
+                           {(task.latestEvidence.parsed_json as any)?.numberOfCommits && (
+                             <div>
+                               <span className="font-medium">Weekly Commits:</span> {(task.latestEvidence.parsed_json as any).numberOfCommits}
+                             </div>
+                           )}
+                           {(task.latestEvidence.parsed_json as any)?.numberOfReadmes && (
+                             <div>
+                               <span className="font-medium">README/Docs Updates:</span> {(task.latestEvidence.parsed_json as any).numberOfReadmes}
+                             </div>
+                           )}
+                           {(task.latestEvidence.parsed_json as any)?.description && (
+                             <div>
+                               <span className="font-medium">Description:</span> {(task.latestEvidence.parsed_json as any).description}
+                             </div>
+                           )}
+                           {task.latestEvidence.url && (
+                             <div>
+                               <span className="font-medium">URL:</span> 
+                               <a href={task.latestEvidence.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                                 {task.latestEvidence.url}
+                               </a>
+                             </div>
                            )}
                          </div>
-                         <p className="whitespace-pre-line leading-relaxed">
-                           {task.verification_notes}
-                         </p>
                        </div>
-                     </div>
-                   )}
-
-                   {/* Evidence Information Display */}
-                   {task.latestEvidence && task.latestEvidence.parsed_json && (
-                     <div className="mt-3 space-y-2 p-3 rounded-lg bg-muted/50">
-                       <Label className="text-sm font-medium">Submitted Evidence:</Label>
-                       <div className="text-sm space-y-1">
-                         {(task.latestEvidence.parsed_json as any)?.numberOfCommits && (
-                           <div>
-                             <span className="font-medium">Weekly Commits:</span> {(task.latestEvidence.parsed_json as any).numberOfCommits}
-                           </div>
-                         )}
-                         {(task.latestEvidence.parsed_json as any)?.numberOfReadmes && (
-                           <div>
-                             <span className="font-medium">README/Docs Updates:</span> {(task.latestEvidence.parsed_json as any).numberOfReadmes}
-                           </div>
-                         )}
-                         {(task.latestEvidence.parsed_json as any)?.description && (
-                           <div>
-                             <span className="font-medium">Description:</span> {(task.latestEvidence.parsed_json as any).description}
-                           </div>
-                         )}
-                         {task.latestEvidence.url && (
-                           <div>
-                             <span className="font-medium">URL:</span> 
-                             <a href={task.latestEvidence.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                               {task.latestEvidence.url}
-                             </a>
-                           </div>
-                         )}
-                       </div>
-                     </div>
-                   )}
-                </CardContent>
-              </Card>
-            ))}
+                     )}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {weeklyTasks.length === 0 && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-8">
                   <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Weekly Tasks Yet</h3>
+                  <h3 className="font-semibold mb-2">No Daily Tasks Yet</h3>
                   <p className="text-sm text-muted-foreground text-center mb-4">
                     Generate this week's GitHub tasks to start earning points
                   </p>
                   <Button onClick={() => instantiateWeek()}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Generate Weekly Tasks
+                    Generate Daily Tasks
                   </Button>
                 </CardContent>
               </Card>
@@ -386,6 +403,7 @@ export const GitHubWeeklyAssignments = () => {
         </TabsContent>
 
         <TabsContent value="showcase" className="space-y-4">
+          
           <div>
             <h3 className="text-lg font-semibold">Repository Showcase Setup</h3>
             <p className="text-sm text-muted-foreground">

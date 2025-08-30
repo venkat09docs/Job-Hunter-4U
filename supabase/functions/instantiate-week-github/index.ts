@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       .from('github_user_tasks')
       .select('id')
       .eq('user_id', userId)
-      .eq('period', currentPeriod)
+      .like('period', `${currentPeriod}%`) // Use LIKE to match period with day suffix
       .limit(1);
 
     if (existingError) {
@@ -131,30 +131,68 @@ Deno.serve(async (req) => {
 
     console.log('Found GitHub assignments:', weeklyTasks.length);
 
-    // Calculate due date (end of current week - Sunday 23:59:59 IST)
+    // Get current day of week (0=Sunday, 1=Monday, ..., 6=Saturday)
+    const currentDay = now.getDay();
+    const currentDayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][currentDay];
+    
+    console.log('Current day:', currentDayName, '(', currentDay, ')');
+
+    // Only create tasks for the current day and onwards within the same week
+    // Get start of current week (Monday)
     const startOfWeek = new Date(now);
     const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
-    
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-    
-    // Convert to IST (UTC+5:30)
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const dueDate = new Date(endOfWeek.getTime() + istOffset);
+    startOfWeek.setHours(0, 0, 0, 0);
 
-    // Create user task instances for all weekly tasks
-    const userTasks = weeklyTasks.map(task => ({
-      user_id: userId,
-      task_id: task.id,
-      period: currentPeriod,
-      repo_id: null, // Weekly tasks are not repo-specific
-      due_at: dueDate.toISOString(),
-      status: 'NOT_STARTED' as const,
-      score_awarded: 0,
-    }));
+    // Calculate which day of the week to start creating tasks from
+    const weekDayIndex = currentDay === 0 ? 6 : currentDay - 1; // Convert to 0=Monday, 6=Sunday
+    
+    // Create tasks for current day through Sunday
+    const userTasks = [];
+    for (let dayIndex = weekDayIndex; dayIndex < 7; dayIndex++) {
+      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const assignmentDay = dayNames[dayIndex];
+      
+      // Calculate due date based on day:
+      // Monday-Friday: 48 hours later
+      // Saturday-Sunday: 24 hours later (by Sunday 11:59 PM)
+      let dueDate = new Date(startOfWeek);
+      dueDate.setDate(startOfWeek.getDate() + dayIndex); // Set to assignment day
+      
+      if (dayIndex <= 4) { // Monday through Friday (0-4)
+        // 48 hours later, but not beyond Sunday
+        dueDate.setDate(dueDate.getDate() + 2);
+        if (dueDate.getDay() === 1) { // If it would be Monday, set to Sunday instead
+          dueDate.setDate(dueDate.getDate() - 1);
+        }
+      } else { // Saturday and Sunday (5-6)
+        // 24 hours later (by Sunday)
+        dueDate.setDate(startOfWeek.getDate() + 6); // Set to Sunday
+      }
+      
+      dueDate.setHours(23, 59, 59, 999); // End of day
+      
+      // Convert to IST (UTC+5:30)
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const dueDateIST = new Date(dueDate.getTime() + istOffset);
+
+      // For each day, assign one task (rotate through available tasks)
+      const taskIndex = dayIndex % weeklyTasks.length;
+      const selectedTask = weeklyTasks[taskIndex];
+      
+      userTasks.push({
+        user_id: userId,
+        task_id: selectedTask.id,
+        period: `${currentPeriod}-${assignmentDay}`,
+        repo_id: null,
+        due_at: dueDateIST.toISOString(),
+        status: 'NOT_STARTED' as const,
+        score_awarded: 0,
+      });
+      
+      console.log(`Assigning ${selectedTask.title} for ${assignmentDay}, due: ${dueDateIST.toISOString()}`);
+    }
 
     const { data: createdTasks, error: createError } = await supabaseClient
       .from('github_user_tasks')
@@ -173,10 +211,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: 'Weekly GitHub tasks created successfully',
+        message: 'Daily GitHub tasks created successfully',
         period: currentPeriod,
         tasksCreated: createdTasks?.length || 0,
-        dueDate: dueDate.toISOString(),
+        tasksDetails: userTasks.map(task => ({
+          day: task.period?.split('-').pop(),
+          dueDate: task.due_at
+        }))
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
