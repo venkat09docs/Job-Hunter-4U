@@ -514,7 +514,7 @@ export function AppSidebar() {
                             
                             // Hide GitHub Weekly for free, one-week, and one-month plan users
                             if (item.title === "GitHub Weekly") {
-                              const restrictedPlans = ["Free Plan", "1 Week Plan", "1 Month Plan"];
+                              const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
                               const currentPlan = subscriberPlan || "Free Plan";
                               if (restrictedPlans.includes(currentPlan)) {
                                 return null;
@@ -541,7 +541,7 @@ export function AppSidebar() {
                            
                            // Hide GitHub Weekly for free, one-week, and one-month plan users
                            if (item.title === "GitHub Weekly") {
-                             const restrictedPlans = ["Free Plan", "1 Week Plan", "1 Month Plan"];
+                             const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
                              const currentPlan = subscriberPlan || "Free Plan";
                              if (restrictedPlans.includes(currentPlan)) {
                                return null;
