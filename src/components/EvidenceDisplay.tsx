@@ -58,12 +58,36 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
     return parsedData?.file_name || null;
   };
 
+  const getGitHubDetails = (evidenceItem: Evidence) => {
+    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
+    
+    // Check for GitHub-specific fields
+    const gitHubData = {
+      commits_count: parsedData?.commits_count || parsedData?.commit_count || null,
+      readmes_count: parsedData?.readmes_count || parsedData?.readme_count || null,
+      repo_url: parsedData?.repo_url || parsedData?.repository_url || null,
+      repository_name: parsedData?.repository_name || parsedData?.repo_name || null,
+      branch: parsedData?.branch || null,
+      files_changed: parsedData?.files_changed || null,
+      additions: parsedData?.additions || null,
+      deletions: parsedData?.deletions || null
+    };
+    
+    // Return only if at least one GitHub field exists
+    const hasGitHubData = Object.values(gitHubData).some(value => value !== null);
+    return hasGitHubData ? gitHubData : null;
+  };
+
 
   const handleFileClick = async (filePath: string) => {
     try {
+      // Determine the correct storage bucket based on the file path
+      const bucket = filePath.includes('github-evidence') ? 'github-evidence' : 'career-evidence';
+      const cleanPath = filePath.replace(/.*\/storage\/v1\/object\/public\/(github-evidence|career-evidence)\//, '');
+      
       const { data, error } = await supabase.storage
-        .from('career-evidence')
-        .createSignedUrl(filePath, 3600);
+        .from(bucket)
+        .createSignedUrl(cleanPath, 3600);
       
       if (error) {
         console.error('Error creating signed URL:', error);
@@ -90,11 +114,12 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
           const isLatest = index === 0;
           const submissionDate = new Date(evidenceItem.created_at);
           
-          // Enhanced parsing logic to handle legacy data
+          // Enhanced parsing logic to handle legacy data and GitHub evidence
           let parsedEvidenceData = null;
           let url = null;
           let description = null;
           let fileName = null;
+          let gitHubDetails = null;
           
           // First check the direct url field
           if (evidenceItem.url) {
@@ -108,12 +133,14 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               url = url || parsedEvidenceData.url;
               description = parsedEvidenceData.description || parsedEvidenceData.text;
               fileName = parsedEvidenceData.file_name;
+              gitHubDetails = getGitHubDetails(evidenceItem);
             } else if (typeof evidenceItem.evidence_data === 'string') {
               try {
                 parsedEvidenceData = JSON.parse(evidenceItem.evidence_data);
                 url = url || parsedEvidenceData.url;
                 description = parsedEvidenceData.description || parsedEvidenceData.text;
                 fileName = parsedEvidenceData.file_name;
+                gitHubDetails = getGitHubDetails(evidenceItem);
               } catch (e) {
                 // If it's not valid JSON, check if it's a URL or description
                 const dataStr = evidenceItem.evidence_data.trim();
@@ -182,12 +209,16 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                   {evidenceItem.file_urls && evidenceItem.file_urls.length > 0 ? (
                     <div className="space-y-1">
                       {evidenceItem.file_urls.map((fileUrl, fileIndex) => {
-                        const filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/career-evidence\//, '');
+                        // Handle both career-evidence and github-evidence paths
+                        let filePath = fileUrl;
+                        if (fileUrl.includes('/storage/v1/object/public/')) {
+                          filePath = fileUrl.replace(/.*\/storage\/v1\/object\/public\/(github-evidence|career-evidence)\//, '');
+                        }
                         
                         return (
                           <button
                             key={fileIndex}
-                            onClick={() => handleFileClick(filePath)}
+                            onClick={() => handleFileClick(fileUrl)}
                             className="text-blue-600 hover:underline text-sm block text-left"
                           >
                             📎 {fileName || `File ${fileIndex + 1}`}
@@ -200,6 +231,63 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                   )}
                 </div>
               </div>
+              
+              {/* GitHub-specific details */}
+              {gitHubDetails && (
+                <div className="mb-3">
+                  <Label className="text-xs text-muted-foreground">GitHub Details:</Label>
+                  <div className="mt-1 p-2 border rounded bg-blue-50 space-y-1">
+                    {gitHubDetails.repository_name && (
+                      <div className="text-sm">
+                        <span className="font-medium">Repository:</span> {gitHubDetails.repository_name}
+                      </div>
+                    )}
+                    {gitHubDetails.repo_url && (
+                      <div className="text-sm">
+                        <span className="font-medium">Repository URL:</span>{' '}
+                        <a 
+                          href={gitHubDetails.repo_url.startsWith('http') ? gitHubDetails.repo_url : `https://github.com/${gitHubDetails.repo_url}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline break-all"
+                        >
+                          {gitHubDetails.repo_url}
+                        </a>
+                      </div>
+                    )}
+                    {gitHubDetails.commits_count !== null && (
+                      <div className="text-sm">
+                        <span className="font-medium">Number of Commits:</span> {gitHubDetails.commits_count}
+                      </div>
+                    )}
+                    {gitHubDetails.readmes_count !== null && (
+                      <div className="text-sm">
+                        <span className="font-medium">Number of READMEs:</span> {gitHubDetails.readmes_count}
+                      </div>
+                    )}
+                    {gitHubDetails.branch && (
+                      <div className="text-sm">
+                        <span className="font-medium">Branch:</span> {gitHubDetails.branch}
+                      </div>
+                    )}
+                    {gitHubDetails.files_changed !== null && (
+                      <div className="text-sm">
+                        <span className="font-medium">Files Changed:</span> {gitHubDetails.files_changed}
+                      </div>
+                    )}
+                    {gitHubDetails.additions !== null && (
+                      <div className="text-sm text-green-600">
+                        <span className="font-medium">Additions:</span> +{gitHubDetails.additions}
+                      </div>
+                    )}
+                    {gitHubDetails.deletions !== null && (
+                      <div className="text-sm text-red-600">
+                        <span className="font-medium">Deletions:</span> -{gitHubDetails.deletions}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* Always show Description section */}
               <div className="mb-3">
