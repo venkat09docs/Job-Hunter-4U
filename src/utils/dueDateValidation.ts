@@ -34,6 +34,14 @@ export const isDueDateInAssignmentWeek = (dueDate: string | Date): boolean => {
   const assignmentWeekStart = startOfWeek(due, { weekStartsOn: 1 }); // Monday = 1
   const assignmentWeekEnd = endOfWeek(due, { weekStartsOn: 1 });
   
+  console.log(`🔍 Assignment Week Check:`, {
+    dueDate: due.toISOString(),
+    currentTime: now.toISOString(),
+    assignmentWeekStart: assignmentWeekStart.toISOString(),
+    assignmentWeekEnd: assignmentWeekEnd.toISOString(),
+    isWithinWeek: now >= assignmentWeekStart && now <= assignmentWeekEnd
+  });
+  
   return now >= assignmentWeekStart && now <= assignmentWeekEnd;
 };
 

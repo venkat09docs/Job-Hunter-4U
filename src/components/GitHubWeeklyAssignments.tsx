@@ -15,7 +15,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
 import { 
   getAssignmentDay,
-  getGitHubTaskStatus
+  getGitHubTaskStatus,
+  isDueDateInAssignmentWeek
 } from '@/utils/dueDateValidation';
 
 interface EvidenceSubmissionData {
@@ -129,7 +130,9 @@ export const GitHubWeeklyAssignments = () => {
                 assignmentDay,
                 adminExtended: task.admin_extended,
                 taskStatus,
-                period: task.period
+                period: task.period,
+                currentTime: new Date().toISOString(),
+                isWithinAssignmentWeek: task.due_at ? isDueDateInAssignmentWeek(task.due_at) : false
               });
               
               return (
