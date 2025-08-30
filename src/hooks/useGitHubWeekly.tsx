@@ -75,7 +75,7 @@ export const useGitHubWeekly = () => {
   const { data: optimisticData, applyUpdate } = useOptimisticUpdates([]);
 
   // Fetch weekly tasks for current period
-  const { data: weeklyTasks = [], isLoading: weeklyLoading } = useQuery({
+  const { data: weeklyTasksData = [], isLoading: weeklyLoading } = useQuery({
     queryKey: ['github-weekly-tasks', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -96,6 +96,41 @@ export const useGitHubWeekly = () => {
     },
     enabled: !!user?.id,
     staleTime: 30 * 1000, // 30 seconds
+  });
+
+  // Fetch evidence for weekly tasks
+  const { data: evidenceData = [] } = useQuery({
+    queryKey: ['github-weekly-evidence', user?.id, weeklyTasksData.length],
+    queryFn: async () => {
+      if (!user?.id || !weeklyTasksData.length) return [];
+      
+      const taskIds = weeklyTasksData.map(task => task.id);
+      const { data, error } = await supabase
+        .from('github_evidence')
+        .select('*')
+        .in('user_task_id', taskIds)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && weeklyTasksData.length > 0,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  // Combine tasks with their evidence and verification notes
+  const weeklyTasks = weeklyTasksData.map(task => {
+    const taskEvidence = evidenceData.filter(evidence => evidence.user_task_id === task.id);
+    const latestEvidence = taskEvidence[0]; // Most recent evidence
+    
+    return {
+      ...task,
+      evidence: taskEvidence,
+      latestEvidence,
+      verification_notes: latestEvidence?.verification_notes,
+      evidence_verified_at: latestEvidence?.verified_at,
+      evidence_verification_status: latestEvidence?.verification_status
+    };
   });
 
   // Fetch repositories
@@ -331,6 +366,7 @@ export const useGitHubWeekly = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
       queryClient.invalidateQueries({ queryKey: ['github-repo-tasks'] });
     },
   });
@@ -369,6 +405,7 @@ export const useGitHubWeekly = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
     },
   });
 
