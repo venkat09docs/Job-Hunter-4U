@@ -520,6 +520,12 @@ export const GitHubWeeklyHistory = () => {
             </p>
           </div>
 
+          {/* Debug information */}
+          <div className="text-xs text-muted-foreground">
+            Debug: Current scores: {scores ? 'Found' : 'None'} | 
+            All scores: {allScores?.length || 0} records
+          </div>
+
           <div className="space-y-6">
             {/* Current Week Score */}
             {scores && (
@@ -563,7 +569,7 @@ export const GitHubWeeklyHistory = () => {
                       Weekly Performance History
                     </CardTitle>
                     <CardDescription>
-                      Historical weekly scores and performance trends
+                      Historical weekly scores and performance trends ({allScores.length} weeks)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -675,15 +681,36 @@ export const GitHubWeeklyHistory = () => {
                 </div>
               </div>
             ) : (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-8">
-                  <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Historical Scores Yet</h3>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Complete GitHub tasks weekly to build your performance history
-                  </p>
-                </CardContent>
-              </Card>
+              // Show fallback when no weekly scores exist at all
+              <div className="space-y-4">
+                {!scores && (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <Trophy className="h-16 w-16 text-muted-foreground mb-6" />
+                      <h3 className="text-xl font-semibold mb-3">No Weekly Scores Yet</h3>
+                      <div className="text-center space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                          Weekly point performance will appear here once you complete GitHub assignments.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Complete weekly GitHub tasks and verify them to start building your score history.
+                        </p>
+                      </div>
+                      <div className="mt-6 space-y-2">
+                        <div className="text-xs text-muted-foreground">
+                          <strong>How to earn points:</strong>
+                        </div>
+                        <div className="text-xs text-muted-foreground max-w-md">
+                          • Complete weekly GitHub assignments<br/>
+                          • Submit evidence for your tasks<br/>
+                          • Get your submissions verified<br/>
+                          • Points are automatically calculated and stored
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             )}
           </div>
         </TabsContent>
