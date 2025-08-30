@@ -432,7 +432,7 @@ const VerifyAssignments = () => {
 
       if (profilesError) throw profilesError;
 
-      const combinedGitHubData = gitHubData.map(task => {
+      const gitHubAssignmentsWithProfiles = gitHubData.map(task => {
         const profile = profilesData?.find(p => p.user_id === task.user_id);
         return {
           ...task,
@@ -449,11 +449,53 @@ const VerifyAssignments = () => {
             username: `missing_${task.user_id.slice(0, 8)}`, 
             profile_image_url: '' 
           },
-          evidence: []
+          evidence: [],
+          _originalGitHubTask: task
         };
       });
 
-      allVerifiedAssignments.push(...combinedGitHubData);
+      // Fetch GitHub evidence for these verified assignments
+      const gitHubAssignmentsWithEvidence = await Promise.all(
+        gitHubAssignmentsWithProfiles.map(async (assignment) => {
+          try {
+            const { data: evidenceData, error: evidenceError } = await supabase
+              .from('github_evidence')
+              .select('*')
+              .eq('user_task_id', assignment._originalGitHubTask.id)
+              .order('created_at', { ascending: false });
+
+            if (evidenceError) {
+              console.error('Error fetching GitHub evidence for verified assignment:', assignment.id, evidenceError);
+              return { ...assignment, evidence: [] };
+            }
+
+            // Transform GitHub evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => ({
+              id: evidence.id,
+              assignment_id: assignment.id,
+              evidence_type: evidence.kind?.toLowerCase() || 'url',
+              evidence_data: evidence.parsed_json || {},
+              url: evidence.url,
+              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
+              verification_status: 'approved',
+              created_at: evidence.created_at,
+              submitted_at: evidence.created_at,
+              verification_notes: null,
+              verified_at: assignment.verified_at,
+              verified_by: assignment.verified_by,
+              kind: evidence.kind,
+              parsed_json: evidence.parsed_json
+            }));
+
+            return { ...assignment, evidence: transformedEvidence };
+          } catch (error) {
+            console.error('Error processing GitHub evidence for verified assignment:', assignment.id, error);
+            return { ...assignment, evidence: [] };
+          }
+        })
+      );
+
+      allVerifiedAssignments.push(...gitHubAssignmentsWithEvidence);
     }
 
     // Sort all verified assignments by verified_at or updated_at
