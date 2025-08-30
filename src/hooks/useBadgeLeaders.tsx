@@ -272,9 +272,9 @@ export const useBadgeLeaders = () => {
       }));
   };
 
-  // Process users with LinkedIn network activity
+  // Process LinkedIn network growth leaders - Level Up integration
   const processLinkedInLeaders = (linkedinData: any[]): BadgeLeader[] => {
-    const userNetworkMap = new Map<string, { user_id: string; profile: any; totalValue: number }>();
+    const userNetworkMap = new Map<string, { user_id: string; profile: any; totalConnections: number }>();
     
     linkedinData.forEach((item: any) => {
       const key = item.user_id;
@@ -282,23 +282,24 @@ export const useBadgeLeaders = () => {
         userNetworkMap.set(key, {
           user_id: item.user_id,
           profile: item.profiles,
-          totalValue: 0
+          totalConnections: 0
         });
       }
-      userNetworkMap.get(key)!.totalValue += item.value || 0;
+      // Sum all network activities as connections (connections, likes, comments, shares, posts)
+      userNetworkMap.get(key)!.totalConnections += item.value || 0;
     });
 
     return Array.from(userNetworkMap.values())
-      .filter(item => item.totalValue > 0)
-      .sort((a, b) => b.totalValue - a.totalValue)
+      .filter(item => item.totalConnections >= 10) // Only show users who have at least 10 connections (Silver badge)
+      .sort((a, b) => b.totalConnections - a.totalConnections)
       .slice(0, 3)
       .map(item => ({
         user_id: item.user_id,
         username: item.profile?.username || '',
         full_name: item.profile?.full_name || '',
         profile_image_url: item.profile?.profile_image_url || '',
-        total_points: item.totalValue * 5, // 5 points per network activity
-        badge_type: getBadgeType(item.totalValue * 5)
+        total_points: item.totalConnections * 5, // 5 points per network activity
+        badge_type: getLinkedInBadgeType(item.totalConnections) // Use Level Up LinkedIn badge logic
       }));
   };
 
@@ -357,6 +358,14 @@ export const useBadgeLeaders = () => {
     if (jobCount >= 14) return 'Gold';    // Consistency Champ - 14 jobs
     if (jobCount >= 1) return 'Silver';   // First Step - 1 job
     return 'Bronze'; // Should not reach here as we filter for count > 0
+  };
+
+  // Level Up LinkedIn network growth badge logic - matches BadgeProgressionMap
+  const getLinkedInBadgeType = (connectionCount: number): 'Bronze' | 'Silver' | 'Gold' | 'Diamond' => {
+    if (connectionCount >= 50) return 'Diamond'; // Network Master - 50+ connections
+    if (connectionCount >= 25) return 'Gold';    // Growth Champion - 25+ connections
+    if (connectionCount >= 10) return 'Silver';  // First Connections - 10+ connections
+    return 'Bronze'; // Should not reach here as we filter for connectionCount >= 10
   };
 
   useEffect(() => {
