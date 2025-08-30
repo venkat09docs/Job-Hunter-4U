@@ -500,7 +500,34 @@ export function AppSidebar() {
                       )}
                     </button>
                      {githubOpen && !isCollapsed && (
-                       <div className="space-y-1 mt-1">
+                        <div className="space-y-1 mt-1">
+                          {githubItems.map((item) => {
+                            // Check for high tier subscription plans
+                            const subscriberPlan = profile?.subscription_plan;
+                            const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                            
+                            // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
+                            if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
+                                && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
+                              return null;
+                            }
+                            
+                            // Hide GitHub Weekly for free, one-week, and one-month plan users
+                            if (item.title === "GitHub Weekly") {
+                              const restrictedPlans = ["Free Plan", "1 Week Plan", "1 Month Plan"];
+                              const currentPlan = subscriberPlan || "Free Plan";
+                              if (restrictedPlans.includes(currentPlan)) {
+                                return null;
+                              }
+                            }
+                            
+                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                            return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
+                          })}
+                        </div>
+                     )}
+                      {isCollapsed && (
+                       <div className="space-y-1">
                          {githubItems.map((item) => {
                            // Check for high tier subscription plans
                            const subscriberPlan = profile?.subscription_plan;
@@ -512,22 +539,13 @@ export function AppSidebar() {
                              return null;
                            }
                            
-                           const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                           return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
-                         })}
-                       </div>
-                     )}
-                     {isCollapsed && (
-                       <div className="space-y-1">
-                         {githubItems.map((item) => {
-                           // Check for high tier subscription plans
-                           const subscriberPlan = profile?.subscription_plan;
-                           const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                           
-                           // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
-                           if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
-                               && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
-                             return null;
+                           // Hide GitHub Weekly for free, one-week, and one-month plan users
+                           if (item.title === "GitHub Weekly") {
+                             const restrictedPlans = ["Free Plan", "1 Week Plan", "1 Month Plan"];
+                             const currentPlan = subscriberPlan || "Free Plan";
+                             if (restrictedPlans.includes(currentPlan)) {
+                               return null;
+                             }
                            }
                            
                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
