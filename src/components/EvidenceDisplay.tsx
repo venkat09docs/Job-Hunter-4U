@@ -60,21 +60,26 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
 
   const getGitHubDetails = (evidenceItem: Evidence) => {
     const parsedData = parseEvidenceData(evidenceItem.evidence_data);
+    console.log('🔍 EvidenceDisplay - Evidence item:', evidenceItem);
+    console.log('🔍 EvidenceDisplay - Parsed data:', parsedData);
     
-    // Check for GitHub-specific fields
+    // Check for GitHub-specific fields - enhanced field mapping
     const gitHubData = {
-      commits_count: parsedData?.commits_count || parsedData?.commit_count || null,
-      readmes_count: parsedData?.readmes_count || parsedData?.readme_count || null,
-      repo_url: parsedData?.repo_url || parsedData?.repository_url || null,
-      repository_name: parsedData?.repository_name || parsedData?.repo_name || null,
-      branch: parsedData?.branch || null,
-      files_changed: parsedData?.files_changed || null,
+      commits_count: parsedData?.commits_count || parsedData?.commit_count || parsedData?.numberOfCommits || null,
+      readmes_count: parsedData?.readmes_count || parsedData?.readme_count || parsedData?.numberOfReadmes || null,
+      repo_url: parsedData?.repo_url || parsedData?.repository_url || parsedData?.repositoryUrl || null,
+      repository_name: parsedData?.repository_name || parsedData?.repo_name || parsedData?.repositoryName || null,
+      branch: parsedData?.branch || parsedData?.defaultBranch || null,
+      files_changed: parsedData?.files_changed || parsedData?.filesChanged || null,
       additions: parsedData?.additions || null,
       deletions: parsedData?.deletions || null
     };
     
+    console.log('🔍 EvidenceDisplay - Extracted GitHub data:', gitHubData);
+    
     // Return only if at least one GitHub field exists
     const hasGitHubData = Object.values(gitHubData).some(value => value !== null);
+    console.log('🔍 EvidenceDisplay - Has GitHub data:', hasGitHubData);
     return hasGitHubData ? gitHubData : null;
   };
 
