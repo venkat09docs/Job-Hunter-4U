@@ -48,6 +48,13 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
+import { GitHubWeeklyHistory } from '@/components/GitHubWeeklyHistory';
+import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
+import { 
+  isDueDatePassed,
+  isDueDateInAssignmentWeek,
+  getGitHubTaskStatus
+} from '@/utils/dueDateValidation';
 
 const GitHubWeekly = () => {
   const { user } = useAuth();
@@ -446,6 +453,12 @@ const GitHubWeekly = () => {
     const isExpired = isTaskExpired(displayOrder);
     const canInteract = !isExpired || task.status === 'VERIFIED';
     
+    // Get comprehensive task status for extension logic
+    const assignmentDay = task.period?.split('-')[2] || 'Unknown';
+    const taskStatus = task.due_at ? 
+      getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended || false) : 
+      { canSubmit: false, canRequestExtension: false, status: 'week_expired' as const, message: 'No due date set' };
+    
     // Calculate days until due
     const now = new Date();
     const timeDiff = dueDate.getTime() - now.getTime();
@@ -623,15 +636,32 @@ const GitHubWeekly = () => {
             </div>
           )}
           
+          {/* Extension Request Notice */}
+          {taskStatus.canRequestExtension && task.status !== 'VERIFIED' && (
+            <div className="mb-4 p-4 bg-orange-50 text-orange-800 border border-orange-200 rounded-lg">
+              <div className="flex items-center gap-2 font-semibold mb-2">
+                <Clock className="w-5 h-5 text-orange-600" />
+                Request Extension Available
+              </div>
+              <p className="text-sm mb-3">
+                {taskStatus.message}
+              </p>
+              <GitHubRequestReenableDialog
+                taskId={task.id}
+                taskTitle={task.github_tasks?.title || 'GitHub Task'}
+              />
+            </div>
+          )}
+          
           {/* Expiration Notice */}
-          {isExpired && task.status !== 'VERIFIED' && (
+          {taskStatus.status === 'week_expired' && task.status !== 'VERIFIED' && (
             <div className="mb-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 font-semibold mb-1">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
-                Assignment Expired
+                Assignment Week Expired
               </div>
               <p className="text-sm">
-                This task expired after the 48-hour window and can no longer be submitted.
+                This task expired after the assignment week and can no longer be submitted or extended.
               </p>
             </div>
           )}
@@ -642,13 +672,13 @@ const GitHubWeekly = () => {
               <Button 
                 variant="default"
                 size="sm"
-                disabled={!canAccessFeature("github_weekly") || !canInteract}
+                disabled={!canAccessFeature("github_weekly") || !taskStatus.canSubmit}
                 className="flex-1"
                 onClick={() => handleStartAssignment(task.id)}
               >
                 <Circle className="h-4 w-4 mr-2" />
                 Start Assignment
-                {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
+                {(!canAccessFeature("github_weekly") || !taskStatus.canSubmit) && <Lock className="h-4 w-4 ml-2" />}
               </Button>
             ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
               <Dialog 
@@ -659,12 +689,12 @@ const GitHubWeekly = () => {
                   <Button 
                     variant={task.status === 'REJECTED' ? "destructive" : "default"}
                     size="sm"
-                    disabled={!canAccessFeature("github_weekly") || !canInteract}
+                    disabled={!canAccessFeature("github_weekly") || !taskStatus.canSubmit}
                     className="flex-1"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Assignment'}
-                    {(!canAccessFeature("github_weekly") || !canInteract) && <Lock className="h-4 w-4 ml-2" />}
+                    {(!canAccessFeature("github_weekly") || !taskStatus.canSubmit) && <Lock className="h-4 w-4 ml-2" />}
                   </Button>
                 </DialogTrigger>
                 <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
@@ -1170,53 +1200,7 @@ const GitHubWeekly = () => {
 
         {/* History Tab */}
         <TabsContent value="history" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Activity History
-              </CardTitle>
-              <CardDescription>
-                Review your GitHub activity and earned points over time
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {signals.length > 0 ? (
-                <div className="space-y-3">
-                  {signals.slice(0, 20).map((signal) => (
-                    <div key={signal.id} className="flex items-center justify-between p-3 border rounded">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <GitCommit className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{signal.subject}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(signal.happened_at).toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                      {signal.link && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={signal.link} target="_blank" rel="noopener noreferrer">
-                            <Eye className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <History className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No activity signals recorded yet</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Set up webhooks to start tracking your GitHub activity
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <GitHubWeeklyHistory />
         </TabsContent>
 
         {/* Settings Tab */}

@@ -75,12 +75,17 @@ export const canUserInteractWithTask = (
 };
 
 /**
- * Gets the assignment day from a task period (e.g., "2024-35-Monday" -> "Monday")
+ * Gets the assignment day from a task period (e.g., "2025-36-Monday" -> "Monday" or "2025-36" -> "Week 36")
  */
 export const getAssignmentDay = (period: string | null): string => {
   if (!period) return 'Unknown';
   const parts = period.split('-');
-  return parts.length >= 3 ? parts[2] : 'Unknown';
+  if (parts.length >= 3) {
+    return parts[2]; // Format: "2025-36-Monday"
+  } else if (parts.length === 2) {
+    return `Week ${parts[1]}`; // Format: "2025-36" -> "Week 36"
+  }
+  return 'Unknown';
 };
 
 /**
