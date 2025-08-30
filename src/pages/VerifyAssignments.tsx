@@ -1073,22 +1073,27 @@ const VerifyAssignments = () => {
             // Transform GitHub evidence to match career evidence structure
             const transformedEvidence = (evidenceData || []).map(evidence => {
               console.log('🔍 Transforming GitHub evidence:', evidence);
+              console.log('🔍 Raw parsed_json:', evidence.parsed_json);
               
               // Extract GitHub-specific details from parsed_json - safely handle JSON type
               const parsedData = (evidence.parsed_json as any) || {};
+              console.log('🔍 Parsed data extracted:', parsedData);
+              
               const gitHubDetails = {
-                commits_count: parsedData.commits_count || parsedData.commit_count || null,
-                readmes_count: parsedData.readmes_count || parsedData.readme_count || null,
-                repo_url: parsedData.repo_url || parsedData.repository_url || null,
-                repository_name: parsedData.repository_name || parsedData.repo_name || null,
-                branch: parsedData.branch || null,
-                files_changed: parsedData.files_changed || null,
+                commits_count: parsedData.commits_count || parsedData.commit_count || parsedData.numberOfCommits || null,
+                readmes_count: parsedData.readmes_count || parsedData.readme_count || parsedData.numberOfReadmes || null,
+                repo_url: parsedData.repo_url || parsedData.repository_url || parsedData.repositoryUrl || evidence.url || null,
+                repository_name: parsedData.repository_name || parsedData.repo_name || parsedData.repositoryName || null,
+                branch: parsedData.branch || parsedData.defaultBranch || null,
+                files_changed: parsedData.files_changed || parsedData.filesChanged || null,
                 additions: parsedData.additions || null,
                 deletions: parsedData.deletions || null,
-                description: parsedData.description || evidence.url || 'GitHub submission'
+                description: parsedData.description || parsedData.message || evidence.url || 'GitHub submission'
               };
 
-              return {
+              console.log('🔍 Extracted GitHub details:', gitHubDetails);
+
+              const transformedEvidenceItem = {
                 id: evidence.id,
                 assignment_id: assignment.id,
                 evidence_type: evidence.kind?.toLowerCase() || 'url',
@@ -1102,7 +1107,11 @@ const VerifyAssignments = () => {
                   branch: gitHubDetails.branch,
                   files_changed: gitHubDetails.files_changed,
                   additions: gitHubDetails.additions,
-                  deletions: gitHubDetails.deletions
+                  deletions: gitHubDetails.deletions,
+                  // Also add direct fields for easier access
+                  numberOfCommits: gitHubDetails.commits_count,
+                  numberOfReadmes: gitHubDetails.readmes_count,
+                  repositoryUrl: gitHubDetails.repo_url
                 },
                 url: evidence.url,
                 file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
@@ -1115,6 +1124,9 @@ const VerifyAssignments = () => {
                 kind: evidence.kind,
                 parsed_json: evidence.parsed_json
               };
+
+              console.log('🔍 Final transformed evidence item:', transformedEvidenceItem);
+              return transformedEvidenceItem;
             });
 
             console.log('🔍 Transformed GitHub evidence for assignment:', assignment.id, 'transformed:', transformedEvidence);
