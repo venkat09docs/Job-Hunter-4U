@@ -455,9 +455,28 @@ const GitHubWeekly = () => {
     
     // Get comprehensive task status for extension logic
     const assignmentDay = task.period?.split('-')[2] || 'Unknown';
-    const taskStatus = task.due_at ? 
-      getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended || false) : 
-      { canSubmit: false, canRequestExtension: false, status: 'week_expired' as const, message: 'No due date set' };
+    
+    // Ensure taskStatus is always defined with a fallback
+    let taskStatus: {
+      canSubmit: boolean;
+      canRequestExtension: boolean;
+      status: 'active' | 'expired_can_extend' | 'week_expired';
+      message: string;
+    } = {
+      canSubmit: false,
+      canRequestExtension: false,
+      status: 'week_expired',
+      message: 'No due date set'
+    };
+    
+    if (task.due_at) {
+      try {
+        taskStatus = getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended || false);
+      } catch (error) {
+        console.error('Error calculating task status:', error);
+        // Keep the default fallback values
+      }
+    }
     
     // Calculate days until due
     const now = new Date();
