@@ -688,36 +688,80 @@ const GitHubWeekly = () => {
           {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-4 border-t border-border/50">
             {task.status === 'NOT_STARTED' ? (
-              <Button 
-                variant="default"
-                size="sm"
-                disabled={!canAccessFeature("github_weekly") || !taskStatus.canSubmit}
-                className="flex-1"
-                onClick={() => handleStartAssignment(task.id)}
-              >
-                <Circle className="h-4 w-4 mr-2" />
-                Start Assignment
-                {(!canAccessFeature("github_weekly") || !taskStatus.canSubmit) && <Lock className="h-4 w-4 ml-2" />}
-              </Button>
-            ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
-              <Dialog 
-                open={evidenceDialog.open && evidenceDialog.taskId === task.id}
-                onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
-              >
-                <DialogTrigger asChild>
+              <>
+                {taskStatus.canSubmit ? (
                   <Button 
-                    variant={task.status === 'REJECTED' ? "destructive" : "default"}
+                    variant="default"
                     size="sm"
-                    disabled={!canAccessFeature("github_weekly") || !taskStatus.canSubmit}
+                    disabled={!canAccessFeature("github_weekly")}
                     className="flex-1"
+                    onClick={() => handleStartAssignment(task.id)}
                   >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Assignment'}
-                    {(!canAccessFeature("github_weekly") || !taskStatus.canSubmit) && <Lock className="h-4 w-4 ml-2" />}
+                    <Circle className="h-4 w-4 mr-2" />
+                    Start Assignment
+                    {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                   </Button>
-                </DialogTrigger>
-                <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
-              </Dialog>
+                ) : (
+                  <div className="space-y-2 w-full">
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      disabled
+                      className="w-full"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Assignment Expired
+                    </Button>
+                    {taskStatus.canRequestExtension && (
+                      <GitHubRequestReenableDialog
+                        taskId={task.id}
+                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
+            ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
+              <>
+                {taskStatus.canSubmit ? (
+                  <Dialog 
+                    open={evidenceDialog.open && evidenceDialog.taskId === task.id}
+                    onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant={task.status === 'REJECTED' ? "destructive" : "default"}
+                        size="sm"
+                        disabled={!canAccessFeature("github_weekly")}
+                        className="flex-1"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Assignment'}
+                        {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
+                      </Button>
+                    </DialogTrigger>
+                    <EvidenceSubmissionDialog taskId={evidenceDialog.taskId} />
+                  </Dialog>
+                ) : (
+                  <div className="space-y-2 w-full">
+                    <Button 
+                      variant="secondary"
+                      size="sm"
+                      disabled
+                      className="w-full"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Assignment Expired
+                    </Button>
+                    {taskStatus.canRequestExtension && (
+                      <GitHubRequestReenableDialog
+                        taskId={task.id}
+                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             ) : task.status === 'SUBMITTED' ? (
               <Button 
                 variant="outline"
