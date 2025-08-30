@@ -63,9 +63,9 @@ export const useRecruiterStats = () => {
           is_active: job.is_active,
         })) || [];
 
-        // Fetch assignment statistics
-        // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
-        // The RLS policy will automatically filter to show only assignments from non-institute users for recruiters
+        // Fetch assignment statistics - matching the same sources as VerifyAssignments page
+        
+        // 1. Career task assignments (submitted)
         const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
           .from('career_task_assignments')
           .select('id, user_id')
@@ -73,19 +73,15 @@ export const useRecruiterStats = () => {
 
         if (pendingCareerError) throw pendingCareerError;
 
-        console.log('🔍 Recruiter Stats - Pending Career Assignments (submitted) after RLS filtering:', pendingCareerAssignments?.length || 0);
-
-        // Get verified assignments from career_task_assignments
-        const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
-          .from('career_task_assignments')
+        // 2. LinkedIn user tasks (SUBMITTED)
+        const { data: pendingLinkedInAssignments, error: pendingLinkedInError } = await supabase
+          .from('linkedin_user_tasks')
           .select('id, user_id')
-          .eq('status', 'verified');
+          .eq('status', 'SUBMITTED');
 
-        if (verifiedCareerError) throw verifiedCareerError;
+        if (pendingLinkedInError) throw pendingLinkedInError;
 
-        console.log('🔍 Recruiter Stats - Verified Career Assignments after RLS filtering:', verifiedCareerAssignments?.length || 0);
-
-        // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
+        // 3. Job hunting assignments (submitted)
         const { data: pendingJobAssignments, error: pendingJobError } = await supabase
           .from('job_hunting_assignments')
           .select('id, user_id')
@@ -93,9 +89,36 @@ export const useRecruiterStats = () => {
 
         if (pendingJobError) throw pendingJobError;
 
-        console.log('🔍 Recruiter Stats - Pending Job Assignments (submitted) after RLS filtering:', pendingJobAssignments?.length || 0);
+        // 4. GitHub user tasks (SUBMITTED)
+        const { data: pendingGitHubAssignments, error: pendingGitHubError } = await supabase
+          .from('github_user_tasks')
+          .select('id, user_id')
+          .eq('status', 'SUBMITTED');
 
-        // Get verified assignments from job_hunting_assignments
+        if (pendingGitHubError) throw pendingGitHubError;
+
+        console.log('🔍 Recruiter Stats - Pending Assignments by type:', {
+          career: pendingCareerAssignments?.length || 0,
+          linkedIn: pendingLinkedInAssignments?.length || 0,
+          jobHunting: pendingJobAssignments?.length || 0,
+          gitHub: pendingGitHubAssignments?.length || 0
+        });
+
+        // Get verified assignments from all sources
+        const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
+          .from('career_task_assignments')
+          .select('id, user_id')
+          .eq('status', 'verified');
+
+        if (verifiedCareerError) throw verifiedCareerError;
+
+        const { data: verifiedLinkedInAssignments, error: verifiedLinkedInError } = await supabase
+          .from('linkedin_user_tasks')
+          .select('id, user_id')
+          .eq('status', 'VERIFIED');
+
+        if (verifiedLinkedInError) throw verifiedLinkedInError;
+
         const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
           .from('job_hunting_assignments')
           .select('id, user_id')
@@ -103,7 +126,19 @@ export const useRecruiterStats = () => {
 
         if (verifiedJobError) throw verifiedJobError;
 
-        console.log('🔍 Recruiter Stats - Verified Job Assignments after RLS filtering:', verifiedJobAssignments?.length || 0);
+        const { data: verifiedGitHubAssignments, error: verifiedGitHubError } = await supabase
+          .from('github_user_tasks')
+          .select('id, user_id')
+          .eq('status', 'VERIFIED');
+
+        if (verifiedGitHubError) throw verifiedGitHubError;
+
+        console.log('🔍 Recruiter Stats - Verified Assignments by type:', {
+          career: verifiedCareerAssignments?.length || 0,
+          linkedIn: verifiedLinkedInAssignments?.length || 0,
+          jobHunting: verifiedJobAssignments?.length || 0,
+          gitHub: verifiedGitHubAssignments?.length || 0
+        });
 
         // Get extension requests
         const { data: extensionRequests, error: extensionError } = await supabase
@@ -115,8 +150,15 @@ export const useRecruiterStats = () => {
 
         console.log('🔍 Recruiter Stats - Extension Requests:', extensionRequests?.length || 0);
 
-        const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + (pendingJobAssignments?.length || 0);
-        const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + (verifiedJobAssignments?.length || 0);
+        const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + 
+                                        (pendingLinkedInAssignments?.length || 0) + 
+                                        (pendingJobAssignments?.length || 0) + 
+                                        (pendingGitHubAssignments?.length || 0);
+        
+        const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + 
+                                         (verifiedLinkedInAssignments?.length || 0) + 
+                                         (verifiedJobAssignments?.length || 0) + 
+                                         (verifiedGitHubAssignments?.length || 0);
         const totalExtensionRequests = extensionRequests?.length || 0;
 
         console.log('🔍 Recruiter Stats - Final Totals (fixed):', {
@@ -176,9 +218,9 @@ export const useRecruiterStats = () => {
         is_active: job.is_active,
       })) || [];
 
-      // Fetch assignment statistics
-      // Get pending assignments (submitted by users, waiting for review) from career_task_assignments
-      // The RLS policy will automatically filter to show only assignments from non-institute users for recruiters
+      // Fetch assignment statistics - matching the same sources as VerifyAssignments page
+      
+      // 1. Career task assignments (submitted)
       const { data: pendingCareerAssignments, error: pendingCareerError } = await supabase
         .from('career_task_assignments')
         .select('id, user_id')
@@ -186,15 +228,15 @@ export const useRecruiterStats = () => {
 
       if (pendingCareerError) throw pendingCareerError;
 
-      // Get verified assignments from career_task_assignments
-      const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
-        .from('career_task_assignments')
+      // 2. LinkedIn user tasks (SUBMITTED)
+      const { data: pendingLinkedInAssignments, error: pendingLinkedInError } = await supabase
+        .from('linkedin_user_tasks')
         .select('id, user_id')
-        .eq('status', 'verified');
+        .eq('status', 'SUBMITTED');
 
-      if (verifiedCareerError) throw verifiedCareerError;
+      if (pendingLinkedInError) throw pendingLinkedInError;
 
-      // Get pending assignments (submitted by users, waiting for review) from job_hunting_assignments
+      // 3. Job hunting assignments (submitted)
       const { data: pendingJobAssignments, error: pendingJobError } = await supabase
         .from('job_hunting_assignments')
         .select('id, user_id')
@@ -202,13 +244,42 @@ export const useRecruiterStats = () => {
 
       if (pendingJobError) throw pendingJobError;
 
-      // Get verified assignments from job_hunting_assignments
+      // 4. GitHub user tasks (SUBMITTED)
+      const { data: pendingGitHubAssignments, error: pendingGitHubError } = await supabase
+        .from('github_user_tasks')
+        .select('id, user_id')
+        .eq('status', 'SUBMITTED');
+
+      if (pendingGitHubError) throw pendingGitHubError;
+
+      // Get verified assignments from all sources
+      const { data: verifiedCareerAssignments, error: verifiedCareerError } = await supabase
+        .from('career_task_assignments')
+        .select('id, user_id')
+        .eq('status', 'verified');
+
+      if (verifiedCareerError) throw verifiedCareerError;
+
+      const { data: verifiedLinkedInAssignments, error: verifiedLinkedInError } = await supabase
+        .from('linkedin_user_tasks')
+        .select('id, user_id')
+        .eq('status', 'VERIFIED');
+
+      if (verifiedLinkedInError) throw verifiedLinkedInError;
+
       const { data: verifiedJobAssignments, error: verifiedJobError } = await supabase
         .from('job_hunting_assignments')
         .select('id, user_id')
         .eq('status', 'verified');
 
       if (verifiedJobError) throw verifiedJobError;
+
+      const { data: verifiedGitHubAssignments, error: verifiedGitHubError } = await supabase
+        .from('github_user_tasks')
+        .select('id, user_id')
+        .eq('status', 'VERIFIED');
+
+      if (verifiedGitHubError) throw verifiedGitHubError;
 
       // Get extension requests
       const { data: extensionRequests, error: extensionError } = await supabase
@@ -218,8 +289,15 @@ export const useRecruiterStats = () => {
 
       if (extensionError) throw extensionError;
 
-      const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + (pendingJobAssignments?.length || 0);
-      const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + (verifiedJobAssignments?.length || 0);
+      const totalPendingAssignments = (pendingCareerAssignments?.length || 0) + 
+                                      (pendingLinkedInAssignments?.length || 0) + 
+                                      (pendingJobAssignments?.length || 0) + 
+                                      (pendingGitHubAssignments?.length || 0);
+      
+      const totalVerifiedAssignments = (verifiedCareerAssignments?.length || 0) + 
+                                       (verifiedLinkedInAssignments?.length || 0) + 
+                                       (verifiedJobAssignments?.length || 0) + 
+                                       (verifiedGitHubAssignments?.length || 0);
       const totalExtensionRequests = extensionRequests?.length || 0;
 
       setStats({
