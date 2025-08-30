@@ -91,7 +91,7 @@ export default function RecruiterDashboard() {
 
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/admin/verify-assignments?tab=pending&dialog=extensions')}
+                onClick={() => navigate('/admin/verify-assignments')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Extension Requests</CardTitle>
@@ -109,7 +109,7 @@ export default function RecruiterDashboard() {
 
               <Card 
                 className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => navigate('/admin/verify-assignments?tab=pending&dialog=github-extensions')}
+                onClick={() => navigate('/admin/verify-assignments')}
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">GitHub Extensions</CardTitle>
