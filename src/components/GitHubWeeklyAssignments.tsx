@@ -123,6 +123,15 @@ export const GitHubWeeklyAssignments = () => {
                 getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended) : 
                 { canSubmit: false, canRequestExtension: false, status: 'week_expired' as const, message: 'No due date set' };
               
+              // Debug logging to help track task status logic
+              console.log(`🔍 GitHub Task: ${task.github_tasks?.title}`, {
+                dueDate: task.due_at,
+                assignmentDay,
+                adminExtended: task.admin_extended,
+                taskStatus,
+                period: task.period
+              });
+              
               return (
                 <Card key={task.id} className="border border-border">
                   <CardHeader className="pb-3">

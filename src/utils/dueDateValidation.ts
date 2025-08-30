@@ -24,10 +24,24 @@ export const isDueDateInCurrentWeek = (dueDate: string | Date): boolean => {
 };
 
 /**
- * Checks if admin can still extend a task (within the same week)
+ * Checks if a due date is within the same assignment week (based on due date's week)
+ */
+export const isDueDateInAssignmentWeek = (dueDate: string | Date): boolean => {
+  const due = new Date(dueDate);
+  const now = new Date();
+  
+  // Get the week boundaries based on the due date's week
+  const assignmentWeekStart = startOfWeek(due, { weekStartsOn: 1 }); // Monday = 1
+  const assignmentWeekEnd = endOfWeek(due, { weekStartsOn: 1 });
+  
+  return now >= assignmentWeekStart && now <= assignmentWeekEnd;
+};
+
+/**
+ * Checks if admin can still extend a task (within the same assignment week)
  */
 export const canAdminExtendTask = (dueDate: string | Date): boolean => {
-  return isDueDateInCurrentWeek(dueDate);
+  return isDueDateInAssignmentWeek(dueDate);
 };
 
 /**
@@ -44,8 +58,8 @@ export const canUserInteractWithTask = (
     return true;
   }
   
-  // If due date passed but admin extended and still in same week, user can interact
-  if (duePassed && adminExtended && isDueDateInCurrentWeek(dueDate)) {
+  // If due date passed but admin extended and still in assignment week, user can interact
+  if (duePassed && adminExtended && isDueDateInAssignmentWeek(dueDate)) {
     return true;
   }
   
@@ -74,8 +88,8 @@ export const isGitHubTaskWithinDeadline = (dueDate: string | Date, assignmentDay
     return true;
   }
   
-  // If past due date, check if we can request extension (must be same week)
-  return isDueDateInCurrentWeek(dueDate);
+  // If past due date, check if we can request extension (must be within assignment week)
+  return isDueDateInAssignmentWeek(dueDate);
 };
 
 /**
@@ -94,10 +108,10 @@ export const getGitHubTaskStatus = (
   const due = new Date(dueDate);
   const now = new Date();
   const duePassed = now > due;
-  const inCurrentWeek = isDueDateInCurrentWeek(dueDate);
+  const inAssignmentWeek = isDueDateInAssignmentWeek(dueDate);
   
-  // If admin has extended and still in current week, user can submit
-  if (duePassed && adminExtended && inCurrentWeek) {
+  // If admin has extended and still in assignment week, user can submit
+  if (duePassed && adminExtended && inAssignmentWeek) {
     return {
       canSubmit: true,
       canRequestExtension: false,
@@ -116,8 +130,8 @@ export const getGitHubTaskStatus = (
     };
   }
   
-  // If past due but still in current week, can request extension
-  if (duePassed && inCurrentWeek && !adminExtended) {
+  // If past due but still in assignment week, can request extension
+  if (duePassed && inAssignmentWeek && !adminExtended) {
     return {
       canSubmit: false,
       canRequestExtension: true,
@@ -126,7 +140,7 @@ export const getGitHubTaskStatus = (
     };
   }
   
-  // Week has ended, cannot extend
+  // Assignment week has ended, cannot extend
   return {
     canSubmit: false,
     canRequestExtension: false,
@@ -147,7 +161,7 @@ export const getTaskAvailabilityStatus = (
   message: string;
 } => {
   const duePassed = isDueDatePassed(dueDate);
-  const inCurrentWeek = isDueDateInCurrentWeek(dueDate);
+  const inAssignmentWeek = isDueDateInAssignmentWeek(dueDate);
   const canInteract = canUserInteractWithTask(dueDate, adminExtended);
   
   if (canInteract) {
@@ -158,7 +172,7 @@ export const getTaskAvailabilityStatus = (
     };
   }
   
-  if (duePassed && inCurrentWeek) {
+  if (duePassed && inAssignmentWeek) {
     return {
       canInteract: false,
       status: 'expired',
