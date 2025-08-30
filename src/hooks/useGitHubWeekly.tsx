@@ -309,8 +309,18 @@ export const useGitHubWeekly = () => {
         console.error('Error fetching historical assignments:', error);
         throw error;
       }
-      console.log('Historical assignments fetched:', data?.length || 0, 'assignments');
-      return data || [];
+      
+      // Filter out future weeks - only show current week and past weeks
+      const currentPeriod = getCurrentPeriod();
+      const filteredData = data?.filter(assignment => {
+        if (!assignment.period) return true; // Keep assignments without period (repo tasks)
+        
+        // Compare periods as strings (YYYY-WW format)
+        return assignment.period <= currentPeriod;
+      }) || [];
+      
+      console.log('Historical assignments fetched:', filteredData.length, 'assignments (filtered out future weeks)');
+      return filteredData;
     },
     enabled: !!user?.id,
     staleTime: 60 * 1000, // 1 minute
