@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
+import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
+import { isDueDatePassed, isDueDateInCurrentWeek, canUserInteractWithTask } from '@/utils/dueDateValidation';
 
 interface EvidenceSubmissionData {
   kind: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT';
@@ -268,7 +270,20 @@ export const GitHubWeeklyAssignments = () => {
                       </DialogContent>
                     </Dialog>
                   )}
-                  
+
+                  {/* Extension Request Button */}
+                  {task.due_at && isDueDatePassed(task.due_at) && 
+                   isDueDateInCurrentWeek(task.due_at) && 
+                   !canUserInteractWithTask(task.due_at, task.admin_extended) && 
+                   task.status !== 'VERIFIED' && (
+                    <div className="mt-3">
+                      <GitHubRequestReenableDialog
+                        taskId={task.id}
+                        taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                      />
+                    </div>
+                  )}
+                   
                   {task.status === 'SUBMITTED' && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <AlertCircle className="h-4 w-4" />

@@ -17,6 +17,7 @@ import { Search, Filter, FileText, Award, ChevronLeft, ChevronRight, CheckCircle
 import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
+import { AdminGitHubReenableRequestsDialog } from '@/components/AdminGitHubReenableRequestsDialog';
 import { EvidenceDisplay } from '@/components/EvidenceDisplay';
 
 interface SubmittedAssignment {
@@ -1584,6 +1585,7 @@ const VerifyAssignments = () => {
           </div>
         </div>
         {(isAdmin || isRecruiter) && <AdminReenableRequestsDialog />}
+        {(isAdmin || isRecruiter) && <AdminGitHubReenableRequestsDialog />}
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
