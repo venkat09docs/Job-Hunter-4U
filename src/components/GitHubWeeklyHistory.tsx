@@ -11,19 +11,29 @@ interface PeriodSummary {
   period: string;
   totalTasks: number;
   completedTasks: number;
+  submittedTasks: number;
+  startedTasks: number;
+  notStartedTasks: number;
   totalPoints: number;
   maxPoints: number;
   completionRate: number;
+  avgPointsPerTask: number;
+  submissionRate: number;
+  pointsEfficiency: number;
 }
 
 export const GitHubWeeklyHistory = () => {
-  const { signals, scores, badges, historicalAssignments } = useGitHubWeekly();
+  const { signals, scores, badges, historicalAssignments, allScores } = useGitHubWeekly();
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
 
   console.log('GitHubWeeklyHistory - historicalAssignments:', historicalAssignments);
 
-  // Group assignments by period and calculate summary statistics
+  // Group assignments by period and calculate comprehensive summary statistics
   const periodSummaries: PeriodSummary[] = useMemo(() => {
+    if (!historicalAssignments || historicalAssignments.length === 0) {
+      return [];
+    }
+
     const grouped = historicalAssignments.reduce((acc, assignment) => {
       const period = assignment.period || 'No Period';
       if (!acc[period]) {
@@ -35,20 +45,44 @@ export const GitHubWeeklyHistory = () => {
 
     return Object.entries(grouped)
       .map(([period, assignments]) => {
+        // Calculate various task statuses
         const completedTasks = assignments.filter(a => a.status === 'VERIFIED').length;
-        const totalPoints = assignments.reduce((sum, a) => sum + a.score_awarded, 0);
-        const maxPoints = assignments.reduce((sum, a) => sum + (a.github_tasks?.points_base || 0), 0);
+        const submittedTasks = assignments.filter(a => a.status === 'SUBMITTED' || a.status === 'PARTIALLY_VERIFIED').length;
+        const startedTasks = assignments.filter(a => a.status === 'STARTED').length;
+        const notStartedTasks = assignments.filter(a => a.status === 'NOT_STARTED').length;
+        
+        // Calculate points accurately from actual assignments
+        const totalPoints = assignments.reduce((sum, a) => sum + (a.score_awarded || 0), 0);
+        const maxPoints = assignments.reduce((sum, a) => sum + (a.github_tasks?.points_base || 10), 0);
+        
+        // Calculate completion rate based on verified tasks
+        const completionRate = assignments.length > 0 ? (completedTasks / assignments.length) * 100 : 0;
+        
+        // Calculate average points per task
+        const avgPointsPerTask = completedTasks > 0 ? totalPoints / completedTasks : 0;
         
         return {
           period,
           totalTasks: assignments.length,
           completedTasks,
+          submittedTasks,
+          startedTasks,
+          notStartedTasks,
           totalPoints,
           maxPoints,
-          completionRate: assignments.length > 0 ? (completedTasks / assignments.length) * 100 : 0
+          completionRate,
+          avgPointsPerTask,
+          // Additional metrics for better insights
+          submissionRate: assignments.length > 0 ? ((submittedTasks + completedTasks) / assignments.length) * 100 : 0,
+          pointsEfficiency: maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0
         };
       })
-      .sort((a, b) => b.period.localeCompare(a.period)); // Sort by period descending
+      .sort((a, b) => {
+        // Sort by period descending, handling different formats
+        if (a.period === 'No Period') return 1;
+        if (b.period === 'No Period') return -1;
+        return b.period.localeCompare(a.period);
+      });
   }, [historicalAssignments]);
 
   const getWeekDateRange = (period: string): string => {
@@ -202,7 +236,7 @@ export const GitHubWeeklyHistory = () => {
                                 {getWeekDateRange(summary.period)}
                               </p>
                             </div>
-                            <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-4">
                               <div className="text-center">
                                 <p className="text-2xl font-bold text-primary">{summary.completedTasks}</p>
                                 <p className="text-xs text-muted-foreground">Completed</p>
@@ -213,7 +247,15 @@ export const GitHubWeeklyHistory = () => {
                               </div>
                               <div className="text-center">
                                 <p className="text-2xl font-bold text-blue-600">{Math.round(summary.completionRate)}%</p>
-                                <p className="text-xs text-muted-foreground">Rate</p>
+                                <p className="text-xs text-muted-foreground">Completion</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-orange-600">{Math.round(summary.submissionRate)}%</p>
+                                <p className="text-xs text-muted-foreground">Submission</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-purple-600">{Math.round(summary.avgPointsPerTask * 10) / 10}</p>
+                                <p className="text-xs text-muted-foreground">Avg Pts/Task</p>
                               </div>
                             </div>
                           </div>
@@ -269,8 +311,8 @@ export const GitHubWeeklyHistory = () => {
                 </CardContent>
               </Card>
 
-              {/* Overall Statistics */}
-              <div className="grid md:grid-cols-3 gap-6">
+              {/* Comprehensive Overall Statistics */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -283,7 +325,11 @@ export const GitHubWeeklyHistory = () => {
                       {periodSummaries.reduce((sum, p) => sum + p.totalPoints, 0)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Across {periodSummaries.length} weeks
+                      Out of {periodSummaries.reduce((sum, p) => sum + p.maxPoints, 0)} possible
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {Math.round((periodSummaries.reduce((sum, p) => sum + p.totalPoints, 0) / 
+                      (periodSummaries.reduce((sum, p) => sum + p.maxPoints, 0) || 1)) * 100)}% efficiency
                     </p>
                   </CardContent>
                 </Card>
@@ -302,6 +348,9 @@ export const GitHubWeeklyHistory = () => {
                     <p className="text-sm text-muted-foreground">
                       Out of {periodSummaries.reduce((sum, p) => sum + p.totalTasks, 0)} total
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {periodSummaries.reduce((sum, p) => sum + p.submittedTasks, 0)} submitted & pending
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -309,7 +358,7 @@ export const GitHubWeeklyHistory = () => {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-blue-600" />
-                      Average Rate
+                      Completion Rate
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -320,7 +369,36 @@ export const GitHubWeeklyHistory = () => {
                       )}%
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Completion rate
+                      Average across {periodSummaries.length} weeks
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {Math.round(
+                        periodSummaries.reduce((sum, p) => sum + p.submissionRate, 0) / 
+                        (periodSummaries.length || 1)
+                      )}% submission rate
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-purple-600" />
+                      Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-3xl font-bold text-purple-600">
+                      {Math.round(
+                        (periodSummaries.reduce((sum, p) => sum + p.avgPointsPerTask, 0) / 
+                        (periodSummaries.length || 1)) * 10
+                      ) / 10}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Avg points per task
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Active weeks: {periodSummaries.filter(p => p.totalTasks > 0).length}
                     </p>
                   </CardContent>
                 </Card>
@@ -404,34 +482,36 @@ export const GitHubWeeklyHistory = () => {
 
         <TabsContent value="scores" className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold">Weekly Point Breakdown</h3>
+            <h3 className="text-lg font-semibold">Weekly Point Performance</h3>
             <p className="text-sm text-muted-foreground">
-              Track your GitHub performance and points earned each week
+              Track your GitHub performance and points earned across all weeks
             </p>
           </div>
 
-          <div className="grid gap-4">
-            {scores ? (
-              <Card>
+          <div className="space-y-6">
+            {/* Current Week Score */}
+            {scores && (
+              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                 <CardHeader>
-                  <CardTitle className="text-xl">
-                    {scores.points_total} Total Points
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-primary" />
+                    Current Week: {scores.points_total} Points
                   </CardTitle>
                   <CardDescription>
-                    Period: {scores.period}
+                    Period: {scores.period} • Latest Performance
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {scores.breakdown && typeof scores.breakdown === 'object' && (
                     <div className="space-y-3">
-                      <h4 className="font-medium text-sm">Point Breakdown</h4>
+                      <h4 className="font-medium text-sm">Current Week Breakdown</h4>
                       <div className="grid gap-2 text-sm">
                         {Object.entries(scores.breakdown).map(([key, value]) => (
                           <div key={key} className="flex justify-between">
                             <span className="text-muted-foreground capitalize">
                               {key.replace('_', ' ')}
                             </span>
-                            <span className="font-medium">+{value as number}</span>
+                            <span className="font-medium text-primary">+{value as number}</span>
                           </div>
                         ))}
                       </div>
@@ -439,13 +519,136 @@ export const GitHubWeeklyHistory = () => {
                   )}
                 </CardContent>
               </Card>
+            )}
+
+            {/* Historical Weekly Scores */}
+            {allScores && allScores.length > 0 ? (
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5" />
+                      Weekly Performance History
+                    </CardTitle>
+                    <CardDescription>
+                      Historical weekly scores and performance trends
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {allScores.map((weekScore) => (
+                        <div
+                          key={weekScore.period}
+                          className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div>
+                                <h4 className="font-semibold">Week {weekScore.period}</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {getWeekDateRange(weekScore.period)}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-6">
+                                <div className="text-center">
+                                  <p className="text-2xl font-bold text-primary">{weekScore.points_total}</p>
+                                  <p className="text-xs text-muted-foreground">Total Points</p>
+                                </div>
+                                {weekScore.breakdown && (
+                                  <div className="text-center">
+                                    <p className="text-2xl font-bold text-green-600">
+                                      {Object.keys(weekScore.breakdown).length}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">Activities</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Score Breakdown */}
+                          {weekScore.breakdown && typeof weekScore.breakdown === 'object' && (
+                            <div className="mt-4 pt-4 border-t">
+                              <h5 className="font-medium mb-3 text-sm">Point Sources</h5>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                {Object.entries(weekScore.breakdown).map(([key, value]) => (
+                                  <div key={key} className="flex justify-between p-2 bg-background rounded">
+                                    <span className="text-muted-foreground capitalize">
+                                      {key.replace('_', ' ')}
+                                    </span>
+                                    <span className="font-medium">+{value as number}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Weekly Performance Summary */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-600" />
+                        Total Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold text-primary">
+                        {allScores.reduce((sum, score) => sum + score.points_total, 0)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Across {allScores.length} active weeks
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-green-600" />
+                        Average Weekly
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold text-green-600">
+                        {Math.round(allScores.reduce((sum, score) => sum + score.points_total, 0) / allScores.length)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Points per week
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-blue-600" />
+                        Best Week
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {Math.max(...allScores.map(score => score.points_total))}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Highest weekly score
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             ) : (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-8">
                   <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">No Scores Yet</h3>
+                  <h3 className="font-semibold mb-2">No Historical Scores Yet</h3>
                   <p className="text-sm text-muted-foreground text-center">
-                    Complete GitHub tasks to start earning weekly points
+                    Complete GitHub tasks weekly to build your performance history
                   </p>
                 </CardContent>
               </Card>

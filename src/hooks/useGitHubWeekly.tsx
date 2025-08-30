@@ -185,27 +185,59 @@ export const useGitHubWeekly = () => {
     return acc;
   }, {} as Record<string, GitHubUserTask[]>);
 
-  // Fetch recent signals
+  // Fetch recent signals with enhanced query for better activity tracking
   const { data: signals = [] } = useQuery({
     queryKey: ['github-signals', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       
+      // Get last 30 days of activity for more comprehensive recent activity
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
       const { data, error } = await supabase
         .from('github_signals')
         .select('*')
         .eq('user_id', user.id)
+        .gte('happened_at', thirtyDaysAgo.toISOString())
         .order('happened_at', { ascending: false })
-        .limit(50);
+        .limit(100); // Increased limit for better activity tracking
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching GitHub signals:', error);
+        throw error;
+      }
+      console.log('GitHub signals fetched:', data?.length || 0, 'activities in last 30 days');
       return data || [];
     },
     enabled: !!user?.id,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000, // 30 seconds - refresh more frequently for recent activity
   });
 
-  // Fetch current period scores
+  // Fetch all historical scores for comprehensive weekly performance tracking
+  const { data: allScores = [] } = useQuery({
+    queryKey: ['github-all-scores', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('github_scores')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('period', { ascending: false });
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching all GitHub scores:', error);
+        throw error;
+      }
+      console.log('All GitHub scores fetched:', data?.length || 0, 'periods');
+      return data || [];
+    },
+    enabled: !!user?.id,
+    staleTime: 60 * 1000, // 1 minute
+  });
+
+  // Fetch current period scores  
   const { data: scores } = useQuery({
     queryKey: ['github-scores', user?.id],
     queryFn: async () => {
@@ -246,7 +278,7 @@ export const useGitHubWeekly = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch historical assignments (all assignments regardless of status or period)
+  // Fetch historical assignments (all assignments regardless of status or period) with more comprehensive data
   const { data: historicalAssignments = [] } = useQuery({
     queryKey: ['github-historical-assignments', user?.id],
     queryFn: async () => {
@@ -256,7 +288,18 @@ export const useGitHubWeekly = () => {
         .from('github_user_tasks')
         .select(`
           *,
-          github_tasks (*)
+          github_tasks (
+            id,
+            title,
+            description,
+            points_base,
+            code,
+            scope,
+            cadence,
+            display_order,
+            evidence_types,
+            bonus_rules
+          )
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -265,7 +308,7 @@ export const useGitHubWeekly = () => {
         console.error('Error fetching historical assignments:', error);
         throw error;
       }
-      console.log('Historical assignments fetched:', data);
+      console.log('Historical assignments fetched:', data?.length || 0, 'assignments');
       return data || [];
     },
     enabled: !!user?.id,
@@ -448,6 +491,7 @@ export const useGitHubWeekly = () => {
     repoTasks,
     signals,
     scores,
+    allScores, // Add all scores for comprehensive historical view
     badges,
     historicalAssignments,
 
