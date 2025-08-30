@@ -301,7 +301,11 @@ export const useGitHubWeekly = () => {
           parsed_json: { 
             description: evidenceData.description,
             numberOfCommits: evidenceData.numberOfCommits,
-            numberOfReadmes: evidenceData.numberOfReadmes
+            numberOfReadmes: evidenceData.numberOfReadmes,
+            commits_count: evidenceData.numberOfCommits,
+            readmes_count: evidenceData.numberOfReadmes,
+            repo_url: evidenceData.url,
+            repositoryUrl: evidenceData.url
           },
         })
         .select()

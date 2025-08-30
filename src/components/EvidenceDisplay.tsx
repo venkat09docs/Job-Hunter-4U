@@ -43,21 +43,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
     return null;
   };
 
-  const getUrl = (evidenceItem: Evidence) => {
-    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
-    return evidenceItem.url || parsedData?.url || null;
-  };
-
-  const getDescription = (evidenceItem: Evidence) => {
-    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
-    return parsedData?.description || parsedData?.text || null;
-  };
-
-  const getFileName = (evidenceItem: Evidence) => {
-    const parsedData = parseEvidenceData(evidenceItem.evidence_data);
-    return parsedData?.file_name || null;
-  };
-
   const getGitHubDetails = (evidenceItem: Evidence) => {
     const parsedData = parseEvidenceData(evidenceItem.evidence_data);
     console.log('🔍 EvidenceDisplay - Evidence item:', evidenceItem);
@@ -82,7 +67,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
     console.log('🔍 EvidenceDisplay - Has GitHub data:', hasGitHubData);
     return hasGitHubData ? gitHubData : null;
   };
-
 
   const handleFileClick = async (filePath: string) => {
     try {
@@ -167,7 +151,6 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
             }
           }
           
-          
           return (
             <Card key={evidenceItem.id} className={`p-4 ${!isLatest ? 'opacity-75 border-muted' : 'border-primary/20'}`}>
               <div className="flex items-start justify-between mb-3">
@@ -178,7 +161,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 <div className="flex flex-col items-end gap-1">
                   <Badge 
                     variant={evidenceItem.verification_status === 'pending' ? 'secondary' : 
-                           evidenceItem.verification_status === 'approved' ? 'default' : 'destructive'}
+                           evidenceItem.verification_status === 'approved' || evidenceItem.verification_status === 'verified' ? 'default' : 'destructive'}
                   >
                     {evidenceItem.verification_status}
                   </Badge>
@@ -187,6 +170,66 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                   </span>
                 </div>
               </div>
+              
+              {/* GitHub Activity Summary - Enhanced Display */}
+              {gitHubDetails && ((gitHubDetails.commits_count !== null && gitHubDetails.commits_count !== undefined) || 
+               (gitHubDetails.readmes_count !== null && gitHubDetails.readmes_count !== undefined)) && (
+                <div className="mb-4">
+                  <Label className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2 block">GitHub Activity Summary</Label>
+                  <div className="grid grid-cols-2 gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        {gitHubDetails.commits_count || 0}
+                      </div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                        Weekly Commits
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        {gitHubDetails.readmes_count || 0}
+                      </div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                        README/Docs Updates
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Repository Information */}
+              {gitHubDetails && (gitHubDetails.repo_url || gitHubDetails.repository_name || gitHubDetails.branch) && (
+                <div className="mb-3">
+                  <Label className="text-xs text-muted-foreground">Repository Details:</Label>
+                  <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded space-y-2 text-sm">
+                    {gitHubDetails.repo_url && (
+                      <div>
+                        <span className="font-medium">Repository:</span>
+                        <a 
+                          href={gitHubDetails.repo_url.startsWith('http') ? gitHubDetails.repo_url : `https://${gitHubDetails.repo_url}`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-600 hover:text-blue-800 underline break-all"
+                        >
+                          {gitHubDetails.repo_url}
+                        </a>
+                      </div>
+                    )}
+                    {gitHubDetails.repository_name && (
+                      <div>
+                        <span className="font-medium">Name:</span>
+                        <span className="ml-2">{gitHubDetails.repository_name}</span>
+                      </div>
+                    )}
+                    {gitHubDetails.branch && (
+                      <div>
+                        <span className="font-medium">Branch:</span>
+                        <span className="ml-2">{gitHubDetails.branch}</span>  
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* Always show URL section */}
               <div className="mb-3">
@@ -237,69 +280,12 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                 </div>
               </div>
               
-              {/* GitHub-specific details */}
-              {gitHubDetails && (
-                <div className="mb-3">
-                  <Label className="text-xs text-muted-foreground">GitHub Details:</Label>
-                  <div className="mt-1 p-2 border rounded bg-blue-50 space-y-1">
-                    {gitHubDetails.repository_name && (
-                      <div className="text-sm">
-                        <span className="font-medium">Repository:</span> {gitHubDetails.repository_name}
-                      </div>
-                    )}
-                    {gitHubDetails.repo_url && (
-                      <div className="text-sm">
-                        <span className="font-medium">Repository URL:</span>{' '}
-                        <a 
-                          href={gitHubDetails.repo_url.startsWith('http') ? gitHubDetails.repo_url : `https://github.com/${gitHubDetails.repo_url}`}
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline break-all"
-                        >
-                          {gitHubDetails.repo_url}
-                        </a>
-                      </div>
-                    )}
-                    {gitHubDetails.commits_count !== null && (
-                      <div className="text-sm">
-                        <span className="font-medium">Number of Commits:</span> {gitHubDetails.commits_count}
-                      </div>
-                    )}
-                    {gitHubDetails.readmes_count !== null && (
-                      <div className="text-sm">
-                        <span className="font-medium">Number of READMEs:</span> {gitHubDetails.readmes_count}
-                      </div>
-                    )}
-                    {gitHubDetails.branch && (
-                      <div className="text-sm">
-                        <span className="font-medium">Branch:</span> {gitHubDetails.branch}
-                      </div>
-                    )}
-                    {gitHubDetails.files_changed !== null && (
-                      <div className="text-sm">
-                        <span className="font-medium">Files Changed:</span> {gitHubDetails.files_changed}
-                      </div>
-                    )}
-                    {gitHubDetails.additions !== null && (
-                      <div className="text-sm text-green-600">
-                        <span className="font-medium">Additions:</span> +{gitHubDetails.additions}
-                      </div>
-                    )}
-                    {gitHubDetails.deletions !== null && (
-                      <div className="text-sm text-red-600">
-                        <span className="font-medium">Deletions:</span> -{gitHubDetails.deletions}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
               {/* Always show Description section */}
               <div className="mb-3">
                 <Label className="text-xs text-muted-foreground">Description:</Label>
                 <div className="mt-1">
                   {description ? (
-                    <div className="text-sm whitespace-pre-wrap p-2 border rounded bg-gray-50">
+                    <div className="text-sm whitespace-pre-wrap p-2 border rounded bg-gray-50 dark:bg-gray-800">
                       {description}
                     </div>
                   ) : (

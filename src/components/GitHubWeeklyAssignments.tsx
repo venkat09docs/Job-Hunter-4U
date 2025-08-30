@@ -216,37 +216,36 @@ export const GitHubWeeklyAssignments = () => {
                             />
                           </div>
 
-                          {/* GitHub-specific fields */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="number-of-commits">Number of Commits</Label>
-                              <Input
-                                id="number-of-commits"
-                                type="number"
-                                placeholder="e.g. 5"
-                                min="0"
-                                value={evidenceForm.numberOfCommits || ''}
-                                onChange={(e) => setEvidenceForm(prev => ({ 
-                                  ...prev, 
-                                  numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
-                                }))}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="number-of-readmes">Number of README Files</Label>
-                              <Input
-                                id="number-of-readmes"
-                                type="number"
-                                placeholder="e.g. 1"
-                                min="0"
-                                value={evidenceForm.numberOfReadmes || ''}
-                                onChange={(e) => setEvidenceForm(prev => ({ 
-                                  ...prev, 
-                                  numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
-                                }))}
-                              />
-                            </div>
-                          </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="number-of-commits">Number of Weekly Commits</Label>
+            <Input
+              id="number-of-commits"
+              type="number"
+              placeholder="e.g. 5"
+              min="0"
+              value={evidenceForm.numberOfCommits || ''}
+              onChange={(e) => setEvidenceForm(prev => ({ 
+                ...prev, 
+                numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+              }))}
+            />
+          </div>
+          <div>
+            <Label htmlFor="number-of-readmes">Number of README or Docs Updates</Label>
+            <Input
+              id="number-of-readmes"
+              type="number"
+              placeholder="e.g. 1"
+              min="0"
+              value={evidenceForm.numberOfReadmes || ''}
+              onChange={(e) => setEvidenceForm(prev => ({ 
+                ...prev, 
+                numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+              }))}
+            />
+          </div>
+        </div>
 
                           <div className="flex gap-3 pt-4">
                             <Button onClick={handleSubmitEvidence} className="flex-1">
@@ -290,20 +289,20 @@ export const GitHubWeeklyAssignments = () => {
 
                   {/* Admin Review Section for GitHub Weekly Tasks */}
                   {(task.status === 'VERIFIED' || task.status === 'REJECTED') && (task as any).verification_notes && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-2 p-3 rounded-lg border">
                       <Label className="text-sm font-medium flex items-center gap-2">
                         <Shield className="w-4 h-4" />
-                        Admin Review:
+                        Admin Review Notes:
                       </Label>
                       <div className={`p-3 rounded-md text-sm border-l-4 ${
                         task.status === 'VERIFIED' 
-                          ? 'bg-green-50 border-green-500 text-green-800' 
-                          : 'bg-red-50 border-red-500 text-red-800'
+                          ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-900/20 dark:text-green-200' 
+                          : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-900/20 dark:text-red-200'
                       }`}>
                         <div className="font-medium mb-1">
-                          {task.status === 'VERIFIED' ? 'Approved' : 'Rejected'}
+                          Status: {task.status === 'VERIFIED' ? 'Approved ✓' : 'Rejected ✗'}
                           {task.updated_at && (
-                            <span className="text-xs font-normal ml-2">
+                            <span className="text-xs font-normal ml-2 opacity-75">
                               on {new Date(task.updated_at).toLocaleDateString()}
                             </span>
                           )}
@@ -463,37 +462,37 @@ export const GitHubWeeklyAssignments = () => {
                                       />
                                     </div>
 
-                                    {/* GitHub-specific fields */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <Label htmlFor="number-of-commits-showcase">Number of Commits</Label>
-                                        <Input
-                                          id="number-of-commits-showcase"
-                                          type="number"
-                                          placeholder="e.g. 5"
-                                          min="0"
-                                          value={evidenceForm.numberOfCommits || ''}
-                                          onChange={(e) => setEvidenceForm(prev => ({ 
-                                            ...prev, 
-                                            numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
-                                          }))}
-                                        />
-                                      </div>
-                                      <div>
-                                        <Label htmlFor="number-of-readmes-showcase">Number of README Files</Label>
-                                        <Input
-                                          id="number-of-readmes-showcase"
-                                          type="number"
-                                          placeholder="e.g. 1"
-                                          min="0"
-                                          value={evidenceForm.numberOfReadmes || ''}
-                                          onChange={(e) => setEvidenceForm(prev => ({ 
-                                            ...prev, 
-                                            numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
-                                          }))}
-                                        />
-                                      </div>
-                                    </div>
+                    {/* GitHub-specific fields */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="number-of-commits-showcase">Number of Weekly Commits</Label>
+                        <Input
+                          id="number-of-commits-showcase"
+                          type="number"
+                          placeholder="e.g. 5"
+                          min="0"
+                          value={evidenceForm.numberOfCommits || ''}
+                          onChange={(e) => setEvidenceForm(prev => ({ 
+                            ...prev, 
+                            numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="number-of-readmes-showcase">Number of README or Docs Updates</Label>
+                        <Input
+                          id="number-of-readmes-showcase"
+                          type="number"
+                          placeholder="e.g. 1"
+                          min="0"
+                          value={evidenceForm.numberOfReadmes || ''}
+                          onChange={(e) => setEvidenceForm(prev => ({ 
+                            ...prev, 
+                            numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+                          }))}
+                        />
+                      </div>
+                    </div>
 
                                     <div className="flex gap-3 pt-4">
                                       <Button onClick={handleSubmitEvidence} className="flex-1">
@@ -524,20 +523,20 @@ export const GitHubWeeklyAssignments = () => {
 
                             {/* Admin Review Section for Repo Tasks */}
                             {(task.status === 'VERIFIED' || task.status === 'REJECTED') && (task as any).verification_notes && (
-                              <div className="mt-3 space-y-2">
+                              <div className="mt-3 space-y-2 p-3 rounded-lg border">
                                 <Label className="text-sm font-medium flex items-center gap-2">
                                   <Shield className="w-4 h-4" />
-                                  Admin Review:
+                                  Admin Review Notes:
                                 </Label>
                                 <div className={`p-3 rounded-md text-sm border-l-4 ${
                                   task.status === 'VERIFIED' 
-                                    ? 'bg-green-50 border-green-500 text-green-800' 
-                                    : 'bg-red-50 border-red-500 text-red-800'
+                                    ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-900/20 dark:text-green-200' 
+                                    : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-900/20 dark:text-red-200'
                                 }`}>
                                   <div className="font-medium mb-1">
-                                    {task.status === 'VERIFIED' ? 'Approved' : 'Rejected'}
+                                    Status: {task.status === 'VERIFIED' ? 'Approved ✓' : 'Rejected ✗'}
                                     {task.updated_at && (
-                                      <span className="text-xs font-normal ml-2">
+                                      <span className="text-xs font-normal ml-2 opacity-75">
                                         on {new Date(task.updated_at).toLocaleDateString()}
                                       </span>
                                     )}
