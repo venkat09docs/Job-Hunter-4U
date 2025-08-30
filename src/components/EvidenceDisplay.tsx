@@ -13,6 +13,7 @@ interface Evidence {
   url?: string;
   file_urls?: string[];
   verification_status: string;
+  verification_notes?: string;
   created_at: string;
 }
 
@@ -293,6 +294,18 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
                   )}
                 </div>
               </div>
+              
+              {/* Verification Notes section - only show if notes exist */}
+              {evidenceItem.verification_notes && (
+                <div className="mb-3">
+                  <Label className="text-xs font-medium text-orange-700 dark:text-orange-300">Verification Notes:</Label>
+                  <div className="mt-1">
+                    <div className="text-sm whitespace-pre-wrap p-3 border rounded bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                      {evidenceItem.verification_notes}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {parsedEvidenceData && fileName && (
                 <div className={!isLatest ? 'pointer-events-none' : ''}>
