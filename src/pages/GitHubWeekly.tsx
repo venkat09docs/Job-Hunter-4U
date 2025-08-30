@@ -453,8 +453,18 @@ const GitHubWeekly = () => {
     const isExpired = isTaskExpired(displayOrder);
     const canInteract = !isExpired || task.status === 'VERIFIED';
     
-    // Get comprehensive task status for extension logic
-    const assignmentDay = task.period?.split('-')[2] || 'Unknown';
+    // Extract day number from GitHub task title (e.g., "Day 1 – Planning & Setup" -> "Monday")
+    const extractDayFromTitle = (title: string): string => {
+      const dayMatch = title.match(/Day (\d+)/i);
+      if (dayMatch) {
+        const dayNumber = parseInt(dayMatch[1]);
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        return days[dayNumber - 1] || 'Monday';
+      }
+      return 'Monday'; // Default to Monday if can't extract
+    };
+    
+    const assignmentDay = extractDayFromTitle(task.github_tasks?.title || '');
     
     // Ensure taskStatus is always defined with a fallback
     let taskStatus: {
@@ -477,18 +487,6 @@ const GitHubWeekly = () => {
         // Keep the default fallback values
       }
     }
-    
-    // Debug logging to track task status calculation
-    console.log(`🔍 GitHub Task Debug: ${task.github_tasks?.title}`, {
-      taskId: task.id,
-      dueDate: task.due_at,
-      assignmentDay,
-      adminExtended: task.admin_extended,
-      taskStatus,
-      period: task.period,
-      currentTime: new Date().toISOString(),
-      status: task.status
-    });
     
     // Calculate days until due
     const now = new Date();
