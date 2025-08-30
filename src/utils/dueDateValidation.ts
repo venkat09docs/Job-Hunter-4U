@@ -24,15 +24,15 @@ export const isDueDateInCurrentWeek = (dueDate: string | Date): boolean => {
 };
 
 /**
- * Checks if a due date is within the same assignment week (based on due date's week)
+ * Checks if current time is within the same assignment week as the due date
  */
 export const isDueDateInAssignmentWeek = (dueDate: string | Date): boolean => {
   const due = new Date(dueDate);
   const now = new Date();
   
-  // Get the week boundaries based on the due date's week
+  // Get the week boundaries based on the due date's week (Monday to Sunday)
   const assignmentWeekStart = startOfWeek(due, { weekStartsOn: 1 }); // Monday = 1
-  const assignmentWeekEnd = endOfWeek(due, { weekStartsOn: 1 });
+  const assignmentWeekEnd = endOfWeek(due, { weekStartsOn: 1 }); // Sunday
   
   console.log(`🔍 Assignment Week Check:`, {
     dueDate: due.toISOString(),
