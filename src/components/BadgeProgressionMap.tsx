@@ -153,7 +153,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         return result;
       }
       case 'gold': return Math.min(100, githubRepos >= 3 && githubCommits >= 50 ? 100 : Math.min((githubRepos / 3) * 50 + (githubCommits / 50) * 50, 100));
-      case 'diamond': return Math.min(100, githubProgress >= 80 ? 100 : (githubProgress / 80) * 100);
+      case 'diamond': return Math.min(100, githubRepos >= 5 && githubCommits >= 100 ? 100 : Math.min((githubRepos / 5) * 50 + (githubCommits / 100) * 50, 100));
       default: return 0;
     }
   };
@@ -191,9 +191,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // GitHub section: Only for IT users, progressive unlock based on pinned repos and total commits from GitHub Weekly
         if (!isIT()) return false; // GitHub section disabled for non-IT users
         if (badgeIndex === 0) return true; // Silver always unlocked for IT users
-        // Gold badge: Requires 3 pinned repositories AND 50 total commits
-        if (badgeIndex === 1) return githubRepos >= 3 && githubCommits >= 50;
-        if (badgeIndex === 2) return githubCommits >= 100; // Diamond badge
+        // Gold badge: Unlocked when Silver badge is completed (progressive unlocking)
+        if (badgeIndex === 1) return calculateGithubProgress('silver') >= 100;
+        // Diamond badge: Unlocked when Gold badge is completed
+        if (badgeIndex === 2) return calculateGithubProgress('gold') >= 100;
         return false;
       
       default:
@@ -283,8 +284,12 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           return requirements.length > 0 ? `Need: ${requirements.join(' and ')}` : "Badge completed! 🎉";
         }
         if (badge.tier === 'diamond') {
+          const repoRemaining = Math.max(0, 5 - githubRepos);
           const commitRemaining = Math.max(0, 100 - githubCommits);
-          return commitRemaining > 0 ? `Need ${commitRemaining} more commit(s)` : "Badge completed! 🎉";
+          const requirements = [];
+          if (repoRemaining > 0) requirements.push(`${repoRemaining} more repo(s)`);
+          if (commitRemaining > 0) requirements.push(`${commitRemaining} more commit(s)`);
+          return requirements.length > 0 ? `Need: ${requirements.join(' and ')}` : "Badge completed! 🎉";
         }
         break;
     }
@@ -450,7 +455,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           description: 'Contribute to the community',
           tier: 'diamond' as const,
           progress: calculateGithubProgress('diamond'),
-          criteria: 'Contribute to public projects',
+          criteria: '5 repos + 100 commits',
           nextAction: 'Go Open Source',
           link: '/github-weekly'
         }
