@@ -248,8 +248,8 @@ const LevelUp = () => {
     // Fallback minimum based on verified tasks count
     const totalCommits = Math.max(allVerifiedTasks.length, estimatedTotalCommits);
     
-    // Show at least some activity if user has verified tasks
-    return totalCommits > 0 ? totalCommits : allVerifiedTasks.length > 0 ? 5 : 0;
+    // Return actual calculated commits without hardcoded fallback
+    return totalCommits;
   };
 
   const totalGitHubCommits = getTotalCommitsAllTime();
