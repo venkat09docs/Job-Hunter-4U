@@ -761,6 +761,10 @@ export type Database = {
           parsed_json: Json | null
           url: string | null
           user_task_id: string | null
+          verification_notes: string | null
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           created_at?: string | null
@@ -770,6 +774,10 @@ export type Database = {
           parsed_json?: Json | null
           url?: string | null
           user_task_id?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           created_at?: string | null
@@ -779,6 +787,10 @@ export type Database = {
           parsed_json?: Json | null
           url?: string | null
           user_task_id?: string | null
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {

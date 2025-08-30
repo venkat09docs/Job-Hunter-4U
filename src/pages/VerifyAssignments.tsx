@@ -460,7 +460,7 @@ const VerifyAssignments = () => {
           try {
             const { data: evidenceData, error: evidenceError } = await supabase
               .from('github_evidence')
-              .select('*')
+              .select('*, verification_status, verification_notes, verified_at, verified_by')
               .eq('user_task_id', assignment._originalGitHubTask.id)
               .order('created_at', { ascending: false });
 
@@ -508,14 +508,12 @@ const VerifyAssignments = () => {
                 },
                 url: evidence.url,
                 file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
-                verification_status: assignment._originalGitHubTask.status === 'VERIFIED' ? 'verified' : 
-                                    assignment._originalGitHubTask.status === 'REJECTED' ? 'rejected' : 'pending',
+                verification_status: evidence.verification_status || 'pending',
                 created_at: evidence.created_at,
                 submitted_at: evidence.created_at,
-                verification_notes: assignment._originalGitHubTask.verification_notes || null,
-                verified_at: assignment._originalGitHubTask.status === 'VERIFIED' || assignment._originalGitHubTask.status === 'REJECTED' ? 
-                            assignment._originalGitHubTask.updated_at : null,
-                verified_by: null,
+                verification_notes: evidence.verification_notes || null,
+                verified_at: evidence.verified_at || null,
+                verified_by: evidence.verified_by || null,
                 kind: evidence.kind,
                 parsed_json: evidence.parsed_json
               };
@@ -1093,7 +1091,7 @@ const VerifyAssignments = () => {
             
             const { data: evidenceData, error: evidenceError } = await supabase
               .from('github_evidence')
-              .select('*')
+              .select('*, verification_status, verification_notes, verified_at, verified_by')
               .eq('user_task_id', assignment._originalGitHubTask.id)
               .order('created_at', { ascending: false });
 
@@ -1149,14 +1147,12 @@ const VerifyAssignments = () => {
                 },
                 url: evidence.url,
                 file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : null,
-                verification_status: assignment._originalGitHubTask.status === 'VERIFIED' ? 'verified' : 
-                                assignment._originalGitHubTask.status === 'REJECTED' ? 'rejected' : 'pending',
+                verification_status: evidence.verification_status || 'pending',
                 created_at: evidence.created_at,
                 submitted_at: evidence.created_at,
-                verification_notes: assignment._originalGitHubTask.verification_notes || null,
-                verified_at: assignment._originalGitHubTask.status === 'VERIFIED' || assignment._originalGitHubTask.status === 'REJECTED' ? 
-                            assignment._originalGitHubTask.updated_at : null,
-                verified_by: null,
+                verification_notes: evidence.verification_notes || null,
+                verified_at: evidence.verified_at || null,
+                verified_by: evidence.verified_by || null,
                 kind: evidence.kind,
                 parsed_json: evidence.parsed_json
               };
@@ -1359,12 +1355,35 @@ const VerifyAssignments = () => {
       } else if (selectedAssignment._isGitHubAssignment) {
         // Handle GitHub assignment verification
         console.log('🔍 Processing GitHub assignment verification');
+        
+        // Update the specific evidence with verification status and notes
+        if (selectedAssignment.evidence && selectedAssignment.evidence.length > 0) {
+          // Get the latest evidence (first in the list since it's sorted by creation date desc)
+          const latestEvidence = selectedAssignment.evidence[0];
+          console.log('🔍 Updating GitHub evidence:', latestEvidence.id);
+          
+          const { error: evidenceError } = await supabase
+            .from('github_evidence')
+            .update({
+              verification_status: approved ? 'verified' : 'rejected',
+              verification_notes: verificationNotes.trim() || null,
+              verified_at: new Date().toISOString(),
+              verified_by: user?.id
+            })
+            .eq('id', latestEvidence.id);
+
+          if (evidenceError) {
+            console.error('🔍 Error updating GitHub evidence status:', evidenceError);
+            throw evidenceError;
+          }
+        }
+        
+        // Update the task status
         const { error } = await supabase
           .from('github_user_tasks')
           .update({
             status: approved ? 'VERIFIED' : 'REJECTED', // Set to REJECTED for resubmission
-            score_awarded: approved ? selectedAssignment.career_task_templates.points_reward : 0,
-            verification_notes: verificationNotes.trim() || null
+            score_awarded: approved ? selectedAssignment.career_task_templates.points_reward : 0
           })
           .eq('id', selectedAssignment._originalGitHubTask.id);
 
