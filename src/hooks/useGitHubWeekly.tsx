@@ -276,6 +276,10 @@ export const useGitHubWeekly = () => {
     mutationFn: async ({ taskId, evidenceData }: { taskId: string; evidenceData: EvidenceSubmission }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('🔍 submitEvidenceMutation - evidenceData:', evidenceData);
+      console.log('🔍 submitEvidenceMutation - numberOfCommits:', evidenceData.numberOfCommits);
+      console.log('🔍 submitEvidenceMutation - numberOfReadmes:', evidenceData.numberOfReadmes);
+
       let fileKey: string | undefined;
 
       // Handle file upload if needed
@@ -291,6 +295,18 @@ export const useGitHubWeekly = () => {
         fileKey = fileName;
       }
 
+      const parsed_json_data = { 
+        description: evidenceData.description,
+        numberOfCommits: evidenceData.numberOfCommits,
+        numberOfReadmes: evidenceData.numberOfReadmes,
+        commits_count: evidenceData.numberOfCommits,
+        readmes_count: evidenceData.numberOfReadmes,
+        repo_url: evidenceData.url,
+        repositoryUrl: evidenceData.url
+      };
+
+      console.log('🔍 submitEvidenceMutation - parsed_json_data to save:', parsed_json_data);
+
       const { data, error } = await supabase
         .from('github_evidence')
         .insert({
@@ -298,15 +314,7 @@ export const useGitHubWeekly = () => {
           kind: evidenceData.kind,
           url: evidenceData.url,
           file_key: fileKey,
-          parsed_json: { 
-            description: evidenceData.description,
-            numberOfCommits: evidenceData.numberOfCommits,
-            numberOfReadmes: evidenceData.numberOfReadmes,
-            commits_count: evidenceData.numberOfCommits,
-            readmes_count: evidenceData.numberOfReadmes,
-            repo_url: evidenceData.url,
-            repositoryUrl: evidenceData.url
-          },
+          parsed_json: parsed_json_data,
         })
         .select()
         .single();

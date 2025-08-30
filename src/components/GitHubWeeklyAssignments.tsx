@@ -62,6 +62,9 @@ export const GitHubWeeklyAssignments = () => {
     if (!evidenceDialog.taskId) return;
 
     try {
+      console.log('🔍 Submitting evidence form:', evidenceForm);
+      console.log('🔍 numberOfCommits:', evidenceForm.numberOfCommits);
+      console.log('🔍 numberOfReadmes:', evidenceForm.numberOfReadmes);
       await submitEvidence(evidenceDialog.taskId, evidenceForm);
       setEvidenceDialog({ open: false });
       setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
