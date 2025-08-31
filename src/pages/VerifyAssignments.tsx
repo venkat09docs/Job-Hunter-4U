@@ -637,9 +637,35 @@ const VerifyAssignments = () => {
       if (profilesError) {
         console.error('❌ Error fetching profiles for LinkedIn tasks:', profilesError);
         console.error('❌ Full error object:', profilesError);
+        // Create fallback profiles using linkedin_users data when profile fetch fails
+        profilesData = authUids.map(authUid => {
+          const linkedInUser = linkedInTasks?.find(task => task.linkedin_users?.auth_uid === authUid)?.linkedin_users;
+          return {
+            user_id: authUid,
+            username: linkedInUser?.email?.split('@')[0] || `user_${authUid.slice(0, 8)}`,
+            full_name: linkedInUser?.name || `[LinkedIn User: ${authUid.slice(0, 8)}...]`,
+            profile_image_url: ''
+          };
+        });
       } else {
         profilesData = profiles || [];
         console.log('🔍 Successfully fetched profiles:', profilesData);
+        
+        // Add fallback profiles for any missing users
+        const missingAuthUids = authUids.filter(authUid => !profilesData.find(p => p.user_id === authUid));
+        if (missingAuthUids.length > 0) {
+          console.log('🔍 Adding fallback profiles for missing users:', missingAuthUids);
+          const fallbackProfiles = missingAuthUids.map(authUid => {
+            const linkedInUser = linkedInTasks?.find(task => task.linkedin_users?.auth_uid === authUid)?.linkedin_users;
+            return {
+              user_id: authUid,
+              username: linkedInUser?.email?.split('@')[0] || `user_${authUid.slice(0, 8)}`,
+              full_name: linkedInUser?.name || `[LinkedIn User: ${authUid.slice(0, 8)}...]`,
+              profile_image_url: ''
+            };
+          });
+          profilesData = [...profilesData, ...fallbackProfiles];
+        }
       }
     }
 
@@ -650,7 +676,9 @@ const VerifyAssignments = () => {
       
       return {
         ...task,
-        user_profile: profile
+        user_profile: profile,
+        // Ensure user_id is correctly mapped to auth_uid for proper identification
+        user_id: task.linkedin_users?.auth_uid || task.user_id
       };
     }) || [];
 
