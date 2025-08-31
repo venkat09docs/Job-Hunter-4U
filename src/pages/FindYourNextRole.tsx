@@ -19,6 +19,7 @@ import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { useInternalJobs, type InternalJob } from "@/hooks/useInternalJobs";
 import { useJobMatching } from "@/hooks/useJobMatching";
 import { Progress } from "@/components/ui/progress";
+import PricingDialog from "@/components/PricingDialog";
 
 interface JobResult {
   job_id: string;
@@ -98,6 +99,7 @@ const FindYourNextRole = () => {
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showProfileMatchDialog, setShowProfileMatchDialog] = useState(false);
   const [profileMatchJob, setProfileMatchJob] = useState<JobResult | null>(null);
+  const [showLinkedInUpgradeDialog, setShowLinkedInUpgradeDialog] = useState(false);
 
   // Debug effect to track jobs state changes
   useEffect(() => {
@@ -1135,6 +1137,14 @@ const FindYourNextRole = () => {
     }
   };
 
+  const handleLinkedInButtonClick = () => {
+    if (!isLinkedInJobsAccessible()) {
+      setShowLinkedInUpgradeDialog(true);
+    } else {
+      setSearchType("linkedin-jobs");
+    }
+  };
+
   // Check if user has access to LinkedIn 24-hour Jobs
   const isLinkedInJobsAccessible = () => {
     if (!profile?.subscription_plan) {
@@ -1239,10 +1249,9 @@ const FindYourNextRole = () => {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
-                            onClick={() => {}}
+                            onClick={handleLinkedInButtonClick}
                             variant={searchType === "linkedin-jobs" ? "default" : "outline"}
-                            className="flex-1 min-w-[200px] opacity-50 cursor-not-allowed"
-                            disabled={true}
+                            className="flex-1 min-w-[200px]"
                           >
                             LinkedIn 24-hour Jobs
                           </Button>
@@ -1262,7 +1271,7 @@ const FindYourNextRole = () => {
                     </TooltipProvider>
                   ) : (
                     <Button
-                      onClick={() => setSearchType("linkedin-jobs")}
+                      onClick={handleLinkedInButtonClick}
                       variant={searchType === "linkedin-jobs" ? "default" : "outline"}
                       className="flex-1 min-w-[200px]"
                     >
@@ -2529,6 +2538,21 @@ const FindYourNextRole = () => {
                       </div>
                     </div>
                   )}
+                </DialogContent>
+              </Dialog>
+
+              {/* LinkedIn Upgrade Dialog */}
+              <Dialog open={showLinkedInUpgradeDialog} onOpenChange={setShowLinkedInUpgradeDialog}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-center text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                      Unlock LinkedIn 24-hour Jobs
+                    </DialogTitle>
+                    <p className="text-center text-muted-foreground mt-2">
+                      Get access to the latest LinkedIn job postings with our premium plans
+                    </p>
+                  </DialogHeader>
+                  <PricingDialog eligiblePlans={["3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
                 </DialogContent>
               </Dialog>
         </div>
