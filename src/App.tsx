@@ -65,6 +65,7 @@ import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
 import VerifyAssignments from "./pages/VerifyAssignments";
 import ManageAssignments from "./pages/ManageAssignments";
 import NotificationAnalytics from "./pages/NotificationAnalytics";
+import NotificationManagement from "./pages/NotificationManagement";
 import AffiliateManagementPage from "./pages/AffiliateManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
@@ -431,6 +432,14 @@ const AppContent = () => {
               element={
                 <ProtectedRoute>
                   <NotificationAnalytics />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/notification-management"
+              element={
+                <ProtectedRoute>
+                  <NotificationManagement />
                 </ProtectedRoute>
               } 
             />
