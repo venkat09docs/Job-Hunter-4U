@@ -108,6 +108,128 @@ const FindYourNextRole = () => {
     });
   }, [jobs, loading, searchType]);
 
+  // Fetch existing wishlisted jobs on component mount
+  useEffect(() => {
+    const fetchWishlistedJobs = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('job_title, company_name, job_url')
+          .eq('user_id', user.id)
+          .eq('status', 'wishlist');
+
+        if (error) {
+          console.error('Error fetching wishlisted jobs:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Create a set of wishlisted job identifiers (using company-title combination)
+          const wishlistedJobIds = new Set<string>();
+          const wishlistedInternalJobIds = new Set<string>();
+          
+          data.forEach(item => {
+            // Create a unique identifier from company and job title
+            const jobIdentifier = `${item.company_name?.toLowerCase()}-${item.job_title?.toLowerCase()}`.replace(/\s+/g, '-');
+            wishlistedJobIds.add(jobIdentifier);
+          });
+          
+          setWishlistedJobs(wishlistedJobIds);
+        }
+      } catch (error) {
+        console.error('Error fetching wishlisted jobs:', error);
+      }
+    };
+
+    fetchWishlistedJobs();
+  }, [user]);
+
+  // Update wishlisted jobs when jobs are loaded
+  useEffect(() => {
+    const updateJobWishlistStatus = async () => {
+      if (!user || jobs.length === 0) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('job_title, company_name')
+          .eq('user_id', user.id)
+          .eq('status', 'wishlist');
+
+        if (error) {
+          console.error('Error fetching wishlisted jobs:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const wishlistedJobIds = new Set<string>();
+          
+          data.forEach(wishlistItem => {
+            // Find matching jobs by title and company
+            const matchingJob = jobs.find(job => 
+              job.job_title?.toLowerCase() === wishlistItem.job_title?.toLowerCase() &&
+              job.employer_name?.toLowerCase() === wishlistItem.company_name?.toLowerCase()
+            );
+            
+            if (matchingJob) {
+              wishlistedJobIds.add(matchingJob.job_id);
+            }
+          });
+          
+          setWishlistedJobs(prev => new Set([...prev, ...wishlistedJobIds]));
+        }
+      } catch (error) {
+        console.error('Error updating job wishlist status:', error);
+      }
+    };
+
+    updateJobWishlistStatus();
+  }, [user, jobs]);
+
+  // Update wishlisted internal jobs when internal jobs are loaded
+  useEffect(() => {
+    const updateInternalJobWishlistStatus = async () => {
+      if (!user || internalJobs.length === 0) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('job_tracker')
+          .select('job_title, company_name')
+          .eq('user_id', user.id)
+          .eq('status', 'wishlist');
+
+        if (error) {
+          console.error('Error fetching wishlisted internal jobs:', error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const wishlistedInternalJobIds = new Set<string>();
+          
+          data.forEach(wishlistItem => {
+            // Find matching internal jobs by title and company
+            const matchingJob = internalJobs.find(job => 
+              job.title?.toLowerCase() === wishlistItem.job_title?.toLowerCase() &&
+              job.company?.toLowerCase() === wishlistItem.company_name?.toLowerCase()
+            );
+            
+            if (matchingJob) {
+              wishlistedInternalJobIds.add(matchingJob.id);
+            }
+          });
+          
+          setWishlistedInternalJobs(prev => new Set([...prev, ...wishlistedInternalJobIds]));
+        }
+      } catch (error) {
+        console.error('Error updating internal job wishlist status:', error);
+      }
+    };
+
+    updateInternalJobWishlistStatus();
+  }, [user, internalJobs]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -689,9 +811,42 @@ const FindYourNextRole = () => {
       return;
     }
 
+    // Check if job is already wishlisted
+    if (wishlistedJobs.has(job.job_id)) {
+      toast({
+        title: "Already in wishlist",
+        description: `${job.job_title} at ${job.employer_name} is already in your wishlist.`,
+      });
+      return;
+    }
+
     setAddingToWishlist(job.job_id);
     
     try {
+      // Check if job already exists in database to prevent duplicates
+      const { data: existingJob, error: checkError } = await supabase
+        .from('job_tracker')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_name', job.employer_name)
+        .eq('job_title', job.job_title)
+        .eq('status', 'wishlist')
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        throw checkError;
+      }
+
+      if (existingJob) {
+        // Job already exists in wishlist
+        setWishlistedJobs(prev => new Set([...prev, job.job_id]));
+        toast({
+          title: "Already in wishlist",
+          description: `${job.job_title} at ${job.employer_name} is already in your wishlist.`,
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('job_tracker')
         .insert({
@@ -761,9 +916,42 @@ const FindYourNextRole = () => {
       return;
     }
 
+    // Check if job is already wishlisted
+    if (wishlistedInternalJobs.has(job.id)) {
+      toast({
+        title: "Already in wishlist",
+        description: `${job.title} at ${job.company} is already in your wishlist.`,
+      });
+      return;
+    }
+
     setAddingInternalToWishlist(job.id);
     
     try {
+      // Check if job already exists in database to prevent duplicates
+      const { data: existingJob, error: checkError } = await supabase
+        .from('job_tracker')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_name', job.company || 'Unknown Company')
+        .eq('job_title', job.title || 'Unknown Position')
+        .eq('status', 'wishlist')
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        throw checkError;
+      }
+
+      if (existingJob) {
+        // Job already exists in wishlist
+        setWishlistedInternalJobs(prev => new Set([...prev, job.id]));
+        toast({
+          title: "Already in wishlist",
+          description: `${job.title} at ${job.company} is already in your wishlist.`,
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('job_tracker')
         .insert({
@@ -1321,7 +1509,7 @@ const FindYourNextRole = () => {
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => handleAddToWishlist(job)}
-                                  disabled={addingToWishlist === job.job_id}
+                                  disabled={addingToWishlist === job.job_id || wishlistedJobs.has(job.job_id)}
                                   className="flex items-center gap-2"
                                 >
                                   {addingToWishlist === job.job_id ? (
@@ -1329,7 +1517,7 @@ const FindYourNextRole = () => {
                                   ) : (
                                     <Heart className={`h-4 w-4 ${wishlistedJobs.has(job.job_id) ? 'fill-red-500 text-red-500' : ''}`} />
                                   )}
-                                  Wishlist
+                                  {wishlistedJobs.has(job.job_id) ? 'In Wishlist' : 'Add to Wishlist'}
                                 </Button>
                                 <Button 
                                   variant="secondary" 
