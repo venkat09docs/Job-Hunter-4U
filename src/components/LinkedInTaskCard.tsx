@@ -374,6 +374,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                       <RequestReenableDialog
                         taskId={task.id}
                         taskTitle={task.linkedin_tasks.title}
+                        hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
                       />
                     )}
                   </div>
@@ -541,6 +542,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                       <RequestReenableDialog
                         taskId={task.id}
                         taskTitle={task.linkedin_tasks.title}
+                        hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
                       />
                     )}
                   </div>

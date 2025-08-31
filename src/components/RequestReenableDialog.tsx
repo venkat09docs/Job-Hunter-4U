@@ -16,12 +16,14 @@ import { toast } from 'sonner';
 interface RequestReenableDialogProps {
   taskId: string;
   taskTitle: string;
+  hasPendingRequest?: boolean;
   onRequestSent?: () => void;
 }
 
 export const RequestReenableDialog: React.FC<RequestReenableDialogProps> = ({
   taskId,
   taskTitle,
+  hasPendingRequest = false,
   onRequestSent
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,6 +62,16 @@ export const RequestReenableDialog: React.FC<RequestReenableDialogProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // If there's already a pending request, show different UI
+  if (hasPendingRequest) {
+    return (
+      <Button variant="outline" size="sm" className="w-full" disabled>
+        <Clock className="w-4 h-4 mr-2" />
+        Extension Request Pending
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

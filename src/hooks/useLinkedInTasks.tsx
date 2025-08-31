@@ -30,6 +30,11 @@ export interface LinkedInUserTask {
   extended_at?: string;
   extension_reason?: string;
   linkedin_tasks: LinkedInTask;
+  extension_requests?: Array<{
+    id: string;
+    status: string;
+    created_at: string;
+  }>;
 }
 
 export interface Evidence {
@@ -199,6 +204,11 @@ export const useLinkedInTasks = () => {
             bonus_rules,
             active,
             display_order
+          ),
+          extension_requests:linkedin_task_renable_requests!user_task_id (
+            id,
+            status,
+            created_at
           )
         `)
         .eq('user_id', linkedinUser.id)
