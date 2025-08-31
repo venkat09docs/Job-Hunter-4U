@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp, ExternalLink } from 'lucide-react';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { LearningGoalForm } from '@/components/LearningGoalForm';
 import { format } from 'date-fns';
@@ -141,6 +141,11 @@ export function LearningGoalsSection() {
                         {goal.description && (
                           <div className="text-sm text-muted-foreground">{goal.description}</div>
                         )}
+                        {goal.resources && goal.resources.length > 0 && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {goal.resources.length} resource(s) available
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -164,6 +169,43 @@ export function LearningGoalsSection() {
                     <TableCell>{getStatusBadge(goal)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        {goal.resources && goal.resources.length > 0 && (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="ghost" title="View Learning Resources">
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Learning Resources</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-3">
+                                <p className="text-sm text-muted-foreground">
+                                  Resources for {goal.skill_name}:
+                                </p>
+                                {goal.resources.map((resource: any, index: number) => (
+                                  <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                                    <div>
+                                      <div className="font-medium text-sm">{resource.name}</div>
+                                      <Badge variant="outline" className="text-xs mt-1">
+                                        {resource.type}
+                                      </Badge>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => window.open(resource.url, '_blank')}
+                                      className="shrink-0"
+                                    >
+                                      <ExternalLink className="h-4 w-4 mr-1" />
+                                      Open
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        )}
                         <Dialog open={progressGoal?.id === goal.id} onOpenChange={(open) => !open && setProgressGoal(null)}>
                           <DialogTrigger asChild>
                             <Button size="sm" variant="ghost" onClick={() => openProgressDialog(goal)}>
