@@ -370,8 +370,24 @@ export const useJobHuntingAssignments = () => {
 
       if (error) throw error;
 
-      // Update assignment status
-      await supabase
+      // Optimistic update: Update local state immediately
+      console.log('🔄 submitEvidence - Applying optimistic status update to "submitted"');
+      setAssignments(prevAssignments => {
+        const updatedAssignments = prevAssignments.map(assignment => 
+          assignment.id === assignmentId 
+            ? { 
+                ...assignment, 
+                status: 'submitted',
+                submitted_at: new Date().toISOString()
+              }
+            : assignment
+        );
+        console.log('✅ Optimistic status update applied');
+        return updatedAssignments;
+      });
+
+      // Update assignment status in database
+      const { error: statusError } = await supabase
         .from('job_hunting_assignments')
         .update({ 
           status: 'submitted',
@@ -379,7 +395,14 @@ export const useJobHuntingAssignments = () => {
         })
         .eq('id', assignmentId);
 
-      await fetchAssignments();
+      if (statusError) {
+        console.error('Status update failed, reverting optimistic update:', statusError);
+        // Revert optimistic update on error
+        await fetchAssignments();
+        throw statusError;
+      }
+
+      console.log('✅ Database status update successful');
       await fetchEvidence();
       toast.success('Evidence submitted successfully!');
       

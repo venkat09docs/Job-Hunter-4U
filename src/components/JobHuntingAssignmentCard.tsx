@@ -153,12 +153,14 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
         await submitEvidence(assignment.id, primaryEvidenceType, evidenceData, filesArray);
       });
       
-      toast.success('Evidence submitted successfully!');
+      // Close dialog and reset form immediately after successful submission
       setIsSubmissionOpen(false);
       setEvidenceText('');
       setEvidenceUrl('');
       setFiles(null);
       setFileValidationErrors([]);
+      
+      toast.success('Evidence submitted successfully! Your assignment is now under review.');
     } catch (error) {
       console.error('Submission error:', error);
       toast.error(t('messages.submissionFailed'));
