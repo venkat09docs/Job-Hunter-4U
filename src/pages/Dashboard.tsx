@@ -60,7 +60,10 @@ const Dashboard = () => {
       currentPlan: profile?.subscription_plan,
       eligiblePlans,
       hasPlan,
-      canAccess: hasActive && hasPlan
+      canAccess: hasActive && hasPlan,
+      isAdmin,
+      isRecruiter,
+      finalAccess: isAdmin || isRecruiter || (hasActive && hasPlan)
     });
     return hasActive && hasPlan;
   };
