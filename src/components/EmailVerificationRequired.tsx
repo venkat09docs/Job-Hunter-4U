@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Mail, RefreshCw, LogOut, AlertCircle } from 'lucide-react';
+import { AuthDebugger } from '@/components/AuthDebugger';
 
 export const EmailVerificationRequired = () => {
   const [resending, setResending] = useState(false);
@@ -126,6 +127,9 @@ export const EmailVerificationRequired = () => {
             Having trouble? Contact our support team for assistance.
           </p>
         </div>
+
+        {/* Debug Info - Remove this in production */}
+        <AuthDebugger />
       </div>
     </div>
   );

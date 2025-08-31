@@ -10,6 +10,14 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading, isEmailVerified } = useAuth();
 
+  console.log('🔍 ProtectedRoute check:', {
+    user: !!user,
+    loading,
+    isEmailVerified,
+    email_confirmed_at: user?.email_confirmed_at,
+    user_email: user?.email
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -24,9 +32,11 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   // Check if user's email is verified
   if (!isEmailVerified) {
+    console.log('🚫 User not verified, showing verification page');
     return <EmailVerificationRequired />;
   }
 
+  console.log('✅ User verified, allowing access to dashboard');
   return <>{children}</>;
 };
 

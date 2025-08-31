@@ -59,14 +59,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSession(session);
             setUser(session?.user ?? null);
             // Check email verification status
-            setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
+            const isVerified = session?.user?.email_confirmed_at !== null && session?.user?.email_confirmed_at !== undefined;
+            console.log('🔍 Auth: Email verification check', {
+              email_confirmed_at: session?.user?.email_confirmed_at,
+              isVerified,
+              user_email: session?.user?.email
+            });
+            setIsEmailVerified(isVerified);
           } else {
             // Only update session if we're not in the process of signing out and haven't just logged out
             if (!isSigningOut && !hasLoggedOut) {
               setSession(session);
               setUser(session?.user ?? null);
               // Check email verification status
-              setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
+              const isVerified = session?.user?.email_confirmed_at !== null && session?.user?.email_confirmed_at !== undefined;
+              console.log('🔍 Auth: Email verification check (other events)', {
+                email_confirmed_at: session?.user?.email_confirmed_at,
+                isVerified,
+                event,
+                user_email: session?.user?.email
+              });
+              setIsEmailVerified(isVerified);
             }
           }
           setLoading(false);
@@ -90,7 +103,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setSession(session);
               setUser(session?.user ?? null);
               // Check email verification status
-              setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
+              const isVerified = session?.user?.email_confirmed_at !== null && session?.user?.email_confirmed_at !== undefined;
+              console.log('🔍 Auth: Email verification check (initialization)', {
+                email_confirmed_at: session?.user?.email_confirmed_at,
+                isVerified,
+                user_email: session?.user?.email
+              });
+              setIsEmailVerified(isVerified);
             } else if (hasLoggedOut) {
               // If user has logged out, ensure session is null
               setSession(null);
