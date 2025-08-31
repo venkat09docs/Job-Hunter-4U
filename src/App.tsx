@@ -64,6 +64,7 @@ import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
 import VerifyAssignments from "./pages/VerifyAssignments";
 import ManageAssignments from "./pages/ManageAssignments";
+import AffiliateManagementPage from "./pages/AffiliateManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 
@@ -421,6 +422,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <ManageAssignments />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/affiliate-management"
+            element={
+              <ProtectedRoute>
+                <AffiliateManagementPage />
               </ProtectedRoute>
             } 
           />

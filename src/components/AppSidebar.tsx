@@ -79,6 +79,7 @@ const githubItems = [
 const recruiterItems = [
   { title: "Dashboard", url: "/recruiter", icon: Home },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
+  { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
   { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
 ];
 
@@ -94,6 +95,7 @@ const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
+  { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
   { title: "Manage Assignments", url: "/admin/manage-assignments", icon: ClipboardList },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
