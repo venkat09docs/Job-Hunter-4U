@@ -324,20 +324,37 @@ export const useJobHuntingAssignments = () => {
 
       // Upload files if provided
       if (files && files.length > 0) {
+        console.log(`Uploading ${files.length} files for assignment ${assignmentId}`);
+        
         for (const file of files) {
           const fileName = `${user?.id}/${assignmentId}/${Date.now()}-${file.name}`;
-          const { error: uploadError } = await supabase.storage
+          console.log(`Uploading file: ${fileName}`);
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
             .from('career-evidence')
             .upload(fileName, file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('File upload error:', {
+              fileName,
+              error: uploadError,
+              message: uploadError.message,
+              details: uploadError
+            });
+            throw new Error(`File upload failed for ${file.name}: ${uploadError.message || JSON.stringify(uploadError)}`);
+          }
+
+          console.log('File uploaded successfully:', uploadData);
 
           const { data: urlData } = supabase.storage
             .from('career-evidence')
             .getPublicUrl(fileName);
 
           fileUrls.push(urlData.publicUrl);
+          console.log('File URL generated:', urlData.publicUrl);
         }
+        
+        console.log('All files uploaded successfully. URLs:', fileUrls);
       }
 
       const { data, error } = await supabase
@@ -368,7 +385,14 @@ export const useJobHuntingAssignments = () => {
       
       return data;
     } catch (error: any) {
-      toast.error('Failed to submit evidence: ' + error.message);
+      console.error('submitEvidence error:', {
+        error,
+        message: error?.message,
+        details: error
+      });
+      
+      const errorMessage = error?.message || JSON.stringify(error, null, 2) || 'Unknown error occurred';
+      toast.error(`Failed to submit evidence: ${errorMessage}`);
       throw error;
     }
   };

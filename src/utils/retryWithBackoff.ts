@@ -66,9 +66,19 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       
+      // Log detailed error information for debugging
+      console.error(`Attempt ${attempt} failed:`, {
+        error: lastError,
+        message: lastError.message,
+        stack: lastError.stack,
+        originalError: error
+      });
+      
       if (attempt === config.maxAttempts) {
+        // Create more detailed error message
+        const errorDetails = lastError.message || JSON.stringify(error, null, 2);
         throw new RetryError(
-          `Failed after ${config.maxAttempts} attempts. Last error: ${lastError.message}`,
+          `Failed after ${config.maxAttempts} attempts. Last error: ${errorDetails}`,
           attempt,
           lastError
         );
