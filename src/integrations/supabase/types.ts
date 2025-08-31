@@ -4254,7 +4254,7 @@ export type Database = {
           p_payment_id?: string
           p_referred_user_id: string
         }
-        Returns: undefined
+        Returns: Json
       }
       refresh_github_weekly_assignments: {
         Args: Record<PropertyKey, never>

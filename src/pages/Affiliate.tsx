@@ -1,4 +1,6 @@
 import React from 'react';
+import TestAffiliateButton from '@/components/TestAffiliateButton';
+import AffiliateTestPanel from '@/components/AffiliateTestPanel';
 import { useAffiliate } from '@/hooks/useAffiliate';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -135,6 +137,9 @@ const Affiliate = () => {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Test Component (temporary for debugging) */}
+        <AffiliateTestPanel />
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-3">
