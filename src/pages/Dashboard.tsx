@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
+import PricingDialog from '@/components/PricingDialog';
 
 interface JobEntry {
   id: string;
@@ -112,6 +113,8 @@ const Dashboard = () => {
   const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
   const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
   const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
+  const [jobSearchPricingOpen, setJobSearchPricingOpen] = useState(false);
+  const [jobTrackerPricingOpen, setJobTrackerPricingOpen] = useState(false);
   const [jobStatusCounts, setJobStatusCounts] = useState({
     wishlist: 0,
     applied: 0,
@@ -498,7 +501,27 @@ const Dashboard = () => {
 
 
   const handleJobClick = (jobId: string) => {
-    navigate('/dashboard/job-tracker');
+    if (hasActiveSubscription()) {
+      navigate('/dashboard/job-tracker');
+    } else {
+      setJobTrackerPricingOpen(true);
+    }
+  };
+
+  const handleStartJobSearch = () => {
+    if (hasActiveSubscription()) {
+      navigate('/dashboard/job-search');
+    } else {
+      setJobSearchPricingOpen(true);
+    }
+  };
+
+  const handleViewAllJobs = () => {
+    if (hasActiveSubscription()) {
+      navigate('/dashboard/job-tracker');
+    } else {
+      setJobTrackerPricingOpen(true);
+    }
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -716,7 +739,7 @@ const Dashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate('/dashboard/job-tracker')}
+                        onClick={handleViewAllJobs}
                       >
                         View All
                       </Button>
@@ -763,7 +786,7 @@ const Dashboard = () => {
                           variant="outline"
                           size="sm"
                           className="mt-3"
-                          onClick={() => navigate('/dashboard/job-search')}
+                          onClick={handleStartJobSearch}
                         >
                           Start Job Search
                         </Button>
@@ -825,6 +848,36 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Job Search Pricing Dialog */}
+      <Dialog open={jobSearchPricingOpen} onOpenChange={setJobSearchPricingOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade to Access Job Search
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              Get access to powerful job search tools and find your dream job faster.
+            </p>
+          </DialogHeader>
+          <PricingDialog />
+        </DialogContent>
+      </Dialog>
+
+      {/* Job Tracker Pricing Dialog */}
+      <Dialog open={jobTrackerPricingOpen} onOpenChange={setJobTrackerPricingOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade to Access Job Tracker
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              Get access to job tracking tools to manage your applications effectively.
+            </p>
+          </DialogHeader>
+          <PricingDialog />
+        </DialogContent>
+      </Dialog>
     </ResizableLayout>
   );
 };
