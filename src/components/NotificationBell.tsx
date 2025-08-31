@@ -11,11 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const getCategoryColor = (category: string) => {
@@ -70,8 +73,25 @@ export function NotificationBell() {
     }
   };
 
-  const handleNotificationClick = (notification: any) => {
-    markAsRead(notification.id);
+  const handleNotificationClick = async (notification: any) => {
+    // Mark as read
+    await markAsRead(notification.id);
+
+    // Track click analytics for Phase 3
+    try {
+      const { error } = await supabase.rpc('track_notification_event', {
+        notification_id: notification.id,
+        user_id: user?.id,
+        event_type: 'clicked',
+        metadata: { timestamp: new Date().toISOString() }
+      });
+      
+      if (error) {
+        console.error('Analytics tracking error:', error);
+      }
+    } catch (error) {
+      console.error('Failed to track click event:', error);
+    }
     
     // Navigate based on action_url first, then fallback to type-based routing
     if (notification.action_url) {

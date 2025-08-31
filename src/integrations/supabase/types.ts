@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notification_triggers: {
+        Row: {
+          conditions: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notification_template: string
+          target_roles: string[] | null
+          trigger_name: string
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notification_template: string
+          target_roles?: string[] | null
+          trigger_name: string
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notification_template?: string
+          target_roles?: string[] | null
+          trigger_name?: string
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       affiliate_commissions: {
         Row: {
           affiliate_user_id: string
@@ -2717,6 +2753,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_analytics: {
+        Row: {
+          created_at: string | null
+          event_timestamp: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          notification_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_timestamp?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          notification_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_timestamp?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          notification_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_analytics_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_delivery_log: {
         Row: {
           created_at: string
@@ -4022,6 +4096,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notification_settings: {
+        Row: {
+          created_at: string | null
+          digest_frequency: string | null
+          digest_time: string | null
+          id: string
+          max_daily_notifications: number | null
+          notification_methods: Json | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          timezone: string | null
+          updated_at: string | null
+          user_id: string
+          weekend_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          digest_frequency?: string | null
+          digest_time?: string | null
+          id?: string
+          max_daily_notifications?: number | null
+          notification_methods?: Json | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id: string
+          weekend_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          digest_frequency?: string | null
+          digest_time?: string | null
+          id?: string
+          max_daily_notifications?: number | null
+          notification_methods?: Json | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_id?: string
+          weekend_notifications?: boolean | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -4242,6 +4361,16 @@ export type Database = {
           institute_code: string
           institute_id: string
           institute_name: string
+        }[]
+      }
+      get_notification_analytics_summary: {
+        Args: { end_date?: string; start_date?: string }
+        Returns: {
+          click_rate: number
+          open_rate: number
+          total_clicked: number
+          total_opened: number
+          total_sent: number
         }[]
       }
       get_safe_admin_profiles: {
@@ -4473,6 +4602,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      send_admin_notification: {
+        Args: {
+          notification_category?: string
+          notification_message: string
+          notification_title: string
+          priority?: string
+          target_roles?: string[]
+        }
+        Returns: number
+      }
       send_learning_goal_reminders: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -4498,6 +4637,15 @@ export type Database = {
       }
       sync_student_data_now: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      track_notification_event: {
+        Args: {
+          event_type: string
+          metadata?: Json
+          notification_id: string
+          user_id: string
+        }
         Returns: string
       }
       upsert_resume_data: {
