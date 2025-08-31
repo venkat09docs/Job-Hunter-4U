@@ -2717,6 +2717,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_delivery_log: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          delivery_type: string
+          error_message: string | null
+          id: string
+          notification_id: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          delivery_type: string
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          delivery_type?: string
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_log_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           app_enabled: boolean | null
@@ -2753,6 +2794,45 @@ export type Database = {
           notification_type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      notification_templates: {
+        Row: {
+          category: string
+          created_at: string
+          email_body_template: string | null
+          email_subject_template: string | null
+          id: string
+          is_active: boolean
+          message_template: string
+          template_key: string
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          email_body_template?: string | null
+          email_subject_template?: string | null
+          id?: string
+          is_active?: boolean
+          message_template: string
+          template_key: string
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          email_body_template?: string | null
+          email_subject_template?: string | null
+          id?: string
+          is_active?: boolean
+          message_template?: string
+          template_key?: string
+          title_template?: string
+          updated_at?: string
         }
         Relationships: []
       }
