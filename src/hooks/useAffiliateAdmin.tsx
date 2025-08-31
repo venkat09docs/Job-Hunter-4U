@@ -33,7 +33,9 @@ export const useAffiliateAdmin = () => {
   }, []);
 
   const fetchAffiliateUsers = async () => {
+    setLoading(true);
     try {
+      console.log('Fetching affiliate users...');
       const { data, error } = await supabase
         .from('affiliate_users')
         .select(`
@@ -46,13 +48,18 @@ export const useAffiliateAdmin = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Fetched affiliate users:', data);
       setAffiliateUsers((data as AffiliateUserWithProfile[]) || []);
     } catch (error: any) {
       console.error('Error fetching affiliate users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch affiliate users',
+        description: `Failed to fetch affiliate users: ${error.message}`,
         variant: 'destructive'
       });
     } finally {
