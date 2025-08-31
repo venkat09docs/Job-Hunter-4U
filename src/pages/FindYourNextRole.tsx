@@ -353,13 +353,16 @@ const FindYourNextRole = () => {
     }
   };
 
-  const handleTestWebhook = async () => {
+  const handleSubmit = async () => {
     setLoading(true);
     setJobs([]);
 
     try {
-      // Call the test n8n webhook
-      const response = await fetch('https://rnstech.app.n8n.cloud/webhook-test/jsearch', {
+      // Track job search analytics
+      await incrementAnalytics('job_search');
+
+      // Call the n8n webhook
+      const response = await fetch('https://rnstech.app.n8n.cloud/webhook/jsearch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +382,7 @@ const FindYourNextRole = () => {
 
       const data = await response.json();
       
-      console.log('Test webhook response structure:', data);
+      console.log('Main job search response structure:', data);
       console.log('Data keys:', Object.keys(data || {}));
       console.log('Single job check - has job_id:', !!data?.job_id, 'has job_title:', !!data?.job_title);
       console.log('Response data type:', typeof data, 'Is array:', Array.isArray(data));
@@ -615,22 +618,22 @@ const FindYourNextRole = () => {
         await saveJobResultsToDatabase(jobsArray, formData);
         
         toast({
-          title: "Test Webhook Success", 
-          description: `Found ${jobsArray.length} jobs from test webhook`,
+          title: "Jobs found successfully", 
+          description: `Found ${jobsArray.length} job opportunities for you.`,
         });
       } else {
         setJobs([]);
         setLoading(false); // Set loading to false even when no jobs found
         toast({
-          title: "Test Webhook Success",
-          description: "Test webhook called successfully but no jobs returned. Check console for response structure.",
+          title: "Search completed",
+          description: "No job opportunities found matching your criteria. Try adjusting your search parameters.",
         });
       }
 
     } catch (error) {
-      console.error('Error testing webhook:', error);
+      console.error('Error searching jobs:', error);
       toast({
-        title: "Test Webhook Error",
+        title: "Search Error",
         description: "Please try again later.",
         variant: "destructive",
       });
@@ -639,7 +642,6 @@ const FindYourNextRole = () => {
     }
   };
 
-  const handleSubmit = async () => {
     setLoading(true);
     setJobs([]);
 
@@ -1391,22 +1393,6 @@ const FindYourNextRole = () => {
                           </>
                         ) : (
                           "Find Your Next Role"
-                        )}
-                      </Button>
-
-                      <Button 
-                        onClick={handleTestWebhook} 
-                        disabled={loading}
-                        variant="outline"
-                        className="flex-1 md:flex-none"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Testing...
-                          </>
-                        ) : (
-                          "Test Webhook"
                         )}
                       </Button>
 
