@@ -1580,10 +1580,8 @@ const ResourcesLibrary = () => {
           <TabsContent value="skills-learning" className="mt-6">
             <LearningGoalsSection />
           </TabsContent>
-        </Tabs>
 
-        {/* Content Management Tab */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          {/* Content Management Tab */}
           <TabsContent value="content-mgmt" className="mt-6">
             <div className="space-y-6">
               <Card className="shadow-elegant border-primary/20">
@@ -1732,11 +1730,6 @@ const ResourcesLibrary = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          {/* Skills/Learning Tab */}
-          <TabsContent value="skills-learning" className="mt-6">
-            <LearningGoalsSection />
           </TabsContent>
         </Tabs>
 
