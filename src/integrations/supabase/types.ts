@@ -2719,8 +2719,11 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          app_enabled: boolean | null
           category: string
           created_at: string
+          email_enabled: boolean | null
+          email_frequency: string | null
           id: string
           is_enabled: boolean
           notification_type: string
@@ -2728,8 +2731,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          app_enabled?: boolean | null
           category: string
           created_at?: string
+          email_enabled?: boolean | null
+          email_frequency?: string | null
           id?: string
           is_enabled?: boolean
           notification_type: string
@@ -2737,8 +2743,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          app_enabled?: boolean | null
           category?: string
           created_at?: string
+          email_enabled?: boolean | null
+          email_frequency?: string | null
           id?: string
           is_enabled?: boolean
           notification_type?: string
@@ -2749,10 +2758,16 @@ export type Database = {
       }
       notifications: {
         Row: {
+          action_url: string | null
+          category: string | null
           created_at: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          expires_at: string | null
           id: string
           is_read: boolean
           message: string
+          priority: string | null
           related_id: string | null
           scheduled_for: string | null
           title: string
@@ -2760,10 +2775,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean
           message: string
+          priority?: string | null
           related_id?: string | null
           scheduled_for?: string | null
           title: string
@@ -2771,10 +2792,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean
           message?: string
+          priority?: string | null
           related_id?: string | null
           scheduled_for?: string | null
           title?: string
