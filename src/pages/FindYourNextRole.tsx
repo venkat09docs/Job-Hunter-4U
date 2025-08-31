@@ -1137,9 +1137,18 @@ const FindYourNextRole = () => {
 
   // Check if user has access to LinkedIn 24-hour Jobs
   const isLinkedInJobsAccessible = () => {
-    if (!profile?.subscription_plan) return false;
+    if (!profile?.subscription_plan) {
+      console.log('No subscription plan found, access denied');
+      return false;
+    }
     const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-    return eligiblePlans.includes(profile.subscription_plan);
+    const hasAccess = eligiblePlans.includes(profile.subscription_plan);
+    console.log('LinkedIn Jobs Access Check:', {
+      currentPlan: profile.subscription_plan,
+      hasAccess,
+      eligiblePlans
+    });
+    return hasAccess;
   };
 
   const handleProfileMatch = (job: JobResult) => {
@@ -1225,23 +1234,23 @@ const FindYourNextRole = () => {
                   >
                     Find Your Next Role
                   </Button>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          onClick={() => {
-                            if (!isLinkedInJobsAccessible()) return;
-                            setSearchType("linkedin-jobs");
-                          }}
-                          variant={searchType === "linkedin-jobs" ? "default" : "outline"}
-                          className={`flex-1 min-w-[200px] ${!isLinkedInJobsAccessible() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          disabled={!isLinkedInJobsAccessible()}
+                  {!isLinkedInJobsAccessible() ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            onClick={() => {}}
+                            variant={searchType === "linkedin-jobs" ? "default" : "outline"}
+                            className="flex-1 min-w-[200px] opacity-50 cursor-not-allowed"
+                            disabled={true}
+                          >
+                            LinkedIn 24-hour Jobs
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="top" 
+                          className="max-w-xs p-3 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground border-primary/20 shadow-lg"
                         >
-                          LinkedIn 24-hour Jobs
-                        </Button>
-                      </TooltipTrigger>
-                      {!isLinkedInJobsAccessible() && (
-                        <TooltipContent side="top" className="max-w-xs p-3 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground border-primary/20 shadow-lg">
                           <div className="text-center">
                             <p className="font-semibold mb-1">Premium Feature</p>
                             <p className="text-sm opacity-90">
@@ -1249,10 +1258,18 @@ const FindYourNextRole = () => {
                             </p>
                           </div>
                         </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Button
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <Button
+                      onClick={() => setSearchType("linkedin-jobs")}
+                      variant={searchType === "linkedin-jobs" ? "default" : "outline"}
+                      className="flex-1 min-w-[200px]"
+                    >
+                      LinkedIn 24-hour Jobs
+                    </Button>
+                  )}
+                   <Button
                     onClick={() => setSearchType("internal-jobs")}
                     variant={searchType === "internal-jobs" ? "default" : "outline"}
                     className="flex-1 min-w-[200px]"
