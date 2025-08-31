@@ -21,56 +21,131 @@ interface AffiliateUserWithProfile {
   };
 }
 
+interface PayoutRequestWithDetails {
+  id: string;
+  affiliate_user_id: string;
+  requested_amount: number;
+  status: 'pending' | 'approved' | 'processing' | 'completed' | 'rejected';
+  requested_at: string;
+  approved_by?: string;
+  approved_at?: string;
+  processed_at?: string;
+  admin_notes?: string;
+  rejection_reason?: string;
+  created_at: string;
+  updated_at: string;
+  affiliate_users?: {
+    affiliate_code: string;
+    total_earnings: number;
+    profiles?: {
+      full_name?: string;
+      email?: string;
+      username?: string;
+    };
+  };
+}
+
 export const useAffiliateAdmin = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [affiliateUsers, setAffiliateUsers] = useState<AffiliateUserWithProfile[]>([]);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequestWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    fetchAffiliateUsers();
-  }, []);
+    if (user?.id) {
+      fetchAffiliateUsers();
+      fetchPayoutRequests();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const fetchAffiliateUsers = async () => {
-    setLoading(true);
     try {
-      console.log('Fetching affiliate users...');
+      // Fetch affiliate users and their profiles separately
       const { data, error } = await supabase
         .from('affiliate_users')
-        .select(`
-          *,
-          profiles!fk_affiliate_users_profiles(
-            full_name,
-            email,
-            username
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (error) throw error;
+
+      // Fetch profiles for these users
+      if (data && data.length > 0) {
+        const userIds = data.map(au => au.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email, username')
+          .in('user_id', userIds);
+
+        // Map profiles to affiliate users
+        const affiliateUsersWithProfiles = data.map(au => ({
+          ...au,
+          profiles: profiles?.find(p => p.user_id === au.user_id)
+        }));
+
+        setAffiliateUsers(affiliateUsersWithProfiles as AffiliateUserWithProfile[]);
+      } else {
+        setAffiliateUsers([]);
       }
-      
-      console.log('Fetched affiliate users:', data);
-      setAffiliateUsers((data as AffiliateUserWithProfile[]) || []);
     } catch (error: any) {
       console.error('Error fetching affiliate users:', error);
-      toast({
-        title: 'Error',
-        description: `Failed to fetch affiliate users: ${error.message}`,
-        variant: 'destructive'
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  const updateAffiliateEligibility = async (affiliateId: string, isEligible: boolean) => {
-    setUpdating(affiliateId);
+  const fetchPayoutRequests = async () => {
     try {
-      const updateData: any = { 
+      // Fetch payout requests
+      const { data, error } = await supabase
+        .from('payout_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch related data
+      if (data && data.length > 0) {
+        const affiliateUserIds = data.map(pr => pr.affiliate_user_id);
+        
+        // Fetch affiliate users
+        const { data: affiliateUsersData } = await supabase
+          .from('affiliate_users')
+          .select('id, affiliate_code, total_earnings, user_id')
+          .in('id', affiliateUserIds);
+
+        // Fetch profiles
+        const userIds = affiliateUsersData?.map(au => au.user_id) || [];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email, username')
+          .in('user_id', userIds);
+
+        // Map the data together
+        const payoutRequestsWithDetails = data.map(pr => ({
+          ...pr,
+          affiliate_users: {
+            ...affiliateUsersData?.find(au => au.id === pr.affiliate_user_id),
+            profiles: profiles?.find(p => p.user_id === affiliateUsersData?.find(au => au.id === pr.affiliate_user_id)?.user_id)
+          }
+        }));
+
+        setPayoutRequests(payoutRequestsWithDetails as PayoutRequestWithDetails[]);
+      } else {
+        setPayoutRequests([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching payout requests:', error);
+    }
+  };
+
+  const updateAffiliateEligibility = async (affiliateId: string, isEligible: boolean) => {
+    setUpdating(true);
+    try {
+      const updateData: any = {
         is_eligible: isEligible,
         updated_at: new Date().toISOString()
       };
@@ -78,9 +153,6 @@ export const useAffiliateAdmin = () => {
       if (isEligible) {
         updateData.approved_by = user?.id;
         updateData.approved_at = new Date().toISOString();
-      } else {
-        updateData.approved_by = null;
-        updateData.approved_at = null;
       }
 
       const { error } = await supabase
@@ -90,17 +162,11 @@ export const useAffiliateAdmin = () => {
 
       if (error) throw error;
 
-      // Update local state
-      setAffiliateUsers(prev => 
-        prev.map(user => 
-          user.id === affiliateId 
-            ? { 
-                ...user, 
-                is_eligible: isEligible,
-                approved_by: isEligible ? user?.id : undefined,
-                approved_at: isEligible ? new Date().toISOString() : undefined
-              }
-            : user
+      setAffiliateUsers(prev =>
+        prev.map(affiliate =>
+          affiliate.id === affiliateId
+            ? { ...affiliate, ...updateData }
+            : affiliate
         )
       );
 
@@ -116,15 +182,79 @@ export const useAffiliateAdmin = () => {
         variant: 'destructive'
       });
     } finally {
-      setUpdating(null);
+      setUpdating(false);
+    }
+  };
+
+  const updatePayoutRequest = async (
+    payoutId: string, 
+    status: 'approved' | 'rejected' | 'processing' | 'completed',
+    notes?: string,
+    rejectionReason?: string
+  ) => {
+    setUpdating(true);
+    try {
+      const updateData: any = {
+        status,
+        updated_at: new Date().toISOString()
+      };
+
+      if (status === 'approved') {
+        updateData.approved_by = user?.id;
+        updateData.approved_at = new Date().toISOString();
+      } else if (status === 'processing' || status === 'completed') {
+        updateData.processed_at = new Date().toISOString();
+      }
+
+      if (notes) {
+        updateData.admin_notes = notes;
+      }
+
+      if (rejectionReason) {
+        updateData.rejection_reason = rejectionReason;
+      }
+
+      const { error } = await supabase
+        .from('payout_requests')
+        .update(updateData)
+        .eq('id', payoutId);
+
+      if (error) throw error;
+
+      setPayoutRequests(prev =>
+        prev.map(request =>
+          request.id === payoutId
+            ? { ...request, ...updateData } as PayoutRequestWithDetails
+            : request
+        )
+      );
+
+      toast({
+        title: 'Success',
+        description: `Payout request ${status} successfully`,
+      });
+    } catch (error: any) {
+      console.error('Error updating payout request:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update payout request',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdating(false);
     }
   };
 
   return {
     affiliateUsers,
+    payoutRequests,
     loading,
     updating,
     updateAffiliateEligibility,
-    refreshData: fetchAffiliateUsers
+    updatePayoutRequest,
+    refreshData: () => {
+      fetchAffiliateUsers();
+      fetchPayoutRequests();
+    }
   };
 };

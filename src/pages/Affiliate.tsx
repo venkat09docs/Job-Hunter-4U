@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAffiliate } from '@/hooks/useAffiliate';
+import { usePayoutRequests } from '@/hooks/usePayoutRequests';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import PayoutRequestDialog from '@/components/PayoutRequestDialog';
 
 const Affiliate = () => {
   const navigate = useNavigate();
@@ -22,6 +24,16 @@ const Affiliate = () => {
     getAffiliateLink, 
     copyAffiliateLink 
   } = useAffiliate();
+
+  const { 
+    payoutRequests, 
+    requesting, 
+    requestPayout, 
+    canRequestPayout,
+    refreshPayoutRequests 
+  } = usePayoutRequests(affiliateData?.id);
+
+  const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
 
   if (loading) {
     return (
@@ -134,6 +146,18 @@ const Affiliate = () => {
               </Badge>
             </div>
           </div>
+          
+          {/* Payout Button */}
+          {affiliateData.is_eligible && (
+            <Button
+              onClick={() => setPayoutDialogOpen(true)}
+              className="flex items-center gap-2"
+              disabled={!canRequestPayout(affiliateData)}
+            >
+              <CreditCard className="h-4 w-4" />
+              Request Payout
+            </Button>
+          )}
         </div>
 
         {/* Header */}
@@ -275,6 +299,68 @@ const Affiliate = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Payout Requests Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Payout Requests</CardTitle>
+            <CardDescription>
+              Track your payout requests and their status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {payoutRequests.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No payout requests yet. Request a payout once you have earned commissions!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {payoutRequests.map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">₹{request.requested_amount.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Requested on {new Date(request.requested_at).toLocaleDateString()}
+                      </p>
+                      {request.admin_notes && (
+                        <p className="text-sm text-muted-foreground">
+                          Note: {request.admin_notes}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right space-y-1">
+                      <Badge variant={
+                        request.status === 'completed' ? 'default' : 
+                        request.status === 'approved' || request.status === 'processing' ? 'secondary' : 
+                        request.status === 'rejected' ? 'destructive' : 'outline'
+                      }>
+                        {request.status === 'processing' ? 'Processing' :
+                         request.status === 'approved' ? 'Approved' :
+                         request.status === 'completed' ? 'Completed' :
+                         request.status === 'rejected' ? 'Rejected' : 'Pending'}
+                      </Badge>
+                      {request.processed_at && (
+                        <p className="text-xs text-muted-foreground">
+                          {request.status === 'completed' ? 'Completed' : 'Updated'}: {new Date(request.processed_at).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Payout Request Dialog */}
+        <PayoutRequestDialog
+          open={payoutDialogOpen}
+          onOpenChange={setPayoutDialogOpen}
+          maxAmount={affiliateData?.total_earnings || 0}
+          onConfirm={requestPayout}
+          loading={requesting}
+          canRequest={canRequestPayout(affiliateData)}
+        />
       </div>
     </div>
   );

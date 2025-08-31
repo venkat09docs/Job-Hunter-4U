@@ -82,18 +82,30 @@ export const useAffiliate = () => {
     try {
       const { data, error } = await supabase
         .from('affiliate_referrals')
-        .select(`
-          *,
-          referred_user:profiles!referred_user_id(
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('affiliate_user_id', affiliateData.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReferrals((data as AffiliateReferral[]) || []);
+      
+      // Fetch referred user profiles separately
+      if (data && data.length > 0) {
+        const userIds = data.map(r => r.referred_user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
+        
+        // Map profiles to referrals
+        const referralsWithUsers = data.map(referral => ({
+          ...referral,
+          referred_user: profiles?.find(p => p.user_id === referral.referred_user_id)
+        }));
+        
+        setReferrals(referralsWithUsers as AffiliateReferral[]);
+      } else {
+        setReferrals([]);
+      }
     } catch (error: any) {
       console.error('Error fetching referrals:', error);
     }

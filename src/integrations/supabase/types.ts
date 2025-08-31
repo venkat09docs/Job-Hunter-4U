@@ -2909,6 +2909,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_requests: {
+        Row: {
+          admin_notes: string | null
+          affiliate_user_id: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          id: string
+          processed_at: string | null
+          rejection_reason: string | null
+          requested_amount: number
+          requested_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          affiliate_user_id: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_amount?: number
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          affiliate_user_id?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_amount?: number
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           created_at: string
