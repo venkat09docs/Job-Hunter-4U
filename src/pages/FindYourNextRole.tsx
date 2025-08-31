@@ -1017,22 +1017,32 @@ const FindYourNextRole = () => {
               <CardHeader>
                 <CardTitle>Job Search Type</CardTitle>
                 <CardDescription>
-                  Select the type of job search you want to perform
+                  Choose the type of job search you want to perform
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="search-type">Search Type</Label>
-                  <Select value={searchType} onValueChange={setSearchType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select search type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="regular-search">Find Your Next Role</SelectItem>
-                      <SelectItem value="linkedin-jobs">LinkedIn - 24 Hrs Jobs</SelectItem>
-                      <SelectItem value="internal-jobs">Internal Jobs</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    onClick={() => setSearchType("regular-search")}
+                    variant={searchType === "regular-search" ? "default" : "outline"}
+                    className="flex-1 min-w-[200px]"
+                  >
+                    Find Your Next Role
+                  </Button>
+                  <Button
+                    onClick={() => setSearchType("linkedin-jobs")}
+                    variant={searchType === "linkedin-jobs" ? "default" : "outline"}
+                    className="flex-1 min-w-[200px]"
+                  >
+                    LinkedIn 24-hour Jobs
+                  </Button>
+                  <Button
+                    onClick={() => setSearchType("internal-jobs")}
+                    variant={searchType === "internal-jobs" ? "default" : "outline"}
+                    className="flex-1 min-w-[200px]"
+                  >
+                    Internal Jobs
+                  </Button>
                 </div>
               </CardContent>
             </Card>
