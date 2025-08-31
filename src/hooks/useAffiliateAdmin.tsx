@@ -38,7 +38,7 @@ export const useAffiliateAdmin = () => {
         .from('affiliate_users')
         .select(`
           *,
-          profiles!inner(
+          profiles(
             full_name,
             email,
             username
