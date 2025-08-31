@@ -164,6 +164,20 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
             await refreshProfile();
             await refreshAnalytics();
             
+            // Process affiliate referral if user was referred
+            try {
+              await supabase.functions.invoke('process-affiliate', {
+                body: {
+                  user_id: user?.id,
+                  payment_amount: plan.price,
+                  payment_id: response.razorpay_payment_id
+                }
+              });
+            } catch (affiliateError) {
+              console.error('Affiliate processing error (non-critical):', affiliateError);
+              // Don't show error to user as this is non-critical
+            }
+            
             toast({
               title: "🎉 Payment Successful!",
               description: `Welcome to ${plan.name}! Your subscription is now active.`,

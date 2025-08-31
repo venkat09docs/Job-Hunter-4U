@@ -183,6 +183,20 @@ const InstituteMembershipPlans = () => {
               return;
             }
 
+            // Process affiliate referral if user was referred
+            try {
+              await supabase.functions.invoke('process-affiliate', {
+                body: {
+                  user_id: user?.id,
+                  payment_amount: plan.price,
+                  payment_id: response.razorpay_payment_id
+                }
+              });
+            } catch (affiliateError) {
+              console.error('Affiliate processing error (non-critical):', affiliateError);
+              // Don't show error to user as this is non-critical
+            }
+
             // Success!
             toast({
               title: "🎉 Payment Successful!",

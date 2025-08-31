@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,9 +26,13 @@ const Auth = () => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   
   const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading, isSigningOut, hasLoggedOut } = useAuth();
+
+  // Get affiliate referral code from URL
+  const affiliateCode = searchParams.get('ref');
 
   // Redirect authenticated users, but not if they're signing out or have just logged out
   useEffect(() => {
@@ -73,17 +77,25 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
       
+      // Prepare user metadata with affiliate code if present
+      const userData: any = {
+        username: username,
+        full_name: username,
+        'Display Name': username,
+        industry: industry
+      };
+      
+      // Add affiliate code to metadata if user came from referral link
+      if (affiliateCode) {
+        userData.affiliate_code = affiliateCode;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            username: username,
-            full_name: username,
-            'Display Name': username,
-            industry: industry
-          }
+          data: userData
         }
       });
 
