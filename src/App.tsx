@@ -30,8 +30,10 @@ import MyProfileJourney from "./pages/MyProfileJourney";
 import ResourcesLibrary from "./pages/ResourcesLibrary";
 import LinkedInOptimization from "./pages/LinkedInOptimization";
 import GitHubOptimization from "./pages/GitHubOptimization";
+import GitHubWeekly from "./pages/GitHubWeekly";
 import GitHubActivityTracker from "./pages/GitHubActivityTracker";
 import CareerGrowth from "./pages/CareerGrowth";
+import Affiliate from "./pages/Affiliate";
 
 import FindYourNextRole from "./pages/FindYourNextRole";
 import BuildMyProfile from "./pages/BuildMyProfile";
@@ -60,7 +62,6 @@ import CareerActivities from "./pages/CareerActivities";
 import CareerAssignments from "./pages/CareerAssignments";
 import CareerGrowthActivities from "./pages/CareerGrowthActivities";
 import { JobHuntingAssignments } from "./pages/JobHuntingAssignments";
-import GitHubWeekly from "./pages/GitHubWeekly";
 import VerifyAssignments from "./pages/VerifyAssignments";
 import ManageAssignments from "./pages/ManageAssignments";
 
@@ -245,6 +246,14 @@ const AppContent = () => {
               <PremiumProtectedRoute featureKey="page_github_optimization">
                 <GitHubOptimization />
               </PremiumProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/affiliate" 
+            element={
+              <ProtectedRoute>
+                <Affiliate />
+              </ProtectedRoute>
             } 
           />
           <Route 

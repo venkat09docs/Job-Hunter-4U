@@ -32,10 +32,10 @@ import {
   Sun,
   LogOut,
   Menu,
-  X
+  X,
+  Share2,
+  ClipboardList
 } from "lucide-react";
-
-import { ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
@@ -54,6 +54,7 @@ import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
+  { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
   { title: "Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Build Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },

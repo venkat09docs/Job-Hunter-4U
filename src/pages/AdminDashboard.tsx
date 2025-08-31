@@ -5,12 +5,13 @@ import { useInstituteName } from '@/hooks/useInstituteName';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, GraduationCap, Settings, TrendingUp } from 'lucide-react';
-
+import { Building, GraduationCap, ClipboardList, Share2, TrendingUp } from "lucide-react";
 
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { InstituteDashboard } from '@/components/admin/InstituteDashboard';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
+import { UserAssignmentManagement } from "@/components/admin/UserAssignmentManagement";
+import AffiliateManagement from "@/components/admin/AffiliateManagement";
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -98,32 +99,53 @@ export default function AdminDashboard() {
     );
   }
 
+  const adminTabs = [
+    { id: "dashboard", label: "Dashboard", icon: TrendingUp },
+    { id: "institutes", label: "Institutes", icon: Building },
+    { id: "batches", label: "Batches", icon: GraduationCap },
+    { id: "assignments", label: "User Assignments", icon: ClipboardList },
+    { id: "affiliates", label: "Affiliate Management", icon: Share2 }
+  ];
+  const [activeTab, setActiveTab] = useState("dashboard");
+
   // For Super Admin, show the full layout with sidebar
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>        
         <div className="container mx-auto p-6">
-          <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4" />
-                <span>Dashboard</span>
-              </TabsTrigger>
-              <TabsTrigger value="assignments" className="flex items-center space-x-2">
-                <Users className="h-4 w-4" />
-                <span>User Management</span>
-              </TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
+              {adminTabs.map((tab) => (
+                <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2">
+                  <tab.icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="dashboard">
               <SuperAdminDashboard />
             </TabsContent>
 
-            <TabsContent value="assignments">
+            <TabsContent value="institutes">
               <div className="text-center py-8">
-                <p className="text-muted-foreground">User Management functionality has been moved to dedicated management pages.</p>
+                <p className="text-muted-foreground">Institute Management functionality has been moved to dedicated management pages.</p>
               </div>
+            </TabsContent>
+
+            <TabsContent value="batches">
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Batch Management functionality has been moved to dedicated management pages.</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="assignments">
+              <UserAssignmentManagement />
+            </TabsContent>
+
+            <TabsContent value="affiliates">
+              <AffiliateManagement />
             </TabsContent>
           </Tabs>
         </div>
