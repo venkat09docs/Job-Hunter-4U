@@ -38,7 +38,20 @@ export const useBadgeLeaders = () => {
         supabase.rpc('get_badge_leaders_github_repository')
       ]);
 
-      // Process the results from secure functions
+      if (profileBuildData.error) {
+        console.error('❌ Error fetching profile build leaders:', profileBuildData.error);
+      }
+      if (jobApplyData.error) {
+        console.error('❌ Error fetching job apply leaders:', jobApplyData.error);
+      }
+      if (linkedinGrowthData.error) {
+        console.error('❌ Error fetching LinkedIn growth leaders:', linkedinGrowthData.error);
+      }
+      if (githubRepoData.error) {
+        console.error('❌ Error fetching GitHub repo leaders:', githubRepoData.error);
+      }
+
+      // Transform the data to match the expected BadgeLeader interface
       const profileBuildLeaders: BadgeLeader[] = (profileBuildData.data || []).slice(0, 3).map(item => ({
         user_id: item.user_id,
         username: item.username || '',
@@ -81,6 +94,11 @@ export const useBadgeLeaders = () => {
         linkedinGrowth: linkedinLeaders.length,
         githubRepository: githubLeaders.length
       });
+
+      console.log('🏆 Profile build leaders:', profileBuildLeaders);
+      console.log('🏆 Job application leaders:', jobApplicationLeaders);
+      console.log('🏆 LinkedIn growth leaders:', linkedinLeaders);
+      console.log('🏆 GitHub repository leaders:', githubLeaders);
 
       setBadgeLeaders({
         profileBuild: profileBuildLeaders,
