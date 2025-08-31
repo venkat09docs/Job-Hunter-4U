@@ -40,7 +40,7 @@ export const useAffiliateAdmin = () => {
         .from('affiliate_users')
         .select(`
           *,
-          profiles(
+          profiles!fk_affiliate_users_profiles(
             full_name,
             email,
             username
