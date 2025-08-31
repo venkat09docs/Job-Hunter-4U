@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   isSigningOut: boolean;
   hasLoggedOut: boolean;
+  isEmailVerified: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isSigningOut: false,
   hasLoggedOut: false,
+  isEmailVerified: false,
   signOut: async () => {},
 });
 
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [hasLoggedOut, setHasLoggedOut] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -48,17 +51,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (event === 'SIGNED_OUT') {
             setSession(null);
             setUser(null);
+            setIsEmailVerified(false);
             setIsSigningOut(false);
             setHasLoggedOut(true);
           } else if (event === 'SIGNED_IN') {
             setHasLoggedOut(false);
             setSession(session);
             setUser(session?.user ?? null);
+            // Check email verification status
+            setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
           } else {
             // Only update session if we're not in the process of signing out and haven't just logged out
             if (!isSigningOut && !hasLoggedOut) {
               setSession(session);
               setUser(session?.user ?? null);
+              // Check email verification status
+              setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
             }
           }
           setLoading(false);
@@ -81,10 +89,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (!isSigningOut && !hasLoggedOut) {
               setSession(session);
               setUser(session?.user ?? null);
+              // Check email verification status
+              setIsEmailVerified(session?.user?.email_confirmed_at ? true : false);
             } else if (hasLoggedOut) {
               // If user has logged out, ensure session is null
               setSession(null);
               setUser(null);
+              setIsEmailVerified(false);
             }
           }
           setLoading(false);
@@ -117,6 +128,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Clear local state immediately
       setSession(null);
       setUser(null);
+      setIsEmailVerified(false);
       
       // Clear all possible storage locations using our cross-domain storage
       CrossDomainStorage.clear();
@@ -154,7 +166,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isSigningOut, hasLoggedOut, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isSigningOut, hasLoggedOut, isEmailVerified, signOut }}>
       {children}
     </AuthContext.Provider>
   );

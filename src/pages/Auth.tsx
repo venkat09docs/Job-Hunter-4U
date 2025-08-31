@@ -34,10 +34,14 @@ const Auth = () => {
   // Get affiliate referral code from URL
   const affiliateCode = searchParams.get('ref');
 
-  // Redirect authenticated users, but not if they're signing out or have just logged out
+  // Redirect authenticated and verified users, but not if they're signing out or have just logged out
   useEffect(() => {
     if (!authLoading && user && !isSigningOut && !hasLoggedOut) {
-      navigate('/dashboard', { replace: true });
+      // Only redirect if email is verified
+      const isVerified = user.email_confirmed_at !== null;
+      if (isVerified) {
+        navigate('/dashboard', { replace: true });
+      }
     }
   }, [user, authLoading, isSigningOut, hasLoggedOut, navigate]);
 
