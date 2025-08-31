@@ -3801,6 +3801,55 @@ export type Database = {
           username: string
         }[]
       }
+      get_badge_leaders_github_repository: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          badge_type: string
+          commit_count: number
+          full_name: string
+          profile_image_url: string
+          repo_count: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_badge_leaders_job_apply: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          badge_type: string
+          full_name: string
+          job_count: number
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_badge_leaders_linkedin_growth: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          badge_type: string
+          full_name: string
+          network_count: number
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_badge_leaders_profile_build: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          awarded_at: string
+          badge_type: string
+          full_name: string
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
         Returns: {
