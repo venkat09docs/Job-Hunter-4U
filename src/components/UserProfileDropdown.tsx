@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Settings, LogOut, ChevronDown, Trophy, Bell, TestTube } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy, Bell, HelpCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
 import { NotificationBell } from '@/components/NotificationBell';
-import { AffiliateSystemTester } from '@/components/AffiliateSystemTester';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -23,7 +22,6 @@ export function UserProfileDropdown() {
   const { leaderboard } = useLeaderboard();
   const [open, setOpen] = useState(false);
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
-  const [affiliateTesterOpen, setAffiliateTesterOpen] = useState(false);
 
   // Get current user's total points earned so far (all time)
   const userPoints = leaderboard.current_user_points?.all_time || 0;
@@ -93,9 +91,16 @@ export function UserProfileDropdown() {
               Notifications
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setAffiliateTesterOpen(true)} className="gap-2 cursor-pointer">
-            <TestTube className="h-4 w-4" />
-            Affiliate Tester
+          <DropdownMenuItem asChild>
+            <a 
+              href="https://members.risenshinetechnologies.com/communities/groups/job-hunting-pro/home" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Help/Support
+            </a>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">
@@ -109,10 +114,6 @@ export function UserProfileDropdown() {
       <PointsHistoryDialog 
         open={pointsDialogOpen} 
         onOpenChange={setPointsDialogOpen} 
-      />
-      <AffiliateSystemTester
-        open={affiliateTesterOpen}
-        onOpenChange={setAffiliateTesterOpen}
       />
     </>
   );
