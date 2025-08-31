@@ -455,12 +455,10 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
 
         {/* Main Tabs - Promoted from sub tabs */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-6">
-<TabsList className={`grid w-full ${isIT() ? 'grid-cols-5' : 'grid-cols-4'}`}>
+<TabsList className={`grid w-full ${isIT() ? 'grid-cols-3' : 'grid-cols-2'}`}>
   <TabsTrigger value="application">Job Applications</TabsTrigger>
   <TabsTrigger value="networking">LinkedIn Growth</TabsTrigger>
   {isIT() && <TabsTrigger value="skill">GitHub Activities</TabsTrigger>}
-  <TabsTrigger value="content">Content Mgmt</TabsTrigger>
-  <TabsTrigger value="learning">Skills / Learning</TabsTrigger>
 </TabsList>
             {selectedCategory === 'application' ? (
               <div className="space-y-6">
@@ -727,156 +725,7 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
               </CardContent>
             </Card>
               </div>
-            ) : selectedCategory === 'content' ? (
-              // Content Management Section
-              <div className="space-y-6">
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-primary" />
-                      Content Management Hub
-                    </CardTitle>
-                    <CardDescription>
-                      Create, manage and publish content to showcase your expertise
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Blog Management */}
-                      <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <BookOpen className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg">Blog Management Content</h3>
-                              <p className="text-sm text-muted-foreground">Write and publish blog posts</p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Create professional blog posts to demonstrate your expertise and thought leadership in your field.
-                          </p>
-                          <Button 
-                            onClick={() => navigate('/dashboard/digital-portfolio')}
-                            className="w-full"
-                          >
-                            Manage Blogs
-                          </Button>
-                        </CardContent>
-                      </Card>
-
-                      {/* 1 Minute Portfolio Video */}
-                      <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <Activity className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg">Create 1 Minute Portfolio Video</h3>
-                              <p className="text-sm text-muted-foreground">Create compelling video intro</p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Create a professional 1-minute portfolio video to showcase your skills, experience, and personality to potential employers.
-                          </p>
-                          <Button 
-                            onClick={handlePortfolioVideoClick}
-                            className="w-full"
-                            variant="outline"
-                          >
-                            Create Video Portfolio
-                          </Button>
-                        </CardContent>
-                      </Card>
-
-                      {/* LinkedIn Content */}
-                      <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <Share2 className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg">Generate LinkedIn Posts Content</h3>
-                              <p className="text-sm text-muted-foreground">Create engaging posts</p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Plan and create engaging LinkedIn posts to build your professional network and establish thought leadership.
-                          </p>
-                          <Button 
-                            onClick={handleLinkedInPostsClick}
-                            className="w-full"
-                            variant="outline"
-                          >
-                            LinkedIn Activities
-                          </Button>
-                        </CardContent>
-                      </Card>
-
-                      {/* Digital Portfolio */}
-                      <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <User className="h-6 w-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg">Digital Portfolio</h3>
-                              <p className="text-sm text-muted-foreground">Showcase your work</p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Create a comprehensive digital portfolio to showcase your projects, achievements, and professional journey.
-                          </p>
-                          <Button 
-                            onClick={() => navigate('/dashboard/digital-portfolio')}
-                            className="w-full"
-                            variant="outline"
-                          >
-                            Build Portfolio
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Content Creation Tips */}
-                <Card className="shadow-elegant border-primary/20">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Star className="h-5 w-5 text-primary" />
-                      Content Creation Tips
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg bg-muted/50">
-                        <h4 className="font-medium mb-2">Consistency is Key</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Regular content creation helps establish your voice and builds audience engagement.
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-muted/50">
-                        <h4 className="font-medium mb-2">Quality over Quantity</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Focus on creating valuable, well-researched content rather than frequent low-quality posts.
-                        </p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-muted/50">
-                        <h4 className="font-medium mb-2">Engage with Your Network</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Respond to comments and engage with others' content to build meaningful professional relationships.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-) : selectedCategory === 'skill' ? (
+            ) : selectedCategory === 'skill' ? (
               <div className="space-y-6">
                 <Tabs value={gitTab} onValueChange={(v) => setGitTab(v as 'repo' | 'engagement')} className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
@@ -897,9 +746,6 @@ const [showPricingDialog, setShowPricingDialog] = useState(false);
                   </TabsContent>
                 </Tabs>
               </div>
-            ) : selectedCategory === 'learning' ? (
-              // Skills/Learning Section with CRUD operations
-              <LearningGoalsSection />
             ) : (
               // Regular Activities List
               <div className="space-y-4">

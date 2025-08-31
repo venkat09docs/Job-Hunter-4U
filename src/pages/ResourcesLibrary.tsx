@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useATSHistory } from '@/hooks/useATSHistory';
 
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, X, Star, Upload, CheckCircle, History } from 'lucide-react';
+import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, X, Star, Upload, CheckCircle, History, BookOpen, MessageSquare, Share2, Activity, User } from 'lucide-react';
+import { LearningGoalsSection } from '@/components/LearningGoalsSection';
+import { useProfile } from '@/hooks/useProfile';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -20,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import PricingDialog from '@/components/PricingDialog';
 
 interface SavedResume {
   id: string;
@@ -61,6 +65,8 @@ const ResourcesLibrary = () => {
   
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { hasActiveSubscription } = useProfile();
   const location = useLocation();
   const [savedResumes, setSavedResumes] = useState<SavedResume[]>([]);
   const [savedCoverLetters, setSavedCoverLetters] = useState<SavedCoverLetter[]>([]);
@@ -69,6 +75,7 @@ const ResourcesLibrary = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return location.state?.activeTab || 'saved-resumes';
   });
+  const [showPricingDialog, setShowPricingDialog] = useState(false);
   
   // Edit functionality state
   const [editingCoverLetter, setEditingCoverLetter] = useState<SavedCoverLetter | null>(null);
@@ -99,6 +106,25 @@ const ResourcesLibrary = () => {
   console.log('State variables declared, historyDialogOpen:', historyDialogOpen);
   
   const { isLoading: isHistoryLoading, history, saveATSResult, fetchATSHistory } = useATSHistory();
+
+  // Content management functions
+  const handleLinkedInPostsClick = () => {
+    console.log('handleLinkedInPostsClick called', { hasActiveSubscription: hasActiveSubscription() });
+    if (hasActiveSubscription()) {
+      window.open('https://mysuperaiapp.com/login', '_blank');
+    } else {
+      setShowPricingDialog(true);
+    }
+  };
+
+  const handlePortfolioVideoClick = () => {
+    console.log('handlePortfolioVideoClick called', { hasActiveSubscription: hasActiveSubscription() });
+    if (hasActiveSubscription()) {
+      window.open('https://mysuperaiapp.com/login', '_blank');
+    } else {
+      setShowPricingDialog(true);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -1396,6 +1422,320 @@ const ResourcesLibrary = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Content Management Tab */}
+          <TabsContent value="content-mgmt" className="mt-6">
+            <div className="space-y-6">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    Content Management Hub
+                  </CardTitle>
+                  <CardDescription>
+                    Create, manage and publish content to showcase your expertise
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Blog Management */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <BookOpen className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Blog Management Content</h3>
+                            <p className="text-sm text-muted-foreground">Write and publish blog posts</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create professional blog posts to demonstrate your expertise and thought leadership in your field.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/dashboard/digital-portfolio')}
+                          className="w-full"
+                        >
+                          Manage Blogs
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* 1 Minute Portfolio Video */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Activity className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Create 1 Minute Portfolio Video</h3>
+                            <p className="text-sm text-muted-foreground">Create compelling video intro</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create a professional 1-minute portfolio video to showcase your skills, experience, and personality to potential employers.
+                        </p>
+                        <Button 
+                          onClick={handlePortfolioVideoClick}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          Create Video Portfolio
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* LinkedIn Content */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Share2 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Generate LinkedIn Posts Content</h3>
+                            <p className="text-sm text-muted-foreground">Create engaging posts</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Plan and create engaging LinkedIn posts to build your professional network and establish thought leadership.
+                        </p>
+                        <Button 
+                          onClick={handleLinkedInPostsClick}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          LinkedIn Activities
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Digital Portfolio */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <User className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Digital Portfolio</h3>
+                            <p className="text-sm text-muted-foreground">Showcase your work</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create a comprehensive digital portfolio to showcase your projects, achievements, and professional journey.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/dashboard/digital-portfolio')}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          Build Portfolio
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Content Creation Tips */}
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="h-5 w-5 text-primary" />
+                    Content Creation Tips
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Consistency is Key</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Regular content creation helps establish your voice and builds audience engagement.
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Quality over Quantity</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Focus on creating valuable, well-researched content rather than frequent low-quality posts.
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Engage with Your Network</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Respond to comments and engage with others' content to build meaningful professional relationships.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Skills/Learning Tab */}
+          <TabsContent value="skills-learning" className="mt-6">
+            <LearningGoalsSection />
+          </TabsContent>
+        </Tabs>
+
+        {/* Content Management Tab */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsContent value="content-mgmt" className="mt-6">
+            <div className="space-y-6">
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    Content Management Hub
+                  </CardTitle>
+                  <CardDescription>
+                    Create, manage and publish content to showcase your expertise
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Blog Management */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <BookOpen className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Blog Management Content</h3>
+                            <p className="text-sm text-muted-foreground">Write and publish blog posts</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create professional blog posts to demonstrate your expertise and thought leadership in your field.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/dashboard/digital-portfolio')}
+                          className="w-full"
+                        >
+                          Manage Blogs
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* 1 Minute Portfolio Video */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Activity className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Create 1 Minute Portfolio Video</h3>
+                            <p className="text-sm text-muted-foreground">Create compelling video intro</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create a professional 1-minute portfolio video to showcase your skills, experience, and personality to potential employers.
+                        </p>
+                        <Button 
+                          onClick={handlePortfolioVideoClick}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          Create Video Portfolio
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* LinkedIn Content */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Share2 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Generate LinkedIn Posts Content</h3>
+                            <p className="text-sm text-muted-foreground">Create engaging posts</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Plan and create engaging LinkedIn posts to build your professional network and establish thought leadership.
+                        </p>
+                        <Button 
+                          onClick={handleLinkedInPostsClick}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          LinkedIn Activities
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Digital Portfolio */}
+                    <Card className="border-2 border-dashed border-primary/20 hover:border-primary/40 transition-colors">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <User className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg">Digital Portfolio</h3>
+                            <p className="text-sm text-muted-foreground">Showcase your work</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Create a comprehensive digital portfolio to showcase your projects, achievements, and professional journey.
+                        </p>
+                        <Button 
+                          onClick={() => navigate('/dashboard/digital-portfolio')}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          Build Portfolio
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Content Creation Tips */}
+              <Card className="shadow-elegant border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Star className="h-5 w-5 text-primary" />
+                    Content Creation Tips
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Consistency is Key</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Regular content creation helps establish your voice and builds audience engagement.
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Quality over Quantity</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Focus on creating valuable, well-researched content rather than frequent low-quality posts.
+                      </p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Engage with Your Network</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Respond to comments and engage with others' content to build meaningful professional relationships.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Skills/Learning Tab */}
+          <TabsContent value="skills-learning" className="mt-6">
+            <LearningGoalsSection />
+          </TabsContent>
         </Tabs>
 
         {/* ATS Verification Dialog */}
@@ -1661,6 +2001,21 @@ const ResourcesLibrary = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Pricing Dialog */}
+        {showPricingDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-background rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <PricingDialog />
+              <button
+                onClick={() => setShowPricingDialog(false)}
+                className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
