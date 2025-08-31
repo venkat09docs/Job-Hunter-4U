@@ -989,10 +989,12 @@ const ResourcesLibrary = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[800px]">
             <TabsTrigger value="saved-resumes">Saved Resumes</TabsTrigger>
-            <TabsTrigger value="saved-cover-letters">Saved Cover Letters</TabsTrigger>
+            <TabsTrigger value="saved-cover-letters">Cover Letters</TabsTrigger>
             <TabsTrigger value="saved-readme-files">README Files</TabsTrigger>
+            <TabsTrigger value="content-mgmt">Content Mgmt</TabsTrigger>
+            <TabsTrigger value="skills-learning">Skills / Learning</TabsTrigger>
           </TabsList>
 
           <TabsContent value="saved-resumes" className="mt-6">
