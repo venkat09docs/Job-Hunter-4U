@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, MapPin, Building, Clock, ExternalLink, Heart, ArrowLeft, Save, FolderOpen, Trash2, Search, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -1224,17 +1225,33 @@ const FindYourNextRole = () => {
                   >
                     Find Your Next Role
                   </Button>
-                  <Button
-                    onClick={() => {
-                      if (!isLinkedInJobsAccessible()) return;
-                      setSearchType("linkedin-jobs");
-                    }}
-                    variant={searchType === "linkedin-jobs" ? "default" : "outline"}
-                    className={`flex-1 min-w-[200px] ${!isLinkedInJobsAccessible() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={!isLinkedInJobsAccessible()}
-                  >
-                    LinkedIn 24-hour Jobs
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => {
+                            if (!isLinkedInJobsAccessible()) return;
+                            setSearchType("linkedin-jobs");
+                          }}
+                          variant={searchType === "linkedin-jobs" ? "default" : "outline"}
+                          className={`flex-1 min-w-[200px] ${!isLinkedInJobsAccessible() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          disabled={!isLinkedInJobsAccessible()}
+                        >
+                          LinkedIn 24-hour Jobs
+                        </Button>
+                      </TooltipTrigger>
+                      {!isLinkedInJobsAccessible() && (
+                        <TooltipContent side="top" className="max-w-xs p-3 bg-gradient-to-r from-primary to-primary-glow text-primary-foreground border-primary/20 shadow-lg">
+                          <div className="text-center">
+                            <p className="font-semibold mb-1">Premium Feature</p>
+                            <p className="text-sm opacity-90">
+                              LinkedIn 24-hour Jobs is available for 3-months, 6-months, or 1-year plan subscribers only.
+                            </p>
+                          </div>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <Button
                     onClick={() => setSearchType("internal-jobs")}
                     variant={searchType === "internal-jobs" ? "default" : "outline"}
