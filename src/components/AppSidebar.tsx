@@ -54,7 +54,6 @@ import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
   { title: "Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Build Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
@@ -62,6 +61,7 @@ const mainItems = [
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
+  { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
 ];
 
 const jobHunterItems = [
