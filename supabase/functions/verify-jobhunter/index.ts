@@ -180,6 +180,24 @@ serve(async (req) => {
             .eq('id', evidenceItem.id)
         }
 
+        // Add points to user_activity_points table
+        const today = new Date().toISOString().split('T')[0]
+        const { error: activityPointsError } = await supabase
+          .from('user_activity_points')
+          .insert({
+            user_id: userId,
+            activity_id: `job_hunting_assignment_${assignment.id}`,
+            activity_date: today,
+            points_earned: pointsAwarded,
+            activity_type: 'job_hunting_assignment_completion'
+          })
+
+        if (activityPointsError) {
+          console.error('Error inserting activity points:', activityPointsError)
+        } else {
+          console.log(`✅ Successfully added ${pointsAwarded} points to user_activity_points for assignment ${assignment.id}`)
+        }
+
         totalPointsAwarded += pointsAwarded
         verificationResults.push({
           assignmentId: assignment.id,
