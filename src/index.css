@@ -61,6 +61,51 @@ All colors MUST be HSL.
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
 
+    /* Additional semantic colors */
+    --sky: 198 93% 60%;
+    --sky-foreground: 0 0% 100%;
+    --sky-light: 198 93% 85%;
+    
+    --emerald: 160 84% 39%;
+    --emerald-foreground: 0 0% 100%;
+    --emerald-light: 160 84% 85%;
+    
+    --amber: 43 96% 56%;
+    --amber-foreground: 0 0% 100%;
+    --amber-light: 43 96% 85%;
+    
+    --violet: 262 83% 58%;
+    --violet-foreground: 0 0% 100%;
+    --violet-light: 262 83% 85%;
+    
+    --rose: 351 83% 61%;
+    --rose-foreground: 0 0% 100%;
+    --rose-light: 351 83% 85%;
+    
+    --cyan: 188 95% 42%;
+    --cyan-foreground: 0 0% 100%;
+    --cyan-light: 188 95% 85%;
+    
+    --lime: 84 81% 44%;
+    --lime-foreground: 0 0% 100%;
+    --lime-light: 84 81% 85%;
+    
+    --slate: 215 28% 17%;
+    --slate-foreground: 0 0% 100%;
+    --slate-light: 215 28% 85%;
+    
+    /* Neutral variations */
+    --neutral-50: 0 0% 98%;
+    --neutral-100: 0 0% 96%;
+    --neutral-200: 0 0% 90%;
+    --neutral-300: 0 0% 83%;
+    --neutral-400: 0 0% 64%;
+    --neutral-500: 0 0% 45%;
+    --neutral-600: 0 0% 32%;
+    --neutral-700: 0 0% 25%;
+    --neutral-800: 0 0% 15%;
+    --neutral-900: 0 0% 9%;
+
     /* Job hunter theme colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
