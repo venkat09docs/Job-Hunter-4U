@@ -4116,6 +4116,17 @@ export type Database = {
         }
         Returns: string
       }
+      create_smart_notification: {
+        Args: {
+          action_url_param?: string
+          priority_param?: string
+          scheduled_for_param?: string
+          template_key_param: string
+          template_vars?: Json
+          user_id_param: string
+        }
+        Returns: string
+      }
       generate_affiliate_code: {
         Args: { user_email: string }
         Returns: string
