@@ -7,10 +7,16 @@ interface Notification {
   title: string;
   message: string;
   type: string;
+  category: string;
+  priority: string;
   related_id: string | null;
+  action_url: string | null;
   is_read: boolean;
   created_at: string;
   scheduled_for: string | null;
+  expires_at: string | null;
+  email_sent: boolean;
+  email_sent_at: string | null;
 }
 
 export function useNotifications() {

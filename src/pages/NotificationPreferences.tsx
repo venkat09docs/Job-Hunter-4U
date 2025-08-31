@@ -188,13 +188,13 @@ export default function NotificationPreferences() {
                           {getNotificationDisplayName(preference.notification_type)}
                         </label>
                       </div>
-                      <Switch
-                        id={preference.notification_type}
-                        checked={preference.is_enabled}
-                        onCheckedChange={(checked) => 
-                          updatePreference(preference.notification_type, checked)
-                        }
-                      />
+                       <Switch
+                         id={preference.notification_type}
+                         checked={preference.is_enabled}
+                         onCheckedChange={(checked) => 
+                           updatePreference(preference.notification_type, { is_enabled: checked })
+                         }
+                       />
                     </div>
                     {index < category.preferences.length - 1 && (
                       <Separator className="mt-4" />

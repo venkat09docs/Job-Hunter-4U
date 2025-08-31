@@ -9,6 +9,9 @@ export interface NotificationPreference {
   notification_type: string;
   category: string;
   is_enabled: boolean;
+  email_enabled: boolean;
+  email_frequency: string;
+  app_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -79,14 +82,14 @@ export function useNotificationPreferences() {
     }
   };
 
-  const updatePreference = async (notificationType: string, isEnabled: boolean) => {
+  const updatePreference = async (notificationType: string, updates: Partial<{ is_enabled: boolean; email_enabled: boolean; app_enabled: boolean }>) => {
     if (!user) return;
 
     try {
       const { error } = await supabase
         .from('notification_preferences')
         .update({ 
-          is_enabled: isEnabled,
+          ...updates,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -97,7 +100,7 @@ export function useNotificationPreferences() {
       setPreferences(prev => 
         prev.map(pref => 
           pref.notification_type === notificationType 
-            ? { ...pref, is_enabled: isEnabled }
+            ? { ...pref, ...updates }
             : pref
         )
       );
@@ -116,7 +119,15 @@ export function useNotificationPreferences() {
     }
   };
 
-  const toggleAll = async (category: string, isEnabled: boolean) => {
+  const updateEmailPreference = async (notificationType: string, emailEnabled: boolean) => {
+    await updatePreference(notificationType, { email_enabled: emailEnabled });
+  };
+
+  const updateAppPreference = async (notificationType: string, appEnabled: boolean) => {
+    await updatePreference(notificationType, { app_enabled: appEnabled });
+  };
+
+  const toggleAllInCategory = async (category: string, isEnabled: boolean) => {
     if (!user) return;
 
     try {
@@ -126,6 +137,8 @@ export function useNotificationPreferences() {
         .from('notification_preferences')
         .update({ 
           is_enabled: isEnabled,
+          email_enabled: isEnabled,
+          app_enabled: isEnabled,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -136,7 +149,7 @@ export function useNotificationPreferences() {
       setPreferences(prev => 
         prev.map(pref => 
           pref.category === category 
-            ? { ...pref, is_enabled: isEnabled }
+            ? { ...pref, is_enabled: isEnabled, email_enabled: isEnabled, app_enabled: isEnabled }
             : pref
         )
       );
@@ -249,7 +262,9 @@ export function useNotificationPreferences() {
     preferences,
     loading,
     updatePreference,
-    toggleAll,
+    updateEmailPreference,
+    updateAppPreference,
+    toggleAll: toggleAllInCategory,
     getPreferencesByCategory,
     getCategoryDisplayName,
     getNotificationDisplayName,
