@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { CreditCard, Smartphone, Loader2 } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,27 +36,8 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
   const { toast } = useToast();
   const { user } = useAuth();
   const { refreshProfile, refreshAnalytics } = useProfile();
-  const [selectedGateway, setSelectedGateway] = useState<'razorpay' | 'instamojo'>('instamojo');
   const [loading, setLoading] = useState(false);
 
-  const gateways = [
-    {
-      id: 'instamojo' as const,
-      name: 'Instamojo',
-      description: 'Trusted Indian payment gateway',
-      icon: Smartphone,
-      popular: true,
-      features: ['UPI', 'Cards', 'Net Banking', 'Wallets']
-    },
-    {
-      id: 'razorpay' as const,
-      name: 'Razorpay',
-      description: 'Popular payment solution',
-      icon: CreditCard,
-      popular: false,
-      features: ['Cards', 'UPI', 'Net Banking', 'EMI']
-    }
-  ];
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -224,49 +203,6 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
     }
   };
 
-  const handleInstamojoPayment = async () => {
-    try {
-      console.log('🚀 Starting Instamojo payment...');
-      
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('instamojo-create-order', {
-        body: {
-          amount: Math.round(plan.price * 100),
-          plan_name: plan.name,
-          plan_duration: plan.duration,
-        }
-      });
-
-      if (orderError) {
-        console.error('❌ Payment order error:', orderError);
-        toast({
-          title: "Payment Order Failed", 
-          description: `Error: ${orderError.message}`,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (orderData?.payment_url) {
-        console.log('✅ Redirecting to payment URL:', orderData.payment_url);
-        window.location.href = orderData.payment_url;
-      } else {
-        console.error('❌ No payment URL returned:', orderData);
-        toast({
-          title: "Payment Order Failed",
-          description: "No payment URL received from Instamojo",
-          variant: "destructive"
-        });
-      }
-      
-    } catch (error) {
-      console.error('❌ Instamojo payment error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to initialize Instamojo payment. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handlePayment = async () => {
     if (!user) {
@@ -281,11 +217,7 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
     setLoading(true);
     
     try {
-      if (selectedGateway === 'razorpay') {
-        await handleRazorpayPayment();
-      } else {
-        await handleInstamojoPayment();
-      }
+      await handleRazorpayPayment();
     } finally {
       setLoading(false);
     }
@@ -293,74 +225,37 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
 
   return (
     <div className="space-y-4">
-      <div className="text-sm font-medium text-foreground mb-3">
-        Choose Payment Method
-      </div>
-      
-      <RadioGroup 
-        value={selectedGateway} 
-        onValueChange={(value) => setSelectedGateway(value as 'razorpay' | 'instamojo')}
-        className="space-y-3"
-      >
-        {gateways.map((gateway) => {
-          const IconComponent = gateway.icon;
-          return (
-            <div key={gateway.id}>
-              <Label 
-                htmlFor={gateway.id}
-                className="cursor-pointer"
-              >
-                <Card className={`p-4 transition-all duration-200 hover:shadow-md ${
-                  selectedGateway === gateway.id 
-                    ? 'ring-2 ring-primary border-primary bg-primary/5' 
-                    : 'border-border hover:border-primary/50'
-                }`}>
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value={gateway.id} id={gateway.id} />
-                    <div className="flex-1 flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-full ${
-                          selectedGateway === gateway.id 
-                            ? 'bg-primary/20' 
-                            : 'bg-muted'
-                        }`}>
-                          <IconComponent className={`h-4 w-4 ${
-                            selectedGateway === gateway.id 
-                              ? 'text-primary' 
-                              : 'text-muted-foreground'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{gateway.name}</span>
-                            {gateway.popular && (
-                              <Badge variant="secondary" className="text-xs">
-                                Recommended
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {gateway.description}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex flex-wrap gap-1 justify-end">
-                          {gateway.features.slice(0, 3).map((feature) => (
-                            <Badge key={feature} variant="outline" className="text-xs">
-                              {feature}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </Label>
+      <div className="space-y-3">
+        <Card className="p-4 border-primary bg-primary/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-full bg-primary/20">
+                <CreditCard className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Razorpay</span>
+                  <Badge variant="secondary" className="text-xs">
+                    Recommended
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Secure payment solution
+                </p>
+              </div>
             </div>
-          );
-        })}
-      </RadioGroup>
+            <div className="text-right">
+              <div className="flex flex-wrap gap-1 justify-end">
+                {['Cards', 'UPI', 'Net Banking'].map((feature) => (
+                  <Badge key={feature} variant="outline" className="text-xs">
+                    {feature}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <Button 
         onClick={handlePayment}
@@ -375,7 +270,7 @@ const PaymentGatewaySelector = ({ plan, onSuccess, disabled = false }: PaymentGa
           </>
         ) : (
           <>
-            Pay ₹{plan.price} with {gateways.find(g => g.id === selectedGateway)?.name}
+            Pay ₹{plan.price} with Razorpay
           </>
         )}
       </Button>
