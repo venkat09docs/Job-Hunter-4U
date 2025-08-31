@@ -61,7 +61,7 @@ interface LinkedInJobSearchForm {
 
 const FindYourNextRole = () => {
   const { user } = useAuth();
-  const { incrementAnalytics } = useProfile();
+  const { incrementAnalytics, profile } = useProfile();
   const { jobs: internalJobs, loading: internalJobsLoading, filters: internalFilters, updateFilter, clearFilters } = useInternalJobs();
   const { calculateJobMatch, loading: profileLoading } = useJobMatching();
   const [formData, setFormData] = useState<JobSearchForm>({
@@ -1134,6 +1134,13 @@ const FindYourNextRole = () => {
     }
   };
 
+  // Check if user has access to LinkedIn 24-hour Jobs
+  const isLinkedInJobsAccessible = () => {
+    if (!profile?.subscription_plan) return false;
+    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+    return eligiblePlans.includes(profile.subscription_plan);
+  };
+
   const handleProfileMatch = (job: JobResult) => {
     setProfileMatchJob(job);
     setShowProfileMatchDialog(true);
@@ -1218,9 +1225,13 @@ const FindYourNextRole = () => {
                     Find Your Next Role
                   </Button>
                   <Button
-                    onClick={() => setSearchType("linkedin-jobs")}
+                    onClick={() => {
+                      if (!isLinkedInJobsAccessible()) return;
+                      setSearchType("linkedin-jobs");
+                    }}
                     variant={searchType === "linkedin-jobs" ? "default" : "outline"}
-                    className="flex-1 min-w-[200px]"
+                    className={`flex-1 min-w-[200px] ${!isLinkedInJobsAccessible() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={!isLinkedInJobsAccessible()}
                   >
                     LinkedIn 24-hour Jobs
                   </Button>
