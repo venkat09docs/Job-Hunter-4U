@@ -115,6 +115,7 @@ const Dashboard = () => {
   const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
   const [jobSearchPricingOpen, setJobSearchPricingOpen] = useState(false);
   const [jobTrackerPricingOpen, setJobTrackerPricingOpen] = useState(false);
+  const [githubTrackerPricingOpen, setGithubTrackerPricingOpen] = useState(false);
   const [jobStatusCounts, setJobStatusCounts] = useState({
     wishlist: 0,
     applied: 0,
@@ -524,6 +525,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleViewGithubTracker = () => {
+    if (hasActiveSubscription()) {
+      navigate('/dashboard/github-activity-tracker');
+    } else {
+      setGithubTrackerPricingOpen(true);
+    }
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'interviewing':
@@ -834,7 +843,7 @@ const Dashboard = () => {
                         variant="outline"
                         size="sm"
                         className="w-full"
-                        onClick={() => navigate('/dashboard/github-activity-tracker')}
+                        onClick={handleViewGithubTracker}
                       >
                         View GitHub Tracker
                       </Button>
@@ -873,6 +882,21 @@ const Dashboard = () => {
             </DialogTitle>
             <p className="text-center text-muted-foreground">
               Get access to job tracking tools to manage your applications effectively.
+            </p>
+          </DialogHeader>
+          <PricingDialog />
+        </DialogContent>
+      </Dialog>
+
+      {/* GitHub Tracker Pricing Dialog */}
+      <Dialog open={githubTrackerPricingOpen} onOpenChange={setGithubTrackerPricingOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade to Access GitHub Tracker
+            </DialogTitle>
+            <p className="text-center text-muted-foreground">
+              Get access to GitHub activity tracking tools to monitor your coding progress.
             </p>
           </DialogHeader>
           <PricingDialog />
