@@ -4340,6 +4340,13 @@ export type Database = {
         }
         Returns: Json
       }
+      queue_missed_webhooks: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          message: string
+          queued_count: number
+        }[]
+      }
       refresh_github_weekly_assignments: {
         Args: Record<PropertyKey, never>
         Returns: Json
