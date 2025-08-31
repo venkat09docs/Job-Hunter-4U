@@ -3805,10 +3805,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           badge_type: string
-          commit_count: number
+          commits_count: number
           full_name: string
           profile_image_url: string
-          repo_count: number
+          repos_count: number
           total_points: number
           user_id: string
           username: string
