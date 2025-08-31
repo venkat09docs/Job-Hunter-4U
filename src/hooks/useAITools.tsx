@@ -255,29 +255,33 @@ export const useAITools = () => {
     }
   };
 
-  const useTool = async (toolId: string, creditPoints: number) => {
+  const useTool = async (toolId: string, creditPoints: number = 1) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to use AI tools.",
+        variant: "destructive"
+      });
+      return { success: false, remainingCredits: 0 };
+    }
+
     try {
-      // Record tool usage
-      const { error: usageError } = await supabase
-        .from('tool_usage')
-        .insert([{
-          user_id: user?.id,
-          tool_id: toolId,
-          credits_used: creditPoints
-        }]);
+      // Get tool details for notification
+      const { data: tool } = await supabase
+        .from('ai_tools')
+        .select('tool_name')
+        .eq('id', toolId)
+        .maybeSingle();
 
-      if (usageError) throw usageError;
-
-      // Check if user has active subscription instead of tokens
-      const { data: profile, error: profileError } = await supabase
+      // Check if user has active subscription
+      const { data: profile } = await supabase
         .from('profiles')
         .select('subscription_active, subscription_end_date')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (!profile) throw new Error('Profile not found');
 
-      // Check if subscription is active and not expired
       const hasActiveSubscription = profile.subscription_active && 
         profile.subscription_end_date && 
         new Date(profile.subscription_end_date) > new Date();
@@ -291,13 +295,54 @@ export const useAITools = () => {
         return { success: false, remainingCredits: 0 };
       }
 
+      // Record tool usage (this would be expanded based on your credit system)
+      const { error } = await supabase
+        .from('tool_usage')
+        .insert([{
+          user_id: user.id,
+          tool_id: toolId,
+          credits_used: creditPoints
+        }]);
+
+      if (error) throw error;
+
+      // Send AI tool usage notification (Phase 2)
+      const creditsRemaining = 999; // Placeholder - would be calculated from actual credit system
+      
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          title: 'AI Tool Used Successfully! 🤖',
+          message: `You successfully used ${tool?.tool_name || 'AI Tool'}! ${creditsRemaining} credits remaining.`,
+          type: 'ai_tool_used',
+          category: 'technical',
+          priority: 'low',
+          related_id: toolId
+        });
+
+      // Check if credits are low and send warning
+      if (creditsRemaining <= 10) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: user.id,
+            title: 'AI Credits Running Low! ⚡',
+            message: `You have only ${creditsRemaining} AI credits left. Consider upgrading your plan to continue using AI tools.`,
+            type: 'ai_credits_low',
+            category: 'subscription',
+            priority: 'high',
+            action_url: '/dashboard/manage-subscriptions'
+          });
+      }
+
       toast({
         title: 'Tool Accessed',
         description: 'Tool accessed successfully with your active subscription.',
-        duration: 3000, // Auto-dismiss after 3 seconds
+        duration: 3000
       });
 
-      return { success: true, remainingCredits: 1 };
+      return { success: true, remainingCredits: creditsRemaining };
     } catch (error: any) {
       console.error('Error using tool:', error);
       toast({
@@ -305,7 +350,7 @@ export const useAITools = () => {
         description: 'Failed to access tool',
         variant: 'destructive'
       });
-      throw error;
+      return { success: false, remainingCredits: 0 };
     }
   };
 

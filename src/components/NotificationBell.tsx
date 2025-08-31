@@ -55,6 +55,16 @@ export function NotificationBell() {
         return 'Profile';
       case 'subscription':
         return 'Plan';
+      case 'ai_tools':
+        return 'AI';
+      case 'github':
+        return 'GitHub';
+      case 'reminder':
+        return 'Reminder';
+      case 'warning':
+        return 'Warning';
+      case 'info':
+        return 'Info';
       default:
         return 'General';
     }
@@ -68,59 +78,70 @@ export function NotificationBell() {
       navigate(notification.action_url);
     } else {
       // Enhanced type-based navigation with new notification types
-      switch (notification.type) {
-        case 'new_job_posted':
-        case 'job_application_reminder':
-        case 'job_search_results':
-        case 'job_match_found':
-          navigate('/dashboard/job-search');
-          break;
-        case 'follow_up_reminder':
-        case 'job_status_stale':
-          navigate('/dashboard/job-tracker');
-          break;
-        case 'assignment_completed':
-        case 'assignment_due_soon':
-          navigate('/dashboard/career-assignments');
-          break;
-        case 'points_milestone':
-        case 'achievement_unlocked':
-        case 'milestone_reached':
-        case 'leaderboard_position':
-          navigate('/dashboard/leaderboard-points');
-          break;
-        case 'github_streak_achieved':
-        case 'github_activity_reminder':
-          navigate('/dashboard/github-activity-tracker');
-          break;
-        case 'linkedin_milestone':
-        case 'linkedin_progress_update':
-          navigate('/dashboard/linkedin-optimization');
-          break;
-        case 'profile_completion_reminder':
-        case 'resume_progress_update':
-          navigate('/dashboard/build-my-profile');
-          break;
-        case 'subscription_expiring':
-          navigate('/dashboard/manage-subscriptions');
-          break;
-        case 'learning_goal_reminder':
-        case 'skill_assessment_due':
-        case 'level_up_daily_reminder':
-          navigate('/dashboard/level-up');
-          break;
-        case 'interview_preparation':
-          navigate('/dashboard/career-growth');
-          break;
-        case 'weekly_progress_summary':
-        case 'monthly_progress_report':
-        case 'system_maintenance':
-        case 'feature_announcement':
-          navigate('/dashboard');
-          break;
-        default:
-          navigate('/dashboard');
-      }
+      const typeToRouteMap: Record<string, string> = {
+        // Job hunting
+        'new_job_posted': '/dashboard/job-search',
+        'job_application_reminder': '/dashboard/job-search',
+        'job_search_results': '/dashboard/job-search',
+        'job_match_found': '/dashboard/job-search',
+        'follow_up_reminder': '/dashboard/job-tracker',
+        'job_status_stale': '/dashboard/job-tracker',
+        
+        // Assignments & Tasks
+        'assignment_completed': '/dashboard/career-assignments',
+        'assignment_due_soon': '/dashboard/career-assignments',
+        
+        // Achievements & Points
+        'points_milestone': '/dashboard/leaderboard-points',
+        'achievement_unlocked': '/dashboard/leaderboard-points',
+        'milestone_reached': '/dashboard/leaderboard-points',
+        'leaderboard_position': '/dashboard/leaderboard-points',
+        
+        // GitHub notifications (Phase 2)
+        'github_weekly_completed': '/dashboard/github-activity-tracker',
+        'github_streak_milestone': '/dashboard/github-activity-tracker',
+        'github_task_reminder': '/dashboard/github-activity-tracker',
+        'github_pr_merged': '/dashboard/github-activity-tracker',
+        'github_repo_milestone': '/dashboard/github-activity-tracker',
+        'github_streak_achieved': '/dashboard/github-activity-tracker',
+        'github_activity_reminder': '/dashboard/github-activity-tracker',
+        
+        // LinkedIn notifications (Phase 2)  
+        'linkedin_weekly_completed': '/dashboard/linkedin-optimization',
+        'linkedin_connection_milestone': '/dashboard/linkedin-optimization',
+        'linkedin_task_reminder': '/dashboard/linkedin-optimization',
+        'linkedin_post_engagement': '/dashboard/linkedin-optimization',
+        'linkedin_milestone': '/dashboard/linkedin-optimization',
+        'linkedin_progress_update': '/dashboard/linkedin-optimization',
+        
+        // AI Tools notifications (Phase 2)
+        'ai_tool_used': '/dashboard',
+        'ai_credits_low': '/dashboard/manage-subscriptions',
+        'ai_monthly_summary': '/dashboard',
+        'ai_new_tool_available': '/dashboard',
+        
+        // Profile & Resume
+        'profile_completion_reminder': '/dashboard/build-my-profile',
+        'resume_progress_update': '/dashboard/build-my-profile',
+        
+        // Subscription
+        'subscription_expiring': '/dashboard/manage-subscriptions',
+        
+        // Learning & Development
+        'learning_goal_reminder': '/dashboard/level-up',
+        'skill_assessment_due': '/dashboard/level-up',
+        'level_up_daily_reminder': '/dashboard/level-up',
+        'interview_preparation': '/dashboard/career-growth',
+        
+        // General
+        'weekly_progress_summary': '/dashboard',
+        'monthly_progress_report': '/dashboard',
+        'system_maintenance': '/dashboard',
+        'feature_announcement': '/dashboard'
+      };
+      
+      const route = typeToRouteMap[notification.type] || '/dashboard';
+      navigate(route);
     }
   };
 
