@@ -138,11 +138,11 @@ serve(async (req) => {
       )
     }
 
-    // Calculate due date (end of week - Sunday at 23:59)
+    // Calculate due date (Sunday at 11:59 PM)
     const weekStart = getMonday(now)
     const weekEnd = new Date(weekStart)
     weekEnd.setDate(weekStart.getDate() + 6) // Sunday
-    weekEnd.setHours(23, 59, 59, 999)
+    weekEnd.setHours(23, 59, 59, 999) // Sunday 11:59:59 PM
 
     // Create new assignments for all users and tasks
     const assignments = []
