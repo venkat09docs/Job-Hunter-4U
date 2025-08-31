@@ -36,7 +36,14 @@ export const useAffiliateAdmin = () => {
     try {
       const { data, error } = await supabase
         .from('affiliate_users')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(
+            full_name,
+            email,
+            username
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
