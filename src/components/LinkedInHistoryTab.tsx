@@ -28,6 +28,12 @@ interface HistoricalTask {
     description: string;
     points_base: number;
   };
+  extension_requests?: Array<{
+    id: string;
+    status: string;
+    created_at: string;
+    reason: string;
+  }>;
 }
 
 interface PeriodSummary {
@@ -66,6 +72,12 @@ export const LinkedInHistoryTab = () => {
             title,
             description,
             points_base
+          ),
+          extension_requests:linkedin_task_renable_requests!user_task_id (
+            id,
+            status,
+            created_at,
+            reason
           )
         `)
         .eq('user_id', linkedinUser.id)
@@ -89,7 +101,13 @@ export const LinkedInHistoryTab = () => {
 
     return Object.entries(grouped)
       .map(([period, tasks]) => {
-        const completedTasks = tasks.filter(t => t.status === 'VERIFIED').length;
+        // Count tasks as completed if they are VERIFIED, SUBMITTED, or have any activity (extension requests)
+        const completedTasks = tasks.filter(t => 
+          t.status === 'VERIFIED' || 
+          t.status === 'SUBMITTED' || 
+          t.status === 'PARTIALLY_VERIFIED' ||
+          (t.extension_requests && t.extension_requests.length > 0)
+        ).length;
         const totalPoints = tasks.reduce((sum, t) => sum + t.score_awarded, 0);
         const maxPoints = tasks.reduce((sum, t) => sum + t.linkedin_tasks.points_base, 0);
         
@@ -133,7 +151,14 @@ export const LinkedInHistoryTab = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string, extensionRequests?: Array<{id: string, status: string}>) => {
+    // Check if there are pending extension requests
+    const hasPendingExtension = extensionRequests?.some(req => req.status === 'pending');
+    
+    if (hasPendingExtension) {
+      return <Clock className="w-4 h-4 text-orange-600" />;
+    }
+    
     switch (status) {
       case 'VERIFIED':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
@@ -147,7 +172,19 @@ export const LinkedInHistoryTab = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, extensionRequests?: Array<{id: string, status: string}>) => {
+    // Check if there are pending extension requests
+    const hasPendingExtension = extensionRequests?.some(req => req.status === 'pending');
+    const hasApprovedExtension = extensionRequests?.some(req => req.status === 'approved');
+    
+    if (hasPendingExtension) {
+      return <Badge variant="secondary">Extension Pending</Badge>;
+    }
+    
+    if (hasApprovedExtension) {
+      return <Badge variant="outline">Extension Approved</Badge>;
+    }
+    
     const variants = {
       'VERIFIED': 'default' as const,
       'SUBMITTED': 'secondary' as const,
@@ -262,12 +299,17 @@ export const LinkedInHistoryTab = () => {
                           className="flex items-center justify-between p-3 bg-background border rounded-lg"
                         >
                           <div className="flex items-center gap-3">
-                            {getStatusIcon(task.status)}
+                            {getStatusIcon(task.status, task.extension_requests)}
                             <div>
                               <p className="font-medium text-sm">{task.linkedin_tasks.title}</p>
                               <p className="text-xs text-muted-foreground">
                                 Updated: {format(new Date(task.updated_at), 'MMM dd, yyyy at h:mm a')}
                               </p>
+                              {task.extension_requests && task.extension_requests.length > 0 && (
+                                <p className="text-xs text-orange-600">
+                                  Extension request: {task.extension_requests[0].status}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
@@ -276,7 +318,7 @@ export const LinkedInHistoryTab = () => {
                                 {task.score_awarded} / {task.linkedin_tasks.points_base} pts
                               </p>
                             </div>
-                            {getStatusBadge(task.status)}
+                            {getStatusBadge(task.status, task.extension_requests)}
                           </div>
                         </div>
                       ))}
