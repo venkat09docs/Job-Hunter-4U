@@ -1,15 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAffiliate } from '@/hooks/useAffiliate';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const Affiliate = () => {
+  const navigate = useNavigate();
   const { profile, hasActiveSubscription } = useProfile();
   const { 
     affiliateData, 
@@ -112,17 +114,36 @@ const Affiliate = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="space-y-6">
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between border-b pb-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <Separator orientation="vertical" className="h-6" />
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">Affiliate Program</h1>
+              <Badge variant={affiliateData.is_eligible ? "default" : "secondary"}>
+                {affiliateData.is_eligible ? 'Active' : 'Pending Approval'}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Affiliate Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
+            <h2 className="text-xl font-semibold">Dashboard</h2>
+            <p className="text-muted-foreground mt-1">
               Track your referrals and earnings
             </p>
           </div>
-          <Badge variant={affiliateData.is_eligible ? "default" : "secondary"}>
-            {affiliateData.is_eligible ? 'Active' : 'Pending Approval'}
-          </Badge>
         </div>
 
         {/* Status Alert */}

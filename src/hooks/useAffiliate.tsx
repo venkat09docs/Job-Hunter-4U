@@ -44,11 +44,17 @@ export const useAffiliate = () => {
   useEffect(() => {
     if (user?.id) {
       fetchAffiliateData();
-      fetchReferrals();
     } else {
       setLoading(false);
     }
   }, [user]);
+
+  // Fetch referrals when affiliateData is available
+  useEffect(() => {
+    if (affiliateData?.id) {
+      fetchReferrals();
+    }
+  }, [affiliateData]);
 
   const fetchAffiliateData = async () => {
     try {
@@ -76,7 +82,13 @@ export const useAffiliate = () => {
     try {
       const { data, error } = await supabase
         .from('affiliate_referrals')
-        .select('*')
+        .select(`
+          *,
+          referred_user:profiles!referred_user_id(
+            full_name,
+            email
+          )
+        `)
         .eq('affiliate_user_id', affiliateData.id)
         .order('created_at', { ascending: false });
 
