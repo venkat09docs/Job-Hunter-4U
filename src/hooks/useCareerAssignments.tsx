@@ -545,13 +545,26 @@ export const useCareerAssignments = () => {
       let fileUrls: string[] = [];
       
       if (file) {
-        // Upload file to Supabase storage
-        const fileName = `${user.id}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
+        // Upload file to Supabase storage with proper path structure for RLS policy
+        // Policy expects: {user_id}/{assignment_id}/filename
+        const fileName = `${user.id}/${assignmentId}/${Date.now()}_${file.name}`;
+        console.log('🔍 Attempting to upload file:', fileName, 'Size:', file.size, 'Type:', file.type);
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('career-evidence')
           .upload(fileName, file);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('🔍 File upload error:', uploadError);
+          console.error('🔍 Full upload error details:', {
+            message: uploadError.message,
+            name: uploadError.name,
+            stack: uploadError.stack
+          });
+          throw uploadError;
+        }
+        
+        console.log('🔍 File upload successful:', uploadData);
         
         const { data: { publicUrl } } = supabase.storage
           .from('career-evidence')
