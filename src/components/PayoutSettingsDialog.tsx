@@ -25,7 +25,9 @@ const PayoutSettingsDialog: React.FC<PayoutSettingsDialogProps> = ({
   const [formData, setFormData] = useState({
     payment_method: payoutSettings?.payment_method || '',
     account_details: payoutSettings?.account_details || '',
-    account_holder_name: payoutSettings?.account_holder_name || ''
+    account_holder_name: payoutSettings?.account_holder_name || '',
+    ifsc_code: payoutSettings?.ifsc_code || '',
+    bank_name: payoutSettings?.bank_name || ''
   });
 
   const paymentMethods = [

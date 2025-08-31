@@ -2954,6 +2954,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_settings: {
+        Row: {
+          account_details: string
+          account_holder_name: string
+          affiliate_user_id: string
+          bank_name: string | null
+          created_at: string
+          id: string
+          ifsc_code: string | null
+          is_verified: boolean
+          payment_method: string
+          updated_at: string
+        }
+        Insert: {
+          account_details: string
+          account_holder_name: string
+          affiliate_user_id: string
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          ifsc_code?: string | null
+          is_verified?: boolean
+          payment_method: string
+          updated_at?: string
+        }
+        Update: {
+          account_details?: string
+          account_holder_name?: string
+          affiliate_user_id?: string
+          bank_name?: string | null
+          created_at?: string
+          id?: string
+          ifsc_code?: string | null
+          is_verified?: boolean
+          payment_method?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portfolios: {
         Row: {
           created_at: string

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
 interface PayoutSettings {
   id?: string;
@@ -25,16 +24,17 @@ export const usePayoutSettings = (affiliateId: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('payout_settings')
+        .from('payout_settings' as any)
         .select('*')
         .eq('affiliate_user_id', affiliateId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (error) {
+        console.error('Error fetching payout settings:', error);
+        return;
       }
 
-      setPayoutSettings(data);
+      setPayoutSettings(data as unknown as PayoutSettings | null);
     } catch (error) {
       console.error('Error fetching payout settings:', error);
     } finally {
@@ -57,24 +57,24 @@ export const usePayoutSettings = (affiliateId: string) => {
       if (payoutSettings?.id) {
         // Update existing settings
         const { data, error } = await supabase
-          .from('payout_settings')
+          .from('payout_settings' as any)
           .update(payload)
           .eq('id', payoutSettings.id)
           .select()
           .single();
 
         if (error) throw error;
-        setPayoutSettings(data);
+        setPayoutSettings(data as unknown as PayoutSettings);
       } else {
         // Create new settings
         const { data, error } = await supabase
-          .from('payout_settings')
+          .from('payout_settings' as any)
           .insert([payload])
           .select()
           .single();
 
         if (error) throw error;
-        setPayoutSettings(data);
+        setPayoutSettings(data as unknown as PayoutSettings);
       }
       
       await fetchPayoutSettings();

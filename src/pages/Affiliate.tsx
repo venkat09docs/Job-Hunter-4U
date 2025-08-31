@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard } from 'lucide-react';
+import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard, Settings } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import PayoutRequestDialog from '@/components/PayoutRequestDialog';
+import PayoutSettingsDialog from '@/components/PayoutSettingsDialog';
 
 const Affiliate = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const Affiliate = () => {
   } = usePayoutRequests(affiliateData?.id);
 
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 
   if (loading) {
     return (
@@ -147,18 +149,39 @@ const Affiliate = () => {
             </div>
           </div>
           
-          {/* Payout Button */}
+          {/* Payout Buttons */}
           {affiliateData.is_eligible && (
-            <Button
-              onClick={() => setPayoutDialogOpen(true)}
-              className="flex items-center gap-2"
-              disabled={!canRequestPayout(affiliateData)}
-            >
-              <CreditCard className="h-4 w-4" />
-              Request Payout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setPayoutDialogOpen(true)}
+                className="flex items-center gap-2"
+                disabled={!canRequestPayout(affiliateData)}
+              >
+                <CreditCard className="h-4 w-4" />
+                Request Payout
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setSettingsDialogOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </div>
           )}
         </div>
+
+        {/* 15-day waiting message for payout */}
+        {affiliateData.is_eligible && !canRequestPayout(affiliateData) && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              You need to wait 15 days after earning your first commission before requesting a payout. 
+              This waiting period helps ensure commission stability.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -360,6 +383,13 @@ const Affiliate = () => {
           onConfirm={requestPayout}
           loading={requesting}
           canRequest={canRequestPayout(affiliateData)}
+        />
+
+        {/* Payout Settings Dialog */}
+        <PayoutSettingsDialog
+          open={settingsDialogOpen}
+          onOpenChange={setSettingsDialogOpen}
+          affiliateId={affiliateData?.id || ''}
         />
       </div>
     </div>
