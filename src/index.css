@@ -20,6 +20,37 @@ All colors MUST be HSL.
     --primary: 243 75% 59%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 250 100% 88%;
+    --primary-dark: 243 75% 45%;
+    --primary-light: 243 75% 75%;
+    
+    /* Additional color palette */
+    --info: 200 95% 50%;
+    --info-foreground: 0 0% 100%;
+    --info-light: 200 95% 85%;
+    
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 100%;
+    --error-light: 0 84% 90%;
+    
+    --purple: 271 81% 56%;
+    --purple-foreground: 0 0% 100%;
+    --purple-light: 271 81% 85%;
+    
+    --orange: 25 95% 53%;
+    --orange-foreground: 0 0% 100%;
+    --orange-light: 25 95% 85%;
+    
+    --pink: 330 81% 60%;
+    --pink-foreground: 0 0% 100%;
+    --pink-light: 330 81% 85%;
+    
+    --teal: 173 80% 40%;
+    --teal-foreground: 0 0% 100%;
+    --teal-light: 173 80% 85%;
+    
+    --indigo: 238 75% 65%;
+    --indigo-foreground: 0 0% 100%;
+    --indigo-light: 238 75% 85%;
 
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -108,6 +139,37 @@ All colors MUST be HSL.
     --primary: 243 75% 59%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 250 100% 88%;
+    --primary-dark: 243 75% 35%;
+    --primary-light: 243 75% 65%;
+    
+    /* Additional color palette (dark theme) */
+    --info: 200 95% 40%;
+    --info-foreground: 0 0% 100%;
+    --info-light: 200 95% 25%;
+    
+    --error: 0 84% 50%;
+    --error-foreground: 0 0% 100%;
+    --error-light: 0 84% 25%;
+    
+    --purple: 271 81% 46%;
+    --purple-foreground: 0 0% 100%;
+    --purple-light: 271 81% 25%;
+    
+    --orange: 25 95% 43%;
+    --orange-foreground: 0 0% 100%;
+    --orange-light: 25 95% 25%;
+    
+    --pink: 330 81% 50%;
+    --pink-foreground: 0 0% 100%;
+    --pink-light: 330 81% 25%;
+    
+    --teal: 173 80% 30%;
+    --teal-foreground: 0 0% 100%;
+    --teal-light: 173 80% 25%;
+    
+    --indigo: 238 75% 55%;
+    --indigo-foreground: 0 0% 100%;
+    --indigo-light: 238 75% 25%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
