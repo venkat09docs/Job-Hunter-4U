@@ -549,6 +549,7 @@ export const useLinkedInTasks = () => {
     updateTaskStatus: (taskId: string, newStatus: string) => 
       updateTaskStatusMutation.mutate({ taskId, newStatus }),
     verifyTasks: verifyTasksMutation.mutate,
+    refetchTasks, // Add refetch function
     isSubmittingEvidence: submitEvidenceMutation.isPending,
     isVerifying: verifyTasksMutation.isPending,
     isInitializing: initializeWeekMutation.isPending,

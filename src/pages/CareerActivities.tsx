@@ -46,7 +46,7 @@ const CareerActivities = () => {
   const { metrics: networkMetrics, loading: networkMetricsLoading } = useNetworkGrowthMetrics();
   const {
     userTasks,
-    evidence,
+    evidence,    
     signals,
     userBadges,
     weeklyScore,
@@ -56,6 +56,7 @@ const CareerActivities = () => {
     submitEvidence,
     updateTaskStatus,
     verifyTasks,
+    refetchTasks,
     isSubmittingEvidence,
     isVerifying,
     isInitializing
@@ -333,16 +334,17 @@ const CareerActivities = () => {
 
                 {!tasksLoading && userTasks.length > 0 && (
                   <div className="space-y-4">
-                    {userTasks.map((task) => (
-                      <LinkedInTaskCard
-                        key={task.id}
-                        task={task}
-                        evidence={evidence.filter(e => e.user_task_id === task.id)}
-                        onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
-                        onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
-                        isSubmitting={isSubmittingEvidence}
-                      />
-                    ))}
+                     {userTasks.map((task) => (
+                       <LinkedInTaskCard
+                         key={task.id}
+                         task={task}
+                         evidence={evidence.filter(e => e.user_task_id === task.id)}
+                         onSubmitEvidence={canAccessFeature("linkedin_growth_activities") ? submitEvidence : () => {}}
+                         onUpdateStatus={canAccessFeature("linkedin_growth_activities") ? updateTaskStatus : () => {}}
+                         onRefreshTasks={refetchTasks}
+                         isSubmitting={isSubmittingEvidence}
+                       />
+                     ))}
                   </div>
                 )}
               </div>

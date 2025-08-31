@@ -47,6 +47,7 @@ interface LinkedInTaskCardProps {
     };
   }) => void;
   onUpdateStatus: (taskId: string, newStatus: string) => void;
+  onRefreshTasks?: () => void;
   isSubmitting?: boolean;
 }
 
@@ -55,6 +56,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   evidence,
   onSubmitEvidence,
   onUpdateStatus,
+  onRefreshTasks,
   isSubmitting = false
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -375,6 +377,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                         taskId={task.id}
                         taskTitle={task.linkedin_tasks.title}
                         hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
+                        onRequestSent={onRefreshTasks}
                       />
                     )}
                   </div>
@@ -543,6 +546,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                         taskId={task.id}
                         taskTitle={task.linkedin_tasks.title}
                         hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
+                        onRequestSent={onRefreshTasks}
                       />
                     )}
                   </div>
