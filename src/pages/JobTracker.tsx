@@ -654,20 +654,14 @@ const JobTracker = () => {
     
     try {
       // Update the job with the additional data first
-      const updateData = {
-        status: pendingJobMove.newStatus,
-        ...updatedJobData,
-        assignment_details: assignmentDetails,
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('🔍 JobTracker - pendingJobMove.job:', pendingJobMove.job);
-      console.log('🔍 JobTracker - updatedJobData received:', updatedJobData);
-      console.log('🔍 JobTracker - final updateData to be sent:', updateData);
-      
       const { data, error } = await supabase
         .from('job_tracker')
-        .update(updateData)
+        .update({
+          status: pendingJobMove.newStatus,
+          ...updatedJobData,
+          assignment_details: assignmentDetails,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', pendingJobMove.jobId)
         .select()
         .single();
