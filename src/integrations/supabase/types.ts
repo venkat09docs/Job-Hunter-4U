@@ -2718,8 +2718,8 @@ export type Database = {
             foreignKeyName: "linkedin_user_tasks_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "linkedin_users"
-            referencedColumns: ["id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
