@@ -124,12 +124,15 @@ export const ApplicationRequirementsModal: React.FC<ApplicationRequirementsModal
 
   const handleComplete = () => {
     const updatedJob: Partial<JobEntry> = {
-      // Include essential fields from original job
+      id: job.id,
       job_title: job.job_title,
       company_name: job.company_name,
-      // Include updated editable fields
-      ...jobData,
-      notes: jobData.notes // Keep original notes separate
+      job_url: jobData.job_url,
+      salary_range: jobData.salary_range,
+      location: jobData.location,
+      contact_person: jobData.contact_person,
+      contact_email: jobData.contact_email,
+      notes: applicationStrategy.trim() ? applicationStrategy + (jobData.notes ? '\n\n--- Original Notes ---\n' + jobData.notes : '') : jobData.notes
     };
     
     // Create assignment details structure
@@ -146,11 +149,6 @@ export const ApplicationRequirementsModal: React.FC<ApplicationRequirementsModal
     // Add follow-up date to job data if set
     if (followUpDate) {
       updatedJob.next_follow_up = followUpDate.toISOString().split('T')[0];
-    }
-
-    // Update notes to include application strategy if provided
-    if (applicationStrategy.trim()) {
-      updatedJob.notes = applicationStrategy + (jobData.notes ? '\n\n--- Original Notes ---\n' + jobData.notes : '');
     }
 
     onComplete(updatedJob, assignmentDetails);
