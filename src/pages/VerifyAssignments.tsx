@@ -227,8 +227,8 @@ const VerifyAssignments = () => {
   ];
   const fetchVerifiedAssignments = async () => {
     try {
-      if (isAdmin || isRecruiter) {
-        // Fetch verified assignments from all sources to match recruiter dashboard count
+      if (isAdmin || isRecruiter || isInstituteAdmin) {
+        // Fetch verified assignments from all sources - RLS policies will filter appropriately
         const [careerVerifiedData, linkedInVerifiedData, jobHuntingVerifiedData, gitHubVerifiedData] = await Promise.all([
           // 1. Career task assignments (verified)
           supabase
@@ -316,6 +316,8 @@ const VerifyAssignments = () => {
           jobHuntingVerifiedData.data || [], 
           gitHubVerifiedData.data || []
         );
+      } else {
+        console.log('User does not have permission to view assignments:', { isAdmin, isRecruiter, isInstituteAdmin });
       }
     } catch (error) {
       console.error('Error fetching verified assignments:', error);
@@ -560,6 +562,7 @@ const VerifyAssignments = () => {
   };
 
   const fetchCareerAssignments = async () => {
+    console.log('🔍 Fetching career assignments...');
     const { data, error } = await supabase
       .from('career_task_assignments')
       .select(`
@@ -577,7 +580,11 @@ const VerifyAssignments = () => {
       .eq('status', 'submitted')
       .order('submitted_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error fetching career assignments:', error);
+      throw error;
+    }
+    console.log('✅ Career assignments fetched:', data?.length || 0);
     return data || [];
   };
 
@@ -830,6 +837,7 @@ const VerifyAssignments = () => {
 
   const fetchSubmittedAssignments = async () => {
     try {
+      console.log('🔍 Starting fetchSubmittedAssignments for role:', { isAdmin, isInstituteAdmin, isRecruiter });
       setLoadingAssignments(true);
       
       // Fetch all types of assignments in parallel
@@ -839,6 +847,13 @@ const VerifyAssignments = () => {
         fetchJobHuntingAssignments(),
         fetchGitHubAssignments()
       ]);
+      
+      console.log('🔍 Fetched data counts:', { 
+        careerCount: careerData?.length || 0, 
+        linkedInCount: linkedInData?.length || 0,
+        jobHuntingCount: jobHuntingData?.length || 0,
+        gitHubCount: gitHubData?.length || 0
+      });
       
       // Process all the data together
       await processAssignments(careerData, linkedInData, jobHuntingData, gitHubData);
