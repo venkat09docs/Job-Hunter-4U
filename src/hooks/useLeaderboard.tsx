@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { useUserInstitute } from './useUserInstitute';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -36,10 +37,11 @@ export const useLeaderboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { isInstituteUser, instituteId } = useUserInstitute();
 
   useEffect(() => {
     fetchLeaderboard();
-  }, []);
+  }, [isInstituteUser, instituteId]);
 
   // Refresh leaderboard when user_activity_points table changes
   useEffect(() => {
@@ -206,9 +208,25 @@ export const useLeaderboard = () => {
 
       if (activityError) throw activityError;
 
-      // Group by user and sum points
+      // Filter activity data by institute users if current user is institute user
+      let filteredActivityData = activityData || [];
+      if (isInstituteUser && instituteId) {
+        // Get all users from the same institute
+        const { data: instituteUsers } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .eq('institute_id', instituteId)
+          .eq('is_active', true);
+        
+        const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
+        filteredActivityData = activityData?.filter(record => instituteUserIds.has(record.user_id)) || [];
+        
+        console.log(`Filtered to ${filteredActivityData.length} activity records for institute users only`);
+      }
+
+      // Group by user and sum points using filtered data
       const userPoints = new Map<string, number>();
-      activityData?.forEach(record => {
+      filteredActivityData?.forEach(record => {
         const current = userPoints.get(record.user_id) || 0;
         userPoints.set(record.user_id, current + record.points_earned);
       });
@@ -228,8 +246,17 @@ export const useLeaderboard = () => {
         return [];
       }
 
-      const { data: profileData, error: profileError } = await supabase
-        .rpc('get_safe_leaderboard_profiles');
+      // Use institute-specific profile function if user is institute user
+      let profileData, profileError;
+      if (isInstituteUser && instituteId) {
+        const result = await supabase.rpc('get_institute_leaderboard_profiles', { institute_id_param: instituteId });
+        profileData = result.data;
+        profileError = result.error;
+      } else {
+        const result = await supabase.rpc('get_safe_leaderboard_profiles');
+        profileData = result.data;
+        profileError = result.error;
+      }
 
       if (profileError) throw profileError;
 

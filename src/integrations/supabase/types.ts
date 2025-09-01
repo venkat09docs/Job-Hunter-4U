@@ -4328,6 +4328,50 @@ export type Database = {
           username: string
         }[]
       }
+      get_institute_badge_leaders_github_repository: {
+        Args: { institute_id_param: string }
+        Returns: {
+          badge_type: string
+          full_name: string
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_institute_badge_leaders_job_apply: {
+        Args: { institute_id_param: string }
+        Returns: {
+          badge_type: string
+          full_name: string
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_institute_badge_leaders_linkedin_growth: {
+        Args: { institute_id_param: string }
+        Returns: {
+          badge_type: string
+          full_name: string
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
+      get_institute_badge_leaders_profile_build: {
+        Args: { institute_id_param: string }
+        Returns: {
+          badge_type: string
+          full_name: string
+          profile_image_url: string
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_institute_directory: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -4336,6 +4380,15 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+        }[]
+      }
+      get_institute_leaderboard_profiles: {
+        Args: { institute_id_param: string }
+        Returns: {
+          full_name: string
+          profile_image_url: string
+          user_id: string
+          username: string
         }[]
       }
       get_institute_student_count: {

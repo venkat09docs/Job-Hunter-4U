@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useUserInstitute } from './useUserInstitute';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BadgeLeader {
@@ -25,18 +26,31 @@ export const useBadgeLeaders = () => {
     githubRepository: []
   });
   const [loading, setLoading] = useState(true);
+  const { isInstituteUser, instituteId } = useUserInstitute();
 
   const fetchBadgeLeaders = async () => {
     try {
       setLoading(true);
 
-      // Use secure database functions that bypass RLS restrictions
-      const [profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData] = await Promise.all([
-        supabase.rpc('get_badge_leaders_profile_build'),
-        supabase.rpc('get_badge_leaders_job_apply'), 
-        supabase.rpc('get_badge_leaders_linkedin_growth'),
-        supabase.rpc('get_badge_leaders_github_repository')
-      ]);
+      let profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData;
+
+      // Use institute-specific functions if user is institute user
+      if (isInstituteUser && instituteId) {
+        [profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData] = await Promise.all([
+          supabase.rpc('get_institute_badge_leaders_profile_build', { institute_id_param: instituteId }),
+          supabase.rpc('get_institute_badge_leaders_job_apply', { institute_id_param: instituteId }),
+          supabase.rpc('get_institute_badge_leaders_linkedin_growth', { institute_id_param: instituteId }),
+          supabase.rpc('get_institute_badge_leaders_github_repository', { institute_id_param: instituteId })
+        ]);
+      } else {
+        // Use global functions for admins/recruiters/non-institute users
+        [profileBuildData, jobApplyData, linkedinGrowthData, githubRepoData] = await Promise.all([
+          supabase.rpc('get_badge_leaders_profile_build'),
+          supabase.rpc('get_badge_leaders_job_apply'), 
+          supabase.rpc('get_badge_leaders_linkedin_growth'),
+          supabase.rpc('get_badge_leaders_github_repository')
+        ]);
+      }
 
       if (profileBuildData.error) {
         console.error('❌ Error fetching profile build leaders:', profileBuildData.error);
@@ -118,7 +132,7 @@ export const useBadgeLeaders = () => {
     fetchBadgeLeaders().catch(error => {
       console.error('🏆 useBadgeLeaders: Error in useEffect:', error);
     });
-  }, []);
+  }, [isInstituteUser, instituteId]);
 
   return {
     badgeLeaders,
