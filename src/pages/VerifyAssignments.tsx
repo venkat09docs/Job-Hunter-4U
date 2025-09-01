@@ -73,83 +73,13 @@ const VerifyAssignments = () => {
     setLoading(true);
     
     try {
-      // Fetch all assignment types
+      // Let RLS policies handle all access control - no client-side filtering
+      console.log('🔍 Fetching assignments based on RLS policies...');
       
-      // First, check if user is institute admin and get their institute assignments
-      console.log('🔍 Fetching user assignments for institute filtering...');
-      const { data: userAssignments, error: userAssignmentsError } = await supabase
-        .from('user_assignments')
-        .select('user_id, institute_id')
-        .eq('is_active', true);
-      
-      if (userAssignmentsError) {
-        console.error('Error fetching user assignments:', userAssignmentsError);
-        throw userAssignmentsError;
-      }
-
-      const { data: instituteAdminAssignments, error: adminError } = await supabase
-        .from('institute_admin_assignments')
-        .select('institute_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
-      
-      if (adminError) {
-        console.error('Error fetching institute admin assignments:', adminError);
-        throw adminError;
-      }
-
-      // Filter users based on institute admin access
-      let allowedUserIds: string[] = [];
-      let isGlobalAdmin = false;
-      
-      // Check if current user has admin role (super admin) or recruiter role
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-      
-      if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
-      } else {
-        isGlobalAdmin = userRoles?.some(ur => ur.role === 'admin') || false;
-        const isRecruiter = userRoles?.some(ur => ur.role === 'recruiter') || false;
-        
-        if (isGlobalAdmin) {
-          // Super admin - show all assignments, get all user IDs from profiles
-          const { data: allProfiles } = await supabase
-            .from('profiles')
-            .select('user_id');
-          allowedUserIds = allProfiles?.map(p => p.user_id) || [];
-        } else if (isRecruiter) {
-          // Recruiter - show non-institute users (users not assigned to any institute)
-          const instituteUserIds = userAssignments?.map(ua => ua.user_id) || [];
-          const { data: allProfiles } = await supabase
-            .from('profiles')
-            .select('user_id');
-          const allUserIds = allProfiles?.map(p => p.user_id) || [];
-          // Filter out users who are assigned to institutes
-          allowedUserIds = allUserIds.filter(userId => !instituteUserIds.includes(userId));
-        } else if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
-          // Institute admin - only show their institute's students
-          const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
-          const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
-          allowedUserIds = filteredUsers.map(ua => ua.user_id);
-        } else {
-          // Not an admin, recruiter, or institute admin - no access
-          allowedUserIds = [];
-        }
-      }
-      
-      if (allowedUserIds.length === 0) {
-        setAssignments([]);
-        setLoading(false);
-        return;
-      }
-      
-      // Fetch different types of assignments in parallel
+      // Fetch different types of assignments in parallel - RLS will filter based on user role
       const promises = [
-        // Career assignments with explicit foreign key relationship
-        ...(allowedUserIds.length > 0 ? [supabase
+        // Career assignments
+        supabase
           .from('career_task_assignments')
           .select(`
             id,
@@ -169,11 +99,10 @@ const VerifyAssignments = () => {
             )
           `)
           .in('status', ['submitted', 'verified'])
-          .in('user_id', allowedUserIds)
-          .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
+          .order('submitted_at', { ascending: false }),
 
-        // LinkedIn assignments (filtered by allowed users)
-        ...(allowedUserIds.length > 0 ? [supabase
+        // LinkedIn assignments
+        supabase
           .from('linkedin_user_tasks')
           .select(`
             *,
@@ -186,11 +115,10 @@ const VerifyAssignments = () => {
             )
           `)
           .in('status', ['SUBMITTED', 'VERIFIED'])
-          .in('user_id', allowedUserIds)
-          .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
+          .order('updated_at', { ascending: false }),
 
-        // Job hunting assignments (filtered by allowed users)
-        ...(allowedUserIds.length > 0 ? [supabase
+        // Job hunting assignments
+        supabase
           .from('job_hunting_assignments')
           .select(`
             *,
@@ -203,11 +131,10 @@ const VerifyAssignments = () => {
             )
           `)
           .in('status', ['submitted', 'verified'])
-          .in('user_id', allowedUserIds)
-          .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
+          .order('submitted_at', { ascending: false }),
 
-        // GitHub assignments (filtered by allowed users)
-        ...(allowedUserIds.length > 0 ? [supabase
+        // GitHub assignments
+        supabase
           .from('github_user_tasks')
           .select(`
             *,
@@ -220,8 +147,7 @@ const VerifyAssignments = () => {
             )
           `)
           .in('status', ['SUBMITTED', 'VERIFIED'])
-          .in('user_id', allowedUserIds)
-          .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })])
+          .order('updated_at', { ascending: false })
       ];
 
       const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
