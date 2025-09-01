@@ -74,35 +74,19 @@ serve(async (req) => {
       targetUserId = user.id;
     }
 
-    // Ensure user exists in linkedin_users table
-    const { data: existingUser, error: userSelectError } = await supabase
-      .from('linkedin_users')
-      .select('id')
-      .eq('auth_uid', targetUserId)
+    // Ensure user exists in profiles table (required for foreign key constraint)
+    const { data: existingProfile, error: profileSelectError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', targetUserId)
       .single();
 
-    let linkedinUserId = existingUser?.id;
-
-    if (!existingUser) {
-      // Create linkedin_users record
-      const { data: newUser, error: userCreateError } = await supabase
-        .from('linkedin_users')
-        .insert({
-          auth_uid: targetUserId,
-          auto_forward_address: `linkedin.${targetUserId.substring(0, 8)}@inbox.jobhunter.com`
-        })
-        .select('id')
-        .single();
-
-      if (userCreateError) {
-        console.error('Error creating linkedin user:', userCreateError);
-        return new Response(JSON.stringify({ error: 'Failed to create user' }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      linkedinUserId = newUser.id;
+    if (!existingProfile) {
+      console.error('User profile not found for user:', targetUserId);
+      return new Response(JSON.stringify({ error: 'User profile not found. Please ensure your profile is set up.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get all active tasks ordered by display_order (day assignment)
@@ -124,7 +108,7 @@ serve(async (req) => {
     const { data: existingTasks, error: existingTasksError } = await supabase
       .from('linkedin_user_tasks')
       .select('id')
-      .eq('user_id', linkedinUserId)
+      .eq('user_id', targetUserId)
       .eq('period', currentPeriod);
 
     if (existingTasksError) {
@@ -152,7 +136,7 @@ serve(async (req) => {
       const { error: deleteTasksError } = await supabase
         .from('linkedin_user_tasks')
         .delete()
-        .eq('user_id', linkedinUserId)
+        .eq('user_id', targetUserId)
         .eq('period', currentPeriod);
 
       if (deleteTasksError) {
@@ -186,7 +170,7 @@ serve(async (req) => {
       }
       
       return {
-        user_id: linkedinUserId,
+        user_id: targetUserId,
         task_id: task.id,
         period: currentPeriod,
         due_at: dueDate.toISOString(),
@@ -233,7 +217,7 @@ serve(async (req) => {
           bonus_rules
         )
       `)
-      .eq('user_id', linkedinUserId)
+      .eq('user_id', targetUserId)
       .eq('period', currentPeriod);
 
     if (fetchError) {
