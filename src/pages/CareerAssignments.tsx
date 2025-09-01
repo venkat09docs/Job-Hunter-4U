@@ -236,18 +236,40 @@ const CareerAssignments = () => {
       
       // Additional checks for Digital profile (subscription required)
       if (categoryName.includes('digital')) {
+        console.log('🔍 Digital profile check:', {
+          categoryName,
+          prerequisitesMet,
+          resumeProgress,
+          linkedinProgress,
+          profile: {
+            subscription_active: profile?.subscription_active,
+            subscription_plan: profile?.subscription_plan,
+            hasProfile: !!profile
+          }
+        });
+        
         // Digital profile is only available for 6-month or 1-year plans, not 3-month
         const hasValidSubscription = profile?.subscription_active && (
           profile?.subscription_plan === '6-month' || 
           profile?.subscription_plan === '1-year' ||
           profile?.subscription_plan?.includes('6-month') ||
           profile?.subscription_plan?.includes('1-year') ||
+          profile?.subscription_plan?.includes('6 Months') ||
+          profile?.subscription_plan?.includes('1 Year') ||
+          profile?.subscription_plan?.includes('12 Months') ||
           (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
         );
         // Explicitly exclude 3-month plans
         const isThreeMonthPlan = profile?.subscription_plan === '3-month' || 
                                 profile?.subscription_plan?.includes('3-month') ||
-                                profile?.subscription_plan?.includes('3 month');
+                                profile?.subscription_plan?.includes('3 month') ||
+                                profile?.subscription_plan?.includes('3 Months');
+        
+        console.log('🔍 Digital profile subscription check:', {
+          hasValidSubscription,
+          isThreeMonthPlan,
+          finalResult: prerequisitesMet && hasValidSubscription && !isThreeMonthPlan
+        });
         
         return prerequisitesMet && hasValidSubscription && !isThreeMonthPlan;
       }
@@ -301,6 +323,9 @@ const CareerAssignments = () => {
           profile?.subscription_plan === '1-year' ||
           profile?.subscription_plan?.includes('6-month') ||
           profile?.subscription_plan?.includes('1-year') ||
+          profile?.subscription_plan?.includes('6 Months') ||
+          profile?.subscription_plan?.includes('1 Year') ||
+          profile?.subscription_plan?.includes('12 Months') ||
           (profile?.subscription_plan?.includes('Year') && !profile?.subscription_plan?.includes('3'))
         );
         
