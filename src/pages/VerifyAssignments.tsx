@@ -1328,7 +1328,7 @@ const VerifyAssignments = () => {
             .from('user_activity_points')
             .insert({
               user_id: selectedAssignment.user_id,
-              activity_id: selectedAssignment.id,
+              activity_id: selectedAssignment.id.toString(),
               activity_type: 'linkedin_task_completion',
               points_earned: selectedAssignment.career_task_templates.points_reward,
               activity_date: new Date().toISOString().split('T')[0]
@@ -1382,7 +1382,7 @@ const VerifyAssignments = () => {
             .from('user_activity_points')
             .insert({
               user_id: selectedAssignment.user_id,
-              activity_id: selectedAssignment.id,
+              activity_id: selectedAssignment.id.toString(),
               activity_type: 'job_hunting_task_completion',
               points_earned: selectedAssignment.career_task_templates.points_reward,
               activity_date: new Date().toISOString().split('T')[0]
@@ -1448,7 +1448,7 @@ const VerifyAssignments = () => {
             .from('user_activity_points')
             .insert({
               user_id: selectedAssignment.user_id,
-              activity_id: selectedAssignment.id,
+              activity_id: selectedAssignment.id.toString(),
               activity_type: 'github_task_completion',
               points_earned: selectedAssignment.career_task_templates.points_reward,
               activity_date: new Date().toISOString().split('T')[0]
@@ -1504,7 +1504,7 @@ const VerifyAssignments = () => {
             .from('user_activity_points')
             .insert({
               user_id: selectedAssignment.user_id,
-              activity_id: selectedAssignment.id,
+              activity_id: selectedAssignment.id.toString(),
               activity_type: 'career_task_completion',
               points_earned: selectedAssignment.career_task_templates.points_reward,
               activity_date: new Date().toISOString().split('T')[0]
