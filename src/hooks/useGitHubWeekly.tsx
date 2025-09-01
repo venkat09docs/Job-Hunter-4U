@@ -65,6 +65,10 @@ interface EvidenceSubmission {
   file?: File;
   numberOfCommits?: number;
   numberOfReadmes?: number;
+  weeklyMetrics?: {
+    commits: number;
+    readmeUpdates: number;
+  };
 }
 
 export const useGitHubWeekly = () => {
@@ -504,10 +508,16 @@ export const useGitHubWeekly = () => {
 
       const parsed_json_data = { 
         description: evidenceData.description,
-        numberOfCommits: evidenceData.numberOfCommits,
-        numberOfReadmes: evidenceData.numberOfReadmes,
-        commits_count: evidenceData.numberOfCommits,
-        readmes_count: evidenceData.numberOfReadmes,
+        // Fix: Properly map weeklyMetrics data
+        weeklyMetrics: evidenceData.weeklyMetrics || {
+          commits: evidenceData.numberOfCommits || 0,
+          readmeUpdates: evidenceData.numberOfReadmes || 0
+        },
+        // Keep legacy format for backwards compatibility
+        numberOfCommits: evidenceData.weeklyMetrics?.commits || evidenceData.numberOfCommits || 0,
+        numberOfReadmes: evidenceData.weeklyMetrics?.readmeUpdates || evidenceData.numberOfReadmes || 0,
+        commits_count: evidenceData.weeklyMetrics?.commits || evidenceData.numberOfCommits || 0,
+        readmes_count: evidenceData.weeklyMetrics?.readmeUpdates || evidenceData.numberOfReadmes || 0,
         repo_url: evidenceData.url,
         repositoryUrl: evidenceData.url
       };
