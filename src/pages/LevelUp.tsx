@@ -95,7 +95,6 @@ const LevelUp = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      console.log('🔍 Sub-categories fetched (Level Up):', data);
       setSubCategories(data || []);
     } catch (error) {
       console.error('Error fetching sub categories:', error);
@@ -104,12 +103,9 @@ const LevelUp = () => {
 
   // Use exact same logic as Career Assignments page
   const getTasksBySubCategory = (subCategoryId: string) => {
-    if (careerLoading || !assignments) {
-      console.log('🔍 getTasksBySubCategory - Loading or no assignments:', { careerLoading, assignmentsLength: assignments?.length });
-      return [];
-    }
+    if (careerLoading || !assignments) return [];
     
-    const filteredTasks = assignments
+    return assignments
       .filter(assignment => assignment.career_task_templates?.sub_category_id === subCategoryId)
       .sort((a, b) => {
         const orderA = a.career_task_templates?.display_order || 0;
@@ -119,24 +115,13 @@ const LevelUp = () => {
         }
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
-    
-    console.log('🔍 getTasksBySubCategory result:', { subCategoryId, tasksFound: filteredTasks.length });
-    return filteredTasks;
   };
 
   const getTasksBySubCategoryName = (categoryName: string) => {
-    console.log('🔍 getTasksBySubCategoryName called with:', categoryName);
-    console.log('🔍 Available sub-categories:', subCategories.map(sc => ({ id: sc.id, name: sc.name })));
-    
     const subCategory = subCategories.find(sc => 
       sc.name.toLowerCase().includes(categoryName.toLowerCase())
     );
-    
-    console.log('🔍 Found sub-category for', categoryName, ':', subCategory);
-    
-    const tasks = subCategory ? getTasksBySubCategory(subCategory.id) : [];
-    console.log('🔍 Tasks returned for', categoryName, ':', tasks.length);
-    return tasks;
+    return subCategory ? getTasksBySubCategory(subCategory.id) : [];
   };
 
   // Calculate LinkedIn profile progress using exact same logic as Career Assignments page
@@ -144,39 +129,18 @@ const LevelUp = () => {
   const linkedinProfileProgress = linkedinTasks.length > 0 
     ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
     : 0;
-    
-   console.log('🔍 LinkedIn Profile Tasks (Level Up):', linkedinTasks.length, 'Completed:', linkedinTasks.filter(t => t.status === 'verified').length, 'Progress:', linkedinProfileProgress + '%');
 
   // Calculate Digital Profile progress using exact same logic as Career Assignments page  
   const digitalProfileTasks = getTasksBySubCategoryName('digital profile');
   const digitalProfileProgress = digitalProfileTasks.length > 0 
     ? Math.round((digitalProfileTasks.filter(t => t.status === 'verified').length / digitalProfileTasks.length) * 100)
     : 0;
-    
-   console.log('🔍 Digital Profile Tasks (Level Up):', digitalProfileTasks.length, 'Completed:', digitalProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', digitalProfileProgress + '%');
 
   // Calculate GitHub Profile progress using exact same logic as Career Assignments page (same as Silver/Gold boards)
   const githubProfileTasks = getTasksBySubCategoryName('github');
   const githubProfileProgress = githubProfileTasks.length > 0 
     ? Math.round((githubProfileTasks.filter(t => t.status === 'verified').length / githubProfileTasks.length) * 100)
     : 0;
-    
-   console.log('🔍 GitHub Profile Tasks (Level Up - Same as Bronze/Silver pattern):', {
-     totalTasks: githubProfileTasks.length, 
-     completedTasks: githubProfileTasks.filter(t => t.status === 'verified').length,
-     progress: githubProfileProgress + '%',
-     tasks: githubProfileTasks.map(t => ({ 
-       id: t.id, 
-       status: t.status, 
-       title: t.career_task_templates?.title 
-     }))
-   });
-
-   // Debug: What's being passed to diamond board
-   console.log('🔍 Props passed to BadgeProgressionMap (Diamond Board):', {
-     githubProfileProgress,
-     message: 'This should show 100% for diamond board if you have 10/10 completed tasks'
-   });
   // Calculate GitHub progress based on pinned repositories and total commits from GitHub Weekly page
   const [githubData, setGitHubData] = useState<any>({});
 
@@ -274,25 +238,10 @@ const LevelUp = () => {
     // Show at least some activity if user has verified tasks (same logic as GitHub Weekly)
     const finalCommits = totalCommits > 0 ? totalCommits : allVerifiedTasks.length > 0 ? 5 : 0;
     
-    console.log('🔍 Synced GitHub Commits Calculation (Level Up):', {
-      allVerifiedTasks: allVerifiedTasks.length,
-      allSignals: allSignals.length,
-      estimatedTotal: estimatedTotalCommits,
-      finalCommits: finalCommits
-    });
-    
     return finalCommits;
   };
 
   const totalGitHubCommits = getTotalCommitsAllTime();
-  
-  // Debug logging for GitHub data
-  console.log('🔍 GitHub Debug Data:', {
-    githubRepoCount,
-    totalGitHubCommits,
-    githubSignals: githubData.signals?.length || 0,
-    verifiedTasks: githubData.weeklyTasks?.filter(task => task.status === 'VERIFIED').length || 0
-  });
 
   // Define eligible subscription plans for Level Up
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
