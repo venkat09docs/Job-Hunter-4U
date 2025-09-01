@@ -87,15 +87,34 @@ const VerifyAssignments = () => {
 
       // Filter users based on institute admin access
       let allowedUserIds: string[] = [];
+      let isGlobalAdmin = false;
       
-      if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
+      // Check if current user has admin role (super admin)
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+      } else {
+        isGlobalAdmin = userRoles?.some(ur => ur.role === 'admin') || false;
+      }
+      
+      if (isGlobalAdmin) {
+        // Super admin - show all assignments, get all user IDs from profiles
+        const { data: allProfiles } = await supabase
+          .from('profiles')
+          .select('user_id');
+        allowedUserIds = allProfiles?.map(p => p.user_id) || [];
+      } else if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
         // Institute admin - only show their institute's students
         const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
         const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
         allowedUserIds = filteredUsers.map(ua => ua.user_id);
       } else {
-        // Not an institute admin - check if they have admin/recruiter role
-        allowedUserIds = userAssignments?.map(ua => ua.user_id) || [];
+        // Not an admin or institute admin - no access
+        allowedUserIds = [];
       }
       
       if (allowedUserIds.length === 0) {
