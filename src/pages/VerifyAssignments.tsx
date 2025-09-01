@@ -166,17 +166,6 @@ const VerifyAssignments = () => {
       const jobHuntingData = jobHuntingResult.data || [];
       const gitHubData = gitHubResult.data || [];
 
-      console.log('✅ RLS Policies are working correctly!');
-      console.log('📊 Institute Admin Assignment Summary:', {
-        expectedAssignments: 17, // From RNSTech 1 only  
-        actualCareerAssignments: careerData?.length || 0,
-        actualLinkedInAssignments: linkedInData?.length || 0,
-        actualJobHuntingAssignments: jobHuntingData?.length || 0,
-        actualGitHubAssignments: gitHubData?.length || 0,
-        fromInstitute: 'RNSTech 1',
-        studentEmail: 'krishnacse0542@gmail.com (Gopi)',
-        message: 'You should only see assignments from your institute students'
-      });
       
       // Handle errors
       if (careerResult.error) {
