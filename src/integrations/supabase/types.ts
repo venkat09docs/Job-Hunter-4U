@@ -4250,6 +4250,15 @@ export type Database = {
         Args: { user_email: string }
         Returns: string
       }
+      get_affiliate_referral_users: {
+        Args: { user_ids: string[] }
+        Returns: {
+          email: string
+          full_name: string
+          user_id: string
+          username: string
+        }[]
+      }
       get_all_users_for_admin: {
         Args: Record<PropertyKey, never>
         Returns: {

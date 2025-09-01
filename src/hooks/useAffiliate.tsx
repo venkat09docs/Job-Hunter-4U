@@ -89,74 +89,31 @@ export const useAffiliate = () => {
 
       if (error) throw error;
       
-      console.log('Raw referrals data:', data);
-      
-      // Fetch referred user profiles separately
+      // Get user info using the database function that handles both profiles and auth.users
       if (data && data.length > 0) {
         const userIds = data.map(r => r.referred_user_id);
-        console.log('Looking up profiles for user IDs:', userIds);
         
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, username, email')
-          .in('user_id', userIds);
+        const { data: userInfo, error: userError } = await supabase
+          .rpc('get_affiliate_referral_users', { user_ids: userIds });
         
-        if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
+        if (userError) {
+          console.error('Error fetching user info:', userError);
         }
         
-        console.log('Profiles data:', profiles);
-        
-        // For users without profiles, get their auth data
-        const missingProfileUserIds = userIds.filter(id => 
-          !profiles?.some(p => p.user_id === id)
-        );
-        
-        console.log('Missing profile user IDs:', missingProfileUserIds);
-        
-        let authUserData: any[] = [];
-        if (missingProfileUserIds.length > 0) {
-          // Get auth user data for missing profiles
-          for (const userId of missingProfileUserIds) {
-            try {
-              const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-              if (authUser?.user) {
-                authUserData.push({
-                  user_id: userId,
-                  email: authUser.user.email,
-                  full_name: authUser.user.user_metadata?.full_name || 
-                           authUser.user.user_metadata?.username ||
-                           authUser.user.email?.split('@')[0],
-                  username: authUser.user.user_metadata?.username || 
-                           authUser.user.email?.split('@')[0]
-                });
-              }
-            } catch (error) {
-              console.error(`Error fetching auth data for user ${userId}:`, error);
-            }
-          }
-        }
-        
-        console.log('Auth user data for missing profiles:', authUserData);
-        
-        // Combine profiles and auth data
-        const allUserData = [
-          ...(profiles || []),
-          ...authUserData
-        ];
-        
-        // Map profiles to referrals
+        // Map user info to referrals
         const referralsWithUsers = data.map(referral => {
-          const userProfile = allUserData.find(p => p.user_id === referral.referred_user_id);
-          console.log(`Mapping referral ${referral.id} with user ${referral.referred_user_id}:`, userProfile);
+          const userProfile = userInfo?.find(u => u.user_id === referral.referred_user_id);
           
           return {
             ...referral,
-            referred_user: userProfile
+            referred_user: userProfile ? {
+              full_name: userProfile.full_name,
+              username: userProfile.username,
+              email: userProfile.email
+            } : null
           };
         });
         
-        console.log('Final referrals with users:', referralsWithUsers);
         setReferrals(referralsWithUsers as AffiliateReferral[]);
       } else {
         setReferrals([]);
