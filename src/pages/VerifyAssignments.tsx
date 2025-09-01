@@ -102,7 +102,7 @@ const VerifyAssignments = () => {
       let allowedUserIds: string[] = [];
       let isGlobalAdmin = false;
       
-      // Check if current user has admin role (super admin)
+      // Check if current user has admin role (super admin) or recruiter role
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
@@ -112,22 +112,32 @@ const VerifyAssignments = () => {
         console.error('Error fetching user roles:', rolesError);
       } else {
         isGlobalAdmin = userRoles?.some(ur => ur.role === 'admin') || false;
-      }
-      
-      if (isGlobalAdmin) {
-        // Super admin - show all assignments, get all user IDs from profiles
-        const { data: allProfiles } = await supabase
-          .from('profiles')
-          .select('user_id');
-        allowedUserIds = allProfiles?.map(p => p.user_id) || [];
-      } else if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
-        // Institute admin - only show their institute's students
-        const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
-        const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
-        allowedUserIds = filteredUsers.map(ua => ua.user_id);
-      } else {
-        // Not an admin or institute admin - no access
-        allowedUserIds = [];
+        const isRecruiter = userRoles?.some(ur => ur.role === 'recruiter') || false;
+        
+        if (isGlobalAdmin) {
+          // Super admin - show all assignments, get all user IDs from profiles
+          const { data: allProfiles } = await supabase
+            .from('profiles')
+            .select('user_id');
+          allowedUserIds = allProfiles?.map(p => p.user_id) || [];
+        } else if (isRecruiter) {
+          // Recruiter - show non-institute users (users not assigned to any institute)
+          const instituteUserIds = userAssignments?.map(ua => ua.user_id) || [];
+          const { data: allProfiles } = await supabase
+            .from('profiles')
+            .select('user_id');
+          const allUserIds = allProfiles?.map(p => p.user_id) || [];
+          // Filter out users who are assigned to institutes
+          allowedUserIds = allUserIds.filter(userId => !instituteUserIds.includes(userId));
+        } else if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
+          // Institute admin - only show their institute's students
+          const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
+          const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
+          allowedUserIds = filteredUsers.map(ua => ua.user_id);
+        } else {
+          // Not an admin, recruiter, or institute admin - no access
+          allowedUserIds = [];
+        }
       }
       
       if (allowedUserIds.length === 0) {
