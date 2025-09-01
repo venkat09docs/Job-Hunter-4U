@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { useInstituteAdminManagement } from '@/hooks/useInstituteAdminManagement';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -44,6 +45,13 @@ interface Assignment {
 const VerifyAssignments = () => {
   const { user } = useAuth();
   const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
+  const { 
+    managedInstitutes, 
+    primaryInstitute, 
+    isValidInstituteAdmin, 
+    loading: instituteLoading,
+    error: instituteError
+  } = useInstituteAdminManagement();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
@@ -82,8 +90,17 @@ const VerifyAssignments = () => {
         isInstituteAdmin, 
         isRecruiter,
         userEmail: user.email,
-        userRole: isAdmin ? 'admin' : isInstituteAdmin ? 'institute_admin' : isRecruiter ? 'recruiter' : 'unknown'
+        userRole: isAdmin ? 'admin' : isInstituteAdmin ? 'institute_admin' : isRecruiter ? 'recruiter' : 'unknown',
+        managedInstitutes: managedInstitutes?.map(i => ({ id: i.id, name: i.name })),
+        primaryInstitute: primaryInstitute?.name
       });
+
+      // For institute admins, ensure they have valid institute assignments
+      if (isInstituteAdmin && !isValidInstituteAdmin) {
+        console.warn('⚠️ Institute admin without valid assignments, skipping fetch');
+        setAssignments([]);
+        return;
+      }
 
       // Fetch different types of assignments in parallel - RLS will filter based on user role
       const promises = [
@@ -443,9 +460,13 @@ const VerifyAssignments = () => {
   useEffect(() => {
     // Only fetch when user is authenticated and role is loaded
     if (user && !roleLoading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+      // For institute admins, wait for institute data to load
+      if (isInstituteAdmin && instituteLoading) {
+        return;
+      }
       fetchSubmittedAssignments();
     }
-  }, [user, roleLoading, isAdmin, isInstituteAdmin, isRecruiter]);
+  }, [user, roleLoading, isAdmin, isInstituteAdmin, isRecruiter, instituteLoading, isValidInstituteAdmin]);
 
   useEffect(() => {
     applyFilters();
@@ -465,78 +486,54 @@ const VerifyAssignments = () => {
 
     try {
       const points = action === 'approve' ? parseInt(scoreAwarded) || 0 : 0;
-      const status = action === 'approve' ? 'verified' : 'rejected';
-
+      
+      // Determine assignment type
+      let assignmentType = 'career';
       if (selectedAssignment._isLinkedInAssignment) {
-        // Handle LinkedIn assignment verification
-        const linkedInStatus = action === 'approve' ? 'VERIFIED' : 'REJECTED';
-        const { error } = await supabase
-          .from('linkedin_user_tasks')
-          .update({
-            status: linkedInStatus,
-            score_awarded: points,
-            updated_at: new Date().toISOString(),
-            verification_notes: verificationNotes
-          })
-          .eq('id', selectedAssignment.id);
-
-        if (error) throw error;
+        assignmentType = 'linkedin';
+      } else if (selectedAssignment.career_task_templates?.module === 'JOB_HUNTING') {
+        assignmentType = 'job_hunting';
       } else if (selectedAssignment.career_task_templates?.module === 'GITHUB') {
-        // Handle GitHub assignment verification
-        const gitHubStatus = action === 'approve' ? 'VERIFIED' : 'REJECTED';
-        const { error } = await supabase
-          .from('github_user_tasks')
-          .update({
-            status: gitHubStatus,
-            score_awarded: points,
-            updated_at: new Date().toISOString(),
-            verification_notes: verificationNotes
-          })
-          .eq('id', selectedAssignment.id);
-
-        if (error) throw error;
-
-        // Award points to user for GitHub task completion if approved
-        if (action === 'approve' && points > 0) {
-          const { error: pointsError } = await supabase
-            .from('user_activity_points')
-            .insert({
-              user_id: selectedAssignment.user_id,
-              activity_id: 'github_task_completion',
-              activity_type: 'github_task',
-              points_earned: points,
-              activity_date: new Date().toISOString().split('T')[0]
-            });
-
-          if (pointsError) {
-            console.error('Error awarding points:', pointsError);
-            // Don't throw here, just log the error as the main verification was successful
-          }
-        }
-      } else {
-        // Handle career task assignment verification
-        const { error } = await supabase
-          .from('career_task_assignments')
-          .update({
-            status,
-            points_earned: points,
-            score_awarded: points,
-            verified_at: new Date().toISOString(),
-            verified_by: user.id,
-            verification_notes: verificationNotes
-          })
-          .eq('id', selectedAssignment.id);
-
-        if (error) throw error;
+        assignmentType = 'github';
       }
 
-      toast.success(`Assignment ${action === 'approve' ? 'approved' : 'rejected'} successfully`);
+      console.log('🔄 Verifying assignment via edge function:', {
+        assignmentId: selectedAssignment.id,
+        assignmentType,
+        action,
+        points
+      });
+
+      // Call the secure verification edge function
+      const { data, error } = await supabase.functions.invoke('verify-institute-assignments', {
+        body: {
+          assignmentId: selectedAssignment.id,
+          assignmentType,
+          action,
+          verificationNotes,
+          scoreAwarded: points
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Verification failed');
+      }
+
+      console.log('✅ Assignment verification successful:', data.message);
+      toast.success(data.message);
+
+      // Refresh assignments to show updated data
+      await fetchSubmittedAssignments();
       setIsReviewDialogOpen(false);
-      await fetchSubmittedAssignments(); // Refresh the list
+      setSelectedAssignment(null);
       
-    } catch (error) {
-      console.error('Error verifying assignment:', error);
-      toast.error('Failed to verify assignment');
+    } catch (error: any) {
+      console.error('❌ Verification error:', error);
+      toast.error(error.message || 'Failed to verify assignment');
     } finally {
       setVerifying(false);
     }
@@ -650,7 +647,15 @@ const VerifyAssignments = () => {
             <ArrowLeft className="h-4 w-4" />
             Go to - Dashboard
           </Button>
-          <h1 className="text-3xl font-bold">Verify Assignments</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Verify Assignments</h1>
+            {isInstituteAdmin && primaryInstitute && (
+              <div className="flex items-center gap-2 mt-2 text-gray-600">
+                <Building2 className="h-4 w-4" />
+                <span className="text-sm">Managing: <strong>{primaryInstitute.name}</strong> ({primaryInstitute.code})</span>
+              </div>
+            )}
+          </div>
         </div>
         {loading ? (
           <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -660,6 +665,35 @@ const VerifyAssignments = () => {
           </Button>
         )}
       </div>
+
+      {/* Show institute admin error or warning messages */}
+      {isInstituteAdmin && instituteError && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-800">
+              <XCircle className="h-5 w-5" />
+              <div>
+                <p className="font-medium">Institute Access Error</p>
+                <p className="text-sm">{instituteError}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {isInstituteAdmin && !instituteLoading && !instituteError && !isValidInstituteAdmin && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-yellow-800">
+              <Clock className="h-5 w-5" />
+              <div>
+                <p className="font-medium">No Institute Assignments Found</p>
+                <p className="text-sm">You are not currently assigned to manage any institutes. Please contact your administrator.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filter Controls */}
       <div className="flex gap-4 items-center flex-wrap">
