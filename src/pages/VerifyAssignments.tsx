@@ -81,7 +81,21 @@ const VerifyAssignments = () => {
         isAdmin,
         isInstituteAdmin, 
         isRecruiter,
-        userEmail: user.email
+        userEmail: user.email,
+        userRole: isAdmin ? 'admin' : isInstituteAdmin ? 'institute_admin' : isRecruiter ? 'recruiter' : 'unknown'
+      });
+
+      // Test RLS by making a simple authenticated query first
+      const { data: testRLS, error: testError } = await supabase
+        .from('career_task_assignments')
+        .select('id, user_id')
+        .eq('status', 'submitted')
+        .limit(3);
+      
+      console.log('🧪 RLS Test Query Result:', { 
+        testRLS: testRLS?.length, 
+        testError: testError?.message,
+        sampleUserIds: testRLS?.map(t => t.user_id) 
       });
       
       // Fetch different types of assignments in parallel - RLS will filter based on user role
