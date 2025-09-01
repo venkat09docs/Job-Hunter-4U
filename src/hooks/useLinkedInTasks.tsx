@@ -171,25 +171,6 @@ export const useLinkedInTasks = () => {
 
       console.log('🔍 Authenticated user:', user.user.id);
 
-      // Get linkedin user
-      const { data: linkedinUser, error: userError } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (userError && userError.code !== 'PGRST116') {
-        console.error('🔍 Error fetching linkedin user:', userError);
-        throw userError;
-      }
-
-      if (!linkedinUser) {
-        console.log('🔍 LinkedIn user not found, user needs to initialize week');
-        return [];
-      }
-
-      console.log('🔍 LinkedIn user found:', linkedinUser.id);
-
       const { data, error } = await supabase
         .from('linkedin_user_tasks')
         .select(`
@@ -211,7 +192,7 @@ export const useLinkedInTasks = () => {
             created_at
           )
         `)
-        .eq('user_id', linkedinUser.id)
+        .eq('user_id', user.user.id)
         .eq('period', currentPeriod)
         .order('created_at');
       
@@ -292,20 +273,6 @@ export const useLinkedInTasks = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      // Get linkedin user
-      const { data: linkedinUser, error: userError } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (userError && userError.code !== 'PGRST116') {
-        console.error('Error fetching linkedin user for stats:', userError);
-        throw userError;
-      }
-
-      if (!linkedinUser) return [];
-
       // Get ALL evidence for this user across all periods
       const { data, error } = await supabase
         .from('linkedin_evidence')
@@ -313,7 +280,7 @@ export const useLinkedInTasks = () => {
           *,
           linkedin_user_tasks!inner(user_id)
         `)
-        .eq('linkedin_user_tasks.user_id', linkedinUser.id)
+        .eq('linkedin_user_tasks.user_id', user.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -328,18 +295,10 @@ export const useLinkedInTasks = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      const { data: linkedinUser } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (!linkedinUser) return [];
-
       const { data, error } = await supabase
         .from('linkedin_signals')
         .select('*')
-        .eq('user_id', linkedinUser.id)
+        .eq('user_id', user.user.id)
         .order('happened_at', { ascending: false })
         .limit(10);
 
@@ -355,14 +314,6 @@ export const useLinkedInTasks = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      const { data: linkedinUser } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (!linkedinUser) return [];
-
       const { data, error } = await supabase
         .from('linkedin_user_badges')
         .select(`
@@ -375,7 +326,7 @@ export const useLinkedInTasks = () => {
             criteria
           )
         `)
-        .eq('user_id', linkedinUser.id)
+        .eq('user_id', user.user.id)
         .order('awarded_at', { ascending: false });
 
       if (error) throw error;
@@ -390,18 +341,10 @@ export const useLinkedInTasks = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      const { data: linkedinUser } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (!linkedinUser) return null;
-
       const { data, error } = await supabase
         .from('linkedin_scores')
         .select('*')
-        .eq('user_id', linkedinUser.id)
+        .eq('user_id', user.user.id)
         .eq('period', currentPeriod)
         .single();
 
