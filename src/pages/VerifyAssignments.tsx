@@ -1714,13 +1714,13 @@ const VerifyAssignments = () => {
         <TabsList>
           <TabsTrigger 
             value="pending"
-            onClick={() => navigate('/verify-assignments?tab=pending')}
+            onClick={() => navigate('/admin/verify-assignments?tab=pending')}
           >
             Pending ({filteredAssignments.length})
           </TabsTrigger>
           <TabsTrigger 
             value="verified"
-            onClick={() => navigate('/verify-assignments?tab=verified')}
+            onClick={() => navigate('/admin/verify-assignments?tab=verified')}
           >
             Verified ({filteredVerifiedAssignments.length})
           </TabsTrigger>
