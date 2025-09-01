@@ -182,6 +182,29 @@ export const useAffiliate = () => {
     }
   };
 
+  const recalculateAffiliateData = async () => {
+    try {
+      const { error } = await supabase.rpc('recalculate_affiliate_totals');
+      if (error) throw error;
+      
+      // Refresh the data
+      fetchAffiliateData();
+      fetchReferrals();
+      
+      toast({
+        title: 'Success',
+        description: 'Affiliate earnings recalculated successfully!',
+      });
+    } catch (error: any) {
+      console.error('Error recalculating affiliate data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to recalculate affiliate data',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return {
     affiliateData,
     referrals,
@@ -190,6 +213,7 @@ export const useAffiliate = () => {
     createAffiliateAccount,
     getAffiliateLink,
     copyAffiliateLink,
+    recalculateAffiliateData,
     refreshData: fetchAffiliateData,
     refreshReferrals: fetchReferrals
   };

@@ -4647,6 +4647,10 @@ export type Database = {
           queued_count: number
         }[]
       }
+      recalculate_affiliate_totals: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       refresh_github_weekly_assignments: {
         Args: Record<PropertyKey, never>
         Returns: Json

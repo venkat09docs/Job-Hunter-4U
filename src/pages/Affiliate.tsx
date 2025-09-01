@@ -23,7 +23,8 @@ const Affiliate = () => {
     creating, 
     createAffiliateAccount, 
     getAffiliateLink, 
-    copyAffiliateLink 
+    copyAffiliateLink,
+    recalculateAffiliateData 
   } = useAffiliate();
 
   const { 
@@ -200,6 +201,23 @@ const Affiliate = () => {
             <AlertDescription>
               Your affiliate account is pending approval from our admin team. 
               You'll be notified once it's approved.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Admin Fix for Double Calculation - Temporary */}
+        {affiliateData.is_eligible && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>If your earnings appear incorrect, click to recalculate:</span>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={recalculateAffiliateData}
+              >
+                Recalculate Earnings
+              </Button>
             </AlertDescription>
           </Alert>
         )}
