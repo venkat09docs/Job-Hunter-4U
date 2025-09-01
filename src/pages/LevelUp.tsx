@@ -95,6 +95,7 @@ const LevelUp = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
+      console.log('🔍 Sub-categories fetched (Level Up):', data);
       setSubCategories(data || []);
     } catch (error) {
       console.error('Error fetching sub categories:', error);
@@ -103,9 +104,12 @@ const LevelUp = () => {
 
   // Use exact same logic as Career Assignments page
   const getTasksBySubCategory = (subCategoryId: string) => {
-    if (careerLoading || !assignments) return [];
+    if (careerLoading || !assignments) {
+      console.log('🔍 getTasksBySubCategory - Loading or no assignments:', { careerLoading, assignmentsLength: assignments?.length });
+      return [];
+    }
     
-    return assignments
+    const filteredTasks = assignments
       .filter(assignment => assignment.career_task_templates?.sub_category_id === subCategoryId)
       .sort((a, b) => {
         const orderA = a.career_task_templates?.display_order || 0;
@@ -115,13 +119,24 @@ const LevelUp = () => {
         }
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       });
+    
+    console.log('🔍 getTasksBySubCategory result:', { subCategoryId, tasksFound: filteredTasks.length });
+    return filteredTasks;
   };
 
   const getTasksBySubCategoryName = (categoryName: string) => {
+    console.log('🔍 getTasksBySubCategoryName called with:', categoryName);
+    console.log('🔍 Available sub-categories:', subCategories.map(sc => ({ id: sc.id, name: sc.name })));
+    
     const subCategory = subCategories.find(sc => 
       sc.name.toLowerCase().includes(categoryName.toLowerCase())
     );
-    return subCategory ? getTasksBySubCategory(subCategory.id) : [];
+    
+    console.log('🔍 Found sub-category for', categoryName, ':', subCategory);
+    
+    const tasks = subCategory ? getTasksBySubCategory(subCategory.id) : [];
+    console.log('🔍 Tasks returned for', categoryName, ':', tasks.length);
+    return tasks;
   };
 
   // Calculate LinkedIn profile progress using exact same logic as Career Assignments page
