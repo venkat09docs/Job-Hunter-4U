@@ -62,10 +62,50 @@ const VerifyAssignments = () => {
     try {
       console.log('🔍 Starting to fetch submitted assignments...');
       
+      // First, check if user is institute admin and get their institute assignments
+      const { data: userAssignments, error: userAssignmentsError } = await supabase
+        .from('user_assignments')
+        .select('user_id, institute_id')
+        .eq('is_active', true);
+      
+      if (userAssignmentsError) {
+        console.error('Error fetching user assignments:', userAssignmentsError);
+        throw userAssignmentsError;
+      }
+
+      // Get institute admin assignments for current user
+      const { data: instituteAdminAssignments, error: adminError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+      
+      if (adminError) {
+        console.error('Error fetching institute admin assignments:', adminError);
+      }
+
+      // Filter users based on institute admin access
+      let allowedUserIds: string[] = [];
+      
+      if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
+        // Institute admin - only show their institute's students
+        const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
+        allowedUserIds = userAssignments
+          ?.filter(ua => adminInstituteIds.includes(ua.institute_id))
+          ?.map(ua => ua.user_id) || [];
+        
+        console.log('🔍 Institute admin detected, filtering for institutes:', adminInstituteIds);
+        console.log('🔍 Allowed user IDs:', allowedUserIds.length);
+      } else {
+        // Not an institute admin - check if they have admin/recruiter role
+        allowedUserIds = userAssignments?.map(ua => ua.user_id) || [];
+        console.log('🔍 Admin/recruiter access - showing all users');
+      }
+      
       // Fetch different types of assignments in parallel
       const promises = [
-        // Career assignments
-        supabase
+        // Career assignments with explicit foreign key relationship
+        ...(allowedUserIds.length > 0 ? [supabase
           .from('career_task_assignments')
           .select(`
             id,
@@ -76,7 +116,7 @@ const VerifyAssignments = () => {
             verified_at,
             points_earned,
             score_awarded,
-            career_task_templates (
+            career_task_templates!career_task_assignments_template_id_fkey (
               id,
               title,
               module,
@@ -85,10 +125,11 @@ const VerifyAssignments = () => {
             )
           `)
           .eq('status', 'submitted')
-          .order('submitted_at', { ascending: false }),
+          .in('user_id', allowedUserIds)
+          .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
-        // LinkedIn assignments
-        supabase
+        // LinkedIn assignments (filtered by allowed users)
+        ...(allowedUserIds.length > 0 ? [supabase
           .from('linkedin_user_tasks')
           .select(`
             *,
@@ -99,7 +140,7 @@ const VerifyAssignments = () => {
               description,
               points_base
             ),
-            linkedin_users (
+            linkedin_users!inner (
               id,
               auth_uid,
               name,
@@ -107,10 +148,11 @@ const VerifyAssignments = () => {
             )
           `)
           .eq('status', 'SUBMITTED')
-          .order('updated_at', { ascending: false }),
+          .in('linkedin_users.auth_uid', allowedUserIds)
+          .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
-        // Job hunting assignments  
-        supabase
+        // Job hunting assignments (filtered by allowed users)
+        ...(allowedUserIds.length > 0 ? [supabase
           .from('job_hunting_assignments')
           .select(`
             *,
@@ -123,10 +165,11 @@ const VerifyAssignments = () => {
             )
           `)
           .eq('status', 'submitted')
-          .order('submitted_at', { ascending: false }),
+          .in('user_id', allowedUserIds)
+          .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
-        // GitHub assignments
-        supabase
+        // GitHub assignments (filtered by allowed users)
+        ...(allowedUserIds.length > 0 ? [supabase
           .from('github_user_tasks')
           .select(`
             *,
@@ -139,7 +182,8 @@ const VerifyAssignments = () => {
             )
           `)
           .eq('status', 'SUBMITTED')
-          .order('updated_at', { ascending: false })
+          .in('user_id', allowedUserIds)
+          .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })])
       ];
 
       const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
