@@ -137,13 +137,18 @@ const JobTracker = () => {
   }, [jobs, user]);
 
   const checkRequiredAssignments = async (currentStatus: string, newStatus: string) => {
-    if (!user) return { hasUncompleted: false, assignments: [] };
+    if (!user) {
+      console.log('DEBUG: No user found, skipping assignment check');
+      return { hasUncompleted: false, assignments: [] };
+    }
     
     console.log('DEBUG: Checking assignments for transition:', currentStatus, 'to', newStatus);
     
     // Check if this is the specific transition we need to validate
     if (currentStatus === 'applied' && newStatus === 'interviewing') {
       try {
+        console.log('DEBUG: Starting interview prep assignment check for user:', user.id);
+        
         // First, check if interview preparation assignments already exist for this user
         const { data: existingAssignments, error: existingError } = await supabase
           .from('career_task_assignments')
@@ -160,15 +165,21 @@ const JobTracker = () => {
           .eq('user_id', user.id)
           .in('status', ['assigned', 'pending', 'verified']);
 
-        if (existingError) throw existingError;
+        if (existingError) {
+          console.error('DEBUG: Error fetching existing assignments:', existingError);
+          throw existingError;
+        }
+
+        console.log('DEBUG: Fetched existing assignments:', existingAssignments?.length || 0);
 
         // Check if user has interview preparation assignments
         const interviewPrepAssignments = (existingAssignments || []).filter((assignment: any) => {
-          const category = assignment.career_task_templates?.category?.toLowerCase() || '';
+          const category = assignment.career_task_templates?.category || '';
+          console.log('DEBUG: Checking assignment category:', category);
           return category === 'interview_preparation';
         });
 
-        console.log('DEBUG: Existing interview prep assignments:', interviewPrepAssignments);
+        console.log('DEBUG: Existing interview prep assignments:', interviewPrepAssignments.length);
 
         // If no interview prep assignments exist, create them
         if (interviewPrepAssignments.length === 0) {
@@ -183,11 +194,11 @@ const JobTracker = () => {
             .order('display_order');
 
           if (templatesError) {
-            console.error('Error fetching templates:', templatesError);
+            console.error('DEBUG: Error fetching templates:', templatesError);
             throw templatesError;
           }
           
-          console.log('DEBUG: Interview prep templates found:', templates?.length || 0, templates);
+          console.log('DEBUG: Interview prep templates found:', templates?.length || 0);
 
           if (templates && templates.length > 0) {
             // Create assignments for each template
@@ -256,11 +267,42 @@ const JobTracker = () => {
           assignment.status === 'assigned' || assignment.status === 'pending'
         );
 
-        console.log('DEBUG: Uncompleted interview prep assignments:', uncompletedInterviewPrep);
+        console.log('DEBUG: Uncompleted interview prep assignments:', uncompletedInterviewPrep.length);
+        console.log('DEBUG: All interview prep assignments:', interviewPrepAssignments.length);
+
+        // TEMPORARY FIX: Always show assignments dialog for applied -> interviewing transition
+        // This ensures the dialog appears while we debug the assignment logic
+        if (interviewPrepAssignments.length > 0) {
+          // User has existing interview prep assignments, show them
+          return {
+            hasUncompleted: true,
+            assignments: interviewPrepAssignments
+          };
+        } else {
+          // No existing assignments, let's fetch and show the templates directly
+          const { data: templates, error: templatesError } = await supabase
+            .from('career_task_templates')
+            .select('id, title, description, instructions, category, code, points_reward')
+            .eq('category', 'interview_preparation')
+            .eq('is_active', true)
+            .order('display_order');
+
+          if (!templatesError && templates && templates.length > 0) {
+            return {
+              hasUncompleted: true,
+              assignments: templates.map(template => ({
+                id: `template-${template.id}`,
+                template_id: template.id,
+                status: 'assigned',
+                career_task_templates: template
+              }))
+            };
+          }
+        }
 
         return {
-          hasUncompleted: uncompletedInterviewPrep.length > 0,
-          assignments: uncompletedInterviewPrep
+          hasUncompleted: false,
+          assignments: []
         };
       } catch (error) {
         console.error('Error checking/creating assignments:', error);
