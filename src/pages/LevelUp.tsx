@@ -7,6 +7,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useGitHubProfileProgress } from '@/hooks/useGitHubProfileProgress';
 import { ResizableLayout } from '@/components/ResizableLayout';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { SubscriptionStatus } from '@/components/SubscriptionUpgrade';
@@ -26,6 +27,7 @@ const LevelUp = () => {
   const { completionPercentage: linkedinProgress, loading: linkedinLoading } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading } = useGitHubProgress();
+  const { progress: githubProfileProgressFromDB, loading: githubProfileLoading } = useGitHubProfileProgress();
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [goldBadgeUpgradeDialogOpen, setGoldBadgeUpgradeDialogOpen] = useState(false);
   const [subCategories, setSubCategories] = useState<any[]>([]);
@@ -142,17 +144,12 @@ const LevelUp = () => {
 
   // Calculate GitHub Profile progress using exact same logic as Career Assignments page  
   const githubProfileTasks = getTasksBySubCategoryName('github');
-  const githubProfileProgress = githubProfileTasks.length > 0 
-    ? Math.round((githubProfileTasks.filter(t => t.status === 'verified').length / githubProfileTasks.length) * 100)
-    : 0;
+  const githubProfileProgress = githubProfileProgressFromDB; // Use dynamic data from database
     
-   console.log('🔍 GitHub Profile Tasks (Level Up):', {
-     totalTasks: githubProfileTasks.length, 
-     completedTasks: githubProfileTasks.filter(t => t.status === 'verified').length,
-     allTasks: githubProfileTasks.map(t => ({ id: t.id, status: t.status, title: t.career_task_templates?.title })),
-     subCategories: subCategories,
-     githubSubCategory: subCategories.find(sc => sc.name.toLowerCase().includes('github')),
-     progress: githubProfileProgress + '%'
+   console.log('🔍 GitHub Profile Progress (Level Up - Dynamic):', {
+     progressFromDB: githubProfileProgressFromDB + '%',
+     githubProfileLoading,
+     message: 'Using dynamic GitHub profile progress from database'
    });
   // Calculate GitHub progress based on pinned repositories and total commits from GitHub Weekly page
   const [githubData, setGitHubData] = useState<any>({});
@@ -359,7 +356,7 @@ const LevelUp = () => {
     );
   }
 
-  if (loading || careerLoading || linkedinLoading || networkLoading || githubLoading) {
+  if (loading || careerLoading || linkedinLoading || networkLoading || githubLoading || githubProfileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
