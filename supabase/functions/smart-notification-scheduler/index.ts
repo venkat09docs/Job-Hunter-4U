@@ -134,11 +134,10 @@ async function executeScheduledNotification(supabase: any, schedule: Notificatio
     try {
       // Use smart notification function that respects user preferences
       const { data, error } = await supabase.rpc('create_smart_notification', {
-        target_user_id: userId,
-        template_code: schedule.template_code,
+        user_id_param: userId,
+        template_key_param: schedule.template_code,
         template_vars: schedule.template_variables,
-        priority: 'medium',
-        respect_quiet_hours: true
+        priority_param: 'medium'
       });
       
       if (!error) {
@@ -442,11 +441,10 @@ async function scheduleSmartNotification(supabase: any, payload: any) {
 
     // Create smart notification that respects user preferences
     const { data: notificationId, error } = await supabase.rpc('create_smart_notification', {
-      target_user_id: user_id,
-      template_code: 'custom_scheduled',
+      user_id_param: user_id,
+      template_key_param: 'custom_scheduled',
       template_vars: { title, message },
-      priority,
-      respect_quiet_hours: true
+      priority_param: priority
     });
 
     if (error) throw error;
