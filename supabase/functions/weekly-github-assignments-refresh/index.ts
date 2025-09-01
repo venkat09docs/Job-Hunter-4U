@@ -151,24 +151,42 @@ serve(async (req) => {
       )
     }
 
-    // Calculate due date (Sunday at 11:59 PM)
+    // Calculate week start (Monday)
     const weekStart = getMonday(now)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekStart.getDate() + 6) // Sunday
-    weekEnd.setHours(23, 59, 59, 999) // Sunday 11:59:59 PM
 
-    // Create new assignments for all users and tasks
+    // Create new assignments for all users and tasks with individual due dates
     const assignments = []
     for (const user of users) {
       for (const task of activeTasks) {
-        assignments.push({
-          user_id: user.user_id,
-          task_id: task.id,
-          period: newPeriod,
-          due_at: weekEnd.toISOString(),
-          status: 'NOT_STARTED',
-          score_awarded: 0
-        })
+        const dayAssignment = task.display_order || 1 // Default to day 1 (Monday) if no display_order
+        
+        // Calculate individual due date based on day assignment
+        let dueDate = new Date(weekStart)
+        
+        if (dayAssignment === 7) {
+          // Day 7 (Sunday tasks) are due on Sunday evening (same day)
+          dueDate.setDate(weekStart.getDate() + 6) // Sunday
+          dueDate.setHours(23, 59, 59, 999)
+        } else {
+          // Other tasks are due the next day evening
+          // Day 1 (Monday) → Due Tuesday evening
+          // Day 2 (Tuesday) → Due Wednesday evening
+          // etc.
+          dueDate.setDate(weekStart.getDate() + dayAssignment) // Next day after assignment
+          dueDate.setHours(23, 59, 59, 999)
+        }
+        
+         assignments.push({
+           user_id: user.user_id,
+           task_id: task.id,
+           period: newPeriod,
+           due_at: dueDate.toISOString(),
+           status: 'NOT_STARTED',
+           score_awarded: 0
+         })
+         
+         // Log the assignment for debugging
+         console.log(`Task ${task.code} (Day ${dayAssignment}) assigned to user, due: ${dueDate.toISOString()}`)
       }
     }
 
