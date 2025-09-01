@@ -124,6 +124,10 @@ export const ApplicationRequirementsModal: React.FC<ApplicationRequirementsModal
 
   const handleComplete = () => {
     const updatedJob: Partial<JobEntry> = {
+      // Include essential fields from original job
+      job_title: job.job_title,
+      company_name: job.company_name,
+      // Include updated editable fields
       ...jobData,
       notes: jobData.notes // Keep original notes separate
     };
