@@ -75,8 +75,14 @@ const VerifyAssignments = () => {
     setLoading(true);
     
     try {
-      // Let RLS policies handle all access control - no client-side filtering
-      console.log('🔍 Fetching assignments based on RLS policies...');
+      // Debug current user state
+      console.log('🔍 Fetching assignments for user:', {
+        userId: user.id,
+        isAdmin,
+        isInstituteAdmin, 
+        isRecruiter,
+        userEmail: user.email
+      });
       
       // Fetch different types of assignments in parallel - RLS will filter based on user role
       const promises = [
@@ -176,6 +182,18 @@ const VerifyAssignments = () => {
       const linkedInData = linkedInResult.data || [];
       const jobHuntingData = jobHuntingResult.data || [];
       const gitHubData = gitHubResult.data || [];
+
+      // Log results for debugging
+      console.log('📊 Assignment fetch results:', {
+        careerCount: careerData?.length || 0,
+        linkedInCount: linkedInData?.length || 0, 
+        jobHuntingCount: jobHuntingData?.length || 0,
+        gitHubCount: gitHubData?.length || 0,
+        careerAssignments: careerData?.map(a => ({ id: a.id, userId: a.user_id })),
+        jobHuntingAssignments: jobHuntingData?.map(a => ({ id: a.id, userId: a.user_id })),
+        linkedInAssignments: linkedInData?.map(a => ({ id: a.id, userId: a.user_id })),
+        gitHubAssignments: gitHubData?.map(a => ({ id: a.id, userId: a.user_id }))
+      });
 
       const allAssignments = [];
 
@@ -378,7 +396,17 @@ const VerifyAssignments = () => {
         allAssignments.push(...assignmentsWithEvidence);
       }
 
-      // Set assignments
+      // Set assignments and log final count
+      console.log('✅ Final assignments loaded:', {
+        totalAssignments: allAssignments.length,
+        byModule: allAssignments.reduce((acc, assignment) => {
+          const module = assignment.career_task_templates?.module || 'unknown';
+          acc[module] = (acc[module] || 0) + 1;
+          return acc;
+        }, {}),
+        userIds: [...new Set(allAssignments.map(a => a.user_id))]
+      });
+      
       setAssignments(allAssignments);
       
     } catch (error) {
@@ -411,8 +439,11 @@ const VerifyAssignments = () => {
   };
 
   useEffect(() => {
-    fetchSubmittedAssignments();
-  }, [user]);
+    // Only fetch when user is authenticated and role is loaded
+    if (user && !loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+      fetchSubmittedAssignments();
+    }
+  }, [user, isAdmin, isInstituteAdmin, isRecruiter]);
 
   useEffect(() => {
     applyFilters();
