@@ -525,6 +525,8 @@ const VerifyAssignments = () => {
 
             // Transform GitHub evidence to match career evidence structure
             const transformedEvidence = (evidenceData || []).map(evidence => {
+              console.log('🔍 Transforming GitHub evidence:', evidence);
+              
               // Extract GitHub-specific details from parsed_json - safely handle JSON type
               const parsedData = (evidence.parsed_json as any) || {};
               
@@ -572,6 +574,8 @@ const VerifyAssignments = () => {
                 parsed_json: evidence.parsed_json
               };
             });
+
+            console.log('🔍 Transformed GitHub evidence:', transformedEvidence.length, 'items for assignment:', assignment.id);
 
             return { ...assignment, evidence: transformedEvidence };
           } catch (error) {
@@ -1016,9 +1020,22 @@ const VerifyAssignments = () => {
       console.log('🔍 LinkedIn assignments with profiles:', linkedInAssignmentsWithProfiles.length);
 
       // Fetch LinkedIn evidence for these assignments
+      console.log('🔍 Fetching LinkedIn evidence for assignments:', linkedInAssignmentsWithProfiles.map(a => ({ 
+        id: a.id, 
+        originalTaskId: a._originalLinkedInTask?.id,
+        hasOriginalTask: !!a._originalLinkedInTask 
+      })));
+
       const linkedInAssignmentsWithEvidence = await Promise.all(
         linkedInAssignmentsWithProfiles.map(async (assignment) => {
           try {
+            if (!assignment._originalLinkedInTask?.id) {
+              console.warn('🔍 Missing LinkedIn task ID for assignment:', assignment.id);
+              return { ...assignment, evidence: [] };
+            }
+
+            console.log('🔍 Fetching LinkedIn evidence for task ID:', assignment._originalLinkedInTask.id);
+            
             const { data: evidenceData, error: evidenceError } = await supabase
               .from('linkedin_evidence')
               .select('*')
@@ -1027,28 +1044,35 @@ const VerifyAssignments = () => {
 
             if (evidenceError) {
               console.error('🔍 Error fetching LinkedIn evidence for assignment:', assignment.id, evidenceError);
+              console.error('🔍 Full error details:', evidenceError.message, evidenceError.details);
               return { ...assignment, evidence: [] };
             }
 
-            // Transform LinkedIn evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => ({
-              id: evidence.id,
-              assignment_id: assignment.id,
-              evidence_type: evidence.kind?.toLowerCase() || 'url',
-              evidence_data: evidence.evidence_data || {},
-              url: evidence.url,
-              file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
-              verification_status: 'pending',
-              created_at: evidence.created_at,
-              submitted_at: evidence.created_at,
-              verification_notes: null,
-              verified_at: null,
-              verified_by: null,
-              kind: evidence.kind,
-              email_meta: evidence.email_meta,
-              parsed_json: evidence.parsed_json
-            }));
+            console.log('🔍 LinkedIn evidence fetched for assignment:', assignment.id, 'count:', evidenceData?.length || 0);
 
+            // Transform LinkedIn evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => {
+              console.log('🔍 Transforming LinkedIn evidence:', evidence);
+              return {
+                id: evidence.id,
+                assignment_id: assignment.id,
+                evidence_type: evidence.kind?.toLowerCase() || 'url',
+                evidence_data: evidence.evidence_data || { description: 'LinkedIn evidence submission' },
+                url: evidence.url,
+                file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
+                verification_status: 'pending',
+                created_at: evidence.created_at,
+                submitted_at: evidence.created_at,
+                verification_notes: null,
+                verified_at: null,
+                verified_by: null,
+                kind: evidence.kind,
+                email_meta: evidence.email_meta,
+                parsed_json: evidence.parsed_json
+              };
+            });
+
+            console.log('🔍 Transformed LinkedIn evidence:', transformedEvidence.length, 'items for assignment:', assignment.id);
             return { ...assignment, evidence: transformedEvidence };
           } catch (error) {
             console.error('🔍 Error processing LinkedIn evidence for assignment:', assignment.id, error);
@@ -1105,9 +1129,22 @@ const VerifyAssignments = () => {
       console.log('🔍 Job Hunting assignments with profiles:', jobHuntingAssignmentsWithProfiles.length);
 
       // Fetch Job Hunting evidence for these assignments
+      console.log('🔍 Fetching Job Hunting evidence for assignments:', jobHuntingAssignmentsWithProfiles.map(a => ({ 
+        id: a.id, 
+        originalTaskId: a._originalJobHuntingTask?.id,
+        hasOriginalTask: !!a._originalJobHuntingTask 
+      })));
+
       const jobHuntingAssignmentsWithEvidence = await Promise.all(
         jobHuntingAssignmentsWithProfiles.map(async (assignment) => {
           try {
+            if (!assignment._originalJobHuntingTask?.id) {
+              console.warn('🔍 Missing Job Hunting task ID for assignment:', assignment.id);
+              return { ...assignment, evidence: [] };
+            }
+
+            console.log('🔍 Fetching Job Hunting evidence for task ID:', assignment._originalJobHuntingTask.id);
+            
             const { data: evidenceData, error: evidenceError } = await supabase
               .from('job_hunting_evidence')
               .select('*')
@@ -1116,25 +1153,32 @@ const VerifyAssignments = () => {
 
             if (evidenceError) {
               console.error('🔍 Error fetching Job Hunting evidence for assignment:', assignment.id, evidenceError);
+              console.error('🔍 Full error details:', evidenceError.message, evidenceError.details);
               return { ...assignment, evidence: [] };
             }
 
-            // Transform Job Hunting evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => ({
-              id: evidence.id,
-              assignment_id: assignment.id,
-              evidence_type: evidence.evidence_type,
-              evidence_data: evidence.evidence_data || {},
-              url: (evidence.evidence_data as any)?.url,
-              file_urls: evidence.file_urls,
-              verification_status: evidence.verification_status,
-              created_at: evidence.created_at,
-              submitted_at: evidence.submitted_at,
-              verification_notes: evidence.verification_notes,
-              verified_at: evidence.verified_at,
-              verified_by: evidence.verified_by
-            }));
+            console.log('🔍 Job Hunting evidence fetched for assignment:', assignment.id, 'count:', evidenceData?.length || 0);
 
+            // Transform Job Hunting evidence to match career evidence structure
+            const transformedEvidence = (evidenceData || []).map(evidence => {
+              console.log('🔍 Transforming Job Hunting evidence:', evidence);
+              return {
+                id: evidence.id,
+                assignment_id: assignment.id,
+                evidence_type: evidence.evidence_type,
+                evidence_data: evidence.evidence_data || { description: 'Job hunting evidence submission' },
+                url: (evidence.evidence_data as any)?.url,
+                file_urls: evidence.file_urls,
+                verification_status: evidence.verification_status,
+                created_at: evidence.created_at,
+                submitted_at: evidence.submitted_at,
+                verification_notes: evidence.verification_notes,
+                verified_at: evidence.verified_at,
+                verified_by: evidence.verified_by
+              };
+            });
+
+            console.log('🔍 Transformed Job Hunting evidence:', transformedEvidence.length, 'items for assignment:', assignment.id);
             return { ...assignment, evidence: transformedEvidence };
           } catch (error) {
             console.error('🔍 Error processing Job Hunting evidence for assignment:', assignment.id, error);
@@ -1191,9 +1235,20 @@ const VerifyAssignments = () => {
       console.log('🔍 GitHub assignments with profiles:', gitHubAssignmentsWithProfiles.length);
 
       // Fetch GitHub evidence for these assignments
+      console.log('🔍 Fetching GitHub evidence for assignments:', gitHubAssignmentsWithProfiles.map(a => ({ 
+        id: a.id, 
+        originalTaskId: a._originalGitHubTask?.id,
+        hasOriginalTask: !!a._originalGitHubTask 
+      })));
+
       const gitHubAssignmentsWithEvidence = await Promise.all(
         gitHubAssignmentsWithProfiles.map(async (assignment) => {
           try {
+            if (!assignment._originalGitHubTask?.id) {
+              console.warn('🔍 Missing GitHub task ID for assignment:', assignment.id);
+              return { ...assignment, evidence: [] };
+            }
+
             console.log('🔍 Fetching GitHub evidence for assignment:', assignment.id, 'original task:', assignment._originalGitHubTask.id);
             
             const { data: evidenceData, error: evidenceError } = await supabase
@@ -1204,8 +1259,11 @@ const VerifyAssignments = () => {
 
             if (evidenceError) {
               console.error('🔍 Error fetching GitHub evidence for assignment:', assignment.id, evidenceError);
+              console.error('🔍 Full error details:', evidenceError.message, evidenceError.details);
               return { ...assignment, evidence: [] };
             }
+
+            console.log('🔍 GitHub evidence fetched for assignment:', assignment.id, 'count:', evidenceData?.length || 0);
 
             console.log('🔍 Found GitHub evidence for assignment:', assignment.id, 'evidence count:', evidenceData?.length || 0, 'evidence:', evidenceData);
 
@@ -2059,6 +2117,13 @@ const VerifyAssignments = () => {
               <Badge variant="secondary">
                 {selectedAssignment?.career_task_templates.points_reward} points
               </Badge>
+              {selectedAssignment && (
+                <Badge variant="outline" className="text-xs">
+                  {selectedAssignment._isLinkedInAssignment ? 'LinkedIn Task' : 
+                   selectedAssignment._isJobHuntingAssignment ? 'Job Hunting Task' : 
+                   selectedAssignment._isGitHubAssignment ? 'GitHub Task' : 'Career Task'}
+                </Badge>
+              )}
             </div>
           </DialogHeader>
           
@@ -2116,7 +2181,25 @@ const VerifyAssignments = () => {
 
               <div>
                 <h4 className="font-semibold mb-4">Submitted Evidence</h4>
-                <EvidenceDisplay evidence={selectedAssignment.evidence} />
+                {selectedAssignment.evidence && selectedAssignment.evidence.length > 0 ? (
+                  <>
+                    <div className="mb-2 text-sm text-muted-foreground">
+                      Found {selectedAssignment.evidence.length} evidence submission{selectedAssignment.evidence.length !== 1 ? 's' : ''}
+                    </div>
+                    <EvidenceDisplay evidence={selectedAssignment.evidence} />
+                  </>
+                ) : (
+                  <div className="bg-muted p-4 rounded-lg">
+                    <p className="text-muted-foreground text-sm">
+                      No evidence has been submitted for this assignment yet.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Assignment type: {selectedAssignment._isLinkedInAssignment ? 'LinkedIn' : 
+                                       selectedAssignment._isJobHuntingAssignment ? 'Job Hunting' : 
+                                       selectedAssignment._isGitHubAssignment ? 'GitHub' : 'Career Task'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {selectedAssignment.status === 'submitted' && (
