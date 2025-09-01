@@ -827,39 +827,81 @@ const GitHubWeekly = () => {
     );
   }
 
+  // Helper function to get current week date range (Monday to Sunday)
+  const getCurrentWeekRange = () => {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - now.getDay() + 1); // Monday of current week
+    monday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6); // Sunday of current week
+    sunday.setHours(23, 59, 59, 999);
+    
+    return { monday, sunday };
+  };
+
   // Calculate current week's submitted metrics using ACTUAL evidence data
   const getCurrentWeekMetrics = () => {
-    const currentWeekTasks = weeklyTasks.filter(task => task.status === 'SUBMITTED' || task.status === 'VERIFIED');
+    const { monday, sunday } = getCurrentWeekRange();
+    
+    // Filter tasks that are from current week AND have been submitted/verified
+    const currentWeekTasks = weeklyTasks.filter(task => {
+      if (task.status !== 'SUBMITTED' && task.status !== 'VERIFIED') return false;
+      
+      // Check if task due date or evidence verification date is within current week
+      const taskDate = task.evidence_verified_at ? new Date(task.evidence_verified_at) : new Date(task.due_at || task.created_at);
+      return taskDate >= monday && taskDate <= sunday;
+    });
+
     let totalCommits = 0;
     let totalProjects = 0;
     let totalReadmeUpdates = 0;
 
-    // Calculate from ACTUAL evidence data, not estimates
+    console.log('📊 Current week range:', { monday, sunday });
+    console.log('📊 Current week tasks found:', currentWeekTasks.length);
+
+    // Calculate from ACTUAL evidence data from approved tasks only
     currentWeekTasks.forEach(task => {
+      console.log('📊 Processing task:', task.id, 'status:', task.status, 'evidence count:', task.evidence?.length || 0);
+      
       if (task.evidence && task.evidence.length > 0) {
-        task.evidence.forEach(evidence => {
+        // Use the most recent evidence that has been verified
+        const verifiedEvidence = task.evidence.find(evidence => 
+          evidence.verification_status === 'verified' || task.status === 'VERIFIED'
+        );
+        
+        if (verifiedEvidence) {
           try {
-            const parsedData = evidence.parsed_json as any;
+            const parsedData = verifiedEvidence.parsed_json as any;
+            console.log('📊 Evidence data:', parsedData);
+            
             if (parsedData) {
               // Check for weeklyMetrics structure first (new format)
               if (parsedData.weeklyMetrics) {
-                totalCommits += parsedData.weeklyMetrics.commits || 0;
-                totalReadmeUpdates += parsedData.weeklyMetrics.readmeUpdates || 0;
+                const commits = parsedData.weeklyMetrics.commits || 0;
+                const readmes = parsedData.weeklyMetrics.readmeUpdates || 0;
+                totalCommits += commits;
+                totalReadmeUpdates += readmes;
+                console.log('📊 Added from weeklyMetrics:', { commits, readmes });
               } 
               // Fallback to legacy format
               else {
-                totalCommits += parsedData.numberOfCommits || parsedData.commits_count || 0;
-                totalReadmeUpdates += parsedData.numberOfReadmes || parsedData.readmes_count || 0;
+                const commits = parsedData.numberOfCommits || parsedData.commits_count || 0;
+                const readmes = parsedData.numberOfReadmes || parsedData.readmes_count || 0;
+                totalCommits += commits;
+                totalReadmeUpdates += readmes;
+                console.log('📊 Added from legacy format:', { commits, readmes });
               }
             }
           } catch (error) {
             console.error('Error parsing evidence data:', error);
           }
-        });
+        }
       } 
-      // Only use estimates as absolute last resort for tasks without evidence
+      // Only for verified tasks without evidence data (legacy tasks)
       else if (task.status === 'VERIFIED') {
-        // Conservative estimate only when no evidence data exists
+        console.log('📊 Adding estimate for task without evidence');
         totalCommits += 1;
         totalReadmeUpdates += task.github_tasks?.code?.includes('readme') ? 1 : 0;
       }
@@ -872,23 +914,46 @@ const GitHubWeekly = () => {
     );
     totalProjects = projectTasks.length;
 
+    console.log('📊 Final current week metrics:', { totalCommits, totalProjects, totalReadmeUpdates });
     return { totalCommits, totalProjects, totalReadmeUpdates };
   };
 
   // Calculate total commits across all time periods using ACTUAL data
   const getTotalCommitsAllTime = () => {
-    // First, try to get actual commits from all historical evidence
-    let actualCommitsFromEvidence = 0;
+    let totalCommits = 0;
     
-    // Get all verified tasks with evidence across all periods
+    // Get all verified tasks with evidence across all periods (including historical)
     const allVerifiedTasks = weeklyTasks.filter(task => task.status === 'VERIFIED');
     
-    // Calculate from actual evidence submissions
+    // Calculate from actual evidence submissions for all verified tasks
     allVerifiedTasks.forEach(task => {
-      // This would need evidence data - for now we'll enhance the query to include it
-      // TODO: Enhance historicalAssignments query to include evidence data
-      // For now, conservative estimate based on verified tasks
-      actualCommitsFromEvidence += 1; // Conservative: 1 commit per verified task (not 2)
+      if (task.evidence && task.evidence.length > 0) {
+        // Use the most recent verified evidence
+        const verifiedEvidence = task.evidence.find(evidence => 
+          evidence.verification_status === 'verified'
+        );
+        
+        if (verifiedEvidence) {
+          try {
+            const parsedData = verifiedEvidence.parsed_json as any;
+            if (parsedData) {
+              // Check for weeklyMetrics structure first (new format)
+              if (parsedData.weeklyMetrics) {
+                totalCommits += parsedData.weeklyMetrics.commits || 0;
+              } 
+              // Fallback to legacy format
+              else {
+                totalCommits += parsedData.numberOfCommits || parsedData.commits_count || 0;
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing evidence data:', error);
+          }
+        }
+      } else {
+        // Conservative estimate for verified tasks without evidence data
+        totalCommits += 1;
+      }
     });
     
     // Add signals count as additional activity indicator (commits from GitHub webhooks)
@@ -897,11 +962,15 @@ const GitHubWeekly = () => {
     ).length || 0;
     
     // Combine actual evidence commits + GitHub webhook signals
-    const totalCommits = actualCommitsFromEvidence + gitHubSignalCommits;
+    const finalTotal = totalCommits + gitHubSignalCommits;
     
-    // Return actual total, no artificial minimums
-    // Only show commits if there's real evidence or activity
-    return totalCommits;
+    console.log('📊 Total commits all time:', { 
+      fromEvidence: totalCommits, 
+      fromSignals: gitHubSignalCommits, 
+      total: finalTotal 
+    });
+    
+    return finalTotal;
   };
 
   const currentMetrics = getCurrentWeekMetrics();
