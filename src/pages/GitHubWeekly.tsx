@@ -81,38 +81,7 @@ const GitHubWeekly = () => {
     isSubmittingEvidence
   } = useGitHubWeekly();
 
-  // Auto-refresh assignments with better logic
-  React.useEffect(() => {
-    if (user) {
-      // Check if we need to refresh for new week
-      const checkAndRefresh = async () => {
-        try {
-          const currentPeriod = getCurrentPeriod();
-          console.log(`Checking assignments for period: ${currentPeriod}`);
-          
-          // If we have no weekly tasks, try refreshing
-          if (weeklyTasks.length === 0) {
-            console.log('No weekly tasks found, attempting refresh...');
-            await refreshWeeklyAssignments();
-          } else {
-            // Check if tasks are from correct period
-            const currentTasks = weeklyTasks.filter(task => task.period === currentPeriod);
-            if (currentTasks.length === 0) {
-              console.log('Tasks exist but not for current period, refreshing...');
-              await refreshWeeklyAssignments();
-            }
-          }
-        } catch (error) {
-          console.error('Failed to check/refresh weekly assignments:', error);
-        }
-      };
-      
-      // Only run check if we have loaded the weekly tasks data
-      if (!isLoading) {
-        checkAndRefresh();
-      }
-    }
-  }, [user?.id, weeklyTasks.length, isLoading, refreshWeeklyAssignments]);
+  // Auto-refresh is handled by useGitHubWeekly hook
 
   // Fetch pending extension requests
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
