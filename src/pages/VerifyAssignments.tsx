@@ -63,17 +63,21 @@ const VerifyAssignments = () => {
       console.log('🔍 Starting to fetch submitted assignments...');
       
       // First, check if user is institute admin and get their institute assignments
+      console.log('🔍 Fetching user assignments for institute filtering...');
       const { data: userAssignments, error: userAssignmentsError } = await supabase
         .from('user_assignments')
         .select('user_id, institute_id')
         .eq('is_active', true);
       
       if (userAssignmentsError) {
-        console.error('Error fetching user assignments:', userAssignmentsError);
+        console.error('❌ Error fetching user assignments:', userAssignmentsError);
         throw userAssignmentsError;
       }
+      
+      console.log('✅ User assignments fetched:', userAssignments?.length || 0);
 
       // Get institute admin assignments for current user
+      console.log('🔍 Checking institute admin assignments for user:', user.id);
       const { data: instituteAdminAssignments, error: adminError } = await supabase
         .from('institute_admin_assignments')
         .select('institute_id')
@@ -81,8 +85,11 @@ const VerifyAssignments = () => {
         .eq('is_active', true);
       
       if (adminError) {
-        console.error('Error fetching institute admin assignments:', adminError);
+        console.error('❌ Error fetching institute admin assignments:', adminError);
+        throw adminError;
       }
+      
+      console.log('✅ Institute admin assignments fetched:', instituteAdminAssignments?.length || 0, instituteAdminAssignments);
 
       // Filter users based on institute admin access
       let allowedUserIds: string[] = [];
@@ -90,16 +97,26 @@ const VerifyAssignments = () => {
       if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
         // Institute admin - only show their institute's students
         const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
-        allowedUserIds = userAssignments
-          ?.filter(ua => adminInstituteIds.includes(ua.institute_id))
-          ?.map(ua => ua.user_id) || [];
+        console.log('🔍 Admin institute IDs:', adminInstituteIds);
+        
+        const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
+        console.log('🔍 Filtered user assignments:', filteredUsers.length, filteredUsers);
+        
+        allowedUserIds = filteredUsers.map(ua => ua.user_id);
         
         console.log('🔍 Institute admin detected, filtering for institutes:', adminInstituteIds);
-        console.log('🔍 Allowed user IDs:', allowedUserIds.length);
+        console.log('🔍 Final allowed user IDs:', allowedUserIds.length, allowedUserIds);
       } else {
         // Not an institute admin - check if they have admin/recruiter role
         allowedUserIds = userAssignments?.map(ua => ua.user_id) || [];
-        console.log('🔍 Admin/recruiter access - showing all users');
+        console.log('🔍 Admin/recruiter access - showing all users:', allowedUserIds.length);
+      }
+      
+      if (allowedUserIds.length === 0) {
+        console.log('⚠️ No allowed user IDs found - will return empty results');
+        setAssignments([]);
+        setLoading(false);
+        return;
       }
       
       // Fetch different types of assignments in parallel
@@ -188,10 +205,29 @@ const VerifyAssignments = () => {
 
       const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
       
-      if (careerResult.error) throw careerResult.error;
-      if (linkedInResult.error) throw linkedInResult.error;
-      if (jobHuntingResult.error) throw jobHuntingResult.error;
-      if (gitHubResult.error) throw gitHubResult.error;
+      console.log('🔍 Promise results:', {
+        careerError: careerResult.error,
+        linkedInError: linkedInResult.error,
+        jobHuntingError: jobHuntingResult.error,
+        gitHubError: gitHubResult.error
+      });
+      
+      if (careerResult.error) {
+        console.error('❌ Career assignments error:', careerResult.error);
+        throw careerResult.error;
+      }
+      if (linkedInResult.error) {
+        console.error('❌ LinkedIn assignments error:', linkedInResult.error);
+        throw linkedInResult.error;
+      }
+      if (jobHuntingResult.error) {
+        console.error('❌ Job hunting assignments error:', jobHuntingResult.error);
+        throw jobHuntingResult.error;
+      }
+      if (gitHubResult.error) {
+        console.error('❌ GitHub assignments error:', gitHubResult.error);
+        throw gitHubResult.error;
+      }
 
       const careerData = careerResult.data || [];
       const linkedInData = linkedInResult.data || [];
@@ -421,8 +457,10 @@ const VerifyAssignments = () => {
       setAssignments(allAssignments);
       
     } catch (error) {
-      console.error('Error fetching assignments:', error);
+      console.error('❌ Error in fetchSubmittedAssignments:', error);
+      console.error('❌ Error stack:', error?.stack);
       toast.error('Failed to load assignments');
+      setAssignments([]);
     } finally {
       setLoading(false);
     }
