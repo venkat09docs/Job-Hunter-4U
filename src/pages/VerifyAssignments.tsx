@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, Clock, User, Calendar, Award } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -40,6 +42,7 @@ interface Assignment {
 
 const VerifyAssignments = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,9 +53,19 @@ const VerifyAssignments = () => {
   const [verifying, setVerifying] = useState(false);
 
   // Filter states
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [moduleFilter, setModuleFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('');
+
+  // Compute pending and verified assignments
+  const pendingAssignments = useMemo(() => 
+    filteredAssignments.filter(assignment => assignment.status === 'submitted'),
+    [filteredAssignments]
+  );
+
+  const verifiedAssignments = useMemo(() => 
+    filteredAssignments.filter(assignment => assignment.status === 'verified'),
+    [filteredAssignments]
+  );
 
   const fetchSubmittedAssignments = async () => {
     if (!user) return;
@@ -145,7 +158,7 @@ const VerifyAssignments = () => {
               category
             )
           `)
-          .eq('status', 'submitted')
+          .in('status', ['submitted', 'verified'])
           .in('user_id', allowedUserIds)
           .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
@@ -162,7 +175,7 @@ const VerifyAssignments = () => {
               points_base
             )
           `)
-          .eq('status', 'SUBMITTED')
+          .in('status', ['SUBMITTED', 'VERIFIED'])
           .in('user_id', allowedUserIds)
           .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
@@ -179,7 +192,7 @@ const VerifyAssignments = () => {
               category
             )
           `)
-          .eq('status', 'submitted')
+          .in('status', ['submitted', 'verified'])
           .in('user_id', allowedUserIds)
           .order('submitted_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
@@ -196,7 +209,7 @@ const VerifyAssignments = () => {
               points_base
             )
           `)
-          .eq('status', 'SUBMITTED')
+          .in('status', ['SUBMITTED', 'VERIFIED'])
           .in('user_id', allowedUserIds)
           .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })])
       ];
@@ -443,10 +456,6 @@ const VerifyAssignments = () => {
   const applyFilters = () => {
     let filtered = assignments;
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(assignment => assignment.status === statusFilter);
-    }
-
     if (moduleFilter !== 'all') {
       filtered = filtered.filter(assignment => 
         assignment.career_task_templates?.module?.toLowerCase() === moduleFilter.toLowerCase()
@@ -469,7 +478,7 @@ const VerifyAssignments = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [assignments, statusFilter, moduleFilter, userFilter]);
+  }, [assignments, moduleFilter, userFilter]);
 
   const handleReview = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
@@ -593,158 +602,181 @@ const VerifyAssignments = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Verify Assignments</h1>
-        <Button onClick={fetchSubmittedAssignments} variant="outline">
-          Refresh
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="status-filter">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="verified">Verified</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="module-filter">Module</Label>
-              <Select value={moduleFilter} onValueChange={setModuleFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Modules" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Modules</SelectItem>
-                  <SelectItem value="RESUME">Resume</SelectItem>
-                  <SelectItem value="LINKEDIN">LinkedIn</SelectItem>
-                  <SelectItem value="GITHUB">GitHub</SelectItem>
-                  <SelectItem value="JOB_HUNTING">Job Hunting</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="user-filter">Search User</Label>
-              <Input
-                id="user-filter"
-                placeholder="Search by name or username"
-                value={userFilter}
-                onChange={(e) => setUserFilter(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-end">
-              <Button 
-                onClick={() => {
-                  setStatusFilter('all');
-                  setModuleFilter('all');
-                  setUserFilter('');
-                }}
-                variant="outline"
-              >
-                Clear Filters
-              </Button>
+  const renderAssignmentCard = (assignment: Assignment) => (
+    <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <CardTitle className="text-lg">
+              {assignment.career_task_templates?.title || 'Untitled Assignment'}
+            </CardTitle>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <User className="h-4 w-4" />
+              <span>{assignment.profiles?.full_name || 'Unknown User'}</span>
+              <span className="text-gray-400">(@{assignment.profiles?.username || 'unknown'})</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex flex-col items-end gap-2">
+            {getStatusBadge(assignment.status)}
+            {getModuleBadge(assignment.career_task_templates?.module)}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-400" />
+            <span>
+              {assignment.status === 'verified' ? 'Verified' : 'Submitted'}: {' '}
+              {new Date(assignment.verified_at || assignment.submitted_at).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Award className="h-4 w-4 text-gray-400" />
+            <span>
+              {assignment.status === 'verified' ? 'Points Awarded' : 'Max Points'}: {' '}
+              {assignment.status === 'verified' 
+                ? (assignment.score_awarded || assignment.points_earned || 0) 
+                : (assignment.career_task_templates?.points_reward || 0)
+              }
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Evidence Items: {assignment.evidence?.length || 0}</span>
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button 
+            onClick={() => handleReview(assignment)}
+            variant="outline"
+            size="sm"
+          >
+            {assignment.status === 'verified' ? 'View Details' : 'Review'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-      {/* Assignments List */}
-      <div className="space-y-4">
-        {filteredAssignments.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-gray-500">
-              No assignments found matching the current filters.
-            </CardContent>
-          </Card>
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={() => navigate('/admin/dashboard')} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go to - Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Verify Assignments</h1>
+        </div>
+        {loading ? (
+          <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" />
         ) : (
-          filteredAssignments.map((assignment) => (
-            <Card key={assignment.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start space-x-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold">
-                        {assignment.career_task_templates?.title || 'Unknown Task'}
-                      </h3>
-                      {getStatusBadge(assignment.status)}
-                      {getModuleBadge(assignment.career_task_templates?.module)}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
-                        <span>
-                          {assignment.profiles?.full_name || 'Unknown User'} 
-                          ({assignment.profiles?.username || 'N/A'})
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          Submitted: {new Date(assignment.submitted_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Award className="h-4 w-4" />
-                        <span>
-                          Points: {assignment.career_task_templates?.points_reward || 0}
-                        </span>
-                      </div>
-                    </div>
-
-                    {assignment.evidence && assignment.evidence.length > 0 && (
-                      <div className="mt-3 text-sm text-blue-600">
-                        📎 {assignment.evidence.length} evidence item(s) submitted
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={() => handleReview(assignment)}
-                      size="sm"
-                    >
-                      Review
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+          <Button onClick={fetchSubmittedAssignments} variant="outline">
+            Refresh
+          </Button>
         )}
       </div>
+
+      {/* Filter Controls */}
+      <div className="flex gap-4 items-center flex-wrap">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="module-filter">Module:</Label>
+          <Select value={moduleFilter} onValueChange={setModuleFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="All modules" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Modules</SelectItem>
+              <SelectItem value="career">Career</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+              <SelectItem value="job_hunting">Job Hunting</SelectItem>
+              <SelectItem value="github">GitHub</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Label htmlFor="user-filter">User:</Label>
+          <Input
+            id="user-filter"
+            placeholder="Search by name..."
+            value={userFilter}
+            onChange={(e) => setUserFilter(e.target.value)}
+            className="w-48"
+          />
+        </div>
+      </div>
+
+      {/* Tabs for Pending and Verified */}
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pending">
+            Pending ({pendingAssignments.length})
+          </TabsTrigger>
+          <TabsTrigger value="verified">
+            Verified ({verifiedAssignments.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending" className="space-y-4">
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : pendingAssignments.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Clock className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p className="text-lg">No pending assignments</p>
+              <p className="text-sm">Submitted assignments will appear here for review.</p>
+            </div>
+          ) : (
+            pendingAssignments.map(renderAssignmentCard)
+          )}
+        </TabsContent>
+
+        <TabsContent value="verified" className="space-y-4">
+          {loading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : verifiedAssignments.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <CheckCircle className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p className="text-lg">No verified assignments</p>
+              <p className="text-sm">Verified assignments will appear here.</p>
+            </div>
+          ) : (
+            verifiedAssignments.map(renderAssignmentCard)
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Review Dialog */}
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
@@ -853,58 +885,60 @@ const VerifyAssignments = () => {
                 </CardContent>
               </Card>
 
-              {/* Verification Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Verification</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="score">Score to Award (0 to {selectedAssignment.career_task_templates?.points_reward})</Label>
-                    <Input
-                      id="score"
-                      type="number"
-                      min="0"
-                      max={selectedAssignment.career_task_templates?.points_reward}
-                      value={scoreAwarded}
-                      onChange={(e) => setScoreAwarded(e.target.value)}
-                      placeholder="Enter score"
-                    />
-                  </div>
+              {/* Verification Form - Only show for non-verified assignments */}
+              {selectedAssignment.status !== 'verified' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Verification</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="score">Score to Award (0 to {selectedAssignment.career_task_templates?.points_reward})</Label>
+                      <Input
+                        id="score"
+                        type="number"
+                        min="0"
+                        max={selectedAssignment.career_task_templates?.points_reward}
+                        value={scoreAwarded}
+                        onChange={(e) => setScoreAwarded(e.target.value)}
+                        placeholder="Enter score"
+                      />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="notes">Verification Notes (Optional)</Label>
-                    <Textarea
-                      id="notes"
-                      value={verificationNotes}
-                      onChange={(e) => setVerificationNotes(e.target.value)}
-                      placeholder="Add any feedback or comments..."
-                      rows={3}
-                    />
-                  </div>
+                    <div>
+                      <Label htmlFor="notes">Verification Notes (Optional)</Label>
+                      <Textarea
+                        id="notes"
+                        value={verificationNotes}
+                        onChange={(e) => setVerificationNotes(e.target.value)}
+                        placeholder="Add any feedback or comments..."
+                        rows={3}
+                      />
+                    </div>
 
-                  <div className="flex space-x-3 pt-4">
-                    <Button
-                      onClick={() => handleVerifyAssignment('approve')}
-                      disabled={verifying || !scoreAwarded}
-                      className="flex-1"
-                    >
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {verifying ? 'Approving...' : 'Approve'}
-                    </Button>
-                    
-                    <Button
-                      onClick={() => handleVerifyAssignment('reject')}
-                      disabled={verifying}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {verifying ? 'Rejecting...' : 'Reject'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex space-x-3 pt-4">
+                      <Button
+                        onClick={() => handleVerifyAssignment('approve')}
+                        disabled={verifying || !scoreAwarded}
+                        className="flex-1"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {verifying ? 'Approving...' : 'Approve'}
+                      </Button>
+                      
+                      <Button
+                        onClick={() => handleVerifyAssignment('reject')}
+                        disabled={verifying}
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        {verifying ? 'Rejecting...' : 'Reject'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </DialogContent>
