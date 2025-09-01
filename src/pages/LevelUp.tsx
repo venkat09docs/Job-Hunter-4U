@@ -171,6 +171,12 @@ const LevelUp = () => {
        title: t.career_task_templates?.title 
      }))
    });
+
+   // Debug: What's being passed to diamond board
+   console.log('🔍 Props passed to BadgeProgressionMap (Diamond Board):', {
+     githubProfileProgress,
+     message: 'This should show 100% for diamond board if you have 10/10 completed tasks'
+   });
   // Calculate GitHub progress based on pinned repositories and total commits from GitHub Weekly page
   const [githubData, setGitHubData] = useState<any>({});
 
@@ -424,7 +430,7 @@ const LevelUp = () => {
 
           {/* Badge Progression Map */}
           <div className="mb-8">
-          <BadgeProgressionMap
+           <BadgeProgressionMap
             resumeProgress={resumeProgress}
             completedProfileTasks={completedProfileTasks}
             linkedinProgress={linkedinProgress}

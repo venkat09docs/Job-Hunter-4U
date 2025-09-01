@@ -341,7 +341,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           title: 'Profile Elite',
           description: 'GitHub profile mastery',
           tier: 'diamond',
-          progress: isIT() ? (isBadgeAwarded('profile_elite') ? 100 : calculateProfileProgress('diamond')) : 0,
+          progress: isIT() ? (isBadgeAwarded('profile_elite') ? 100 : githubProfileProgress) : 0,
           criteria: isIT() ? 'Complete GitHub Profile tasks (100%)' : 'GitHub profile available only for IT professionals',
           nextAction: isIT() ? 'Build Network' : 'Not Available',
           link: isIT() ? '/dashboard/career-assignments?category=github' : '#',
