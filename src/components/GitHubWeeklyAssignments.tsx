@@ -100,6 +100,52 @@ export const GitHubWeeklyAssignments = () => {
         </TabsList>
 
         <TabsContent value="weekly" className="space-y-4">
+          {/* Current Week Details */}
+          {weeklyTasks.length > 0 && (
+            <Card className="bg-accent/10 border-accent">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-accent-foreground" />
+                  <h4 className="font-medium">Current Week - {weeklyTasks[0]?.period}</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {(() => {
+                    // Calculate week start and end from period (e.g., "2025-36")
+                    const period = weeklyTasks[0]?.period;
+                    if (!period) return "Week period not available";
+                    
+                    const [year, week] = period.split('-').map(Number);
+                    
+                    // Calculate the Monday of the given week
+                    const jan1 = new Date(year, 0, 1);
+                    const jan1DayOfWeek = jan1.getDay() || 7; // Convert Sunday=0 to Sunday=7
+                    const firstMondayOfYear = new Date(jan1);
+                    firstMondayOfYear.setDate(jan1.getDate() + (8 - jan1DayOfWeek) % 7);
+                    
+                    // Add (week - 1) weeks to first Monday
+                    const weekStart = new Date(firstMondayOfYear);
+                    weekStart.setDate(firstMondayOfYear.getDate() + (week - 1) * 7);
+                    
+                    // Week end is the Sunday
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    
+                    return `${weekStart.toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })} - ${weekEnd.toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      month: 'short', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}`;
+                  })()}
+                </p>
+              </CardHeader>
+            </Card>
+          )}
+
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold">Daily GitHub Assignments</h3>
