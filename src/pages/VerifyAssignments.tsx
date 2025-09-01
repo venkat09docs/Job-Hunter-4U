@@ -43,7 +43,7 @@ interface Assignment {
 
 const VerifyAssignments = () => {
   const { user } = useAuth();
-  const { isAdmin, isInstituteAdmin, isRecruiter } = useRole();
+  const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
@@ -440,10 +440,10 @@ const VerifyAssignments = () => {
 
   useEffect(() => {
     // Only fetch when user is authenticated and role is loaded
-    if (user && !loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+    if (user && !roleLoading && (isAdmin || isInstituteAdmin || isRecruiter)) {
       fetchSubmittedAssignments();
     }
-  }, [user, isAdmin, isInstituteAdmin, isRecruiter]);
+  }, [user, roleLoading, isAdmin, isInstituteAdmin, isRecruiter]);
 
   useEffect(() => {
     applyFilters();
