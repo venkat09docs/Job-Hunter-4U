@@ -116,15 +116,19 @@ export const GitHubWeeklyAssignments = () => {
                     
                     const [year, week] = period.split('-').map(Number);
                     
-                    // Calculate the Monday of the given week
+                    // Use the same logic as PostgreSQL's DATE_TRUNC('week')
+                    // Start from January 1st and calculate the Monday of the target week
                     const jan1 = new Date(year, 0, 1);
-                    const jan1DayOfWeek = jan1.getDay() || 7; // Convert Sunday=0 to Sunday=7
-                    const firstMondayOfYear = new Date(jan1);
-                    firstMondayOfYear.setDate(jan1.getDate() + (8 - jan1DayOfWeek) % 7);
                     
-                    // Add (week - 1) weeks to first Monday
-                    const weekStart = new Date(firstMondayOfYear);
-                    weekStart.setDate(firstMondayOfYear.getDate() + (week - 1) * 7);
+                    // Find the first Monday of the year (or use Jan 1 if it's a Monday)
+                    const jan1Day = jan1.getDay(); // 0 = Sunday, 1 = Monday, etc.
+                    const daysToFirstMonday = jan1Day === 1 ? 0 : (jan1Day === 0 ? 1 : 8 - jan1Day);
+                    
+                    const firstMonday = new Date(year, 0, 1 + daysToFirstMonday);
+                    
+                    // Calculate the Monday of the target week
+                    const weekStart = new Date(firstMonday);
+                    weekStart.setDate(firstMonday.getDate() + (week - 1) * 7);
                     
                     // Week end is the Sunday
                     const weekEnd = new Date(weekStart);
