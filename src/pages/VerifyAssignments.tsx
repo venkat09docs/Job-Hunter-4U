@@ -142,7 +142,7 @@ const VerifyAssignments = () => {
               description,
               points_base
             ),
-            linkedin_users!inner (
+            linkedin_users (
               id,
               auth_uid,
               name,
@@ -150,7 +150,7 @@ const VerifyAssignments = () => {
             )
           `)
           .eq('status', 'SUBMITTED')
-          .in('linkedin_users.auth_uid', allowedUserIds)
+          .in('user_id', allowedUserIds)
           .order('updated_at', { ascending: false })] : [Promise.resolve({ data: [], error: null })]),
 
         // Job hunting assignments (filtered by allowed users)
@@ -249,15 +249,15 @@ const VerifyAssignments = () => {
 
       // Process LinkedIn assignments WITH EVIDENCE FETCHING
       if (linkedInData && linkedInData.length > 0) {
-        // Get auth_uids for profile lookup
-        const authUids = [...new Set(linkedInData.map(task => task.linkedin_users?.auth_uid).filter(Boolean))];
+        // Get user_ids for profile lookup - use user_id directly from linkedin_user_tasks
+        const userIds = [...new Set(linkedInData.map(task => task.user_id).filter(Boolean))];
         let profilesData: any[] = [];
         
-        if (authUids.length > 0) {
+        if (userIds.length > 0) {
           const { data: profiles, error: profilesError } = await supabase
             .from('profiles')
             .select('user_id, username, full_name, profile_image_url')
-            .in('user_id', authUids);
+            .in('user_id', userIds);
 
           if (profilesError) {
             console.error('Error fetching profiles for LinkedIn assignments:', profilesError);
@@ -268,8 +268,9 @@ const VerifyAssignments = () => {
 
         const linkedInAssignmentsWithEvidence = await Promise.all(
           linkedInData.map(async assignment => {
-            const authUid = assignment.linkedin_users?.auth_uid || assignment.user_id;
-            const profile = profilesData?.find(p => p.user_id === authUid);
+            // Use user_id directly from the linkedin_user_tasks table
+            const userId = assignment.user_id;
+            const profile = profilesData?.find(p => p.user_id === userId);
             
             // Fetch LinkedIn evidence for this specific task
             let evidenceData: any[] = [];
@@ -291,7 +292,7 @@ const VerifyAssignments = () => {
             
             return {
               id: assignment.id,
-              user_id: authUid, // Use auth_uid for correct user identification
+              user_id: userId, // Use user_id directly from linkedin_user_tasks
               template_id: assignment.task_id,
               status: assignment.status.toLowerCase(),
               submitted_at: assignment.updated_at,
@@ -306,8 +307,8 @@ const VerifyAssignments = () => {
                 sub_categories: { name: 'LinkedIn growth activities based' }
               },
               profiles: profile || { 
-                full_name: assignment.linkedin_users?.name || `[Missing User: ${authUid?.slice(0, 8)}...]`, 
-                username: assignment.linkedin_users?.email?.split('@')[0] || `missing_${authUid?.slice(0, 8)}`, 
+                full_name: assignment.linkedin_users?.name || `[Missing User: ${userId?.slice(0, 8)}...]`, 
+                username: assignment.linkedin_users?.email?.split('@')[0] || `missing_${userId?.slice(0, 8)}`, 
                 profile_image_url: '' 
               },
               evidence: evidenceData,
