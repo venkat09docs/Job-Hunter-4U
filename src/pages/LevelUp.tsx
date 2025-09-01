@@ -145,6 +145,8 @@ const LevelUp = () => {
   const githubProfileProgress = githubProfileTasks.length > 0 
     ? Math.round((githubProfileTasks.filter(t => t.status === 'verified').length / githubProfileTasks.length) * 100)
     : 0;
+    
+   console.log('🔍 GitHub Profile Tasks (Level Up):', githubProfileTasks.length, 'Completed:', githubProfileTasks.filter(t => t.status === 'verified').length, 'Progress:', githubProfileProgress + '%');
   // Calculate GitHub progress based on pinned repositories and total commits from GitHub Weekly page
   const [githubData, setGitHubData] = useState<any>({});
 
