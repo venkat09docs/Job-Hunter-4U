@@ -91,13 +91,33 @@ serve(async (req) => {
 
     console.log('Starting weekly GitHub assignments refresh...')
 
-    // Get current date and calculate the new week period
+    // Get current date and calculate the new week period using consistent ISO week calculation
     const now = new Date()
     const currentYear = now.getFullYear()
     const currentWeek = getWeekNumber(now)
     const newPeriod = `${currentYear}-${currentWeek.toString().padStart(2, '0')}`
 
     console.log(`Creating assignments for period: ${newPeriod}`)
+
+    // First, check if assignments for this period already exist to avoid duplicates
+    const { data: existingPeriodTasks } = await supabaseClient
+      .from('github_user_tasks')
+      .select('id')
+      .eq('period', newPeriod)
+      .limit(1)
+
+    if (existingPeriodTasks && existingPeriodTasks.length > 0) {
+      console.log('Assignments already exist for period:', newPeriod)
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: 'Assignments already exist for this period',
+          period: newPeriod,
+          tasksCreated: 0
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Get all active GitHub tasks
     const { data: activeTasks, error: tasksError } = await supabaseClient
@@ -148,25 +168,14 @@ serve(async (req) => {
     const assignments = []
     for (const user of users) {
       for (const task of activeTasks) {
-        // Check if user already has this task for the current period
-        const { data: existingTask } = await supabaseClient
-          .from('github_user_tasks')
-          .select('id')
-          .eq('user_id', user.user_id)
-          .eq('task_id', task.id)
-          .eq('period', newPeriod)
-          .single()
-
-        if (!existingTask) {
-          assignments.push({
-            user_id: user.user_id,
-            task_id: task.id,
-            period: newPeriod,
-            due_at: weekEnd.toISOString(),
-            status: 'NOT_STARTED',
-            score_awarded: 0
-          })
-        }
+        assignments.push({
+          user_id: user.user_id,
+          task_id: task.id,
+          period: newPeriod,
+          due_at: weekEnd.toISOString(),
+          status: 'NOT_STARTED',
+          score_awarded: 0
+        })
       }
     }
 

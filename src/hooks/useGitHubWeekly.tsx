@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -517,23 +517,28 @@ export const useGitHubWeekly = () => {
     },
   });
 
-  // Instantiate week mutation
-  const instantiateWeekMutation = useMutation({
-    mutationFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
+  // Check for new assignments automatically
+  React.useEffect(() => {
+    const checkForNewAssignments = async () => {
+      if (!user?.id) return;
 
-      const { data, error } = await supabase.functions.invoke('instantiate-week-github', {
-        body: { userId: user.id },
-      });
+      const currentPeriod = getCurrentPeriod();
+      const { data: existingTasks } = await supabase
+        .from('github_user_tasks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('period', currentPeriod)
+        .limit(1);
 
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
-    },
-  });
+      // If no tasks exist for current period, trigger refresh
+      if (!existingTasks || existingTasks.length === 0) {
+        console.log('No tasks found for current period, checking if weekly refresh is needed');
+        queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      }
+    };
+
+    checkForNewAssignments();
+  }, [user?.id, queryClient]);
 
   // Helper function to get current period (YYYY-WW format)
   const getCurrentPeriod = (): string => {
@@ -570,9 +575,25 @@ export const useGitHubWeekly = () => {
     return retryWithBackoff(() => verifyTasksMutation.mutateAsync(period));
   }, [verifyTasksMutation]);
 
-  const instantiateWeek = useCallback(async () => {
-    return retryWithBackoff(() => instantiateWeekMutation.mutateAsync());
-  }, [instantiateWeekMutation]);
+  // Add a manual refresh function for the weekly assignments
+  const refreshWeeklyAssignments = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('weekly-github-assignments-refresh', {
+        body: { trigger: 'manual' }
+      });
+      
+      if (error) throw error;
+      
+      // Refresh the queries after successful assignment refresh
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
+      
+      return data;
+    } catch (error) {
+      console.error('Error refreshing weekly assignments:', error);
+      throw error;
+    }
+  }, [queryClient]);
 
   return {
     // Data
@@ -593,12 +614,11 @@ export const useGitHubWeekly = () => {
     addRepo,
     submitEvidence,
     verifyTasks,
-    instantiateWeek,
+    refreshWeeklyAssignments,
 
     // Mutations (for additional control)
     addRepoMutation,
     submitEvidenceMutation,
     verifyTasksMutation,
-    instantiateWeekMutation,
   };
 };

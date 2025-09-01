@@ -77,9 +77,47 @@ const GitHubWeekly = () => {
     addRepo,
     submitEvidence,
     verifyTasks,
-    instantiateWeek,
+    refreshWeeklyAssignments,
     isSubmittingEvidence
   } = useGitHubWeekly();
+
+  // Auto-refresh assignments on component mount and when user changes
+  React.useEffect(() => {
+    if (user) {
+      // Check if we need to refresh for new week
+      const checkAndRefresh = async () => {
+        try {
+          // Simple check - if we have no weekly tasks, try refreshing
+          if (weeklyTasks.length === 0) {
+            console.log('No weekly tasks found, refreshing assignments...');
+            await refreshWeeklyAssignments();
+          }
+        } catch (error) {
+          console.error('Failed to refresh weekly assignments:', error);
+        }
+      };
+      checkAndRefresh();
+    }
+  }, [user?.id, weeklyTasks.length, refreshWeeklyAssignments]);
+
+  // Add a getCurrentPeriod helper function 
+  const getCurrentPeriod = (): string => {
+    const now = new Date();
+    // Use proper ISO week calculation
+    const year = now.getFullYear();
+    // Calculate ISO week number correctly
+    const jan4 = new Date(year, 0, 4);
+    const week1Monday = new Date(jan4);
+    week1Monday.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+    const currentWeekStart = new Date(now);
+    currentWeekStart.setDate(now.getDate() - (now.getDay() || 7) + 1);
+    
+    // Calculate the week number from the difference in days
+    const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const weekNumber = daysDiff + 1;
+    
+    return `${year}-${weekNumber.toString().padStart(2, '0')}`;
+  };
 
   // Fetch pending extension requests
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
@@ -1124,12 +1162,12 @@ const GitHubWeekly = () => {
                         Generate your Day 1-7 GitHub activities for this week
                       </p>
                       <Button 
-                        onClick={() => instantiateWeek()}
+                        onClick={() => refreshWeeklyAssignments()}
                         disabled={!canAccessFeature("github_weekly")}
                         className="mt-4"
                       >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Generate Week Tasks
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh Week Tasks
                         {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                       </Button>
                     </div>

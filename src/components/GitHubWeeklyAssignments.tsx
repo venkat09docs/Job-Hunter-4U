@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield } from 'lucide-react';
+import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
@@ -36,7 +36,7 @@ export const GitHubWeeklyAssignments = () => {
     isLoading, 
     submitEvidence, 
     verifyTasks, 
-    instantiateWeek 
+    refreshWeeklyAssignments 
   } = useGitHubWeekly();
 
   const [evidenceDialog, setEvidenceDialog] = useState<{ open: boolean; taskId?: string }>({ open: false });
@@ -108,12 +108,12 @@ export const GitHubWeeklyAssignments = () => {
               </p>
             </div>
             <Button 
-              onClick={() => instantiateWeek()} 
+              onClick={() => refreshWeeklyAssignments()} 
               variant="outline" 
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Generate Tasks
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh Tasks
             </Button>
           </div>
 
@@ -404,9 +404,9 @@ export const GitHubWeeklyAssignments = () => {
                   <p className="text-sm text-muted-foreground text-center mb-4">
                     Generate this week's GitHub tasks to start earning points
                   </p>
-                  <Button onClick={() => instantiateWeek()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Generate Daily Tasks
+                  <Button onClick={() => refreshWeeklyAssignments()}>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh Weekly Tasks
                   </Button>
                 </CardContent>
               </Card>
