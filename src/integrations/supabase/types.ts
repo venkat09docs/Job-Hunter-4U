@@ -4692,6 +4692,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      test_institute_admin_assignments: {
+        Args: { admin_user_id: string }
+        Returns: {
+          assignment_id: string
+          assignment_type: string
+          assignment_user_id: string
+          institute_name: string
+          student_email: string
+        }[]
+      }
       track_notification_event: {
         Args: {
           event_type: string
