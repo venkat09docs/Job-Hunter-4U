@@ -927,31 +927,42 @@ const GitHubWeekly = () => {
     
     // Calculate from actual evidence submissions for all verified tasks
     allVerifiedTasks.forEach(task => {
+      console.log('📊 [TOTAL] Processing task:', task.id, 'status:', task.status, 'evidence count:', task.evidence?.length || 0);
+      
       if (task.evidence && task.evidence.length > 0) {
-        // Use the most recent verified evidence
+        // Use the most recent evidence (same logic as weekly calculation)
         const verifiedEvidence = task.evidence.find(evidence => 
-          evidence.verification_status === 'verified'
+          evidence.verification_status === 'verified' || task.status === 'VERIFIED'
         );
         
         if (verifiedEvidence) {
           try {
             const parsedData = verifiedEvidence.parsed_json as any;
+            console.log('📊 [TOTAL] Evidence data found:', parsedData);
+            
             if (parsedData) {
               // Check for weeklyMetrics structure first (new format)
               if (parsedData.weeklyMetrics) {
-                totalCommits += parsedData.weeklyMetrics.commits || 0;
+                const commits = parsedData.weeklyMetrics.commits || 0;
+                totalCommits += commits;
+                console.log('📊 [TOTAL] Added from weeklyMetrics:', commits);
               } 
               // Fallback to legacy format
               else {
-                totalCommits += parsedData.numberOfCommits || parsedData.commits_count || 0;
+                const commits = parsedData.numberOfCommits || parsedData.commits_count || 0;
+                totalCommits += commits;
+                console.log('📊 [TOTAL] Added from legacy format:', commits);
               }
             }
           } catch (error) {
             console.error('Error parsing evidence data:', error);
           }
+        } else {
+          console.log('📊 [TOTAL] No verified evidence found for task');
         }
-      } else {
+      } else if (task.status === 'VERIFIED') {
         // Conservative estimate for verified tasks without evidence data
+        console.log('📊 [TOTAL] Adding estimate for task without evidence');
         totalCommits += 1;
       }
     });
