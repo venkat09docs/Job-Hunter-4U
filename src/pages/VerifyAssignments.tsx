@@ -60,7 +60,7 @@ const VerifyAssignments = () => {
     setLoading(true);
     
     try {
-      console.log('🔍 Starting to fetch submitted assignments...');
+      // Fetch all assignment types
       
       // First, check if user is institute admin and get their institute assignments
       console.log('🔍 Fetching user assignments for institute filtering...');
@@ -70,14 +70,10 @@ const VerifyAssignments = () => {
         .eq('is_active', true);
       
       if (userAssignmentsError) {
-        console.error('❌ Error fetching user assignments:', userAssignmentsError);
+        console.error('Error fetching user assignments:', userAssignmentsError);
         throw userAssignmentsError;
       }
-      
-      console.log('✅ User assignments fetched:', userAssignments?.length || 0);
 
-      // Get institute admin assignments for current user
-      console.log('🔍 Checking institute admin assignments for user:', user.id);
       const { data: instituteAdminAssignments, error: adminError } = await supabase
         .from('institute_admin_assignments')
         .select('institute_id')
@@ -85,11 +81,9 @@ const VerifyAssignments = () => {
         .eq('is_active', true);
       
       if (adminError) {
-        console.error('❌ Error fetching institute admin assignments:', adminError);
+        console.error('Error fetching institute admin assignments:', adminError);
         throw adminError;
       }
-      
-      console.log('✅ Institute admin assignments fetched:', instituteAdminAssignments?.length || 0, instituteAdminAssignments);
 
       // Filter users based on institute admin access
       let allowedUserIds: string[] = [];
@@ -97,23 +91,14 @@ const VerifyAssignments = () => {
       if (instituteAdminAssignments && instituteAdminAssignments.length > 0) {
         // Institute admin - only show their institute's students
         const adminInstituteIds = instituteAdminAssignments.map(ia => ia.institute_id);
-        console.log('🔍 Admin institute IDs:', adminInstituteIds);
-        
         const filteredUsers = userAssignments?.filter(ua => adminInstituteIds.includes(ua.institute_id)) || [];
-        console.log('🔍 Filtered user assignments:', filteredUsers.length, filteredUsers);
-        
         allowedUserIds = filteredUsers.map(ua => ua.user_id);
-        
-        console.log('🔍 Institute admin detected, filtering for institutes:', adminInstituteIds);
-        console.log('🔍 Final allowed user IDs:', allowedUserIds.length, allowedUserIds);
       } else {
         // Not an institute admin - check if they have admin/recruiter role
         allowedUserIds = userAssignments?.map(ua => ua.user_id) || [];
-        console.log('🔍 Admin/recruiter access - showing all users:', allowedUserIds.length);
       }
       
       if (allowedUserIds.length === 0) {
-        console.log('⚠️ No allowed user IDs found - will return empty results');
         setAssignments([]);
         setLoading(false);
         return;
@@ -205,41 +190,28 @@ const VerifyAssignments = () => {
 
       const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
       
-      console.log('🔍 Promise results:', {
-        careerError: careerResult.error,
-        linkedInError: linkedInResult.error,
-        jobHuntingError: jobHuntingResult.error,
-        gitHubError: gitHubResult.error
-      });
-      
+      // Handle errors
       if (careerResult.error) {
-        console.error('❌ Career assignments error:', careerResult.error);
-        throw careerResult.error;
+        console.error('Career assignments error:', careerResult.error);
+        toast.error('Failed to load career assignments');
       }
       if (linkedInResult.error) {
-        console.error('❌ LinkedIn assignments error:', linkedInResult.error);
-        throw linkedInResult.error;
+        console.error('LinkedIn assignments error:', linkedInResult.error);
+        toast.error('Failed to load LinkedIn assignments');
       }
       if (jobHuntingResult.error) {
-        console.error('❌ Job hunting assignments error:', jobHuntingResult.error);
-        throw jobHuntingResult.error;
+        console.error('Job hunting assignments error:', jobHuntingResult.error);
+        toast.error('Failed to load job hunting assignments');
       }
       if (gitHubResult.error) {
-        console.error('❌ GitHub assignments error:', gitHubResult.error);
-        throw gitHubResult.error;
+        console.error('GitHub assignments error:', gitHubResult.error);
+        toast.error('Failed to load GitHub assignments');
       }
 
       const careerData = careerResult.data || [];
       const linkedInData = linkedInResult.data || [];
       const jobHuntingData = jobHuntingResult.data || [];
       const gitHubData = gitHubResult.data || [];
-
-      console.log('🔍 Data fetched:', {
-        careerDataLength: careerData?.length || 0, 
-        linkedInDataLength: linkedInData?.length || 0,
-        jobHuntingDataLength: jobHuntingData?.length || 0,
-        gitHubDataLength: gitHubData?.length || 0
-      });
 
       const allAssignments = [];
 
@@ -277,8 +249,6 @@ const VerifyAssignments = () => {
 
       // Process LinkedIn assignments WITH EVIDENCE FETCHING
       if (linkedInData && linkedInData.length > 0) {
-        console.log('🔍 Processing LinkedIn assignments, count:', linkedInData.length);
-        
         // Get auth_uids for profile lookup
         const authUids = [...new Set(linkedInData.map(task => task.linkedin_users?.auth_uid).filter(Boolean))];
         let profilesData: any[] = [];
@@ -301,14 +271,6 @@ const VerifyAssignments = () => {
             const authUid = assignment.linkedin_users?.auth_uid || assignment.user_id;
             const profile = profilesData?.find(p => p.user_id === authUid);
             
-            console.log('🔍 Processing LinkedIn assignment:', {
-              assignmentId: assignment.id,
-              originalUserId: assignment.user_id,
-              authUid: authUid,
-              linkedInUsersData: assignment.linkedin_users,
-              profileFound: !!profile
-            });
-            
             // Fetch LinkedIn evidence for this specific task
             let evidenceData: any[] = [];
             try {
@@ -319,13 +281,12 @@ const VerifyAssignments = () => {
                 .order('created_at', { ascending: false });
 
               if (evidenceError) {
-                console.error('🔍 LinkedIn evidence fetch error for task', assignment.id, ':', evidenceError);
+                console.error('LinkedIn evidence fetch error for task', assignment.id, ':', evidenceError);
               } else {
                 evidenceData = evidence || [];
-                console.log('🔍 LinkedIn evidence found for task', assignment.id, ':', evidenceData.length, 'items');
               }
             } catch (error) {
-              console.error('🔍 LinkedIn evidence fetch exception for task', assignment.id, ':', error);
+              console.error('LinkedIn evidence fetch exception for task', assignment.id, ':', error);
             }
             
             return {
@@ -356,7 +317,6 @@ const VerifyAssignments = () => {
           })
         );
 
-        console.log('🔍 LinkedIn assignments with evidence:', linkedInAssignmentsWithEvidence.length);
         allAssignments.push(...linkedInAssignmentsWithEvidence);
       }
 
@@ -453,12 +413,11 @@ const VerifyAssignments = () => {
         allAssignments.push(...assignmentsWithEvidence);
       }
 
-      console.log('🔍 Total processed assignments:', allAssignments.length);
+      // Set assignments
       setAssignments(allAssignments);
       
     } catch (error) {
-      console.error('❌ Error in fetchSubmittedAssignments:', error);
-      console.error('❌ Error stack:', error?.stack);
+      console.error('Error in fetchSubmittedAssignments:', error);
       toast.error('Failed to load assignments');
       setAssignments([]);
     } finally {
