@@ -507,6 +507,38 @@ const VerifyAssignments = () => {
           .eq('id', selectedAssignment.id);
 
         if (error) throw error;
+      } else if (selectedAssignment.career_task_templates?.module === 'GITHUB') {
+        // Handle GitHub assignment verification
+        const gitHubStatus = action === 'approve' ? 'VERIFIED' : 'REJECTED';
+        const { error } = await supabase
+          .from('github_user_tasks')
+          .update({
+            status: gitHubStatus,
+            score_awarded: points,
+            updated_at: new Date().toISOString(),
+            verification_notes: verificationNotes
+          })
+          .eq('id', selectedAssignment.id);
+
+        if (error) throw error;
+
+        // Award points to user for GitHub task completion if approved
+        if (action === 'approve' && points > 0) {
+          const { error: pointsError } = await supabase
+            .from('user_activity_points')
+            .insert({
+              user_id: selectedAssignment.user_id,
+              activity_id: 'github_task_completion',
+              activity_type: 'github_task',
+              points_earned: points,
+              activity_date: new Date().toISOString().split('T')[0]
+            });
+
+          if (pointsError) {
+            console.error('Error awarding points:', pointsError);
+            // Don't throw here, just log the error as the main verification was successful
+          }
+        }
       } else {
         // Handle career task assignment verification
         const { error } = await supabase
