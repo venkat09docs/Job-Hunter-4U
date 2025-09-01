@@ -315,7 +315,7 @@ const JobTracker = () => {
           title: 'Job Application Needs Update',
           message: `${job.job_title} at ${job.company_name} hasn't been updated for ${daysSinceUpdate} days. Please verify and update the status.`,
           type: 'job_status_stale',
-          related_id: job.id,
+          related_id: null, // Set to null since job.id might not be a valid UUID
           is_read: false
         };
       });

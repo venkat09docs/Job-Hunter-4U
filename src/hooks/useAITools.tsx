@@ -318,7 +318,7 @@ export const useAITools = () => {
           type: 'ai_tool_used',
           category: 'technical',
           priority: 'low',
-          related_id: toolId
+          related_id: null // Set to null since toolId is a string, not UUID
         });
 
       // Check if credits are low and send warning
