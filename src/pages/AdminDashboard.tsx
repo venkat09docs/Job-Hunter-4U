@@ -24,6 +24,8 @@ export default function AdminDashboard() {
   const { isAdmin, isInstituteAdmin, loading } = useRole();
   const { user } = useAuth();
   const { instituteName, instituteSubscription } = useInstituteName();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   // Extract max students from subscription plan name
   const getMaxStudentsFromPlan = (planName: string | null): number => {
@@ -31,7 +33,6 @@ export default function AdminDashboard() {
     const match = planName.match(/(\d+)\s*Members?\s*Pack/i);
     return match ? parseInt(match[1]) : 0;
   };
-  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -106,7 +107,6 @@ export default function AdminDashboard() {
     { id: "assignments", label: "User Assignments", icon: ClipboardList },
     { id: "affiliates", label: "Affiliate Management", icon: Share2 }
   ];
-  const [activeTab, setActiveTab] = useState("dashboard");
 
   // For Super Admin, show the full layout with sidebar
   return (
