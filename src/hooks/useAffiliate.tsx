@@ -29,6 +29,7 @@ interface AffiliateReferral {
   updated_at: string;
   referred_user?: {
     full_name?: string;
+    username?: string;
     email?: string;
   };
 }
@@ -93,7 +94,7 @@ export const useAffiliate = () => {
         const userIds = data.map(r => r.referred_user_id);
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email')
+          .select('user_id, full_name, username, email')
           .in('user_id', userIds);
         
         // Map profiles to referrals

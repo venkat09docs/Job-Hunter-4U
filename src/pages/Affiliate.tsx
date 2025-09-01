@@ -319,10 +319,10 @@ const Affiliate = () => {
                   <div key={referral.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-1">
                       <p className="font-medium">
-                        {referral.referred_user?.full_name || referral.referred_user?.email || 'New User'}
+                        {referral.referred_user?.full_name || referral.referred_user?.username || 'New User'}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(referral.created_at).toLocaleDateString()}
+                        @{referral.referred_user?.username || referral.referred_user?.email?.split('@')[0] || 'unknown'} • {new Date(referral.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right space-y-1">
