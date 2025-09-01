@@ -975,47 +975,50 @@ const VerifyAssignments = () => {
       allAssignments.push(...assignmentsWithEvidence);
     }
 
-    // Process LinkedIn assignments
-    if (linkedInData && linkedInData.length > 0) {
-      console.log('🔍 Processing LinkedIn assignments, count:', linkedInData.length);
-      
-      // Process each LinkedIn assignment with profile data
-      const linkedInAssignmentsWithProfiles = linkedInData.map(assignment => {
-        const profile = assignment.user_profile;
+      // Process LinkedIn assignments
+      if (linkedInData && linkedInData.length > 0) {
+        console.log('🔍 Processing LinkedIn assignments, count:', linkedInData.length);
         
-        console.log('🔍 Processing LinkedIn assignment:', {
-          assignmentId: assignment.id,
-          userId: assignment.user_id,
-          profileFound: !!profile,
-          profileData: profile ? { full_name: profile.full_name, username: profile.username } : null
+        // Process each LinkedIn assignment with profile data
+        const linkedInAssignmentsWithProfiles = linkedInData.map(assignment => {
+          const profile = assignment.user_profile;
+          const authUid = assignment.linkedin_users?.auth_uid || assignment.user_id;
+          
+          console.log('🔍 Processing LinkedIn assignment:', {
+            assignmentId: assignment.id,
+            originalUserId: assignment.user_id,
+            authUid: authUid,
+            linkedInUsersData: assignment.linkedin_users,
+            profileFound: !!profile,
+            profileData: profile ? { full_name: profile.full_name, username: profile.username } : null
+          });
+          
+          return {
+            id: assignment.id,
+            user_id: authUid, // Use auth_uid for correct user identification
+            template_id: assignment.task_id,
+            status: assignment.status.toLowerCase(),
+            submitted_at: assignment.updated_at,
+            verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+            points_earned: assignment.score_awarded,
+            score_awarded: assignment.score_awarded,
+            career_task_templates: {
+              title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
+              module: 'LINKEDIN',
+              points_reward: assignment.linkedin_tasks?.points_base || 0,
+              category: 'LinkedIn Growth Activities',
+              sub_categories: { name: 'LinkedIn growth activities based' }
+            },
+            profiles: profile || { 
+              full_name: assignment.linkedin_users?.name || `[Missing User: ${authUid?.slice(0, 8)}...]`, 
+              username: assignment.linkedin_users?.email?.split('@')[0] || `missing_${authUid?.slice(0, 8)}`, 
+              profile_image_url: '' 
+            },
+            evidence: [],
+            _isLinkedInAssignment: true,
+            _originalLinkedInTask: assignment
+          };
         });
-        
-        return {
-          id: assignment.id,
-          user_id: assignment.linkedin_users?.auth_uid || assignment.user_id, // Use auth_uid for correct user identification
-          template_id: assignment.task_id,
-          status: assignment.status.toLowerCase(),
-          submitted_at: assignment.updated_at,
-          verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
-          points_earned: assignment.score_awarded,
-          score_awarded: assignment.score_awarded,
-          career_task_templates: {
-            title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
-            module: 'LINKEDIN',
-            points_reward: assignment.linkedin_tasks?.points_base || 0,
-            category: 'LinkedIn Profile',
-            sub_categories: { name: 'LinkedIn Profile' }
-          },
-          profiles: profile || { 
-            full_name: `[Missing User: ${assignment.linkedin_users?.auth_uid?.slice(0, 8) || assignment.user_id.slice(0, 8)}...]`, 
-            username: `missing_${assignment.linkedin_users?.auth_uid?.slice(0, 8) || assignment.user_id.slice(0, 8)}`, 
-            profile_image_url: '' 
-          },
-          evidence: [],
-          _isLinkedInAssignment: true,
-          _originalLinkedInTask: assignment
-        };
-      });
 
       console.log('🔍 LinkedIn assignments with profiles:', linkedInAssignmentsWithProfiles.length);
 
@@ -1026,60 +1029,112 @@ const VerifyAssignments = () => {
         hasOriginalTask: !!a._originalLinkedInTask 
       })));
 
-      const linkedInAssignmentsWithEvidence = await Promise.all(
-        linkedInAssignmentsWithProfiles.map(async (assignment) => {
-          try {
-            if (!assignment._originalLinkedInTask?.id) {
-              console.warn('🔍 Missing LinkedIn task ID for assignment:', assignment.id);
+        const linkedInAssignmentsWithEvidence = await Promise.all(
+          linkedInAssignmentsWithProfiles.map(async (assignment) => {
+            try {
+              if (!assignment._originalLinkedInTask?.id) {
+                console.warn('🔍 Missing LinkedIn task ID for assignment:', assignment.id);
+                return { ...assignment, evidence: [] };
+              }
+
+              console.log('🔍 Fetching LinkedIn evidence for task ID:', assignment._originalLinkedInTask.id, 'assignment:', assignment.id);
+              
+              const { data: evidenceData, error: evidenceError } = await supabase
+                .from('linkedin_evidence')
+                .select('*')
+                .eq('user_task_id', assignment._originalLinkedInTask.id)
+                .order('created_at', { ascending: false });
+
+              if (evidenceError) {
+                console.error('🔍 Error fetching LinkedIn evidence for assignment:', assignment.id, evidenceError);
+                console.error('🔍 Full error details:', evidenceError.message, evidenceError.details, evidenceError.hint);
+                console.error('🔍 Query details - user_task_id:', assignment._originalLinkedInTask.id);
+                return { ...assignment, evidence: [] };
+              }
+
+              console.log('🔍 LinkedIn evidence query result for assignment:', assignment.id, {
+                taskId: assignment._originalLinkedInTask.id,
+                evidenceCount: evidenceData?.length || 0,
+                evidenceItems: evidenceData?.map(e => ({ id: e.id, kind: e.kind, url: e.url, created_at: e.created_at })) || []
+              });
+
+              if (!evidenceData || evidenceData.length === 0) {
+                console.warn('⚠️ No LinkedIn evidence found for task ID:', assignment._originalLinkedInTask.id, 'assignment:', assignment.id);
+                console.warn('⚠️ This could be due to:');
+                console.warn('   1. No evidence has been submitted yet');
+                console.warn('   2. RLS policies preventing access');
+                console.warn('   3. Incorrect user_task_id mapping');
+                
+                // Try to fetch all evidence for debugging (will be limited by RLS)
+                const { data: debugEvidence, error: debugError } = await supabase
+                  .from('linkedin_evidence')
+                  .select('user_task_id, id, kind, created_at')
+                  .limit(10);
+                
+                console.warn('🔍 Sample linkedin_evidence data (limited by RLS):', debugEvidence);
+                
+                // Also check if the linkedin_user_task actually exists and has the right user linkage
+                const { data: taskInfo, error: taskError } = await supabase
+                  .from('linkedin_user_tasks')
+                  .select(`
+                    id,
+                    user_id,
+                    status,
+                    linkedin_users (
+                      id,
+                      auth_uid,
+                      name,
+                      email
+                    )
+                  `)
+                  .eq('id', assignment._originalLinkedInTask.id)
+                  .single();
+                
+                if (taskInfo) {
+                  console.warn('🔍 LinkedIn task info:', {
+                    taskId: taskInfo.id,
+                    taskUserId: taskInfo.user_id,
+                    status: taskInfo.status,
+                    authUid: taskInfo.linkedin_users?.auth_uid,
+                    linkedInUserName: taskInfo.linkedin_users?.name
+                  });
+                } else {
+                  console.error('❌ LinkedIn task not found or no access:', assignment._originalLinkedInTask.id, taskError);
+                }
+                
+                return { ...assignment, evidence: [] };
+              }
+
+              // Transform LinkedIn evidence to match career evidence structure
+              const transformedEvidence = (evidenceData || []).map(evidence => {
+                console.log('🔍 Transforming LinkedIn evidence:', evidence);
+                return {
+                  id: evidence.id,
+                  assignment_id: assignment.id,
+                  evidence_type: evidence.kind?.toLowerCase() || 'url',
+                  evidence_data: evidence.evidence_data || { description: 'LinkedIn evidence submission' },
+                  url: evidence.url,
+                  file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
+                  verification_status: 'pending',
+                  created_at: evidence.created_at,
+                  submitted_at: evidence.created_at,
+                  verification_notes: null,
+                  verified_at: null,
+                  verified_by: null,
+                  kind: evidence.kind,
+                  email_meta: evidence.email_meta,
+                  parsed_json: evidence.parsed_json
+                };
+              });
+
+              console.log('✅ Transformed LinkedIn evidence:', transformedEvidence.length, 'items for assignment:', assignment.id);
+              return { ...assignment, evidence: transformedEvidence };
+            } catch (error) {
+              console.error('❌ Error processing LinkedIn evidence for assignment:', assignment.id, error);
               return { ...assignment, evidence: [] };
             }
-
-            console.log('🔍 Fetching LinkedIn evidence for task ID:', assignment._originalLinkedInTask.id);
-            
-            const { data: evidenceData, error: evidenceError } = await supabase
-              .from('linkedin_evidence')
-              .select('*')
-              .eq('user_task_id', assignment._originalLinkedInTask.id)
-              .order('created_at', { ascending: false });
-
-            if (evidenceError) {
-              console.error('🔍 Error fetching LinkedIn evidence for assignment:', assignment.id, evidenceError);
-              console.error('🔍 Full error details:', evidenceError.message, evidenceError.details);
-              return { ...assignment, evidence: [] };
-            }
-
-            console.log('🔍 LinkedIn evidence fetched for assignment:', assignment.id, 'count:', evidenceData?.length || 0);
-
-            // Transform LinkedIn evidence to match career evidence structure
-            const transformedEvidence = (evidenceData || []).map(evidence => {
-              console.log('🔍 Transforming LinkedIn evidence:', evidence);
-              return {
-                id: evidence.id,
-                assignment_id: assignment.id,
-                evidence_type: evidence.kind?.toLowerCase() || 'url',
-                evidence_data: evidence.evidence_data || { description: 'LinkedIn evidence submission' },
-                url: evidence.url,
-                file_urls: evidence.file_key ? [`/storage/v1/object/public/linkedin-evidence/${evidence.file_key}`] : null,
-                verification_status: 'pending',
-                created_at: evidence.created_at,
-                submitted_at: evidence.created_at,
-                verification_notes: null,
-                verified_at: null,
-                verified_by: null,
-                kind: evidence.kind,
-                email_meta: evidence.email_meta,
-                parsed_json: evidence.parsed_json
-              };
-            });
-
-            console.log('🔍 Transformed LinkedIn evidence:', transformedEvidence.length, 'items for assignment:', assignment.id);
-            return { ...assignment, evidence: transformedEvidence };
-          } catch (error) {
-            console.error('🔍 Error processing LinkedIn evidence for assignment:', assignment.id, error);
-            return { ...assignment, evidence: [] };
-          }
-        })
-      );
+          })
+        );
 
       console.log('🔍 LinkedIn assignments with evidence:', linkedInAssignmentsWithEvidence.length);
       allAssignments.push(...linkedInAssignmentsWithEvidence);
