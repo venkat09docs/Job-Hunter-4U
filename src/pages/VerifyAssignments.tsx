@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,7 @@ interface Assignment {
 
 const VerifyAssignments = () => {
   const { user } = useAuth();
+  const { isAdmin, isInstituteAdmin, isRecruiter } = useRole();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [filteredAssignments, setFilteredAssignments] = useState<Assignment[]>([]);
@@ -599,7 +601,15 @@ const VerifyAssignments = () => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Button 
-            onClick={() => navigate('/admin')} 
+            onClick={() => {
+              if (isAdmin || isInstituteAdmin) {
+                navigate('/admin');
+              } else if (isRecruiter) {
+                navigate('/recruiter');
+              } else {
+                navigate('/dashboard');
+              }
+            }} 
             variant="outline" 
             size="sm"
             className="flex items-center gap-2"
