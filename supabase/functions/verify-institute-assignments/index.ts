@@ -236,6 +236,43 @@ serve(async (req) => {
       status: updateData.status
     });
 
+    // Award points to user_activity_points table if approved
+    if (action === 'approve' && (updateData.score_awarded || updateData.points_earned) > 0) {
+      const pointsToAward = updateData.score_awarded || updateData.points_earned;
+      const activityTypeMap = {
+        'career': 'career_task_completion',
+        'linkedin': 'linkedin_task_completion', 
+        'job_hunting': 'job_hunting_task_completion',
+        'github': 'github_task_completion'
+      };
+      
+      const activityType = activityTypeMap[assignmentType];
+      
+      console.log('🎯 Awarding points to user_activity_points:', {
+        userId: assignment.user_id,
+        activityType,
+        assignmentId,
+        points: pointsToAward
+      });
+
+      const { error: pointsError } = await supabaseClient
+        .from('user_activity_points')
+        .insert({
+          user_id: assignment.user_id,
+          activity_type: activityType,
+          activity_id: assignmentId,
+          points_earned: pointsToAward,
+          activity_date: new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
+        });
+
+      if (pointsError) {
+        console.error('❌ Error awarding points:', pointsError);
+        // Don't fail the request if points can't be awarded, just log the error
+      } else {
+        console.log('✅ Points awarded successfully');
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
