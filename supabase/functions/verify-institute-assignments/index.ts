@@ -186,26 +186,30 @@ serve(async (req) => {
 
     // Update assignment based on type and action using service role client
     const updateData: any = {
-      verified_at: new Date().toISOString(),
-      verified_by: user.id,
       verification_notes: verificationNotes || null
     };
 
     if (assignmentType === 'career') {
+      // Career assignments have verified_at and verified_by columns
+      updateData.verified_at = new Date().toISOString();
+      updateData.verified_by = user.id;
       updateData.status = action === 'approve' ? 'verified' : 'rejected';
       updateData.points_earned = action === 'approve' ? (scoreAwarded || assignment.career_task_templates?.points_reward || 0) : 0;
       updateData.score_awarded = updateData.points_earned;
-    } else {
-      // For other types (LinkedIn, GitHub, Job Hunting)
+    } else if (assignmentType === 'job_hunting') {
+      // Job hunting assignments have verified_at and verified_by columns
+      updateData.verified_at = new Date().toISOString();
+      updateData.verified_by = user.id;
       updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
-      const pointsField = assignmentType === 'linkedin' || assignmentType === 'github' ? 'points_base' : 'points_reward';
-      const templatePoints = assignmentType === 'career' 
-        ? assignment.career_task_templates?.[pointsField] 
-        : assignmentType === 'linkedin' 
+      const templatePoints = assignment.template?.points_reward || 0;
+      updateData.score_awarded = action === 'approve' ? (scoreAwarded || templatePoints) : 0;
+    } else {
+      // LinkedIn and GitHub assignments only have verification_notes and score_awarded
+      updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
+      const pointsField = 'points_base';
+      const templatePoints = assignmentType === 'linkedin' 
         ? assignment.linkedin_tasks?.[pointsField]
-        : assignmentType === 'github'
-        ? assignment.github_tasks?.[pointsField]
-        : assignment.template?.[pointsField];
+        : assignment.github_tasks?.[pointsField];
       
       updateData.score_awarded = action === 'approve' ? (scoreAwarded || templatePoints || 0) : 0;
     }
