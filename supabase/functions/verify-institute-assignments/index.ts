@@ -21,7 +21,7 @@ serve(async (req) => {
   }
 
   try {
-    // Initialize Supabase client
+    // Initialize Supabase client with service role key
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -33,19 +33,30 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    // Set the auth context for RLS
     const jwt = authHeader.replace('Bearer ', '');
-    supabaseClient.auth.setAuth(jwt);
+    
+    // Create a client with the user's JWT for RLS context
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: {
+            Authorization: authHeader,
+          },
+        },
+      }
+    );
 
-    // Get current user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    // Get current user using the user client
+    const { data: { user }, error: userError } = await userClient.auth.getUser(jwt);
     if (userError || !user) {
       throw new Error('Authentication required');
     }
 
     console.log('🔐 Authenticated user:', user.id);
 
-    // Verify user is an institute admin
+    // Verify user is an institute admin using the service client
     const { data: userRoles, error: roleError } = await supabaseClient
       .from('user_roles')
       .select('role')
@@ -68,16 +79,15 @@ serve(async (req) => {
       adminUserId: user.id
     });
 
-    // Verify institute admin has access to this assignment
+    // Use the user client to fetch assignment (this will respect RLS policies)
     let assignment: any = null;
     let tableName = '';
-    let userIdField = 'user_id';
 
-    // Get assignment details and verify access
+    // Get assignment details using user context (RLS will filter appropriately)
     switch (assignmentType) {
       case 'career':
         tableName = 'career_task_assignments';
-        const { data: careerAssignment, error: careerError } = await supabaseClient
+        const { data: careerAssignment, error: careerError } = await userClient
           .from('career_task_assignments')
           .select(`
             *,
@@ -90,13 +100,16 @@ serve(async (req) => {
           .eq('id', assignmentId)
           .single();
 
-        if (careerError) throw careerError;
+        if (careerError) {
+          console.error('Career assignment fetch error:', careerError);
+          throw new Error(`Assignment not found or you don't have access to it`);
+        }
         assignment = careerAssignment;
         break;
 
       case 'linkedin':
         tableName = 'linkedin_user_tasks';
-        const { data: linkedinAssignment, error: linkedinError } = await supabaseClient
+        const { data: linkedinAssignment, error: linkedinError } = await userClient
           .from('linkedin_user_tasks')
           .select(`
             *,
@@ -108,13 +121,16 @@ serve(async (req) => {
           .eq('id', assignmentId)
           .single();
 
-        if (linkedinError) throw linkedinError;
+        if (linkedinError) {
+          console.error('LinkedIn assignment fetch error:', linkedinError);
+          throw new Error(`Assignment not found or you don't have access to it`);
+        }
         assignment = linkedinAssignment;
         break;
 
       case 'job_hunting':
         tableName = 'job_hunting_assignments';
-        const { data: jobAssignment, error: jobError } = await supabaseClient
+        const { data: jobAssignment, error: jobError } = await userClient
           .from('job_hunting_assignments')
           .select(`
             *,
@@ -126,13 +142,16 @@ serve(async (req) => {
           .eq('id', assignmentId)
           .single();
 
-        if (jobError) throw jobError;
+        if (jobError) {
+          console.error('Job hunting assignment fetch error:', jobError);
+          throw new Error(`Assignment not found or you don't have access to it`);
+        }
         assignment = jobAssignment;
         break;
 
       case 'github':
         tableName = 'github_user_tasks';
-        const { data: githubAssignment, error: githubError } = await supabaseClient
+        const { data: githubAssignment, error: githubError } = await userClient
           .from('github_user_tasks')
           .select(`
             *,
@@ -144,7 +163,10 @@ serve(async (req) => {
           .eq('id', assignmentId)
           .single();
 
-        if (githubError) throw githubError;
+        if (githubError) {
+          console.error('GitHub assignment fetch error:', githubError);
+          throw new Error(`Assignment not found or you don't have access to it`);
+        }
         assignment = githubAssignment;
         break;
 
@@ -162,52 +184,7 @@ serve(async (req) => {
       status: assignment.status
     });
 
-    // Verify the admin has access to this user's institute
-    const { data: userAssignment, error: userAssignmentError } = await supabaseClient
-      .from('user_assignments')
-      .select(`
-        institute_id,
-        institutes:institute_id (
-          name
-        )
-      `)
-      .eq('user_id', assignment.user_id)
-      .eq('is_active', true)
-      .single();
-
-    if (userAssignmentError && userAssignmentError.code !== 'PGRST116') {
-      throw new Error(`Failed to verify user institute assignment: ${userAssignmentError.message}`);
-    }
-
-    // If user is not assigned to an institute, only super admin/recruiter can verify
-    if (!userAssignment) {
-      const { data: adminRoles, error: adminRoleError } = await supabaseClient
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .in('role', ['admin', 'recruiter']);
-
-      if (adminRoleError || !adminRoles?.length) {
-        throw new Error('User is not assigned to your institute');
-      }
-    } else {
-      // Verify admin manages this institute
-      const { data: adminAssignment, error: adminAssignmentError } = await supabaseClient
-        .from('institute_admin_assignments')
-        .select('institute_id')
-        .eq('user_id', user.id)
-        .eq('institute_id', userAssignment.institute_id)
-        .eq('is_active', true)
-        .single();
-
-      if (adminAssignmentError || !adminAssignment) {
-        throw new Error(`You don't have permission to verify assignments for ${userAssignment.institutes?.name || 'this institute'}`);
-      }
-
-      console.log('✅ Institute access verified:', userAssignment.institutes?.name);
-    }
-
-    // Update assignment based on type and action
+    // Update assignment based on type and action using service role client
     const updateData: any = {
       verified_at: new Date().toISOString(),
       verified_by: user.id,
@@ -235,7 +212,7 @@ serve(async (req) => {
 
     console.log('🔄 Updating assignment:', { updateData, tableName });
 
-    // Update the assignment
+    // Update the assignment using service role client
     const { data: updatedAssignment, error: updateError } = await supabaseClient
       .from(tableName)
       .update(updateData)
@@ -244,6 +221,7 @@ serve(async (req) => {
       .single();
 
     if (updateError) {
+      console.error('Update error:', updateError);
       throw updateError;
     }
 
