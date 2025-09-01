@@ -89,20 +89,74 @@ export const useAffiliate = () => {
 
       if (error) throw error;
       
+      console.log('Raw referrals data:', data);
+      
       // Fetch referred user profiles separately
       if (data && data.length > 0) {
         const userIds = data.map(r => r.referred_user_id);
-        const { data: profiles } = await supabase
+        console.log('Looking up profiles for user IDs:', userIds);
+        
+        const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('user_id, full_name, username, email')
           .in('user_id', userIds);
         
-        // Map profiles to referrals
-        const referralsWithUsers = data.map(referral => ({
-          ...referral,
-          referred_user: profiles?.find(p => p.user_id === referral.referred_user_id)
-        }));
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        }
         
+        console.log('Profiles data:', profiles);
+        
+        // For users without profiles, get their auth data
+        const missingProfileUserIds = userIds.filter(id => 
+          !profiles?.some(p => p.user_id === id)
+        );
+        
+        console.log('Missing profile user IDs:', missingProfileUserIds);
+        
+        let authUserData: any[] = [];
+        if (missingProfileUserIds.length > 0) {
+          // Get auth user data for missing profiles
+          for (const userId of missingProfileUserIds) {
+            try {
+              const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+              if (authUser?.user) {
+                authUserData.push({
+                  user_id: userId,
+                  email: authUser.user.email,
+                  full_name: authUser.user.user_metadata?.full_name || 
+                           authUser.user.user_metadata?.username ||
+                           authUser.user.email?.split('@')[0],
+                  username: authUser.user.user_metadata?.username || 
+                           authUser.user.email?.split('@')[0]
+                });
+              }
+            } catch (error) {
+              console.error(`Error fetching auth data for user ${userId}:`, error);
+            }
+          }
+        }
+        
+        console.log('Auth user data for missing profiles:', authUserData);
+        
+        // Combine profiles and auth data
+        const allUserData = [
+          ...(profiles || []),
+          ...authUserData
+        ];
+        
+        // Map profiles to referrals
+        const referralsWithUsers = data.map(referral => {
+          const userProfile = allUserData.find(p => p.user_id === referral.referred_user_id);
+          console.log(`Mapping referral ${referral.id} with user ${referral.referred_user_id}:`, userProfile);
+          
+          return {
+            ...referral,
+            referred_user: userProfile
+          };
+        });
+        
+        console.log('Final referrals with users:', referralsWithUsers);
         setReferrals(referralsWithUsers as AffiliateReferral[]);
       } else {
         setReferrals([]);
