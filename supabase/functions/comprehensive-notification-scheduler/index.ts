@@ -111,7 +111,7 @@ async function sendAssignmentDueReminders(supabase: any) {
         template_vars: {
           assignment_title: assignment.career_task_templates.title,
           days: '1',
-          related_id: assignment.id
+          related_id: null // Fix UUID type error
         },
         action_url_param: '/career-assignments',
         priority_param: 'high'

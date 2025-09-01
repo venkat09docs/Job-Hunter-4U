@@ -139,7 +139,7 @@ async function sendGitHubTaskReminders(supabase: any) {
       .select('id')
       .eq('user_id', task.user_id)
       .eq('type', 'github_task_reminder')
-      .eq('related_id', task.id)
+      .eq('related_id', null) // Fix UUID comparison
       .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
       .single();
       
@@ -155,7 +155,7 @@ async function sendGitHubTaskReminders(supabase: any) {
         type: 'github_task_reminder',
         category: 'technical',
         priority: 'medium',
-        related_id: task.id,
+        related_id: null, // Fix UUID type error
         action_url: '/dashboard/github-activity-tracker'
       });
   }
@@ -201,7 +201,7 @@ async function sendLinkedInTaskReminders(supabase: any) {
       .select('id')
       .eq('user_id', task.user_id)
       .eq('type', 'linkedin_task_reminder')
-      .eq('related_id', task.id)
+      .eq('related_id', null) // Fix UUID comparison
       .gte('created_at', new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString())
       .single();
       
@@ -217,7 +217,7 @@ async function sendLinkedInTaskReminders(supabase: any) {
         type: 'linkedin_task_reminder',
         category: 'networking',
         priority: 'medium',
-        related_id: task.id,
+        related_id: null, // Fix UUID type error
         action_url: '/dashboard/linkedin-optimization'
       });
   }

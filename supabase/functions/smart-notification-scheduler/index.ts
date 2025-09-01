@@ -307,7 +307,7 @@ async function sendWeeklyAssignmentReminders(supabase: any) {
         type: 'assignment_reminder',
         category: 'assignment',
         priority: daysUntilDue <= 1 ? 'high' : 'medium',
-        related_id: assignment.id
+        related_id: null // Fix UUID type error
       });
       
       sent++;
