@@ -75,6 +75,52 @@ export const useGitHubWeekly = () => {
   // Optimistic updates
   const { data: optimisticData, applyUpdate } = useOptimisticUpdates([]);
 
+  // Helper function to get current period (YYYY-WW format)
+  const getCurrentPeriod = (): string => {
+    const now = new Date();
+    // Use proper ISO week calculation
+    const year = now.getFullYear();
+    // Calculate ISO week number correctly
+    const jan4 = new Date(year, 0, 4);
+    const week1Monday = startOfWeek(jan4, { weekStartsOn: 1 });
+    const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    
+    // Calculate the week number from the difference in days
+    const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const weekNumber = daysDiff + 1;
+    
+    return `${year}-${weekNumber.toString().padStart(2, '0')}`;
+  };
+
+  // Add a manual refresh function for the weekly assignments with better error handling
+  const refreshWeeklyAssignments = useCallback(async () => {
+    try {
+      console.log('Manually triggering weekly GitHub assignments refresh...');
+      
+      // First invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['github-scores'] });
+      
+      const { data, error } = await supabase.functions.invoke('weekly-github-assignments-refresh', {
+        body: { trigger: 'manual' }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Weekly refresh result:', data);
+      
+      // Refresh the queries again after successful assignment refresh
+      await queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+      await queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
+      
+      return data;
+    } catch (error) {
+      console.error('Error refreshing weekly assignments:', error);
+      throw error;
+    }
+  }, [queryClient]);
+
   // Fetch weekly tasks for current period
   const { data: weeklyTasksData = [], isLoading: weeklyLoading } = useQuery({
     queryKey: ['github-weekly-tasks', user?.id],
@@ -517,45 +563,56 @@ export const useGitHubWeekly = () => {
     },
   });
 
-  // Check for new assignments automatically
+  // Check for new assignments automatically with better cache management
   React.useEffect(() => {
     const checkForNewAssignments = async () => {
       if (!user?.id) return;
 
       const currentPeriod = getCurrentPeriod();
+      
+      // Always invalidate cache when checking for new assignments
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence', user.id] });
+      
+      // Check if assignments exist for current period
       const { data: existingTasks } = await supabase
         .from('github_user_tasks')
-        .select('id')
+        .select('id, status, created_at')
         .eq('user_id', user.id)
         .eq('period', currentPeriod)
-        .limit(1);
+        .limit(5);
 
-      // If no tasks exist for current period, trigger refresh
+      console.log(`Current period: ${currentPeriod}, existing tasks:`, existingTasks?.length || 0);
+
+      // If no tasks exist for current period, or if it's Monday and tasks are old, refresh
+      const now = new Date();
+      const isMonday = now.getDay() === 1;
+      
       if (!existingTasks || existingTasks.length === 0) {
-        console.log('No tasks found for current period, checking if weekly refresh is needed');
-        queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
+        console.log('No tasks found for current period, triggering refresh');
+        try {
+          await refreshWeeklyAssignments();
+        } catch (error) {
+          console.error('Failed to refresh assignments:', error);
+        }
+      } else if (isMonday && existingTasks.length > 0) {
+        // Check if tasks are from previous day (Sunday) - if so, refresh on Monday
+        const firstTaskDate = new Date(existingTasks[0].created_at);
+        const daysDiff = Math.floor((now.getTime() - firstTaskDate.getTime()) / (24 * 60 * 60 * 1000));
+        
+        if (daysDiff >= 1) {
+          console.log('Monday detected with old tasks, refreshing for new week');
+          try {
+            await refreshWeeklyAssignments();
+          } catch (error) {
+            console.error('Failed to refresh assignments on Monday:', error);
+          }
+        }
       }
     };
 
     checkForNewAssignments();
-  }, [user?.id, queryClient]);
-
-  // Helper function to get current period (YYYY-WW format)
-  const getCurrentPeriod = (): string => {
-    const now = new Date();
-    // Use proper ISO week calculation
-    const year = now.getFullYear();
-    // Calculate ISO week number correctly
-    const jan4 = new Date(year, 0, 4);
-    const week1Monday = startOfWeek(jan4, { weekStartsOn: 1 });
-    const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
-    
-    // Calculate the week number from the difference in days
-    const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const weekNumber = daysDiff + 1;
-    
-    return `${year}-${weekNumber.toString().padStart(2, '0')}`;
-  };
+  }, [user?.id, queryClient, refreshWeeklyAssignments]);
 
   // Wrapper functions with retry logic
   const addRepo = useCallback(async (repoFullName: string) => {
@@ -574,26 +631,6 @@ export const useGitHubWeekly = () => {
   const verifyTasks = useCallback(async (period?: string) => {
     return retryWithBackoff(() => verifyTasksMutation.mutateAsync(period));
   }, [verifyTasksMutation]);
-
-  // Add a manual refresh function for the weekly assignments
-  const refreshWeeklyAssignments = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('weekly-github-assignments-refresh', {
-        body: { trigger: 'manual' }
-      });
-      
-      if (error) throw error;
-      
-      // Refresh the queries after successful assignment refresh
-      queryClient.invalidateQueries({ queryKey: ['github-weekly-tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['github-weekly-evidence'] });
-      
-      return data;
-    } catch (error) {
-      console.error('Error refreshing weekly assignments:', error);
-      throw error;
-    }
-  }, [queryClient]);
 
   return {
     // Data

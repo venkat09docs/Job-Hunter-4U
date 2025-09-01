@@ -99,24 +99,17 @@ serve(async (req) => {
 
     console.log(`Creating assignments for period: ${newPeriod}`)
 
-    // First, check if assignments for this period already exist to avoid duplicates
-    const { data: existingPeriodTasks } = await supabaseClient
+    // First, delete any existing assignments for the current period to ensure fresh start
+    const { error: deleteError } = await supabaseClient
       .from('github_user_tasks')
-      .select('id')
+      .delete()
       .eq('period', newPeriod)
-      .limit(1)
 
-    if (existingPeriodTasks && existingPeriodTasks.length > 0) {
-      console.log('Assignments already exist for period:', newPeriod)
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Assignments already exist for this period',
-          period: newPeriod,
-          tasksCreated: 0
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (deleteError) {
+      console.error('Error deleting existing assignments:', deleteError)
+      // Don't throw error, continue with creation
+    } else {
+      console.log(`Deleted existing assignments for period: ${newPeriod}`)
     }
 
     // Get all active GitHub tasks

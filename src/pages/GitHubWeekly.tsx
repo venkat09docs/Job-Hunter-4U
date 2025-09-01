@@ -81,43 +81,38 @@ const GitHubWeekly = () => {
     isSubmittingEvidence
   } = useGitHubWeekly();
 
-  // Auto-refresh assignments on component mount and when user changes
+  // Auto-refresh assignments with better logic
   React.useEffect(() => {
     if (user) {
       // Check if we need to refresh for new week
       const checkAndRefresh = async () => {
         try {
-          // Simple check - if we have no weekly tasks, try refreshing
+          const currentPeriod = getCurrentPeriod();
+          console.log(`Checking assignments for period: ${currentPeriod}`);
+          
+          // If we have no weekly tasks, try refreshing
           if (weeklyTasks.length === 0) {
-            console.log('No weekly tasks found, refreshing assignments...');
+            console.log('No weekly tasks found, attempting refresh...');
             await refreshWeeklyAssignments();
+          } else {
+            // Check if tasks are from correct period
+            const currentTasks = weeklyTasks.filter(task => task.period === currentPeriod);
+            if (currentTasks.length === 0) {
+              console.log('Tasks exist but not for current period, refreshing...');
+              await refreshWeeklyAssignments();
+            }
           }
         } catch (error) {
-          console.error('Failed to refresh weekly assignments:', error);
+          console.error('Failed to check/refresh weekly assignments:', error);
         }
       };
-      checkAndRefresh();
+      
+      // Only run check if we have loaded the weekly tasks data
+      if (!isLoading) {
+        checkAndRefresh();
+      }
     }
-  }, [user?.id, weeklyTasks.length, refreshWeeklyAssignments]);
-
-  // Add a getCurrentPeriod helper function 
-  const getCurrentPeriod = (): string => {
-    const now = new Date();
-    // Use proper ISO week calculation
-    const year = now.getFullYear();
-    // Calculate ISO week number correctly
-    const jan4 = new Date(year, 0, 4);
-    const week1Monday = new Date(jan4);
-    week1Monday.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
-    const currentWeekStart = new Date(now);
-    currentWeekStart.setDate(now.getDate() - (now.getDay() || 7) + 1);
-    
-    // Calculate the week number from the difference in days
-    const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const weekNumber = daysDiff + 1;
-    
-    return `${year}-${weekNumber.toString().padStart(2, '0')}`;
-  };
+  }, [user?.id, weeklyTasks.length, isLoading, refreshWeeklyAssignments]);
 
   // Fetch pending extension requests
   const [pendingRequests, setPendingRequests] = useState<Set<string>>(new Set());
