@@ -103,10 +103,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
         // Gold progress is based on Digital Profile completion (same as Career Assignments page)
         return Math.min(100, digitalProfileProgress);
       case 'diamond':
-        // Diamond: Only progresses after gold is 100% AND based on GitHub progress from Profile assignments page
+        // Diamond: Only progresses after gold is 100% AND based on GitHub profile progress from career assignments
         if (calculateProfileProgress('gold') < 100) return 0;
-        // Diamond progress is based on GitHub Progress (same as Profile assignments page)
-        return Math.min(100, githubProgress);
+        // Diamond progress is based on GitHub Profile progress (same as Career Assignments page)
+        return Math.min(100, githubProfileProgress);
       default: return 0;
     }
   };
@@ -227,7 +227,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           return `Complete ${Math.ceil(remaining)}% more Digital Profile tasks`;
         }
         if (badge.tier === 'diamond') {
-          const remaining = 100 - githubProgress;
+          const remaining = 100 - githubProfileProgress;
           return `Complete ${Math.ceil(remaining)}% more GitHub Profile tasks`;
         }
         break;
