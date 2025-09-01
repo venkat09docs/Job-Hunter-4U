@@ -103,8 +103,11 @@ const VerifyAssignments = () => {
   // All useEffect hooks - must be called unconditionally
   useEffect(() => {
     if (!loading && (isAdmin || isInstituteAdmin || isRecruiter)) {
+      console.log('🔍 VerifyAssignments: Starting data fetch for role:', { isAdmin, isInstituteAdmin, isRecruiter, userId: user?.id });
       fetchSubmittedAssignments();
       fetchVerifiedAssignments();
+    } else {
+      console.log('🔍 VerifyAssignments: Conditions not met for data fetch:', { loading, isAdmin, isInstituteAdmin, isRecruiter, userId: user?.id });
     }
   }, [user?.id, isAdmin, isInstituteAdmin, isRecruiter, loading]);
 
@@ -228,6 +231,8 @@ const VerifyAssignments = () => {
   const fetchVerifiedAssignments = async () => {
     try {
       if (isAdmin || isRecruiter || isInstituteAdmin) {
+        console.log('🔍 Fetching verified assignments for role:', { isAdmin, isInstituteAdmin, isRecruiter });
+        
         // Fetch verified assignments from all sources - RLS policies will filter appropriately
         const [careerVerifiedData, linkedInVerifiedData, jobHuntingVerifiedData, gitHubVerifiedData] = await Promise.all([
           // 1. Career task assignments (verified)
@@ -246,7 +251,11 @@ const VerifyAssignments = () => {
               )
             `)
             .eq('status', 'verified')
-            .order('verified_at', { ascending: false }),
+            .order('verified_at', { ascending: false })
+            .then(result => {
+              console.log('🔍 Career verified data result:', { count: result.data?.length || 0, error: result.error });
+              return result;
+            }),
 
           // 2. LinkedIn user tasks (VERIFIED)
           supabase
@@ -268,7 +277,11 @@ const VerifyAssignments = () => {
               )
             `)
             .eq('status', 'VERIFIED')
-            .order('updated_at', { ascending: false }),
+            .order('updated_at', { ascending: false })
+            .then(result => {
+              console.log('🔍 LinkedIn verified data result:', { count: result.data?.length || 0, error: result.error });
+              return result;
+            }),
 
           // 3. Job hunting assignments (verified)
           supabase
@@ -284,7 +297,11 @@ const VerifyAssignments = () => {
               )
             `)
             .eq('status', 'verified')
-            .order('verified_at', { ascending: false }),
+            .order('verified_at', { ascending: false })
+            .then(result => {
+              console.log('🔍 Job hunting verified data result:', { count: result.data?.length || 0, error: result.error });
+              return result;
+            }),
 
           // 4. GitHub user tasks (VERIFIED)
           supabase
@@ -301,13 +318,29 @@ const VerifyAssignments = () => {
             `)
             .eq('status', 'VERIFIED')
             .order('updated_at', { ascending: false })
+            .then(result => {
+              console.log('🔍 GitHub verified data result:', { count: result.data?.length || 0, error: result.error });
+              return result;
+            })
         ]);
 
         // Check for errors
-        if (careerVerifiedData.error) throw careerVerifiedData.error;
-        if (linkedInVerifiedData.error) throw linkedInVerifiedData.error;
-        if (jobHuntingVerifiedData.error) throw jobHuntingVerifiedData.error;
-        if (gitHubVerifiedData.error) throw gitHubVerifiedData.error;
+        if (careerVerifiedData.error) {
+          console.error('❌ Career verified data error:', careerVerifiedData.error);
+          throw careerVerifiedData.error;
+        }
+        if (linkedInVerifiedData.error) {
+          console.error('❌ LinkedIn verified data error:', linkedInVerifiedData.error);
+          throw linkedInVerifiedData.error;
+        }
+        if (jobHuntingVerifiedData.error) {
+          console.error('❌ Job hunting verified data error:', jobHuntingVerifiedData.error);
+          throw jobHuntingVerifiedData.error;
+        }
+        if (gitHubVerifiedData.error) {
+          console.error('❌ GitHub verified data error:', gitHubVerifiedData.error);
+          throw gitHubVerifiedData.error;
+        }
 
         // Process all verified assignments together
         await processVerifiedAssignments(
@@ -317,11 +350,11 @@ const VerifyAssignments = () => {
           gitHubVerifiedData.data || []
         );
       } else {
-        console.log('User does not have permission to view assignments:', { isAdmin, isRecruiter, isInstituteAdmin });
+        console.log('❌ User does not have permission to view assignments:', { isAdmin, isRecruiter, isInstituteAdmin });
       }
     } catch (error) {
-      console.error('Error fetching verified assignments:', error);
-      toast.error('Failed to load verified assignments');
+      console.error('❌ Critical error in fetchVerifiedAssignments:', error);
+      toast.error(`Failed to load verified assignments: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -842,10 +875,22 @@ const VerifyAssignments = () => {
       
       // Fetch all types of assignments in parallel
       const [careerData, linkedInData, jobHuntingData, gitHubData] = await Promise.all([
-        fetchCareerAssignments(),
-        fetchLinkedInAssignments(),
-        fetchJobHuntingAssignments(),
-        fetchGitHubAssignments()
+        fetchCareerAssignments().catch(error => {
+          console.error('❌ Career assignments fetch failed:', error);
+          return [];
+        }),
+        fetchLinkedInAssignments().catch(error => {
+          console.error('❌ LinkedIn assignments fetch failed:', error);
+          return [];
+        }),
+        fetchJobHuntingAssignments().catch(error => {
+          console.error('❌ Job hunting assignments fetch failed:', error);
+          return [];
+        }),
+        fetchGitHubAssignments().catch(error => {
+          console.error('❌ GitHub assignments fetch failed:', error);
+          return [];
+        })
       ]);
       
       console.log('🔍 Fetched data counts:', { 
@@ -859,8 +904,8 @@ const VerifyAssignments = () => {
       await processAssignments(careerData, linkedInData, jobHuntingData, gitHubData);
       
     } catch (error) {
-      console.error('Error fetching submitted assignments:', error);
-      toast.error('Failed to load submitted assignments');
+      console.error('❌ Critical error in fetchSubmittedAssignments:', error);
+      toast.error(`Failed to load submitted assignments: ${error.message || 'Unknown error'}`);
     } finally {
       setLoadingAssignments(false);
     }
