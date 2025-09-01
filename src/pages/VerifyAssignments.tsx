@@ -160,12 +160,6 @@ const VerifyAssignments = () => {
               title,
               description,
               points_base
-            ),
-            linkedin_users (
-              id,
-              auth_uid,
-              name,
-              email
             )
           `)
           .eq('status', 'SUBMITTED')
