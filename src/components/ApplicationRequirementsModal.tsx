@@ -151,6 +151,8 @@ export const ApplicationRequirementsModal: React.FC<ApplicationRequirementsModal
       updatedJob.next_follow_up = followUpDate.toISOString().split('T')[0];
     }
 
+    console.log('🔍 Modal - updatedJob being sent:', updatedJob);
+    console.log('🔍 Modal - assignmentDetails being sent:', assignmentDetails);
     onComplete(updatedJob, assignmentDetails);
   };
 
