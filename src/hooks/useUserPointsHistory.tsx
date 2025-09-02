@@ -101,15 +101,34 @@ export const useUserPointsHistory = () => {
         // For career task completions, use the template and subcategory data
         if (item.activity_type === 'career_task_completion') {
           const taskDetail = careerTaskDetails.find(task => task.id === item.activity_id);
+          console.log('Full item data:', item);
           console.log('Task detail found:', taskDetail);
+          console.log('All career task details:', careerTaskDetails);
           
-          // Handle the nested structure correctly
-          const template = taskDetail?.career_task_templates;
-          const subcategory = template?.sub_categories;
+          if (taskDetail && taskDetail.career_task_templates) {
+            const template = taskDetail.career_task_templates;
+            const subcategory = template.sub_categories;
+            
+            console.log('Template data:', template);
+            console.log('Subcategory data:', subcategory);
+            
+            return {
+              id: item.id,
+              user_id: item.user_id,
+              activity_id: item.activity_id,
+              activity_type: item.activity_type,
+              points_earned: item.points_earned,
+              activity_date: item.activity_date,
+              created_at: item.created_at,
+              activity_settings: {
+                activity_name: template.title || `Task ${item.activity_id}`,
+                description: `Completed ${template.title || 'career task'}`,
+                category: subcategory?.name || 'Career Task'
+              }
+            };
+          }
           
-          console.log('Template:', template);
-          console.log('Subcategory:', subcategory);
-          
+          // Fallback if no task detail found
           return {
             id: item.id,
             user_id: item.user_id,
@@ -119,9 +138,9 @@ export const useUserPointsHistory = () => {
             activity_date: item.activity_date,
             created_at: item.created_at,
             activity_settings: {
-              activity_name: template?.title || `Task ${item.activity_id}`,
-              description: `Completed ${template?.title || 'career task'}`,
-              category: subcategory?.name || 'Career Task'
+              activity_name: `Task ${item.activity_id.substring(0, 8)}...`,
+              description: 'Career task completed',
+              category: 'Career Task'
             }
           };
         }
