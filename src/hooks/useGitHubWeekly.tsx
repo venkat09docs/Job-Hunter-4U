@@ -589,8 +589,7 @@ export const useGitHubWeekly = () => {
         .from('github_user_tasks')
         .select('id, status, created_at')
         .eq('user_id', user.id)
-        .eq('period', currentPeriod)
-        .limit(5);
+        .eq('period', currentPeriod);
 
       console.log(`Current period: ${currentPeriod}, existing tasks:`, existingTasks?.length || 0);
 
