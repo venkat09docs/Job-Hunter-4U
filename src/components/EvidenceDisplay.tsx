@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,11 @@ interface EvidenceDisplayProps {
 }
 
 export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) => {
+  // Sort evidence by created_at in descending order (latest first)
+  const sortedEvidence = useMemo(() => {
+    return [...evidence].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [evidence]);
+
   const parseEvidenceData = (evidenceData: any) => {
     if (!evidenceData) return null;
     
@@ -110,7 +115,7 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
         Submitted Evidence ({evidence.length} submission{evidence.length !== 1 ? 's' : ''})
       </Label>
       <div className="space-y-4">
-        {evidence.map((evidenceItem, index) => {
+        {sortedEvidence.map((evidenceItem, index) => {
           const isLatest = index === 0;
           const submissionDate = new Date(evidenceItem.created_at);
           
@@ -167,14 +172,14 @@ export const EvidenceDisplay: React.FC<EvidenceDisplayProps> = ({ evidence }) =>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   {isLatest && <Badge variant="default" className="text-xs">Latest</Badge>}
-                  {index > 0 && <Badge variant="secondary" className="text-xs">Previous</Badge>}
+                  {!isLatest && <Badge variant="secondary" className="text-xs">Previous</Badge>}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <Badge 
                     variant={evidenceItem.verification_status === 'pending' ? 'secondary' : 
                            evidenceItem.verification_status === 'approved' || evidenceItem.verification_status === 'verified' ? 'default' : 'destructive'}
                   >
-                    {evidenceItem.verification_status}
+                    {evidenceItem.verification_status || 'pending'}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     {format(submissionDate, 'MMM dd, yyyy hh:mm a')}
