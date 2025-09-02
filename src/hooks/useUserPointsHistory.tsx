@@ -100,8 +100,14 @@ export const useUserPointsHistory = () => {
         // For career task completions, use the template and subcategory data
         if (item.activity_type === 'career_task_completion') {
           const taskDetail = careerTaskDetails.find(task => task.id === item.activity_id);
+          console.log('Task detail found:', taskDetail);
+          
+          // Handle the nested structure correctly
           const template = taskDetail?.career_task_templates;
           const subcategory = template?.sub_categories;
+          
+          console.log('Template:', template);
+          console.log('Subcategory:', subcategory);
           
           return {
             id: item.id,
@@ -112,7 +118,7 @@ export const useUserPointsHistory = () => {
             activity_date: item.activity_date,
             created_at: item.created_at,
             activity_settings: {
-              activity_name: template?.title || item.activity_id,
+              activity_name: template?.title || `Task ${item.activity_id}`,
               description: `Completed ${template?.title || 'career task'}`,
               category: subcategory?.name || 'Career Task'
             }
@@ -133,7 +139,7 @@ export const useUserPointsHistory = () => {
             description: settings.description,
             category: settings.category
           } : {
-            activity_name: item.activity_id,
+            activity_name: `Activity ${item.activity_id}`,
             description: 'Activity completed',
             category: 'General'
           }
