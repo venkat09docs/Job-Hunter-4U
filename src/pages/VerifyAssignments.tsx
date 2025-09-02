@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -66,16 +67,22 @@ const VerifyAssignments = () => {
   const [moduleFilter, setModuleFilter] = useState<string>('all');
   const [userFilter, setUserFilter] = useState<string>('');
 
-  // Compute pending and verified assignments
+  // Pagination states for verified assignments
+  const [verifiedCurrentPage, setVerifiedCurrentPage] = useState(1);
+  const [verifiedTotalCount, setVerifiedTotalCount] = useState(0);
+  const [verifiedLoading, setVerifiedLoading] = useState(false);
+  const [paginatedVerifiedAssignments, setPaginatedVerifiedAssignments] = useState<Assignment[]>([]);
+  
+  const VERIFIED_PAGE_SIZE = 10;
+
+  // Compute pending assignments (these are not paginated)
   const pendingAssignments = useMemo(() => 
     filteredAssignments.filter(assignment => assignment.status === 'submitted'),
     [filteredAssignments]
   );
 
-  const verifiedAssignments = useMemo(() => 
-    filteredAssignments.filter(assignment => assignment.status === 'verified'),
-    [filteredAssignments]
-  );
+  // For verified assignments, we'll use separate pagination logic
+  const totalVerifiedPages = Math.ceil(verifiedTotalCount / VERIFIED_PAGE_SIZE);
 
   const fetchSubmittedAssignments = async () => {
     if (!user) return;
@@ -103,8 +110,9 @@ const VerifyAssignments = () => {
       }
 
       // Fetch different types of assignments in parallel - RLS will filter based on user role
+      // For pending assignments, fetch all. For verified, we'll fetch separately with pagination
       const promises = [
-        // Career assignments
+        // Career assignments - only pending for now
         supabase
           .from('career_task_assignments')
           .select(`
@@ -124,10 +132,10 @@ const VerifyAssignments = () => {
               category
             )
           `)
-          .in('status', ['submitted', 'verified'])
+          .eq('status', 'submitted')
           .order('submitted_at', { ascending: false }),
 
-        // LinkedIn assignments
+        // LinkedIn assignments - only pending for now
         supabase
           .from('linkedin_user_tasks')
           .select(`
@@ -140,10 +148,10 @@ const VerifyAssignments = () => {
               points_base
             )
           `)
-          .in('status', ['SUBMITTED', 'VERIFIED'])
+          .eq('status', 'SUBMITTED')
           .order('updated_at', { ascending: false }),
 
-        // Job hunting assignments
+        // Job hunting assignments - only pending for now
         supabase
           .from('job_hunting_assignments')
           .select(`
@@ -156,10 +164,10 @@ const VerifyAssignments = () => {
               category
             )
           `)
-          .in('status', ['submitted', 'verified'])
+          .eq('status', 'submitted')
           .order('submitted_at', { ascending: false }),
 
-        // GitHub assignments
+        // GitHub assignments - only pending for now
         supabase
           .from('github_user_tasks')
           .select(`
@@ -172,7 +180,7 @@ const VerifyAssignments = () => {
               points_base
             )
           `)
-          .in('status', ['SUBMITTED', 'VERIFIED'])
+          .eq('status', 'SUBMITTED')
           .order('updated_at', { ascending: false })
       ];
 
@@ -426,7 +434,11 @@ const VerifyAssignments = () => {
         userIds: [...new Set(allAssignments.map(a => a.user_id))]
       });
       
+      // Only set pending assignments, verified will be fetched separately
       setAssignments(allAssignments);
+      
+      // Fetch verified assignments count for pagination
+      await fetchVerifiedAssignmentsCount();
       
     } catch (error) {
       console.error('Error in fetchSubmittedAssignments:', error);
@@ -434,6 +446,315 @@ const VerifyAssignments = () => {
       setAssignments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVerifiedAssignmentsCount = async () => {
+    if (!user) return;
+    
+    try {
+      // Count verified assignments across all tables
+      const countPromises = [
+        supabase
+          .from('career_task_assignments')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'verified'),
+        supabase
+          .from('linkedin_user_tasks')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'VERIFIED'),
+        supabase
+          .from('job_hunting_assignments')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'verified'),
+        supabase
+          .from('github_user_tasks')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'VERIFIED')
+      ];
+
+      const [careerCount, linkedInCount, jobHuntingCount, gitHubCount] = await Promise.all(countPromises);
+      
+      const totalCount = (careerCount.count || 0) + (linkedInCount.count || 0) + 
+                        (jobHuntingCount.count || 0) + (gitHubCount.count || 0);
+      
+      setVerifiedTotalCount(totalCount);
+      
+      // Fetch first page if we haven't already
+      if (verifiedCurrentPage === 1) {
+        await fetchVerifiedAssignments(1);
+      }
+    } catch (error) {
+      console.error('Error fetching verified assignments count:', error);
+    }
+  };
+
+  const fetchVerifiedAssignments = async (page: number) => {
+    if (!user) return;
+    
+    setVerifiedLoading(true);
+    
+    try {
+      const offset = (page - 1) * VERIFIED_PAGE_SIZE;
+      const limit = VERIFIED_PAGE_SIZE;
+      
+      // Fetch verified assignments with pagination
+      const promises = [
+        supabase
+          .from('career_task_assignments')
+          .select(`
+            id,
+            user_id,
+            template_id,
+            status,
+            submitted_at,
+            verified_at,
+            points_earned,
+            score_awarded,
+            career_task_templates!career_task_assignments_template_id_fkey (
+              id,
+              title,
+              module,
+              points_reward,
+              category
+            )
+          `)
+          .eq('status', 'verified')
+          .order('verified_at', { ascending: false })
+          .range(offset, offset + limit - 1),
+
+        supabase
+          .from('linkedin_user_tasks')
+          .select(`
+            *,
+            linkedin_tasks (
+              id,
+              code,
+              title,
+              description,
+              points_base
+            )
+          `)
+          .eq('status', 'VERIFIED')
+          .order('updated_at', { ascending: false })
+          .range(offset, offset + limit - 1),
+
+        supabase
+          .from('job_hunting_assignments')
+          .select(`
+            *,
+            template:job_hunting_task_templates (
+              id,
+              title,
+              description,
+              points_reward,
+              category
+            )
+          `)
+          .eq('status', 'verified')
+          .order('verified_at', { ascending: false })
+          .range(offset, offset + limit - 1),
+
+        supabase
+          .from('github_user_tasks')
+          .select(`
+            *,
+            github_tasks (
+              id,
+              code,
+              title,
+              description,
+              points_base
+            )
+          `)
+          .eq('status', 'VERIFIED')
+          .order('updated_at', { ascending: false })
+          .range(offset, offset + limit - 1)
+      ];
+
+      const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
+      
+      const careerData = careerResult.data || [];
+      const linkedInData = linkedInResult.data || [];
+      const jobHuntingData = jobHuntingResult.data || [];
+      const gitHubData = gitHubResult.data || [];
+      
+      const verifiedAssignments = [];
+
+      // Process career assignments (same logic as before)
+      if (careerData && careerData.length > 0) {
+        const userIds = careerData.map(assignment => assignment.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, username, profile_image_url')
+          .in('user_id', userIds);
+
+        const assignmentsWithEvidence = await Promise.all(
+          careerData.map(async (assignment) => {
+            const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+            
+            const { data: evidenceData } = await supabase
+              .from('career_task_evidence')
+              .select('*')
+              .eq('assignment_id', assignment.id)
+              .order('created_at', { ascending: false });
+
+            return { ...assignment, profiles: profile, evidence: evidenceData || [] };
+          })
+        );
+
+        verifiedAssignments.push(...assignmentsWithEvidence);
+      }
+
+      // Process other assignment types (similar logic as in main fetch)
+      // LinkedIn assignments
+      if (linkedInData && linkedInData.length > 0) {
+        const userIds = [...new Set(linkedInData.map(task => task.user_id).filter(Boolean))];
+        let profilesData: any[] = [];
+        
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, username, full_name, profile_image_url')
+            .in('user_id', userIds);
+          profilesData = profiles || [];
+        }
+
+        const linkedInAssignmentsWithEvidence = await Promise.all(
+          linkedInData.map(async assignment => {
+            const userId = assignment.user_id;
+            const profile = profilesData?.find(p => p.user_id === userId);
+            
+            let evidenceData: any[] = [];
+            try {
+              const { data: evidence } = await supabase
+                .from('linkedin_evidence')
+                .select('*')
+                .eq('user_task_id', assignment.id)
+                .order('created_at', { ascending: false });
+              evidenceData = evidence || [];
+            } catch (error) {
+              console.error('LinkedIn evidence fetch exception for task', assignment.id, ':', error);
+            }
+            
+            return {
+              id: assignment.id,
+              user_id: userId,
+              template_id: assignment.task_id,
+              status: assignment.status.toLowerCase(),
+              submitted_at: assignment.updated_at,
+              verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+              points_earned: assignment.score_awarded,
+              score_awarded: assignment.score_awarded,
+              career_task_templates: {
+                title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
+                module: 'LINKEDIN',
+                points_reward: assignment.linkedin_tasks?.points_base || 0,
+                category: 'LinkedIn Growth Activities',
+                sub_categories: { name: 'LinkedIn growth activities based' }
+              },
+              profiles: profile || { 
+                full_name: assignment.linkedin_users?.name || `[Missing User: ${userId?.slice(0, 8)}...]`, 
+                username: assignment.linkedin_users?.email?.split('@')[0] || `missing_${userId?.slice(0, 8)}`, 
+                profile_image_url: '' 
+              },
+              evidence: evidenceData,
+              _isLinkedInAssignment: true,
+              _originalLinkedInTask: assignment
+            };
+          })
+        );
+
+        verifiedAssignments.push(...linkedInAssignmentsWithEvidence);
+      }
+
+      // Job hunting assignments
+      if (jobHuntingData && jobHuntingData.length > 0) {
+        const userIds = jobHuntingData.map(assignment => assignment.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, username, profile_image_url')
+          .in('user_id', userIds);
+
+        const assignmentsWithEvidence = await Promise.all(
+          jobHuntingData.map(async (assignment) => {
+            const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+            
+            const { data: evidenceData } = await supabase
+              .from('job_hunting_evidence')
+              .select('*')
+              .eq('assignment_id', assignment.id)
+              .order('created_at', { ascending: false });
+
+            return {
+              ...assignment,
+              profiles: profile,
+              evidence: evidenceData || [],
+              career_task_templates: {
+                title: assignment.template?.title || 'Job Hunting Task',
+                module: 'JOB_HUNTING',
+                points_reward: assignment.template?.points_reward || 0,
+                category: 'Job Hunting Activities',
+                sub_categories: { name: 'Job hunting activities based' }
+              }
+            };
+          })
+        );
+
+        verifiedAssignments.push(...assignmentsWithEvidence);
+      }
+
+      // GitHub assignments
+      if (gitHubData && gitHubData.length > 0) {
+        const userIds = gitHubData.map(task => task.user_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, username, profile_image_url')
+          .in('user_id', userIds);
+
+        const assignmentsWithEvidence = await Promise.all(
+          gitHubData.map(async (assignment) => {
+            const profile = profilesData?.find(p => p.user_id === assignment.user_id);
+            
+            const { data: evidenceData } = await supabase
+              .from('github_evidence')
+              .select('*')
+              .eq('user_task_id', assignment.id)
+              .order('created_at', { ascending: false });
+
+            return {
+              id: assignment.id,
+              user_id: assignment.user_id,
+              template_id: assignment.task_id,
+              status: assignment.status.toLowerCase(),
+              submitted_at: assignment.updated_at,
+              verified_at: assignment.status === 'VERIFIED' ? assignment.updated_at : null,
+              points_earned: assignment.score_awarded,
+              score_awarded: assignment.score_awarded,
+              career_task_templates: {
+                title: assignment.github_tasks?.title || 'GitHub Task',
+                module: 'GITHUB',
+                points_reward: assignment.github_tasks?.points_base || 0,
+                category: 'GitHub Activities',
+                sub_categories: { name: 'GitHub activities based' }
+              },
+              profiles: profile,
+              evidence: evidenceData || []
+            };
+          })
+        );
+
+        verifiedAssignments.push(...assignmentsWithEvidence);
+      }
+
+      setPaginatedVerifiedAssignments(verifiedAssignments);
+      setVerifiedCurrentPage(page);
+      
+    } catch (error) {
+      console.error('Error fetching verified assignments:', error);
+      toast.error('Failed to load verified assignments');
+    } finally {
+      setVerifiedLoading(false);
     }
   };
 
@@ -657,10 +978,17 @@ const VerifyAssignments = () => {
             )}
           </div>
         </div>
-        {loading ? (
+        {loading || verifiedLoading ? (
           <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin" />
         ) : (
-          <Button onClick={fetchSubmittedAssignments} variant="outline">
+          <Button 
+            onClick={() => {
+              setVerifiedCurrentPage(1);
+              setPaginatedVerifiedAssignments([]);
+              fetchSubmittedAssignments();
+            }} 
+            variant="outline"
+          >
             Refresh
           </Button>
         )}
@@ -732,7 +1060,7 @@ const VerifyAssignments = () => {
             Pending ({pendingAssignments.length})
           </TabsTrigger>
           <TabsTrigger value="verified">
-            Verified ({verifiedAssignments.length})
+            Verified ({verifiedTotalCount})
           </TabsTrigger>
         </TabsList>
 
@@ -764,7 +1092,7 @@ const VerifyAssignments = () => {
         </TabsContent>
 
         <TabsContent value="verified" className="space-y-4">
-          {loading ? (
+          {verifiedLoading || loading ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i} className="animate-pulse">
@@ -779,14 +1107,56 @@ const VerifyAssignments = () => {
                 </Card>
               ))}
             </div>
-          ) : verifiedAssignments.length === 0 ? (
+          ) : verifiedTotalCount === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <CheckCircle className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p className="text-lg">No verified assignments</p>
               <p className="text-sm">Verified assignments will appear here.</p>
             </div>
           ) : (
-            verifiedAssignments.map(renderAssignmentCard)
+            <>
+              {paginatedVerifiedAssignments.map(renderAssignmentCard)}
+              
+              {/* Pagination for verified assignments */}
+              {totalVerifiedPages > 1 && (
+                <div className="flex justify-center mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => verifiedCurrentPage > 1 && fetchVerifiedAssignments(verifiedCurrentPage - 1)}
+                          className={verifiedCurrentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalVerifiedPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => fetchVerifiedAssignments(page)}
+                            isActive={page === verifiedCurrentPage}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => verifiedCurrentPage < totalVerifiedPages && fetchVerifiedAssignments(verifiedCurrentPage + 1)}
+                          className={verifiedCurrentPage >= totalVerifiedPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+              
+              {/* Results info */}
+              <div className="text-center text-sm text-gray-500 mt-4">
+                Showing {((verifiedCurrentPage - 1) * VERIFIED_PAGE_SIZE) + 1} to {Math.min(verifiedCurrentPage * VERIFIED_PAGE_SIZE, verifiedTotalCount)} of {verifiedTotalCount} verified assignments
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
