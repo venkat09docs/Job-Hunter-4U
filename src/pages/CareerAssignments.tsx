@@ -53,7 +53,8 @@ const CareerAssignments = () => {
     updateAssignmentStatus,
     initializeUserWeek,
     getModuleProgress,
-    getTasksByModule
+    getTasksByModule,
+    refreshData
   } = useCareerAssignments();
 
   // Progress hooks for different modules
@@ -158,10 +159,21 @@ const CareerAssignments = () => {
         },
         (payload) => {
           console.log('🔍 Evidence changed, refreshing data...', payload);
-          // Force refresh of all data when evidence changes to update Recent Activity
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          // Refresh assignments when evidence changes
+          refreshData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'career_task_assignments'
+        },
+        (payload) => {
+          console.log('🔍 Assignment status updated, refreshing data...', payload);
+          // Refresh assignments when status changes (approved/rejected by admin)
+          refreshData();
         }
       )
       .subscribe();
