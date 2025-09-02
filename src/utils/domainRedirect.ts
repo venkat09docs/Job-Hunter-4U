@@ -20,7 +20,10 @@ export const ensureConsistentDomain = () => {
   }
   
   // If we're on localhost or other domains, don't redirect
-  if (currentHost.includes('localhost') || currentHost.includes('127.0.0.1') || currentHost.includes('lovableproject.com')) {
+  if (currentHost.includes('localhost') || 
+      currentHost.includes('127.0.0.1') || 
+      currentHost.includes('lovableproject.com') ||
+      currentHost.includes('lovable.app')) {
     return;
   }
 };
