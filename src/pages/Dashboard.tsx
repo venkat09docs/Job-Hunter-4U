@@ -47,10 +47,34 @@ const Dashboard = () => {
   const REPO_TASK_IDS = ['pinned_repos','repo_descriptions','readme_files','topics_tags','license'];
   const WEEKLY_TARGET = 3;
   
-  // ALL HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
+  // ALL REACT HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
   const { user, signOut, hasLoggedOut } = useAuth();
   const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
   const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Progress and metrics hooks
+  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
+  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
+  const { loading: networkLoading } = useLinkedInNetworkProgress();
+  const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { isIT } = useUserIndustry();
+  const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
+  
+  // Optimized hooks for better performance
+  const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
+  const { 
+    totalJobApplications, 
+    publishedBlogsCount, 
+    savedCoverLettersCount, 
+    savedReadmeFilesCount, 
+    totalJobResultsCount, 
+    jobStatusCounts, 
+    recentJobs, 
+    loading: statsLoading 
+  } = useOptimizedDashboardStats();
+  const { leaderboard: optimizedLeaderboard, loading: leaderboardLoading } = useOptimizedLeaderboard();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
   const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
@@ -99,28 +123,6 @@ const Dashboard = () => {
 
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
-  // Keep existing hooks for LinkedIn, GitHub, and other features
-  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
-  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
-  const { loading: networkLoading } = useLinkedInNetworkProgress();
-  const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
-  const { isIT } = useUserIndustry();
-  const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
-  // Use optimized hooks for better performance
-  const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
-  const { 
-    totalJobApplications, 
-    publishedBlogsCount, 
-    savedCoverLettersCount, 
-    savedReadmeFilesCount, 
-    totalJobResultsCount, 
-    jobStatusCounts, 
-    recentJobs, 
-    loading: statsLoading 
-  } = useOptimizedDashboardStats();
-  const { leaderboard: optimizedLeaderboard, loading: leaderboardLoading } = useOptimizedLeaderboard();
-  const { toast } = useToast();
-  const navigate = useNavigate();
   
   // All useState hooks - MUST be called unconditionally - removed job-related state (now from optimized hook)
   const [jobsLoading, setJobsLoading] = useState(false); // Keep for compatibility
