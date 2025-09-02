@@ -56,18 +56,22 @@ serve(async (req) => {
 
     console.log('🔐 Authenticated user:', user.id);
 
-    // Verify user is an institute admin using the service client
-    const { data: userRoles, error: roleError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
+    // Verify user is an institute admin by checking institute_admin_assignments
+    const { data: adminAssignments, error: roleError } = await supabaseClient
+      .from('institute_admin_assignments')
+      .select('institute_id, is_active')
       .eq('user_id', user.id)
-      .eq('role', 'institute_admin');
+      .eq('is_active', true);
 
-    if (roleError || !userRoles?.length) {
+    if (roleError || !adminAssignments?.length) {
+      console.error('Institute admin verification failed:', roleError);
       throw new Error('Only institute admins can verify assignments');
     }
 
-    console.log('✅ Institute admin role verified');
+    console.log('✅ Institute admin status verified:', {
+      userId: user.id,
+      managedInstitutes: adminAssignments.length
+    });
 
     const body: VerifyAssignmentRequest = await req.json();
     const { assignmentId, assignmentType, action, verificationNotes, scoreAwarded } = body;
