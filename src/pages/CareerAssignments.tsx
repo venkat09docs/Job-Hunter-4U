@@ -988,7 +988,7 @@ const CareerAssignments = () => {
                       </div>
                     ) : (
                         <div className="space-y-3">
-                          {evidence.map(e => (
+                          {evidence.slice(0, 5).map(e => (
                             <div key={e.id} className="flex items-center gap-3 text-sm">
                               <div className="w-2 h-2 bg-primary rounded-full" />
                               <div className="flex-1">
