@@ -66,8 +66,8 @@ const VerifyAssignments = () => {
   
   const VERIFIED_PAGE_SIZE = 10;
 
-  // Optimized data fetching function
-  const fetchAssignmentsOptimized = async () => {
+  // Optimized data fetching function for pending assignments
+  const fetchPendingAssignments = async () => {
     if (!user) throw new Error('User not authenticated');
     
     // Fetch all assignment types in parallel with optimized queries
@@ -233,6 +233,160 @@ const VerifyAssignments = () => {
     return allAssignments;
   };
 
+  // Optimized data fetching function for verified assignments
+  const fetchVerifiedAssignments = async (page: number) => {
+    if (!user) throw new Error('User not authenticated');
+    
+    const offset = (page - 1) * VERIFIED_PAGE_SIZE;
+
+    // Get total count and paginated data in parallel
+    const [countResults, dataResults] = await Promise.all([
+      // Count queries
+      Promise.all([
+        supabase.from('career_task_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
+        supabase.from('linkedin_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED'),
+        supabase.from('job_hunting_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
+        supabase.from('github_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED')
+      ]),
+      
+      // Data queries with proper ordering and range
+      Promise.all([
+        supabase
+          .from('career_task_assignments')
+          .select(`
+            id, user_id, template_id, status, submitted_at, verified_at, points_earned, score_awarded,
+            career_task_templates!career_task_assignments_template_id_fkey (
+              id, title, module, points_reward, category
+            )
+          `)
+          .eq('status', 'verified')
+          .order('verified_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
+
+        supabase
+          .from('linkedin_user_tasks')
+          .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
+          .eq('status', 'VERIFIED')
+          .order('updated_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
+
+        supabase
+          .from('job_hunting_assignments')
+          .select(`*, template:job_hunting_task_templates (id, title, description, points_reward, category)`)
+          .eq('status', 'verified')
+          .order('verified_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
+
+        supabase
+          .from('github_user_tasks')
+          .select(`*, github_tasks (id, code, title, description, points_base)`)
+          .eq('status', 'VERIFIED')
+          .order('updated_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3))
+      ])
+    ]);
+
+    const [careerCount, linkedInCount, jobHuntingCount, gitHubCount] = countResults;
+    const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = dataResults;
+
+    const totalCount = (careerCount.count || 0) + (linkedInCount.count || 0) + 
+                      (jobHuntingCount.count || 0) + (gitHubCount.count || 0);
+
+    // Use the same optimized processing
+    const allUserIds = new Set([
+      ...(careerResult.data || []).map(a => a.user_id),
+      ...(linkedInResult.data || []).map(a => a.user_id),
+      ...(jobHuntingResult.data || []).map(a => a.user_id),
+      ...(gitHubResult.data || []).map(a => a.user_id)
+    ]);
+
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, username, profile_image_url')
+      .in('user_id', Array.from(allUserIds));
+
+    const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+
+    // Process all assignments efficiently (simpler since we don't need evidence for list view)
+    const allAssignments: Assignment[] = [];
+
+    (careerResult.data || []).forEach(assignment => {
+      allAssignments.push({
+        ...assignment,
+        profiles: profilesMap.get(assignment.user_id),
+        evidence: []
+      });
+    });
+
+    (linkedInResult.data || []).forEach(assignment => {
+      allAssignments.push({
+        id: assignment.id,
+        user_id: assignment.user_id,
+        template_id: assignment.task_id,
+        status: assignment.status.toLowerCase(),
+        submitted_at: assignment.updated_at,
+        verified_at: assignment.updated_at,
+        points_earned: assignment.score_awarded,
+        score_awarded: assignment.score_awarded,
+        career_task_templates: {
+          title: assignment.linkedin_tasks?.title || 'LinkedIn Task',
+          module: 'LINKEDIN',
+          points_reward: assignment.linkedin_tasks?.points_base || 0,
+          category: 'LinkedIn Growth Activities'
+        },
+        profiles: profilesMap.get(assignment.user_id),
+        evidence: [],
+        _isLinkedInAssignment: true
+      });
+    });
+
+    (jobHuntingResult.data || []).forEach(assignment => {
+      allAssignments.push({
+        ...assignment,
+        profiles: profilesMap.get(assignment.user_id),
+        evidence: [],
+        career_task_templates: {
+          title: assignment.template?.title || 'Job Hunting Task',
+          module: 'JOB_HUNTING',
+          points_reward: assignment.template?.points_reward || 0,
+          category: 'Job Hunting Activities'
+        }
+      });
+    });
+
+    (gitHubResult.data || []).forEach(assignment => {
+      allAssignments.push({
+        id: assignment.id,
+        user_id: assignment.user_id,
+        template_id: assignment.task_id,
+        status: assignment.status.toLowerCase(),
+        submitted_at: assignment.updated_at,
+        verified_at: assignment.updated_at,
+        points_earned: assignment.score_awarded,
+        score_awarded: assignment.score_awarded,
+        career_task_templates: {
+          title: assignment.github_tasks?.title || 'GitHub Task',
+          module: 'GITHUB',
+          points_reward: assignment.github_tasks?.points_base || 0,
+          category: 'GitHub Activities'
+        },
+        profiles: profilesMap.get(assignment.user_id),
+        evidence: []
+      });
+    });
+
+    // Sort by verified date and paginate
+    const sortedAssignments = allAssignments.sort((a, b) => {
+      const dateA = new Date(a.verified_at || a.submitted_at || '').getTime();
+      const dateB = new Date(b.verified_at || b.submitted_at || '').getTime();
+      return dateB - dateA;
+    });
+
+    const paginatedResults = sortedAssignments.slice(offset, offset + VERIFIED_PAGE_SIZE);
+
+    return { assignments: paginatedResults, totalCount };
+  };
+
   // Check if user can access this page
   const canAccess = user && !roleLoading && (isAdmin || isInstituteAdmin || isRecruiter) && 
                    (!isInstituteAdmin || !instituteLoading);
@@ -240,9 +394,18 @@ const VerifyAssignments = () => {
   // Query for pending assignments with React Query for better performance
   const { data: assignments = [], isLoading, error } = useQuery({
     queryKey: ['assignments', 'pending', user?.id],
-    queryFn: fetchAssignmentsOptimized,
+    queryFn: fetchPendingAssignments,
     enabled: canAccess,
     staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: false
+  });
+
+  // Query for verified assignments with pagination
+  const { data: verifiedData, isLoading: verifiedLoading } = useQuery({
+    queryKey: ['assignments', 'verified', verifiedCurrentPage, user?.id],
+    queryFn: () => fetchVerifiedAssignments(verifiedCurrentPage),
+    enabled: canAccess,
+    staleTime: 30000,
     refetchOnWindowFocus: false
   });
 
@@ -270,6 +433,15 @@ const VerifyAssignments = () => {
     filteredAssignments.filter(assignment => assignment.status === 'submitted'),
     [filteredAssignments]
   );
+
+  const verifiedAssignments = verifiedData?.assignments || [];
+  const verifiedTotalCount = verifiedData?.totalCount || 0;
+  const totalVerifiedPages = Math.ceil(verifiedTotalCount / VERIFIED_PAGE_SIZE);
+
+  // Handle page changes for verified assignments
+  const handleVerifiedPageChange = (page: number) => {
+    setVerifiedCurrentPage(page);
+  };
 
   // Mutation for verifying assignments
   const verifyAssignmentMutation = useMutation({
@@ -393,6 +565,13 @@ const VerifyAssignments = () => {
               </Button>
             </div>
           )}
+          
+          {(assignment.status === 'verified' || assignment.status === 'rejected') && (
+            <div className="text-sm text-muted-foreground">
+              <div>Verified: {assignment.verified_at ? new Date(assignment.verified_at).toLocaleDateString() : 'N/A'}</div>
+              {assignment.score_awarded && <div>Score: {assignment.score_awarded} points</div>}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -497,6 +676,9 @@ const VerifyAssignments = () => {
           <TabsTrigger value="pending">
             Pending Assignments ({pendingAssignments.length})
           </TabsTrigger>
+          <TabsTrigger value="verified">
+            Verified Assignments ({verifiedTotalCount})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4">
@@ -516,6 +698,61 @@ const VerifyAssignments = () => {
             <div className="space-y-4">
               {pendingAssignments.map(renderAssignmentCard)}
             </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="verified" className="space-y-4">
+          {verifiedLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : verifiedAssignments.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No Verified Assignments</h3>
+              <p className="text-muted-foreground">
+                No assignments have been verified yet.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {verifiedAssignments.map(renderAssignmentCard)}
+              </div>
+              
+              {totalVerifiedPages > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => handleVerifiedPageChange(verifiedCurrentPage - 1)}
+                        className={verifiedCurrentPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    {[...Array(Math.min(5, totalVerifiedPages))].map((_, index) => {
+                      const page = index + 1;
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => handleVerifiedPageChange(page)}
+                            isActive={page === verifiedCurrentPage}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => handleVerifiedPageChange(verifiedCurrentPage + 1)}
+                        className={verifiedCurrentPage >= totalVerifiedPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </>
           )}
         </TabsContent>
       </Tabs>
