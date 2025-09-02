@@ -87,7 +87,7 @@ const CareerActivities = () => {
   const cumulativeStats = {
     connections: networkMetrics.totalConnections,
     posts: networkMetrics.totalPosts,
-    views: networkMetrics.totalConnections, // Using connections as profile views since that's the closest metric we have
+    views: networkMetrics.totalProfileViews,
   };
   const stats = getTaskStats();
 

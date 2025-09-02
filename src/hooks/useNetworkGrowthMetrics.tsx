@@ -8,6 +8,7 @@ interface NetworkGrowthMetrics {
   totalComments: number;
   totalShares: number;
   totalPosts: number;
+  totalProfileViews: number;
   weeklyProgress: number;
   monthlyProgress: number;
 }
@@ -20,6 +21,7 @@ export const useNetworkGrowthMetrics = () => {
     totalComments: 0,
     totalShares: 0,
     totalPosts: 0,
+    totalProfileViews: 0,
     weeklyProgress: 0,
     monthlyProgress: 0,
   });
@@ -85,6 +87,7 @@ export const useNetworkGrowthMetrics = () => {
         totalComments: 0,
         totalShares: 0,
         totalPosts: 0,
+        totalProfileViews: 0,
       };
 
       allTimeMetrics?.forEach(metric => {
@@ -103,6 +106,9 @@ export const useNetworkGrowthMetrics = () => {
             break;
           case 'create_post':
             totals.totalPosts += metric.value;
+            break;
+          case 'profile_views':
+            totals.totalProfileViews += metric.value;
             break;
         }
       });
@@ -147,6 +153,7 @@ export const useNetworkGrowthMetrics = () => {
         totalComments: totals.totalComments,
         totalShares: totals.totalShares,
         totalPosts: totals.totalPosts,
+        totalProfileViews: totals.totalProfileViews,
         weeklyProgress: weeklyTotal,
         monthlyProgress: monthlyTotal,
       });
