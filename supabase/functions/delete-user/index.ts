@@ -85,95 +85,90 @@ serve(async (req) => {
     // Delete all user-related data in order (using admin client to bypass RLS)
     console.log(`Starting deletion process for user: ${user_id}`)
 
-    // 1. Delete from ai_chat_logs
-    await supabaseAdmin
-      .from('ai_chat_logs')
-      .delete()
-      .eq('user_id', user_id)
+    // Delete from all tables that reference user_id
+    const tablesToDelete = [
+      'affiliate_users',
+      'ai_chat_logs', 
+      'ats_score_history',
+      'audit_log',
+      'blogs',
+      'career_task_assignments',
+      'career_weekly_schedules', 
+      'daily_job_hunting_sessions',
+      'daily_progress_snapshots',
+      'github_daily_flow_sessions',
+      'github_progress',
+      'github_repos',
+      'github_scores', 
+      'github_signals',
+      'github_snapshots',
+      'github_task_reenable_requests',
+      'github_user_badges',
+      'github_user_tasks',
+      'job_application_activities',
+      'job_hunting_assignments',
+      'job_hunting_pipeline', 
+      'job_hunting_streaks',
+      'job_hunting_weekly_schedules',
+      'job_results',
+      'job_searches',
+      'job_tracker',
+      'leaderboard_rankings',
+      'learning_goals',
+      'linkedin_automations',
+      'linkedin_network_completions',
+      'linkedin_network_metrics',
+      'linkedin_progress',
+      'linkedin_scores',
+      'linkedin_signals', 
+      'linkedin_task_renable_requests',
+      'linkedin_user_badges',
+      'linkedin_user_tasks',
+      'notification_analytics',
+      'notification_preferences',
+      'notifications',
+      'payment_audit_log',
+      'payment_records',
+      'payments',
+      'portfolios',
+      'profile_user_badges',
+      'public_profiles',
+      'resume_checks',
+      'resume_data',
+      'role_audit_log',
+      'saved_cover_letters',
+      'saved_job_searches',
+      'saved_readme_files', 
+      'saved_resumes',
+      'security_audit_log',
+      'signals',
+      'tool_chats',
+      'tool_usage', 
+      'user_activity_points',
+      'user_analytics',
+      'user_badges',
+      'user_inputs',
+      'user_notification_settings',
+      'webhook_queue',
+      'user_assignments',
+      'institute_admin_assignments',
+      'user_roles',
+      'profiles'
+    ]
 
-    // 2. Delete from tool_chats
-    await supabaseAdmin
-      .from('tool_chats')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 3. Delete from tool_usage
-    await supabaseAdmin
-      .from('tool_usage')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 4. Delete from user_analytics
-    await supabaseAdmin
-      .from('user_analytics')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 5. Delete from job_searches
-    await supabaseAdmin
-      .from('job_searches')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 6. Delete from job_tracker
-    await supabaseAdmin
-      .from('job_tracker')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 7. Delete from linkedin_automations
-    await supabaseAdmin
-      .from('linkedin_automations')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 8. Delete from portfolios
-    await supabaseAdmin
-      .from('portfolios')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 9. Delete from public_profiles
-    await supabaseAdmin
-      .from('public_profiles')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 10. Delete from blogs
-    await supabaseAdmin
-      .from('blogs')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 11. Delete from payments
-    await supabaseAdmin
-      .from('payments')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 12. Delete from user_assignments
-    await supabaseAdmin
-      .from('user_assignments')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 13. Delete from institute_admin_assignments
-    await supabaseAdmin
-      .from('institute_admin_assignments')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 14. Delete from user_roles
-    await supabaseAdmin
-      .from('user_roles')
-      .delete()
-      .eq('user_id', user_id)
-
-    // 15. Delete from profiles
-    await supabaseAdmin
-      .from('profiles')
-      .delete()
-      .eq('user_id', user_id)
+    // Delete from each table
+    for (const table of tablesToDelete) {
+      try {
+        await supabaseAdmin
+          .from(table)
+          .delete()
+          .eq('user_id', user_id)
+        console.log(`Deleted from ${table}`)
+      } catch (error) {
+        console.log(`Error deleting from ${table}:`, error)
+        // Continue with other tables even if one fails
+      }
+    }
 
     // 16. Finally, delete from auth.users using admin API
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(user_id)
