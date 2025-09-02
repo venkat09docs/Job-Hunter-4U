@@ -27,6 +27,35 @@ export const useUserInstitute = () => {
     }
   }, [user, isUser]);
 
+  // Refresh institute data when user assignments change
+  useEffect(() => {
+    if (user) {
+      const channel = supabase
+        .channel('user-institute-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_assignments'
+          },
+           (payload) => {
+             // Only refresh if the change affects this user
+             if ((payload.new && 'user_id' in payload.new && payload.new.user_id === user.id) || 
+                 (payload.old && 'user_id' in payload.old && payload.old.user_id === user.id)) {
+               console.log('User assignment updated for current user, refreshing institute data...');
+               fetchUserInstitute();
+             }
+           }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user]);
+
   const fetchUserInstitute = async () => {
     try {
       setLoading(true);

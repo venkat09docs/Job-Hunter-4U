@@ -43,7 +43,7 @@ export const useLeaderboard = () => {
     fetchLeaderboard();
   }, [isInstituteUser, instituteId]);
 
-  // Refresh leaderboard when user_activity_points table changes
+  // Refresh leaderboard when user_activity_points or user_assignments change
   useEffect(() => {
     const channel = supabase
       .channel('leaderboard-updates')
@@ -56,6 +56,18 @@ export const useLeaderboard = () => {
         },
         () => {
           console.log('User activity points updated, refreshing leaderboard...');
+          fetchLeaderboard();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_assignments'
+        },
+        () => {
+          console.log('User assignments updated, refreshing leaderboard...');
           fetchLeaderboard();
         }
       )
