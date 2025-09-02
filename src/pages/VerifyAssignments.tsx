@@ -34,6 +34,11 @@ interface Assignment {
     category?: string;
     sub_categories?: { name: string };
   };
+  job_hunting_task_templates?: {
+    title: string;
+    points_reward: number;
+    category?: string;
+  };
   profiles?: {
     full_name: string;
     username: string;
@@ -562,11 +567,10 @@ const VerifyAssignments = () => {
         ...assignment,
         profiles: profilesMap.get(assignment.user_id),
         evidence: evidenceMaps.jobHunting.get(assignment.id) || [],
-        career_task_templates: {
+        job_hunting_task_templates: {
           title: assignment.template?.title || 'Job Hunting Task',
-          module: 'JOB_HUNTING',
           points_reward: assignment.template?.points_reward || 0,
-          category: 'Job Hunting Activities'
+          category: assignment.template?.category || 'Job Hunting Activities'
         }
       });
     });
@@ -704,11 +708,10 @@ const VerifyAssignments = () => {
         ...assignment,
         profiles: profilesMap.get(assignment.user_id),
         evidence: [],
-        career_task_templates: {
+        job_hunting_task_templates: {
           title: assignment.template?.title || 'Job Hunting Task',
-          module: 'JOB_HUNTING',
           points_reward: assignment.template?.points_reward || 0,
-          category: 'Job Hunting Activities'
+          category: assignment.template?.category || 'Job Hunting Activities'
         }
       });
     });
@@ -773,9 +776,16 @@ const VerifyAssignments = () => {
     let filtered = assignments;
 
     if (moduleFilter !== 'all') {
-      filtered = filtered.filter(assignment => 
-        assignment.career_task_templates?.module?.toLowerCase() === moduleFilter.toLowerCase()
-      );
+      filtered = filtered.filter(assignment => {
+        if (assignment.job_hunting_task_templates) {
+          // Job hunting assignments
+          return moduleFilter.toLowerCase() === 'job_hunting';
+        } else if (assignment.career_task_templates?.module) {
+          // Career, GitHub, and LinkedIn assignments  
+          return assignment.career_task_templates.module.toLowerCase() === moduleFilter.toLowerCase();
+        }
+        return false;
+      });
     }
 
     if (userFilter.trim()) {
@@ -805,12 +815,26 @@ const VerifyAssignments = () => {
   // Mutation for verifying assignments
   const verifyAssignmentMutation = useMutation({
     mutationFn: async ({ action, assignment }: { action: 'approve' | 'reject', assignment: Assignment }) => {
+      // Determine assignment type based on the structure
+      let assignmentType: string;
+      
+      if (assignment._isLinkedInAssignment) {
+        assignmentType = 'linkedin';
+      } else if (assignment.job_hunting_task_templates) {
+        // Job hunting assignments have job_hunting_task_templates
+        assignmentType = 'job_hunting';
+      } else if (assignment.career_task_templates?.module === 'GITHUB') {
+        assignmentType = 'github';
+      } else {
+        assignmentType = 'career';
+      }
+
+      console.log('Assignment type determined:', assignmentType, 'for assignment:', assignment.id);
+
       const response = await supabase.functions.invoke('verify-institute-assignments', {
         body: {
           assignmentId: assignment.id,
-          assignmentType: assignment._isLinkedInAssignment ? 'linkedin' : 
-                         assignment.career_task_templates?.module === 'GITHUB' ? 'github' :
-                         assignment.career_task_templates?.module === 'JOB_HUNTING' ? 'job_hunting' : 'career',
+          assignmentType,
           action,
           scoreAwarded: parseInt(scoreAwarded) || 0,
           verificationNotes

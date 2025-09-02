@@ -48,8 +48,8 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
           .select('id')
           .eq('user_id', user.id)
           .eq('status', 'applied')
-          .gte('created_at', format(currentWeekStart, 'yyyy-MM-dd'))
-          .lte('created_at', format(currentWeekEnd, 'yyyy-MM-dd'));
+          .gte('created_at', format(currentWeekStart, 'yyyy-MM-dd HH:mm:ss'))
+          .lte('created_at', format(currentWeekEnd, 'yyyy-MM-dd HH:mm:ss'));
 
         if (jobsError) throw jobsError;
 
