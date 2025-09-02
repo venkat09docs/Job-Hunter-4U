@@ -73,9 +73,13 @@ import NotificationPreferences from "./pages/NotificationPreferences";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  // Ensure consistent domain usage on app load
+  // Temporarily disable domain redirect to debug custom domain issues
   useEffect(() => {
-    ensureConsistentDomain();
+    console.log('🔍 App loading on domain:', window.location.host);
+    console.log('🔍 Full URL:', window.location.href);
+    
+    // Comment out domain redirect temporarily
+    // ensureConsistentDomain();
   }, []);
 
   return (
