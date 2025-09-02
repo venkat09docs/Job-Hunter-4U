@@ -288,13 +288,29 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
   };
 
   return (
-    <Card className="p-4">
+    <Card className={`p-4 ${index === 0 ? 'border-primary/20' : 'border-muted opacity-75'}`}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="font-medium">Evidence {index + 1}</h4>
-          <Badge variant="outline">
-            {evidence.evidence_type || evidence.kind || 'Evidence'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium">
+              {index === 0 ? 'Latest Evidence' : `Previous Evidence ${index + 1}`}
+            </h4>
+            {index === 0 && <Badge variant="default" className="text-xs">Latest</Badge>}
+            {index > 0 && <Badge variant="secondary" className="text-xs">Previous</Badge>}
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {evidence.evidence_type || evidence.kind || 'Evidence'}
+            </Badge>
+            {evidence.verification_status && (
+              <Badge 
+                variant={evidence.verification_status === 'pending' ? 'secondary' : 
+                       evidence.verification_status === 'approved' || evidence.verification_status === 'verified' ? 'default' : 'destructive'}
+              >
+                {evidence.verification_status}
+              </Badge>
+            )}
+          </div>
         </div>
         
         <div className="grid grid-cols-1 gap-4">
@@ -321,18 +337,15 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
               </div>
             )}
             
-            {evidence.submitted_at && (
+            {(evidence.submitted_at || evidence.created_at) && (
               <div>
-                <strong>Submitted:</strong> {new Date(evidence.submitted_at).toLocaleString()}
+                <strong>Submitted:</strong> {new Date(evidence.submitted_at || evidence.created_at).toLocaleString()}
               </div>
             )}
             
-            {evidence.verification_status && (
+            {evidence.verified_at && (
               <div>
-                <strong>Status:</strong> 
-                <Badge variant="outline" className="ml-2">
-                  {evidence.verification_status}
-                </Badge>
+                <strong>Verified:</strong> {new Date(evidence.verified_at).toLocaleString()}
               </div>
             )}
           </div>
@@ -367,13 +380,19 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             </div>
           )}
           
-          {/* Previous Notes */}
+          {/* Verification Notes - Enhanced styling for rejected items */}
           {evidence.verification_notes && (
             <div>
-              <strong>Previous Notes:</strong>
-              <p className="mt-1 text-muted-foreground text-sm p-2 bg-muted/30 rounded">
+              <strong className={`${evidence.verification_status === 'rejected' ? 'text-destructive' : 'text-orange-700 dark:text-orange-300'}`}>
+                {evidence.verification_status === 'rejected' ? 'Rejection Reason:' : 'Verification Notes:'}
+              </strong>
+              <div className={`mt-1 p-3 rounded text-sm ${
+                evidence.verification_status === 'rejected' 
+                  ? 'bg-destructive/10 border border-destructive/20 text-destructive-foreground' 
+                  : 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 text-muted-foreground'
+              }`}>
                 {evidence.verification_notes}
-              </p>
+              </div>
             </div>
           )}
         </div>
@@ -849,6 +868,9 @@ const VerifyAssignments = () => {
           .eq('assignment_id', assignment.id);
         evidenceData = data || [];
       }
+
+      // Sort evidence by created_at in descending order (latest first)
+      evidenceData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setSelectedAssignmentEvidence(evidenceData);
     } catch (error) {
