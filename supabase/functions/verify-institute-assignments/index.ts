@@ -267,20 +267,26 @@ const handler = async (req: Request): Promise<Response> => {
 
       // If approved, award points in user activity points table
       if (isApproved && pointsEarned > 0) {
+        const taskTitle = assignmentData.career_task_templates?.title || 
+                         assignmentData.linkedin_tasks?.title || 
+                         assignmentData.github_tasks?.title || 
+                         assignmentData.job_hunting_task_templates?.title || 
+                         'Task Completed';
+        
         const { error: pointsError } = await supabase
           .from('user_activity_points')
           .insert({
             user_id: userId,
             activity_date: new Date().toISOString().split('T')[0],
             activity_type: `${assignmentType}_task_completion`,
-            points_earned: pointsEarned,
-            activity_description: `Completed task: ${assignmentData.career_task_templates?.title || assignmentData.linkedin_tasks?.title || assignmentData.github_tasks?.title || assignmentData.job_hunting_task_templates?.title}`
+            activity_id: assignmentId,
+            points_earned: pointsEarned
           });
 
         if (pointsError) {
           console.error('Error awarding points:', pointsError);
         } else {
-          console.log(`🎯 Awarded ${pointsEarned} points to user ${userId}`);
+          console.log(`🎯 Awarded ${pointsEarned} points to user ${userId} for ${taskTitle}`);
         }
       }
     }
