@@ -220,36 +220,10 @@ export const useLeaderboard = () => {
 
       if (activityError) throw activityError;
 
-      // Filter activity data based on user type
-      let filteredActivityData = activityData || [];
-      if (isInstituteUser && instituteId) {
-        // Institute users: Show only users from the same institute
-        const { data: instituteUsers } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .eq('institute_id', instituteId)
-          .eq('is_active', true);
-        
-        const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
-        filteredActivityData = activityData?.filter(record => instituteUserIds.has(record.user_id)) || [];
-        
-        console.log(`Filtered to ${filteredActivityData.length} activity records for institute users only`);
-      } else if (!isInstituteUser) {
-        // Non-institute users: Exclude all institute users
-        const { data: instituteUsers } = await supabase
-          .from('user_assignments')
-          .select('user_id')
-          .eq('is_active', true);
-        
-        const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
-        filteredActivityData = activityData?.filter(record => !instituteUserIds.has(record.user_id)) || [];
-        
-        console.log(`Filtered to ${filteredActivityData.length} activity records excluding institute users`);
-      }
-
-      // Group by user and sum points using filtered data
+      // RLS policies now handle filtering at database level, no need for application-level filtering
+      // Group by user and sum points using activity data (already filtered by RLS)
       const userPoints = new Map<string, number>();
-      filteredActivityData?.forEach(record => {
+      (activityData || []).forEach(record => {
         const current = userPoints.get(record.user_id) || 0;
         userPoints.set(record.user_id, current + record.points_earned);
       });
@@ -269,28 +243,10 @@ export const useLeaderboard = () => {
         return [];
       }
 
-      // Use institute-specific profile function if user is institute user
-      let profileData, profileError;
-      if (isInstituteUser && instituteId) {
-        const result = await supabase.rpc('get_institute_leaderboard_profiles', { institute_id_param: instituteId });
-        profileData = result.data;
-        profileError = result.error;
-      } else {
-        const result = await supabase.rpc('get_safe_leaderboard_profiles');
-        profileData = result.data;
-        profileError = result.error;
-        
-        // For non-institute users, filter out institute user profiles
-        if (!isInstituteUser && profileData) {
-          const { data: instituteUsers } = await supabase
-            .from('user_assignments')
-            .select('user_id')
-            .eq('is_active', true);
-          
-          const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
-          profileData = profileData.filter((profile: any) => !instituteUserIds.has(profile.user_id));
-        }
-      }
+      // Fetch user profiles - RLS policies handle filtering by institute
+      const result = await supabase.rpc('get_safe_leaderboard_profiles');
+      const profileData = result.data;
+      const profileError = result.error;
 
       if (profileError) throw profileError;
 
