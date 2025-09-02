@@ -208,10 +208,10 @@ export const useLeaderboard = () => {
 
       if (activityError) throw activityError;
 
-      // Filter activity data by institute users if current user is institute user
+      // Filter activity data based on user type
       let filteredActivityData = activityData || [];
       if (isInstituteUser && instituteId) {
-        // Get all users from the same institute
+        // Institute users: Show only users from the same institute
         const { data: instituteUsers } = await supabase
           .from('user_assignments')
           .select('user_id')
@@ -222,6 +222,17 @@ export const useLeaderboard = () => {
         filteredActivityData = activityData?.filter(record => instituteUserIds.has(record.user_id)) || [];
         
         console.log(`Filtered to ${filteredActivityData.length} activity records for institute users only`);
+      } else if (!isInstituteUser) {
+        // Non-institute users: Exclude all institute users
+        const { data: instituteUsers } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .eq('is_active', true);
+        
+        const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
+        filteredActivityData = activityData?.filter(record => !instituteUserIds.has(record.user_id)) || [];
+        
+        console.log(`Filtered to ${filteredActivityData.length} activity records excluding institute users`);
       }
 
       // Group by user and sum points using filtered data
@@ -256,6 +267,17 @@ export const useLeaderboard = () => {
         const result = await supabase.rpc('get_safe_leaderboard_profiles');
         profileData = result.data;
         profileError = result.error;
+        
+        // For non-institute users, filter out institute user profiles
+        if (!isInstituteUser && profileData) {
+          const { data: instituteUsers } = await supabase
+            .from('user_assignments')
+            .select('user_id')
+            .eq('is_active', true);
+          
+          const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
+          profileData = profileData.filter((profile: any) => !instituteUserIds.has(profile.user_id));
+        }
       }
 
       if (profileError) throw profileError;

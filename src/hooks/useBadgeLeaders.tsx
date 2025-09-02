@@ -50,6 +50,38 @@ export const useBadgeLeaders = () => {
           supabase.rpc('get_badge_leaders_linkedin_growth'),
           supabase.rpc('get_badge_leaders_github_repository')
         ]);
+
+        // For non-institute users, filter out institute users
+        if (!isInstituteUser) {
+          const { data: instituteUsers } = await supabase
+            .from('user_assignments')
+            .select('user_id')
+            .eq('is_active', true);
+          
+          const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
+          
+          // Filter out institute users from each dataset
+          if (profileBuildData.data) {
+            profileBuildData.data = profileBuildData.data.filter((leader: any) => 
+              !instituteUserIds.has(leader.user_id)
+            );
+          }
+          if (jobApplyData.data) {
+            jobApplyData.data = jobApplyData.data.filter((leader: any) => 
+              !instituteUserIds.has(leader.user_id)
+            );
+          }
+          if (linkedinGrowthData.data) {
+            linkedinGrowthData.data = linkedinGrowthData.data.filter((leader: any) => 
+              !instituteUserIds.has(leader.user_id)
+            );
+          }
+          if (githubRepoData.data) {
+            githubRepoData.data = githubRepoData.data.filter((leader: any) => 
+              !instituteUserIds.has(leader.user_id)
+            );
+          }
+        }
       }
 
       if (profileBuildData.error) {
