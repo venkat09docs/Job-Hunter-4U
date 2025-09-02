@@ -4328,6 +4328,17 @@ export type Database = {
           username: string
         }[]
       }
+      get_dashboard_stats_consolidated: {
+        Args: { target_user_id?: string }
+        Returns: {
+          job_status_counts: Json
+          published_blogs_count: number
+          saved_cover_letters_count: number
+          saved_readme_files_count: number
+          total_job_applications: number
+          total_job_results_count: number
+        }[]
+      }
       get_institute_badge_leaders_github_repository: {
         Args: { institute_id_param: string }
         Returns: {
@@ -4415,6 +4426,17 @@ export type Database = {
           subscription_plan: string
           subscription_start_date: string
           updated_at: string
+        }[]
+      }
+      get_leaderboard_optimized: {
+        Args: { limit_count?: number; period_type?: string }
+        Returns: {
+          full_name: string
+          profile_image_url: string
+          rank_position: number
+          total_points: number
+          user_id: string
+          username: string
         }[]
       }
       get_managed_institutes: {
@@ -4588,6 +4610,14 @@ export type Database = {
           last_payment_date: string
           payment_count: number
           total_amount_spent: number
+        }[]
+      }
+      get_user_points_consolidated: {
+        Args: { target_user_id?: string }
+        Returns: {
+          current_month_points: number
+          current_week_points: number
+          total_points: number
         }[]
       }
       has_full_institute_access: {

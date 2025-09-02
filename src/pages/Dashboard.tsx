@@ -1,6 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useResumeProgress } from '@/hooks/useResumeProgress';
+import { useOptimizedUserPoints } from '@/hooks/useOptimizedUserPoints';
+import { useOptimizedDashboardStats } from '@/hooks/useOptimizedDashboardStats';
+import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
 import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
@@ -96,39 +99,37 @@ const Dashboard = () => {
 
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  // Keep existing hooks for LinkedIn, GitHub, and other features
   const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { isIT } = useUserIndustry();
   const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
+  // Use optimized hooks for better performance
+  const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
+  const { 
+    totalJobApplications, 
+    publishedBlogsCount, 
+    savedCoverLettersCount, 
+    savedReadmeFilesCount, 
+    totalJobResultsCount, 
+    jobStatusCounts, 
+    recentJobs, 
+    loading: statsLoading 
+  } = useOptimizedDashboardStats();
+  const { leaderboard: optimizedLeaderboard, loading: leaderboardLoading } = useOptimizedLeaderboard();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // All useState hooks - MUST be called unconditionally
-  const [recentJobs, setRecentJobs] = useState<JobEntry[]>([]);
-  const [jobsLoading, setJobsLoading] = useState(true);
-  const [totalJobApplications, setTotalJobApplications] = useState(0);
-  const [publishedBlogsCount, setPublishedBlogsCount] = useState(0);
-  const [savedCoverLettersCount, setSavedCoverLettersCount] = useState(0);
-  const [savedReadmeFilesCount, setSavedReadmeFilesCount] = useState(0);
-  const [totalJobResultsCount, setTotalJobResultsCount] = useState(0);
-  const [jobSearchPricingOpen, setJobSearchPricingOpen] = useState(false);
-  const [jobTrackerPricingOpen, setJobTrackerPricingOpen] = useState(false);
-  const [githubTrackerPricingOpen, setGithubTrackerPricingOpen] = useState(false);
-  const [jobStatusCounts, setJobStatusCounts] = useState({
-    wishlist: 0,
-    applied: 0,
-    interviewing: 0,
-    negotiating: 0,
-    accepted: 0,
-    not_selected: 0,
-    no_response: 0,
-    archived: 0
-  });
+  // All useState hooks - MUST be called unconditionally - removed job-related state (now from optimized hook)
+  const [jobsLoading, setJobsLoading] = useState(false); // Keep for compatibility
   const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<Record<string, Record<string, number>>>({});
   const [repoMetrics, setRepoMetrics] = useState({ completed: 0, total: REPO_TASK_IDS.length });
   const [weeklyFlowCompleted, setWeeklyFlowCompleted] = useState(0);
+  const [jobSearchPricingOpen, setJobSearchPricingOpen] = useState(false);
+  const [jobTrackerPricingOpen, setJobTrackerPricingOpen] = useState(false);
+  const [githubTrackerPricingOpen, setGithubTrackerPricingOpen] = useState(false);
   
   // All useCallback hooks - MUST be called unconditionally  
   const refreshWeeklyFlow = useCallback(async () => {
@@ -146,101 +147,10 @@ const Dashboard = () => {
   }, [user]);
 
   const fetchJobData = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      // Fetch recent jobs
-      const { data: recentData, error: recentError } = await supabase
-        .from('job_tracker')
-        .select('id, company_name, job_title, status, application_date, created_at')
-        .eq('user_id', user.id)
-        .eq('is_archived', false)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (recentError) throw recentError;
-      setRecentJobs(recentData || []);
-
-      // Fetch total job applications in process (excluding wishlist and final statuses)
-      const { count, error: countError } = await supabase
-        .from('job_tracker')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_archived', false)
-        .not('status', 'in', '(\\\"wishlist\\\",\\\"not_selected\\\",\\\"no_response\\\",\\\"archived\\\")');
-
-      if (countError) throw countError;
-      setTotalJobApplications(count || 0);
-
-      // Fetch published blogs count
-      const { count: blogsCount, error: blogsError } = await supabase
-        .from('blogs')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('is_public', true);
-
-      if (blogsError) throw blogsError;
-      setPublishedBlogsCount(blogsCount || 0);
-
-      // Fetch saved cover letters count
-      const { count: coverLettersCount, error: coverLettersError } = await supabase
-        .from('saved_cover_letters')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      if (coverLettersError) throw coverLettersError;
-      setSavedCoverLettersCount(coverLettersCount || 0);
-
-      // Fetch saved README files count
-      const { count: readmeFilesCount, error: readmeFilesError } = await supabase
-        .from('saved_readme_files')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      if (readmeFilesError) throw readmeFilesError;
-      setSavedReadmeFilesCount(readmeFilesCount || 0);
-
-      // Fetch total job results count from job search history
-      const { count: jobResultsCount, error: jobResultsError } = await supabase
-        .from('job_results')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      if (jobResultsError) throw jobResultsError;
-      setTotalJobResultsCount(jobResultsCount || 0);
-
-      // Fetch job status counts
-      const statusTypes = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response', 'archived'];
-      const statusCounts = { 
-        wishlist: 0, 
-        applied: 0, 
-        interviewing: 0, 
-        negotiating: 0, 
-        accepted: 0,
-        not_selected: 0,
-        no_response: 0,
-        archived: 0
-      };
-      
-      for (const status of statusTypes) {
-        const { count: statusCount, error: statusError } = await supabase
-          .from('job_tracker')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('status', status)
-          .eq('is_archived', status === 'archived');
-
-        if (statusError) throw statusError;
-        statusCounts[status as keyof typeof statusCounts] = statusCount || 0;
-      }
-      
-      setJobStatusCounts(statusCounts);
-    } catch (error) {
-      // Error fetching data
-    } finally {
-      setJobsLoading(false);
-    }
-  }, [user]);
+    // This function is kept for compatibility but no longer used 
+    // since we're using optimized hooks for job data
+    console.log('fetchJobData called but using optimized hooks instead');
+  }, []);
 
   const fetchWeeklyDailyBreakdown = useCallback(async () => {
     if (!user) return;
@@ -283,62 +193,18 @@ const Dashboard = () => {
     refreshWeeklyFlow();
   }, [refreshWeeklyFlow]);
 
-  useEffect(() => {
-    fetchJobData();
-  }, [fetchJobData]);
-
+  // Remove old fetchJobData useEffect since we're using optimized hook
   useEffect(() => {
     fetchWeeklyDailyBreakdown();
   }, [fetchWeeklyDailyBreakdown]);
 
+  // Optimized real-time subscriptions - reduced from 6 to 2 channels
   useEffect(() => {
-    console.log('🔍 Dashboard: Setting up real-time subscriptions');
+    console.log('🔍 Dashboard: Setting up optimized real-time subscriptions');
     if (!user) return;
 
     const channel = supabase
-      .channel('dashboard-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('🔔 Profile updated, refreshing...', payload);
-          // Refresh profile data when subscription changes
-          fetchJobData();
-          refreshLinkedInProgress();
-          refreshGitHubProgress();
-          refreshNetworkMetrics();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'daily_progress_snapshots',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          refreshLinkedInProgress();
-          refreshGitHubProgress();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'job_tracker',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          fetchJobData();
-        }
-      )
+      .channel('dashboard-linkedin-github-sync')
       .on(
         'postgres_changes',
         {
@@ -381,7 +247,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, fetchJobData, refreshWeeklyFlow]);
+  }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, refreshWeeklyFlow]);
 
   // Early redirect for recruiters to their specific dashboard
   useEffect(() => {
@@ -395,8 +261,8 @@ const Dashboard = () => {
   console.log('Dashboard: profile =', profile);
   console.log('Dashboard: loading =', loading);
   
-  // Check loading states IMMEDIATELY after all hooks are called, before any other logic
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading) {
+  // Check loading states IMMEDIATELY after all hooks are called - include new loading states
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading || pointsLoading || statsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -764,9 +630,9 @@ const Dashboard = () => {
                           </div>
                         ))}
                       </div>
-                    ) : recentJobs.length > 0 ? (
+                    ) : recentJobs && recentJobs.length > 0 ? (
                       <div className="space-y-3">
-                        {recentJobs.map((job) => (
+                        {recentJobs && recentJobs.map((job) => (
                           <div
                             key={job.id}
                             className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
