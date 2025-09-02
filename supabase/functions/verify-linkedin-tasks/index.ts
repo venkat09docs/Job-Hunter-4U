@@ -221,6 +221,24 @@ serve(async (req) => {
             score_awarded: pointsAwarded,
             status: 'VERIFIED'
           });
+
+          // Send notification to user about task verification
+          const { error: notificationError } = await supabase
+            .from('notifications')
+            .insert({
+              user_id: user.id,
+              title: `LinkedIn Task Completed: ${task.linkedin_tasks.title}`,
+              message: `Congratulations! Your LinkedIn task "${task.linkedin_tasks.title}" has been automatically verified. You earned ${pointsAwarded} points!`,
+              type: 'task_approved',
+              related_id: task.id,
+              is_read: false
+            });
+
+          if (notificationError) {
+            console.error('Error sending notification:', notificationError);
+          } else {
+            console.log(`📧 Notification sent to user ${user.id} for verified LinkedIn task`);
+          }
         }
       }
     }

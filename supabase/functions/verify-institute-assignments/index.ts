@@ -1,327 +1,307 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface VerifyAssignmentRequest {
-  assignmentId: string;
-  assignmentType: 'career' | 'linkedin' | 'job_hunting' | 'github';
-  action: 'approve' | 'reject';
-  verificationNotes?: string;
-  scoreAwarded?: number;
 }
 
-serve(async (req) => {
+interface VerificationRequest {
+  assignmentId: string;
+  assignmentType: 'career' | 'linkedin' | 'github' | 'job_hunting';
+  action: 'approve' | 'reject';
+  scoreAwarded?: number;
+  verificationNotes?: string;
+}
+
+const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Initialize Supabase client with service role key
-    const supabaseClient = createClient(
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    )
 
-    // Get the JWT from the Authorization header
+    const { 
+      assignmentId, 
+      assignmentType, 
+      action, 
+      scoreAwarded = 0, 
+      verificationNotes = '' 
+    }: VerificationRequest = await req.json();
+
+    console.log(`🔍 Processing ${action} for assignment ${assignmentId} (${assignmentType})`);
+
+    // Get JWT from Authorization header for user verification
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Missing authorization header');
+      throw new Error('Missing Authorization header');
     }
 
-    const jwt = authHeader.replace('Bearer ', '');
-    
-    // Create a client with the user's JWT for RLS context
-    const userClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      throw new Error('Invalid or expired token');
+    }
+
+    const verifierId = user.id;
+    const isApproved = action === 'approve';
+    const newStatus = isApproved ? 'verified' : 'rejected';
+    const pointsEarned = isApproved ? scoreAwarded : 0;
+
+    let assignmentData: any = null;
+    let notificationTitle: string;
+    let notificationMessage: string;
+
+    // Process different assignment types
+    switch (assignmentType) {
+      case 'career':
+        // Update career task assignment
+        const { data: careerData, error: careerError } = await supabase
+          .from('career_task_assignments')
+          .update({
+            status: newStatus,
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            points_earned: pointsEarned,
+            score_awarded: scoreAwarded,
+            verification_notes: verificationNotes
+          })
+          .eq('id', assignmentId)
+          .select(`
+            *,
+            career_task_templates(title, module, points_reward),
+            profiles(user_id, full_name)
+          `)
+          .single();
+
+        if (careerError) throw careerError;
+        assignmentData = careerData;
+
+        // Update evidence status
+        await supabase
+          .from('career_task_evidence')
+          .update({
+            verification_status: isApproved ? 'approved' : 'rejected',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            verification_notes: verificationNotes
+          })
+          .eq('assignment_id', assignmentId);
+
+        notificationTitle = `Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.career_task_templates?.title}`;
+        notificationMessage = isApproved
+          ? `Congratulations! Your task "${assignmentData.career_task_templates?.title}" has been approved. You earned ${pointsEarned} points!`
+          : `Your task "${assignmentData.career_task_templates?.title}" was rejected. ${verificationNotes ? `Reason: ${verificationNotes}` : 'Please review and resubmit.'}`;
+        break;
+
+      case 'linkedin':
+        // Update LinkedIn task
+        const { data: linkedinData, error: linkedinError } = await supabase
+          .from('linkedin_user_tasks')
+          .update({
+            status: isApproved ? 'VERIFIED' : 'REJECTED',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            score_awarded: scoreAwarded,
+            verification_notes: verificationNotes
+          })
+          .eq('id', assignmentId)
+          .select(`
+            *,
+            linkedin_tasks(title, points_base),
+            profiles(user_id, full_name)
+          `)
+          .single();
+
+        if (linkedinError) throw linkedinError;
+        assignmentData = linkedinData;
+
+        // Update evidence status
+        await supabase
+          .from('linkedin_evidence')
+          .update({
+            verification_status: isApproved ? 'verified' : 'rejected',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            verification_notes: verificationNotes
+          })
+          .eq('user_task_id', assignmentId);
+
+        notificationTitle = `LinkedIn Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.linkedin_tasks?.title}`;
+        notificationMessage = isApproved
+          ? `Great work! Your LinkedIn task "${assignmentData.linkedin_tasks?.title}" has been approved. You earned ${pointsEarned} points!`
+          : `Your LinkedIn task "${assignmentData.linkedin_tasks?.title}" was rejected. ${verificationNotes ? `Reason: ${verificationNotes}` : 'Please review and resubmit.'}`;
+        break;
+
+      case 'github':
+        // Update GitHub task
+        const { data: githubData, error: githubError } = await supabase
+          .from('github_user_tasks')
+          .update({
+            status: isApproved ? 'VERIFIED' : 'REJECTED',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            score_awarded: scoreAwarded,
+            verification_notes: verificationNotes
+          })
+          .eq('id', assignmentId)
+          .select(`
+            *,
+            github_tasks(title, points_base),
+            profiles(user_id, full_name)
+          `)
+          .single();
+
+        if (githubError) throw githubError;
+        assignmentData = githubData;
+
+        // Update evidence status
+        await supabase
+          .from('github_evidence')
+          .update({
+            verification_status: isApproved ? 'verified' : 'rejected',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            verification_notes: verificationNotes
+          })
+          .eq('user_task_id', assignmentId);
+
+        notificationTitle = `GitHub Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.github_tasks?.title}`;
+        notificationMessage = isApproved
+          ? `Excellent! Your GitHub task "${assignmentData.github_tasks?.title}" has been approved. You earned ${pointsEarned} points!`
+          : `Your GitHub task "${assignmentData.github_tasks?.title}" was rejected. ${verificationNotes ? `Reason: ${verificationNotes}` : 'Please review and resubmit.'}`;
+        break;
+
+      case 'job_hunting':
+        // Update job hunting assignment
+        const { data: jobData, error: jobError } = await supabase
+          .from('job_hunting_assignments')
+          .update({
+            status: newStatus,
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            points_earned: pointsEarned,
+            score_awarded: scoreAwarded,
+            verification_notes: verificationNotes
+          })
+          .eq('id', assignmentId)
+          .select(`
+            *,
+            job_hunting_task_templates(title, points_reward),
+            profiles(user_id, full_name)
+          `)
+          .single();
+
+        if (jobError) throw jobError;
+        assignmentData = jobData;
+
+        // Update evidence status
+        await supabase
+          .from('job_hunting_evidence')
+          .update({
+            verification_status: isApproved ? 'approved' : 'rejected',
+            verified_at: new Date().toISOString(),
+            verified_by: verifierId,
+            verification_notes: verificationNotes
+          })
+          .eq('assignment_id', assignmentId);
+
+        notificationTitle = `Job Hunting Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.job_hunting_task_templates?.title}`;
+        notificationMessage = isApproved
+          ? `Amazing! Your job hunting task "${assignmentData.job_hunting_task_templates?.title}" has been approved. You earned ${pointsEarned} points!`
+          : `Your job hunting task "${assignmentData.job_hunting_task_templates?.title}" was rejected. ${verificationNotes ? `Reason: ${verificationNotes}` : 'Please review and resubmit.'}`;
+        break;
+
+      default:
+        throw new Error(`Unsupported assignment type: ${assignmentType}`);
+    }
+
+    if (!assignmentData) {
+      throw new Error('Assignment not found or could not be updated');
+    }
+
+    // Send notification to the user
+    const userId = assignmentData.profiles?.user_id || assignmentData.user_id;
+    if (userId) {
+      console.log(`📧 Sending ${action} notification to user ${userId}`);
+      
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: isApproved ? 'task_approved' : 'task_rejected',
+          related_id: assignmentId,
+          is_read: false
+        });
+
+      if (notificationError) {
+        console.error('Error sending notification:', notificationError);
+        // Don't throw here as the main verification was successful
+      } else {
+        console.log(`✅ Notification sent successfully to user ${userId}`);
+      }
+
+      // If approved, award points in user activity points table
+      if (isApproved && pointsEarned > 0) {
+        const { error: pointsError } = await supabase
+          .from('user_activity_points')
+          .insert({
+            user_id: userId,
+            activity_date: new Date().toISOString().split('T')[0],
+            activity_type: `${assignmentType}_task_completion`,
+            points_earned: pointsEarned,
+            activity_description: `Completed task: ${assignmentData.career_task_templates?.title || assignmentData.linkedin_tasks?.title || assignmentData.github_tasks?.title || assignmentData.job_hunting_task_templates?.title}`
+          });
+
+        if (pointsError) {
+          console.error('Error awarding points:', pointsError);
+        } else {
+          console.log(`🎯 Awarded ${pointsEarned} points to user ${userId}`);
+        }
+      }
+    }
+
+    console.log(`✅ Assignment ${assignmentId} ${action}ed successfully`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        assignment: assignmentData,
+        message: `Assignment ${action}ed successfully` 
+      }),
       {
-        global: {
-          headers: {
-            Authorization: authHeader,
-          },
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
         },
       }
     );
 
-    // Get current user using the user client
-    const { data: { user }, error: userError } = await userClient.auth.getUser(jwt);
-    if (userError || !user) {
-      throw new Error('Authentication required');
-    }
-
-    console.log('🔐 Authenticated user:', user.id);
-
-    // Check if user is an institute admin or recruiter
-    const { data: userRoles, error: roleError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .in('role', ['institute_admin', 'recruiter']);
-
-    if (roleError || !userRoles?.length) {
-      console.error('Role verification failed:', roleError);
-      throw new Error('Only institute admins and recruiters can verify assignments');
-    }
-
-    const userRole = userRoles[0].role;
-    console.log('✅ User role verified:', { userId: user.id, role: userRole });
-
-    // If user is institute admin, verify they have active institute assignments
-    let adminAssignments = null;
-    if (userRole === 'institute_admin') {
-      const { data: institutes, error: instituteError } = await supabaseClient
-        .from('institute_admin_assignments')
-        .select('institute_id, is_active')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
-
-      if (instituteError || !institutes?.length) {
-        console.error('Institute admin verification failed:', instituteError);
-        throw new Error('Institute admin without active institute assignments');
-      }
-
-      adminAssignments = institutes;
-      console.log('✅ Institute admin status verified:', {
-        userId: user.id,
-        managedInstitutes: adminAssignments.length
-      });
-    } else {
-      console.log('✅ Recruiter verified - can access all assignments');
-    }
-
-    const body: VerifyAssignmentRequest = await req.json();
-    const { assignmentId, assignmentType, action, verificationNotes, scoreAwarded } = body;
-
-    console.log('📋 Processing assignment verification:', {
-      assignmentId,
-      assignmentType,
-      action,
-      adminUserId: user.id
-    });
-
-    // Use appropriate client based on role - service role for recruiters, user client for institute admins
-    const assignmentClient = userRole === 'recruiter' ? supabaseClient : userClient;
-    let assignment: any = null;
-    let tableName = '';
-
-    // Get assignment details using user context (RLS will filter appropriately)
-    switch (assignmentType) {
-      case 'career':
-        tableName = 'career_task_assignments';
-        const { data: careerAssignment, error: careerError } = await assignmentClient
-          .from('career_task_assignments')
-          .select(`
-            *,
-            career_task_templates!career_task_assignments_template_id_fkey (
-              title,
-              points_reward,
-              module
-            )
-          `)
-          .eq('id', assignmentId)
-          .single();
-
-        if (careerError) {
-          console.error('Career assignment fetch error:', careerError);
-          throw new Error(`Assignment not found or you don't have access to it`);
-        }
-        assignment = careerAssignment;
-        break;
-
-      case 'linkedin':
-        tableName = 'linkedin_user_tasks';
-        const { data: linkedinAssignment, error: linkedinError } = await assignmentClient
-          .from('linkedin_user_tasks')
-          .select(`
-            *,
-            linkedin_tasks (
-              title,
-              points_base
-            )
-          `)
-          .eq('id', assignmentId)
-          .single();
-
-        if (linkedinError) {
-          console.error('LinkedIn assignment fetch error:', linkedinError);
-          throw new Error(`Assignment not found or you don't have access to it`);
-        }
-        assignment = linkedinAssignment;
-        break;
-
-      case 'job_hunting':
-        tableName = 'job_hunting_assignments';
-        const { data: jobAssignment, error: jobError } = await assignmentClient
-          .from('job_hunting_assignments')
-          .select(`
-            *,
-            template:job_hunting_task_templates (
-              title,
-              points_reward
-            )
-          `)
-          .eq('id', assignmentId)
-          .single();
-
-        if (jobError) {
-          console.error('Job hunting assignment fetch error:', jobError);
-          throw new Error(`Assignment not found or you don't have access to it`);
-        }
-        assignment = jobAssignment;
-        break;
-
-      case 'github':
-        tableName = 'github_user_tasks';
-        const { data: githubAssignment, error: githubError } = await assignmentClient
-          .from('github_user_tasks')
-          .select(`
-            *,
-            github_tasks (
-              title,
-              points_base
-            )
-          `)
-          .eq('id', assignmentId)
-          .single();
-
-        if (githubError) {
-          console.error('GitHub assignment fetch error:', githubError);
-          throw new Error(`Assignment not found or you don't have access to it`);
-        }
-        assignment = githubAssignment;
-        break;
-
-      default:
-        throw new Error('Invalid assignment type');
-    }
-
-    if (!assignment) {
-      throw new Error('Assignment not found');
-    }
-
-    console.log('📄 Assignment found:', {
-      id: assignment.id,
-      userId: assignment.user_id,
-      status: assignment.status
-    });
-
-    // Update assignment based on type and action using service role client
-    const updateData: any = {};
-
-    if (assignmentType === 'career') {
-      // Career assignments have verified_at, verified_by, and verification_notes columns
-      updateData.verification_notes = verificationNotes || null;
-      updateData.verified_at = new Date().toISOString();
-      updateData.verified_by = user.id;
-      updateData.status = action === 'approve' ? 'verified' : 'rejected';
-      updateData.points_earned = action === 'approve' ? (scoreAwarded || assignment.career_task_templates?.points_reward || 0) : 0;
-      updateData.score_awarded = updateData.points_earned;
-    } else if (assignmentType === 'job_hunting') {
-      // Job hunting assignments have verified_at and verified_by columns (but NO verification_notes)
-      updateData.verified_at = new Date().toISOString();
-      updateData.verified_by = user.id;
-      updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
-      const templatePoints = assignment.template?.points_reward || 0;
-      updateData.score_awarded = action === 'approve' ? (scoreAwarded || templatePoints) : 0;
-    } else {
-      // LinkedIn and GitHub assignments have verification_notes and score_awarded
-      updateData.verification_notes = verificationNotes || null;
-      updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
-      const pointsField = 'points_base';
-      const templatePoints = assignmentType === 'linkedin' 
-        ? assignment.linkedin_tasks?.[pointsField]
-        : assignment.github_tasks?.[pointsField];
-      
-      updateData.score_awarded = action === 'approve' ? (scoreAwarded || templatePoints || 0) : 0;
-    }
-
-    console.log('🔄 Updating assignment:', { updateData, tableName });
-
-    // Update the assignment using service role client
-    const { data: updatedAssignment, error: updateError } = await supabaseClient
-      .from(tableName)
-      .update(updateData)
-      .eq('id', assignmentId)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('Update error:', updateError);
-      throw updateError;
-    }
-
-    console.log('✅ Assignment verification completed:', {
-      id: assignmentId,
-      action,
-      points: updateData.score_awarded || updateData.points_earned,
-      status: updateData.status
-    });
-
-    // Award points to user_activity_points table if approved
-    if (action === 'approve' && (updateData.score_awarded || updateData.points_earned) > 0) {
-      const pointsToAward = updateData.score_awarded || updateData.points_earned;
-      const activityTypeMap = {
-        'career': 'career_task_completion',
-        'linkedin': 'linkedin_task_completion', 
-        'job_hunting': 'job_hunting_task_completion',
-        'github': 'github_task_completion'
-      };
-      
-      const activityType = activityTypeMap[assignmentType];
-      
-      console.log('🎯 Awarding points to user_activity_points:', {
-        userId: assignment.user_id,
-        activityType,
-        assignmentId,
-        points: pointsToAward
-      });
-
-      const { error: pointsError } = await supabaseClient
-        .from('user_activity_points')
-        .insert({
-          user_id: assignment.user_id,
-          activity_type: activityType,
-          activity_id: assignmentId,
-          points_earned: pointsToAward,
-          activity_date: new Date().toISOString().split('T')[0] // Today's date in YYYY-MM-DD format
-        });
-
-      if (pointsError) {
-        console.error('❌ Error awarding points:', pointsError);
-        // Don't fail the request if points can't be awarded, just log the error
-      } else {
-        console.log('✅ Points awarded successfully');
-      }
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        assignment: updatedAssignment,
-        message: `Assignment ${action === 'approve' ? 'approved' : 'rejected'} successfully`
-      }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-
   } catch (error: any) {
-    console.error('❌ Error in verify-institute-assignments:', error);
+    console.error('Error in verify-institute-assignments:', error);
+    
     return new Response(
-      JSON.stringify({
-        error: error.message,
-        success: false
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        success: false 
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        headers: { 
+          'Content-Type': 'application/json', 
+          ...corsHeaders 
+        },
       }
     );
   }
-});
+};
+
+serve(handler);

@@ -392,6 +392,43 @@ Deno.serve(async (req) => {
             notes: result.notes,
           });
           totalPointsAwarded += result.points;
+
+          // Send notification for newly verified tasks
+          if (result.status === 'VERIFIED' && userTask.status !== 'VERIFIED') {
+            const { error: notificationError } = await supabaseClient
+              .from('notifications')
+              .insert({
+                user_id: userId,
+                title: `GitHub Task Completed: ${task.title}`,
+                message: `Excellent! Your GitHub task "${task.title}" has been automatically verified. You earned ${result.points} points!`,
+                type: 'task_approved',
+                related_id: userTask.id,
+                is_read: false
+              });
+
+            if (notificationError) {
+              console.error('Error sending notification:', notificationError);
+            } else {
+              console.log(`📧 Notification sent to user ${userId} for verified GitHub task`);
+            }
+
+            // Award points in user_activity_points
+            const { error: pointsError } = await supabaseClient
+              .from('user_activity_points')
+              .insert({
+                user_id: userId,
+                activity_date: new Date().toISOString().split('T')[0],
+                activity_type: 'github_task_completion',
+                points_earned: result.points,
+                activity_description: `Completed GitHub task: ${task.title}`
+              });
+
+            if (pointsError) {
+              console.error('Error awarding activity points:', pointsError);
+            } else {
+              console.log(`🎯 Awarded ${result.points} points to user ${userId} for GitHub task`);
+            }
+          }
         }
       }
     }
