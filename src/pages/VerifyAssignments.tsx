@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -57,6 +57,8 @@ const VerifyAssignments = () => {
   const queryClient = useQueryClient();
   
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [selectedAssignmentEvidence, setSelectedAssignmentEvidence] = useState<any[]>([]);
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [verificationNotes, setVerificationNotes] = useState('');
   const [scoreAwarded, setScoreAwarded] = useState('');
@@ -475,11 +477,59 @@ const VerifyAssignments = () => {
     }
   });
 
-  const handleReview = (assignment: Assignment) => {
+  const fetchAssignmentEvidence = async (assignment: Assignment) => {
+    setEvidenceLoading(true);
+    try {
+      let evidenceData: any[] = [];
+
+      if (assignment._isLinkedInAssignment) {
+        // Fetch LinkedIn evidence
+        const { data } = await supabase
+          .from('linkedin_evidence')
+          .select('*')
+          .eq('user_task_id', assignment.id);
+        evidenceData = data || [];
+      } else if (assignment.career_task_templates?.module === 'GITHUB') {
+        // Fetch GitHub evidence
+        const { data } = await supabase
+          .from('github_evidence')
+          .select('*')
+          .eq('user_task_id', assignment.id);
+        evidenceData = data || [];
+      } else if (assignment.career_task_templates?.module === 'JOB_HUNTING') {
+        // Fetch Job Hunting evidence
+        const { data } = await supabase
+          .from('job_hunting_evidence')
+          .select('*')
+          .eq('assignment_id', assignment.id);
+        evidenceData = data || [];
+      } else {
+        // Fetch Career task evidence
+        const { data } = await supabase
+          .from('career_task_evidence')
+          .select('*')
+          .eq('assignment_id', assignment.id);
+        evidenceData = data || [];
+      }
+
+      setSelectedAssignmentEvidence(evidenceData);
+    } catch (error) {
+      console.error('Error fetching evidence:', error);
+      toast.error('Failed to load evidence');
+      setSelectedAssignmentEvidence([]);
+    } finally {
+      setEvidenceLoading(false);
+    }
+  };
+
+  const handleReview = async (assignment: Assignment) => {
     setSelectedAssignment(assignment);
     setIsReviewDialogOpen(true);
     setVerificationNotes('');
     setScoreAwarded(assignment.career_task_templates?.points_reward?.toString() || '');
+    
+    // Fetch detailed evidence
+    await fetchAssignmentEvidence(assignment);
   };
 
   const handleVerifyAssignment = async (action: 'approve' | 'reject') => {
@@ -759,21 +809,153 @@ const VerifyAssignments = () => {
 
       {/* Review Dialog */}
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Review Assignment</DialogTitle>
           </DialogHeader>
           
           {selectedAssignment && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
                 <div><strong>Title:</strong> {selectedAssignment.career_task_templates?.title}</div>
                 <div><strong>Student:</strong> {selectedAssignment.profiles?.full_name}</div>
                 <div><strong>Module:</strong> {selectedAssignment.career_task_templates?.module}</div>
                 <div><strong>Points:</strong> {selectedAssignment.career_task_templates?.points_reward}</div>
+                <div><strong>Submitted:</strong> {selectedAssignment.submitted_at ? new Date(selectedAssignment.submitted_at).toLocaleString() : 'N/A'}</div>
+                <div><strong>Status:</strong> {selectedAssignment.status}</div>
               </div>
 
+              {/* Evidence Section */}
               <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold">Submitted Evidence</h3>
+                  {evidenceLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  )}
+                </div>
+                
+                {evidenceLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : selectedAssignmentEvidence.length > 0 ? (
+                  <div className="space-y-4">
+                    {selectedAssignmentEvidence.map((evidence, index) => (
+                      <Card key={evidence.id || index} className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">Evidence {index + 1}</h4>
+                            <Badge variant="outline">
+                              {evidence.evidence_type || evidence.kind || 'Evidence'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            {evidence.url && (
+                              <div>
+                                <strong>URL:</strong>
+                                <a 
+                                  href={evidence.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="ml-2 text-primary hover:underline break-all"
+                                >
+                                  {evidence.url}
+                                </a>
+                              </div>
+                            )}
+                            
+                            {evidence.file_urls && evidence.file_urls.length > 0 && (
+                              <div>
+                                <strong>Files:</strong>
+                                <div className="mt-1 space-y-1">
+                                  {evidence.file_urls.map((fileUrl: string, fileIndex: number) => (
+                                    <a 
+                                      key={fileIndex}
+                                      href={fileUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="block text-primary hover:underline text-xs break-all"
+                                    >
+                                      File {fileIndex + 1}
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {evidence.submitted_at && (
+                              <div>
+                                <strong>Submitted:</strong> {new Date(evidence.submitted_at).toLocaleString()}
+                              </div>
+                            )}
+                            
+                            {evidence.verification_status && (
+                              <div>
+                                <strong>Status:</strong> 
+                                <Badge variant="outline" className="ml-2">
+                                  {evidence.verification_status}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {evidence.evidence_data && (
+                            <div>
+                              <strong>Evidence Data:</strong>
+                              <div className="mt-2 p-3 bg-muted rounded text-xs">
+                                <pre className="whitespace-pre-wrap break-words">
+                                  {typeof evidence.evidence_data === 'object' 
+                                    ? JSON.stringify(evidence.evidence_data, null, 2)
+                                    : evidence.evidence_data
+                                  }
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {evidence.parsed_json && (
+                            <div>
+                              <strong>Parsed Data:</strong>
+                              <div className="mt-2 p-3 bg-muted rounded text-xs">
+                                <pre className="whitespace-pre-wrap break-words">
+                                  {JSON.stringify(evidence.parsed_json, null, 2)}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+
+                          {evidence.email_meta && (
+                            <div>
+                              <strong>Email Metadata:</strong>
+                              <div className="mt-2 p-3 bg-muted rounded text-xs">
+                                <pre className="whitespace-pre-wrap break-words">
+                                  {JSON.stringify(evidence.email_meta, null, 2)}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {evidence.verification_notes && (
+                            <div>
+                              <strong>Previous Notes:</strong>
+                              <p className="mt-1 text-muted-foreground text-sm">{evidence.verification_notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                    <p>No evidence submitted for this assignment</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Review Actions */}
+              <div className="space-y-4 border-t pt-4">
                 <div>
                   <Label htmlFor="score">Score to Award</Label>
                   <Input
