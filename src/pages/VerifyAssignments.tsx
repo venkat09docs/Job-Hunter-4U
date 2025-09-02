@@ -495,10 +495,11 @@ const VerifyAssignments = () => {
     setVerifiedLoading(true);
     
     try {
-      const offset = (page - 1) * VERIFIED_PAGE_SIZE;
-      const limit = VERIFIED_PAGE_SIZE;
+      // Fetch more records from each table to ensure we have enough for proper pagination
+      // We'll combine all results, sort them, and then slice to get exact page size
+      const fetchSize = Math.max(VERIFIED_PAGE_SIZE * 2, 50); // Fetch enough to cover page needs
       
-      // Fetch verified assignments with pagination
+      // Fetch verified assignments without individual pagination - we'll handle it after combining
       const promises = [
         supabase
           .from('career_task_assignments')
@@ -521,7 +522,7 @@ const VerifyAssignments = () => {
           `)
           .eq('status', 'verified')
           .order('verified_at', { ascending: false })
-          .range(offset, offset + limit - 1),
+          .limit(fetchSize),
 
         supabase
           .from('linkedin_user_tasks')
@@ -537,7 +538,7 @@ const VerifyAssignments = () => {
           `)
           .eq('status', 'VERIFIED')
           .order('updated_at', { ascending: false })
-          .range(offset, offset + limit - 1),
+          .limit(fetchSize),
 
         supabase
           .from('job_hunting_assignments')
@@ -553,7 +554,7 @@ const VerifyAssignments = () => {
           `)
           .eq('status', 'verified')
           .order('verified_at', { ascending: false })
-          .range(offset, offset + limit - 1),
+          .limit(fetchSize),
 
         supabase
           .from('github_user_tasks')
@@ -569,7 +570,7 @@ const VerifyAssignments = () => {
           `)
           .eq('status', 'VERIFIED')
           .order('updated_at', { ascending: false })
-          .range(offset, offset + limit - 1)
+          .limit(fetchSize)
       ];
 
       const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all(promises);
@@ -747,7 +748,18 @@ const VerifyAssignments = () => {
         verifiedAssignments.push(...assignmentsWithEvidence);
       }
 
-      setPaginatedVerifiedAssignments(verifiedAssignments);
+      // After combining all assignments, sort by verified_at date and paginate properly
+      const allCombinedAssignments = verifiedAssignments.sort((a, b) => {
+        const dateA = new Date(a.verified_at || a.submitted_at || '').getTime();
+        const dateB = new Date(b.verified_at || b.submitted_at || '').getTime();
+        return dateB - dateA; // Most recent first
+      });
+      
+      // Calculate proper pagination
+      const offset = (page - 1) * VERIFIED_PAGE_SIZE;
+      const paginatedResults = allCombinedAssignments.slice(offset, offset + VERIFIED_PAGE_SIZE);
+      
+      setPaginatedVerifiedAssignments(paginatedResults);
       setVerifiedCurrentPage(page);
       
     } catch (error) {
