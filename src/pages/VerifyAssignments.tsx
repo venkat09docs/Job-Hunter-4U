@@ -877,7 +877,7 @@ const VerifyAssignments = () => {
           .select('*')
           .eq('user_task_id', assignment.id);
         evidenceData = data || [];
-      } else if (assignment.career_task_templates?.module === 'JOB_HUNTING') {
+      } else if (assignment.job_hunting_task_templates) {
         // Fetch Job Hunting evidence
         const { data } = await supabase
           .from('job_hunting_evidence')
@@ -910,7 +910,8 @@ const VerifyAssignments = () => {
     setSelectedAssignment(assignment);
     setIsReviewDialogOpen(true);
     setVerificationNotes('');
-    setScoreAwarded(assignment.career_task_templates?.points_reward?.toString() || '');
+    const pointsReward = assignment.job_hunting_task_templates?.points_reward || assignment.career_task_templates?.points_reward;
+    setScoreAwarded(pointsReward?.toString() || '');
     
     // Fetch detailed evidence
     await fetchAssignmentEvidence(assignment);
@@ -1214,10 +1215,15 @@ const VerifyAssignments = () => {
           {selectedAssignment && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4 text-sm bg-muted/50 p-4 rounded-lg">
-                <div><strong>Title:</strong> {selectedAssignment.career_task_templates?.title}</div>
+                <div><strong>Title:</strong> {selectedAssignment.job_hunting_task_templates?.title || selectedAssignment.career_task_templates?.title}</div>
                 <div><strong>Student:</strong> {selectedAssignment.profiles?.full_name}</div>
-                <div><strong>Module:</strong> {selectedAssignment.career_task_templates?.module}</div>
-                <div><strong>Points:</strong> {selectedAssignment.career_task_templates?.points_reward}</div>
+                <div>
+                  <strong>Module:</strong> {
+                    selectedAssignment.job_hunting_task_templates ? 'Job Hunting' : 
+                    selectedAssignment.career_task_templates?.module || 'N/A'
+                  }
+                </div>
+                <div><strong>Points:</strong> {selectedAssignment.job_hunting_task_templates?.points_reward || selectedAssignment.career_task_templates?.points_reward}</div>
                 <div><strong>Submitted:</strong> {selectedAssignment.submitted_at ? new Date(selectedAssignment.submitted_at).toLocaleString() : 'N/A'}</div>
                 <div><strong>Status:</strong> {selectedAssignment.status}</div>
               </div>
@@ -1257,7 +1263,7 @@ const VerifyAssignments = () => {
                     id="score"
                     type="number"
                     min="0"
-                    max={selectedAssignment.career_task_templates?.points_reward}
+                    max={selectedAssignment.job_hunting_task_templates?.points_reward || selectedAssignment.career_task_templates?.points_reward}
                     value={scoreAwarded}
                     onChange={(e) => setScoreAwarded(e.target.value)}
                   />
