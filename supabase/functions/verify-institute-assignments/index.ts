@@ -56,22 +56,43 @@ serve(async (req) => {
 
     console.log('🔐 Authenticated user:', user.id);
 
-    // Verify user is an institute admin by checking institute_admin_assignments
-    const { data: adminAssignments, error: roleError } = await supabaseClient
-      .from('institute_admin_assignments')
-      .select('institute_id, is_active')
+    // Check if user is an institute admin or recruiter
+    const { data: userRoles, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
       .eq('user_id', user.id)
-      .eq('is_active', true);
+      .in('role', ['institute_admin', 'recruiter']);
 
-    if (roleError || !adminAssignments?.length) {
-      console.error('Institute admin verification failed:', roleError);
-      throw new Error('Only institute admins can verify assignments');
+    if (roleError || !userRoles?.length) {
+      console.error('Role verification failed:', roleError);
+      throw new Error('Only institute admins and recruiters can verify assignments');
     }
 
-    console.log('✅ Institute admin status verified:', {
-      userId: user.id,
-      managedInstitutes: adminAssignments.length
-    });
+    const userRole = userRoles[0].role;
+    console.log('✅ User role verified:', { userId: user.id, role: userRole });
+
+    // If user is institute admin, verify they have active institute assignments
+    let adminAssignments = null;
+    if (userRole === 'institute_admin') {
+      const { data: institutes, error: instituteError } = await supabaseClient
+        .from('institute_admin_assignments')
+        .select('institute_id, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (instituteError || !institutes?.length) {
+        console.error('Institute admin verification failed:', instituteError);
+        throw new Error('Institute admin without active institute assignments');
+      }
+
+      adminAssignments = institutes;
+      console.log('✅ Institute admin status verified:', {
+        userId: user.id,
+        managedInstitutes: adminAssignments.length
+      });
+    } else {
+      console.log('✅ Recruiter verified - can access all assignments');
+    }
 
     const body: VerifyAssignmentRequest = await req.json();
     const { assignmentId, assignmentType, action, verificationNotes, scoreAwarded } = body;
@@ -83,7 +104,8 @@ serve(async (req) => {
       adminUserId: user.id
     });
 
-    // Use the user client to fetch assignment (this will respect RLS policies)
+    // Use appropriate client based on role - service role for recruiters, user client for institute admins
+    const assignmentClient = userRole === 'recruiter' ? supabaseClient : userClient;
     let assignment: any = null;
     let tableName = '';
 
@@ -91,7 +113,7 @@ serve(async (req) => {
     switch (assignmentType) {
       case 'career':
         tableName = 'career_task_assignments';
-        const { data: careerAssignment, error: careerError } = await userClient
+        const { data: careerAssignment, error: careerError } = await assignmentClient
           .from('career_task_assignments')
           .select(`
             *,
@@ -113,7 +135,7 @@ serve(async (req) => {
 
       case 'linkedin':
         tableName = 'linkedin_user_tasks';
-        const { data: linkedinAssignment, error: linkedinError } = await userClient
+        const { data: linkedinAssignment, error: linkedinError } = await assignmentClient
           .from('linkedin_user_tasks')
           .select(`
             *,
@@ -134,7 +156,7 @@ serve(async (req) => {
 
       case 'job_hunting':
         tableName = 'job_hunting_assignments';
-        const { data: jobAssignment, error: jobError } = await userClient
+        const { data: jobAssignment, error: jobError } = await assignmentClient
           .from('job_hunting_assignments')
           .select(`
             *,
@@ -155,7 +177,7 @@ serve(async (req) => {
 
       case 'github':
         tableName = 'github_user_tasks';
-        const { data: githubAssignment, error: githubError } = await userClient
+        const { data: githubAssignment, error: githubError } = await assignmentClient
           .from('github_user_tasks')
           .select(`
             *,
