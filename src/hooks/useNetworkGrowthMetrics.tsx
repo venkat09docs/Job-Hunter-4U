@@ -92,7 +92,7 @@ export const useNetworkGrowthMetrics = () => {
 
       allTimeMetrics?.forEach(metric => {
         switch (metric.activity_id) {
-          case 'connection_requests':
+          case 'connections_accepted':
             totals.totalConnections += metric.value;
             break;
           case 'post_likes':
@@ -124,7 +124,7 @@ export const useNetworkGrowthMetrics = () => {
 
       weeklyMetrics?.forEach(metric => {
         switch (metric.activity_id) {
-          case 'connection_requests':
+          case 'connections_accepted':
             weeklyTotals.totalConnections += metric.value;
             break;
           case 'post_likes':
