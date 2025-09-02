@@ -8,7 +8,11 @@ import { format, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { useUserPointsHistory } from '@/hooks/useUserPointsHistory';
 
-export const JobHunterHistory: React.FC = () => {
+interface JobHunterHistoryProps {
+  onViewDetails?: () => void;
+}
+
+export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetails }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-week');
   
   // Get real data from hooks
@@ -21,10 +25,10 @@ export const JobHunterHistory: React.FC = () => {
 
     const weeks = new Map();
     
-    // Group assignments by week
+    // Group assignments by week (Monday to Sunday)
     assignments.forEach(assignment => {
-      const weekStart = format(startOfWeek(new Date(assignment.week_start_date)), 'yyyy-MM-dd');
-      const weekEnd = format(endOfWeek(new Date(assignment.week_start_date)), 'yyyy-MM-dd');
+      const weekStart = format(startOfWeek(new Date(assignment.week_start_date), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const weekEnd = format(endOfWeek(new Date(assignment.week_start_date), { weekStartsOn: 1 }), 'yyyy-MM-dd');
       const weekKey = weekStart;
       
       if (!weeks.has(weekKey)) {
@@ -196,7 +200,13 @@ export const JobHunterHistory: React.FC = () => {
                       <p className="text-muted-foreground">Offers</p>
                     </div>
                     <div className="text-center">
-                      <Button variant="outline" size="sm">View Details</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={onViewDetails}
+                      >
+                        View Details
+                      </Button>
                     </div>
                   </div>
                 </div>

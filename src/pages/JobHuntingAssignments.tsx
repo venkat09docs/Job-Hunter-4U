@@ -62,6 +62,7 @@ export const JobHuntingAssignments: React.FC = () => {
   } = useJobHuntingAssignments();
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>('assignments');
   const [jobTrackerStats, setJobTrackerStats] = useState<Record<string, number>>({
     wishlist: 0,
     applied: 0,
@@ -219,7 +220,7 @@ export const JobHuntingAssignments: React.FC = () => {
 
 
             {/* Main Content Tabs */}
-            <Tabs defaultValue="assignments" className="space-y-6">
+            <Tabs defaultValue="assignments" className="space-y-6" value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="assignments">Assignments</TabsTrigger>
                 <TabsTrigger value="history">History</TabsTrigger>
@@ -232,7 +233,7 @@ export const JobHuntingAssignments: React.FC = () => {
                   {/* Main Content - Left Side */}
                   <div className="xl:col-span-3 space-y-6">
                     {/* Weekly Progress Overview */}
-                <Card className="shadow-elegant border-primary/20">
+                <Card className="shadow-elegant border-primary/20" data-section="weekly-progress-targets">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
                       <Target className="h-5 w-5 text-primary" />
@@ -628,7 +629,18 @@ export const JobHuntingAssignments: React.FC = () => {
 
               {/* History Tab - Period summaries, audit trail */}
               <TabsContent value="history" className="space-y-6">
-                <JobHunterHistory />
+                <JobHunterHistory 
+                  onViewDetails={() => {
+                    setActiveTab('assignments');
+                    // Scroll to weekly progress targets section
+                    setTimeout(() => {
+                      const element = document.querySelector('[data-section="weekly-progress-targets"]');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }, 100);
+                  }}
+                />
               </TabsContent>
 
               {/* Settings Tab - Email auto-verify setup, data controls */}
