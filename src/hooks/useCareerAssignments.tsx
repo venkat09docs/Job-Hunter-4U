@@ -197,8 +197,9 @@ export const useCareerAssignments = () => {
 
       setAssignments(assignmentsWithTemplates);
 
-      // Skip evidence fetch for now to avoid TypeScript and body stream issues
-      setEvidence([]);
+      // Fetch evidence for user's assignments
+      console.log('🔍 Fetching evidence...');
+      await fetchEvidenceWithAssignments(assignmentsWithTemplates);
       
       console.log('🔍 ✅ All data loaded successfully');
       setLoading(false);

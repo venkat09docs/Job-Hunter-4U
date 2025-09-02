@@ -149,6 +149,21 @@ const CareerAssignments = () => {
           // Data will be refreshed by the hook
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'career_task_evidence'
+        },
+        (payload) => {
+          console.log('🔍 Evidence changed, refreshing data...', payload);
+          // Force refresh of all data when evidence changes to update Recent Activity
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        }
+      )
       .subscribe();
 
     return () => {
