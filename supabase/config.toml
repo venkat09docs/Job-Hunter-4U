@@ -1,5 +1,8 @@
 project_id = "moirryvajzyriagqihbe"
 
+[functions.verify-institute-assignments]
+verify_jwt = true
+
 [functions.initialize-job-hunting-week]
 verify_jwt = true
 

@@ -830,6 +830,13 @@ const VerifyAssignments = () => {
       }
 
       console.log('Assignment type determined:', assignmentType, 'for assignment:', assignment.id);
+      console.log('Calling verify-institute-assignments with:', {
+        assignmentId: assignment.id,
+        assignmentType,
+        action,
+        scoreAwarded: parseInt(scoreAwarded) || 0,
+        verificationNotes
+      });
 
       const response = await supabase.functions.invoke('verify-institute-assignments', {
         body: {
@@ -841,7 +848,18 @@ const VerifyAssignments = () => {
         }
       });
 
-      if (response.error) throw response.error;
+      console.log('Edge function response:', response);
+      
+      if (response.error) {
+        console.error('Edge function error:', response.error);
+        throw response.error;
+      }
+      
+      if (!response.data) {
+        console.error('No data returned from edge function');
+        throw new Error('No data returned from verification function');
+      }
+      
       return response.data;
     },
     onSuccess: () => {
@@ -852,9 +870,19 @@ const VerifyAssignments = () => {
       setScoreAwarded('');
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
-    onError: (error) => {
-      console.error('Error verifying assignment:', error);
-      toast.error('Failed to process assignment');
+    onError: (error: any) => {
+      console.error('Error verifying assignment - Full error object:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error details:', error?.details);
+      console.error('Error hint:', error?.hint);
+      console.error('Error code:', error?.code);
+      
+      let errorMessage = 'Failed to process assignment';
+      if (error?.message) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     }
   });
 
