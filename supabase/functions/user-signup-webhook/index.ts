@@ -136,13 +136,74 @@ Deno.serve(async (req) => {
 
     console.log('Processing webhook for user:', userData.user_id || userData.id)
 
+    const userId = userData.user_id || userData.id
+    
+    // Get user's industry from profile or metadata
+    let userIndustry = 'Non-IT' // Default to Non-IT
+    
+    if (userData.raw_user_meta_data?.industry) {
+      userIndustry = userData.raw_user_meta_data.industry
+    } else {
+      // Check profile table for industry
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('industry')
+        .eq('user_id', userId)
+        .single()
+      
+      if (profile?.industry) {
+        userIndustry = profile.industry
+      }
+    }
+    
+    console.log(`User ${userId} industry: ${userIndustry}`)
+
+    // Auto-assign to RNS Tech Institute with appropriate batch
+    const rnsInstituteId = '8a75a3b2-9e8d-44ab-9f9a-a005fb822f80'
+    const itBatchId = 'acd2af9d-b906-4dc8-a250-fc5e47736e6a'
+    const nonItBatchId = '37bb5110-42d7-43ea-8854-b2bfee404dd8'
+    
+    const batchId = userIndustry === 'IT' ? itBatchId : nonItBatchId
+    const batchName = userIndustry === 'IT' ? 'IT Batch' : 'Non-IT Batch'
+    
+    console.log(`Auto-assigning user ${userId} to RNS Tech Institute ${batchName}`)
+    
+    // Check if user is already assigned to any institute
+    const { data: existingAssignment } = await supabase
+      .from('user_assignments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (!existingAssignment || existingAssignment.length === 0) {
+      // Auto-assign to RNS Tech Institute with appropriate batch
+      const { error: assignmentError } = await supabase
+        .from('user_assignments')
+        .insert({
+          user_id: userId,
+          institute_id: rnsInstituteId,
+          batch_id: batchId,
+          assignment_type: 'auto_signup',
+          is_active: true
+        })
+
+      if (assignmentError) {
+        console.error('❌ Failed to auto-assign user to RNS Tech Institute:', assignmentError)
+      } else {
+        console.log(`✅ User successfully auto-assigned to RNS Tech Institute ${batchName}`)
+      }
+    } else {
+      console.log('👤 User already has institute assignment, skipping auto-assignment')
+    }
+
     // Prepare comprehensive user details for webhook
     const webhookPayload = {
-      user_id: userData.user_id || userData.id,
+      user_id: userId,
       email: userData.email,
       full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email?.split('@')[0],
       username: userData.username || userData.raw_user_meta_data?.username || userData.email?.split('@')[0],
-      industry: 'IT', // Default value since not selected during signup
+      industry: userIndustry,
       created_at: userData.created_at,
       updated_at: userData.updated_at || new Date().toISOString(),
       email_verified: userData.email_confirmed_at ? true : false,
@@ -156,6 +217,11 @@ Deno.serve(async (req) => {
       confirmed_at: userData.confirmed_at || userData.email_confirmed_at,
       role: userData.role || 'authenticated',
       signup_source: 'web_application',
+      institute_assignment: {
+        institute_id: rnsInstituteId,
+        batch_id: batchId,
+        batch_type: userIndustry === 'IT' ? 'IT' : 'Non-IT'
+      },
       timestamp: new Date().toISOString()
     }
 
