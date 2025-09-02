@@ -189,14 +189,22 @@ const handler = async (req: Request): Promise<Response> => {
             score_awarded: scoreAwarded
           })
           .eq('id', assignmentId)
-          .select(`
-            *,
-            job_hunting_task_templates(title, points_reward)
-          `)
+          .select('*')
           .single();
 
         if (jobError) throw jobError;
         assignmentData = jobData;
+
+        // Get template data separately
+        const { data: templateData, error: templateError } = await supabase
+          .from('job_hunting_task_templates')
+          .select('title, points_reward')
+          .eq('id', assignmentData.template_id)
+          .single();
+          
+        if (!templateError && templateData) {
+          assignmentData.job_hunting_task_templates = templateData;
+        }
         
         // Get user profile separately
         const { data: profileData, error: profileError } = await supabase
