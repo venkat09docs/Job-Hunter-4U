@@ -968,17 +968,42 @@ const GitHubWeekly = () => {
     });
     
     // Add signals count as additional activity indicator (commits from GitHub webhooks)
-    const gitHubSignalCommits = signals?.filter(signal => 
-      signal.kind === 'COMMIT' || signal.kind === 'PUSH'
-    ).length || 0;
+    // Only include signals that happened AFTER user started weekly tracking
+    const earliestAssignment = weeklyTasks.length > 0 ? 
+      new Date(Math.min(...weeklyTasks.map(task => new Date(task.created_at).getTime()))) : 
+      new Date();
+      
+    const gitHubSignalCommits = signals?.filter(signal => {
+      const signalDate = new Date(signal.happened_at);
+      return (signal.kind === 'COMMIT' || signal.kind === 'PUSH') && 
+             signalDate >= earliestAssignment;
+    }).length || 0;
     
-    // Combine actual evidence commits + GitHub webhook signals
-    const finalTotal = totalCommits + gitHubSignalCommits;
+    // Check if user only has current week assignments (started this week)
+    const hasOnlyCurrentWeekAssignments = weeklyTasks.every(task => {
+      if (!task.period) return false;
+      // Get current period in YYYY-WW format
+      const now = new Date();
+      const year = now.getFullYear();
+      const jan4 = new Date(year, 0, 4);
+      const week1Monday = new Date(jan4.getTime() - (jan4.getDay() - 1) * 24 * 60 * 60 * 1000);
+      const currentWeekStart = new Date(now.getTime() - (now.getDay() - 1) * 24 * 60 * 60 * 1000);
+      const daysDiff = Math.floor((currentWeekStart.getTime() - week1Monday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      const currentPeriod = `${year}-${(daysDiff + 1).toString().padStart(2, '0')}`;
+      return task.period === currentPeriod;
+    });
+    
+    // If user started this week only, use evidence data primarily (avoid double counting)
+    const finalTotal = hasOnlyCurrentWeekAssignments ? 
+      Math.max(totalCommits, gitHubSignalCommits) : // Use higher of the two, don't double count
+      totalCommits + gitHubSignalCommits; // Add both for established users
     
     console.log('📊 Total commits all time:', { 
       fromEvidence: totalCommits, 
       fromSignals: gitHubSignalCommits, 
-      total: finalTotal 
+      hasOnlyCurrentWeek: hasOnlyCurrentWeekAssignments,
+      earliestAssignment: earliestAssignment.toISOString(),
+      finalTotal 
     });
     
     return finalTotal;
