@@ -72,6 +72,12 @@ export const JobHuntingAssignments: React.FC = () => {
     no_response: 0
   });
   const [jobTrackerLoading, setJobTrackerLoading] = useState(true);
+  const [sidebarWeeklyStats, setSidebarWeeklyStats] = useState({
+    applied: 0,
+    referrals: 0,
+    followUps: 0,
+    conversations: 0
+  });
 
   const weekProgress = getWeekProgress();
   const taskCategories = getTasksByCategory();
@@ -444,11 +450,12 @@ export const JobHuntingAssignments: React.FC = () => {
                           </div>
                         ) : (
                             <JobHunterAssignments 
-                             weekProgress={weekProgress}
-                             assignments={jobHuntingAssignments}
-                             initializeUserWeek={initializeUserWeek}
-                             onUpdateStatus={updateAssignmentStatus}
-                           />
+                              weekProgress={weekProgress}
+                              assignments={jobHuntingAssignments}
+                              initializeUserWeek={initializeUserWeek}
+                              onUpdateStatus={updateAssignmentStatus}
+                              onWeeklyStatsUpdate={setSidebarWeeklyStats}
+                            />
                         )}
                       </div>
                     )}
@@ -477,25 +484,25 @@ export const JobHuntingAssignments: React.FC = () => {
                             <Briefcase className="h-4 w-4 text-primary" />
                             <h4 className="font-medium text-sm">Job Applications</h4>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary">3</div>
-                                <div className="text-sm text-muted-foreground">of 5 completed</div>
-                              </div>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-3">
-                              <div 
-                                className="bg-primary h-3 rounded-full transition-all"
-                                style={{ width: '60%' }}
-                              />
-                            </div>
-                            <div className="text-center">
-                              <Badge variant="secondary" className="text-sm font-medium">
-                                60% Complete
-                              </Badge>
-                            </div>
-                          </div>
+                           <div className="space-y-2">
+                             <div className="flex items-center justify-center">
+                               <div className="text-center">
+                                 <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.applied}</div>
+                                 <div className="text-sm text-muted-foreground">of 5 completed</div>
+                               </div>
+                             </div>
+                             <div className="w-full bg-muted rounded-full h-3">
+                               <div 
+                                 className="bg-primary h-3 rounded-full transition-all"
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.applied / 5) * 100)}%` }}
+                               />
+                             </div>
+                             <div className="text-center">
+                               <Badge variant={sidebarWeeklyStats.applied >= 5 ? "default" : "secondary"} className="text-sm font-medium">
+                                 {Math.round((sidebarWeeklyStats.applied / 5) * 100)}% Complete
+                               </Badge>
+                             </div>
+                           </div>
                         </CardContent>
                       </Card>
                       
@@ -506,25 +513,25 @@ export const JobHuntingAssignments: React.FC = () => {
                             <Target className="h-4 w-4 text-primary" />
                             <h4 className="font-medium text-sm">Referral Requests</h4>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary">1</div>
-                                <div className="text-sm text-muted-foreground">of 3 completed</div>
-                              </div>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-3">
-                              <div 
-                                className="bg-primary h-3 rounded-full transition-all"
-                                style={{ width: '33%' }}
-                              />
-                            </div>
-                            <div className="text-center">
-                              <Badge variant="outline" className="text-sm font-medium">
-                                33% Complete
-                              </Badge>
-                            </div>
-                          </div>
+                           <div className="space-y-2">
+                             <div className="flex items-center justify-center">
+                               <div className="text-center">
+                                 <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.referrals}</div>
+                                 <div className="text-sm text-muted-foreground">of 3 completed</div>
+                               </div>
+                             </div>
+                             <div className="w-full bg-muted rounded-full h-3">
+                               <div 
+                                 className="bg-primary h-3 rounded-full transition-all"
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.referrals / 3) * 100)}%` }}
+                               />
+                             </div>
+                             <div className="text-center">
+                               <Badge variant={sidebarWeeklyStats.referrals >= 3 ? "default" : "outline"} className="text-sm font-medium">
+                                 {Math.round((sidebarWeeklyStats.referrals / 3) * 100)}% Complete
+                               </Badge>
+                             </div>
+                           </div>
                         </CardContent>
                       </Card>
                       
@@ -535,25 +542,25 @@ export const JobHuntingAssignments: React.FC = () => {
                             <TrendingUp className="h-4 w-4 text-primary" />
                             <h4 className="font-medium text-sm">Follow-ups</h4>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary">4</div>
-                                <div className="text-sm text-muted-foreground">of 5 completed</div>
-                              </div>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-3">
-                              <div 
-                                className="bg-primary h-3 rounded-full transition-all"
-                                style={{ width: '80%' }}
-                              />
-                            </div>
-                            <div className="text-center">
-                              <Badge variant="secondary" className="text-sm font-medium">
-                                80% Complete
-                              </Badge>
-                            </div>
-                          </div>
+                           <div className="space-y-2">
+                             <div className="flex items-center justify-center">
+                               <div className="text-center">
+                                 <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.followUps}</div>
+                                 <div className="text-sm text-muted-foreground">of 5 completed</div>
+                               </div>
+                             </div>
+                             <div className="w-full bg-muted rounded-full h-3">
+                               <div 
+                                 className="bg-primary h-3 rounded-full transition-all"
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.followUps / 5) * 100)}%` }}
+                               />
+                             </div>
+                             <div className="text-center">
+                               <Badge variant={sidebarWeeklyStats.followUps >= 5 ? "default" : "secondary"} className="text-sm font-medium">
+                                 {Math.round((sidebarWeeklyStats.followUps / 5) * 100)}% Complete
+                               </Badge>
+                             </div>
+                           </div>
                         </CardContent>
                       </Card>
                       
@@ -564,25 +571,25 @@ export const JobHuntingAssignments: React.FC = () => {
                             <BarChart3 className="h-4 w-4 text-primary" />
                             <h4 className="font-medium text-sm">New Conversations</h4>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="text-3xl font-bold text-primary">2</div>
-                                <div className="text-sm text-muted-foreground">of 3 completed</div>
-                              </div>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-3">
-                              <div 
-                                className="bg-primary h-3 rounded-full transition-all"
-                                style={{ width: '67%' }}
-                              />
-                            </div>
-                            <div className="text-center">
-                              <Badge variant="secondary" className="text-sm font-medium">
-                                67% Complete
-                              </Badge>
-                            </div>
-                          </div>
+                           <div className="space-y-2">
+                             <div className="flex items-center justify-center">
+                               <div className="text-center">
+                                 <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.conversations}</div>
+                                 <div className="text-sm text-muted-foreground">of 3 completed</div>
+                               </div>
+                             </div>
+                             <div className="w-full bg-muted rounded-full h-3">
+                               <div 
+                                 className="bg-primary h-3 rounded-full transition-all"
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.conversations / 3) * 100)}%` }}
+                               />
+                             </div>
+                             <div className="text-center">
+                               <Badge variant={sidebarWeeklyStats.conversations >= 3 ? "default" : "secondary"} className="text-sm font-medium">
+                                 {Math.round((sidebarWeeklyStats.conversations / 3) * 100)}% Complete
+                               </Badge>
+                             </div>
+                           </div>
                         </CardContent>
                       </Card>
 

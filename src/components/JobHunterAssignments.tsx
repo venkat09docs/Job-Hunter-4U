@@ -16,13 +16,15 @@ interface JobHunterAssignmentsProps {
   assignments: any[];
   initializeUserWeek: () => void;
   onUpdateStatus: (assignmentId: string, status: string) => void;
+  onWeeklyStatsUpdate: (stats: any) => void;
 }
 
 export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({ 
   weekProgress, 
   assignments, 
   initializeUserWeek,
-  onUpdateStatus
+  onUpdateStatus,
+  onWeeklyStatsUpdate
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [weeklyJobStats, setWeeklyJobStats] = useState({
@@ -79,12 +81,15 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
           totalJobApplications += 5;
         }
 
-        setWeeklyJobStats({
+        const newStats = {
           applied: totalJobApplications,
           referrals: referralAssignment ? 3 : 0, // 3 referrals per completed assignment
           followUps: followUpAssignment ? 5 : 0, // 5 follow-ups per completed assignment
           conversations: 0 // This would need additional tracking
-        });
+        };
+        
+        setWeeklyJobStats(newStats);
+        onWeeklyStatsUpdate(newStats);
 
       } catch (error) {
         console.error('Error fetching weekly job stats:', error);
