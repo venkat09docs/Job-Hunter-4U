@@ -451,7 +451,7 @@ const VerifyAssignments = () => {
         .from('linkedin_user_tasks')
         .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
         .eq('status', 'SUBMITTED')
-        .order('updated_at', { ascending: false }),
+        .order('created_at', { ascending: false }),
 
       supabase
         .from('job_hunting_assignments')
@@ -463,7 +463,7 @@ const VerifyAssignments = () => {
         .from('github_user_tasks')
         .select(`*, github_tasks (id, code, title, description, points_base)`)
         .eq('status', 'SUBMITTED')
-        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
     ]);
 
     // Collect all unique user IDs and fetch profiles in one query
@@ -593,7 +593,14 @@ const VerifyAssignments = () => {
       });
     });
 
-    return allAssignments;
+    // Sort by submission date and return latest first
+    const sortedAssignments = allAssignments.sort((a, b) => {
+      const dateA = new Date(a.submitted_at || '').getTime();
+      const dateB = new Date(b.submitted_at || '').getTime();
+      return dateB - dateA;
+    });
+
+    return sortedAssignments;
   };
 
   // Optimized data fetching function for verified assignments
@@ -630,7 +637,7 @@ const VerifyAssignments = () => {
           .from('linkedin_user_tasks')
           .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
           .eq('status', 'VERIFIED')
-          .order('updated_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
         supabase
@@ -644,7 +651,7 @@ const VerifyAssignments = () => {
           .from('github_user_tasks')
           .select(`*, github_tasks (id, code, title, description, points_base)`)
           .eq('status', 'VERIFIED')
-          .order('updated_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3))
       ])
     ]);
