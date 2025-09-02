@@ -5,26 +5,45 @@ export const ensureConsistentDomain = () => {
   // Only run in browser environment
   if (typeof window === 'undefined') return;
 
-  const currentHost = window.location.host;
-  const currentUrl = window.location.href;
-  
-  // Define the preferred domain (without www)
-  const preferredDomain = 'jobhunter4u.com';
-  
-  // Check if we're on the www version
-  if (currentHost === `www.${preferredDomain}`) {
-    // Redirect to non-www version
-    const newUrl = currentUrl.replace(`www.${preferredDomain}`, preferredDomain);
-    window.location.replace(newUrl);
-    return;
-  }
-  
-  // If we're on localhost or other domains, don't redirect
-  if (currentHost.includes('localhost') || 
-      currentHost.includes('127.0.0.1') || 
-      currentHost.includes('lovableproject.com') ||
-      currentHost.includes('lovable.app')) {
-    return;
+  try {
+    const currentHost = window.location.host;
+    const currentUrl = window.location.href;
+    
+    // Define the preferred domain (without www)
+    const preferredDomain = 'jobhunter4u.com';
+    
+    console.log('🔍 Domain Check:', { currentHost, preferredDomain });
+    
+    // If we're on development or Lovable domains, don't redirect
+    if (currentHost.includes('localhost') || 
+        currentHost.includes('127.0.0.1') || 
+        currentHost.includes('lovableproject.com') ||
+        currentHost.includes('lovable.app') ||
+        currentHost.includes('preview--') ||
+        currentHost.includes('.lovable.')) {
+      console.log('🔍 Skipping redirect for development/preview domain');
+      return;
+    }
+    
+    // Check if we're on the www version of our custom domain
+    if (currentHost === `www.${preferredDomain}`) {
+      console.log('🔍 Redirecting from www to non-www');
+      // Redirect to non-www version
+      const newUrl = currentUrl.replace(`www.${preferredDomain}`, preferredDomain);
+      window.location.replace(newUrl);
+      return;
+    }
+    
+    // If we're on the correct custom domain, do nothing
+    if (currentHost === preferredDomain) {
+      console.log('🔍 On correct custom domain, no redirect needed');
+      return;
+    }
+    
+    console.log('🔍 No domain redirect action needed');
+  } catch (error) {
+    console.error('🚨 Domain redirect error:', error);
+    // Don't block the app if domain redirect fails
   }
 };
 
