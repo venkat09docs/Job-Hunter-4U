@@ -10,9 +10,15 @@ import { useUserPointsHistory } from '@/hooks/useUserPointsHistory';
 
 interface JobHunterHistoryProps {
   onViewDetails?: () => void;
+  weeklyStats?: {
+    applied: number;
+    referrals: number;
+    followUps: number;
+    conversations: number;
+  };
 }
 
-export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetails }) => {
+export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetails, weeklyStats }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>('current-week');
   
   // Get real data from hooks
@@ -38,9 +44,10 @@ export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetail
           tasksAssigned: 0,
           tasksCompleted: 0,
           pointsEarned: 0,
-          applicationsSubmitted: 0,
-          interviewsScheduled: 0,
-          offers: 0
+          jobApplications: 0,
+          referralRequests: 0,
+          followUps: 0,
+          newConversations: 0
         });
       }
       
@@ -50,16 +57,25 @@ export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetail
       if (assignment.status === 'verified') {
         week.tasksCompleted++;
         week.pointsEarned += assignment.points_earned || 0;
-      }
-      
-      // Count applications based on task titles
-      if (assignment.template?.title?.toLowerCase().includes('apply')) {
-        week.applicationsSubmitted++;
-      }
-      
-      // Count interviews based on task titles
-      if (assignment.template?.title?.toLowerCase().includes('interview')) {
-        week.interviewsScheduled++;
+        
+        // Count based on task categories from template titles
+        const taskTitle = assignment.template?.title?.toLowerCase() || '';
+        
+        if (taskTitle.includes('apply') || taskTitle.includes('application')) {
+          week.jobApplications++;
+        }
+        
+        if (taskTitle.includes('referral') || taskTitle.includes('reference')) {
+          week.referralRequests++;
+        }
+        
+        if (taskTitle.includes('follow') || taskTitle.includes('followup') || taskTitle.includes('follow-up')) {
+          week.followUps++;
+        }
+        
+        if (taskTitle.includes('conversation') || taskTitle.includes('network') || taskTitle.includes('connect')) {
+          week.newConversations++;
+        }
       }
     });
 
@@ -178,7 +194,7 @@ export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetail
                     </Badge>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-7 gap-4 text-sm">
                     <div className="text-center">
                       <p className="font-semibold text-lg">{report.tasksCompleted}/{report.tasksAssigned}</p>
                       <p className="text-muted-foreground">Tasks</p>
@@ -188,16 +204,28 @@ export const JobHunterHistory: React.FC<JobHunterHistoryProps> = ({ onViewDetail
                       <p className="text-muted-foreground">Points</p>
                     </div>
                     <div className="text-center">
-                      <p className="font-semibold text-lg text-blue-600">{report.applicationsSubmitted}</p>
-                      <p className="text-muted-foreground">Applied</p>
+                      <p className="font-semibold text-lg text-blue-600">
+                        {index === 0 && weeklyStats ? weeklyStats.applied : report.jobApplications}
+                      </p>
+                      <p className="text-muted-foreground">Job Applications</p>
                     </div>
                     <div className="text-center">
-                      <p className="font-semibold text-lg text-green-600">{report.interviewsScheduled}</p>
-                      <p className="text-muted-foreground">Interviews</p>
+                      <p className="font-semibold text-lg text-green-600">
+                        {index === 0 && weeklyStats ? weeklyStats.referrals : report.referralRequests}
+                      </p>
+                      <p className="text-muted-foreground">Referral Requests</p>
                     </div>
                     <div className="text-center">
-                      <p className="font-semibold text-lg text-purple-600">{report.offers}</p>
-                      <p className="text-muted-foreground">Offers</p>
+                      <p className="font-semibold text-lg text-purple-600">
+                        {index === 0 && weeklyStats ? weeklyStats.followUps : report.followUps}
+                      </p>
+                      <p className="text-muted-foreground">Follow-ups</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-lg text-orange-600">
+                        {index === 0 && weeklyStats ? weeklyStats.conversations : report.newConversations}
+                      </p>
+                      <p className="text-muted-foreground">New Conversations</p>
                     </div>
                     <div className="text-center">
                       <Button 

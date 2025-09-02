@@ -640,6 +640,7 @@ export const JobHuntingAssignments: React.FC = () => {
                       }
                     }, 100);
                   }}
+                  weeklyStats={sidebarWeeklyStats}
                 />
               </TabsContent>
 
