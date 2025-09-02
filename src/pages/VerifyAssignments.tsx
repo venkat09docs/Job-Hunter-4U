@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2, FileText, ExternalLink, Download, Mail, Github, Linkedin } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -43,6 +43,301 @@ interface Assignment {
   _isLinkedInAssignment?: boolean;
   _originalLinkedInTask?: any;
 }
+
+// Helper component to render evidence in a user-friendly format
+const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, index }) => {
+  const renderEvidenceData = (data: any) => {
+    if (!data) return null;
+    
+    if (typeof data === 'string') {
+      return <span className="text-sm">{data}</span>;
+    }
+
+    if (typeof data === 'object') {
+      // Handle specific data structures based on evidence type
+      if (evidence.evidence_type === 'url' || evidence.kind === 'url') {
+        return (
+          <div className="space-y-2">
+            {data.url && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                <a 
+                  href={data.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline break-all"
+                >
+                  {data.url}
+                </a>
+              </div>
+            )}
+            {data.title && <div><strong>Title:</strong> {data.title}</div>}
+            {data.description && <div><strong>Description:</strong> {data.description}</div>}
+          </div>
+        );
+      }
+
+      if (evidence.evidence_type === 'email' || evidence.kind === 'email') {
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              <span className="font-medium">Email Evidence</span>
+            </div>
+            {data.subject && <div><strong>Subject:</strong> {data.subject}</div>}
+            {data.from && <div><strong>From:</strong> {data.from}</div>}
+            {data.to && <div><strong>To:</strong> {data.to}</div>}
+            {data.date && <div><strong>Date:</strong> {new Date(data.date).toLocaleString()}</div>}
+            {data.body && (
+              <div>
+                <strong>Content:</strong>
+                <div className="mt-1 p-2 bg-muted/50 rounded text-sm max-h-32 overflow-y-auto">
+                  {data.body}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      if (evidence.evidence_type === 'github' || evidence.kind === 'github') {
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Github className="w-4 h-4" />
+              <span className="font-medium">GitHub Evidence</span>
+            </div>
+            {data.repository && <div><strong>Repository:</strong> {data.repository}</div>}
+            {data.commit_sha && <div><strong>Commit:</strong> <code className="text-xs bg-muted px-1 rounded">{data.commit_sha.substring(0, 8)}</code></div>}
+            {data.branch && <div><strong>Branch:</strong> {data.branch}</div>}
+            {data.commit_message && <div><strong>Message:</strong> {data.commit_message}</div>}
+            {data.files_changed && <div><strong>Files Changed:</strong> {Array.isArray(data.files_changed) ? data.files_changed.join(', ') : data.files_changed}</div>}
+          </div>
+        );
+      }
+
+      if (evidence.evidence_type === 'linkedin' || evidence.kind === 'linkedin') {
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Linkedin className="w-4 h-4" />
+              <span className="font-medium">LinkedIn Evidence</span>
+            </div>
+            {data.post_url && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                <a 
+                  href={data.post_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View LinkedIn Post
+                </a>
+              </div>
+            )}
+            {data.content && (
+              <div>
+                <strong>Post Content:</strong>
+                <div className="mt-1 p-2 bg-muted/50 rounded text-sm max-h-32 overflow-y-auto">
+                  {data.content}
+                </div>
+              </div>
+            )}
+            {data.connections_count && <div><strong>Connections Count:</strong> {data.connections_count}</div>}
+            {data.profile_views && <div><strong>Profile Views:</strong> {data.profile_views}</div>}
+          </div>
+        );
+      }
+
+      if (evidence.evidence_type === 'job_application' || evidence.kind === 'job_application') {
+        return (
+          <div className="space-y-2">
+            <div className="font-medium">Job Application Details</div>
+            {data.company_name && <div><strong>Company:</strong> {data.company_name}</div>}
+            {data.position && <div><strong>Position:</strong> {data.position}</div>}
+            {data.application_url && (
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                <a 
+                  href={data.application_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View Application
+                </a>
+              </div>
+            )}
+            {data.application_date && <div><strong>Applied on:</strong> {new Date(data.application_date).toLocaleDateString()}</div>}
+            {data.status && <div><strong>Status:</strong> <Badge variant="outline">{data.status}</Badge></div>}
+            {data.notes && (
+              <div>
+                <strong>Notes:</strong>
+                <div className="mt-1 p-2 bg-muted/50 rounded text-sm">
+                  {data.notes}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      // Generic object display for other types
+      return (
+        <div className="space-y-2">
+          {Object.entries(data).map(([key, value]) => (
+            <div key={key}>
+              <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+              {typeof value === 'object' ? (
+                <span className="text-xs text-muted-foreground">
+                  {Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
+                </span>
+              ) : (
+                <span>{String(value)}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return <span className="text-sm">{String(data)}</span>;
+  };
+
+  const renderParsedData = (data: any) => {
+    if (!data) return null;
+    
+    if (typeof data === 'object') {
+      return (
+        <div className="space-y-1">
+          {Object.entries(data).map(([key, value]) => (
+            <div key={key} className="text-sm">
+              <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span>{' '}
+              {typeof value === 'object' ? (
+                <span className="text-muted-foreground">
+                  {Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
+                </span>
+              ) : (
+                <span>{String(value)}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return <span className="text-sm">{String(data)}</span>;
+  };
+
+  return (
+    <Card className="p-4">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium">Evidence {index + 1}</h4>
+          <Badge variant="outline">
+            {evidence.evidence_type || evidence.kind || 'Evidence'}
+          </Badge>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-4">
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            {evidence.url && (
+              <div>
+                <strong>URL:</strong>
+                <a 
+                  href={evidence.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="ml-2 text-primary hover:underline break-all"
+                >
+                  {evidence.url}
+                </a>
+              </div>
+            )}
+            
+            {evidence.file_urls && evidence.file_urls.length > 0 && (
+              <div>
+                <strong>Files:</strong>
+                <div className="mt-1 space-y-1">
+                  {evidence.file_urls.map((fileUrl: string, fileIndex: number) => (
+                    <div key={fileIndex} className="flex items-center gap-2">
+                      <Download className="w-3 h-3" />
+                      <a 
+                        href={fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs"
+                      >
+                        File {fileIndex + 1}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {evidence.submitted_at && (
+              <div>
+                <strong>Submitted:</strong> {new Date(evidence.submitted_at).toLocaleString()}
+              </div>
+            )}
+            
+            {evidence.verification_status && (
+              <div>
+                <strong>Status:</strong> 
+                <Badge variant="outline" className="ml-2">
+                  {evidence.verification_status}
+                </Badge>
+              </div>
+            )}
+          </div>
+
+          {/* Evidence Data */}
+          {evidence.evidence_data && (
+            <div>
+              <strong>Evidence Details:</strong>
+              <div className="mt-2 p-3 bg-muted/30 rounded">
+                {renderEvidenceData(evidence.evidence_data)}
+              </div>
+            </div>
+          )}
+          
+          {/* Parsed Data */}
+          {evidence.parsed_json && (
+            <div>
+              <strong>Additional Information:</strong>
+              <div className="mt-2 p-3 bg-muted/30 rounded">
+                {renderParsedData(evidence.parsed_json)}
+              </div>
+            </div>
+          )}
+
+          {/* Email Metadata */}
+          {evidence.email_meta && (
+            <div>
+              <strong>Email Details:</strong>
+              <div className="mt-2 p-3 bg-muted/30 rounded">
+                {renderParsedData(evidence.email_meta)}
+              </div>
+            </div>
+          )}
+          
+          {/* Previous Notes */}
+          {evidence.verification_notes && (
+            <div>
+              <strong>Previous Notes:</strong>
+              <p className="mt-1 text-muted-foreground text-sm p-2 bg-muted/30 rounded">
+                {evidence.verification_notes}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
 
 const VerifyAssignments = () => {
   const { user } = useAuth();
@@ -841,109 +1136,7 @@ const VerifyAssignments = () => {
                 ) : selectedAssignmentEvidence.length > 0 ? (
                   <div className="space-y-4">
                     {selectedAssignmentEvidence.map((evidence, index) => (
-                      <Card key={evidence.id || index} className="p-4">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium">Evidence {index + 1}</h4>
-                            <Badge variant="outline">
-                              {evidence.evidence_type || evidence.kind || 'Evidence'}
-                            </Badge>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            {evidence.url && (
-                              <div>
-                                <strong>URL:</strong>
-                                <a 
-                                  href={evidence.url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="ml-2 text-primary hover:underline break-all"
-                                >
-                                  {evidence.url}
-                                </a>
-                              </div>
-                            )}
-                            
-                            {evidence.file_urls && evidence.file_urls.length > 0 && (
-                              <div>
-                                <strong>Files:</strong>
-                                <div className="mt-1 space-y-1">
-                                  {evidence.file_urls.map((fileUrl: string, fileIndex: number) => (
-                                    <a 
-                                      key={fileIndex}
-                                      href={fileUrl} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="block text-primary hover:underline text-xs break-all"
-                                    >
-                                      File {fileIndex + 1}
-                                    </a>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {evidence.submitted_at && (
-                              <div>
-                                <strong>Submitted:</strong> {new Date(evidence.submitted_at).toLocaleString()}
-                              </div>
-                            )}
-                            
-                            {evidence.verification_status && (
-                              <div>
-                                <strong>Status:</strong> 
-                                <Badge variant="outline" className="ml-2">
-                                  {evidence.verification_status}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                          
-                          {evidence.evidence_data && (
-                            <div>
-                              <strong>Evidence Data:</strong>
-                              <div className="mt-2 p-3 bg-muted rounded text-xs">
-                                <pre className="whitespace-pre-wrap break-words">
-                                  {typeof evidence.evidence_data === 'object' 
-                                    ? JSON.stringify(evidence.evidence_data, null, 2)
-                                    : evidence.evidence_data
-                                  }
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {evidence.parsed_json && (
-                            <div>
-                              <strong>Parsed Data:</strong>
-                              <div className="mt-2 p-3 bg-muted rounded text-xs">
-                                <pre className="whitespace-pre-wrap break-words">
-                                  {JSON.stringify(evidence.parsed_json, null, 2)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-
-                          {evidence.email_meta && (
-                            <div>
-                              <strong>Email Metadata:</strong>
-                              <div className="mt-2 p-3 bg-muted rounded text-xs">
-                                <pre className="whitespace-pre-wrap break-words">
-                                  {JSON.stringify(evidence.email_meta, null, 2)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {evidence.verification_notes && (
-                            <div>
-                              <strong>Previous Notes:</strong>
-                              <p className="mt-1 text-muted-foreground text-sm">{evidence.verification_notes}</p>
-                            </div>
-                          )}
-                        </div>
-                      </Card>
+                      <EvidenceCard key={evidence.id || index} evidence={evidence} index={index} />
                     ))}
                   </div>
                 ) : (
