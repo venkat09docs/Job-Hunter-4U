@@ -35,7 +35,7 @@ export function useDeduplicatedQuery<T>(
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(false);
-  const queryKeyRef = useRef<string>();
+  const queryKeyRef = useRef<string | undefined>(undefined);
   const mountedRef = useRef(true);
 
   // Generate a stable query key
