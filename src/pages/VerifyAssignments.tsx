@@ -975,8 +975,21 @@ const VerifyAssignments = () => {
   }
 
   if (!user || (!isAdmin && !isInstituteAdmin && !isRecruiter)) {
-    navigate('/dashboard');
-    return null;
+    return (
+      <div className="min-h-screen p-8 flex flex-col items-center justify-center">
+        <div className="text-center">
+          <Building2 className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
+          <p className="text-muted-foreground mb-6">
+            You need admin, institute admin, or recruiter permissions to access assignment verification.
+          </p>
+          <Button onClick={() => navigate('/dashboard')} variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (isInstituteAdmin && !isValidInstituteAdmin) {
