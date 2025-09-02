@@ -211,26 +211,26 @@ serve(async (req) => {
     });
 
     // Update assignment based on type and action using service role client
-    const updateData: any = {
-      verification_notes: verificationNotes || null
-    };
+    const updateData: any = {};
 
     if (assignmentType === 'career') {
-      // Career assignments have verified_at and verified_by columns
+      // Career assignments have verified_at, verified_by, and verification_notes columns
+      updateData.verification_notes = verificationNotes || null;
       updateData.verified_at = new Date().toISOString();
       updateData.verified_by = user.id;
       updateData.status = action === 'approve' ? 'verified' : 'rejected';
       updateData.points_earned = action === 'approve' ? (scoreAwarded || assignment.career_task_templates?.points_reward || 0) : 0;
       updateData.score_awarded = updateData.points_earned;
     } else if (assignmentType === 'job_hunting') {
-      // Job hunting assignments have verified_at and verified_by columns
+      // Job hunting assignments have verified_at and verified_by columns (but NO verification_notes)
       updateData.verified_at = new Date().toISOString();
       updateData.verified_by = user.id;
       updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
       const templatePoints = assignment.template?.points_reward || 0;
       updateData.score_awarded = action === 'approve' ? (scoreAwarded || templatePoints) : 0;
     } else {
-      // LinkedIn and GitHub assignments only have verification_notes and score_awarded
+      // LinkedIn and GitHub assignments have verification_notes and score_awarded
+      updateData.verification_notes = verificationNotes || null;
       updateData.status = action === 'approve' ? 'VERIFIED' : 'REJECTED';
       const pointsField = 'points_base';
       const templatePoints = assignmentType === 'linkedin' 
