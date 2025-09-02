@@ -48,27 +48,41 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
           .select('id')
           .eq('user_id', user.id)
           .eq('status', 'applied')
-          .gte('applied_at', format(currentWeekStart, 'yyyy-MM-dd'))
-          .lte('applied_at', format(currentWeekEnd, 'yyyy-MM-dd'));
+          .gte('created_at', format(currentWeekStart, 'yyyy-MM-dd'))
+          .lte('created_at', format(currentWeekEnd, 'yyyy-MM-dd'));
 
         if (jobsError) throw jobsError;
+
+        // Find the "Apply to 5 Job Roles" assignment
+        const jobApplicationAssignment = assignments.find(a => 
+          a.template?.title?.includes('Apply to 5 Job Roles') && 
+          (a.status === 'verified' || a.status === 'VERIFIED')
+        );
 
         // Get referral requests from assignments this week
         const referralAssignment = assignments.find(a => 
           a.template?.title?.includes('Referral') && 
-          a.status === 'verified'
+          (a.status === 'verified' || a.status === 'VERIFIED')
         );
 
         // Get follow-ups from assignments this week  
         const followUpAssignment = assignments.find(a => 
           a.template?.title?.includes('Follow-up') && 
-          a.status === 'verified'
+          (a.status === 'verified' || a.status === 'VERIFIED')
         );
 
+        // Calculate total job applications
+        let totalJobApplications = jobsApplied?.length || 0;
+        
+        // If "Apply to 5 Job Roles" assignment is completed, add 5 applications
+        if (jobApplicationAssignment) {
+          totalJobApplications += 5;
+        }
+
         setWeeklyJobStats({
-          applied: jobsApplied?.length || 0,
-          referrals: referralAssignment ? 3 : 0, // Assuming 3 referrals per completed assignment
-          followUps: followUpAssignment ? 5 : 0, // Assuming 5 follow-ups per completed assignment
+          applied: totalJobApplications,
+          referrals: referralAssignment ? 3 : 0, // 3 referrals per completed assignment
+          followUps: followUpAssignment ? 5 : 0, // 5 follow-ups per completed assignment
           conversations: 0 // This would need additional tracking
         });
 
