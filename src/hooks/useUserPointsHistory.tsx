@@ -61,15 +61,65 @@ export const useUserPointsHistory = () => {
 
         if (settingsError) {
           console.error('Error fetching activity settings:', settingsError);
-          // Don't throw here, just continue without settings data
         } else {
           settingsData = settings || [];
+        }
+      }
+
+      // For career task completions, fetch additional details
+      const careerTaskIds = activityData?.filter(item => 
+        item.activity_type === 'career_task_completion'
+      ).map(item => item.activity_id) || [];
+
+      let careerTaskDetails: any[] = [];
+      if (careerTaskIds.length > 0) {
+        const { data: taskDetails, error: taskError } = await supabase
+          .from('career_task_assignments')
+          .select(`
+            id,
+            career_task_templates!inner(
+              title,
+              sub_categories!inner(
+                name
+              )
+            )
+          `)
+          .in('id', careerTaskIds);
+
+        if (taskError) {
+          console.error('Error fetching career task details:', taskError);
+        } else {
+          careerTaskDetails = taskDetails || [];
         }
       }
 
       // Transform the data and combine with settings
       const transformedData: UserActivityPoint[] = activityData?.map(item => {
         const settings = settingsData.find(s => s.activity_id === item.activity_id);
+        
+        // For career task completions, use the template and subcategory data
+        if (item.activity_type === 'career_task_completion') {
+          const taskDetail = careerTaskDetails.find(task => task.id === item.activity_id);
+          const template = taskDetail?.career_task_templates;
+          const subcategory = template?.sub_categories;
+          
+          return {
+            id: item.id,
+            user_id: item.user_id,
+            activity_id: item.activity_id,
+            activity_type: item.activity_type,
+            points_earned: item.points_earned,
+            activity_date: item.activity_date,
+            created_at: item.created_at,
+            activity_settings: {
+              activity_name: template?.title || item.activity_id,
+              description: `Completed ${template?.title || 'career task'}`,
+              category: subcategory?.name || 'Career Task'
+            }
+          };
+        }
+        
+        // For other activity types, use the settings data
         return {
           id: item.id,
           user_id: item.user_id,
@@ -82,7 +132,11 @@ export const useUserPointsHistory = () => {
             activity_name: settings.activity_name,
             description: settings.description,
             category: settings.category
-          } : undefined
+          } : {
+            activity_name: item.activity_id,
+            description: 'Activity completed',
+            category: 'General'
+          }
         };
       }) || [];
 
