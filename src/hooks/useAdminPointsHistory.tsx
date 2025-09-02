@@ -95,9 +95,9 @@ export const useAdminPointsHistory = (userId: string) => {
           .from('career_task_assignments')
           .select(`
             id,
-            career_task_templates!inner(
+            career_task_templates(
               title,
-              sub_categories!inner(
+              sub_categories(
                 name
               )
             )
@@ -108,6 +108,7 @@ export const useAdminPointsHistory = (userId: string) => {
           console.error('Error fetching career task details:', taskError);
         } else {
           careerTaskDetails = taskDetails || [];
+          console.log('Admin - Career task details fetched:', careerTaskDetails);
         }
       }
 

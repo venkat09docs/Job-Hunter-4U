@@ -77,9 +77,9 @@ export const useUserPointsHistory = () => {
           .from('career_task_assignments')
           .select(`
             id,
-            career_task_templates!inner(
+            career_task_templates(
               title,
-              sub_categories!inner(
+              sub_categories(
                 name
               )
             )
@@ -90,6 +90,7 @@ export const useUserPointsHistory = () => {
           console.error('Error fetching career task details:', taskError);
         } else {
           careerTaskDetails = taskDetails || [];
+          console.log('Career task details fetched:', careerTaskDetails);
         }
       }
 
