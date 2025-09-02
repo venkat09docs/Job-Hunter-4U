@@ -186,8 +186,7 @@ const handler = async (req: Request): Promise<Response> => {
             verified_at: new Date().toISOString(),
             verified_by: verifierId,
             points_earned: pointsEarned,
-            score_awarded: scoreAwarded,
-            verification_notes: verificationNotes
+            score_awarded: scoreAwarded
           })
           .eq('id', assignmentId)
           .select(`
