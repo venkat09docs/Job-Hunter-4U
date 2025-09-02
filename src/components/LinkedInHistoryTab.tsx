@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   BarChart3, 
   Calendar, 
@@ -11,7 +12,12 @@ import {
   AlertCircle,
   Trophy,
   TrendingUp,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  FileText,
+  Users,
+  MessageSquare,
+  Link
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -47,6 +53,7 @@ interface PeriodSummary {
 
 export const LinkedInHistoryTab = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('tasks');
 
   // Fetch all historical LinkedIn tasks for the user
   const { data: historicalTasks = [], isLoading } = useQuery({
@@ -85,6 +92,73 @@ export const LinkedInHistoryTab = () => {
 
       if (error) throw error;
       return data as HistoricalTask[];
+    }
+  });
+
+  // Fetch all LinkedIn evidence for the user
+  const { data: evidenceHistory = [] } = useQuery({
+    queryKey: ['linkedin-evidence-history'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('linkedin_evidence')
+        .select(`
+          *,
+          linkedin_user_tasks!inner (
+            user_id,
+            period,
+            linkedin_tasks:task_id (
+              title,
+              description
+            )
+          )
+        `)
+        .eq('linkedin_user_tasks.user_id', user.user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Fetch LinkedIn network metrics
+  const { data: networkMetrics = [] } = useQuery({
+    queryKey: ['linkedin-network-metrics'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('linkedin_network_metrics')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .order('date', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Fetch LinkedIn signals
+  const { data: signals = [] } = useQuery({
+    queryKey: ['linkedin-signals-history'],
+    queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('linkedin_signals')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .order('happened_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data || [];
     }
   });
 
@@ -204,6 +278,16 @@ export const LinkedInHistoryTab = () => {
     ? historicalTasks.filter(task => task.period === selectedPeriod)
     : [];
 
+  const formatTrackingMetrics = (evidenceData: any) => {
+    if (!evidenceData?.tracking_metrics) return null;
+    
+    const metrics = evidenceData.tracking_metrics;
+    return Object.entries(metrics)
+      .filter(([key, value]) => typeof value === 'number' && value > 0)
+      .map(([key, value]) => `${key.replace('_', ' ')}: ${value}`)
+      .join(' • ');
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -215,7 +299,9 @@ export const LinkedInHistoryTab = () => {
     );
   }
 
-  if (periodSummaries.length === 0) {
+  const hasAnyData = historicalTasks.length > 0 || evidenceHistory.length > 0 || networkMetrics.length > 0 || signals.length > 0;
+
+  if (!hasAnyData) {
     return (
       <Card>
         <CardHeader>
@@ -239,154 +325,331 @@ export const LinkedInHistoryTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Period Summaries */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <BarChart3 className="w-6 h-6" />
-            Activity History by Week
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {periodSummaries.map((summary) => (
-              <div
-                key={summary.period}
-                className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => setSelectedPeriod(selectedPeriod === summary.period ? null : summary.period)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <h4 className="font-semibold">Week {summary.period}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {getWeekDateRange(summary.period)}
-                      </p>
+      {/* Activity Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="tasks" className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4" />
+            Tasks ({historicalTasks.length})
+          </TabsTrigger>
+          <TabsTrigger value="evidence" className="flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            Evidence ({evidenceHistory.length})
+          </TabsTrigger>
+          <TabsTrigger value="metrics" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Metrics ({networkMetrics.length})
+          </TabsTrigger>
+          <TabsTrigger value="signals" className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Signals ({signals.length})
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Tasks Tab */}
+        <TabsContent value="tasks" className="space-y-6">
+          {periodSummaries.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <Trophy className="w-6 h-6" />
+                  Task Completion by Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {periodSummaries.map((summary) => (
+                    <div
+                      key={summary.period}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => setSelectedPeriod(selectedPeriod === summary.period ? null : summary.period)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h4 className="font-semibold">Week {summary.period}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {getWeekDateRange(summary.period)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-primary">{summary.completedTasks}</p>
+                              <p className="text-xs text-muted-foreground">Completed</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-green-600">{summary.totalPoints}</p>
+                              <p className="text-xs text-muted-foreground">Points</p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-2xl font-bold text-blue-600">{Math.round(summary.completionRate)}%</p>
+                              <p className="text-xs text-muted-foreground">Rate</p>
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight 
+                          className={`w-5 h-5 text-muted-foreground transition-transform ${
+                            selectedPeriod === summary.period ? 'rotate-90' : ''
+                          }`} 
+                        />
+                      </div>
+                      
+                      {/* Task Details for Selected Period */}
+                      {selectedPeriod === summary.period && (
+                        <div className="mt-6 pt-4 border-t">
+                          <h5 className="font-medium mb-4 flex items-center gap-2">
+                            <Trophy className="w-4 h-4" />
+                            Tasks for Week {summary.period}
+                          </h5>
+                          <div className="grid gap-3">
+                            {selectedPeriodTasks.map((task) => (
+                              <div
+                                key={task.id}
+                                className="flex items-center justify-between p-3 bg-background border rounded-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  {getStatusIcon(task.status, task.extension_requests)}
+                                  <div>
+                                    <p className="font-medium text-sm">{task.linkedin_tasks.title}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Updated: {format(new Date(task.updated_at), 'MMM dd, yyyy at h:mm a')}
+                                    </p>
+                                    {task.extension_requests && task.extension_requests.length > 0 && (
+                                      <p className="text-xs text-orange-600">
+                                        Extension request: {task.extension_requests[0].status}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <p className="text-sm font-medium">
+                                      {task.score_awarded} / {task.linkedin_tasks.points_base} pts
+                                    </p>
+                                  </div>
+                                  {getStatusBadge(task.status, task.extension_requests)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-primary">{summary.completedTasks}</p>
-                        <p className="text-xs text-muted-foreground">Completed</p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Evidence Tab */}
+        <TabsContent value="evidence" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <FileText className="w-6 h-6" />
+                Evidence Submissions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {evidenceHistory.map((evidence: any) => (
+                  <div key={evidence.id} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium">
+                            {evidence.linkedin_user_tasks?.linkedin_tasks?.title || 'Task Evidence'}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Period: {evidence.linkedin_user_tasks?.period}
+                          </p>
+                          {evidence.url && (
+                            <div className="flex items-center gap-2 mt-1">
+                              <Link className="w-3 h-3" />
+                              <a href={evidence.url} target="_blank" rel="noopener noreferrer" 
+                                 className="text-xs text-blue-600 hover:underline">
+                                {evidence.url.length > 50 ? evidence.url.substring(0, 50) + '...' : evidence.url}
+                              </a>
+                            </div>
+                          )}
+                          {evidence.evidence_data && formatTrackingMetrics(evidence.evidence_data) && (
+                            <p className="text-xs text-green-600 mt-1">
+                              📊 {formatTrackingMetrics(evidence.evidence_data)}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-green-600">{summary.totalPoints}</p>
-                        <p className="text-xs text-muted-foreground">Points</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">{Math.round(summary.completionRate)}%</p>
-                        <p className="text-xs text-muted-foreground">Rate</p>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(evidence.created_at), 'MMM dd, yyyy')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(evidence.created_at), 'h:mm a')}
+                        </p>
                       </div>
                     </div>
                   </div>
-                  <ChevronRight 
-                    className={`w-5 h-5 text-muted-foreground transition-transform ${
-                      selectedPeriod === summary.period ? 'rotate-90' : ''
-                    }`} 
-                  />
-                </div>
-                
-                {/* Task Details for Selected Period */}
-                {selectedPeriod === summary.period && (
-                  <div className="mt-6 pt-4 border-t">
-                    <h5 className="font-medium mb-4 flex items-center gap-2">
-                      <Trophy className="w-4 h-4" />
-                      Tasks for Week {summary.period}
-                    </h5>
-                    <div className="grid gap-3">
-                      {selectedPeriodTasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="flex items-center justify-between p-3 bg-background border rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(task.status, task.extension_requests)}
-                            <div>
-                              <p className="font-medium text-sm">{task.linkedin_tasks.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Updated: {format(new Date(task.updated_at), 'MMM dd, yyyy at h:mm a')}
-                              </p>
-                              {task.extension_requests && task.extension_requests.length > 0 && (
-                                <p className="text-xs text-orange-600">
-                                  Extension request: {task.extension_requests[0].status}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <p className="text-sm font-medium">
-                                {task.score_awarded} / {task.linkedin_tasks.points_base} pts
-                              </p>
-                            </div>
-                            {getStatusBadge(task.status, task.extension_requests)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                ))}
+                {evidenceHistory.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No evidence submissions found
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Network Metrics Tab */}
+        <TabsContent value="metrics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6" />
+                Network Growth Metrics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {networkMetrics.map((metric: any) => (
+                  <div key={`${metric.date}-${metric.activity_id}`} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {metric.activity_id === 'connections_accepted' && <Users className="w-4 h-4 text-blue-600" />}
+                      {metric.activity_id === 'create_post' && <MessageSquare className="w-4 h-4 text-green-600" />}
+                      {metric.activity_id === 'profile_views' && <Activity className="w-4 h-4 text-purple-600" />}
+                      <div>
+                        <p className="font-medium text-sm">
+                          {metric.activity_id.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(metric.date), 'MMM dd, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-primary">{metric.value}</p>
+                    </div>
+                  </div>
+                ))}
+                {networkMetrics.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No network metrics recorded yet
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Signals Tab */}
+        <TabsContent value="signals" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Activity className="w-6 h-6" />
+                LinkedIn Activity Signals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {signals.map((signal: any) => (
+                  <div key={signal.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Activity className="w-4 h-4 text-orange-600" />
+                      <div>
+                        <p className="font-medium text-sm">{signal.subject}</p>
+                        {signal.actor && (
+                          <p className="text-xs text-muted-foreground">By: {signal.actor}</p>
+                        )}
+                        {signal.link && (
+                          <a href={signal.link} target="_blank" rel="noopener noreferrer" 
+                             className="text-xs text-blue-600 hover:underline">
+                            View Activity
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(signal.happened_at), 'MMM dd, yyyy')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(signal.happened_at), 'h:mm a')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {signals.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No activity signals recorded yet
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Overall Statistics */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-600" />
-              Total Points
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-primary">
-              {periodSummaries.reduce((sum, p) => sum + p.totalPoints, 0)}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Across {periodSummaries.length} weeks
-            </p>
-          </CardContent>
-        </Card>
+      {periodSummaries.length > 0 && (
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-600" />
+                Total Points
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-primary">
+                {periodSummaries.reduce((sum, p) => sum + p.totalPoints, 0)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Across {periodSummaries.length} weeks
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              Tasks Completed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-green-600">
-              {periodSummaries.reduce((sum, p) => sum + p.completedTasks, 0)}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Out of {periodSummaries.reduce((sum, p) => sum + p.totalTasks, 0)} total
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                Tasks Completed
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-green-600">
+                {periodSummaries.reduce((sum, p) => sum + p.completedTasks, 0)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Out of {periodSummaries.reduce((sum, p) => sum + p.totalTasks, 0)} total
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              Average Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-blue-600">
-              {Math.round(
-                periodSummaries.reduce((sum, p) => sum + p.completionRate, 0) / 
-                (periodSummaries.length || 1)
-              )}%
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Completion rate
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Average Rate
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-blue-600">
+                {Math.round(
+                  periodSummaries.reduce((sum, p) => sum + p.completionRate, 0) / 
+                  (periodSummaries.length || 1)
+                )}%
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Completion rate
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
