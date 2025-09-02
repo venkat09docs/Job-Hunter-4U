@@ -84,7 +84,7 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
         const newStats = {
           applied: totalJobApplications,
           referrals: referralAssignment ? 3 : 0, // 3 referrals per completed assignment
-          followUps: followUpAssignment ? 5 : 0, // 5 follow-ups per completed assignment
+          followUps: 0, // Set to 0 as requested - was: followUpAssignment ? 5 : 0
           conversations: 0 // This would need additional tracking
         };
         
