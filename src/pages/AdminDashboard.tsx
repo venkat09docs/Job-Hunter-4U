@@ -5,13 +5,14 @@ import { useInstituteName } from '@/hooks/useInstituteName';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building, GraduationCap, ClipboardList, Share2, TrendingUp } from "lucide-react";
+import { Building, GraduationCap, ClipboardList, Share2, TrendingUp, Calculator } from "lucide-react";
 
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { InstituteDashboard } from '@/components/admin/InstituteDashboard';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
 import { UserAssignmentManagement } from "@/components/admin/UserAssignmentManagement";
 import AffiliateManagement from "@/components/admin/AffiliateManagement";
+import { RecalculateGitHubCommits } from '@/components/RecalculateGitHubCommits';
 import { AppSidebar } from '@/components/AppSidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
@@ -105,7 +106,8 @@ export default function AdminDashboard() {
     { id: "institutes", label: "Institutes", icon: Building },
     { id: "batches", label: "Batches", icon: GraduationCap },
     { id: "assignments", label: "User Assignments", icon: ClipboardList },
-    { id: "affiliates", label: "Affiliate Management", icon: Share2 }
+    { id: "affiliates", label: "Affiliate Management", icon: Share2 },
+    { id: "github-commits", label: "GitHub Commits", icon: Calculator }
   ];
 
   // For Super Admin, show the full layout with sidebar
@@ -115,7 +117,7 @@ export default function AdminDashboard() {
       <SidebarInset>        
         <div className="container mx-auto p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               {adminTabs.map((tab) => (
                 <TabsTrigger key={tab.id} value={tab.id} className="flex items-center space-x-2">
                   <tab.icon className="h-4 w-4" />
@@ -146,6 +148,18 @@ export default function AdminDashboard() {
 
             <TabsContent value="affiliates">
               <AffiliateManagement />
+            </TabsContent>
+
+            <TabsContent value="github-commits">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2">GitHub Commits Management</h2>
+                  <p className="text-muted-foreground">Recalculate GitHub commits for users based on approved evidence</p>
+                </div>
+                <div className="flex justify-center">
+                  <RecalculateGitHubCommits />
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
