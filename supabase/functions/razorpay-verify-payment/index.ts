@@ -143,6 +143,43 @@ serve(async (req) => {
     }
 
     console.log('User subscription updated successfully');
+
+    // Auto-assign to RNS Tech Institute for long-term subscriptions
+    const longTermPlans = ['3 months', '6 months', '1 year'];
+    if (longTermPlans.includes(planDuration)) {
+      console.log('Auto-assigning user to RNS Tech Institute for long-term subscription:', planDuration);
+      
+      const rnsInstituteId = '8a75a3b2-9e8d-44ab-9f9a-a005fb822f80'; // RNS Tech Institute ID
+      
+      // Check if user is already assigned to any institute
+      const { data: existingAssignment } = await supabaseService
+        .from('user_assignments')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
+
+      if (!existingAssignment || existingAssignment.length === 0) {
+        // Auto-assign to RNS Tech Institute
+        const { error: assignmentError } = await supabaseService
+          .from('user_assignments')
+          .insert({
+            user_id: user.id,
+            institute_id: rnsInstituteId,
+            assignment_type: 'auto_premium',
+            is_active: true
+          });
+
+        if (assignmentError) {
+          console.error('Failed to auto-assign user to RNS Tech Institute:', assignmentError);
+        } else {
+          console.log('User successfully auto-assigned to RNS Tech Institute');
+        }
+      } else {
+        console.log('User already has institute assignment, skipping auto-assignment');
+      }
+    }
+
     console.log('=== Payment Verification Success ===');
 
     return new Response(
