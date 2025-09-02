@@ -958,9 +958,14 @@ const VerifyAssignments = () => {
     <Card key={assignment.id} className="mb-4">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{assignment.career_task_templates?.title}</CardTitle>
+          <CardTitle className="text-lg">
+            {assignment.job_hunting_task_templates?.title || assignment.career_task_templates?.title || 'Unknown Task'}
+          </CardTitle>
           <div className="flex items-center gap-2">
-            {getModuleBadge(assignment.career_task_templates?.module)}
+            {assignment.job_hunting_task_templates ? 
+              getModuleBadge('JOB_HUNTING') : 
+              getModuleBadge(assignment.career_task_templates?.module)
+            }
             {getStatusBadge(assignment.status)}
           </div>
         </div>
@@ -978,7 +983,7 @@ const VerifyAssignments = () => {
             </div>
             <div className="flex items-center gap-1">
               <Award className="w-4 h-4" />
-              <span>{assignment.career_task_templates?.points_reward || 0} points</span>
+              <span>{assignment.job_hunting_task_templates?.points_reward || assignment.career_task_templates?.points_reward || 0} points</span>
             </div>
           </div>
           

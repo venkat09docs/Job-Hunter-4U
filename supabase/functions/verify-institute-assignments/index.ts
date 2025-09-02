@@ -192,13 +192,23 @@ const handler = async (req: Request): Promise<Response> => {
           .eq('id', assignmentId)
           .select(`
             *,
-            job_hunting_task_templates(title, points_reward),
-            profiles(user_id, full_name)
+            job_hunting_task_templates(title, points_reward)
           `)
           .single();
 
         if (jobError) throw jobError;
         assignmentData = jobData;
+        
+        // Get user profile separately
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .eq('user_id', assignmentData.user_id)
+          .single();
+          
+        if (!profileError && profileData) {
+          assignmentData.profiles = profileData;
+        }
 
         // Update evidence status
         await supabase
