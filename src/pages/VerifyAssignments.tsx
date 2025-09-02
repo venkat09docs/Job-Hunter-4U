@@ -16,6 +16,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2, FileText, ExternalLink, Download, Mail, Github, Linkedin } from 'lucide-react';
+import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
+import { AdminGitHubReenableRequestsDialog } from '@/components/AdminGitHubReenableRequestsDialog';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -1160,12 +1162,18 @@ const VerifyAssignments = () => {
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending">
             Pending Assignments ({pendingAssignments.length})
           </TabsTrigger>
           <TabsTrigger value="verified">
             Verified Assignments ({verifiedTotalCount})
+          </TabsTrigger>
+          <TabsTrigger value="request-extensions">
+            Request Extensions
+          </TabsTrigger>
+          <TabsTrigger value="github-request-extensions">
+            GitHub Request Extensions
           </TabsTrigger>
         </TabsList>
 
@@ -1242,6 +1250,29 @@ const VerifyAssignments = () => {
               )}
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="request-extensions" className="space-y-4">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold mb-2">Assignment Extension Requests</h3>
+            <p className="text-muted-foreground">
+              Review and manage extension requests submitted by students for their assignments
+            </p>
+          </div>
+          <AdminReenableRequestsDialog />
+        </TabsContent>
+
+        <TabsContent value="github-request-extensions" className="space-y-4">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold mb-2 flex items-center justify-center gap-2">
+              <Github className="h-5 w-5" />
+              GitHub Task Extension Requests
+            </h3>
+            <p className="text-muted-foreground">
+              Review and manage extension requests submitted by students for their GitHub weekly tasks
+            </p>
+          </div>
+          <AdminGitHubReenableRequestsDialog />
         </TabsContent>
       </Tabs>
 
