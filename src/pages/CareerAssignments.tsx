@@ -101,11 +101,22 @@ const CareerAssignments = () => {
   useEffect(() => {
     console.log('🔍 CareerAssignments stats calculation triggered', { assignmentsLength: assignments?.length || 0, isLoading });
     if (!isLoading && assignments && assignments.length > 0) {
-      const completed = assignments.filter(a => a.status === 'verified').length;
-      const points = assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
-      const maxPts = assignments.reduce((sum, a) => sum + (a.career_task_templates?.points_reward || 0), 0);
+      // Only count active profile-building tasks (tasks with sub_category_id)
+      const profileTasks = assignments.filter(a => 
+        a.career_task_templates?.sub_category_id
+      );
       
-      console.log('🔍 Calculated stats:', { completed, points, maxPts });
+      const completed = profileTasks.filter(a => a.status === 'verified').length;
+      const points = assignments.reduce((sum, a) => sum + (a.points_earned || 0), 0);
+      const maxPts = profileTasks.reduce((sum, a) => sum + (a.career_task_templates?.points_reward || 0), 0);
+      
+      console.log('🔍 Calculated stats:', { 
+        totalAssignments: assignments.length,
+        profileTasks: profileTasks.length,
+        completed, 
+        points, 
+        maxPts 
+      });
       setCompletedTasks(completed);
       setTotalPoints(points);
       setMaxPoints(maxPts);
@@ -917,7 +928,9 @@ const CareerAssignments = () => {
                       <div className="text-3xl font-bold text-primary">{totalPoints}</div>
                       <div className="text-sm text-muted-foreground">points earned</div>
                       <div className="mt-2 text-xs text-muted-foreground">
-                        {completedTasks}/{assignments.length} tasks completed
+                        {completedTasks}/{assignments.filter(a => 
+                          a.career_task_templates?.sub_category_id
+                        ).length} tasks completed
                       </div>
                     </div>
                   </CardContent>
