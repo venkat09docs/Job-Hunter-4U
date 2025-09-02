@@ -46,6 +46,47 @@ interface Assignment {
 
 // Helper component to render evidence in a user-friendly format
 const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, index }) => {
+  // Recursive function to render nested objects properly
+  const renderNestedData = (data: any, depth: number = 0): React.ReactNode => {
+    if (!data) return null;
+    
+    if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
+      return <span className="text-sm">{String(data)}</span>;
+    }
+    
+    if (Array.isArray(data)) {
+      return (
+        <div className={`space-y-1 ${depth > 0 ? 'ml-2' : ''}`}>
+          {data.map((item, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              <span className="text-xs text-muted-foreground mt-1">•</span>
+              <div className="flex-1">{renderNestedData(item, depth + 1)}</div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (typeof data === 'object') {
+      return (
+        <div className={`space-y-2 ${depth > 0 ? 'ml-2 pl-2 border-l-2 border-muted' : ''}`}>
+          {Object.entries(data).map(([key, value]) => (
+            <div key={key} className="space-y-1">
+              <div className="font-medium text-sm capitalize">
+                {key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim()}:
+              </div>
+              <div className="ml-2">
+                {renderNestedData(value, depth + 1)}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return <span className="text-sm">{String(data)}</span>;
+  };
+
   const renderEvidenceData = (data: any) => {
     if (!data) return null;
     
@@ -57,7 +98,7 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
       // Handle specific data structures based on evidence type
       if (evidence.evidence_type === 'url' || evidence.kind === 'url') {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {data.url && (
               <div className="flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />
@@ -73,13 +114,22 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             )}
             {data.title && <div><strong>Title:</strong> {data.title}</div>}
             {data.description && <div><strong>Description:</strong> {data.description}</div>}
+            {data.notes && <div><strong>Notes:</strong> {data.notes}</div>}
+            
+            {/* Render any additional properties */}
+            {Object.entries(data).filter(([key]) => !['url', 'title', 'description', 'notes'].includes(key)).map(([key, value]) => (
+              <div key={key}>
+                <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+                {renderNestedData(value)}
+              </div>
+            ))}
           </div>
         );
       }
 
       if (evidence.evidence_type === 'email' || evidence.kind === 'email') {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
               <span className="font-medium">Email Evidence</span>
@@ -96,13 +146,21 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
                 </div>
               </div>
             )}
+            
+            {/* Render any additional email properties */}
+            {Object.entries(data).filter(([key]) => !['subject', 'from', 'to', 'date', 'body'].includes(key)).map(([key, value]) => (
+              <div key={key}>
+                <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+                {renderNestedData(value)}
+              </div>
+            ))}
           </div>
         );
       }
 
       if (evidence.evidence_type === 'github' || evidence.kind === 'github') {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Github className="w-4 h-4" />
               <span className="font-medium">GitHub Evidence</span>
@@ -112,13 +170,22 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             {data.branch && <div><strong>Branch:</strong> {data.branch}</div>}
             {data.commit_message && <div><strong>Message:</strong> {data.commit_message}</div>}
             {data.files_changed && <div><strong>Files Changed:</strong> {Array.isArray(data.files_changed) ? data.files_changed.join(', ') : data.files_changed}</div>}
+            {data.description && <div><strong>Description:</strong> {data.description}</div>}
+            
+            {/* Render any additional GitHub properties */}
+            {Object.entries(data).filter(([key]) => !['repository', 'commit_sha', 'branch', 'commit_message', 'files_changed', 'description'].includes(key)).map(([key, value]) => (
+              <div key={key}>
+                <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+                {renderNestedData(value)}
+              </div>
+            ))}
           </div>
         );
       }
 
       if (evidence.evidence_type === 'linkedin' || evidence.kind === 'linkedin') {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Linkedin className="w-4 h-4" />
               <span className="font-medium">LinkedIn Evidence</span>
@@ -146,13 +213,34 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             )}
             {data.connections_count && <div><strong>Connections Count:</strong> {data.connections_count}</div>}
             {data.profile_views && <div><strong>Profile Views:</strong> {data.profile_views}</div>}
+            {data.post_count && <div><strong>Post Count:</strong> {data.post_count}</div>}
+            {data.connections_accepted && <div><strong>Connections Accepted:</strong> {data.connections_accepted}</div>}
+            {data.description && <div><strong>Description:</strong> {data.description}</div>}
+            
+            {/* Handle tracking metrics specifically */}
+            {data.tracking_metrics && (
+              <div>
+                <strong>Tracking Metrics:</strong>
+                <div className="mt-2 ml-4">
+                  {renderNestedData(data.tracking_metrics)}
+                </div>
+              </div>
+            )}
+            
+            {/* Render any additional LinkedIn properties */}
+            {Object.entries(data).filter(([key]) => !['post_url', 'content', 'connections_count', 'profile_views', 'post_count', 'connections_accepted', 'description', 'tracking_metrics'].includes(key)).map(([key, value]) => (
+              <div key={key}>
+                <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+                {renderNestedData(value)}
+              </div>
+            ))}
           </div>
         );
       }
 
       if (evidence.evidence_type === 'job_application' || evidence.kind === 'job_application') {
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="font-medium">Job Application Details</div>
             {data.company_name && <div><strong>Company:</strong> {data.company_name}</div>}
             {data.position && <div><strong>Position:</strong> {data.position}</div>}
@@ -179,54 +267,23 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
                 </div>
               </div>
             )}
+            {data.description && <div><strong>Description:</strong> {data.description}</div>}
+            
+            {/* Render any additional job hunting properties */}
+            {Object.entries(data).filter(([key]) => !['company_name', 'position', 'application_url', 'application_date', 'status', 'notes', 'description'].includes(key)).map(([key, value]) => (
+              <div key={key}>
+                <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
+                {renderNestedData(value)}
+              </div>
+            ))}
           </div>
         );
       }
 
-      // Generic object display for other types
-      return (
-        <div className="space-y-2">
-          {Object.entries(data).map(([key, value]) => (
-            <div key={key}>
-              <strong className="capitalize">{key.replace(/_/g, ' ')}:</strong>{' '}
-              {typeof value === 'object' ? (
-                <span className="text-xs text-muted-foreground">
-                  {Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
-                </span>
-              ) : (
-                <span>{String(value)}</span>
-              )}
-            </div>
-          ))}
-        </div>
-      );
+      // Generic object display for other types - using recursive rendering
+      return renderNestedData(data);
     }
 
-    return <span className="text-sm">{String(data)}</span>;
-  };
-
-  const renderParsedData = (data: any) => {
-    if (!data) return null;
-    
-    if (typeof data === 'object') {
-      return (
-        <div className="space-y-1">
-          {Object.entries(data).map(([key, value]) => (
-            <div key={key} className="text-sm">
-              <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span>{' '}
-              {typeof value === 'object' ? (
-                <span className="text-muted-foreground">
-                  {Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
-                </span>
-              ) : (
-                <span>{String(value)}</span>
-              )}
-            </div>
-          ))}
-        </div>
-      );
-    }
-    
     return <span className="text-sm">{String(data)}</span>;
   };
 
@@ -241,22 +298,8 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
         </div>
         
         <div className="grid grid-cols-1 gap-4">
-          {/* Basic Info */}
+          {/* Basic Info - removing redundant URL display */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            {evidence.url && (
-              <div>
-                <strong>URL:</strong>
-                <a 
-                  href={evidence.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="ml-2 text-primary hover:underline break-all"
-                >
-                  {evidence.url}
-                </a>
-              </div>
-            )}
-            
             {evidence.file_urls && evidence.file_urls.length > 0 && (
               <div>
                 <strong>Files:</strong>
@@ -309,7 +352,7 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             <div>
               <strong>Additional Information:</strong>
               <div className="mt-2 p-3 bg-muted/30 rounded">
-                {renderParsedData(evidence.parsed_json)}
+                {renderNestedData(evidence.parsed_json)}
               </div>
             </div>
           )}
@@ -319,7 +362,7 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
             <div>
               <strong>Email Details:</strong>
               <div className="mt-2 p-3 bg-muted/30 rounded">
-                {renderParsedData(evidence.email_meta)}
+                {renderNestedData(evidence.email_meta)}
               </div>
             </div>
           )}
