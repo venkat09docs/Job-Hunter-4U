@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -96,6 +96,275 @@ export const GitHubWeeklyAssignments = () => {
     );
   }
 
+  // Separate Day tasks and non-Day tasks
+  const dayTasks = weeklyTasks.filter(task => {
+    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+    return hasDay;
+  });
+  
+  const nonDayTasks = weeklyTasks.filter(task => {
+    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+    return !hasDay;
+  });
+
+  // Sort day tasks by day number
+  const sortedDayTasks = dayTasks.sort((a, b) => {
+    const dayA = (a.github_tasks?.title || '').match(/Day (\d+)/i)?.[1];
+    const dayB = (b.github_tasks?.title || '').match(/Day (\d+)/i)?.[1];
+    return (dayA ? parseInt(dayA) : 0) - (dayB ? parseInt(dayB) : 0);
+  });
+
+  const renderTaskContent = (task: any) => {
+    const assignmentDay = getAssignmentDay(task.period);
+    
+    // Day-based availability (same as LinkedIn and main GitHub Weekly)
+    const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+    const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
+    const dayAvailabilityMessage = getTaskAvailabilityMessage(task.github_tasks?.title || '', task.admin_extended);
+    
+    // Combined availability - use day-based if task has Day X format
+    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+    const canInteract = hasDay ? canInteractDayBased : true; // Fallback for older tasks
+    
+    // Only show extension request for incomplete tasks that are past due
+    const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
+    const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : false);
+    
+    console.log(`🔍 GitHub Task: ${task.github_tasks?.title}`, {
+      dueDate: task.due_at,
+      assignmentDay,
+      adminExtended: task.admin_extended,
+      hasDay,
+      canInteract,
+      dayAvailability,
+      period: task.period,
+      currentTime: new Date().toISOString(),
+      isWithinAssignmentWeek: task.due_at ? isDueDateInAssignmentWeek(task.due_at) : false
+    });
+
+    return (
+      <div className="space-y-4">
+        <div className="text-sm text-muted-foreground">
+          {task.github_tasks?.description}
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              {hasDay ? dayAvailabilityMessage : (task.due_at ? 'Legacy task' : 'No due date')}
+            </span>
+            <span className="font-medium text-primary">
+              {task.github_tasks?.points_base} points
+            </span>
+          </div>
+          {task.score_awarded > 0 && (
+            <span className="text-green-600 font-medium">
+              +{task.score_awarded} earned
+            </span>
+          )}
+        </div>
+        
+        {/* Task Status-based Actions */}
+        {task.status !== 'VERIFIED' && (
+          <>
+            {canInteract && (task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
+              <Dialog 
+                open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
+                onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
+              >
+                <DialogTrigger asChild>
+                  <Button size="sm" className="w-full">
+                    <Upload className="h-4 w-4 mr-2" />
+                    {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Submit Evidence</DialogTitle>
+                    <DialogDescription>
+                      Provide evidence for completing: {task.github_tasks?.title} ({assignmentDay} Assignment)
+                    </DialogDescription>
+                  </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="evidence-type">Evidence Type</Label>
+                    <Select 
+                      value={evidenceForm.kind} 
+                      onValueChange={(value: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT') => 
+                        setEvidenceForm(prev => ({ ...prev, kind: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select evidence type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="URL">URL Link</SelectItem>
+                        <SelectItem value="SCREENSHOT">Screenshot</SelectItem>
+                        <SelectItem value="DATA_EXPORT">File Upload</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {evidenceForm.kind === 'URL' && (
+                    <div>
+                      <Label htmlFor="evidence-url">URL</Label>
+                      <Input
+                        id="evidence-url"
+                        placeholder="https://github.com/..."
+                        value={evidenceForm.url || ''}
+                        onChange={(e) => setEvidenceForm(prev => ({ ...prev, url: e.target.value }))}
+                      />
+                    </div>
+                  )}
+
+                  {evidenceForm.kind === 'DATA_EXPORT' && (
+                    <div>
+                      <Label htmlFor="evidence-file">File</Label>
+                      <Input
+                        id="evidence-file"
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.pdf,.md"
+                        onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="evidence-description">Description (Optional)</Label>
+                    <Textarea
+                      id="evidence-description"
+                      placeholder="Additional notes about your completion..."
+                      value={evidenceForm.description || ''}
+                      onChange={(e) => setEvidenceForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="number-of-commits">Number of Weekly Commits</Label>
+                      <Input
+                        id="number-of-commits"
+                        type="number"
+                        placeholder="e.g. 5"
+                        min="0"
+                        value={evidenceForm.numberOfCommits || ''}
+                        onChange={(e) => setEvidenceForm(prev => ({ 
+                          ...prev, 
+                          numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="number-of-readmes">Number of README or Docs Updates</Label>
+                      <Input
+                        id="number-of-readmes"
+                        type="number"
+                        placeholder="e.g. 1"
+                        min="0"
+                        value={evidenceForm.numberOfReadmes || ''}
+                        onChange={(e) => setEvidenceForm(prev => ({ 
+                          ...prev, 
+                          numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
+                        }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button onClick={handleSubmitEvidence} className="flex-1">
+                      Submit Evidence
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setEvidenceDialog({ open: false });
+                        setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+           )}
+            
+            {/* Show extension request if needed */}
+            {showExtensionRequest && (
+              <div className="mt-3">
+                <GitHubRequestReenableDialog
+                  taskId={task.id}
+                  taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                />
+              </div>
+            )}
+          </>
+        )}
+         
+        {task.status === 'SUBMITTED' && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <AlertCircle className="h-4 w-4" />
+            Awaiting verification...
+          </div>
+        )}
+        
+        {(task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED') && (
+          <div className="flex items-center gap-2 text-sm text-green-600">
+            <CheckCircle className="h-4 w-4" />
+            {task.status === 'VERIFIED' ? 'Completed!' : 'Partially completed'}
+          </div>
+        )}
+
+        {/* Evidence Display Section */}
+        {task.evidence && task.evidence.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <EvidenceDisplay evidence={task.evidence.map(evidence => ({
+              id: evidence.id,
+              evidence_type: evidence.kind || 'URL',
+              evidence_data: evidence.parsed_json || evidence.url || {},
+              url: evidence.url,
+              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : [],
+              verification_status: evidence.verification_status || 'pending',
+              verification_notes: evidence.verification_notes,
+              created_at: evidence.created_at
+            }))} />
+          </div>
+        )}
+        
+        {/* Admin Review Notes */}
+        {task.verification_notes && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4" />
+              Admin Review:
+            </Label>
+            <div className={`p-3 rounded-md text-sm border-l-4 ${
+              task.status === 'VERIFIED' 
+                ? 'bg-success/10 border-success text-success-foreground' 
+                : task.status === 'REJECTED'
+                ? 'bg-destructive/10 border-destructive text-destructive-foreground'
+                : 'bg-warning/10 border-warning text-warning-foreground'
+            }`}>
+              <div className="font-medium mb-1">
+                {task.status === 'VERIFIED' ? 'Approved' : 
+                 task.status === 'REJECTED' ? 'Rejected' : 'Under Review'}
+                {task.evidence_verified_at && (
+                  <span className="text-xs font-normal ml-2">
+                    on {new Date(task.evidence_verified_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-line leading-relaxed">
+                {task.verification_notes}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="weekly" className="w-full">
@@ -172,276 +441,79 @@ export const GitHubWeeklyAssignments = () => {
             </Button>
           </div>
 
-          <div className="grid gap-4">
-            {weeklyTasks.map((task) => {
-              const assignmentDay = getAssignmentDay(task.period);
-              
-              // Day-based availability (same as LinkedIn and main GitHub Weekly)
-              const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
-              const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
-              const dayAvailabilityMessage = getTaskAvailabilityMessage(task.github_tasks?.title || '', task.admin_extended);
-              
-              // Combined availability - use day-based if task has Day X format
-              const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
-              const canInteract = hasDay ? canInteractDayBased : true; // Fallback for older tasks
-              
-              // Only show extension request for incomplete tasks that are past due
-              const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
-              const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : false);
-              
-              console.log(`🔍 GitHub Task: ${task.github_tasks?.title}`, {
-                dueDate: task.due_at,
-                assignmentDay,
-                adminExtended: task.admin_extended,
-                hasDay,
-                canInteract,
-                dayAvailability,
-                period: task.period,
-                currentTime: new Date().toISOString(),
-                isWithinAssignmentWeek: task.due_at ? isDueDateInAssignmentWeek(task.due_at) : false
-              });
-              
-              return (
-                <Card key={task.id} className="border border-border">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-base">
-                            {task.github_tasks?.title}
-                          </CardTitle>
-                          <Badge variant="outline" className="text-xs">
-                            {assignmentDay}
-                          </Badge>
-                        </div>
-                        <CardDescription>
-                          {task.github_tasks?.description}
-                        </CardDescription>
-                      </div>
-                      <Badge variant={getStatusColor(task.status)}>
-                        {getStatusLabel(task.status)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {hasDay ? dayAvailabilityMessage : (task.due_at ? 'Legacy task' : 'No due date')}
-                        </span>
-                        <span className="font-medium text-primary">
-                          {task.github_tasks?.points_base} points
-                        </span>
-                      </div>
-                      {task.score_awarded > 0 && (
-                        <span className="text-green-600 font-medium">
-                          +{task.score_awarded} earned
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Task Status-based Actions */}
-                    {task.status !== 'VERIFIED' && (
-                      <>
-                        {canInteract && (task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
-                          <Dialog 
-                            open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
-                            onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
-                          >
-                            <DialogTrigger asChild>
-                              <Button size="sm" className="w-full mb-3">
-                                <Upload className="h-4 w-4 mr-2" />
-                                {task.status === 'REJECTED' ? 'Resubmit Assignment' : 'Submit Evidence'}
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Submit Evidence</DialogTitle>
-                                <DialogDescription>
-                                  Provide evidence for completing: {task.github_tasks?.title} ({assignmentDay} Assignment)
-                                </DialogDescription>
-                              </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="evidence-type">Evidence Type</Label>
-                                <Select 
-                                  value={evidenceForm.kind} 
-                                  onValueChange={(value: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT') => 
-                                    setEvidenceForm(prev => ({ ...prev, kind: value }))
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select evidence type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="URL">URL Link</SelectItem>
-                                    <SelectItem value="SCREENSHOT">Screenshot</SelectItem>
-                                    <SelectItem value="DATA_EXPORT">File Upload</SelectItem>
-                                  </SelectContent>
-                                </Select>
+          <div className="space-y-4">
+            {/* Day Tasks with Accordion */}
+            {sortedDayTasks.length > 0 && (
+              <Accordion type="multiple" className="space-y-2">
+                {sortedDayTasks.map((task) => {
+                  const dayMatch = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+                  const dayNumber = dayMatch ? dayMatch[1] : '?';
+                  
+                  return (
+                    <AccordionItem key={task.id} value={task.id} className="border rounded-lg px-0">
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                        <div className="flex items-center justify-between w-full mr-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                              {dayNumber}
+                            </div>
+                            <div className="text-left">
+                              <div className="font-medium">
+                                {task.github_tasks?.title}
                               </div>
-
-                              {evidenceForm.kind === 'URL' && (
-                                <div>
-                                  <Label htmlFor="evidence-url">URL</Label>
-                                  <Input
-                                    id="evidence-url"
-                                    placeholder="https://github.com/..."
-                                    value={evidenceForm.url || ''}
-                                    onChange={(e) => setEvidenceForm(prev => ({ ...prev, url: e.target.value }))}
-                                  />
-                                </div>
-                              )}
-
-                              {evidenceForm.kind === 'DATA_EXPORT' && (
-                                <div>
-                                  <Label htmlFor="evidence-file">File</Label>
-                                  <Input
-                                    id="evidence-file"
-                                    type="file"
-                                    accept=".png,.jpg,.jpeg,.pdf,.md"
-                                    onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
-                                  />
-                                </div>
-                              )}
-
-                              <div>
-                                <Label htmlFor="evidence-description">Description (Optional)</Label>
-                                <Textarea
-                                  id="evidence-description"
-                                  placeholder="Additional notes about your completion..."
-                                  value={evidenceForm.description || ''}
-                                  onChange={(e) => setEvidenceForm(prev => ({ ...prev, description: e.target.value }))}
-                                />
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <Label htmlFor="number-of-commits">Number of Weekly Commits</Label>
-                                  <Input
-                                    id="number-of-commits"
-                                    type="number"
-                                    placeholder="e.g. 5"
-                                    min="0"
-                                    value={evidenceForm.numberOfCommits || ''}
-                                    onChange={(e) => setEvidenceForm(prev => ({ 
-                                      ...prev, 
-                                      numberOfCommits: e.target.value ? parseInt(e.target.value) : undefined 
-                                    }))}
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="number-of-readmes">Number of README or Docs Updates</Label>
-                                  <Input
-                                    id="number-of-readmes"
-                                    type="number"
-                                    placeholder="e.g. 1"
-                                    min="0"
-                                    value={evidenceForm.numberOfReadmes || ''}
-                                    onChange={(e) => setEvidenceForm(prev => ({ 
-                                      ...prev, 
-                                      numberOfReadmes: e.target.value ? parseInt(e.target.value) : undefined 
-                                    }))}
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="flex gap-3 pt-4">
-                                <Button onClick={handleSubmitEvidence} className="flex-1">
-                                  Submit Evidence
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => {
-                                    setEvidenceDialog({ open: false });
-                                    setEvidenceForm({ kind: 'URL', numberOfCommits: undefined, numberOfReadmes: undefined });
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
+                              <div className="text-sm text-muted-foreground">
+                                {task.github_tasks?.points_base} points
                               </div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
-                       )}
-                        
-                        {/* Show extension request if needed */}
-                        {showExtensionRequest && (
-                          <div className="mt-3">
-                            <GitHubRequestReenableDialog
-                              taskId={task.id}
-                              taskTitle={task.github_tasks?.title || 'GitHub Task'}
-                            />
                           </div>
-                        )}
-                      </>
-                    )}
-                     
-                    {task.status === 'SUBMITTED' && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <AlertCircle className="h-4 w-4" />
-                        Awaiting verification...
-                      </div>
-                    )}
-                    
-                    {(task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED') && (
-                      <div className="flex items-center gap-2 text-sm text-green-600">
-                        <CheckCircle className="h-4 w-4" />
-                        {task.status === 'VERIFIED' ? 'Completed!' : 'Partially completed'}
-                      </div>
-                    )}
-
-                    {/* Evidence Display Section */}
-                    {task.evidence && task.evidence.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <EvidenceDisplay evidence={task.evidence.map(evidence => ({
-                          id: evidence.id,
-                          evidence_type: evidence.kind || 'URL',
-                          evidence_data: evidence.parsed_json || evidence.url || {},
-                          url: evidence.url,
-                          file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : [],
-                          verification_status: evidence.verification_status || 'pending',
-                          verification_notes: evidence.verification_notes,
-                          created_at: evidence.created_at
-                        }))} />
-                      </div>
-                    )}
-                    
-                    {/* Admin Review Notes */}
-                    {task.verification_notes && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <Label className="text-sm font-medium flex items-center gap-2 mb-2">
-                          <Shield className="h-4 w-4" />
-                          Admin Review:
-                        </Label>
-                        <div className={`p-3 rounded-md text-sm border-l-4 ${
-                          task.status === 'VERIFIED' 
-                            ? 'bg-success/10 border-success text-success-foreground' 
-                            : task.status === 'REJECTED'
-                            ? 'bg-destructive/10 border-destructive text-destructive-foreground'
-                            : 'bg-warning/10 border-warning text-warning-foreground'
-                        }`}>
-                          <div className="font-medium mb-1">
-                            {task.status === 'VERIFIED' ? 'Approved' : 
-                             task.status === 'REJECTED' ? 'Rejected' : 'Under Review'}
-                            {task.evidence_verified_at && (
-                              <span className="text-xs font-normal ml-2">
-                                on {new Date(task.evidence_verified_at).toLocaleDateString()}
-                              </span>
-                            )}
-                          </div>
-                          <p className="whitespace-pre-line leading-relaxed">
-                            {task.verification_notes}
-                          </p>
+                          <Badge variant={getStatusColor(task.status)} className="ml-2">
+                            {getStatusLabel(task.status)}
+                          </Badge>
                         </div>
-                      </div>
-                    )}
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-4">
+                        <div className="animate-fade-in">
+                          {renderTaskContent(task)}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
+            )}
 
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {/* Non-Day Tasks (Legacy tasks) */}
+            {nonDayTasks.length > 0 && (
+              <div className="grid gap-4">
+                {nonDayTasks.map((task) => (
+                  <Card key={task.id} className="border border-border">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base">
+                              {task.github_tasks?.title}
+                            </CardTitle>
+                            <Badge variant="outline" className="text-xs">
+                              {getAssignmentDay(task.period)}
+                            </Badge>
+                          </div>
+                          <CardDescription>
+                            {task.github_tasks?.description}
+                          </CardDescription>
+                        </div>
+                        <Badge variant={getStatusColor(task.status)}>
+                          {getStatusLabel(task.status)}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {renderTaskContent(task)}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             {weeklyTasks.length === 0 && (
               <Card className="border-dashed">
