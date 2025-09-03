@@ -128,6 +128,14 @@ const Dashboard = () => {
     return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
 
+  // Check if user can access Level Up Status (3M, 6M, 1Y plans)
+  const canAccessLevelUpStatus = () => {
+    if (isAdmin || isRecruiter) return true;
+    const hasActive = hasActiveSubscription();
+    const hasPlan = profile?.subscription_plan && eligiblePlans.includes(profile.subscription_plan);
+    return hasActive && hasPlan;
+  };
+
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
@@ -612,122 +620,145 @@ const Dashboard = () => {
                 </Card>
               )}
 
-              {/* Level Up Status - For all users */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Level Up Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Resume Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">Resume</p>
-                            <p className="text-lg font-bold">{resumeProgress}%</p>
+              {/* Level Up Status - Only for 3M, 6M, 1Y plan users */}
+              {canAccessLevelUpStatus() ? (
+                <Card className="border-gradient-primary">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Level Up Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Resume Status */}
+                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume</p>
+                              <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeProgress}%</p>
+                            </div>
+                            <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <FileText className="h-6 w-6 text-chart-1" />
-                        </div>
-                        <Progress value={resumeProgress} className="mt-3" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
-                        </p>
-                      </CardContent>
-                    </Card>
+                          <Progress value={resumeProgress} className="mt-3 bg-blue-200 dark:bg-blue-800" />
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
+                          </p>
+                        </CardContent>
+                      </Card>
 
-                    {/* LinkedIn Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">LinkedIn</p>
-                            <p className="text-lg font-bold">{linkedinProgress}%</p>
+                      {/* LinkedIn Status */}
+                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn</p>
+                              <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
+                            </div>
+                            <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                           </div>
-                          <Users className="h-6 w-6 text-chart-2" />
-                        </div>
-                        <Progress value={linkedinProgress} className="mt-3" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
-                        </p>
-                      </CardContent>
-                    </Card>
+                          <Progress value={linkedinProgress} className="mt-3 bg-indigo-200 dark:bg-indigo-800" />
+                          <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                            {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
+                          </p>
+                        </CardContent>
+                      </Card>
 
-                    {/* GitHub Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">GitHub</p>
-                            <p className="text-lg font-bold">{githubProgress}%</p>
+                      {/* GitHub Status */}
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub</p>
+                              <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
+                            </div>
+                            <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
                           </div>
-                          <Github className="h-6 w-6 text-chart-3" />
-                        </div>
-                        <Progress value={githubProgress} className="mt-3" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {githubProgress === 100 ? 'Profile Ready!' : `${repoMetrics.total - repoCompleted} tasks left`}
-                        </p>
-                      </CardContent>
-                    </Card>
+                          <Progress value={githubProgress} className="mt-3 bg-green-200 dark:bg-green-800" />
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                            {githubProgress === 100 ? 'Profile Ready!' : `${repoMetrics.total - repoCompleted} tasks left`}
+                          </p>
+                        </CardContent>
+                      </Card>
 
-                    {/* Job Application Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">Applications</p>
-                            <p className="text-lg font-bold">{totalJobApplications}</p>
+                      {/* Job Application Status */}
+                      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Applications</p>
+                              <p className="text-lg font-bold text-orange-900 dark:text-orange-100">{totalJobApplications}</p>
+                            </div>
+                            <Briefcase className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                           </div>
-                          <Briefcase className="h-6 w-6 text-chart-4" />
-                        </div>
-                        <div className="mt-3 text-xs text-muted-foreground">
-                          {totalJobApplications === 0 ? 'Start applying!' : 
-                           totalJobApplications < 10 ? 'Keep applying!' : 
-                           'Great progress!'}
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
+                            {totalJobApplications === 0 ? 'Start applying!' : 
+                             totalJobApplications < 10 ? 'Keep applying!' : 
+                             'Great progress!'}
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                    {/* LinkedIn Growth Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">LinkedIn Growth</p>
-                            <p className="text-lg font-bold">{networkMetrics?.totalConnections || 0}</p>
+                      {/* LinkedIn Growth Status */}
+                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
+                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0}</p>
+                            </div>
+                            <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                           </div>
-                          <Users className="h-6 w-6 text-chart-5" />
-                        </div>
-                        <div className="mt-3 text-xs text-muted-foreground">
-                          {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
-                           (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
-                           'Strong network!'}
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="mt-3 text-xs text-purple-600 dark:text-purple-400">
+                            {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
+                             (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
+                             'Strong network!'}
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                    {/* GitHub Growth Status */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground">GitHub Growth</p>
-                            <p className="text-lg font-bold">{flowCompleted}/{WEEKLY_TARGET}</p>
+                      {/* GitHub Growth Status */}
+                      <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Growth</p>
+                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{flowCompleted}/{WEEKLY_TARGET}</p>
+                            </div>
+                            <BarChart3 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                           </div>
-                          <BarChart3 className="h-6 w-6 text-chart-6" />
-                        </div>
-                        <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="mt-3" />
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {flowCompleted >= WEEKLY_TARGET ? 'Weekly goal met!' : `${WEEKLY_TARGET - flowCompleted} sessions left`}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CardContent>
-              </Card>
+                          <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
+                          <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
+                            {flowCompleted >= WEEKLY_TARGET ? 'Weekly goal met!' : `${WEEKLY_TARGET - flowCompleted} sessions left`}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Level Up Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-12">
+                      <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">Level Up Status</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Advanced tracking available with 3 Months, 6 Months, or 1 Year plans
+                      </p>
+                      <SubscriptionUpgrade featureName="Level Up Status" eligiblePlans={eligiblePlans}>
+                        <Button>Upgrade Plan</Button>
+                      </SubscriptionUpgrade>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Main Content Grid */}
