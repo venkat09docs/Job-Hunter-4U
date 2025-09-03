@@ -32,6 +32,7 @@ import {
   Settings,
   History,
   Plus,
+  Minus,
   Trash2,
   Eye,
   Star,
@@ -69,6 +70,7 @@ const GitHubWeekly = () => {
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const [evidenceDialog, setEvidenceDialog] = useState({ open: false, taskId: null as string | null });
   const [newRepoName, setNewRepoName] = useState('');
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   
   const {
     weeklyTasks,
@@ -182,6 +184,18 @@ const GitHubWeekly = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const toggleTaskExpansion = (taskId: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
   };
 
   const EvidenceSubmissionDialog = ({ taskId }: { taskId: string | null }) => {
@@ -480,6 +494,9 @@ const GitHubWeekly = () => {
     const statusColor = statusConfig[task.status]?.color || 'text-muted-foreground';
     const statusBg = statusConfig[task.status]?.bg || 'bg-muted';
     
+    // Check if this is a Day task (Day 1, Day 2, etc.)
+    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+    const isExpanded = expandedTasks.has(task.id);
     // Day-based availability (primary check) - same as LinkedIn
     const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
     const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
@@ -491,7 +508,6 @@ const GitHubWeekly = () => {
     const isExpired = isTaskExpired(displayOrder);
     
     // Combined availability - use day-based if task has Day X format, otherwise use due date
-    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
     const canInteract = hasDay ? canInteractDayBased : (!isExpired || task.status === 'VERIFIED');
     
     // Only show extension request for incomplete tasks that are past due
@@ -606,15 +622,33 @@ const GitHubWeekly = () => {
         <CardHeader className="pb-4 pr-32"> {/* Increase right padding for status/due date */}
           {/* Day Badge and Activity Title */}
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="text-sm font-medium px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                <Calendar className="h-3 w-3 mr-1" />
-                {dayPart}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                <Trophy className="h-3 w-3 mr-1" />
-                {task.github_tasks?.points_base || 0} pts
-              </Badge>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="text-sm font-medium px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {dayPart}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  <Trophy className="h-3 w-3 mr-1" />
+                  {task.github_tasks?.points_base || 0} pts
+                </Badge>
+              </div>
+              
+              {/* Collapse/Expand Button for Day tasks only */}
+              {hasDay && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleTaskExpansion(task.id)}
+                  className="h-8 w-8 p-0"
+                >
+                  {isExpanded ? (
+                    <Minus className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
             </div>
             
             <div className="flex items-start gap-3">
@@ -633,7 +667,9 @@ const GitHubWeekly = () => {
           </div>
         </CardHeader>
         
-        <CardContent className="pt-0">
+        {/* Conditionally show content: always for non-Day tasks, only when expanded for Day tasks */}
+        {(!hasDay || isExpanded) && (
+          <CardContent className="pt-0 animate-fade-in">
           {repo && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
               <GitBranch className="h-4 w-4 text-primary" />
@@ -883,6 +919,7 @@ const GitHubWeekly = () => {
             )}
           </div>
         </CardContent>
+        )}
       </Card>
     );
   };
