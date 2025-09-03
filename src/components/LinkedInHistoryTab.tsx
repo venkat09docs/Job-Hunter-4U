@@ -62,15 +62,6 @@ export const LinkedInHistoryTab = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      // Get linkedin user
-      const { data: linkedinUser } = await supabase
-        .from('linkedin_users')
-        .select('id')
-        .eq('auth_uid', user.user.id)
-        .single();
-
-      if (!linkedinUser) return [];
-
       const { data, error } = await supabase
         .from('linkedin_user_tasks')
         .select(`
@@ -87,7 +78,7 @@ export const LinkedInHistoryTab = () => {
             reason
           )
         `)
-        .eq('user_id', linkedinUser.id)
+        .eq('user_id', user.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
