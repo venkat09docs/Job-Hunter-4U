@@ -16,9 +16,13 @@ import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableD
 import { EvidenceDisplay } from '@/components/EvidenceDisplay';
 import { 
   getAssignmentDay,
-  getGitHubTaskStatus,
   isDueDateInAssignmentWeek
 } from '@/utils/dueDateValidation';
+import { 
+  getTaskDayAvailability,
+  canUserInteractWithDayBasedTask,
+  getTaskAvailabilityMessage
+} from '@/utils/dayBasedTaskValidation';
 
 interface EvidenceSubmissionData {
   kind: 'URL' | 'SCREENSHOT' | 'DATA_EXPORT';
@@ -171,16 +175,27 @@ export const GitHubWeeklyAssignments = () => {
           <div className="grid gap-4">
             {weeklyTasks.map((task) => {
               const assignmentDay = getAssignmentDay(task.period);
-              const taskStatus = task.due_at ? 
-                getGitHubTaskStatus(task.due_at, assignmentDay, task.admin_extended) : 
-                { canSubmit: false, canRequestExtension: false, status: 'week_expired' as const, message: 'No due date set' };
               
-              // Debug logging to help track task status logic
+              // Day-based availability (same as LinkedIn and main GitHub Weekly)
+              const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+              const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
+              const dayAvailabilityMessage = getTaskAvailabilityMessage(task.github_tasks?.title || '', task.admin_extended);
+              
+              // Combined availability - use day-based if task has Day X format
+              const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+              const canInteract = hasDay ? canInteractDayBased : true; // Fallback for older tasks
+              
+              // Only show extension request for incomplete tasks that are past due
+              const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
+              const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : false);
+              
               console.log(`🔍 GitHub Task: ${task.github_tasks?.title}`, {
                 dueDate: task.due_at,
                 assignmentDay,
                 adminExtended: task.admin_extended,
-                taskStatus,
+                hasDay,
+                canInteract,
+                dayAvailability,
                 period: task.period,
                 currentTime: new Date().toISOString(),
                 isWithinAssignmentWeek: task.due_at ? isDueDateInAssignmentWeek(task.due_at) : false
@@ -213,7 +228,7 @@ export const GitHubWeeklyAssignments = () => {
                       <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {task.due_at ? taskStatus.message : 'No due date'}
+                          {hasDay ? dayAvailabilityMessage : (task.due_at ? 'Legacy task' : 'No due date')}
                         </span>
                         <span className="font-medium text-primary">
                           {task.github_tasks?.points_base} points
@@ -229,7 +244,7 @@ export const GitHubWeeklyAssignments = () => {
                     {/* Task Status-based Actions */}
                     {task.status !== 'VERIFIED' && (
                       <>
-                        {taskStatus.canSubmit && (task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
+                        {canInteract && (task.status === 'NOT_STARTED' || task.status === 'REJECTED') && (
                           <Dialog 
                             open={evidenceDialog.open && evidenceDialog.taskId === task.id} 
                             onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : undefined })}
@@ -352,7 +367,7 @@ export const GitHubWeeklyAssignments = () => {
                        )}
                         
                         {/* Show extension request if needed */}
-                        {taskStatus.canRequestExtension && (
+                        {showExtensionRequest && (
                           <div className="mt-3">
                             <GitHubRequestReenableDialog
                               taskId={task.id}

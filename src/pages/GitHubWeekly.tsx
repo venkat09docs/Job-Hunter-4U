@@ -53,8 +53,7 @@ import { GitHubWeeklyHistory } from '@/components/GitHubWeeklyHistory';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
 import { 
   isDueDatePassed,
-  isDueDateInAssignmentWeek,
-  getGitHubTaskStatus
+  isDueDateInAssignmentWeek
 } from '@/utils/dueDateValidation';
 import { 
   getTaskDayAvailability,
