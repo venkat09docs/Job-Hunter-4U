@@ -31,8 +31,8 @@ import {
   Webhook,
   Settings,
   History,
+  ChevronDown,
   Plus,
-  Minus,
   Trash2,
   Eye,
   Star,
@@ -556,20 +556,16 @@ const GitHubWeekly = () => {
         
         {/* Status and Due Date - Top Right Corner */}
         <div className="absolute top-4 right-4 z-10 text-right space-y-2">
-          {/* Collapse/Expand Button for Day tasks - Top Priority */}
+          {/* Collapse/Expand Button for Day tasks - Right Side */}
           {hasDay && (
             <div className="flex justify-end mb-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleTaskExpansion(task.id)}
-                className="h-10 w-10 p-0 bg-background/80 hover:bg-background border border-border/50 rounded-full shadow-sm"
+                className="h-8 w-8 p-0 hover:bg-muted/50 transition-colors"
               >
-                {isExpanded ? (
-                  <Minus className="h-5 w-5" />
-                ) : (
-                  <Plus className="h-5 w-5" />
-                )}
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
               </Button>
             </div>
           )}
