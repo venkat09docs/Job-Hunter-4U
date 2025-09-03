@@ -20,7 +20,8 @@ import {
   AlertCircle,
   Calendar,
   AlertTriangle,
-  Shield
+  Shield,
+  RefreshCw
 } from 'lucide-react';
 import { JobHuntingAssignment, useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ import { format } from 'date-fns';
 import { validateEvidenceFiles } from '@/utils/fileValidation';
 import { retryWithBackoff } from '@/utils/retryWithBackoff';
 import { useTranslation } from '@/i18n';
+import { JobHuntingRequestReenableDialog } from '@/components/JobHuntingRequestReenableDialog';
 
 interface JobHuntingAssignmentCardProps {
   assignment: JobHuntingAssignment;
@@ -46,6 +48,72 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const [files, setFiles] = useState<FileList | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fileValidationErrors, setFileValidationErrors] = useState<string[]>([]);
+
+  // Job hunting specific day validation
+  const getJobHuntingDayAvailability = (taskTitle: string) => {
+    const now = new Date();
+    const currentDayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Convert to Monday = 1 system (1 = Monday, 7 = Sunday)
+    const currentWeekDay = currentDayOfWeek === 0 ? 7 : currentDayOfWeek;
+    
+    // Custom mapping for job hunting assignments
+    const dayMappings: { [key: string]: number } = {
+      'Day 5 – Follow-ups (Friday)': 4, // Thursday = 4
+      'Day 6 – Response & Interview Prep (Saturday)': 6, // Saturday = 6  
+      'Day 7 – Weekly Review (Sunday)': 7, // Sunday = 7
+    };
+    
+    const targetDay = dayMappings[taskTitle];
+    
+    if (!targetDay) {
+      // If not a day-specific task, allow access
+      return {
+        isAvailable: true,
+        isPastDue: false,
+        isFutureDay: false,
+        canRequestExtension: false,
+        message: 'Task available'
+      };
+    }
+    
+    const getDayName = (dayNumber: number): string => {
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      return days[dayNumber - 1] || 'Unknown';
+    };
+    
+    if (currentWeekDay === targetDay) {
+      return {
+        isAvailable: true,
+        isPastDue: false,
+        isFutureDay: false,
+        canRequestExtension: false,
+        message: `Available today (${getDayName(targetDay)})`
+      };
+    }
+    
+    if (currentWeekDay > targetDay) {
+      return {
+        isAvailable: false,
+        isPastDue: true,
+        isFutureDay: false,
+        canRequestExtension: true,
+        message: `Task was due on ${getDayName(targetDay)}. Request extension to complete.`
+      };
+    }
+    
+    return {
+      isAvailable: false,
+      isPastDue: false,
+      isFutureDay: true,
+      canRequestExtension: false,
+      message: `Will be available on ${getDayName(targetDay)}`
+    };
+  };
+  
+  const dayAvailability = getJobHuntingDayAvailability(assignment.template?.title || '');
+  const canInteract = dayAvailability.isAvailable;
+  const showExtensionRequest = dayAvailability.canRequestExtension;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -266,26 +334,65 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
           </div>
         )}
 
+        {/* Day Availability Message */}
+        {!dayAvailability.isAvailable && (
+          <div className="w-full p-3 bg-muted/50 border border-muted rounded-md text-center">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm">{dayAvailability.message}</span>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons - Following LinkedIn/CareerTaskCard Assignment Flow */}
         {assignment.status !== 'verified' && (
           <>
             {/* Start Assignment Button */}
             {assignment.status === 'assigned' && (
-              <Button onClick={handleStartAssignment} className="w-full">
-                <Upload className="w-4 h-4 mr-2" />
-                Start Assignment
-              </Button>
+              <>
+                {canInteract ? (
+                  <Button onClick={handleStartAssignment} className="w-full">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Start Assignment
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full" 
+                      variant="secondary" 
+                      disabled
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      {dayAvailability.isFutureDay 
+                        ? 'Available Later This Week'
+                        : dayAvailability.isPastDue 
+                        ? 'Task Missed'
+                        : 'Assignment Expired'
+                      }
+                    </Button>
+                    {showExtensionRequest && (
+                      <JobHuntingRequestReenableDialog
+                        assignmentId={assignment.id}
+                        taskTitle={assignment.template?.title || ''}
+                        onRequestSent={() => {/* refresh if needed */}}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
             
             {/* Submit Assignment Button */}
             {(assignment.status === 'started' || assignment.status === 'rejected') && (
-              <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full">
-                    <Upload className="w-4 h-4 mr-2" />
-                    {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
-                  </Button>
-                </DialogTrigger>
+              <>
+                {canInteract ? (
+                  <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full">
+                        <Upload className="w-4 h-4 mr-2" />
+                        {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
+                      </Button>
+                    </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Submit Evidence - {assignment.template?.title}</DialogTitle>
@@ -387,6 +494,31 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
                   </div>
                 </DialogContent>
               </Dialog>
+                ) : (
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full" 
+                      variant="secondary" 
+                      disabled
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      {dayAvailability.isFutureDay 
+                        ? 'Available Later This Week'
+                        : dayAvailability.isPastDue 
+                        ? 'Task Missed'
+                        : 'Assignment Expired'
+                      }
+                    </Button>
+                    {showExtensionRequest && (
+                      <JobHuntingRequestReenableDialog
+                        assignmentId={assignment.id}
+                        taskTitle={assignment.template?.title || ''}
+                        onRequestSent={() => {/* refresh if needed */}}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
             )}
             
             {/* Under Review State */}
