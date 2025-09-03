@@ -121,6 +121,13 @@ const Dashboard = () => {
     return !hasActiveSubscription();
   };
 
+  // Check if user can access Status Tracker (free, 1-week, 1-month plans)
+  const canAccessStatusTracker = () => {
+    if (isAdmin || isRecruiter) return true;
+    if (!profile?.subscription_plan) return true; // Free users
+    return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
+  };
+
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
@@ -534,71 +541,194 @@ const Dashboard = () => {
             </Card>
 
 
-            {/* Status Tracker */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Status Tracker
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
-                  <Card>
-                    <CardContent className="p-4 lg:p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">Resume</p>
-                          <p className="text-lg sm:text-2xl font-bold">{resumeProgress}%</p>
-                        </div>
-                        <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                      </div>
-                      <Progress value={resumeProgress} className="mt-3" />
-                    </CardContent>
-                  </Card>
+            {/* Status Tracker and Level Up Status - Side by Side */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+              
+              {/* Status Tracker - Only for Free, 1-week, 1-month plan users */}
+              {canAccessStatusTracker() && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Status Tracker
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Resume</p>
+                              <p className="text-lg font-bold">{resumeProgress}%</p>
+                            </div>
+                            <FileText className="h-6 w-6 text-primary" />
+                          </div>
+                          <Progress value={resumeProgress} className="mt-3" />
+                        </CardContent>
+                      </Card>
 
-                  <Card>
-                    <CardContent className="p-4 lg:p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">LinkedIn</p>
-                          <p className="text-lg sm:text-2xl font-bold">{linkedinProgress}%</p>
-                        </div>
-                        <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                      </div>
-                      <Progress value={linkedinProgress} className="mt-3" />
-                    </CardContent>
-                  </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">LinkedIn</p>
+                              <p className="text-lg font-bold">{linkedinProgress}%</p>
+                            </div>
+                            <Users className="h-6 w-6 text-primary" />
+                          </div>
+                          <Progress value={linkedinProgress} className="mt-3" />
+                        </CardContent>
+                      </Card>
 
-                  {isIT() && (
+                      {isIT() && (
+                        <Card>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground">GitHub</p>
+                                <p className="text-lg font-bold">{githubProgress}%</p>
+                              </div>
+                              <Github className="h-6 w-6 text-primary" />
+                            </div>
+                            <Progress value={githubProgress} className="mt-3" />
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">Job Apps</p>
+                              <p className="text-lg font-bold">{totalJobApplications}</p>
+                            </div>
+                            <Briefcase className="h-6 w-6 text-primary" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Level Up Status - For all users */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Level Up Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Resume Status */}
                     <Card>
-                      <CardContent className="p-4 lg:p-6">
+                      <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-xs sm:text-sm font-medium text-muted-foreground">GitHub</p>
-                            <p className="text-lg sm:text-2xl font-bold">{githubProgress}%</p>
+                            <p className="text-xs font-medium text-muted-foreground">Resume</p>
+                            <p className="text-lg font-bold">{resumeProgress}%</p>
                           </div>
-                          <Github className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                          <FileText className="h-6 w-6 text-chart-1" />
                         </div>
-                        <Progress value={githubProgress} className="mt-3" />
+                        <Progress value={resumeProgress} className="mt-3" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
+                        </p>
                       </CardContent>
                     </Card>
-                  )}
 
-                  <Card>
-                    <CardContent className="p-4 lg:p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs sm:text-sm font-medium text-muted-foreground">Job Apps</p>
-                          <p className="text-lg sm:text-2xl font-bold">{totalJobApplications}</p>
+                    {/* LinkedIn Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">LinkedIn</p>
+                            <p className="text-lg font-bold">{linkedinProgress}%</p>
+                          </div>
+                          <Users className="h-6 w-6 text-chart-2" />
                         </div>
-                        <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-amber-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
+                        <Progress value={linkedinProgress} className="mt-3" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    {/* GitHub Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">GitHub</p>
+                            <p className="text-lg font-bold">{githubProgress}%</p>
+                          </div>
+                          <Github className="h-6 w-6 text-chart-3" />
+                        </div>
+                        <Progress value={githubProgress} className="mt-3" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {githubProgress === 100 ? 'Profile Ready!' : `${repoMetrics.total - repoCompleted} tasks left`}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Job Application Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">Applications</p>
+                            <p className="text-lg font-bold">{totalJobApplications}</p>
+                          </div>
+                          <Briefcase className="h-6 w-6 text-chart-4" />
+                        </div>
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          {totalJobApplications === 0 ? 'Start applying!' : 
+                           totalJobApplications < 10 ? 'Keep applying!' : 
+                           'Great progress!'}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* LinkedIn Growth Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">LinkedIn Growth</p>
+                            <p className="text-lg font-bold">{networkMetrics?.totalConnections || 0}</p>
+                          </div>
+                          <Users className="h-6 w-6 text-chart-5" />
+                        </div>
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
+                           (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
+                           'Strong network!'}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* GitHub Growth Status */}
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">GitHub Growth</p>
+                            <p className="text-lg font-bold">{flowCompleted}/{WEEKLY_TARGET}</p>
+                          </div>
+                          <BarChart3 className="h-6 w-6 text-chart-6" />
+                        </div>
+                        <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="mt-3" />
+                        <div className="mt-1 text-xs text-muted-foreground">
+                          {flowCompleted >= WEEKLY_TARGET ? 'Weekly goal met!' : `${WEEKLY_TARGET - flowCompleted} sessions left`}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
