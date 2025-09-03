@@ -166,7 +166,7 @@ export function NotificationBell() {
   };
 
   const handleViewAllClick = () => {
-    navigate('/dashboard/notification-preferences');
+    navigate('/dashboard/all-notifications');
   };
 
   return (
@@ -250,7 +250,7 @@ export function NotificationBell() {
           className="text-center justify-center cursor-pointer"
           onClick={handleViewAllClick}
         >
-          <span className="text-sm font-medium">Manage Notification Settings</span>
+          <span className="text-sm font-medium">View all the notifications</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

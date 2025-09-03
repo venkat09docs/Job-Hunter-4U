@@ -69,6 +69,7 @@ import NotificationManagement from "./pages/NotificationManagement";
 import AffiliateManagementPage from "./pages/AffiliateManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
+import AllNotifications from "./pages/AllNotifications";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <NotificationPreferences />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/all-notifications" 
+            element={
+              <ProtectedRoute>
+                <AllNotifications />
               </ProtectedRoute>
             } 
           />
