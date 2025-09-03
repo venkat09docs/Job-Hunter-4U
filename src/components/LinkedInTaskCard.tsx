@@ -21,7 +21,9 @@ import {
   CheckCircle, 
   AlertCircle,
   Trophy,
-  Shield
+  Shield,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { LinkedInUserTask, Evidence } from '@/hooks/useLinkedInTasks';
 import { format } from 'date-fns';
@@ -68,6 +70,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   const [selectedEvidenceType, setSelectedEvidenceType] = useState<string>('');
   const [url, setUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // New tracking metrics
   const [connectionsAccepted, setConnectionsAccepted] = useState('');
@@ -216,9 +219,32 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   const showDayWarning = hasDay && !canInteract && !isTaskCompleteOrSubmitted;
   const showDueDateWarning = !hasDay && !canInteract && !isTaskCompleteOrSubmitted;
 
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <Card className={`transition-all hover:shadow-lg ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
-      <CardHeader className="pb-4">
+    <Card className={`relative transition-all hover:shadow-lg min-h-[200px] ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
+      
+      {/* Collapse/Expand Button for Day tasks - Top Right Corner */}
+      {hasDay && (
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleExpanded}
+            className="h-10 w-10 p-0 bg-background/80 hover:bg-background border border-border/50 rounded-full shadow-sm"
+          >
+            {isExpanded ? (
+              <Minus className="h-5 w-5" />
+            ) : (
+              <Plus className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+      )}
+
+      <CardHeader className="pb-6 pr-20"> {/* Increased padding for button space */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -241,33 +267,35 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Task Instructions */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Daily Instructions:</Label>
-          <div className="p-3 bg-muted/50 rounded-lg">
-            <div className="text-sm space-y-2">
-              {task.linkedin_tasks.description.split('\n').filter(line => line.trim() !== '').map((line, index) => {
-                const cleanLine = line.trim();
-                if (cleanLine.startsWith('✅')) {
-                  return (
-                    <div key={index} className="flex items-start gap-2">
-                      <span className="text-green-600 mt-0.5 flex-shrink-0">✅</span>
-                      <span className="flex-1 text-foreground">{cleanLine.replace('✅', '').trim()}</span>
-                    </div>
-                  );
-                } else if (cleanLine.length > 0) {
-                  return (
-                    <div key={index} className="pl-6 text-muted-foreground text-xs">
-                      {cleanLine}
-                    </div>
-                  );
-                }
-                return null;
-              })}
+      {/* Conditionally show content: always for non-Day tasks, only when expanded for Day tasks */}
+      {(!hasDay || isExpanded) && (
+        <CardContent className="space-y-4 pb-6 animate-fade-in"> {/* Increased bottom padding */}
+          {/* Task Instructions */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Daily Instructions:</Label>
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <div className="text-sm space-y-2">
+                {task.linkedin_tasks.description.split('\n').filter(line => line.trim() !== '').map((line, index) => {
+                  const cleanLine = line.trim();
+                  if (cleanLine.startsWith('✅')) {
+                    return (
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="text-green-600 mt-0.5 flex-shrink-0">✅</span>
+                        <span className="flex-1 text-foreground">{cleanLine.replace('✅', '').trim()}</span>
+                      </div>
+                    );
+                  } else if (cleanLine.length > 0) {
+                    return (
+                      <div key={index} className="pl-6 text-muted-foreground text-xs">
+                        {cleanLine}
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Due Date with Status */}
         <div className="flex items-center justify-between">
@@ -641,16 +669,17 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
           </>
         )}
 
-        {/* Bonus Rules */}
-        {task.linkedin_tasks.bonus_rules && Object.keys(task.linkedin_tasks.bonus_rules).length > 0 && (
-          <div className="text-xs text-muted-foreground p-3 bg-blue-50 rounded">
-            <div className="font-medium mb-1">💡 Bonus Opportunity:</div>
-            {task.linkedin_tasks.code === 'POST_ONCE' && 'Get +5 points for 3+ unique engagements'}
-            {task.linkedin_tasks.code === 'COMMENT_3' && 'Get +2 points if someone mentions you'}
-            {task.linkedin_tasks.code === 'INVITES_10' && 'Get +5 points for 1+ accepted invites'}
-          </div>
-        )}
-      </CardContent>
+          {/* Bonus Rules */}
+          {task.linkedin_tasks.bonus_rules && Object.keys(task.linkedin_tasks.bonus_rules).length > 0 && (
+            <div className="text-xs text-muted-foreground p-3 bg-blue-50 rounded">
+              <div className="font-medium mb-1">💡 Bonus Opportunity:</div>
+              {task.linkedin_tasks.code === 'POST_ONCE' && 'Get +5 points for 3+ unique engagements'}
+              {task.linkedin_tasks.code === 'COMMENT_3' && 'Get +2 points if someone mentions you'}
+              {task.linkedin_tasks.code === 'INVITES_10' && 'Get +5 points for 1+ accepted invites'}
+            </div>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 };
