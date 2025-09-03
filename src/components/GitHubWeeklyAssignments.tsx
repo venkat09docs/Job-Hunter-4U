@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Github, Plus, Minus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
@@ -46,6 +46,7 @@ export const GitHubWeeklyAssignments = () => {
 
   const [evidenceDialog, setEvidenceDialog] = useState<{ open: boolean; taskId?: string }>({ open: false });
   const [evidenceForm, setEvidenceForm] = useState<EvidenceSubmissionData>({ kind: 'URL' });
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -86,6 +87,18 @@ export const GitHubWeeklyAssignments = () => {
 
   const handleFileChange = (file: File | null) => {
     setEvidenceForm(prev => ({ ...prev, file: file || undefined }));
+  };
+
+  const toggleTaskExpansion = (taskId: string) => {
+    setExpandedTasks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
   };
 
   if (isLoading) {
@@ -442,17 +455,18 @@ export const GitHubWeeklyAssignments = () => {
           </div>
 
           <div className="space-y-4">
-            {/* Day Tasks with Accordion */}
+            {/* Day Tasks with Custom Collapse/Expand */}
             {sortedDayTasks.length > 0 && (
-              <Accordion type="multiple" className="space-y-2">
+              <div className="space-y-2">
                 {sortedDayTasks.map((task) => {
                   const dayMatch = (task.github_tasks?.title || '').match(/Day (\d+)/i);
                   const dayNumber = dayMatch ? dayMatch[1] : '?';
+                  const isExpanded = expandedTasks.has(task.id);
                   
                   return (
-                    <AccordionItem key={task.id} value={task.id} className="border rounded-lg px-0">
-                      <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                        <div className="flex items-center justify-between w-full mr-3">
+                    <Card key={task.id} className="border border-border">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                               {dayNumber}
@@ -466,20 +480,34 @@ export const GitHubWeeklyAssignments = () => {
                               </div>
                             </div>
                           </div>
-                          <Badge variant={getStatusColor(task.status)} className="ml-2">
-                            {getStatusLabel(task.status)}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={getStatusColor(task.status)}>
+                              {getStatusLabel(task.status)}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleTaskExpansion(task.id)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {isExpanded ? (
+                                <Minus className="h-4 w-4" />
+                              ) : (
+                                <Plus className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4">
-                        <div className="animate-fade-in">
+                      </CardHeader>
+                      {isExpanded && (
+                        <CardContent className="pt-0 animate-fade-in">
                           {renderTaskContent(task)}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
+                        </CardContent>
+                      )}
+                    </Card>
                   );
                 })}
-              </Accordion>
+              </div>
             )}
 
             {/* Non-Day Tasks (Legacy tasks) */}
