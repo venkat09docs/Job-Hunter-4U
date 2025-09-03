@@ -155,7 +155,7 @@ export const DailyJobHuntingSessions: React.FC = () => {
             <div className="text-sm text-muted-foreground">Loading daily sessions...</div>
           </div>
         )}
-        {currentWeek.map((day) => {
+        {currentWeek.map((day, dayIndex) => {
           const dayKey = format(day.date, 'yyyy-MM-dd');
           const isExpanded = expandedDays.has(dayKey);
           const isToday = isSameDay(day.date, new Date());
@@ -278,12 +278,15 @@ export const DailyJobHuntingSessions: React.FC = () => {
                       Daily Task Assignments
                     </h4>
                     <div className="space-y-3">
-                      <DailyTaskCard
-                        taskType="job_applications"
-                        date={dayKey}
-                        task={getTasksForDate(dayKey).find(t => t.task_type === 'job_applications')}
-                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
-                      />
+                      {/* Job Applications - Only Monday through Thursday (day index 0-3) */}
+                      {dayIndex <= 3 && (
+                        <DailyTaskCard
+                          taskType="job_applications"
+                          date={dayKey}
+                          task={getTasksForDate(dayKey).find(t => t.task_type === 'job_applications')}
+                          onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                        />
+                      )}
                       <DailyTaskCard
                         taskType="referral_requests"
                         date={dayKey}
