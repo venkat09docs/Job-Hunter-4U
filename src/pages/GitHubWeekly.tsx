@@ -542,7 +542,7 @@ const GitHubWeekly = () => {
     const activityName = titleParts[1] || 'GitHub Activity';
     
     return (
-      <Card className={`relative transition-all duration-300 hover:shadow-xl border-l-4 ${
+      <Card className={`relative transition-all duration-300 hover:shadow-xl border-l-4 min-h-[200px] ${
         task.status === 'VERIFIED' 
           ? 'border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50/30' 
           : task.status === 'SUBMITTED' 
@@ -637,7 +637,7 @@ const GitHubWeekly = () => {
           </div>
         </div>
 
-        <CardHeader className="pb-4 pr-32"> {/* Increase right padding for status/due date */}
+        <CardHeader className="pb-6 pr-20"> {/* Increase bottom padding and right padding for better spacing */}
           {/* Day Badge and Activity Title */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -669,7 +669,7 @@ const GitHubWeekly = () => {
         
         {/* Conditionally show content: always for non-Day tasks, only when expanded for Day tasks */}
         {(!hasDay || isExpanded) && (
-          <CardContent className="pt-0 animate-fade-in">
+          <CardContent className="pt-0 pb-6 animate-fade-in"> {/* Increase bottom padding */}
           {repo && (
             <div className="flex items-center gap-2 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
               <GitBranch className="h-4 w-4 text-primary" />
