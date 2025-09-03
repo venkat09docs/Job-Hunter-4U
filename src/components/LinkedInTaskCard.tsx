@@ -30,6 +30,11 @@ import {
   canUserInteractWithTask,
   isDueDatePassed 
 } from '@/utils/dueDateValidation';
+import { 
+  getTaskDayAvailability,
+  canUserInteractWithDayBasedTask,
+  getTaskAvailabilityMessage
+} from '@/utils/dayBasedTaskValidation';
 import { RequestReenableDialog } from '@/components/RequestReenableDialog';
 
 interface LinkedInTaskCardProps {
@@ -189,10 +194,20 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   const isCompleted = task.status === 'VERIFIED';
   const hasEvidence = taskEvidence.length > 0;
   
-  // Due date validation
+  // Day-based availability (primary check)
+  const dayAvailability = getTaskDayAvailability(task.linkedin_tasks.title);
+  const canInteractDayBased = canUserInteractWithDayBasedTask(task.linkedin_tasks.title, task.admin_extended);
+  const dayAvailabilityMessage = getTaskAvailabilityMessage(task.linkedin_tasks.title, task.admin_extended);
+  
+  // Due date validation (fallback for non-day-based tasks)
   const duePassed = isDueDatePassed(task.due_at);
-  const canInteract = canUserInteractWithTask(task.due_at, task.admin_extended);
+  const canInteractDueDate = canUserInteractWithTask(task.due_at, task.admin_extended);
   const availabilityStatus = getTaskAvailabilityStatus(task.due_at, task.admin_extended);
+  
+  // Combined availability - use day-based if task has Day X format, otherwise use due date
+  const hasDay = task.linkedin_tasks.title.match(/Day (\d+)/i);
+  const canInteract = hasDay ? canInteractDayBased : canInteractDueDate;
+  const showExtensionRequest = hasDay ? dayAvailability.canRequestExtension : (availabilityStatus.status === 'expired');
 
   return (
     <Card className={`transition-all hover:shadow-lg ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
@@ -278,8 +293,34 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
           </div>
         </div>
 
-        {/* Availability Status Message */}
-        {!canInteract && (
+        {/* Day-based Availability Status Message */}
+        {hasDay && !canInteract && (
+          <div className={`p-3 rounded-lg text-sm ${
+            dayAvailability.isPastDue
+              ? 'bg-orange-50 text-orange-700 border border-orange-200'
+              : dayAvailability.isFutureDay 
+              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4" />
+              {dayAvailabilityMessage}
+            </div>
+            {dayAvailability.isPastDue && (
+              <p className="text-xs mt-1">
+                You missed the deadline for this task. Request an extension to complete it.
+              </p>
+            )}
+            {dayAvailability.isFutureDay && (
+              <p className="text-xs mt-1">
+                This task will unlock automatically on its designated day.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Legacy due date message for non-day-based tasks */}
+        {!hasDay && !canInteract && (
           <div className={`p-3 rounded-lg text-sm ${
             availabilityStatus.status === 'week_expired'
               ? 'bg-red-50 text-red-700 border border-red-200'
@@ -384,31 +425,36 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
             {/* Start Assignment Button */}
             {task.status === 'NOT_STARTED' && (
               <>
-                {canInteract ? (
-                  <Button className="w-full" onClick={handleStartAssignment}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Start Assignment
-                  </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Button 
-                      className="w-full" 
-                      variant="secondary" 
-                      disabled
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      Assignment Expired
-                    </Button>
-                    {availabilityStatus.status === 'expired' && (
-                      <RequestReenableDialog
-                        taskId={task.id}
-                        taskTitle={task.linkedin_tasks.title}
-                        hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
-                        onRequestSent={onRefreshTasks}
-                      />
-                    )}
-                  </div>
-                )}
+                 {canInteract ? (
+                   <Button className="w-full" onClick={handleStartAssignment}>
+                     <Upload className="w-4 h-4 mr-2" />
+                     Start Assignment
+                   </Button>
+                 ) : (
+                   <div className="space-y-2">
+                     <Button 
+                       className="w-full" 
+                       variant="secondary" 
+                       disabled
+                     >
+                        <Clock className="w-4 h-4 mr-2" />
+                        {hasDay && dayAvailability.isFutureDay 
+                          ? 'Available Later This Week'
+                          : hasDay && dayAvailability.isPastDue 
+                          ? 'Task Missed'
+                          : 'Assignment Expired'
+                        }
+                     </Button>
+                     {showExtensionRequest && (
+                       <RequestReenableDialog
+                         taskId={task.id}
+                         taskTitle={task.linkedin_tasks.title}
+                         hasPendingRequest={task.extension_requests?.some(req => req.status === 'pending')}
+                         onRequestSent={onRefreshTasks}
+                       />
+                     )}
+                   </div>
+                 )}
               </>
             )}
             
@@ -566,9 +612,14 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
                       disabled
                     >
                       <Clock className="w-4 h-4 mr-2" />
-                      {task.status === 'REJECTED' ? 'Cannot Resubmit - Expired' : 'Submission Expired'}
+                      {hasDay && dayAvailability.isFutureDay 
+                        ? 'Available Later This Week'
+                        : hasDay && dayAvailability.isPastDue 
+                        ? 'Task Missed'
+                        : task.status === 'REJECTED' ? 'Cannot Resubmit - Expired' : 'Submission Expired'
+                      }
                     </Button>
-                    {availabilityStatus.status === 'expired' && (
+                    {showExtensionRequest && (
                       <RequestReenableDialog
                         taskId={task.id}
                         taskTitle={task.linkedin_tasks.title}
