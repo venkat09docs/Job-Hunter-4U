@@ -376,18 +376,18 @@ export const JobHuntingAssignments: React.FC = () => {
                              <div className="flex items-center justify-center">
                                <div className="text-center">
                                  <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.applied}</div>
-                                 <div className="text-sm text-muted-foreground">of 5 completed</div>
+                                  <div className="text-sm text-muted-foreground">of 15 completed</div>
                                </div>
                              </div>
                              <div className="w-full bg-muted rounded-full h-3">
                                <div 
                                  className="bg-primary h-3 rounded-full transition-all"
-                                 style={{ width: `${Math.round((sidebarWeeklyStats.applied / 5) * 100)}%` }}
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.applied / 15) * 100)}%` }}
                                />
                              </div>
                              <div className="text-center">
-                               <Badge variant={sidebarWeeklyStats.applied >= 5 ? "default" : "secondary"} className="text-sm font-medium">
-                                 {Math.round((sidebarWeeklyStats.applied / 5) * 100)}% Complete
+                                <Badge variant={sidebarWeeklyStats.applied >= 15 ? "default" : "secondary"} className="text-sm font-medium">
+                                  {Math.round((sidebarWeeklyStats.applied / 15) * 100)}% Complete
                                </Badge>
                              </div>
                            </div>
@@ -405,18 +405,18 @@ export const JobHuntingAssignments: React.FC = () => {
                              <div className="flex items-center justify-center">
                                <div className="text-center">
                                  <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.referrals}</div>
-                                 <div className="text-sm text-muted-foreground">of 3 completed</div>
+                                  <div className="text-sm text-muted-foreground">of 15 completed</div>
                                </div>
                              </div>
                              <div className="w-full bg-muted rounded-full h-3">
                                <div 
                                  className="bg-primary h-3 rounded-full transition-all"
-                                 style={{ width: `${Math.round((sidebarWeeklyStats.referrals / 3) * 100)}%` }}
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.referrals / 15) * 100)}%` }}
                                />
                              </div>
                              <div className="text-center">
-                               <Badge variant={sidebarWeeklyStats.referrals >= 3 ? "default" : "outline"} className="text-sm font-medium">
-                                 {Math.round((sidebarWeeklyStats.referrals / 3) * 100)}% Complete
+                                <Badge variant={sidebarWeeklyStats.referrals >= 15 ? "default" : "outline"} className="text-sm font-medium">
+                                  {Math.round((sidebarWeeklyStats.referrals / 15) * 100)}% Complete
                                </Badge>
                              </div>
                            </div>
@@ -434,18 +434,18 @@ export const JobHuntingAssignments: React.FC = () => {
                              <div className="flex items-center justify-center">
                                <div className="text-center">
                                  <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.followUps}</div>
-                                 <div className="text-sm text-muted-foreground">of 5 completed</div>
+                                 <div className="text-sm text-muted-foreground">of 15 completed</div>
                                </div>
                              </div>
                              <div className="w-full bg-muted rounded-full h-3">
                                <div 
                                  className="bg-primary h-3 rounded-full transition-all"
-                                 style={{ width: `${Math.round((sidebarWeeklyStats.followUps / 5) * 100)}%` }}
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.followUps / 15) * 100)}%` }}
                                />
                              </div>
                              <div className="text-center">
-                               <Badge variant={sidebarWeeklyStats.followUps >= 5 ? "default" : "secondary"} className="text-sm font-medium">
-                                 {Math.round((sidebarWeeklyStats.followUps / 5) * 100)}% Complete
+                                <Badge variant={sidebarWeeklyStats.followUps >= 15 ? "default" : "secondary"} className="text-sm font-medium">
+                                  {Math.round((sidebarWeeklyStats.followUps / 15) * 100)}% Complete
                                </Badge>
                              </div>
                            </div>
@@ -463,18 +463,18 @@ export const JobHuntingAssignments: React.FC = () => {
                              <div className="flex items-center justify-center">
                                <div className="text-center">
                                  <div className="text-3xl font-bold text-primary">{sidebarWeeklyStats.conversations}</div>
-                                 <div className="text-sm text-muted-foreground">of 3 completed</div>
+                                 <div className="text-sm text-muted-foreground">of 15 completed</div>
                                </div>
                              </div>
                              <div className="w-full bg-muted rounded-full h-3">
                                <div 
                                  className="bg-primary h-3 rounded-full transition-all"
-                                 style={{ width: `${Math.round((sidebarWeeklyStats.conversations / 3) * 100)}%` }}
+                                 style={{ width: `${Math.round((sidebarWeeklyStats.conversations / 15) * 100)}%` }}
                                />
                              </div>
                              <div className="text-center">
-                               <Badge variant={sidebarWeeklyStats.conversations >= 3 ? "default" : "secondary"} className="text-sm font-medium">
-                                 {Math.round((sidebarWeeklyStats.conversations / 3) * 100)}% Complete
+                                <Badge variant={sidebarWeeklyStats.conversations >= 15 ? "default" : "secondary"} className="text-sm font-medium">
+                                  {Math.round((sidebarWeeklyStats.conversations / 15) * 100)}% Complete
                                </Badge>
                              </div>
                            </div>

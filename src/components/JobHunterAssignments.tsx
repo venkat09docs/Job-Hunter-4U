@@ -126,28 +126,28 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
     { 
       id: 'applications', 
       label: 'Job Applications', 
-      target: 5, 
+      target: 15, 
       current: weeklyJobStats.applied, 
       icon: Briefcase 
     },
     { 
       id: 'referrals', 
       label: 'Referral Requests', 
-      target: 3, 
+      target: 15, 
       current: weeklyJobStats.referrals, 
       icon: Users 
     },
     { 
       id: 'follow_ups', 
       label: 'Follow-ups', 
-      target: 5, 
+      target: 15, 
       current: weeklyJobStats.followUps, 
       icon: MessageSquare 
     },
     { 
       id: 'conversations', 
       label: 'New Conversations', 
-      target: 3, 
+      target: 15, 
       current: weeklyJobStats.conversations, 
       icon: TrendingUp 
     }
