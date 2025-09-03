@@ -1169,6 +1169,33 @@ const GitHubWeekly = () => {
                 </Badge>
               </div>
               
+              {/* Weekly Goals Progress Bar */}
+              <div className="mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Weekly Goals Progress</span>
+                      <span className="text-sm text-muted-foreground">
+                        {[
+                          currentMetrics.totalCommits >= 10,
+                          currentMetrics.totalReadmeUpdates >= 2
+                        ].filter(Boolean).length} / 2 goals achieved
+                      </span>
+                    </div>
+                    <Progress 
+                      value={[
+                        currentMetrics.totalCommits >= 10,
+                        currentMetrics.totalReadmeUpdates >= 2
+                      ].filter(Boolean).length / 2 * 100}
+                      className="h-3"
+                    />
+                  </div>
+                  <Badge variant={[currentMetrics.totalCommits >= 10, currentMetrics.totalReadmeUpdates >= 2].filter(Boolean).length === 2 ? "default" : "secondary"} className="text-lg px-3 py-1">
+                    {Math.round([currentMetrics.totalCommits >= 10, currentMetrics.totalReadmeUpdates >= 2].filter(Boolean).length / 2 * 100)}%
+                  </Badge>
+                </div>
+              </div>
+              
               {/* Weekly Targets & Progress Board */}
               <div className="bg-primary/5 p-4 rounded-lg">
                 <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
@@ -1299,26 +1326,7 @@ const GitHubWeekly = () => {
                 <CardDescription>
                   Weekly coding activities to maintain consistent development habits
                 </CardDescription>
-                  {/* Weekly Goals Progress Bar */}
-                  <div className="mt-4 p-3 bg-background rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Weekly Goals Progress</span>
-                      <span className="text-sm text-muted-foreground">
-                        {[
-                          currentMetrics.totalCommits >= 10,
-                          currentMetrics.totalReadmeUpdates >= 2
-                        ].filter(Boolean).length} / 2 goals achieved
-                      </span>
-                    </div>
-                    <Progress 
-                      value={[
-                        currentMetrics.totalCommits >= 10,
-                        currentMetrics.totalReadmeUpdates >= 2
-                      ].filter(Boolean).length / 2 * 100}
-                      className="h-2"
-                    />
-                  </div>
-                </CardHeader>
+              </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {/* Sort tasks by display_order to ensure Day 1-7 ordering */}
