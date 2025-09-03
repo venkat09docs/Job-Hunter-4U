@@ -6,7 +6,8 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Target, Zap } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { Calendar, CheckCircle2, Clock, XCircle, FileCheck, Users, MessageSquare, TrendingUp, Briefcase, Target, Zap, ChevronDown, ChevronRight } from 'lucide-react';
 import { JobHuntingAssignmentCard } from './JobHuntingAssignmentCard';
 import { DailyJobHuntingSessions } from './DailyJobHuntingSessions';
 import { startOfWeek, endOfWeek, format } from 'date-fns';
@@ -27,6 +28,7 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
   onWeeklyStatsUpdate
 }) => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [isWeeklyAssignmentsExpanded, setIsWeeklyAssignmentsExpanded] = useState(false);
   const [weeklyJobStats, setWeeklyJobStats] = useState({
     applied: 0,
     referrals: 0,
@@ -208,71 +210,94 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
       </Card>
 
       {/* Weekly Assignments */}
-      <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  Weekly Assignments
-                  <Button 
-                    onClick={initializeUserWeek}
-                    variant="outline"
+      <Collapsible open={isWeeklyAssignmentsExpanded} onOpenChange={setIsWeeklyAssignmentsExpanded}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isWeeklyAssignmentsExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      Weekly Assignments
+                      <Button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          initializeUserWeek();
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <Zap className="h-4 w-4" />
+                        Initialize Tasks
+                      </Button>
+                    </CardTitle>
+                    <CardDescription>
+                      General job hunting tasks for this week
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={activeFilter === 'all' ? 'default' : 'outline'}
                     size="sm"
-                    className="flex items-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveFilter('all');
+                    }}
                   >
-                    <Zap className="h-4 w-4" />
-                    Initialize Tasks
+                    All ({assignments.length})
                   </Button>
-                </CardTitle>
-                <CardDescription>
-                  General job hunting tasks for this week
-                </CardDescription>
+                  <Button
+                    variant={activeFilter === 'pending' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveFilter('pending');
+                    }}
+                  >
+                    <Clock className="h-4 w-4 mr-1" />
+                    Pending
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={activeFilter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveFilter('all')}
-                >
-                  All ({assignments.length})
-                </Button>
-                <Button
-                  variant={activeFilter === 'pending' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setActiveFilter('pending')}
-                >
-                  <Clock className="h-4 w-4 mr-1" />
-                  Pending
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {filteredAssignments.length === 0 ? (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">No assignments yet</h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Generate your weekly assignments to start your job hunting journey
-                </p>
-                <Button onClick={initializeUserWeek}>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Generate This Week's Tasks
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                 {filteredAssignments.map((assignment) => (
-                   <JobHuntingAssignmentCard 
-                     key={assignment.id} 
-                     assignment={assignment}
-                     onUpdateStatus={onUpdateStatus}
-                   />
-                 ))}
-              </div>
-            )}
-          </CardContent>
-      </Card>
+            </CardHeader>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <CardContent>
+              {filteredAssignments.length === 0 ? (
+                <div className="text-center py-8">
+                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-semibold mb-2">No assignments yet</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Generate your weekly assignments to start your job hunting journey
+                  </p>
+                  <Button onClick={initializeUserWeek}>
+                    <Zap className="h-4 w-4 mr-2" />
+                    Generate This Week's Tasks
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                   {filteredAssignments.map((assignment) => (
+                     <JobHuntingAssignmentCard 
+                       key={assignment.id} 
+                       assignment={assignment}
+                       onUpdateStatus={onUpdateStatus}
+                     />
+                   ))}
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
     </div>
   );
