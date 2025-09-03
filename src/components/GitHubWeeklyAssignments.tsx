@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Github, Plus, Minus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Github, Plus, Minus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw, Link2, Camera, FileText } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
@@ -329,19 +329,77 @@ export const GitHubWeeklyAssignments = () => {
           </div>
         )}
 
-        {/* Evidence Display Section */}
+        {/* Submitted Evidence with GitHub Metrics */}
         {task.evidence && task.evidence.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <EvidenceDisplay evidence={task.evidence.map(evidence => ({
-              id: evidence.id,
-              evidence_type: evidence.kind || 'URL',
-              evidence_data: evidence.parsed_json || evidence.url || {},
-              url: evidence.url,
-              file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : [],
-              verification_status: evidence.verification_status || 'pending',
-              verification_notes: evidence.verification_notes,
-              created_at: evidence.created_at
-            }))} />
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Submitted Evidence:</Label>
+            <div className="space-y-2">
+              {task.evidence.map((ev) => (
+                <div key={ev.id} className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    {ev.kind === 'URL' && <Link2 className="w-4 h-4" />}
+                    {ev.kind === 'SCREENSHOT' && <Camera className="w-4 h-4" />}
+                    {ev.kind === 'DATA_EXPORT' && <FileText className="w-4 h-4" />}
+                    <span>
+                      {ev.kind === 'URL' && ev.url && (
+                        <a href={ev.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          GitHub URL
+                        </a>
+                      )}
+                      {ev.kind === 'SCREENSHOT' && 'Screenshot uploaded'}
+                      {ev.kind === 'DATA_EXPORT' && 'File uploaded'}
+                    </span>
+                    <span className="text-muted-foreground ml-auto">
+                      {new Date(ev.created_at).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </span>
+                  </div>
+                  
+                  {/* Display GitHub metrics if available */}
+                  {(ev.parsed_json?.numberOfCommits || ev.parsed_json?.numberOfReadmes) && (
+                    <div className="mt-2 p-2 bg-background/50 rounded text-xs space-y-1">
+                      <div className="font-medium text-primary">📊 GitHub Metrics:</div>
+                      <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+                        {ev.parsed_json?.numberOfCommits && (
+                          <div>Commits: {ev.parsed_json.numberOfCommits}</div>
+                        )}
+                        {ev.parsed_json?.numberOfReadmes && (
+                          <div>README/Docs: {ev.parsed_json.numberOfReadmes}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Verification status */}
+                  {ev.verification_status && (
+                    <div className="mt-2 flex items-center gap-1 text-xs">
+                      {ev.verification_status === 'verified' && (
+                        <>
+                          <CheckCircle className="w-3 h-3 text-green-600" />
+                          <span className="text-green-600">Verified</span>
+                        </>
+                      )}
+                      {ev.verification_status === 'pending' && (
+                        <>
+                          <Clock className="w-3 h-3 text-yellow-600" />
+                          <span className="text-yellow-600">Under Review</span>
+                        </>
+                      )}
+                      {ev.verification_status === 'rejected' && (
+                        <>
+                          <AlertCircle className="w-3 h-3 text-red-600" />
+                          <span className="text-red-600">Rejected</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
         
