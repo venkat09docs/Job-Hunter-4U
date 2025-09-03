@@ -556,6 +556,24 @@ const GitHubWeekly = () => {
         
         {/* Status and Due Date - Top Right Corner */}
         <div className="absolute top-4 right-4 z-10 text-right space-y-2">
+          {/* Collapse/Expand Button for Day tasks - Top Priority */}
+          {hasDay && (
+            <div className="flex justify-end mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleTaskExpansion(task.id)}
+                className="h-10 w-10 p-0 bg-background/80 hover:bg-background border border-border/50 rounded-full shadow-sm"
+              >
+                {isExpanded ? (
+                  <Minus className="h-5 w-5" />
+                ) : (
+                  <Plus className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+          )}
+          
           {/* Status Badge */}
           <Badge className={`${statusBg} ${statusColor} shadow-sm`}>
             <StatusIcon className="h-3 w-3 mr-1" />
@@ -622,33 +640,15 @@ const GitHubWeekly = () => {
         <CardHeader className="pb-4 pr-32"> {/* Increase right padding for status/due date */}
           {/* Day Badge and Activity Title */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="text-sm font-medium px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  {dayPart}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  <Trophy className="h-3 w-3 mr-1" />
-                  {task.github_tasks?.points_base || 0} pts
-                </Badge>
-              </div>
-              
-              {/* Collapse/Expand Button for Day tasks only */}
-              {hasDay && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleTaskExpansion(task.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  {isExpanded ? (
-                    <Minus className="h-4 w-4" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-sm font-medium px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                <Calendar className="h-3 w-3 mr-1" />
+                {dayPart}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                <Trophy className="h-3 w-3 mr-1" />
+                {task.github_tasks?.points_base || 0} pts
+              </Badge>
             </div>
             
             <div className="flex items-start gap-3">
