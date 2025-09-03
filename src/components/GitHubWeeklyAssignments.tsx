@@ -13,6 +13,7 @@ import { Calendar, Clock, Github, Plus, Upload, CheckCircle, AlertCircle, Shield
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
+import { EvidenceDisplay } from '@/components/EvidenceDisplay';
 import { 
   getAssignmentDay,
   getGitHubTaskStatus,
@@ -376,71 +377,52 @@ export const GitHubWeeklyAssignments = () => {
                       </div>
                     )}
 
-                    {task.status === 'REJECTED' && (
-                      <div className="flex items-center gap-2 text-sm text-red-600">
-                        <AlertCircle className="h-4 w-4" />
-                        Rejected - Please resubmit
+                    {/* Evidence Display Section */}
+                    {task.evidence && task.evidence.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <EvidenceDisplay evidence={task.evidence.map(evidence => ({
+                          id: evidence.id,
+                          evidence_type: evidence.kind || 'URL',
+                          evidence_data: evidence.parsed_json || evidence.url || {},
+                          url: evidence.url,
+                          file_urls: evidence.file_key ? [`/storage/v1/object/public/github-evidence/${evidence.file_key}`] : [],
+                          verification_status: evidence.verification_status || 'pending',
+                          verification_notes: evidence.verification_notes,
+                          created_at: evidence.created_at
+                        }))} />
+                      </div>
+                    )}
+                    
+                    {/* Admin Review Notes */}
+                    {task.verification_notes && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <Label className="text-sm font-medium flex items-center gap-2 mb-2">
+                          <Shield className="h-4 w-4" />
+                          Admin Review:
+                        </Label>
+                        <div className={`p-3 rounded-md text-sm border-l-4 ${
+                          task.status === 'VERIFIED' 
+                            ? 'bg-success/10 border-success text-success-foreground' 
+                            : task.status === 'REJECTED'
+                            ? 'bg-destructive/10 border-destructive text-destructive-foreground'
+                            : 'bg-warning/10 border-warning text-warning-foreground'
+                        }`}>
+                          <div className="font-medium mb-1">
+                            {task.status === 'VERIFIED' ? 'Approved' : 
+                             task.status === 'REJECTED' ? 'Rejected' : 'Under Review'}
+                            {task.evidence_verified_at && (
+                              <span className="text-xs font-normal ml-2">
+                                on {new Date(task.evidence_verified_at).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          <p className="whitespace-pre-line leading-relaxed">
+                            {task.verification_notes}
+                          </p>
+                        </div>
                       </div>
                     )}
 
-                     {/* Admin Review Section for GitHub Weekly Tasks */}
-                     {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
-                       <div className="mt-3 space-y-2 p-3 rounded-lg border">
-                         <Label className="text-sm font-medium flex items-center gap-2">
-                           <Shield className="w-4 h-4" />
-                           Admin Review Notes:
-                         </Label>
-                         <div className={`p-3 rounded-md text-sm border-l-4 ${
-                           task.status === 'VERIFIED' 
-                             ? 'bg-green-50 border-green-500 text-green-800 dark:bg-green-900/20 dark:text-green-200' 
-                             : 'bg-red-50 border-red-500 text-red-800 dark:bg-red-900/20 dark:text-red-200'
-                         }`}>
-                           <div className="font-medium mb-1">
-                             Status: {task.status === 'VERIFIED' ? 'Approved ✓' : 'Rejected ✗'}
-                             {task.evidence_verified_at && (
-                               <span className="text-xs font-normal ml-2 opacity-75">
-                                 on {new Date(task.evidence_verified_at).toLocaleDateString()}
-                               </span>
-                             )}
-                           </div>
-                           <p className="whitespace-pre-line leading-relaxed">
-                             {task.verification_notes}
-                           </p>
-                         </div>
-                       </div>
-                     )}
-
-                     {/* Evidence Information Display */}
-                     {task.latestEvidence && task.latestEvidence.parsed_json && (
-                       <div className="mt-3 space-y-2 p-3 rounded-lg bg-muted/50">
-                         <Label className="text-sm font-medium">Submitted Evidence:</Label>
-                         <div className="text-sm space-y-1">
-                           {(task.latestEvidence.parsed_json as any)?.numberOfCommits && (
-                             <div>
-                               <span className="font-medium">Weekly Commits:</span> {(task.latestEvidence.parsed_json as any).numberOfCommits}
-                             </div>
-                           )}
-                           {(task.latestEvidence.parsed_json as any)?.numberOfReadmes && (
-                             <div>
-                               <span className="font-medium">README/Docs Updates:</span> {(task.latestEvidence.parsed_json as any).numberOfReadmes}
-                             </div>
-                           )}
-                           {(task.latestEvidence.parsed_json as any)?.description && (
-                             <div>
-                               <span className="font-medium">Description:</span> {(task.latestEvidence.parsed_json as any).description}
-                             </div>
-                           )}
-                           {task.latestEvidence.url && (
-                             <div>
-                               <span className="font-medium">URL:</span> 
-                               <a href={task.latestEvidence.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                                 {task.latestEvidence.url}
-                               </a>
-                             </div>
-                           )}
-                         </div>
-                       </div>
-                     )}
                   </CardContent>
                 </Card>
               );
@@ -652,7 +634,7 @@ export const GitHubWeeklyAssignments = () => {
                             )}
 
                             {/* Admin Review Section for Repo Tasks */}
-                            {(task.status === 'VERIFIED' || task.status === 'REJECTED') && (task as any).verification_notes && (
+                            {(task.status === 'VERIFIED' || task.status === 'REJECTED') && task.verification_notes && (
                               <div className="mt-3 space-y-2 p-3 rounded-lg border">
                                 <Label className="text-sm font-medium flex items-center gap-2">
                                   <Shield className="w-4 h-4" />
@@ -672,7 +654,7 @@ export const GitHubWeeklyAssignments = () => {
                                     )}
                                   </div>
                                   <p className="whitespace-pre-line leading-relaxed">
-                                    {(task as any).verification_notes}
+                                    {task.verification_notes}
                                   </p>
                                 </div>
                               </div>
