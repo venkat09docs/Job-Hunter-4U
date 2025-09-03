@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target, Briefcase, Users, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target, Briefcase, Users, MessageSquare, AlertCircle } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useDailyJobHuntingSessions } from '@/hooks/useDailyJobHuntingSessions';
 import { useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
 import { DailyTaskCard } from './DailyTaskCard';
+import { getTaskDayAvailability, canUserInteractWithDayBasedTask, getTaskAvailabilityMessage } from '@/utils/dayBasedTaskValidation';
+import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
 
 interface SessionTask {
   id: string;
@@ -176,6 +178,16 @@ export const DailyJobHuntingSessions: React.FC = () => {
           const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
           const dayIndex = Math.floor((day.date.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
           
+          // Day-based availability check for sessions
+          const dayTaskTitle = `Day ${dayIndex + 1}`;
+          const dayAvailability = getTaskDayAvailability(dayTaskTitle);
+          const canInteract = canUserInteractWithDayBasedTask(dayTaskTitle, false); // No admin extension for now
+          const availabilityMessage = getTaskAvailabilityMessage(dayTaskTitle, false);
+          
+          // Check if we should show extension request (when task is past due and not completed)
+          const hasIncompleteSessions = day.completedSessions < day.totalSessions;
+          const showExtensionRequest = !canInteract && dayAvailability.canRequestExtension && hasIncompleteSessions;
+          
           return (
             <Collapsible key={dayKey} open={isExpanded} onOpenChange={() => toggleDay(dayKey)}>
               <CollapsibleTrigger asChild>
@@ -233,6 +245,43 @@ export const DailyJobHuntingSessions: React.FC = () => {
               
               <CollapsibleContent className="mt-2">
                 <div className="grid gap-3 pl-4">
+                  
+                  {/* Day Availability Warning */}
+                  {!canInteract && day.totalSessions > 0 && hasIncompleteSessions && (
+                    <div className={`p-3 rounded-lg text-sm ${
+                      dayAvailability.isPastDue
+                        ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                        : dayAvailability.isFutureDay 
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                    }`}>
+                      <div className="flex items-center gap-2 font-medium">
+                        <AlertCircle className="w-4 h-4" />
+                        {availabilityMessage}
+                      </div>
+                      {dayAvailability.isPastDue && (
+                        <p className="text-xs mt-1">
+                          You missed the deadline for this day's sessions. Request an extension to complete them.
+                        </p>
+                      )}
+                      {dayAvailability.isFutureDay && (
+                        <p className="text-xs mt-1">
+                          These sessions will unlock automatically on {day.dayName}.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Extension Request Button */}
+                  {showExtensionRequest && (
+                    <div className="mb-3">
+                      <JobHuntingRequestReenableDialog
+                        assignmentId={`daily-sessions-${dayKey}`}
+                        taskTitle={`${day.dayName} Daily Job Hunting Sessions`}
+                      />
+                    </div>
+                  )}
+                  
                   {day.sessions.map((session) => (
                     <Card key={session.id} className={session.completed ? 'bg-green-50 border-green-200' : ''}>
                       <CardContent className="p-4">
@@ -265,9 +314,9 @@ export const DailyJobHuntingSessions: React.FC = () => {
                               size="sm" 
                               variant="outline"
                               onClick={() => handleCompleteSession(dayKey, session.id.includes('-morning') ? 'morning' : session.id.includes('-afternoon') ? 'afternoon' : 'evening')}
-                              disabled={loading}
+                              disabled={loading || !canInteract}
                             >
-                              Mark Complete
+                              {!canInteract ? 'Not Available' : 'Mark Complete'}
                             </Button>
                           )}
                         </div>
