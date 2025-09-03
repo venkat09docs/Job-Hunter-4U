@@ -181,10 +181,22 @@ const handler = async (req: Request): Promise<Response> => {
               // Insert metrics into linkedin_network_metrics table
               if (metrics.length > 0) {
                 for (const metric of metrics) {
+                  // First, check if a metric already exists for this user/date/activity
+                  const { data: existingMetric } = await supabase
+                    .from('linkedin_network_metrics')
+                    .select('value')
+                    .eq('user_id', metric.user_id)
+                    .eq('date', metric.date)
+                    .eq('activity_id', metric.activity_id)
+                    .single();
+
+                  const finalValue = existingMetric ? (existingMetric.value + metric.value) : metric.value;
+                  
                   const { error: metricError } = await supabase
                     .from('linkedin_network_metrics')
                     .upsert({
                       ...metric,
+                      value: finalValue,
                       created_at: new Date().toISOString(),
                       updated_at: new Date().toISOString()
                     }, {
@@ -194,7 +206,7 @@ const handler = async (req: Request): Promise<Response> => {
                   if (metricError) {
                     console.error(`❌ Error inserting metric ${metric.activity_id}:`, metricError);
                   } else {
-                    console.log(`✅ Inserted ${metric.activity_id}: ${metric.value} for user ${metric.user_id}`);
+                    console.log(`✅ ${existingMetric ? 'Updated' : 'Inserted'} ${metric.activity_id}: ${finalValue} (added ${metric.value}) for user ${metric.user_id}`);
                   }
                 }
               }
