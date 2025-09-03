@@ -1168,6 +1168,119 @@ const GitHubWeekly = () => {
                   {weeklyTasks.length > 0 ? Math.round((weeklyTasks.filter(task => task.status === 'VERIFIED').length / weeklyTasks.length) * 100) : 0}%
                 </Badge>
               </div>
+              
+              {/* Weekly Targets & Progress Board */}
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Weekly Targets & Progress
+                </h4>
+                <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <GitCommit className="h-4 w-4 text-green-600" />
+                        <span className="font-semibold text-green-600">Weekly Commits</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-green-600">{currentMetrics.totalCommits}</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-lg font-bold text-green-600">10+</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Current / Target</div>
+                        {currentMetrics.totalCommits >= 10 ? (
+                          <Badge variant="default" className="text-xs bg-green-100 text-green-700 border-green-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Target Met!
+                          </Badge>
+                        ) : (
+                          <div className="text-xs text-orange-600">
+                            {10 - currentMetrics.totalCommits} more needed
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <GitBranch className="h-4 w-4 text-indigo-600" />
+                        <span className="font-semibold text-indigo-600">Total Commits</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-indigo-600">{getTotalCommitsAllTime()}</span>
+                          <span className="text-muted-foreground">commits</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">All time total</div>
+                        <div className="text-xs text-indigo-600 font-medium">
+                          Lifetime achievement
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div 
+                    className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:border-blue-300 hover:bg-blue-50/50"
+                    onClick={() => setActiveTab("repos")}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <Star className="h-4 w-4 text-blue-600" />
+                        <span className="font-semibold text-blue-600">Pinned Repositories</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-blue-600">{repos?.length || 0}</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-lg font-bold text-blue-600">3+</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Current / Target</div>
+                        {(repos?.length || 0) >= 3 ? (
+                          <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Target Met!
+                          </Badge>
+                        ) : (
+                          <div className="text-xs text-orange-600">
+                            {3 - (repos?.length || 0)} more needed
+                          </div>
+                        )}
+                        <div className="text-xs text-blue-600 font-medium mt-1">Click to manage repositories →</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-2">
+                        <BookOpen className="h-4 w-4 text-purple-600" />
+                        <span className="font-semibold text-purple-600">README/Docs</span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-lg font-bold text-purple-600">{currentMetrics.totalReadmeUpdates}</span>
+                          <span className="text-muted-foreground">/</span>
+                          <span className="text-lg font-bold text-purple-600">2-3</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Current / Target</div>
+                        {currentMetrics.totalReadmeUpdates >= 2 ? (
+                          <Badge variant="default" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Target Met!
+                          </Badge>
+                        ) : (
+                          <div className="text-xs text-orange-600">
+                            {2 - currentMetrics.totalReadmeUpdates} more needed
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -1186,120 +1299,7 @@ const GitHubWeekly = () => {
                 <CardDescription>
                   Weekly coding activities to maintain consistent development habits
                 </CardDescription>
-                
-                {/* Weekly Targets */}
-                <div className="bg-primary/5 p-4 rounded-lg mt-4">
-                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                    <Target className="h-4 w-4" />
-                    Weekly Targets & Progress
-                  </h4>
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <GitCommit className="h-4 w-4 text-green-600" />
-                          <span className="font-semibold text-green-600">Weekly Commits</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-lg font-bold text-green-600">{currentMetrics.totalCommits}</span>
-                            <span className="text-muted-foreground">/</span>
-                            <span className="text-lg font-bold text-green-600">10+</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">Current / Target</div>
-                          {currentMetrics.totalCommits >= 10 ? (
-                            <Badge variant="default" className="text-xs bg-green-100 text-green-700 border-green-300">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Target Met!
-                            </Badge>
-                          ) : (
-                            <div className="text-xs text-orange-600">
-                              {10 - currentMetrics.totalCommits} more needed
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <GitBranch className="h-4 w-4 text-indigo-600" />
-                          <span className="font-semibold text-indigo-600">Total Commits</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-lg font-bold text-indigo-600">{getTotalCommitsAllTime()}</span>
-                            <span className="text-muted-foreground">commits</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">All time total</div>
-                          <div className="text-xs text-indigo-600 font-medium">
-                            Lifetime achievement
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div 
-                      className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow cursor-pointer hover:border-blue-300 hover:bg-blue-50/50"
-                      onClick={() => setActiveTab("repos")}
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <Star className="h-4 w-4 text-blue-600" />
-                          <span className="font-semibold text-blue-600">Pinned Repositories</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-lg font-bold text-blue-600">{repos?.length || 0}</span>
-                            <span className="text-muted-foreground">/</span>
-                            <span className="text-lg font-bold text-blue-600">3+</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">Current / Target</div>
-                          {(repos?.length || 0) >= 3 ? (
-                            <Badge variant="default" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Target Met!
-                            </Badge>
-                          ) : (
-                            <div className="text-xs text-orange-600">
-                              {3 - (repos?.length || 0)} more needed
-                            </div>
-                          )}
-                          <div className="text-xs text-blue-600 font-medium mt-1">Click to manage repositories →</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-center p-4 bg-background rounded-lg border hover:shadow-md transition-shadow">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-center gap-2">
-                          <BookOpen className="h-4 w-4 text-purple-600" />
-                          <span className="font-semibold text-purple-600">README/Docs</span>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-lg font-bold text-purple-600">{currentMetrics.totalReadmeUpdates}</span>
-                            <span className="text-muted-foreground">/</span>
-                            <span className="text-lg font-bold text-purple-600">2-3</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">Current / Target</div>
-                          {currentMetrics.totalReadmeUpdates >= 2 ? (
-                            <Badge variant="default" className="text-xs bg-purple-100 text-purple-700 border-purple-300">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Target Met!
-                            </Badge>
-                          ) : (
-                            <div className="text-xs text-orange-600">
-                              {2 - currentMetrics.totalReadmeUpdates} more needed
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Overall Progress Bar */}
+                  {/* Weekly Goals Progress Bar */}
                   <div className="mt-4 p-3 bg-background rounded-lg border">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Weekly Goals Progress</span>
@@ -1318,8 +1318,7 @@ const GitHubWeekly = () => {
                       className="h-2"
                     />
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {/* Sort tasks by display_order to ensure Day 1-7 ordering */}
