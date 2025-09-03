@@ -204,7 +204,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
               {getStatusIcon(task.status)}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {task.linkedin_tasks.description}
+              LinkedIn Growth Activity
             </p>
           </div>
           <div className="text-right">
@@ -220,6 +220,30 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Task Instructions */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Instructions:</Label>
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <div className="text-sm space-y-1">
+              {task.linkedin_tasks.description.split('\n').map((line, index) => {
+                if (line.trim() === '') return null;
+                return (
+                  <div key={index} className="flex items-start gap-2">
+                    {line.includes('✅') ? (
+                      <>
+                        <span className="text-green-600 mt-0.5">✅</span>
+                        <span className="flex-1">{line.replace('✅', '').trim()}</span>
+                      </>
+                    ) : (
+                      <span className="pl-6">{line}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Due Date with Status */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm">
