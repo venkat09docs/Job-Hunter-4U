@@ -287,6 +287,86 @@ const EvidenceCard: React.FC<{ evidence: any; index: number }> = ({ evidence, in
         );
       }
 
+      if (evidence.evidence_type === 'daily_task' || evidence.kind === 'daily_task') {
+        const taskTypeNames = {
+          job_applications: 'Apply to Job Roles',
+          job_referrals: 'Request Job Referrals', 
+          follow_up_messages: 'Send Follow-up Messages'
+        };
+
+        return (
+          <div className="space-y-3">
+            <div className="font-medium">Daily Task Details</div>
+            {data.task_type && <div><strong>Task Type:</strong> {taskTypeNames[data.task_type] || data.task_type}</div>}
+            {data.task_date && <div><strong>Task Date:</strong> {new Date(data.task_date).toLocaleDateString()}</div>}
+            {data.target_count && <div><strong>Target Count:</strong> {data.target_count}</div>}
+            {data.actual_count !== undefined && <div><strong>Actual Count:</strong> {data.actual_count}</div>}
+            {data.description && (
+              <div>
+                <strong>Description:</strong>
+                <div className="mt-1 p-2 bg-muted/50 rounded text-sm">
+                  {data.description}
+                </div>
+              </div>
+            )}
+            
+            {/* Render evidence URLs */}
+            {data.evidence_urls && data.evidence_urls.length > 0 && (
+              <div>
+                <strong>Evidence URLs:</strong>
+                <div className="mt-1 space-y-1">
+                  {data.evidence_urls.map((url: string, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <ExternalLink className="w-3 h-3" />
+                      <a 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs break-all"
+                      >
+                        {url}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Render file URLs */}
+            {data.file_urls && data.file_urls.length > 0 && (
+              <div>
+                <strong>Files:</strong>
+                <div className="mt-1 space-y-1">
+                  {data.file_urls.map((fileUrl: string, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <FileText className="w-3 h-3" />
+                      <a 
+                        href={fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs"
+                      >
+                        File {index + 1}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Render any additional daily task data */}
+            {data.evidence_data && (
+              <div>
+                <strong>Additional Evidence:</strong>
+                <div className="mt-2 p-2 bg-muted/30 rounded">
+                  {renderNestedData(data.evidence_data)}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
       // Generic object display for other types - using recursive rendering
       return renderNestedData(data);
     }
@@ -1013,7 +1093,37 @@ const VerifyAssignments = () => {
     try {
       let evidenceData: any[] = [];
 
-      if (assignment._isLinkedInAssignment) {
+      if (assignment.career_task_templates?.module === 'DAILY_TASKS') {
+        // For daily tasks, evidence is already included in the assignment
+        evidenceData = assignment.evidence || [];
+        
+        // If no evidence, fetch the task details from the daily_job_hunting_tasks table
+        if (evidenceData.length === 0) {
+          const { data: taskData } = await supabase
+            .from('daily_job_hunting_tasks')
+            .select('*')
+            .eq('id', assignment.id)
+            .single();
+            
+          if (taskData) {
+            evidenceData = [{
+              evidence_type: 'daily_task',
+              evidence_data: {
+                task_type: taskData.task_type,
+                target_count: taskData.target_count,
+                actual_count: taskData.actual_count,
+                description: taskData.description,
+                task_date: taskData.task_date,
+                evidence_urls: taskData.evidence_urls,
+                file_urls: taskData.file_urls,
+                evidence_data: taskData.evidence_data
+              },
+              created_at: taskData.created_at,
+              submitted_at: taskData.submitted_at
+            }];
+          }
+        }
+      } else if (assignment._isLinkedInAssignment) {
         // Fetch LinkedIn evidence
         const { data } = await supabase
           .from('linkedin_evidence')
@@ -1044,7 +1154,7 @@ const VerifyAssignments = () => {
       }
 
       // Sort evidence by created_at in descending order (latest first)
-      evidenceData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      evidenceData.sort((a, b) => new Date(b.created_at || b.submitted_at || '').getTime() - new Date(a.created_at || a.submitted_at || '').getTime());
 
       setSelectedAssignmentEvidence(evidenceData);
     } catch (error) {
@@ -1094,7 +1204,8 @@ const VerifyAssignments = () => {
       'LINKEDIN': 'bg-green-100 text-green-800',
       'GITHUB': 'bg-purple-100 text-purple-800',
       'JOB_HUNTING': 'bg-orange-100 text-orange-800',
-      'DIGITAL_PROFILE': 'bg-pink-100 text-pink-800'
+      'DIGITAL_PROFILE': 'bg-pink-100 text-pink-800',
+      'DAILY_TASKS': 'bg-red-100 text-red-800'
     };
     
     return (
