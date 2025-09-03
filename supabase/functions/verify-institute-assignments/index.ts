@@ -129,8 +129,78 @@ const handler = async (req: Request): Promise<Response> => {
           assignmentData.profiles = linkedinProfileData;
         }
 
-        // Update evidence status (no verification tracking for LinkedIn evidence)
-        // LinkedIn evidence table doesn't have verification columns
+        // Process tracking metrics from evidence if approved
+        if (isApproved) {
+          console.log(`🔍 Processing tracking metrics for LinkedIn task ${assignmentId}`);
+          
+          // Get evidence with tracking metrics
+          const { data: evidenceData, error: evidenceError } = await supabase
+            .from('linkedin_evidence')
+            .select('*')
+            .eq('user_task_id', assignmentId)
+            .not('evidence_data', 'is', null);
+
+          if (!evidenceError && evidenceData && evidenceData.length > 0) {
+            const evidence = evidenceData[0];
+            const trackingMetrics = evidence.evidence_data?.tracking_metrics;
+            
+            if (trackingMetrics) {
+              console.log(`📊 Found tracking metrics:`, trackingMetrics);
+              
+              const currentDate = new Date().toISOString().split('T')[0];
+              const metrics = [];
+              
+              // Process different metric types
+              if (trackingMetrics.connections_accepted && trackingMetrics.connections_accepted > 0) {
+                metrics.push({
+                  user_id: assignmentData.user_id,
+                  date: currentDate,
+                  activity_id: 'connections_accepted',
+                  value: trackingMetrics.connections_accepted
+                });
+              }
+              
+              if (trackingMetrics.posts_count && trackingMetrics.posts_count > 0) {
+                metrics.push({
+                  user_id: assignmentData.user_id,
+                  date: currentDate,
+                  activity_id: 'create_post',
+                  value: trackingMetrics.posts_count
+                });
+              }
+              
+              if (trackingMetrics.profile_views && trackingMetrics.profile_views > 0) {
+                metrics.push({
+                  user_id: assignmentData.user_id,
+                  date: currentDate,
+                  activity_id: 'profile_views',
+                  value: trackingMetrics.profile_views
+                });
+              }
+              
+              // Insert metrics into linkedin_network_metrics table
+              if (metrics.length > 0) {
+                for (const metric of metrics) {
+                  const { error: metricError } = await supabase
+                    .from('linkedin_network_metrics')
+                    .upsert({
+                      ...metric,
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString()
+                    }, {
+                      onConflict: 'user_id,date,activity_id'
+                    });
+                    
+                  if (metricError) {
+                    console.error(`❌ Error inserting metric ${metric.activity_id}:`, metricError);
+                  } else {
+                    console.log(`✅ Inserted ${metric.activity_id}: ${metric.value} for user ${metric.user_id}`);
+                  }
+                }
+              }
+            }
+          }
+        }
 
         notificationTitle = `LinkedIn Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.linkedin_tasks?.title}`;
         notificationMessage = isApproved
