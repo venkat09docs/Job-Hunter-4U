@@ -207,7 +207,14 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   // Combined availability - use day-based if task has Day X format, otherwise use due date
   const hasDay = task.linkedin_tasks.title.match(/Day (\d+)/i);
   const canInteract = hasDay ? canInteractDayBased : canInteractDueDate;
-  const showExtensionRequest = hasDay ? dayAvailability.canRequestExtension : (availabilityStatus.status === 'expired');
+  
+  // Only show extension request for incomplete tasks that are past due
+  const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
+  const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : (availabilityStatus.status === 'expired'));
+  
+  // Only show warning messages for incomplete tasks
+  const showDayWarning = hasDay && !canInteract && !isTaskCompleteOrSubmitted;
+  const showDueDateWarning = !hasDay && !canInteract && !isTaskCompleteOrSubmitted;
 
   return (
     <Card className={`transition-all hover:shadow-lg ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
@@ -294,7 +301,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
         </div>
 
         {/* Day-based Availability Status Message */}
-        {hasDay && !canInteract && (
+        {showDayWarning && (
           <div className={`p-3 rounded-lg text-sm ${
             dayAvailability.isPastDue
               ? 'bg-orange-50 text-orange-700 border border-orange-200'
@@ -320,7 +327,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
         )}
 
         {/* Legacy due date message for non-day-based tasks */}
-        {!hasDay && !canInteract && (
+        {showDueDateWarning && (
           <div className={`p-3 rounded-lg text-sm ${
             availabilityStatus.status === 'week_expired'
               ? 'bg-red-50 text-red-700 border border-red-200'
