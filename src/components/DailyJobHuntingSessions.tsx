@@ -360,6 +360,10 @@ export const DailyJobHuntingSessions: React.FC = () => {
                           date={dayKey}
                           task={getTasksForDate(dayKey).find(t => t.task_type === 'job_applications')}
                           onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                          canInteract={canInteract}
+                          availabilityMessage={availabilityMessage}
+                          showExtensionRequest={showExtensionRequest}
+                          dayAvailability={dayAvailability}
                         />
                       )}
                       <DailyTaskCard
@@ -367,12 +371,20 @@ export const DailyJobHuntingSessions: React.FC = () => {
                         date={dayKey}
                         task={getTasksForDate(dayKey).find(t => t.task_type === 'referral_requests')}
                         onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                        canInteract={canInteract}
+                        availabilityMessage={availabilityMessage}
+                        showExtensionRequest={showExtensionRequest}
+                        dayAvailability={dayAvailability}
                       />
                       <DailyTaskCard
                         taskType="follow_up_messages"
                         date={dayKey}
                         task={getTasksForDate(dayKey).find(t => t.task_type === 'follow_up_messages')}
                         onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                        canInteract={canInteract}
+                        availabilityMessage={availabilityMessage}
+                        showExtensionRequest={showExtensionRequest}
+                        dayAvailability={dayAvailability}
                       />
                     </div>
                   </div>

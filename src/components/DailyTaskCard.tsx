@@ -18,19 +18,33 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { DailyTask, TaskType, useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
+import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
 
 interface DailyTaskCardProps {
   taskType: TaskType;
   date: string;
   task?: DailyTask;
   onTaskUpdate: () => void;
+  canInteract?: boolean;
+  availabilityMessage?: string;
+  showExtensionRequest?: boolean;
+  dayAvailability?: {
+    isAvailable: boolean;
+    isPastDue: boolean;
+    isFutureDay: boolean;
+    canRequestExtension: boolean;
+  };
 }
 
 export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
   taskType,
   date,
   task,
-  onTaskUpdate
+  onTaskUpdate,
+  canInteract = true,
+  availabilityMessage,
+  showExtensionRequest = false,
+  dayAvailability
 }) => {
   const { taskConfigs, upsertTask, submitTask } = useDailyJobHuntingTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -139,6 +153,43 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-3">
+        
+        {/* Day Availability Warning */}
+        {!canInteract && dayAvailability && (
+          <div className={`p-3 rounded-lg text-sm ${
+            dayAvailability.isPastDue
+              ? 'bg-orange-50 text-orange-700 border border-orange-200'
+              : dayAvailability.isFutureDay 
+              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4" />
+              {availabilityMessage}
+            </div>
+            {dayAvailability.isPastDue && (
+              <p className="text-xs mt-1">
+                You missed the deadline for this task. Request an extension to complete it.
+              </p>
+            )}
+            {dayAvailability.isFutureDay && (
+              <p className="text-xs mt-1">
+                This task will unlock automatically on its designated day.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Extension Request Button */}
+        {showExtensionRequest && (
+          <div className="mb-3">
+            <JobHuntingRequestReenableDialog
+              assignmentId={`daily-task-${taskType}-${date}`}
+              taskTitle={`${config.title} - ${format(new Date(date), 'MMM dd')}`}
+            />
+          </div>
+        )}
+        
         {/* Progress Display */}
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
@@ -201,9 +252,9 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
               <>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button variant="outline" size="sm" className="flex-1" disabled={!canInteract}>
                       <FileText className="h-4 w-4 mr-2" />
-                      {task ? 'Edit Task' : 'Add Evidence'}
+                      {!canInteract ? 'Not Available' : (task ? 'Edit Task' : 'Add Evidence')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
@@ -283,7 +334,7 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
                         </Button>
                         <Button
                           onClick={handleSaveTask}
-                          disabled={submitting || actualCount === 0}
+                          disabled={submitting || actualCount === 0 || !canInteract}
                           className="flex-1"
                         >
                           {submitting ? 'Saving...' : 'Save Task'}
@@ -297,11 +348,11 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
                   <Button
                     size="sm"
                     onClick={handleSubmitTask}
-                    disabled={submitting}
+                    disabled={submitting || !canInteract}
                     className="flex-1"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    {submitting ? 'Submitting...' : 'Submit for Review'}
+                    {!canInteract ? 'Not Available' : (submitting ? 'Submitting...' : 'Submit for Review')}
                   </Button>
                 )}
               </>
