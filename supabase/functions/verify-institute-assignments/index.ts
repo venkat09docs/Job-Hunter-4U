@@ -105,32 +105,32 @@ const handler = async (req: Request): Promise<Response> => {
           .from('linkedin_user_tasks')
           .update({
             status: isApproved ? 'VERIFIED' : 'REJECTED',
-            verified_at: new Date().toISOString(),
-            verified_by: verifierId,
             score_awarded: scoreAwarded,
             verification_notes: verificationNotes
           })
           .eq('id', assignmentId)
           .select(`
             *,
-            linkedin_tasks(title, points_base),
-            profiles(user_id, full_name)
+            linkedin_tasks(title, points_base)
           `)
           .single();
 
         if (linkedinError) throw linkedinError;
         assignmentData = linkedinData;
 
-        // Update evidence status
-        await supabase
-          .from('linkedin_evidence')
-          .update({
-            verification_status: isApproved ? 'verified' : 'rejected',
-            verified_at: new Date().toISOString(),
-            verified_by: verifierId,
-            verification_notes: verificationNotes
-          })
-          .eq('user_task_id', assignmentId);
+        // Get user profile separately for LinkedIn tasks
+        const { data: linkedinProfileData, error: linkedinProfileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .eq('user_id', assignmentData.user_id)
+          .single();
+          
+        if (!linkedinProfileError && linkedinProfileData) {
+          assignmentData.profiles = linkedinProfileData;
+        }
+
+        // Update evidence status (no verification tracking for LinkedIn evidence)
+        // LinkedIn evidence table doesn't have verification columns
 
         notificationTitle = `LinkedIn Task ${isApproved ? 'Approved' : 'Rejected'}: ${assignmentData.linkedin_tasks?.title}`;
         notificationMessage = isApproved
@@ -144,8 +144,6 @@ const handler = async (req: Request): Promise<Response> => {
           .from('github_user_tasks')
           .update({
             status: isApproved ? 'VERIFIED' : 'REJECTED',
-            verified_at: new Date().toISOString(),
-            verified_by: verifierId,
             score_awarded: scoreAwarded,
             verification_notes: verificationNotes
           })
