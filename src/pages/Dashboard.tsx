@@ -767,11 +767,11 @@ const Dashboard = () => {
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
 
                 {/* Recent Job Applications */}
-                <Card>
+                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Briefcase className="h-5 w-5" />
+                      <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                        <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         Recent Job Applications
                       </CardTitle>
                       <Button
@@ -838,10 +838,10 @@ const Dashboard = () => {
               <div className="space-y-4 lg:space-y-6">
                 {/* GitHub Activities Card */}
                 {isIT() && (
-                  <Card>
+                  <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Github className="h-5 w-5" />
+                      <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
+                        <Github className="h-5 w-5 text-green-600 dark:text-green-400" />
                         GitHub Activities
                       </CardTitle>
                     </CardHeader>
