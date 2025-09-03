@@ -56,6 +56,11 @@ import {
   isDueDateInAssignmentWeek,
   getGitHubTaskStatus
 } from '@/utils/dueDateValidation';
+import { 
+  getTaskDayAvailability,
+  canUserInteractWithDayBasedTask,
+  getTaskAvailabilityMessage
+} from '@/utils/dayBasedTaskValidation';
 
 const GitHubWeekly = () => {
   const { user } = useAuth();
@@ -476,11 +481,27 @@ const GitHubWeekly = () => {
     const statusColor = statusConfig[task.status]?.color || 'text-muted-foreground';
     const statusBg = statusConfig[task.status]?.bg || 'bg-muted';
     
-    // Get display order from task
+    // Day-based availability (primary check) - same as LinkedIn
+    const dayAvailability = getTaskDayAvailability(task.github_tasks?.title || '');
+    const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
+    const dayAvailabilityMessage = getTaskAvailabilityMessage(task.github_tasks?.title || '', task.admin_extended);
+    
+    // Get display order from task for fallback calculations
     const displayOrder = task.github_tasks?.display_order || 1;
     const dueDate = calculateDayDueDate(displayOrder);
     const isExpired = isTaskExpired(displayOrder);
-    const canInteract = !isExpired || task.status === 'VERIFIED';
+    
+    // Combined availability - use day-based if task has Day X format, otherwise use due date
+    const hasDay = (task.github_tasks?.title || '').match(/Day (\d+)/i);
+    const canInteract = hasDay ? canInteractDayBased : (!isExpired || task.status === 'VERIFIED');
+    
+    // Only show extension request for incomplete tasks that are past due
+    const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
+    const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : isExpired);
+    
+    // Only show warning messages for incomplete tasks
+    const showDayWarning = hasDay && !canInteract && !isTaskCompleteOrSubmitted;
+    const showExpirationWarning = !hasDay && isExpired && !isTaskCompleteOrSubmitted;
     
     // Extract day number from GitHub task title (e.g., "Day 1 – Planning & Setup" -> "Monday")
     const extractDayFromTitle = (title: string): string => {
@@ -494,37 +515,6 @@ const GitHubWeekly = () => {
     };
     
     const assignmentDay = extractDayFromTitle(task.github_tasks?.title || '');
-    
-    // Calculate conceptual due date based on day number instead of using database due_at
-    const calculateConceptualDueDate = (title: string): Date => {
-      const dayMatch = title.match(/Day (\d+)/i);
-      if (dayMatch) {
-        const dayNumber = parseInt(dayMatch[1]);
-        // Get the start of the current week (Monday)
-        const now = new Date();
-        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Adjust for Sunday
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - daysFromMonday);
-        startOfWeek.setHours(23, 59, 59, 999); // End of the day
-        
-        // Add days based on task day number (Day 1 = Monday, Day 2 = Tuesday, etc.)
-        const taskDueDate = new Date(startOfWeek);
-        taskDueDate.setDate(startOfWeek.getDate() + (dayNumber - 1));
-        
-        return taskDueDate;
-      }
-      return new Date(task.due_at); // Fallback to database due_at
-    };
-    
-    const conceptualDueDate = calculateConceptualDueDate(task.github_tasks?.title || '');
-    
-    // Use GitHub-specific task status logic with conceptual due date
-    let taskStatus = getGitHubTaskStatus(
-      conceptualDueDate,
-      assignmentDay,
-      task.admin_extended || false
-    );
     
     // Calculate days until due
     const now = new Date();
@@ -542,8 +532,10 @@ const GitHubWeekly = () => {
           ? 'border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50/30' 
           : task.status === 'SUBMITTED' 
           ? 'border-l-blue-500 bg-gradient-to-br from-blue-50 to-sky-50/30'
-          : isExpired && task.status !== 'VERIFIED'
+          : (hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted) || (!hasDay && isExpired && !isTaskCompleteOrSubmitted)
           ? 'border-l-red-500 bg-gradient-to-br from-red-50 to-rose-50/30 opacity-80'
+          : hasDay && dayAvailability.isFutureDay
+          ? 'border-l-blue-400 bg-gradient-to-br from-blue-50 to-sky-50/30 opacity-60'
           : 'border-l-primary bg-gradient-to-br from-background to-muted/20'
       } group hover:border-l-primary/80`}>
         
@@ -557,7 +549,11 @@ const GitHubWeekly = () => {
           
           {/* Due Date */}
           <div className="text-xs text-right">
-            <div className={`flex items-center gap-1 justify-end ${isExpired && task.status !== 'VERIFIED' ? 'text-red-600 font-medium' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-1 justify-end ${
+              (hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted) || 
+              (!hasDay && isExpired && !isTaskCompleteOrSubmitted) 
+                ? 'text-red-600 font-medium' : 'text-muted-foreground'
+            }`}>
               <Clock className="h-3 w-3" />
               <span>
                 Due: {dueDate.toLocaleDateString('en-US', { 
@@ -571,17 +567,37 @@ const GitHubWeekly = () => {
             
             {/* Additional Status Indicators */}
             <div className="flex items-center gap-1 justify-end mt-1">
-              {isExpired && task.status !== 'VERIFIED' && (
+              {hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted && (
+                <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Missed
+                </Badge>
+              )}
+              
+              {hasDay && dayAvailability.isFutureDay && (
+                <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {assignmentDay}
+                </Badge>
+              )}
+              
+              {!hasDay && isExpired && !isTaskCompleteOrSubmitted && (
                 <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Expired
                 </Badge>
               )}
               
-              {!isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
+              {!hasDay && !isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
                 <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
                   <Clock className="h-3 w-3 mr-1" />
                   {hoursUntilDue}h left
+                </Badge>
+              )}
+              
+              {task.admin_extended && (
+                <Badge variant="outline" className="text-xs bg-green-100 text-green-700 border-green-300">
+                  Extended
                 </Badge>
               )}
             </div>
@@ -703,15 +719,47 @@ const GitHubWeekly = () => {
             </div>
           )}
           
-          {/* Extension Request Notice */}
-          {taskStatus.canRequestExtension && task.status !== 'VERIFIED' && (
+          {/* Day-based Availability Status Message */}
+          {showDayWarning && (
+            <div className={`mb-4 p-4 rounded-lg ${
+              dayAvailability.isPastDue
+                ? 'bg-orange-50 text-orange-800 border border-orange-200'
+                : dayAvailability.isFutureDay 
+                ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                : 'bg-red-50 text-red-800 border border-red-200'
+            }`}>
+              <div className="flex items-center gap-2 font-semibold mb-2">
+                <AlertCircle className="w-5 h-5" />
+                {dayAvailabilityMessage}
+              </div>
+              {dayAvailability.isPastDue && (
+                <p className="text-sm mb-3">
+                  You missed the deadline for this task. Request an extension to complete it.
+                </p>
+              )}
+              {dayAvailability.isFutureDay && (
+                <p className="text-sm">
+                  This task will unlock automatically on its designated day.
+                </p>
+              )}
+              {showExtensionRequest && (
+                <GitHubRequestReenableDialog
+                  taskId={task.id}
+                  taskTitle={task.github_tasks?.title || 'GitHub Task'}
+                />
+              )}
+            </div>
+          )}
+          
+          {/* Legacy Extension Request Notice for non-day-based tasks */}
+          {showExpirationWarning && showExtensionRequest && (
             <div className="mb-4 p-4 bg-orange-50 text-orange-800 border border-orange-200 rounded-lg">
               <div className="flex items-center gap-2 font-semibold mb-2">
                 <Clock className="w-5 h-5 text-orange-600" />
                 Request Extension Available
               </div>
               <p className="text-sm mb-3">
-                {taskStatus.message}
+                This task expired after the 48-hour window. You can request an extension to complete it.
               </p>
               <GitHubRequestReenableDialog
                 taskId={task.id}
@@ -720,8 +768,8 @@ const GitHubWeekly = () => {
             </div>
           )}
           
-          {/* Expiration Notice */}
-          {taskStatus.status === 'week_expired' && task.status !== 'VERIFIED' && (
+          {/* Legacy Expiration Notice for non-day-based tasks */}
+          {showExpirationWarning && !showExtensionRequest && (
             <div className="mb-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 font-semibold mb-1">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
@@ -737,7 +785,7 @@ const GitHubWeekly = () => {
           <div className="flex items-center gap-3 pt-4 border-t border-border/50">
             {task.status === 'NOT_STARTED' ? (
               <>
-                {taskStatus.canSubmit ? (
+                {canInteract ? (
                   <Button 
                     variant="default"
                     size="sm"
@@ -749,11 +797,28 @@ const GitHubWeekly = () => {
                     Start Assignment
                     {!canAccessFeature("github_weekly") && <Lock className="h-4 w-4 ml-2" />}
                   </Button>
-                 ) : null}
+                ) : (
+                  <div className="flex-1 space-y-2">
+                    <Button 
+                      variant="secondary"
+                      size="sm"
+                      disabled
+                      className="w-full"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      {hasDay && dayAvailability.isFutureDay 
+                        ? 'Available Later This Week'
+                        : hasDay && dayAvailability.isPastDue 
+                        ? 'Task Missed'
+                        : 'Assignment Expired'
+                      }
+                    </Button>
+                  </div>
+                )}
               </>
             ) : task.status === 'STARTED' || task.status === 'REJECTED' ? (
               <>
-                {taskStatus.canSubmit ? (
+                {canInteract ? (
                   <Dialog 
                     open={evidenceDialog.open && evidenceDialog.taskId === task.id}
                     onOpenChange={(open) => setEvidenceDialog({ open, taskId: open ? task.id : null })}
@@ -780,7 +845,12 @@ const GitHubWeekly = () => {
                     className="w-full"
                   >
                     <Clock className="h-4 w-4 mr-2" />
-                    Assignment Expired
+                    {hasDay && dayAvailability.isFutureDay 
+                      ? 'Available Later This Week'
+                      : hasDay && dayAvailability.isPastDue 
+                      ? 'Task Missed'
+                      : task.status === 'REJECTED' ? 'Cannot Resubmit - Expired' : 'Submission Expired'
+                    }
                   </Button>
                 )}
               </>
