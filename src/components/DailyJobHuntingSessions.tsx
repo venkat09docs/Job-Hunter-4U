@@ -49,8 +49,11 @@ export const DailyJobHuntingSessions: React.FC = () => {
       const dayKey = format(date, 'yyyy-MM-dd');
       const dailyStats = getDailyStats(dayKey);
       
-      const sessions: DailySession[] = [
-        {
+      const sessions: DailySession[] = [];
+      
+      // Morning session - available for all days except Saturday
+      if (i < 5) { // Monday to Friday only
+        sessions.push({
           id: `${dayKey}-morning`,
           name: 'Morning Session',
           timeRange: '9:00 - 10:00 AM',
@@ -65,8 +68,12 @@ export const DailyJobHuntingSessions: React.FC = () => {
             { id: 'apply-jobs', description: 'Apply to relevant jobs with customized resume/cover letter' },
             { id: 'update-tracker', description: 'Update tracker: Job Link + Date Applied + Status = Applied' }
           ]
-        },
-        {
+        });
+      }
+      
+      // Afternoon session - available Monday to Thursday only
+      if (i < 4) { // Monday to Thursday only
+        sessions.push({
           id: `${dayKey}-afternoon`,
           name: 'Afternoon Session',
           timeRange: '2:00 - 2:20 PM',
@@ -81,8 +88,12 @@ export const DailyJobHuntingSessions: React.FC = () => {
             { id: 'apply-new', description: 'Apply immediately to any new relevant jobs' },
             { id: 'update-tracker-2', description: 'Update job tracker with new applications' }
           ]
-        },
-        {
+        });
+      }
+      
+      // Evening session - available Monday to Thursday only  
+      if (i < 4) { // Monday to Thursday only
+        sessions.push({
           id: `${dayKey}-evening`,
           name: 'Evening Session',
           timeRange: '6:00 - 6:20 PM',
@@ -97,14 +108,14 @@ export const DailyJobHuntingSessions: React.FC = () => {
             { id: 'add-recruiter', description: 'Add recruiter details if available' },
             { id: 'mark-priority', description: 'Mark high-priority jobs (dream companies/exact skill match)' }
           ]
-        }
-      ];
+        });
+      }
       
       days.push({
         date,
         dayName: format(date, 'EEEE'),
         sessions,
-        totalSessions: 3,
+        totalSessions: sessions.length, // Dynamic based on actual sessions
         completedSessions: dailyStats.completed
       });
     }
@@ -146,7 +157,7 @@ export const DailyJobHuntingSessions: React.FC = () => {
           Daily Job Hunting Sessions
         </CardTitle>
         <CardDescription>
-          Complete 3 focused sessions daily (Mon-Sat) to maximize your job search effectiveness
+          Complete focused sessions daily to maximize your job search effectiveness (Mon-Thu: 3 sessions, Fri: 1 session, Sat: No sessions)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -159,7 +170,7 @@ export const DailyJobHuntingSessions: React.FC = () => {
           const dayKey = format(day.date, 'yyyy-MM-dd');
           const isExpanded = expandedDays.has(dayKey);
           const isToday = isSameDay(day.date, new Date());
-          const progressPercentage = (day.completedSessions / day.totalSessions) * 100;
+          const progressPercentage = day.totalSessions > 0 ? (day.completedSessions / day.totalSessions) * 100 : 0;
           
           // Calculate day index (0 = Monday, 1 = Tuesday, etc.)
           const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -274,6 +285,17 @@ export const DailyJobHuntingSessions: React.FC = () => {
                       </CardContent>
                     </Card>
                   ))}
+                  
+                  {/* Show special message for Saturday when no sessions */}
+                  {day.totalSessions === 0 && (
+                    <Card className="bg-muted/30">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-sm text-muted-foreground">
+                          No scheduled sessions - Rest day
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                   
                   {/* Daily Task Assignments */}
                   <div className="mt-4 pt-4 border-t border-muted">
