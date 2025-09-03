@@ -58,8 +58,8 @@ const LeaderBoard = () => {
     );
   };
 
-  const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon: React.ReactNode) => (
-    <Card>
+  const renderLeaderboardCard = (title: string, entries: LeaderboardEntry[], icon: React.ReactNode, cardTheme: string) => (
+    <Card className={cardTheme}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           {icon}
@@ -70,7 +70,7 @@ const LeaderBoard = () => {
         <div className="space-y-2">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 p-2">
+              <div key={i} className="flex items-center gap-3 p-2 animate-pulse">
                 <Skeleton className="h-6 w-6 rounded" />
                 <Skeleton className="h-8 w-8 rounded-full" />
                 <div className="flex-1 space-y-1">
@@ -111,17 +111,20 @@ const LeaderBoard = () => {
         {renderLeaderboardCard(
           'Top Performer',
           leaderboard.top_performer,
-          <Trophy className="h-4 w-4 text-primary" />
+          <Trophy className="h-4 w-4 text-yellow-600" />,
+          'bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/20 dark:to-yellow-900/20 border-yellow-200 dark:border-yellow-800'
         )}
         {renderLeaderboardCard(
           'Current Week',
           leaderboard.current_week,
-          <Medal className="h-4 w-4 text-muted-foreground" />
+          <Medal className="h-4 w-4 text-blue-600" />,
+          'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800'
         )}
         {renderLeaderboardCard(
           'Last 30 Days',
           leaderboard.last_30_days,
-          <Award className="h-4 w-4 text-amber-600" />
+          <Award className="h-4 w-4 text-green-600" />,
+          'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800'
         )}
       </div>
 

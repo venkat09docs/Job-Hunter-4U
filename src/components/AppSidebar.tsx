@@ -174,11 +174,55 @@ export function AppSidebar() {
     return 'U';
   };
 
-  const MenuItem = ({ item, isPremium = false, isSubItem = false }: { 
+  const MenuItem = ({ item, isPremium = false, isSubItem = false, sectionColor }: { 
     item: any, 
     isPremium?: boolean, 
-    isSubItem?: boolean
+    isSubItem?: boolean,
+    sectionColor?: string
   }) => {
+    // Get section-specific colors
+    const getSectionColors = (section: string) => {
+      switch (section) {
+        case 'admin':
+          return {
+            activeColor: 'text-red-600 dark:text-red-400',
+            activeBg: 'bg-red-50 dark:bg-red-950/20',
+            hoverBg: 'hover:bg-red-50/50 dark:hover:bg-red-950/10',
+            icon: 'text-red-500'
+          };
+        case 'main':
+          return {
+            activeColor: 'text-blue-600 dark:text-blue-400',
+            activeBg: 'bg-blue-50 dark:bg-blue-950/20',
+            hoverBg: 'hover:bg-blue-50/50 dark:hover:bg-blue-950/10',
+            icon: 'text-blue-500'
+          };
+        case 'jobhunter':
+          return {
+            activeColor: 'text-green-600 dark:text-green-400',
+            activeBg: 'bg-green-50 dark:bg-green-950/20',
+            hoverBg: 'hover:bg-green-50/50 dark:hover:bg-green-950/10',
+            icon: 'text-green-500'
+          };
+        case 'github':
+          return {
+            activeColor: 'text-orange-600 dark:text-orange-400',
+            activeBg: 'bg-orange-50 dark:bg-orange-950/20',
+            hoverBg: 'hover:bg-orange-50/50 dark:hover:bg-orange-950/10',
+            icon: 'text-orange-500'
+          };
+        default:
+          return {
+            activeColor: 'text-primary',
+            activeBg: 'bg-primary/10',
+            hoverBg: 'hover:bg-accent/50',
+            icon: 'text-primary'
+          };
+      }
+    };
+
+    const colors = getSectionColors(sectionColor || 'default');
+    
     // Special handling for AI-Powered Career Tools to check subscription before opening
     const isAICareerTools = item.title === "AI-Powered Career Tools";
     
@@ -233,9 +277,9 @@ export function AppSidebar() {
     const menuItem = isAICareerTools ? (
       <div
         onClick={handleAICareerToolsClick}
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -253,9 +297,9 @@ export function AppSidebar() {
     ) : (isGitHubWeekly || isJobHunterPremium) ? (
       <div 
         onClick={handlePremiumFeatureClick}
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -268,9 +312,9 @@ export function AppSidebar() {
     ) : isCareerGrowthPremium ? (
       <div 
         onClick={handleCareerGrowthClick}
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -283,9 +327,9 @@ export function AppSidebar() {
     ) : isGitHubToolsPremium ? (
       <div 
         onClick={handleGitHubToolsClick}
-        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground hover:bg-accent/50`}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer text-foreground hover:text-accent-foreground ${colors.hoverBg}`}
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -302,12 +346,12 @@ export function AppSidebar() {
         className={({ isActive }) => 
           `flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 ${
             isActive 
-              ? "text-primary" + (isSubItem ? " bg-primary/5" : " bg-primary/10")
-              : "text-foreground hover:text-accent-foreground hover:bg-accent/50"
+              ? `${colors.activeColor} ${colors.activeBg}`
+              : `text-foreground hover:text-accent-foreground ${colors.hoverBg}`
           }`
         }
       >
-        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0`} />
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
         {!isCollapsed && (
           <div className="flex items-center justify-between flex-1 min-w-0">
             <span className="text-sm truncate">
@@ -379,16 +423,16 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : 
+                 {(isRecruiter && !isAdmin && !isInstituteAdmin ? recruiterItems : 
                   isInstituteAdmin && !isAdmin ? instituteAdminItems : adminItems).map((item) => {
                   // Filter logic for different admin types
                   if (isRecruiter && !isAdmin && !isInstituteAdmin) {
-                    return <MenuItem key={item.title} item={item} />;
+                    return <MenuItem key={item.title} item={item} sectionColor="admin" />;
                   }
                   
                   if (isInstituteAdmin && !isAdmin) {
                     // For institute admins, all items in instituteAdminItems are allowed
-                    return <MenuItem key={item.title} item={item} />;
+                    return <MenuItem key={item.title} item={item} sectionColor="admin" />;
                   }
                   
                   // For super admins, apply existing filtering logic
@@ -450,116 +494,116 @@ export function AppSidebar() {
 
                 {/* Job Hunter Section */}
                 <div className="mt-4">
-                  <button
-                    onClick={() => setJobHunterOpen(!jobHunterOpen)}
-                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                      isJobHunterActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
-                    }`}
-                  >
-                    <Target className="h-5 w-5 flex-shrink-0" />
-                    {!isCollapsed && (
-                      <>
-                        <span className="font-medium text-sm">Job Hunter</span>
-                        {jobHunterOpen ? (
-                          <ChevronDown className="h-4 w-4 ml-auto" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 ml-auto" />
-                        )}
-                      </>
+                    <button
+                      onClick={() => setJobHunterOpen(!jobHunterOpen)}
+                      className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                        isJobHunterActive ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-green-50/50 dark:hover:bg-green-950/10'
+                      }`}
+                    >
+                      <Target className="h-5 w-5 flex-shrink-0 text-green-500" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="font-medium text-sm">Job Hunter</span>
+                          {jobHunterOpen ? (
+                            <ChevronDown className="h-4 w-4 ml-auto text-green-500" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 ml-auto text-green-500" />
+                          )}
+                        </>
+                      )}
+                    </button>
+                    {jobHunterOpen && !isCollapsed && (
+                      <div className="space-y-1 mt-1">
+                        {jobHunterItems.map((item) => {
+                          const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                          return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="jobhunter" />;
+                        })}
+                      </div>
                     )}
-                  </button>
-                  {jobHunterOpen && !isCollapsed && (
-                    <div className="space-y-1 mt-1">
-                      {jobHunterItems.map((item) => {
-                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
-                      })}
-                    </div>
-                  )}
-                  {isCollapsed && (
-                    <div className="space-y-1">
-                      {jobHunterItems.map((item) => (
-                        <MenuItem key={item.title} item={item} />
-                      ))}
-                    </div>
-                  )}
+                    {isCollapsed && (
+                      <div className="space-y-1">
+                        {jobHunterItems.map((item) => (
+                          <MenuItem key={item.title} item={item} sectionColor="jobhunter" />
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* GitHub Section - Only for IT users */}
                 {isIT() && (
                   <div className="mt-4">
-                    <button
-                      onClick={() => setGitHubOpen(!githubOpen)}
-                      className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                        isGitHubActive ? 'text-primary' : 'text-foreground hover:text-accent-foreground'
-                      }`}
-                    >
-                      <Github className="h-5 w-5 flex-shrink-0" />
-                      {!isCollapsed && (
-                        <>
-                          <span className="font-medium text-sm">GitHub Tools</span>
-                          {githubOpen ? (
-                            <ChevronDown className="h-4 w-4 ml-auto" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4 ml-auto" />
-                          )}
-                        </>
-                      )}
-                    </button>
-                     {githubOpen && !isCollapsed && (
-                        <div className="space-y-1 mt-1">
-                          {githubItems.map((item) => {
-                            // Check for high tier subscription plans
-                            const subscriberPlan = profile?.subscription_plan;
-                            const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                            
-                            // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
-                            if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
-                                && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
-                              return null;
-                            }
-                            
-                            // Hide GitHub Weekly for free, one-week, and one-month plan users
-                            if (item.title === "GitHub Weekly") {
-                              const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
-                              const currentPlan = subscriberPlan || "Free Plan";
-                              if (restrictedPlans.includes(currentPlan)) {
+                      <button
+                        onClick={() => setGitHubOpen(!githubOpen)}
+                        className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                          isGitHubActive ? 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-orange-50/50 dark:hover:bg-orange-950/10'
+                        }`}
+                      >
+                        <Github className="h-5 w-5 flex-shrink-0 text-orange-500" />
+                        {!isCollapsed && (
+                          <>
+                            <span className="font-medium text-sm">GitHub Tools</span>
+                            {githubOpen ? (
+                              <ChevronDown className="h-4 w-4 ml-auto text-orange-500" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 ml-auto text-orange-500" />
+                            )}
+                          </>
+                        )}
+                      </button>
+                       {githubOpen && !isCollapsed && (
+                          <div className="space-y-1 mt-1">
+                            {githubItems.map((item) => {
+                              // Check for high tier subscription plans
+                              const subscriberPlan = profile?.subscription_plan;
+                              const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                              
+                              // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
+                              if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
+                                  && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
                                 return null;
                               }
-                            }
-                            
-                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                            return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} />;
-                          })}
-                        </div>
-                     )}
-                      {isCollapsed && (
-                       <div className="space-y-1">
-                         {githubItems.map((item) => {
-                           // Check for high tier subscription plans
-                           const subscriberPlan = profile?.subscription_plan;
-                           const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                           
-                           // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
-                           if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
-                               && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
-                             return null;
-                           }
-                           
-                           // Hide GitHub Weekly for free, one-week, and one-month plan users
-                           if (item.title === "GitHub Weekly") {
-                             const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
-                             const currentPlan = subscriberPlan || "Free Plan";
-                             if (restrictedPlans.includes(currentPlan)) {
+                              
+                              // Hide GitHub Weekly for free, one-week, and one-month plan users
+                              if (item.title === "GitHub Weekly") {
+                                const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
+                                const currentPlan = subscriberPlan || "Free Plan";
+                                if (restrictedPlans.includes(currentPlan)) {
+                                  return null;
+                                }
+                              }
+                              
+                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                              return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="github" />;
+                            })}
+                          </div>
+                       )}
+                        {isCollapsed && (
+                         <div className="space-y-1">
+                           {githubItems.map((item) => {
+                             // Check for high tier subscription plans
+                             const subscriberPlan = profile?.subscription_plan;
+                             const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                             
+                             // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
+                             if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
+                                 && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
                                return null;
                              }
-                           }
-                           
-                           const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                           return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={isCollapsed} />;
-                         })}
-                       </div>
-                     )}
+                             
+                             // Hide GitHub Weekly for free, one-week, and one-month plan users
+                             if (item.title === "GitHub Weekly") {
+                               const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
+                               const currentPlan = subscriberPlan || "Free Plan";
+                               if (restrictedPlans.includes(currentPlan)) {
+                                 return null;
+                               }
+                             }
+                             
+                             const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                             return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={isCollapsed} sectionColor="github" />;
+                           })}
+                         </div>
+                       )}
                   </div>
                 )}
               </div>
