@@ -55,36 +55,15 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 
         if (jobsError) throw jobsError;
 
-        // Find the "Apply to 5 Job Roles" assignment
-        const jobApplicationAssignment = assignments.find(a => 
-          a.template?.title?.includes('Apply to 5 Job Roles') && 
-          (a.status === 'verified' || a.status === 'VERIFIED')
-        );
+        // Note: Daily tasks are now handled separately in DailyJobHuntingSessions
+        // No longer counting these from weekly assignments
 
-        // Get referral requests from assignments this week
-        const referralAssignment = assignments.find(a => 
-          a.template?.title?.includes('Referral') && 
-          (a.status === 'verified' || a.status === 'VERIFIED')
-        );
-
-        // Get follow-ups from assignments this week  
-        const followUpAssignment = assignments.find(a => 
-          a.template?.title?.includes('Follow-up') && 
-          (a.status === 'verified' || a.status === 'VERIFIED')
-        );
-
-        // Calculate total job applications
-        let totalJobApplications = jobsApplied?.length || 0;
-        
-        // If "Apply to 5 Job Roles" assignment is completed, add 5 applications
-        if (jobApplicationAssignment) {
-          totalJobApplications += 5;
-        }
-
+        // Calculate total job applications from job_tracker only
+        // Daily tasks are now tracked separately
         const newStats = {
-          applied: totalJobApplications,
-          referrals: referralAssignment ? 3 : 0, // 3 referrals per completed assignment
-          followUps: 0, // Set to 0 as requested - was: followUpAssignment ? 5 : 0
+          applied: jobsApplied?.length || 0,
+          referrals: 0, // Tracked in daily tasks now
+          followUps: 0, // Tracked in daily tasks now  
           conversations: 0 // This would need additional tracking
         };
         
@@ -99,8 +78,16 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
     fetchWeeklyJobStats();
   }, [user, assignments]);
 
-  // Filter assignments based on active filter
+  // Filter assignments based on active filter  
+  // Exclude the daily tasks that are now handled separately
   const filteredAssignments = assignments.filter(assignment => {
+    // Filter out daily tasks that are now handled in DailyJobHuntingSessions
+    const isDailyTask = assignment.template?.title?.includes('Apply to 5 Job Roles') ||
+                        assignment.template?.title?.includes('Request 3 Job Referrals') ||
+                        assignment.template?.title?.includes('Send 5 Follow-up Messages');
+    
+    if (isDailyTask) return false;
+
     switch (activeFilter) {
       case 'pending': return assignment.status === 'assigned' || assignment.status === 'in_progress';
       case 'submitted': return assignment.status === 'submitted';

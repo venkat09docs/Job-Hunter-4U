@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target } from 'lucide-react';
+import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Target, Briefcase, Users, MessageSquare } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useDailyJobHuntingSessions } from '@/hooks/useDailyJobHuntingSessions';
+import { useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
+import { DailyTaskCard } from './DailyTaskCard';
 
 interface SessionTask {
   id: string;
@@ -35,6 +37,7 @@ interface DailyActivity {
 export const DailyJobHuntingSessions: React.FC = () => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const { getDailyStats, getSessionStatus, completeSession, loading, sessions } = useDailyJobHuntingSessions();
+  const { getTasksForDate, fetchTasksForDate, getDailyProgress } = useDailyJobHuntingTasks();
 
   // Generate current week (Mon-Sat) with real session data
   const currentWeek = React.useMemo(() => {
@@ -267,6 +270,34 @@ export const DailyJobHuntingSessions: React.FC = () => {
                       </CardContent>
                     </Card>
                   ))}
+                  
+                  {/* Daily Task Assignments */}
+                  <div className="mt-4 pt-4 border-t border-muted">
+                    <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                      <Target className="h-4 w-4 text-primary" />
+                      Daily Task Assignments
+                    </h4>
+                    <div className="space-y-3">
+                      <DailyTaskCard
+                        taskType="job_applications"
+                        date={dayKey}
+                        task={getTasksForDate(dayKey).find(t => t.task_type === 'job_applications')}
+                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                      />
+                      <DailyTaskCard
+                        taskType="referral_requests"
+                        date={dayKey}
+                        task={getTasksForDate(dayKey).find(t => t.task_type === 'referral_requests')}
+                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                      />
+                      <DailyTaskCard
+                        taskType="follow_up_messages"
+                        date={dayKey}
+                        task={getTasksForDate(dayKey).find(t => t.task_type === 'follow_up_messages')}
+                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
+                      />
+                    </div>
+                  </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>

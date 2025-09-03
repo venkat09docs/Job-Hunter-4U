@@ -788,6 +788,69 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_job_hunting_tasks: {
+        Row: {
+          actual_count: number
+          created_at: string
+          description: string | null
+          evidence_data: Json | null
+          evidence_urls: string[] | null
+          file_urls: string[] | null
+          id: string
+          points_earned: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_notes: string | null
+          status: string
+          submitted_at: string | null
+          target_count: number
+          task_date: string
+          task_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_count?: number
+          created_at?: string
+          description?: string | null
+          evidence_data?: Json | null
+          evidence_urls?: string[] | null
+          file_urls?: string[] | null
+          id?: string
+          points_earned?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          target_count?: number
+          task_date?: string
+          task_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_count?: number
+          created_at?: string
+          description?: string | null
+          evidence_data?: Json | null
+          evidence_urls?: string[] | null
+          file_urls?: string[] | null
+          id?: string
+          points_earned?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          target_count?: number
+          task_date?: string
+          task_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_progress_snapshots: {
         Row: {
           created_at: string
