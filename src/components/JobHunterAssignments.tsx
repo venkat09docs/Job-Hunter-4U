@@ -35,7 +35,7 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
   });
   const { user } = useAuth();
 
-  // Fetch current week job application stats
+  // Fetch current week job application stats including approved daily tasks
   useEffect(() => {
     const fetchWeeklyJobStats = async () => {
       if (!user) return;
@@ -55,15 +55,39 @@ export const JobHunterAssignments: React.FC<JobHunterAssignmentsProps> = ({
 
         if (jobsError) throw jobsError;
 
-        // Note: Daily tasks are now handled separately in DailyJobHuntingSessions
-        // No longer counting these from weekly assignments
+        // Get approved daily tasks for this week
+        const { data: approvedDailyTasks, error: dailyTasksError } = await supabase
+          .from('daily_job_hunting_tasks')
+          .select('task_type, actual_count')
+          .eq('user_id', user.id)
+          .eq('status', 'approved')
+          .gte('task_date', format(currentWeekStart, 'yyyy-MM-dd'))
+          .lte('task_date', format(currentWeekEnd, 'yyyy-MM-dd'));
 
-        // Calculate total job applications from job_tracker only
-        // Daily tasks are now tracked separately
+        if (dailyTasksError) throw dailyTasksError;
+
+        // Sum up approved daily task counts by type
+        const dailyTaskCounts = {
+          job_applications: 0,
+          referral_requests: 0,
+          follow_up_messages: 0
+        };
+
+        approvedDailyTasks?.forEach((task) => {
+          if (task.task_type === 'job_applications') {
+            dailyTaskCounts.job_applications += task.actual_count;
+          } else if (task.task_type === 'referral_requests') {
+            dailyTaskCounts.referral_requests += task.actual_count;
+          } else if (task.task_type === 'follow_up_messages') {
+            dailyTaskCounts.follow_up_messages += task.actual_count;
+          }
+        });
+
+        // Combine job_tracker applications with approved daily task applications
         const newStats = {
-          applied: jobsApplied?.length || 0,
-          referrals: 0, // Tracked in daily tasks now
-          followUps: 0, // Tracked in daily tasks now  
+          applied: (jobsApplied?.length || 0) + dailyTaskCounts.job_applications,
+          referrals: dailyTaskCounts.referral_requests,
+          followUps: dailyTaskCounts.follow_up_messages,
           conversations: 0 // This would need additional tracking
         };
         
