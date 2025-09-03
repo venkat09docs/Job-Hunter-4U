@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +22,9 @@ import {
   Calendar,
   AlertTriangle,
   Shield,
-  RefreshCw
+  RefreshCw,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { JobHuntingAssignment, useJobHuntingAssignments } from '@/hooks/useJobHuntingAssignments';
 import { toast } from 'sonner';
@@ -43,6 +46,7 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const { submitEvidence } = useJobHuntingAssignments();
   const { t } = useTranslation();
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [evidenceText, setEvidenceText] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [files, setFiles] = useState<FileList | null>(null);
@@ -241,356 +245,373 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const daysUntilDue = Math.ceil((new Date(assignment.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <Card className={`transition-all duration-200 ${isOverdue ? 'border-red-300 bg-red-50' : ''}`}>
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{getCategoryIcon(assignment.template?.category || '')}</span>
-            <div>
-              <CardTitle className="text-lg">{assignment.template?.title}</CardTitle>
-              <CardDescription className="mt-1">
-                {assignment.template?.description}
-              </CardDescription>
+    <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+      <Card className={`transition-all duration-200 ${isOverdue ? 'border-red-300 bg-red-50' : ''}`}>
+        <CollapsibleTrigger asChild>
+          <CardHeader className="pb-4 cursor-pointer hover:bg-muted/50 transition-colors">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                )}
+                <span className="text-2xl flex-shrink-0">{getCategoryIcon(assignment.template?.category || '')}</span>
+                <div className="min-w-0 flex-1">
+                  <CardTitle className="text-lg">{assignment.template?.title}</CardTitle>
+                  <CardDescription className="mt-1">
+                    {assignment.template?.description}
+                  </CardDescription>
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <Badge className={`${getStatusColor(assignment.status)} text-white`}>
+                  {getStatusIcon(assignment.status)}
+                  <span className="ml-1 capitalize">{assignment.status.replace('_', ' ')}</span>
+                </Badge>
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <Badge className={`${getStatusColor(assignment.status)} text-white`}>
-              {getStatusIcon(assignment.status)}
-              <span className="ml-1 capitalize">{assignment.status.replace('_', ' ')}</span>
-            </Badge>
-          </div>
-        </div>
-      </CardHeader>
+          </CardHeader>
+        </CollapsibleTrigger>
 
-      <CardContent className="space-y-4">
-        {/* Progress and Points */}
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-yellow-600" />
-            <span className="text-muted-foreground">Points:</span>
-            <span className="font-semibold">
-              {assignment.points_earned || 0}/{assignment.template?.points_reward || 0}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-600" />
-            <span className="text-muted-foreground">Duration:</span>
-            <span className="font-semibold">{assignment.template?.estimated_duration || 0}min</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-purple-600" />
-            <span className="text-muted-foreground">Due:</span>
-            <span className={`font-semibold ${isOverdue ? 'text-red-600' : daysUntilDue <= 1 ? 'text-yellow-600' : 'text-green-600'}`}>
-              {daysUntilDue > 0 ? `${daysUntilDue}d` : 'Overdue'}
-            </span>
-          </div>
-        </div>
+        <CollapsibleContent>
+          <CardContent className="space-y-4">
+            {/* Progress and Points */}
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-yellow-600" />
+                <span className="text-muted-foreground">Points:</span>
+                <span className="font-semibold">
+                  {assignment.points_earned || 0}/{assignment.template?.points_reward || 0}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-blue-600" />
+                <span className="text-muted-foreground">Duration:</span>
+                <span className="font-semibold">{assignment.template?.estimated_duration || 0}min</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-purple-600" />
+                <span className="text-muted-foreground">Due:</span>
+                <span className={`font-semibold ${isOverdue ? 'text-red-600' : daysUntilDue <= 1 ? 'text-yellow-600' : 'text-green-600'}`}>
+                  {daysUntilDue > 0 ? `${daysUntilDue}d` : 'Overdue'}
+                </span>
+              </div>
+            </div>
 
-        {/* Instructions - Handle both structured and plain text formats */}
-        {assignment.template?.instructions && (
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Instructions:
-            </h4>
-            
-            {/* Handle structured instructions with steps */}
-            {typeof assignment.template.instructions === 'object' && assignment.template.instructions.steps && (
-              <ul className="space-y-2 text-sm text-muted-foreground mb-3">
-                {assignment.template.instructions.steps.map((step: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center mt-0.5">
-                      {index + 1}
-                    </span>
-                    <span className="leading-relaxed">{step}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Instructions - Handle both structured and plain text formats */}
+            {assignment.template?.instructions && (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Instructions:
+                </h4>
+                
+                {/* Handle structured instructions with steps */}
+                {typeof assignment.template.instructions === 'object' && assignment.template.instructions.steps && (
+                  <ul className="space-y-2 text-sm text-muted-foreground mb-3">
+                    {assignment.template.instructions.steps.map((step: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center mt-0.5">
+                          {index + 1}
+                        </span>
+                        <span className="leading-relaxed">{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Handle plain text instructions */}
+                {typeof assignment.template.instructions === 'string' && (
+                  <div className="text-sm text-muted-foreground mb-3">
+                    <div className="whitespace-pre-line leading-relaxed">
+                      {assignment.template.instructions}
+                    </div>
+                  </div>
+                )}
+
+                {/* Handle tips if available */}
+                {typeof assignment.template.instructions === 'object' && assignment.template.instructions.tips && (
+                  <div className="border-t pt-3">
+                    <h5 className="font-medium text-xs mb-2 text-primary">💡 Tips:</h5>
+                    <ul className="space-y-1 text-xs text-muted-foreground">
+                      {assignment.template.instructions.tips.map((tip: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="flex-shrink-0 w-1 h-1 bg-primary rounded-full mt-2"></span>
+                          <span className="leading-relaxed">{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
 
-            {/* Handle plain text instructions */}
-            {typeof assignment.template.instructions === 'string' && (
-              <div className="text-sm text-muted-foreground mb-3">
-                <div className="whitespace-pre-line leading-relaxed">
-                  {assignment.template.instructions}
+            {/* Day Availability Message */}
+            {!dayAvailability.isAvailable && (
+              <div className="w-full p-3 bg-muted/50 border border-muted rounded-md text-center">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">{dayAvailability.message}</span>
                 </div>
               </div>
             )}
 
-            {/* Handle tips if available */}
-            {typeof assignment.template.instructions === 'object' && assignment.template.instructions.tips && (
-              <div className="border-t pt-3">
-                <h5 className="font-medium text-xs mb-2 text-primary">💡 Tips:</h5>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  {assignment.template.instructions.tips.map((tip: string, index: number) => (
+            {/* Action Buttons - Following LinkedIn/CareerTaskCard Assignment Flow */}
+            {assignment.status !== 'verified' && (
+              <>
+                {/* Start Assignment Button */}
+                {assignment.status === 'assigned' && (
+                  <>
+                    {canInteract ? (
+                      <Button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStartAssignment();
+                        }} 
+                        className="w-full"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Start Assignment
+                      </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full" 
+                          variant="secondary" 
+                          disabled
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          {dayAvailability.isFutureDay 
+                            ? 'Available Later This Week'
+                            : dayAvailability.isPastDue 
+                            ? 'Task Missed'
+                            : 'Assignment Expired'
+                          }
+                        </Button>
+                        {showExtensionRequest && (
+                          <JobHuntingRequestReenableDialog
+                            assignmentId={assignment.id}
+                            taskTitle={assignment.template?.title || ''}
+                            onRequestSent={() => {/* refresh if needed */}}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {/* Submit Assignment Button */}
+                {(assignment.status === 'started' || assignment.status === 'rejected') && (
+                  <>
+                    {canInteract ? (
+                      <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+                        <DialogTrigger asChild>
+                          <Button className="w-full" onClick={(e) => e.stopPropagation()}>
+                            <Upload className="w-4 h-4 mr-2" />
+                            {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Submit Evidence - {assignment.template?.title}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="text-sm text-muted-foreground">
+                              Provide evidence of your completed assignment. You can submit any combination of the options below.
+                            </div>
+
+                            {/* URL Input - Always Available */}
+                            <div className="space-y-2">
+                              <Label htmlFor="evidenceUrl" className="flex items-center gap-2">
+                                <LinkIcon className="h-4 w-4" />
+                                URL Evidence (Optional)
+                              </Label>
+                              <Input
+                                id="evidenceUrl"
+                                value={evidenceUrl}
+                                onChange={(e) => setEvidenceUrl(e.target.value)}
+                                placeholder="https://example.com/your-proof"
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Share a link to your completed work or relevant proof
+                              </p>
+                            </div>
+
+                            {/* File Upload - Always Available */}
+                            <div className="space-y-2">
+                              <Label htmlFor="files" className="flex items-center gap-2">
+                                <Upload className="h-4 w-4" />
+                                File Attachment (Optional)
+                              </Label>
+                              <Input
+                                id="files"
+                                type="file"
+                                multiple
+                                accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,.zip"
+                                onChange={handleFileChange}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Upload screenshots, documents, or other proof files
+                              </p>
+                              {fileValidationErrors.length > 0 && (
+                                <div className="space-y-1">
+                                  {fileValidationErrors.map((error, index) => (
+                                    <div key={index} className="flex items-center gap-2 text-sm text-red-600">
+                                      <AlertTriangle className="h-4 w-4" />
+                                      {error}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Description - Always Available */}
+                            <div className="space-y-2">
+                              <Label htmlFor="evidenceText" className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Description (Optional)
+                              </Label>
+                              <Textarea
+                                id="evidenceText"
+                                value={evidenceText}
+                                onChange={(e) => setEvidenceText(e.target.value)}
+                                placeholder="Describe what you completed, provide additional context, or explain your submission..."
+                                rows={4}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                Provide details about your completed task or additional context
+                              </p>
+                            </div>
+
+                            {/* Accepted Evidence Types Display */}
+                            {assignment.template?.evidence_types?.length > 0 && (
+                              <div className="p-3 bg-muted/50 rounded-lg">
+                                <h5 className="text-sm font-medium mb-2">Accepted Evidence Types:</h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {assignment.template.evidence_types.map((type) => (
+                                    <Badge key={type} variant="outline" className="text-xs">
+                                      {type === 'url' && <LinkIcon className="h-3 w-3 mr-1" />}
+                                      {type === 'screenshot' && <Camera className="h-3 w-3 mr-1" />}
+                                      {type === 'file' && <FileText className="h-3 w-3 mr-1" />}
+                                      {type === 'text' && <FileText className="h-3 w-3 mr-1" />}
+                                      {type === 'email' && <FileText className="h-3 w-3 mr-1" />}
+                                      <span className="capitalize">{type}</span>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <Button 
+                              onClick={handleSubmitEvidence} 
+                              disabled={submitting || (!evidenceUrl && !evidenceText && !files)}
+                              className="w-full"
+                            >
+                              {submitting ? 'Submitting...' : 'Submit Evidence'}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      <div className="space-y-2">
+                        <Button 
+                          className="w-full" 
+                          variant="secondary" 
+                          disabled
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          {dayAvailability.isFutureDay 
+                            ? 'Available Later This Week'
+                            : dayAvailability.isPastDue 
+                            ? 'Task Missed'
+                            : 'Assignment Expired'
+                          }
+                        </Button>
+                        {showExtensionRequest && (
+                          <JobHuntingRequestReenableDialog
+                            assignmentId={assignment.id}
+                            taskTitle={assignment.template?.title || ''}
+                            onRequestSent={() => {/* refresh if needed */}}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {/* Under Review State */}
+                {assignment.status === 'submitted' && (
+                  <div className="w-full p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md text-center">
+                    <div className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-200">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="font-medium">Under Review</span>
+                    </div>
+                    <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                      Your submission is being verified
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Completed State */}
+            {assignment.status === 'verified' && (
+              <div className="w-full p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md text-center">
+                <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-200">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="font-medium">Assignment Completed</span>
+                </div>
+                <p className="text-xs text-green-600 dark:text-green-300 mt-1">
+                  {assignment.points_earned} points earned
+                </p>
+              </div>
+            )}
+
+            {/* Admin Review Section */}
+            {(assignment.status === 'verified' || assignment.status === 'rejected') && assignment.verification_notes && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Admin Review:
+                </Label>
+                <div className={`p-3 rounded-md text-sm border-l-4 ${
+                  assignment.status === 'verified' 
+                    ? 'bg-green-50 border-green-500 text-green-800' 
+                    : 'bg-red-50 border-red-500 text-red-800'
+                }`}>
+                  <div className="font-medium mb-1">
+                    {assignment.status === 'verified' ? 'Approved' : 'Rejected'}
+                    {assignment.verified_at && (
+                      <span className="text-xs font-normal ml-2">
+                        on {new Date(assignment.verified_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {assignment.verification_notes}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Criteria */}
+            {assignment.template?.verification_criteria?.required && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <h5 className="font-medium text-sm text-blue-900 mb-2">Required Evidence:</h5>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  {assignment.template.verification_criteria.required.map((item: string, index: number) => (
                     <li key={index} className="flex items-start gap-2">
-                      <span className="flex-shrink-0 w-1 h-1 bg-primary rounded-full mt-2"></span>
-                      <span className="leading-relaxed">{tip}</span>
+                      <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      {item}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Day Availability Message */}
-        {!dayAvailability.isAvailable && (
-          <div className="w-full p-3 bg-muted/50 border border-muted rounded-md text-center">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">{dayAvailability.message}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons - Following LinkedIn/CareerTaskCard Assignment Flow */}
-        {assignment.status !== 'verified' && (
-          <>
-            {/* Start Assignment Button */}
-            {assignment.status === 'assigned' && (
-              <>
-                {canInteract ? (
-                  <Button onClick={handleStartAssignment} className="w-full">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Start Assignment
-                  </Button>
-                ) : (
-                  <div className="space-y-2">
-                    <Button 
-                      className="w-full" 
-                      variant="secondary" 
-                      disabled
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      {dayAvailability.isFutureDay 
-                        ? 'Available Later This Week'
-                        : dayAvailability.isPastDue 
-                        ? 'Task Missed'
-                        : 'Assignment Expired'
-                      }
-                    </Button>
-                    {showExtensionRequest && (
-                      <JobHuntingRequestReenableDialog
-                        assignmentId={assignment.id}
-                        taskTitle={assignment.template?.title || ''}
-                        onRequestSent={() => {/* refresh if needed */}}
-                      />
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-            
-            {/* Submit Assignment Button */}
-            {(assignment.status === 'started' || assignment.status === 'rejected') && (
-              <>
-                {canInteract ? (
-                  <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full">
-                        <Upload className="w-4 h-4 mr-2" />
-                        {assignment.status === 'rejected' ? 'Resubmit Assignment' : 'Submit Assignment'}
-                      </Button>
-                    </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Submit Evidence - {assignment.template?.title}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="text-sm text-muted-foreground">
-                      Provide evidence of your completed assignment. You can submit any combination of the options below.
-                    </div>
-
-                    {/* URL Input - Always Available */}
-                    <div className="space-y-2">
-                      <Label htmlFor="evidenceUrl" className="flex items-center gap-2">
-                        <LinkIcon className="h-4 w-4" />
-                        URL Evidence (Optional)
-                      </Label>
-                      <Input
-                        id="evidenceUrl"
-                        value={evidenceUrl}
-                        onChange={(e) => setEvidenceUrl(e.target.value)}
-                        placeholder="https://example.com/your-proof"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Share a link to your completed work or relevant proof
-                      </p>
-                    </div>
-
-                    {/* File Upload - Always Available */}
-                    <div className="space-y-2">
-                      <Label htmlFor="files" className="flex items-center gap-2">
-                        <Upload className="h-4 w-4" />
-                        File Attachment (Optional)
-                      </Label>
-                      <Input
-                        id="files"
-                        type="file"
-                        multiple
-                        accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,.zip"
-                        onChange={handleFileChange}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Upload screenshots, documents, or other proof files
-                      </p>
-                      {fileValidationErrors.length > 0 && (
-                        <div className="space-y-1">
-                          {fileValidationErrors.map((error, index) => (
-                            <div key={index} className="flex items-center gap-2 text-sm text-red-600">
-                              <AlertTriangle className="h-4 w-4" />
-                              {error}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Description - Always Available */}
-                    <div className="space-y-2">
-                      <Label htmlFor="evidenceText" className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Description (Optional)
-                      </Label>
-                      <Textarea
-                        id="evidenceText"
-                        value={evidenceText}
-                        onChange={(e) => setEvidenceText(e.target.value)}
-                        placeholder="Describe what you completed, provide additional context, or explain your submission..."
-                        rows={4}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Provide details about your completed task or additional context
-                      </p>
-                    </div>
-
-                    {/* Accepted Evidence Types Display */}
-                    {assignment.template?.evidence_types?.length > 0 && (
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <h5 className="text-sm font-medium mb-2">Accepted Evidence Types:</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {assignment.template.evidence_types.map((type) => (
-                            <Badge key={type} variant="outline" className="text-xs">
-                              {type === 'url' && <LinkIcon className="h-3 w-3 mr-1" />}
-                              {type === 'screenshot' && <Camera className="h-3 w-3 mr-1" />}
-                              {type === 'file' && <FileText className="h-3 w-3 mr-1" />}
-                              {type === 'text' && <FileText className="h-3 w-3 mr-1" />}
-                              {type === 'email' && <FileText className="h-3 w-3 mr-1" />}
-                              <span className="capitalize">{type}</span>
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <Button 
-                      onClick={handleSubmitEvidence} 
-                      disabled={submitting || (!evidenceUrl && !evidenceText && !files)}
-                      className="w-full"
-                    >
-                      {submitting ? 'Submitting...' : 'Submit Evidence'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-                ) : (
-                  <div className="space-y-2">
-                    <Button 
-                      className="w-full" 
-                      variant="secondary" 
-                      disabled
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      {dayAvailability.isFutureDay 
-                        ? 'Available Later This Week'
-                        : dayAvailability.isPastDue 
-                        ? 'Task Missed'
-                        : 'Assignment Expired'
-                      }
-                    </Button>
-                    {showExtensionRequest && (
-                      <JobHuntingRequestReenableDialog
-                        assignmentId={assignment.id}
-                        taskTitle={assignment.template?.title || ''}
-                        onRequestSent={() => {/* refresh if needed */}}
-                      />
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-            
-            {/* Under Review State */}
-            {assignment.status === 'submitted' && (
-              <div className="w-full p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md text-center">
-                <div className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-200">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="font-medium">Under Review</span>
-                </div>
-                <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                  Your submission is being verified
-                </p>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Completed State */}
-        {assignment.status === 'verified' && (
-          <div className="w-full p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md text-center">
-            <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-200">
-              <CheckCircle className="w-4 h-4" />
-              <span className="font-medium">Assignment Completed</span>
-            </div>
-            <p className="text-xs text-green-600 dark:text-green-300 mt-1">
-              {assignment.points_earned} points earned
-            </p>
-          </div>
-        )}
-
-        {/* Admin Review Section */}
-        {(assignment.status === 'verified' || assignment.status === 'rejected') && assignment.verification_notes && (
-          <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              Admin Review:
-            </Label>
-            <div className={`p-3 rounded-md text-sm border-l-4 ${
-              assignment.status === 'verified' 
-                ? 'bg-green-50 border-green-500 text-green-800' 
-                : 'bg-red-50 border-red-500 text-red-800'
-            }`}>
-              <div className="font-medium mb-1">
-                {assignment.status === 'verified' ? 'Approved' : 'Rejected'}
-                {assignment.verified_at && (
-                  <span className="text-xs font-normal ml-2">
-                    on {new Date(assignment.verified_at).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
-              <p className="whitespace-pre-line leading-relaxed">
-                {assignment.verification_notes}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Verification Criteria */}
-        {assignment.template?.verification_criteria?.required && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <h5 className="font-medium text-sm text-blue-900 mb-2">Required Evidence:</h5>
-            <ul className="text-sm text-blue-700 space-y-1">
-              {assignment.template.verification_criteria.required.map((item: string, index: number) => (
-                <li key={index} className="flex items-start gap-2">
-                  <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
