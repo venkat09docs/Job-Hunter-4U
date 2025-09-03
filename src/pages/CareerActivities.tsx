@@ -260,29 +260,6 @@ const CareerActivities = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-semibold">Week {currentPeriod} ({getWeekDateRange(currentPeriod)}) - LinkedIn Growth Tasks</h3>
                   <div className="flex items-center gap-2">
-                    {(isAdmin || isInstituteAdmin) && (
-                      <>
-                        <AdminReenableRequestsDialog />
-                        <Button
-                          onClick={handleInitializeWeek}
-                          disabled={isInitializing}
-                          variant="outline"
-                          size="sm"
-                        >
-                          {isInitializing ? (
-                            <>
-                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                              Regenerating...
-                            </>
-                          ) : (
-                            <>
-                              <RefreshCw className="w-4 h-4 mr-2" />
-                              Reset Week
-                            </>
-                          )}
-                        </Button>
-                      </>
-                    )}
                     <Badge variant="outline" className="text-sm">
                       {stats.completed} of {stats.total} completed
                     </Badge>
