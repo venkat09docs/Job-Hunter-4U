@@ -152,13 +152,23 @@ const handler = async (req: Request): Promise<Response> => {
           .eq('id', assignmentId)
           .select(`
             *,
-            github_tasks(title, points_base),
-            profiles(user_id, full_name)
+            github_tasks(title, points_base)
           `)
           .single();
 
         if (githubError) throw githubError;
         assignmentData = githubData;
+
+        // Get user profile separately for GitHub tasks
+        const { data: githubProfileData, error: githubProfileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .eq('user_id', assignmentData.user_id)
+          .single();
+          
+        if (!githubProfileError && githubProfileData) {
+          assignmentData.profiles = githubProfileData;
+        }
 
         // Update evidence status
         await supabase
