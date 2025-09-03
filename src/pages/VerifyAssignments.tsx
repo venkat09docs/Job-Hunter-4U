@@ -437,7 +437,7 @@ const VerifyAssignments = () => {
     if (!user) throw new Error('User not authenticated');
     
     // Fetch all assignment types in parallel with optimized queries
-    const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = await Promise.all([
+    const [careerResult, linkedInResult, jobHuntingResult, gitHubResult, dailyTasksResult] = await Promise.all([
       supabase
         .from('career_task_assignments')
         .select(`
@@ -465,7 +465,16 @@ const VerifyAssignments = () => {
         .from('github_user_tasks')
         .select(`*, github_tasks (id, code, title, description, points_base)`)
         .eq('status', 'SUBMITTED')
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false }),
+
+      supabase
+        .from('daily_job_hunting_tasks')
+        .select(`
+          id, user_id, task_type, status, submitted_at, reviewed_at, points_earned, 
+          task_date, target_count, actual_count, description
+        `)
+        .eq('status', 'submitted')
+        .order('submitted_at', { ascending: false })
     ]);
 
     // Collect all unique user IDs and fetch profiles in one query
@@ -473,7 +482,8 @@ const VerifyAssignments = () => {
       ...(careerResult.data || []).map(a => a.user_id),
       ...(linkedInResult.data || []).map(a => a.user_id),
       ...(jobHuntingResult.data || []).map(a => a.user_id),
-      ...(gitHubResult.data || []).map(a => a.user_id)
+      ...(gitHubResult.data || []).map(a => a.user_id),
+      ...(dailyTasksResult.data || []).map(a => a.user_id)
     ]);
 
     const { data: profilesData } = await supabase
@@ -500,7 +510,9 @@ const VerifyAssignments = () => {
       gitHubResult.data?.length ? supabase
         .from('github_evidence')
         .select('user_task_id, *')
-        .in('user_task_id', gitHubResult.data.map(a => a.id)) : Promise.resolve({ data: [] })
+        .in('user_task_id', gitHubResult.data.map(a => a.id)) : Promise.resolve({ data: [] }),
+      // Daily tasks have evidence stored inline, so we don't need a separate evidence query
+      Promise.resolve({ data: [] })
     ];
 
     const [careerEvidence, linkedInEvidence, jobHuntingEvidence, gitHubEvidence] = await Promise.all(evidencePromises);
@@ -510,7 +522,8 @@ const VerifyAssignments = () => {
       career: new Map(),
       linkedin: new Map(),
       jobHunting: new Map(),
-      github: new Map()
+      github: new Map(),
+      dailyTasks: new Map()
     };
 
     (careerEvidence.data || []).forEach(e => {
@@ -595,6 +608,42 @@ const VerifyAssignments = () => {
       });
     });
 
+    // Process daily job hunting tasks
+    (dailyTasksResult.data || []).forEach(task => {
+      const taskTypeNames = {
+        job_applications: 'Apply to 5 Job Roles',
+        job_referrals: 'Request 3 Job Referrals', 
+        follow_up_messages: 'Send 5 Follow-up Messages'
+      };
+
+      allAssignments.push({
+        id: task.id,
+        user_id: task.user_id,
+        template_id: task.task_type,
+        status: task.status,
+        submitted_at: task.submitted_at,
+        verified_at: task.reviewed_at,
+        points_earned: task.points_earned || 0,
+        career_task_templates: {
+          title: taskTypeNames[task.task_type] || task.task_type,
+          module: 'DAILY_TASKS',
+          points_reward: task.points_earned || 0,
+          category: 'Daily Job Hunting Tasks'
+        },
+        profiles: profilesMap.get(task.user_id),
+        evidence: [{
+          evidence_type: 'daily_task',
+          evidence_data: {
+            task_type: task.task_type,
+            target_count: task.target_count,
+            actual_count: task.actual_count,
+            description: task.description,
+            task_date: task.task_date
+          }
+        }]
+      });
+    });
+
     // Sort by submission date and return latest first
     const sortedAssignments = allAssignments.sort((a, b) => {
       const dateA = new Date(a.submitted_at || '').getTime();
@@ -618,7 +667,8 @@ const VerifyAssignments = () => {
         supabase.from('career_task_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
         supabase.from('linkedin_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED'),
         supabase.from('job_hunting_assignments').select('id', { count: 'exact', head: true }).eq('status', 'verified'),
-        supabase.from('github_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED')
+        supabase.from('github_user_tasks').select('id', { count: 'exact', head: true }).eq('status', 'VERIFIED'),
+        supabase.from('daily_job_hunting_tasks').select('id', { count: 'exact', head: true }).eq('status', 'approved')
       ]),
       
       // Data queries with proper ordering and range
@@ -654,22 +704,33 @@ const VerifyAssignments = () => {
           .select(`*, github_tasks (id, code, title, description, points_base)`)
           .eq('status', 'VERIFIED')
           .order('created_at', { ascending: false })
+          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
+
+        supabase
+          .from('daily_job_hunting_tasks')
+          .select(`
+            id, user_id, task_type, status, submitted_at, reviewed_at, points_earned, 
+            task_date, target_count, actual_count, description
+          `)
+          .eq('status', 'approved')
+          .order('reviewed_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3))
       ])
     ]);
 
-    const [careerCount, linkedInCount, jobHuntingCount, gitHubCount] = countResults;
-    const [careerResult, linkedInResult, jobHuntingResult, gitHubResult] = dataResults;
+    const [careerCount, linkedInCount, jobHuntingCount, gitHubCount, dailyTasksCount] = countResults;
+    const [careerResult, linkedInResult, jobHuntingResult, gitHubResult, dailyTasksResult] = dataResults;
 
     const totalCount = (careerCount.count || 0) + (linkedInCount.count || 0) + 
-                      (jobHuntingCount.count || 0) + (gitHubCount.count || 0);
+                      (jobHuntingCount.count || 0) + (gitHubCount.count || 0) + (dailyTasksCount.count || 0);
 
     // Use the same optimized processing
     const allUserIds = new Set([
       ...(careerResult.data || []).map(a => a.user_id),
       ...(linkedInResult.data || []).map(a => a.user_id),
       ...(jobHuntingResult.data || []).map(a => a.user_id),
-      ...(gitHubResult.data || []).map(a => a.user_id)
+      ...(gitHubResult.data || []).map(a => a.user_id),
+      ...(dailyTasksResult.data || []).map(a => a.user_id)
     ]);
 
     const { data: profilesData } = await supabase
@@ -746,6 +807,34 @@ const VerifyAssignments = () => {
       });
     });
 
+    // Process verified daily job hunting tasks
+    (dailyTasksResult.data || []).forEach(task => {
+      const taskTypeNames = {
+        job_applications: 'Apply to 5 Job Roles',
+        job_referrals: 'Request 3 Job Referrals', 
+        follow_up_messages: 'Send 5 Follow-up Messages'
+      };
+
+      allAssignments.push({
+        id: task.id,
+        user_id: task.user_id,
+        template_id: task.task_type,
+        status: 'verified',
+        submitted_at: task.submitted_at,
+        verified_at: task.reviewed_at,
+        points_earned: task.points_earned || 0,
+        score_awarded: task.points_earned || 0,
+        career_task_templates: {
+          title: taskTypeNames[task.task_type] || task.task_type,
+          module: 'DAILY_TASKS',
+          points_reward: task.points_earned || 0,
+          category: 'Daily Job Hunting Tasks'
+        },
+        profiles: profilesMap.get(task.user_id),
+        evidence: []
+      });
+    });
+
     // Sort by verified date and paginate
     const sortedAssignments = allAssignments.sort((a, b) => {
       const dateA = new Date(a.verified_at || a.submitted_at || '').getTime();
@@ -790,7 +879,7 @@ const VerifyAssignments = () => {
           // Job hunting assignments
           return moduleFilter.toLowerCase() === 'job_hunting';
         } else if (assignment.career_task_templates?.module) {
-          // Career, GitHub, and LinkedIn assignments  
+          // Career, GitHub, LinkedIn and Daily Task assignments  
           return assignment.career_task_templates.module.toLowerCase() === moduleFilter.toLowerCase();
         }
         return false;
@@ -826,50 +915,74 @@ const VerifyAssignments = () => {
     mutationFn: async ({ action, assignment }: { action: 'approve' | 'reject', assignment: Assignment }) => {
       // Determine assignment type based on the structure
       let assignmentType: string;
+      let edgeFunction: string;
       
       if (assignment._isLinkedInAssignment) {
         assignmentType = 'linkedin';
+        edgeFunction = 'verify-institute-assignments';
       } else if (assignment.job_hunting_task_templates) {
         // Job hunting assignments have job_hunting_task_templates
         assignmentType = 'job_hunting';
+        edgeFunction = 'verify-institute-assignments';
       } else if (assignment.career_task_templates?.module === 'GITHUB') {
         assignmentType = 'github';
+        edgeFunction = 'verify-institute-assignments';
+      } else if (assignment.career_task_templates?.module === 'DAILY_TASKS') {
+        assignmentType = 'daily_tasks';
+        edgeFunction = 'verify-daily-job-hunting-tasks';
       } else {
         assignmentType = 'career';
+        edgeFunction = 'verify-institute-assignments';
       }
 
       console.log('Assignment type determined:', assignmentType, 'for assignment:', assignment.id);
-      console.log('Calling verify-institute-assignments with:', {
-        assignmentId: assignment.id,
-        assignmentType,
-        action,
-        scoreAwarded: parseInt(scoreAwarded) || 0,
-        verificationNotes
-      });
+      
+      // Use different edge functions based on assignment type
+      if (assignmentType === 'daily_tasks') {
+        console.log('Calling verify-daily-job-hunting-tasks with:', {
+          taskId: assignment.id,
+          action,
+          reviewerNotes: verificationNotes
+        });
 
-      const response = await supabase.functions.invoke('verify-institute-assignments', {
-        body: {
+        const response = await supabase.functions.invoke('verify-daily-job-hunting-tasks', {
+          body: {
+            taskId: assignment.id,
+            action,
+            reviewerNotes: verificationNotes
+          }
+        });
+
+        console.log('Daily tasks edge function response:', response);
+        
+        if (response.error) {
+          throw new Error(response.error.message || 'Failed to verify daily task');
+        }
+      } else {
+        console.log('Calling verify-institute-assignments with:', {
           assignmentId: assignment.id,
           assignmentType,
           action,
           scoreAwarded: parseInt(scoreAwarded) || 0,
           verificationNotes
-        }
-      });
+        });
 
-      console.log('Edge function response:', response);
-      
-      if (response.error) {
-        console.error('Edge function error:', response.error);
-        throw response.error;
+        const response = await supabase.functions.invoke('verify-institute-assignments', {
+          body: {
+            assignmentId: assignment.id,
+            assignmentType,
+            action,
+            scoreAwarded: parseInt(scoreAwarded) || 0,
+            verificationNotes
+          }
+        });
+
+        console.log('Edge function response:', response);
+
+        if (response.error) {
+          throw new Error(response.error.message || 'Failed to verify assignment');
+        }
       }
-      
-      if (!response.data) {
-        console.error('No data returned from edge function');
-        throw new Error('No data returned from verification function');
-      }
-      
-      return response.data;
     },
     onSuccess: () => {
       toast.success('Assignment processed successfully');
