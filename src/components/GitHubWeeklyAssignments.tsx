@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Github, Plus, Minus, Upload, CheckCircle, AlertCircle, Shield, RefreshCw, Link2, Camera, FileText } from 'lucide-react';
+import { Calendar, Clock, Github, ChevronDown, Upload, CheckCircle, AlertCircle, Shield, RefreshCw, Link2, Camera, FileText } from 'lucide-react';
 import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { formatDistanceToNow } from 'date-fns';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
@@ -546,13 +546,9 @@ export const GitHubWeeklyAssignments = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleTaskExpansion(task.id)}
-                              className="h-8 w-8 p-0"
+                              className="h-8 w-8 p-0 hover:bg-muted/50 transition-colors"
                             >
-                              {isExpanded ? (
-                                <Minus className="h-4 w-4" />
-                              ) : (
-                                <Plus className="h-4 w-4" />
-                              )}
+                              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                             </Button>
                           </div>
                         </div>

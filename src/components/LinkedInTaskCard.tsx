@@ -22,8 +22,7 @@ import {
   AlertCircle,
   Trophy,
   Shield,
-  Plus,
-  Minus
+  ChevronDown
 } from 'lucide-react';
 import { LinkedInUserTask, Evidence } from '@/hooks/useLinkedInTasks';
 import { format } from 'date-fns';
@@ -226,20 +225,16 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
   return (
     <Card className={`relative transition-all hover:shadow-lg min-h-[200px] ${isCompleted ? 'ring-2 ring-green-500/20 bg-green-50/50' : ''}`}>
       
-      {/* Collapse/Expand Button for Day tasks - Top Right Corner */}
+      {/* Collapse/Expand Button for Day tasks - Right Side */}
       {hasDay && (
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-1/2 right-4 -translate-y-1/2 z-10">
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleExpanded}
-            className="h-10 w-10 p-0 bg-background/80 hover:bg-background border border-border/50 rounded-full shadow-sm"
+            className="h-8 w-8 p-0 hover:bg-muted/50 transition-colors"
           >
-            {isExpanded ? (
-              <Minus className="h-5 w-5" />
-            ) : (
-              <Plus className="h-5 w-5" />
-            )}
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
           </Button>
         </div>
       )}
