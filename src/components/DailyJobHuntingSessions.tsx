@@ -155,11 +155,15 @@ export const DailyJobHuntingSessions: React.FC = () => {
             <div className="text-sm text-muted-foreground">Loading daily sessions...</div>
           </div>
         )}
-        {currentWeek.map((day, dayIndex) => {
+        {currentWeek.map((day) => {
           const dayKey = format(day.date, 'yyyy-MM-dd');
           const isExpanded = expandedDays.has(dayKey);
           const isToday = isSameDay(day.date, new Date());
           const progressPercentage = (day.completedSessions / day.totalSessions) * 100;
+          
+          // Calculate day index (0 = Monday, 1 = Tuesday, etc.)
+          const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+          const dayIndex = Math.floor((day.date.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
           
           return (
             <Collapsible key={dayKey} open={isExpanded} onOpenChange={() => toggleDay(dayKey)}>
