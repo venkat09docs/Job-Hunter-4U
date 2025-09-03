@@ -204,7 +204,7 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
               {getStatusIcon(task.status)}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              LinkedIn Growth Activity
+              {task.linkedin_tasks.title}
             </p>
           </div>
           <div className="text-right">
@@ -222,23 +222,26 @@ export const LinkedInTaskCard: React.FC<LinkedInTaskCardProps> = ({
       <CardContent className="space-y-4">
         {/* Task Instructions */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Instructions:</Label>
+          <Label className="text-sm font-medium">Daily Instructions:</Label>
           <div className="p-3 bg-muted/50 rounded-lg">
-            <div className="text-sm space-y-1">
-              {task.linkedin_tasks.description.split('\n').map((line, index) => {
-                if (line.trim() === '') return null;
-                return (
-                  <div key={index} className="flex items-start gap-2">
-                    {line.includes('✅') ? (
-                      <>
-                        <span className="text-green-600 mt-0.5">✅</span>
-                        <span className="flex-1">{line.replace('✅', '').trim()}</span>
-                      </>
-                    ) : (
-                      <span className="pl-6">{line}</span>
-                    )}
-                  </div>
-                );
+            <div className="text-sm space-y-2">
+              {task.linkedin_tasks.description.split('\n').filter(line => line.trim() !== '').map((line, index) => {
+                const cleanLine = line.trim();
+                if (cleanLine.startsWith('✅')) {
+                  return (
+                    <div key={index} className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5 flex-shrink-0">✅</span>
+                      <span className="flex-1 text-foreground">{cleanLine.replace('✅', '').trim()}</span>
+                    </div>
+                  );
+                } else if (cleanLine.length > 0) {
+                  return (
+                    <div key={index} className="pl-6 text-muted-foreground text-xs">
+                      {cleanLine}
+                    </div>
+                  );
+                }
+                return null;
               })}
             </div>
           </div>
