@@ -43,60 +43,65 @@ export const socialProofHelpers = {
   /**
    * Track when a user completes payment (premium upgrade)
    */
-  trackPremiumUpgrade: async (userId: string, userFirstName?: string, planName?: string) => {
+  trackPremiumUpgrade: async (userId: string, userFirstName?: string, planName?: string, location?: string) => {
     return trackSocialProofEvent({
       eventType: 'premium_upgrade',
       userId,
       userFirstName,
-      eventData: { plan_name: planName }
+      eventData: { plan_name: planName },
+      location
     });
   },
 
   /**
    * Track when a user applies to a job
    */
-  trackJobApplication: async (userId: string, userFirstName?: string, jobTitle?: string, company?: string) => {
+  trackJobApplication: async (userId: string, userFirstName?: string, jobTitle?: string, company?: string, location?: string) => {
     return trackSocialProofEvent({
       eventType: 'job_application',
       userId,
       userFirstName,
-      eventData: { job_title: jobTitle, company }
+      eventData: { job_title: jobTitle, company },
+      location
     });
   },
 
   /**
    * Track when a user completes their resume
    */
-  trackResumeCompletion: async (userId: string, userFirstName?: string, completionPercentage?: number) => {
+  trackResumeCompletion: async (userId: string, userFirstName?: string, completionPercentage?: number, location?: string) => {
     return trackSocialProofEvent({
       eventType: 'resume_completion',
       userId,
       userFirstName,
-      eventData: { completion_percentage: completionPercentage }
+      eventData: { completion_percentage: completionPercentage },
+      location
     });
   },
 
   /**
    * Track when a user optimizes their LinkedIn profile
    */
-  trackLinkedInOptimization: async (userId: string, userFirstName?: string, tasksCompleted?: number) => {
+  trackLinkedInOptimization: async (userId: string, userFirstName?: string, tasksCompleted?: number, location?: string) => {
     return trackSocialProofEvent({
       eventType: 'linkedin_optimization',
       userId,
       userFirstName,
-      eventData: { tasks_completed: tasksCompleted }
+      eventData: { tasks_completed: tasksCompleted },
+      location
     });
   },
 
   /**
    * Track when a user sets up their GitHub profile
    */
-  trackGitHubSetup: async (userId: string, userFirstName?: string, reposCreated?: number) => {
+  trackGitHubSetup: async (userId: string, userFirstName?: string, reposCreated?: number, location?: string) => {
     return trackSocialProofEvent({
       eventType: 'github_setup',
       userId,
       userFirstName,
-      eventData: { repos_created: reposCreated }
+      eventData: { repos_created: reposCreated },
+      location
     });
   }
 };

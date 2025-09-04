@@ -34,6 +34,7 @@ const professionalDetailsSchema = z.object({
 
 const usernameSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username must be less than 30 characters').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
+  location: z.string().optional().or(z.literal('')),
 });
 
 type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
@@ -83,6 +84,7 @@ const Settings = () => {
     resolver: zodResolver(usernameSchema),
     defaultValues: {
       username: profile?.username || '',
+      location: (profile as any)?.location || '',
     },
   });
 
@@ -102,6 +104,7 @@ const Settings = () => {
       setOriginalUsername(currentUsername);
       usernameForm.reset({
         username: currentUsername,
+        location: (profile as any).location || '',
       });
     }
   }, [profile, professionalForm, usernameForm]);
@@ -231,15 +234,15 @@ const Settings = () => {
 
       const { error } = await supabase
         .from('profiles')
-        .update({ username: data.username } as any)
+        .update({ username: data.username, location: data.location } as any)
         .eq('user_id', user.id);
 
       if (error) throw error;
 
       setOriginalUsername(data.username);
       toast({
-        title: 'Username updated',
-        description: 'Your username has been successfully updated.',
+        title: 'Profile updated',
+        description: 'Your username and location have been successfully updated.',
       });
     } catch (error: any) {
       console.error('Error updating username:', error);
@@ -394,10 +397,10 @@ const Settings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5" />
-                    Username
+                    Username & Location
                   </CardTitle>
                   <CardDescription>
-                    Change your unique username
+                    Change your unique username and location
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -422,13 +425,32 @@ const Settings = () => {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={usernameForm.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Location</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter your location (e.g., New York, USA)" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              This location will be displayed in social proof events
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <Button 
                         type="submit" 
-                        disabled={savingUsername || usernameForm.watch('username') === originalUsername} 
+                        disabled={savingUsername || (usernameForm.watch('username') === originalUsername && usernameForm.watch('location') === (profile as any)?.location)} 
                         className="gap-2"
                       >
                         <User className="h-4 w-4" />
-                        {savingUsername ? 'Saving...' : 'Update Username'}
+                        {savingUsername ? 'Saving...' : 'Update Profile'}
                       </Button>
                     </form>
                   </Form>

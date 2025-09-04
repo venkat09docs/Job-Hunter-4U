@@ -3404,6 +3404,7 @@ export type Database = {
           industry: string | null
           leetcode_url: string | null
           linkedin_url: string | null
+          location: string | null
           profile_image_url: string | null
           subscription_active: boolean | null
           subscription_end_date: string | null
@@ -3427,6 +3428,7 @@ export type Database = {
           industry?: string | null
           leetcode_url?: string | null
           linkedin_url?: string | null
+          location?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null
@@ -3450,6 +3452,7 @@ export type Database = {
           industry?: string | null
           leetcode_url?: string | null
           linkedin_url?: string | null
+          location?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null

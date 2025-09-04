@@ -22,13 +22,18 @@ export const useTrackSocialProof = () => {
     return undefined;
   };
 
+  const getUserLocation = () => {
+    return (profile as any)?.location || undefined;
+  };
+
   return {
     trackPremiumUpgrade: (planName?: string) => {
       if (!user?.id) return Promise.resolve({ success: false, error: 'No user' });
       return socialProofHelpers.trackPremiumUpgrade(
         user.id,
         getUserFirstName(),
-        planName
+        planName,
+        getUserLocation()
       );
     },
 
@@ -38,7 +43,8 @@ export const useTrackSocialProof = () => {
         user.id,
         getUserFirstName(),
         jobTitle,
-        company
+        company,
+        getUserLocation()
       );
     },
 
@@ -47,7 +53,8 @@ export const useTrackSocialProof = () => {
       return socialProofHelpers.trackResumeCompletion(
         user.id,
         getUserFirstName(),
-        completionPercentage
+        completionPercentage,
+        getUserLocation()
       );
     },
 
@@ -56,7 +63,8 @@ export const useTrackSocialProof = () => {
       return socialProofHelpers.trackLinkedInOptimization(
         user.id,
         getUserFirstName(),
-        tasksCompleted
+        tasksCompleted,
+        getUserLocation()
       );
     },
 
@@ -65,7 +73,8 @@ export const useTrackSocialProof = () => {
       return socialProofHelpers.trackGitHubSetup(
         user.id,
         getUserFirstName(),
-        reposCreated
+        reposCreated,
+        getUserLocation()
       );
     }
   };
