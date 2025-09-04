@@ -688,11 +688,10 @@ const JobTracker = () => {
 
       // Track social proof for job status transitions
       try {
-        const updatedJob = jobs.find(j => j.id === jobId);
-        if (updatedJob && newStatus === 'applied' && prevStatus !== 'applied') {
+        if (data && newStatus === 'applied' && prevStatus !== 'applied') {
           await trackJobApplicationFromTracker({
-            company: updatedJob.company_name,
-            role: updatedJob.job_title,
+            company: data.company_name,
+            role: data.job_title,
             status: newStatus
           });
         }
@@ -791,6 +790,19 @@ const JobTracker = () => {
         await incrementActivity('apply_quality_jobs');
       } catch (e) {
         console.error('Failed to increment daily job application metrics', e);
+      }
+      
+      // Track social proof for job status transitions
+      try {
+        if (data && pendingJobMove.newStatus === 'applied' && pendingJobMove.job.status !== 'applied') {
+          await trackJobApplicationFromTracker({
+            company: data.company_name,
+            role: data.job_title,
+            status: pendingJobMove.newStatus
+          });
+        }
+      } catch (e) {
+        console.error('Failed to track social proof for job status change', e);
       }
       
       toast.success('Application requirements completed! Job moved to Applied.');
