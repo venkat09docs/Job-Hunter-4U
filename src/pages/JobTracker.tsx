@@ -104,7 +104,39 @@ const JobTracker = () => {
     archived: 'Archived'
   };
 
-  // Helper function to check if backward movement to wishlist is prohibited
+  // Helper function to get allowed status transitions based on current status
+  const getAllowedStatusTransitions = (currentStatus: string): string[] => {
+    switch (currentStatus) {
+      case 'wishlist':
+        // From wishlist, can only go to applied
+        return ['wishlist', 'applied'];
+      case 'applied':
+        // From applied, can go to any of the later statuses
+        return ['applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
+      case 'interviewing':
+        // From interviewing, can go to negotiating, accepted, not_selected, or no_response
+        return ['interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
+      case 'negotiating':
+        // From negotiating, can go to accepted, not_selected, or no_response
+        return ['negotiating', 'accepted', 'not_selected', 'no_response'];
+      case 'accepted':
+      case 'not_selected':
+      case 'no_response':
+        // Terminal states - can only stay in current state (no transitions allowed)
+        return [currentStatus];
+      default:
+        // Fallback to all options
+        return statusOptions;
+    }
+  };
+
+  // Helper function to check if a status transition is allowed
+  const isStatusTransitionAllowed = (currentStatus: string, newStatus: string): boolean => {
+    const allowedStatuses = getAllowedStatusTransitions(currentStatus);
+    return allowedStatuses.includes(newStatus);
+  };
+
+  // Helper function to check if backward movement to wishlist is prohibited (legacy function)
   const isBackwardMoveProhibited = (currentStatus: string, newStatus: string): boolean => {
     // Prevent moving back to wishlist from any status that comes after applied
     const progressiveStatuses = ['applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
@@ -531,7 +563,13 @@ const JobTracker = () => {
     const job = jobs.find(j => j.id === jobId);
     if (!job) return;
     
-    // Check for prohibited backward movement to wishlist
+    // Check if the status transition is allowed
+    if (!isStatusTransitionAllowed(job.status, newStatus)) {
+      toast.error(`Cannot change status from ${getStatusDisplayName(job.status)} to ${getStatusDisplayName(newStatus)}. Please follow the proper workflow.`);
+      return;
+    }
+    
+    // Check for prohibited backward movement to wishlist (legacy check, now handled by transition rules)
     if (isBackwardMoveProhibited(job.status, newStatus)) {
       setBackwardMoveData({ jobId, job, newStatus });
       setShowBackwardMoveAlert(true);
@@ -661,7 +699,13 @@ const JobTracker = () => {
       return;
     }
     
-    // Check for prohibited backward movement to wishlist
+    // Check if the status transition is allowed
+    if (!isStatusTransitionAllowed(job.status, newStatus)) {
+      toast.error(`Cannot change status from ${getStatusDisplayName(job.status)} to ${getStatusDisplayName(newStatus)}. Please follow the proper workflow.`);
+      return;
+    }
+    
+    // Check for prohibited backward movement to wishlist (legacy check, now handled by transition rules)
     if (isBackwardMoveProhibited(job.status, newStatus)) {
       setBackwardMoveData({ jobId, job, newStatus });
       setShowBackwardMoveAlert(true);
@@ -1032,6 +1076,7 @@ const JobTracker = () => {
                          hasActiveSubscription={hasActiveSubscription()}
                          onStatusChange={handleStatusChange}
                          onCardClick={setSelectedJob}
+                         getAllowedStatusTransitions={getAllowedStatusTransitions}
                        />
                      ))}
                     {statusJobs.length === 0 && (

@@ -31,6 +31,7 @@ interface DraggableKanbanCardProps {
   showWarning?: boolean;
   onStatusChange: (jobId: string, newStatus: string) => void;
   onCardClick: (job: JobEntry) => void;
+  getAllowedStatusTransitions?: (currentStatus: string) => string[];
 }
 
 export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
@@ -41,6 +42,7 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
   showWarning = false,
   onStatusChange,
   onCardClick,
+  getAllowedStatusTransitions,
 }) => {
   const {
     attributes,
@@ -66,6 +68,11 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
       onCardClick(job);
     }
   };
+
+  // Get allowed status transitions for the current job
+  const allowedStatuses = getAllowedStatusTransitions ? 
+    getAllowedStatusTransitions(job.status) : 
+    statusOptions;
 
   return (
     <div
@@ -123,7 +130,7 @@ export const DraggableKanbanCard: React.FC<DraggableKanbanCardProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map(statusOption => (
+                  {allowedStatuses.map(statusOption => (
                     <SelectItem key={statusOption} value={statusOption}>
                       {statusLabels[statusOption as keyof typeof statusLabels]}
                     </SelectItem>
