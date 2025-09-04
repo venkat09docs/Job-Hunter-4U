@@ -83,16 +83,6 @@ const Dashboard = () => {
   const hasEligibleSubscription = () => {
     const hasActive = hasActiveSubscription();
     const hasPlan = profile?.subscription_plan && eligiblePlans.includes(profile.subscription_plan);
-    console.log('🔍 Badge Leaders eligibility check:', {
-      hasActiveSubscription: hasActive,
-      currentPlan: profile?.subscription_plan,
-      eligiblePlans,
-      hasPlan,
-      canAccess: hasActive && hasPlan,
-      isAdmin,
-      isRecruiter,
-      finalAccess: isAdmin || isRecruiter || (hasActive && hasPlan)
-    });
     return hasActive && hasPlan;
   };
 
@@ -114,14 +104,6 @@ const Dashboard = () => {
     if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
     return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
-  
-  // Debug log for Badge Leaders upgrade eligibility - moved after function declarations
-  console.log('🔍 Badge Leaders Upgrade Plans:', {
-    currentPlan: profile?.subscription_plan,
-    eligiblePlans,
-    hasRestrictedPlan: hasRestrictedPlanForBadgeLeaders(),
-    canAccess: canAccessBadgeLeaders()
-  });
 
   // Check if user has no active subscription (not admin or recruiter)
   const hasNoActiveSubscription = () => {
