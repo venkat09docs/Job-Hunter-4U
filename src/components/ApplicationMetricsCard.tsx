@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TrendingUp, ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useJobApplicationActivities, JobApplicationTaskId } from "@/hooks/useJobApplicationActivities";
+import { JobApplicationTaskId } from "@/hooks/useJobApplicationActivities";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay, subDays, addWeeks } from "date-fns";
@@ -13,7 +13,22 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 export default function ApplicationMetricsCard() {
   const { user } = useAuth();
-  const { fetchWeek, getWeekDatesMonToFri } = useJobApplicationActivities();
+  
+  const getWeekDatesMonToFri = (baseDate: Date): Date[] => {
+    const dates: Date[] = [];
+    const currentDate = new Date(baseDate);
+    const dayOfWeek = currentDate.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    
+    currentDate.setDate(currentDate.getDate() + mondayOffset);
+    
+    for (let i = 0; i < 5; i++) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return dates;
+  };
 
   const [jobWeekData, setJobWeekData] = useState<Record<string, Partial<Record<JobApplicationTaskId, number>>>>({});
   const [statusWeekData, setStatusWeekData] = useState<Record<string, Partial<Record<string, number>>>>({});
@@ -23,13 +38,9 @@ export default function ApplicationMetricsCard() {
     const baseDate = addWeeks(new Date(), weekOffset);
     const weekDates = getWeekDatesMonToFri(baseDate);
 
-    // Fetch week activities (wishlist/applied counts)
-    const data = await fetchWeek(baseDate);
-    setJobWeekData(data);
-
     if (!user) return;
 
-    // Aggregate job_tracker statuses for requested week
+    // Aggregate job_tracker data for requested week - both activities and statuses
     try {
       const startDate = format(weekDates[0], 'yyyy-MM-dd');
       const lastWeekday = weekDates[weekDates.length - 1];
@@ -37,32 +48,51 @@ export default function ApplicationMetricsCard() {
       const isCurrentWeek = weekOffset === 0;
       const end = isCurrentWeek && today < lastWeekday ? today : lastWeekday;
       const endDate = format(end, 'yyyy-MM-dd');
-      const { data: statusRows, error } = await supabase
+      
+      const { data: jobRows, error } = await supabase
         .from('job_tracker')
-        .select('status, updated_at, user_id')
+        .select('status, updated_at, created_at, user_id')
         .eq('user_id', user.id)
         .gte('updated_at', `${startDate}T00:00:00Z`)
         .lte('updated_at', `${endDate}T23:59:59Z`);
+        
       if (error) {
-        console.error('Error fetching status metrics:', error);
+        console.error('Error fetching job tracker data:', error);
+        setJobWeekData({});
         setStatusWeekData({});
         return;
       }
-      const TARGET_STATUSES = ['interviewing','negotiating','accepted','not_selected','no_response'];
-      const map: Record<string, Partial<Record<string, number>>> = {};
-      (statusRows || []).forEach((row: any) => {
-        const key = format(new Date(row.updated_at), 'yyyy-MM-dd');
-        if (!map[key]) map[key] = {};
-        const st = row.status as string;
-        if (TARGET_STATUSES.includes(st)) {
-          map[key]![st] = ((map[key]![st] as number) || 0) + 1;
+
+      // Process job tracker data into activities and status changes
+      const activityMap: Record<string, Partial<Record<JobApplicationTaskId, number>>> = {};
+      const statusMap: Record<string, Partial<Record<string, number>>> = {};
+      
+      (jobRows || []).forEach((row: any) => {
+        const updateKey = format(new Date(row.updated_at), 'yyyy-MM-dd');
+        const createKey = format(new Date(row.created_at), 'yyyy-MM-dd');
+        
+        // Track status changes
+        if (!statusMap[updateKey]) statusMap[updateKey] = {};
+        const TARGET_STATUSES = ['interviewing','negotiating','accepted','not_selected','no_response'];
+        if (TARGET_STATUSES.includes(row.status)) {
+          statusMap[updateKey]![row.status] = ((statusMap[updateKey]![row.status] as number) || 0) + 1;
+        }
+        
+        // Track job creation activities
+        if (!activityMap[createKey]) activityMap[createKey] = {};
+        if (row.status === 'wishlist') {
+          activityMap[createKey]!['save_potential_opportunities'] = ((activityMap[createKey]!['save_potential_opportunities'] as number) || 0) + 1;
+        } else {
+          activityMap[createKey]!['apply_quality_jobs'] = ((activityMap[createKey]!['apply_quality_jobs'] as number) || 0) + 1;
         }
       });
-      setStatusWeekData(map);
+      
+      setJobWeekData(activityMap);
+      setStatusWeekData(statusMap);
     } catch (e) {
-      console.error('Failed to compute status metrics', e);
+      console.error('Failed to compute job tracker metrics', e);
     }
-  }, [user, fetchWeek, getWeekDatesMonToFri, weekOffset]);
+  }, [user, weekOffset]);
 
   useEffect(() => {
     refreshApplicationMetrics();
@@ -72,11 +102,6 @@ export default function ApplicationMetricsCard() {
     if (!user) return;
     const channel = supabase
       .channel('job-app-rt-report')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_application_activities' }, (payload) => {
-        const row: any = (payload as any).new || (payload as any).old;
-        if (!row || row.user_id !== user.id) return;
-        refreshApplicationMetrics();
-      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'job_tracker' }, (payload) => {
         const row: any = (payload as any).new || (payload as any).old;
         if (!row || row.user_id !== user.id) return;
@@ -178,7 +203,7 @@ export default function ApplicationMetricsCard() {
             <TrendingUp className="h-5 w-5 text-primary" />
             Application Metrics
           </CardTitle>
-          <CardDescription>Weekly job application stats from Job Tracker</CardDescription>
+          <CardDescription>Actual job applications and status changes from your Job Tracker</CardDescription>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="hover-scale" onClick={() => setWeekOffset((v) => v - 1)}>
