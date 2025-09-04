@@ -57,7 +57,7 @@ export const useOptimizedLeaderboard = () => {
         },
         () => {
           // Clear cache and refetch with debouncing
-          requestCache.clearCache('get_leaderboard_optimized');
+          requestCache.clearCache('get_leaderboard_filtered');
           requestCache.clearCache('get_user_points_consolidated');
           setTimeout(fetchLeaderboard, 500);
         }
@@ -74,8 +74,15 @@ export const useOptimizedLeaderboard = () => {
       setLoading(true);
       
       // Clear cache to ensure we get updated data after migration
-      requestCache.clearCache('get_leaderboard_optimized');
+      requestCache.clearCache('get_leaderboard_filtered');
       requestCache.clearCache('get_user_points_consolidated');
+      
+      // Debug logging
+      console.log('🔍 Leaderboard Filter Debug:', {
+        isInstituteUser,
+        instituteId,
+        userId: user?.id
+      });
       
       // Get current user points and all leaderboard periods in parallel with caching
       const [userPointsResult, topPerformerResult, currentWeekResult, last30DaysResult] = await Promise.all([
@@ -90,28 +97,43 @@ export const useOptimizedLeaderboard = () => {
         
         requestCache.interceptRequest(
           async () => {
-            const { data, error } = await supabase.rpc('get_leaderboard_optimized', { period_type: 'top_performer', limit_count: 5 });
+            const { data, error } = await supabase.rpc('get_leaderboard_filtered', { 
+              period_type: 'top_performer', 
+              limit_count: 5,
+              is_institute_user: isInstituteUser,
+              user_institute_id: instituteId
+            });
             return { data, error };
           },
-          '/rpc/get_leaderboard_optimized?period=top_performer&limit=5',
+          `/rpc/get_leaderboard_filtered?period=top_performer&limit=5&institute=${isInstituteUser}&institute_id=${instituteId}`,
           'POST'
         ),
         
         requestCache.interceptRequest(
           async () => {
-            const { data, error } = await supabase.rpc('get_leaderboard_optimized', { period_type: 'current_week', limit_count: 5 });
+            const { data, error } = await supabase.rpc('get_leaderboard_filtered', { 
+              period_type: 'current_week', 
+              limit_count: 5,
+              is_institute_user: isInstituteUser,
+              user_institute_id: instituteId
+            });
             return { data, error };
           },
-          '/rpc/get_leaderboard_optimized?period=current_week&limit=5',
+          `/rpc/get_leaderboard_filtered?period=current_week&limit=5&institute=${isInstituteUser}&institute_id=${instituteId}`,
           'POST'
         ),
         
         requestCache.interceptRequest(
           async () => {
-            const { data, error } = await supabase.rpc('get_leaderboard_optimized', { period_type: 'last_30_days', limit_count: 5 });
+            const { data, error } = await supabase.rpc('get_leaderboard_filtered', { 
+              period_type: 'last_30_days', 
+              limit_count: 5,
+              is_institute_user: isInstituteUser,
+              user_institute_id: instituteId
+            });
             return { data, error };
           },
-          '/rpc/get_leaderboard_optimized?period=last_30_days&limit=5',
+          `/rpc/get_leaderboard_filtered?period=last_30_days&limit=5&institute=${isInstituteUser}&institute_id=${instituteId}`,
           'POST'
         )
       ]) as [

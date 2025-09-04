@@ -4491,6 +4491,22 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_leaderboard_filtered: {
+        Args: {
+          is_institute_user?: boolean
+          limit_count?: number
+          period_type?: string
+          user_institute_id?: string
+        }
+        Returns: {
+          full_name: string
+          profile_image_url: string
+          rank_position: number
+          total_points: number
+          user_id: string
+          username: string
+        }[]
+      }
       get_leaderboard_optimized: {
         Args: { limit_count?: number; period_type?: string }
         Returns: {
