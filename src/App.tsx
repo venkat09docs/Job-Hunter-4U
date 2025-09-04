@@ -52,6 +52,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
 import InstituteAdminRedirect from "./components/InstituteAdminRedirect";
 import AIAssistantChat from "./components/AIAssistantChat";
+import SocialProofPopup from "./components/SocialProofPopup";
 import NotFound from "./pages/NotFound";
 import DigitalPortfolio from "./pages/DigitalPortfolio";
 import CareerActivitiesNew from "./pages/CareerActivitiesNew";
@@ -478,6 +479,7 @@ const AppContent = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
         <AIAssistantChat />
+        <SocialProofPopup />
       </BrowserRouter>
     </>
   );
