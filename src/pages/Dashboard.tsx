@@ -10,6 +10,7 @@ import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
 import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
+import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,6 +62,9 @@ const Dashboard = () => {
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { isIT } = useUserIndustry();
   const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
+  
+  // Social proof tracking for payments
+  usePaymentSocialProof();
   
   // Optimized hooks for better performance
   const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();

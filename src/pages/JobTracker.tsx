@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Link, useNavigate } from 'react-router-dom';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { useJobApplicationActivities } from '@/hooks/useJobApplicationActivities';
+import { useJobTrackerSocialProof } from '@/hooks/useJobTrackerSocialProof';
 
 interface JobEntry {
   id: string;
@@ -81,6 +82,7 @@ const JobTracker = () => {
   } | null>(null);
 
   const { incrementActivity } = useJobApplicationActivities();
+  const { trackJobApplicationFromTracker } = useJobTrackerSocialProof();
 
   const statusOptions = ['wishlist', 'applied', 'interviewing', 'negotiating', 'accepted', 'not_selected', 'no_response'];
   const statusColors = {
@@ -484,6 +486,17 @@ const JobTracker = () => {
         console.error('Failed to increment daily job application metrics', e);
       }
 
+      // Track social proof for job applications
+      try {
+        await trackJobApplicationFromTracker({
+          company: data.company_name,
+          role: data.job_title,
+          status: data.status
+        });
+      } catch (e) {
+        console.error('Failed to track social proof for job application', e);
+      }
+
       toast.success('Job added successfully!');
     } catch (error: any) {
       toast.error('Failed to add job: ' + error.message);
@@ -671,6 +684,20 @@ const JobTracker = () => {
         }
       } catch (e) {
         console.error('Failed to increment daily job application metrics', e);
+      }
+
+      // Track social proof for job status transitions
+      try {
+        const updatedJob = jobs.find(j => j.id === jobId);
+        if (updatedJob && newStatus === 'applied' && prevStatus !== 'applied') {
+          await trackJobApplicationFromTracker({
+            company: updatedJob.company_name,
+            role: updatedJob.job_title,
+            status: newStatus
+          });
+        }
+      } catch (e) {
+        console.error('Failed to track social proof for job status change', e);
       }
 
       toast.success('Status updated successfully!');
