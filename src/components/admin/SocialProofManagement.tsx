@@ -17,6 +17,7 @@ const SocialProofManagement: React.FC = () => {
   const { config, events, updateConfig, fetchEvents, fetchConfig, loading } = useSocialProof();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [previewEventTypes, setPreviewEventTypes] = useState<string[]>([]);
 
   const eventTypeOptions = [
     { value: 'signup', label: 'New Signups', description: 'Show when users sign up' },
@@ -72,6 +73,25 @@ const SocialProofManagement: React.FC = () => {
       description: "Social proof data has been refreshed.",
     });
   };
+
+  // Initialize preview event types with all enabled types when config loads
+  React.useEffect(() => {
+    if (config && previewEventTypes.length === 0) {
+      setPreviewEventTypes(config.enabled_event_types);
+    }
+  }, [config, previewEventTypes.length]);
+
+  const handlePreviewEventTypeToggle = (eventType: string, checked: boolean) => {
+    const updatedTypes = checked
+      ? [...previewEventTypes, eventType]
+      : previewEventTypes.filter(type => type !== eventType);
+    
+    setPreviewEventTypes(updatedTypes);
+  };
+
+  const filteredEventsForPreview = events.filter(event => 
+    previewEventTypes.includes(event.event_type)
+  );
 
   if (loading) {
     return (
@@ -272,31 +292,97 @@ const SocialProofManagement: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="preview" className="space-y-4">
+          {/* Preview Event Type Filter */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Preview Event Filters</CardTitle>
+              <CardDescription>
+                Select which event types to show in the preview below
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {eventTypeOptions.map((eventType) => (
+                  <div key={eventType.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`preview-${eventType.value}`}
+                      checked={previewEventTypes.includes(eventType.value)}
+                      onCheckedChange={(checked) => handlePreviewEventTypeToggle(eventType.value, checked as boolean)}
+                    />
+                    <Label 
+                      htmlFor={`preview-${eventType.value}`}
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      {eventType.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <Separator className="my-4" />
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Showing {previewEventTypes.length} of {eventTypeOptions.length} event types
+                </span>
+                <div className="space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewEventTypes(eventTypeOptions.map(e => e.value))}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewEventTypes([])}
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preview Events */}
           <Card>
             <CardHeader>
               <CardTitle>Recent Events Preview</CardTitle>
               <CardDescription>
-                Preview of recent social proof events that would be displayed
+                Preview of recent social proof events that would be displayed ({filteredEventsForPreview.length} events)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {events.length === 0 ? (
+              {filteredEventsForPreview.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  No recent events to display
+                  {previewEventTypes.length === 0 
+                    ? "Select event types above to see preview"
+                    : "No recent events to display for selected types"
+                  }
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {events.slice(0, 5).map((event) => (
+                  {filteredEventsForPreview.slice(0, 10).map((event) => (
                     <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="space-y-1">
                         <p className="text-sm font-medium">{event.display_text}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(event.created_at).toLocaleString()}
-                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{new Date(event.created_at).toLocaleString()}</span>
+                          {event.location && (
+                            <>
+                              <span>•</span>
+                              <span>{event.location}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <Badge variant="outline">{event.event_type}</Badge>
                     </div>
                   ))}
+                  {filteredEventsForPreview.length > 10 && (
+                    <p className="text-center text-sm text-muted-foreground pt-2">
+                      And {filteredEventsForPreview.length - 10} more events...
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>
