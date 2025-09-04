@@ -26,17 +26,29 @@ export const SubscriptionUpgrade = ({
 }: SubscriptionUpgradeProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
-  const { hasActiveSubscription, getRemainingDays } = useProfile();
+  const { hasActiveSubscription, getRemainingDays, profile } = useProfile();
 
   // Debug logging
   console.log('🔍 SubscriptionUpgrade Debug:', {
     featureName,
     eligiblePlans,
     hasEligiblePlans: !!eligiblePlans,
-    eligiblePlansLength: eligiblePlans?.length || 0
+    eligiblePlansLength: eligiblePlans?.length || 0,
+    currentPlan: profile?.subscription_plan,
+    hasActiveSubscription: hasActiveSubscription()
   });
 
-  const hasValidSubscription = hasActiveSubscription();
+  // If eligiblePlans is provided (like for Badge Leaders), we should show upgrade dialog
+  // even if user has an active subscription (like One Week Plan users who need to upgrade)
+  const shouldShowUpgradeDialog = eligiblePlans && eligiblePlans.length > 0;
+  const hasValidSubscription = hasActiveSubscription() && !shouldShowUpgradeDialog;
+
+  console.log('🔍 SubscriptionUpgrade Logic:', {
+    shouldShowUpgradeDialog,
+    hasValidSubscription,
+    willShowManageDialog: hasValidSubscription,
+    willShowUpgradeDialog: !hasValidSubscription
+  });
 
   const handleManageSubscription = () => {
     setManageDialogOpen(true);
