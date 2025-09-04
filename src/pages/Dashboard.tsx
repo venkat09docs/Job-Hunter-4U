@@ -33,6 +33,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, Legend } from 'recharts';
 import PricingDialog from '@/components/PricingDialog';
+import { TestSocialProof } from '@/components/TestSocialProof';
 
 interface JobEntry {
   id: string;
@@ -451,6 +452,7 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <TestSocialProof />
               <div className="hidden sm:flex">
                 <SubscriptionStatus />
               </div>
