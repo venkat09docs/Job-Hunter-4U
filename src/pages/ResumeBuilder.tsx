@@ -1654,10 +1654,8 @@ ${resumeData.personalDetails.fullName}`;
           skills: resumeData.skills.filter(skill => skill.trim()),
           interests: resumeData.interests.filter(interest => interest.trim())
         } as any,
-        p_certifications_awards: [
-          ...resumeData.certifications.filter(cert => cert.trim()),
-          ...resumeData.awards.filter(award => award.trim())
-        ] as any,
+        p_certifications_awards: resumeData.certifications.filter(cert => cert.trim()) as any,
+        p_awards: resumeData.awards.filter(award => award.trim()) as any,
         p_professional_summary: resumeData.professionalSummary,
         p_status: status
       });
