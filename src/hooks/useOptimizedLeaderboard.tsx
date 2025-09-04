@@ -73,6 +73,10 @@ export const useOptimizedLeaderboard = () => {
     try {
       setLoading(true);
       
+      // Clear cache to ensure we get updated data after migration
+      requestCache.clearCache('get_leaderboard_optimized');
+      requestCache.clearCache('get_user_points_consolidated');
+      
       // Get current user points and all leaderboard periods in parallel with caching
       const [userPointsResult, topPerformerResult, currentWeekResult, last30DaysResult] = await Promise.all([
         user ? requestCache.interceptRequest(
