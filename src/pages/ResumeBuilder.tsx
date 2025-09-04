@@ -221,7 +221,8 @@ const ResumeBuilder = () => {
         const experience = Array.isArray(data.experience) ? (data.experience as unknown as Experience[]) : [{ company: '', role: '', duration: '', description: '' }];
         const education = Array.isArray(data.education) ? (data.education as unknown as Education[]) : [{ institution: '', degree: '', duration: '', gpa: '' }];
         const skillsInterests = data.skills_interests as any || {};
-        const certAwards = Array.isArray(data.certifications_awards) ? (data.certifications_awards as unknown as string[]) : [''];
+        const certifications = Array.isArray(data.certifications_awards) ? (data.certifications_awards as unknown as string[]) : [''];
+        const awards = Array.isArray(data.awards) ? (data.awards as unknown as string[]) : [''];
 
         setResumeData({
           personalDetails: {
@@ -236,8 +237,8 @@ const ResumeBuilder = () => {
           education: education,
           skills: Array.isArray(skillsInterests.skills) ? skillsInterests.skills : [''],
           interests: Array.isArray(skillsInterests.interests) ? skillsInterests.interests : [''],
-          certifications: certAwards,
-          awards: [''],
+          certifications: certifications,
+          awards: awards,
           professionalSummary: data.professional_summary || ''
         });
         setStatus(data.status as StatusType || 'draft');
@@ -502,10 +503,8 @@ ${resumeData.personalDetails.fullName}`;
           skills: resumeData.skills.filter(skill => skill.trim()),
           interests: resumeData.interests.filter(interest => interest.trim())
         } as any,
-        p_certifications_awards: [
-          ...resumeData.certifications.filter(cert => cert.trim()),
-          ...resumeData.awards.filter(award => award.trim())
-        ] as any,
+        p_certifications_awards: resumeData.certifications.filter(cert => cert.trim()) as any,
+        p_awards: resumeData.awards.filter(award => award.trim()) as any,
         p_professional_summary: resumeData.professionalSummary,
         p_status: 'finalized'
       });
