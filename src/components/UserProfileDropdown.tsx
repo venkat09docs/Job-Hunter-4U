@@ -12,14 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
 import { PointsHistoryDialog } from '@/components/PointsHistoryDialog';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export function UserProfileDropdown() {
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
-  const { leaderboard } = useLeaderboard();
+  const { leaderboard } = useOptimizedLeaderboard();
   const [open, setOpen] = useState(false);
   const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
 

@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Medal, Award } from 'lucide-react';
-import { useLeaderboard, LeaderboardEntry } from '@/hooks/useLeaderboard';
+import { useOptimizedLeaderboard, LeaderboardEntry } from '@/hooks/useOptimizedLeaderboard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LeaderboardRefreshButton } from '@/components/LeaderboardRefreshButton';
 import { useRole } from '@/hooks/useRole';
 import { AdminPointsHistoryDialog } from '@/components/AdminPointsHistoryDialog';
 
 const LeaderBoard = () => {
-  const { leaderboard, loading } = useLeaderboard();
+  const { leaderboard, loading } = useOptimizedLeaderboard();
   const { isAdmin } = useRole();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 

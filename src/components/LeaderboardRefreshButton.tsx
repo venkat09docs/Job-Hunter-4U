@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
-import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
 import { toast } from 'sonner';
 
 export const LeaderboardRefreshButton = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { refreshLeaderboard } = useLeaderboard();
+  const { refreshLeaderboard } = useOptimizedLeaderboard();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
