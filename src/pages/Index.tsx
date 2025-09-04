@@ -12,6 +12,7 @@ import AIToolsSection from "@/components/AIToolsSection";
 import Pricing from "@/components/Pricing";
 import BuildProfileCTA from "@/components/BuildProfileCTA";
 import Footer from "@/components/Footer";
+import SocialProofPopup from "@/components/SocialProofPopup";
 
 const Index = () => {
   const { user, loading, hasLoggedOut } = useAuth();
@@ -52,6 +53,9 @@ const Index = () => {
       </div>
       <BuildProfileCTA />
       <Footer />
+      
+      {/* Social Proof Popup */}
+      <SocialProofPopup />
     </div>
   );
 };

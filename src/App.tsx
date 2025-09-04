@@ -67,6 +67,7 @@ import ManageAssignments from "./pages/ManageAssignments";
 import NotificationAnalytics from "./pages/NotificationAnalytics";
 import NotificationManagement from "./pages/NotificationManagement";
 import AffiliateManagementPage from "./pages/AffiliateManagement";
+import SocialProofManagement from "./pages/SocialProofManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
@@ -457,6 +458,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <AffiliateManagementPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/social-proof-management"
+            element={
+              <ProtectedRoute>
+                <SocialProofManagement />
               </ProtectedRoute>
             } 
           />

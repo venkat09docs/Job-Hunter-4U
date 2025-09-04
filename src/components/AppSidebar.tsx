@@ -99,6 +99,7 @@ const adminItems = [
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
   { title: "Manage Assignments", url: "/admin/manage-assignments", icon: ClipboardList },
+  { title: "Social Proof Management", url: "/admin/social-proof-management", icon: TrendingUp },
   { title: "Notification Analytics", url: "/admin/notification-analytics", icon: Bell },
   { title: "Notification Management", url: "/admin/notification-management", icon: Settings },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
