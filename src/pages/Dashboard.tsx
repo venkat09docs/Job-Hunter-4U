@@ -105,6 +105,17 @@ const Dashboard = () => {
     return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
 
+  // Debug logging for subscription status
+  console.log('🔍 Dashboard Subscription Debug:', {
+    currentPlan: profile?.subscription_plan,
+    hasActiveSubscription: hasActiveSubscription(),
+    isAdmin,
+    isRecruiter,
+    canAccessBadgeLeaders: canAccessBadgeLeaders(),
+    hasRestrictedPlan: hasRestrictedPlanForBadgeLeaders(),
+    eligiblePlans
+  });
+
   // Check if user has no active subscription (not admin or recruiter)
   const hasNoActiveSubscription = () => {
     if (isAdmin || isRecruiter) return false;

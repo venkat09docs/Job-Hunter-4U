@@ -20,6 +20,13 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
   const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
+  // Debug logging
+  console.log('🔍 PricingDialog Debug:', {
+    eligiblePlans,
+    hasEligiblePlans: !!eligiblePlans,
+    eligiblePlansLength: eligiblePlans?.length || 0
+  });
+
   const plans = [
     {
       name: "One Week Plan",
@@ -137,7 +144,15 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
       {/* Pricing cards - Compact grid for dialog */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
         {plans
-          .filter(plan => !eligiblePlans || eligiblePlans.includes(plan.name))
+          .filter(plan => {
+            const shouldInclude = !eligiblePlans || eligiblePlans.includes(plan.name);
+            console.log('🔍 Plan Filter Debug:', {
+              planName: plan.name,
+              eligiblePlans,
+              shouldInclude
+            });
+            return shouldInclude;
+          })
           .map((plan, index) => {
           const IconComponent = plan.icon;
           return (

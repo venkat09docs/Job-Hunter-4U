@@ -28,6 +28,14 @@ export const SubscriptionUpgrade = ({
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const { hasActiveSubscription, getRemainingDays } = useProfile();
 
+  // Debug logging
+  console.log('🔍 SubscriptionUpgrade Debug:', {
+    featureName,
+    eligiblePlans,
+    hasEligiblePlans: !!eligiblePlans,
+    eligiblePlansLength: eligiblePlans?.length || 0
+  });
+
   const hasValidSubscription = hasActiveSubscription();
 
   const handleManageSubscription = () => {
