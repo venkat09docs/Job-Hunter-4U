@@ -4837,28 +4837,17 @@ export type Database = {
         Returns: string
       }
       upsert_resume_data: {
-        Args:
-          | {
-              p_awards?: Json
-              p_certifications_awards?: Json
-              p_education: Json
-              p_experience: Json
-              p_personal_details: Json
-              p_professional_summary?: string
-              p_skills_interests: Json
-              p_status?: string
-              p_user_id: string
-            }
-          | {
-              p_certifications_awards: Json
-              p_education: Json
-              p_experience: Json
-              p_personal_details: Json
-              p_professional_summary: string
-              p_skills_interests: Json
-              p_status: string
-              p_user_id: string
-            }
+        Args: {
+          p_awards?: Json
+          p_certifications_awards?: Json
+          p_education: Json
+          p_experience: Json
+          p_personal_details: Json
+          p_professional_summary?: string
+          p_skills_interests: Json
+          p_status?: string
+          p_user_id: string
+        }
         Returns: string
       }
       validate_user_metadata: {

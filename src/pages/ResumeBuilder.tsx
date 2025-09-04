@@ -221,8 +221,20 @@ const ResumeBuilder = () => {
         const experience = Array.isArray(data.experience) ? (data.experience as unknown as Experience[]) : [{ company: '', role: '', duration: '', description: '' }];
         const education = Array.isArray(data.education) ? (data.education as unknown as Education[]) : [{ institution: '', degree: '', duration: '', gpa: '' }];
         const skillsInterests = data.skills_interests as any || {};
-        const certifications = Array.isArray(data.certifications_awards) ? (data.certifications_awards as unknown as string[]) : [''];
-        const awards = Array.isArray(data.awards) ? (data.awards as unknown as string[]) : [''];
+        
+        // Handle both old and new data formats
+        let certifications = [''];
+        let awards = [''];
+        
+        if (data.awards && Array.isArray(data.awards)) {
+          // New format: awards are stored separately
+          awards = (data.awards as string[]).length > 0 ? (data.awards as string[]) : [''];
+        }
+        
+        if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
+          // If we have the old combined format and no separate awards, keep them as certifications
+          certifications = (data.certifications_awards as string[]).length > 0 ? (data.certifications_awards as string[]) : [''];
+        }
 
         setResumeData({
           personalDetails: {
