@@ -147,10 +147,19 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
           .filter(plan => {
             // If eligiblePlans is provided, only show those plans
             // If eligiblePlans is not provided, show all plans
+            let shouldInclude = true;
             if (eligiblePlans && eligiblePlans.length > 0) {
-              return eligiblePlans.includes(plan.name);
+              shouldInclude = eligiblePlans.includes(plan.name);
             }
-            return true; // Show all plans if no eligiblePlans filter
+            
+            console.log('🔍 Plan Filter Debug:', {
+              planName: plan.name,
+              eligiblePlans,
+              hasEligiblePlans: eligiblePlans && eligiblePlans.length > 0,
+              shouldInclude
+            });
+            
+            return shouldInclude;
           })
           .map((plan, index) => {
           const IconComponent = plan.icon;
