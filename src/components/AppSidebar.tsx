@@ -480,7 +480,7 @@ export function AppSidebar() {
                   // Hide specific items for high tier subscription users
                   const subscriberPlan = profile?.subscription_plan;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const hiddenItems = ["Build Profile", "Career Growth Activities", "Career Growth Report"];
+                  const hiddenItems = ["Career Growth Activities", "Career Growth Report"];
                   
                   if (subscriberPlan && 
                       highTierPlans.includes(subscriberPlan) && 
