@@ -114,6 +114,14 @@ const Dashboard = () => {
     if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
     return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
   };
+  
+  // Debug log for Badge Leaders upgrade eligibility - moved after function declarations
+  console.log('🔍 Badge Leaders Upgrade Plans:', {
+    currentPlan: profile?.subscription_plan,
+    eligiblePlans,
+    hasRestrictedPlan: hasRestrictedPlanForBadgeLeaders(),
+    canAccess: canAccessBadgeLeaders()
+  });
 
   // Check if user has no active subscription (not admin or recruiter)
   const hasNoActiveSubscription = () => {
@@ -490,7 +498,10 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      {profile?.subscription_plan && ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan) 
+                        ? `Upgrade from your ${profile.subscription_plan} to access Badge Leaders` 
+                        : 'Available with 3 Months, 6 Months, or 1 Year plans'
+                      }
                     </p>
                     <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
