@@ -3841,6 +3841,87 @@ export type Database = {
         }
         Relationships: []
       }
+      social_proof_config: {
+        Row: {
+          created_at: string
+          display_duration: number
+          enabled_event_types: string[]
+          id: string
+          is_active: boolean
+          max_events_shown: number
+          position: string
+          rotation_interval: number
+          show_after_signin: boolean
+          show_on_landing_page: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_duration?: number
+          enabled_event_types?: string[]
+          id?: string
+          is_active?: boolean
+          max_events_shown?: number
+          position?: string
+          rotation_interval?: number
+          show_after_signin?: boolean
+          show_on_landing_page?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_duration?: number
+          enabled_event_types?: string[]
+          id?: string
+          is_active?: boolean
+          max_events_shown?: number
+          position?: string
+          rotation_interval?: number
+          show_after_signin?: boolean
+          show_on_landing_page?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_events: {
+        Row: {
+          created_at: string
+          display_text: string
+          event_data: Json
+          event_type: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          location: string | null
+          user_first_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_text: string
+          event_data?: Json
+          event_type: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          user_first_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_text?: string
+          event_data?: Json
+          event_type?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          user_first_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sub_categories: {
         Row: {
           created_at: string
@@ -4309,6 +4390,16 @@ export type Database = {
           template_key_param: string
           template_vars?: Json
           user_id_param: string
+        }
+        Returns: string
+      }
+      create_social_proof_event: {
+        Args: {
+          p_event_data?: Json
+          p_event_type: string
+          p_location?: string
+          p_user_first_name?: string
+          p_user_id: string
         }
         Returns: string
       }
