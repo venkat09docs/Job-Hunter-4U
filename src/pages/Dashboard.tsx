@@ -395,7 +395,7 @@ const Dashboard = () => {
 
   const handleStartJobSearch = () => {
     if (hasActiveSubscription()) {
-      navigate('/dashboard/job-search');
+      navigate('/dashboard/find-your-next-role');
     } else {
       setJobSearchPricingOpen(true);
     }
