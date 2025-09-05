@@ -361,26 +361,20 @@ const FindYourNextRole = () => {
       // Track job search analytics
       await incrementAnalytics('job_search');
 
-      // Call the n8n webhook
-      const response = await fetch('https://rnstech.app.n8n.cloud/webhook/jsearch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Call the Supabase edge function for job search
+      const { data, error } = await supabase.functions.invoke('job-search', {
+        body: {
           query: formData.query,
           date_posted: formData.date_posted,
           country: formData.country,
           job_requirements: formData.job_requirements,
           employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        throw new Error(`Job search error: ${error.message}`);
       }
-
-      const data = await response.json();
       
       console.log('Main job search response structure:', data);
       console.log('Data keys:', Object.keys(data || {}));
