@@ -114,8 +114,11 @@ export const useSocialProof = () => {
         
         // Update display text with current profile data if profile exists
         if (profile) {
-          const currentName = profile.username || profile.full_name || 'Someone';
-          const currentLocation = profile.location || event.location;
+          // Prioritize username if it exists, otherwise use full_name
+          const currentName = (profile.username && profile.username.trim() !== '') 
+            ? profile.username 
+            : (profile.full_name || 'Someone');
+          const currentLocation = profile.location; // Only use current location, don't fall back to old event location
           
           // Construct display text - only include location if it exists
           const locationText = currentLocation ? ` from ${currentLocation}` : '';
@@ -146,7 +149,7 @@ export const useSocialProof = () => {
           ...event,
           display_text: displayText,
           user_first_name: profile?.username || profile?.full_name || event.user_first_name,
-          location: profile?.location || event.location
+          location: profile?.location || ''
         } as SocialProofEvent;
       });
       
