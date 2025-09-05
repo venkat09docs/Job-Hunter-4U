@@ -59,6 +59,8 @@ export const useUserInputs = () => {
           user_id: user.id,
           key,
           value
+        }, {
+          onConflict: 'user_id,key'
         });
 
       if (error) throw error;
