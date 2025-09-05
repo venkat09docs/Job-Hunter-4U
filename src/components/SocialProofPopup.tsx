@@ -38,38 +38,38 @@ const SocialProofPopup: React.FC = () => {
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
       case 'signup':
-        return <Users className="w-4 h-4 text-green-500" />;
+        return <Users className="w-6 h-6 text-white" />;
       case 'premium_upgrade':
-        return <Star className="w-4 h-4 text-yellow-500" />;
+        return <Star className="w-6 h-6 text-white" />;
       case 'job_application':
-        return <Briefcase className="w-4 h-4 text-blue-500" />;
+        return <Briefcase className="w-6 h-6 text-white" />;
       case 'resume_completion':
-        return <FileText className="w-4 h-4 text-purple-500" />;
+        return <FileText className="w-6 h-6 text-white" />;
       case 'linkedin_optimization':
-        return <Linkedin className="w-4 h-4 text-blue-600" />;
+        return <Linkedin className="w-6 h-6 text-white" />;
       case 'github_setup':
-        return <Github className="w-4 h-4 text-gray-700" />;
+        return <Github className="w-6 h-6 text-white" />;
       default:
-        return <TrendingUp className="w-4 h-4 text-primary" />;
+        return <TrendingUp className="w-6 h-6 text-white" />;
     }
   };
 
   const getEventColor = (eventType: string) => {
     switch (eventType) {
       case 'signup':
-        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 text-green-900 shadow-green-200/50';
+        return 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-400 text-white shadow-2xl shadow-green-500/40';
       case 'premium_upgrade':
-        return 'bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-300 text-yellow-900 shadow-yellow-200/50';
+        return 'bg-gradient-to-br from-amber-500 to-orange-600 border-amber-400 text-white shadow-2xl shadow-amber-500/40';
       case 'job_application':
-        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 text-blue-900 shadow-blue-200/50';
+        return 'bg-gradient-to-br from-blue-600 to-indigo-700 border-blue-400 text-white shadow-2xl shadow-blue-500/40';
       case 'resume_completion':
-        return 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 text-purple-900 shadow-purple-200/50';
+        return 'bg-gradient-to-br from-purple-600 to-violet-700 border-purple-400 text-white shadow-2xl shadow-purple-500/40';
       case 'linkedin_optimization':
-        return 'bg-gradient-to-br from-sky-50 to-sky-100 border-sky-300 text-sky-900 shadow-sky-200/50';
+        return 'bg-gradient-to-br from-cyan-600 to-blue-700 border-cyan-400 text-white shadow-2xl shadow-cyan-500/40';
       case 'github_setup':
-        return 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-300 text-slate-900 shadow-slate-200/50';
+        return 'bg-gradient-to-br from-slate-700 to-gray-800 border-slate-500 text-white shadow-2xl shadow-slate-600/40';
       default:
-        return 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 text-primary shadow-primary/20';
+        return 'bg-gradient-to-br from-primary to-primary/80 border-primary text-white shadow-2xl shadow-primary/40';
     }
   };
 
@@ -99,7 +99,7 @@ const SocialProofPopup: React.FC = () => {
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
           className={cn(
-            "fixed z-50 max-w-md w-80",
+            "fixed z-50 max-w-lg w-96",
             getPositionClasses(config?.position || 'bottom-left')
           )}
         >
@@ -117,16 +117,16 @@ const SocialProofPopup: React.FC = () => {
              </button>
              
              <div className="flex items-start gap-4">
-               <div className="flex-shrink-0 mt-1 p-2 rounded-full bg-white/80 shadow-sm">
+               <div className="flex-shrink-0 mt-1 p-3 rounded-full bg-white/20 shadow-lg backdrop-blur-sm">
                  {getEventIcon(currentEvent.event_type)}
                </div>
                
                <div className="flex-1 min-w-0">
-                 <p className="text-base font-semibold leading-6 mb-2">
+                 <p className="text-lg font-bold leading-7 mb-2">
                    {currentEvent.display_text}
                  </p>
                  
-                 <p className="text-sm opacity-80 font-medium">
+                 <p className="text-base opacity-90 font-semibold">
                    {new Date(currentEvent.created_at).toLocaleTimeString([], { 
                      hour: '2-digit', 
                      minute: '2-digit' 
