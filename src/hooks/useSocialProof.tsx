@@ -39,7 +39,7 @@ interface SocialProofConfig {
 
 export const useSocialProof = () => {
   const { user } = useAuth();
-  const { getInput } = useUserInputs();
+  const { getInput, loading: inputsLoading } = useUserInputs();
   const [events, setEvents] = useState<SocialProofEvent[]>([]);
   const [config, setConfig] = useState<SocialProofConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -200,8 +200,12 @@ export const useSocialProof = () => {
     
     // For authenticated users, check their preference
     if (user) {
+      // Don't show anything while user inputs are still loading
+      if (inputsLoading) return false;
+      
       const userPreference = getInput('social_proof_enabled');
-      const isUserEnabled = userPreference === '' || userPreference === 'true'; // Default to enabled
+      // If no preference is set, default to enabled. If explicitly set to 'false', respect that.
+      const isUserEnabled = userPreference !== 'false';
       if (!isUserEnabled) return false;
     }
     
