@@ -57,19 +57,19 @@ const SocialProofPopup: React.FC = () => {
   const getEventColor = (eventType: string) => {
     switch (eventType) {
       case 'signup':
-        return 'border-green-200 bg-green-50 text-green-800';
+        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-300 text-green-900 shadow-green-200/50';
       case 'premium_upgrade':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-800';
+        return 'bg-gradient-to-br from-yellow-50 to-orange-100 border-yellow-300 text-yellow-900 shadow-yellow-200/50';
       case 'job_application':
-        return 'border-blue-200 bg-blue-50 text-blue-800';
+        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 text-blue-900 shadow-blue-200/50';
       case 'resume_completion':
-        return 'border-purple-200 bg-purple-50 text-purple-800';
+        return 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 text-purple-900 shadow-purple-200/50';
       case 'linkedin_optimization':
-        return 'border-blue-200 bg-blue-50 text-blue-800';
+        return 'bg-gradient-to-br from-sky-50 to-sky-100 border-sky-300 text-sky-900 shadow-sky-200/50';
       case 'github_setup':
-        return 'border-gray-200 bg-gray-50 text-gray-800';
+        return 'bg-gradient-to-br from-slate-50 to-slate-100 border-slate-300 text-slate-900 shadow-slate-200/50';
       default:
-        return 'border-primary/20 bg-primary/5 text-primary';
+        return 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30 text-primary shadow-primary/20';
     }
   };
 
@@ -99,47 +99,51 @@ const SocialProofPopup: React.FC = () => {
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
           className={cn(
-            "fixed z-50 max-w-sm",
+            "fixed z-50 max-w-md w-80",
             getPositionClasses(config?.position || 'bottom-left')
           )}
         >
-          <div className={cn(
-            "relative rounded-lg border-2 p-4 shadow-lg backdrop-blur-sm transition-all duration-300",
-            getEventColor(currentEvent.event_type)
-          )}>
-            <button
-              onClick={handleDismiss}
-              className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50 transition-colors"
-              aria-label="Dismiss notification"
-            >
-              <X className="w-3 h-3 text-gray-400" />
-            </button>
-            
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                {getEventIcon(currentEvent.event_type)}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium leading-5">
-                  {currentEvent.display_text}
-                </p>
-                
-                <p className="text-xs mt-1 opacity-75">
-                  {new Date(currentEvent.created_at).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-            </div>
-            
-            {/* Pulse animation dot */}
-            <div className="absolute -top-1 -left-1 w-3 h-3">
-              <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
-              <div className="absolute inset-0 bg-green-500 rounded-full"></div>
-            </div>
-          </div>
+           <div className={cn(
+             "relative rounded-xl border-2 p-6 shadow-2xl backdrop-blur-sm transition-all duration-300 ring-1 ring-white/20",
+             "hover:shadow-3xl hover:scale-105 transform",
+             getEventColor(currentEvent.event_type)
+           )}>
+             <button
+               onClick={handleDismiss}
+               className="absolute -top-3 -right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all hover:scale-110 border border-gray-200"
+               aria-label="Dismiss notification"
+             >
+               <X className="w-4 h-4 text-gray-500" />
+             </button>
+             
+             <div className="flex items-start gap-4">
+               <div className="flex-shrink-0 mt-1 p-2 rounded-full bg-white/80 shadow-sm">
+                 {getEventIcon(currentEvent.event_type)}
+               </div>
+               
+               <div className="flex-1 min-w-0">
+                 <p className="text-base font-semibold leading-6 mb-2">
+                   {currentEvent.display_text}
+                 </p>
+                 
+                 <p className="text-sm opacity-80 font-medium">
+                   {new Date(currentEvent.created_at).toLocaleTimeString([], { 
+                     hour: '2-digit', 
+                     minute: '2-digit' 
+                   })}
+                 </p>
+               </div>
+             </div>
+             
+             {/* Enhanced pulse animation with glow */}
+             <div className="absolute -top-2 -left-2 w-4 h-4">
+               <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+               <div className="absolute inset-0 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></div>
+             </div>
+             
+             {/* Subtle highlight border */}
+             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-white/5 pointer-events-none"></div>
+           </div>
         </motion.div>
       )}
     </AnimatePresence>
