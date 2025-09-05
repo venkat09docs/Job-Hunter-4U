@@ -12,6 +12,7 @@ interface JobSearchRequest {
   country: string;
   language: string;
   job_requirements: string;
+  employment_type: string;
 }
 
 Deno.serve(async (req) => {
@@ -41,13 +42,13 @@ Deno.serve(async (req) => {
       refresh_token: '',
     });
 
-    const { query, num_pages, date_posted, country, language, job_requirements }: JobSearchRequest = await req.json();
+    const { query, num_pages, date_posted, country, language, job_requirements, employment_type }: JobSearchRequest = await req.json();
     
     if (!query) {
       throw new Error('Missing required field: query');
     }
 
-    console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements });
+    console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements, employment_type });
 
     // Use the production n8n webhook URL
     const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook/jsearch';
@@ -70,7 +71,8 @@ Deno.serve(async (req) => {
           date_posted,
           country,
           language,
-          job_requirements
+          job_requirements,
+          employment_type
         }),
       });
 
@@ -114,7 +116,8 @@ Deno.serve(async (req) => {
               date_posted,
               country,
               language,
-              job_requirements
+              job_requirements,
+              employment_type
             },
             results: jobResults,
             results_count: jobResults.length,
@@ -145,7 +148,8 @@ Deno.serve(async (req) => {
             date_posted,
             country,
             language,
-            job_requirements
+            job_requirements,
+            employment_type
           },
           totalResults: jobResults.length
         }
