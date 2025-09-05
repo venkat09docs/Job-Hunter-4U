@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     console.log('Job search request:', { query, num_pages, date_posted, country, language, job_requirements });
 
     // Use the specific n8n webhook URL you provided
-    const n8nWebhookUrl = 'https://rnstech.app.n8n.cloud/webhook/find-next-job-role';
+    const n8nWebhookUrl = 'https://n8n.srv995073.hstgr.cloud/webhook-test/jsearch';
 
     // Send job search request to n8n
     console.log('Sending to n8n webhook:', n8nWebhookUrl);
