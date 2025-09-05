@@ -9,14 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard, Link } from 'lucide-react';
+import { ArrowLeft, Key, User, Upload, X, Calendar, CreditCard, Link, Bell } from 'lucide-react';
 import { ResizableLayout } from '@/components/ResizableLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
+import { useUserInputs } from '@/hooks/useUserInputs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SubscriptionStatus, SubscriptionUpgrade } from '@/components/SubscriptionUpgrade';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const passwordResetSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -45,6 +48,7 @@ const Settings = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { canAccessFeature } = usePremiumFeatures();
+  const { getInput, saveInput, loading: inputsLoading } = useUserInputs();
   
   const hasActiveSubscription = () => {
     return profile?.subscription_active && 
@@ -589,6 +593,39 @@ const Settings = () => {
                       </Button>
                     </form>
                   </Form>
+                </CardContent>
+              </Card>
+
+              {/* Notification Preferences */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription>
+                    Control which notifications you want to receive
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="social-proof-toggle" className="text-base font-medium">
+                        Social Proof Notifications
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        Show popup notifications when other users complete activities
+                      </p>
+                    </div>
+                    <Switch
+                      id="social-proof-toggle"
+                      checked={getInput('social_proof_enabled') !== 'false'}
+                      onCheckedChange={(checked) => {
+                        saveInput('social_proof_enabled', checked.toString());
+                      }}
+                      disabled={inputsLoading}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 

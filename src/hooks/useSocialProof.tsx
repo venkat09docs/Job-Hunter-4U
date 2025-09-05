@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserInputs } from '@/hooks/useUserInputs';
 
 interface SocialProofEvent {
   id: string;
@@ -38,6 +39,7 @@ interface SocialProofConfig {
 
 export const useSocialProof = () => {
   const { user } = useAuth();
+  const { getInput } = useUserInputs();
   const [events, setEvents] = useState<SocialProofEvent[]>([]);
   const [config, setConfig] = useState<SocialProofConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,6 +197,13 @@ export const useSocialProof = () => {
   // Check if social proof should be shown based on user state and config
   const shouldShowSocialProof = () => {
     if (!config || !config.is_active || events.length === 0) return false;
+    
+    // For authenticated users, check their preference
+    if (user) {
+      const userPreference = getInput('social_proof_enabled');
+      const isUserEnabled = userPreference === '' || userPreference === 'true'; // Default to enabled
+      if (!isUserEnabled) return false;
+    }
     
     // Show on landing page for anonymous users
     if (!user && config.show_on_landing_page) return true;
