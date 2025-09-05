@@ -121,8 +121,7 @@ export const useSocialProof = () => {
               displayText = `${currentName} from ${currentLocation} just upgraded to premium!`;
               break;
             case 'job_application':
-              const jobData = event.event_data as JobEventData;
-              displayText = `${currentName} from ${currentLocation} just applied to ${jobData?.job_title || 'a job'}${jobData?.company ? ` at ${jobData.company}` : ''}!`;
+              displayText = `${currentName} from ${currentLocation} just applied to a job!`;
               break;
             case 'resume_completion':
               displayText = `${currentName} from ${currentLocation} just completed their resume!`;
