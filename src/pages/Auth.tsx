@@ -104,10 +104,14 @@ const Auth = () => {
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
+        // Handle various "user already exists" error scenarios
+        if (error.message.includes('already registered') || 
+            error.message.includes('User already registered') ||
+            error.message.includes('already exists') ||
+            error.message.toLowerCase().includes('user already')) {
           toast({
-            title: 'Account exists',
-            description: 'An account with this email already exists. Please sign in instead.',
+            title: 'Account Already Exists',
+            description: 'An account with this email address already exists. Please use the Sign In tab instead.',
             variant: 'destructive'
           });
         } else {
