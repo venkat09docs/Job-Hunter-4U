@@ -79,6 +79,22 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // First, check if email already exists by attempting to get user data
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (existingUser) {
+        toast({
+          title: 'Account Already Exists',
+          description: 'An account with this email address already exists. Please use the Sign In tab instead.',
+          variant: 'destructive'
+        });
+        setLoading(false);
+        return;
+      }
       const redirectUrl = `${window.location.origin}/dashboard`;
       
       // Prepare user metadata with affiliate code if present
