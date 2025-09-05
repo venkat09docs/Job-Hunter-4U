@@ -365,8 +365,10 @@ const FindYourNextRole = () => {
       const { data, error } = await supabase.functions.invoke('job-search', {
         body: {
           query: formData.query,
+          num_pages: 1,
           date_posted: formData.date_posted,
           country: formData.country,
+          language: "en",
           job_requirements: formData.job_requirements,
           employment_type: formData.employment_type === "ALL" ? "FULLTIME,CONTRACTOR,PARTTIME,INTERN" : formData.employment_type
         }
