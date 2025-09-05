@@ -115,27 +115,30 @@ export const useSocialProof = () => {
         // Update display text with current profile data if profile exists
         if (profile) {
           const currentName = profile.username || profile.full_name || 'Someone';
-          const currentLocation = profile.location || event.location || 'somewhere';
+          const currentLocation = profile.location || event.location;
+          
+          // Construct display text - only include location if it exists
+          const locationText = currentLocation ? ` from ${currentLocation}` : '';
           
           // Reconstruct display text with current data
           switch (event.event_type) {
             case 'premium_upgrade':
-              displayText = `${currentName} from ${currentLocation} just upgraded to premium!`;
+              displayText = `${currentName}${locationText} just upgraded to premium!`;
               break;
             case 'job_application':
-              displayText = `${currentName} from ${currentLocation} just applied to a job!`;
+              displayText = `${currentName}${locationText} just applied to a job!`;
               break;
             case 'resume_completion':
-              displayText = `${currentName} from ${currentLocation} just completed their resume!`;
+              displayText = `${currentName}${locationText} just completed their resume!`;
               break;
             case 'linkedin_optimization':
-              displayText = `${currentName} from ${currentLocation} just optimized their LinkedIn profile!`;
+              displayText = `${currentName}${locationText} just optimized their LinkedIn profile!`;
               break;
             case 'github_setup':
-              displayText = `${currentName} from ${currentLocation} just set up their GitHub profile!`;
+              displayText = `${currentName}${locationText} just set up their GitHub profile!`;
               break;
             default:
-              displayText = `${currentName} from ${currentLocation} just completed an activity!`;
+              displayText = `${currentName}${locationText} just completed an activity!`;
           }
         }
         
