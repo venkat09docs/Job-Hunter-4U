@@ -4855,6 +4855,10 @@ export type Database = {
         }
         Returns: Json
       }
+      process_pending_webhooks: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       queue_missed_webhooks: {
         Args: Record<PropertyKey, never>
         Returns: {
