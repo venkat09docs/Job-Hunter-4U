@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-import heroImage from "@/assets/devops-aws-ai-hero.jpg";
+import heroImage from "/lovable-uploads/7790abe8-91a8-4e8d-acbd-62f3a98c637b.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -353,90 +353,90 @@ const CareerLevelUp = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-neutral-50 to-sky/5 py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="bg-gradient-to-br from-background via-background/50 to-muted/20 py-16 lg:py-24">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
-            <div className="space-y-8">
-              <p className="text-lg text-muted-foreground">Land your Premium Tech Job with</p>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                <span className="bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">AI-Enhanced</span> DevOps & AWS Bootcamp
-              </h1>
-              
-              <p className="text-lg md:text-xl text-muted-foreground">
-                Become an in-demand DevOps engineer mastering <strong className="text-violet">AI Agents</strong>, 
-                <strong className="text-emerald"> AI Automations</strong>, and <strong className="text-orange">Vibe Coding</strong>
-                <br />
-                <strong>leveraging the power of GenAI</strong>
-              </p>
+            <div className="space-y-8 lg:pr-8">
+              <div className="space-y-6">
+                <p className="text-lg text-muted-foreground font-medium">Land your Premium Tech Job with</p>
+                
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
+                  <span className="bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">AI-Enhanced</span>{" "}
+                  <span className="text-foreground">DevOps &</span>
+                  <br />
+                  <span className="text-foreground">AWS Bootcamp</span>
+                </h1>
+                
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  Become an in-demand DevOps engineer mastering{" "}
+                  <span className="font-semibold text-violet">AI Agents</span>,{" "}
+                  <span className="font-semibold text-emerald">AI Automations</span>, and{" "}
+                  <span className="font-semibold text-orange">Vibe Coding</span>
+                  <br />
+                  <span className="font-semibold text-foreground">leveraging the power of GenAI</span>
+                </p>
+              </div>
 
               {/* Duration Badges */}
               <div className="flex flex-wrap gap-4">
-                <Badge variant="outline" className="px-4 py-2 text-base border-orange bg-orange/10 text-orange">
+                <Badge variant="outline" className="px-4 py-2 text-base border-orange bg-orange/10 text-orange hover:bg-orange/20 transition-colors">
                   <Calendar className="h-4 w-4 mr-2" />
                   10 weeks Full-time
                 </Badge>
-                <Badge variant="outline" className="px-4 py-2 text-base border-emerald bg-emerald/10 text-emerald">
+                <Badge variant="outline" className="px-4 py-2 text-base border-emerald bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors">
                   <Zap className="h-4 w-4 mr-2" />
                   Live Online
                 </Badge>
               </div>
 
               {/* Next Cohort Highlight */}
-              <div className="bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg p-6 border-2 border-violet/20">
-                <div className="text-center space-y-4">
-                  <p className="text-lg font-semibold text-violet mb-1">🚀 Next Cohort</p>
-                  <p className="text-2xl font-bold text-foreground">Starts on 18th Sept 2025</p>
-                  <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
+              <div className="bg-gradient-to-br from-violet/10 via-indigo/5 to-violet/5 rounded-2xl p-8 border-2 border-violet/20 shadow-lg backdrop-blur-sm">
+                <div className="text-center space-y-6">
+                  <div className="inline-flex items-center gap-2 bg-violet/10 rounded-full px-4 py-2">
+                    <div className="w-2 h-2 bg-violet rounded-full animate-pulse"></div>
+                    <span className="text-lg font-semibold text-violet">Next Cohort</span>
+                  </div>
                   
-                  {/* CTA Buttons inside the board */}
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                  <div className="space-y-2">
+                    <p className="text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
+                    <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
+                  </div>
+                  
+                  {/* CTA Buttons */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
                      <Button 
                        size="lg" 
-                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-2 text-base font-semibold shadow-lg"
+                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                        onClick={() => setIsCurriculumDialogOpen(true)}
                      >
-                      <Download className="mr-2 h-4 w-4" />
+                      <Download className="mr-2 h-5 w-5" />
                       Download Curriculum
                     </Button>
                     <Button 
                       size="lg" 
                       variant="outline"
-                      className="border-2 border-violet text-violet hover:bg-violet/10 px-6 py-2 text-base font-semibold"
+                      className="border-2 border-violet text-violet hover:bg-violet/10 px-8 py-3 text-base font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                       onClick={() => setIsCallbackDialogOpen(true)}
                     >
-                      <Phone className="mr-2 h-4 w-4" />
+                      <Phone className="mr-2 h-5 w-5" />
                       Get a Callback
                     </Button>
                   </div>
                 </div>
               </div>
-
             </div>
 
             {/* Right Hero Image */}
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img 
-                  src={heroImage} 
-                  alt="DevOps AWS AI Hero" 
-                  className="w-full h-auto"
-                />
-                {/* AI Tool Logos Overlay */}
-                <div className="absolute top-4 right-4 space-y-2">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-orange">AWS</span>
-                  </div>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-violet">Kubernetes</span>
-                  </div>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-emerald">AI Agents</span>
-                  </div>
-                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-sky">Vibe Coding</span>
-                  </div>
+            <div className="relative lg:pl-8">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet/20 via-indigo/10 to-emerald/20 rounded-3xl transform rotate-3 scale-105 blur-xl opacity-60"></div>
+                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+                  <img 
+                    src={heroImage} 
+                    alt="AI-Enhanced DevOps & AWS Bootcamp" 
+                    className="w-full h-auto object-cover"
+                  />
                 </div>
               </div>
             </div>
