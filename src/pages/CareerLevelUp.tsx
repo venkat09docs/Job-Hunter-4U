@@ -69,7 +69,7 @@ const CareerLevelUp = () => {
   };
 
   // Payment handler with authentication check
-  const handleEnrollment = useCallback(async () => {
+  async function handleEnrollment() {
     // Check if user is authenticated
     if (!user) {
       // Store the enrollment intent in sessionStorage
@@ -195,7 +195,7 @@ const CareerLevelUp = () => {
         variant: "destructive"
       });
     }
-  }, [user, toast]);
+  }
 
   // Check for enrollment intent after authentication
   useEffect(() => {
@@ -208,7 +208,7 @@ const CareerLevelUp = () => {
         handleEnrollment();
       }, 500);
     }
-  }, [user, handleEnrollment]);
+  }, [user]);
 
   useEffect(() => {
     const timer = setInterval(() => {
