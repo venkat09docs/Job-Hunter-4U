@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -69,7 +69,7 @@ const CareerLevelUp = () => {
   };
 
   // Payment handler with authentication check
-  const handleEnrollment = async () => {
+  const handleEnrollment = useCallback(async () => {
     // Check if user is authenticated
     if (!user) {
       // Store the enrollment intent in sessionStorage
@@ -195,7 +195,20 @@ const CareerLevelUp = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [user, toast]);
+
+  // Check for enrollment intent after authentication
+  useEffect(() => {
+    const enrollmentIntent = sessionStorage.getItem('enrollmentIntent');
+    if (user && enrollmentIntent) {
+      // Remove the intent and automatically start payment
+      sessionStorage.removeItem('enrollmentIntent');
+      // Small delay to ensure UI is ready
+      setTimeout(() => {
+        handleEnrollment();
+      }, 500);
+    }
+  }, [user, handleEnrollment]);
 
   useEffect(() => {
     const timer = setInterval(() => {
