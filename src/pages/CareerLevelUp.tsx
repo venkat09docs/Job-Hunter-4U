@@ -72,7 +72,7 @@ const CareerLevelUp = () => {
   // Payment handler
   const handleEnrollment = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('razorpay-create-order-simple', {
+      const { data, error } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
           amount: 2000000, // ₹20,000 in paise (1 rupee = 100 paise)
           plan_name: 'DevOps AWS AI Course',
@@ -1060,9 +1060,9 @@ const CareerLevelUp = () => {
               <h2 className="text-3xl md:text-4xl font-bold">
                 🎁 Exclusive Early Access Benefit
               </h2>
-              <h3 className="text-xl md:text-2xl font-semibold text-red-600 mt-4">
-                ⚡ Limited Time Offer ⚡
-              </h3>
+              <div className="text-red-600 font-bold text-lg mt-4">
+                ⏰ Hurry! Only {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} minutes left!
+              </div>
             </div>
             
             <div className="bg-white rounded-2xl shadow-2xl border-2 border-violet/20 p-8 md:p-12 mt-8">
@@ -1070,32 +1070,39 @@ const CareerLevelUp = () => {
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                   Enroll Now & Start Your Journey Today!
                 </h3>
-                <h4 className="text-lg md:text-xl font-semibold text-red-600">
-                  Enroll in the next 30 minutes and get all the following bonuses, which are worth of ₹15,000 free.
-                </h4>
                 
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                   Don't wait for the cohort to begin. <strong className="text-violet">Enroll today</strong> and get 
                   <strong className="text-emerald"> immediate access</strong> to all prerequisite courses and materials.
                 </p>
 
-                <div className="grid md:grid-cols-3 gap-6 mt-8">
-                  <div className="bg-gradient-to-br from-violet/5 to-indigo/5 rounded-xl p-6 border border-violet/20">
-                    <BookOpen className="w-8 h-8 text-violet mb-4 mx-auto" />
-                    <h4 className="font-semibold text-foreground mb-2">Linux & Git Fundamentals</h4>
-                    <p className="text-sm text-muted-foreground">Master the basics before day 1</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-emerald/5 to-teal/5 rounded-xl p-6 border border-emerald/20">
-                    <Code className="w-8 h-8 text-emerald mb-4 mx-auto" />
-                    <h4 className="font-semibold text-foreground mb-2">Python Essentials</h4>
-                    <p className="text-sm text-muted-foreground">Get comfortable with scripting</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-orange/5 to-amber/5 rounded-xl p-6 border border-orange/20">
-                    <Cloud className="w-8 h-8 text-orange mb-4 mx-auto" />
-                    <h4 className="font-semibold text-foreground mb-2">AWS Basics</h4>
-                    <p className="text-sm text-muted-foreground">Understand cloud fundamentals</p>
+                {/* Combined Exclusive Bonus Board */}
+                <div className="bg-gradient-to-r from-violet/10 to-indigo/10 rounded-xl p-6 border-2 border-violet/20 mt-8">
+                  <div className="text-center space-y-4">
+                    <div className="flex items-center justify-center gap-2 text-violet font-bold text-xl">
+                      <BookOpen className="w-6 h-6" />
+                      <span>🎁 EXCLUSIVE BONUS COURSES 🎁</span>
+                    </div>
+                    <p className="text-lg font-semibold text-foreground mb-4">
+                      Get immediate access to these prerequisite courses:
+                    </p>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="bg-white/70 rounded-lg p-4 border border-violet/20">
+                        <BookOpen className="w-6 h-6 text-violet mb-2 mx-auto" />
+                        <div className="text-sm font-medium text-foreground">Linux & Git Fundamentals</div>
+                        <div className="text-xs text-muted-foreground">Master the basics before day 1</div>
+                      </div>
+                      <div className="bg-white/70 rounded-lg p-4 border border-emerald/20">
+                        <Code className="w-6 h-6 text-emerald mb-2 mx-auto" />
+                        <div className="text-sm font-medium text-foreground">Python Essentials</div>
+                        <div className="text-xs text-muted-foreground">Get comfortable with scripting</div>
+                      </div>
+                      <div className="bg-white/70 rounded-lg p-4 border border-orange/20">
+                        <Cloud className="w-6 h-6 text-orange mb-2 mx-auto" />
+                        <div className="text-sm font-medium text-foreground">AWS Basics</div>
+                        <div className="text-xs text-muted-foreground">Understand cloud fundamentals</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1112,33 +1119,6 @@ const CareerLevelUp = () => {
                     <div className="bg-white/70 rounded-lg p-4 border border-emerald-200">
                       <div className="text-2xl font-bold text-emerald-600">Worth ₹12,000</div>
                       <p className="text-sm text-muted-foreground">Complete job hunting automation platform</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Limited Time Offer */}
-                <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-xl p-6 border-2 border-red-500/20 mt-8">
-                  <div className="text-center space-y-3">
-                    <div className="flex items-center justify-center gap-2 text-red-600 font-bold text-xl">
-                      <Zap className="w-6 h-6" />
-                      <span>⚡ LIMITED TIME OFFER ⚡</span>
-                    </div>
-                    <p className="text-lg font-semibold text-foreground">
-                      Enroll in next 30 minutes and get <span className="text-emerald-600">3 BONUS courses</span> worth ₹15,000 FREE!
-                    </p>
-                    <div className="grid md:grid-cols-3 gap-4 mt-4">
-                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
-                        <span className="text-sm font-medium text-emerald-700">🎯 Interview Mastery</span>
-                      </div>
-                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
-                        <span className="text-sm font-medium text-emerald-700">💼 Resume Optimization</span>
-                      </div>
-                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
-                        <span className="text-sm font-medium text-emerald-700">🔥 Salary Negotiation</span>
-                      </div>
-                    </div>
-                    <div className="text-red-600 font-bold text-lg">
-                      ⏰ Hurry! Only {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} minutes left!
                     </div>
                   </div>
                 </div>
