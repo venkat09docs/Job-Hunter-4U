@@ -24,7 +24,10 @@ import {
   BookOpen,
   Award,
   Timer,
-  ArrowRight
+  ArrowRight,
+  Cloud,
+  TrendingUp,
+  Users
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
@@ -301,7 +304,7 @@ const CareerLevelUp = () => {
             The Future Belongs to Those who Master AI
           </h2>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 max-w-7xl mx-auto">
             <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
               <CardContent className="space-y-4 p-0">
                 <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
@@ -332,6 +335,39 @@ const CareerLevelUp = () => {
                 <p className="text-muted-foreground">"Jobseekers with generative AI skills could expect a nearly</p>
                 <p className="text-2xl font-bold text-orange">50%</p>
                 <p className="text-muted-foreground">salary bump."</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <Cloud className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">Demand for cloud professionals is surging</p>
+                <p className="text-2xl font-bold text-orange">$12.7B</p>
+                <p className="text-muted-foreground">investment in cloud infrastructure in India</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">AWS customer base growth</p>
+                <p className="text-2xl font-bold text-orange">357%</p>
+                <p className="text-muted-foreground">increase since 2020</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <Users className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">Full-time AWS jobs annually by 2030</p>
+                <p className="text-2xl font-bold text-orange">131,700</p>
+                <p className="text-muted-foreground">careers available</p>
               </CardContent>
             </Card>
           </div>
