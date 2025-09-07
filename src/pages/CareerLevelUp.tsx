@@ -4,30 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { 
-  ArrowRight, 
-  Users, 
-  Target, 
-  Trophy, 
-  Star, 
-  Building, 
-  Award,
-  Flame,
-  Rocket,
-  Globe,
-  Bot,
+  Download,
+  GraduationCap,
+  Briefcase,
   Code,
-  Server,
-  Database,
-  GitBranch,
+  Building,
   Calendar,
   Clock,
   CheckCircle,
-  Play,
-  BookOpen,
-  MessageCircle,
   Phone,
-  User,
-  ChevronDown
+  Target,
+  Trophy,
+  Star,
+  Zap,
+  User
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
@@ -35,49 +25,27 @@ import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 const CareerLevelUp = () => {
   const { user } = useAuth();
-  const [hoveredProject, setHoveredProject] = useState<string | null>(null);
 
-  const techBadges = [
-    { name: "AWS", icon: Server, color: "bg-orange/20 text-orange border-orange/30" },
-    { name: "Kubernetes", icon: Building, color: "bg-sky/20 text-sky border-sky/30" },
-    { name: "GitHub", icon: GitBranch, color: "bg-violet/20 text-violet border-violet/30" },
-    { name: "AI", icon: Bot, color: "bg-emerald/20 text-emerald border-emerald/30" }
-  ];
-
-  const targetAudience = [
+  const highlights = [
     {
-      icon: Rocket,
-      title: "Final year students & freshers",
-      description: "Launch your tech career with in-demand skills"
+      icon: GraduationCap,
+      title: "Industry-focused Curriculum",
+      description: "DevOps fundamentals | AWS Cloud | AI Integration | Capstone projects | Lab sessions"
     },
     {
-      icon: Globe,
-      title: "IT professionals switching to DevOps & Cloud",
-      description: "Transition to high-growth cloud technologies"
+      icon: Code,
+      title: "Hands-on Learning", 
+      description: "15+ tools | Group assignments | Real-world projects | Practical assessments"
     },
     {
-      icon: Bot,
-      title: "DevOps engineers upskilling with GenAI",
-      description: "Stay ahead with AI-powered automation"
-    }
-  ];
-
-  const outcomes = [
-    {
-      title: "Build & deploy AI-powered apps on AWS",
-      description: "Create scalable applications using cloud-native services"
+      icon: Briefcase,
+      title: "Dedicated Placement Support",
+      description: "Industry mentors | Portfolio showcase | Mock interviews | Resume optimization"
     },
     {
-      title: "Automate Kubernetes troubleshooting with AI",
-      description: "Use AI tools to diagnose and fix cluster issues"
-    },
-    {
-      title: "Ship 2 Capstone Projects + Job-ready Portfolio",
-      description: "Showcase real-world projects to potential employers"
-    },
-    {
-      title: "Crack interviews with Placement Toolkit",
-      description: "Get comprehensive interview preparation and job support"
+      icon: Building,
+      title: "Access to Premium DevOps Job Opportunities",
+      description: "500+ Recruiters | Weekly drives* | Quarterly job fairs* | *T&C Apply"
     }
   ];
 
@@ -122,32 +90,7 @@ const CareerLevelUp = () => {
       title: "Secure CI/CD Pipeline",
       description: "AI chatbot with Jenkins, Docker, EC2",
       tech: ["Jenkins", "Docker", "AWS", "AI"]
-    },
-    {
-      id: "partyrock",
-      title: "PartyRock Explainer",
-      description: "AI-powered cloud learning app",
-      tech: ["AWS", "PartyRock", "Education"]
-    },
-    {
-      id: "database-agent",
-      title: "Database Agent",
-      description: "Natural language queries on Postgres",
-      tech: ["PostgreSQL", "NLP", "AI"]
-    },
-    {
-      id: "portfolio",
-      title: "Portfolio Project",
-      description: "Choose your own DevOps+AI build",
-      tech: ["Custom", "DevOps", "AI"]
     }
-  ];
-
-  const bonuses = [
-    "GitHub Copilot & Cursor cheatsheets",
-    "AWS PartyRock mini-build templates",
-    "Bedrock cost calculator",
-    "AWS AI Practitioner exam blueprint"
   ];
 
   const faqs = [
@@ -173,144 +116,179 @@ const CareerLevelUp = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Urgency Banner */}
-      <div className="bg-gradient-to-r from-orange to-rose text-white py-3 text-center animate-pulse">
-        <div className="flex items-center justify-center gap-2">
-          <Flame className="h-5 w-5 text-amber" />
-          <span className="font-semibold">Early Bird Discount — Save ₹5,000 | Limited Seats!</span>
-        </div>
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-orange to-amber text-white py-3 text-center font-medium">
+        Limited Scholarships Available | Admissions Open for Next Cohort
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo via-violet to-purple text-white">
-        {/* Hero Background Image */}
-        <div className="absolute inset-0 opacity-20">
-          <img 
-            src={heroImage} 
-            alt="DevOps AWS AI Background" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
-          <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-full"></div>
-          <div className="absolute bottom-20 left-32 w-40 h-40 border border-white/20 rounded-full"></div>
-        </div>
-
-        <div className="relative container mx-auto px-4 py-20">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center space-y-8 mb-16">
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                Master DevOps & AWS with AI
+      <section className="bg-gradient-to-br from-neutral-50 to-sky/5 py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <p className="text-lg text-muted-foreground">Land your Premium Tech Job with</p>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                <span className="bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">AI-Enhanced</span> DevOps & AWS Bootcamp
               </h1>
-              <p className="text-2xl md:text-3xl font-medium text-white/90">
-                From Zero to Job-Ready
-              </p>
               
-              <div className="flex flex-wrap justify-center gap-4 text-lg text-white/80">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  10-week cohort
-                </span>
-                <span className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Live classes
-                </span>
-                <span className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Hands-on labs
-                </span>
-                <span className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Capstone portfolio
-                </span>
+              <p className="text-lg md:text-xl text-muted-foreground">
+                Become an in-demand DevOps engineer with this comprehensive course,
+                <br />
+                <strong>leveraging the power of GenAI</strong>
+              </p>
+
+              {/* Duration Badges */}
+              <div className="flex flex-wrap gap-4">
+                <Badge variant="outline" className="px-4 py-2 text-base border-orange bg-orange/10 text-orange">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  10 weeks Full-time
+                </Badge>
+                <Badge variant="outline" className="px-4 py-2 text-base border-emerald bg-emerald/10 text-emerald">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Live Online
+                </Badge>
               </div>
 
-              {/* Tech Badges */}
-              <div className="flex flex-wrap justify-center gap-4 mt-8">
-                {techBadges.map((tech, index) => {
-                  const IconComponent = tech.icon;
-                  return (
-                    <Badge key={index} variant="secondary" className={`${tech.color} backdrop-blur-sm px-4 py-2 font-medium hover:scale-105 transition-transform`}>
-                      <IconComponent className="h-4 w-4 mr-2" />
-                      {tech.name}
-                    </Badge>
-                  );
-                })}
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-amber to-orange text-white hover:from-orange hover:to-rose font-semibold px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                  className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-8 py-3 text-lg font-semibold shadow-lg"
                 >
-                  Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Curriculum
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-white text-white hover:bg-gradient-to-r hover:from-cyan/20 hover:to-sky/20 backdrop-blur-sm px-8 py-3 text-lg transition-all"
+                  className="border-2 border-foreground text-foreground hover:bg-muted px-8 py-3 text-lg font-semibold"
                 >
-                  <BookOpen className="mr-2 h-5 w-5" />
-                  View Syllabus
+                  Get a Callback
                 </Button>
+              </div>
+            </div>
+
+            {/* Right Hero Image */}
+            <div className="relative">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <img 
+                  src={heroImage} 
+                  alt="DevOps AWS AI Hero" 
+                  className="w-full h-auto"
+                />
+                {/* AI Tool Logos Overlay */}
+                <div className="absolute top-4 right-4 space-y-2">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                    <span className="text-sm font-semibold text-orange">AWS</span>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                    <span className="text-sm font-semibold text-violet">Kubernetes</span>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                    <span className="text-sm font-semibold text-emerald">GitHub Copilot</span>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                    <span className="text-sm font-semibold text-sky">Docker</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Who It's For */}
-      <section className="py-20 bg-gradient-to-br from-neutral-50 to-sky/5">
+      {/* Stats Section */}
+      <section className="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">
-            Who This Program Is For
-          </h2>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {targetAudience.map((audience, index) => {
-              const IconComponent = audience.icon;
-              return (
-                <Card key={index} className="bg-gradient-to-br from-rose/5 to-pink/5 border-2 border-rose/20 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  <CardContent className="p-8 text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto bg-rose/20 rounded-full flex items-center justify-center">
-                      <IconComponent className="h-8 w-8 text-rose" />
-                    </div>
-                    <h3 className="text-xl font-semibold">{audience.title}</h3>
-                    <p className="text-muted-foreground">{audience.description}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-semibold text-orange mb-4">Job Hunter 4U Bootcamp Highlights</h3>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">9+</div>
+              <div className="text-lg text-white/80">Years of<br />excellence</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">500+</div>
+              <div className="text-lg text-white/80">Recruitment<br />Partners</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">15,000+</div>
+              <div className="text-lg text-white/80">Students<br />Placed</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Outcomes */}
-      <section className="py-20 bg-gradient-to-br from-emerald/5 to-teal/10">
+      {/* The Future Section */}
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-emerald to-teal bg-clip-text text-transparent">
-            What You'll Achieve
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
+            The Future Belongs to Those who Master AI
           </h2>
           
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <Target className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">"DevOps specialist jobs are growing</p>
+                <p className="text-2xl font-bold text-orange">3.5 times</p>
+                <p className="text-muted-foreground">faster than other jobs."</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <Trophy className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">"AI-enhanced DevOps engineers can demand</p>
+                <p className="text-2xl font-bold text-orange">40-80%</p>
+                <p className="text-muted-foreground">more than traditional IT roles."</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center p-6 border-orange/20 hover:shadow-lg transition-all">
+              <CardContent className="space-y-4 p-0">
+                <div className="w-12 h-12 mx-auto bg-orange/20 rounded-full flex items-center justify-center">
+                  <Star className="h-6 w-6 text-orange" />
+                </div>
+                <p className="text-muted-foreground">"Jobseekers with generative AI skills could expect a nearly</p>
+                <p className="text-2xl font-bold text-orange">50%</p>
+                <p className="text-muted-foreground">salary bump."</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Course Highlights */}
+      <section className="py-20 bg-gradient-to-br from-muted/30 to-sky/5">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
+            AI-Enhanced DevOps & AWS Course Highlights
+          </h2>
+          <p className="text-center text-lg text-muted-foreground mb-16">
+            Applications Open for New Cohort | Limited Scholarships Available
+          </p>
+          
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {outcomes.map((outcome, index) => {
-              const colorClasses = [
-                { card: 'from-emerald/5 to-white border-emerald/20', icon: 'text-emerald' },
-                { card: 'from-sky/5 to-white border-sky/20', icon: 'text-sky' },
-                { card: 'from-violet/5 to-white border-violet/20', icon: 'text-violet' },
-                { card: 'from-orange/5 to-white border-orange/20', icon: 'text-orange' }
-              ];
-              const colorClass = colorClasses[index % colorClasses.length];
+            {highlights.map((highlight, index) => {
+              const IconComponent = highlight.icon;
               return (
-                <Card key={index} className={`p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br ${colorClass.card}`}>
+                <Card key={index} className="p-6 hover:shadow-lg transition-all bg-card/50 backdrop-blur-sm">
                   <CardContent className="space-y-4 p-0">
                     <div className="flex items-start gap-4">
-                      <CheckCircle className={`h-6 w-6 ${colorClass.icon} mt-1 flex-shrink-0`} />
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <IconComponent className="h-6 w-6 text-primary" />
+                      </div>
                       <div>
-                        <h3 className="text-lg font-semibold mb-2">{outcome.title}</h3>
-                        <p className="text-muted-foreground">{outcome.description}</p>
+                        <h3 className="text-lg font-semibold mb-2">{highlight.title}</h3>
+                        <p className="text-muted-foreground">{highlight.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -322,10 +300,10 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Curriculum */}
-      <section className="py-20 bg-gradient-to-br from-violet/5 to-purple/10">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-violet to-purple bg-clip-text text-transparent">
-            Curriculum by Level
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
+            Comprehensive Curriculum
           </h2>
           
           <div className="max-w-4xl mx-auto">
@@ -355,62 +333,37 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
-      {/* Projects Gallery */}
-      <section className="py-20 bg-gradient-to-br from-slate/2 to-neutral-50">
+      {/* Projects Section */}
+      <section className="py-20 bg-gradient-to-br from-muted/30 to-neutral-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-indigo to-purple bg-clip-text text-transparent">
-            Projects You'll Build
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
+            Capstone Projects You'll Build
           </h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {projects.map((project, index) => {
               const projectColorClasses = [
-                { gradient: 'from-orange to-amber', bg: 'from-orange/5 to-amber/5', border: 'border-orange/20', topBar: 'from-orange to-amber', title: 'from-orange to-amber' },
-                { gradient: 'from-sky to-cyan', bg: 'from-sky/5 to-cyan/5', border: 'border-sky/20', topBar: 'from-sky to-cyan', title: 'from-sky to-cyan' },
-                { gradient: 'from-violet to-purple', bg: 'from-violet/5 to-purple/5', border: 'border-violet/20', topBar: 'from-violet to-purple', title: 'from-violet to-purple' },
-                { gradient: 'from-emerald to-teal', bg: 'from-emerald/5 to-teal/5', border: 'border-emerald/20', topBar: 'from-emerald to-teal', title: 'from-emerald to-teal' },
-                { gradient: 'from-pink to-rose', bg: 'from-pink/5 to-rose/5', border: 'border-pink/20', topBar: 'from-pink to-rose', title: 'from-pink to-rose' },
-                { gradient: 'from-indigo to-violet', bg: 'from-indigo/5 to-violet/5', border: 'border-indigo/20', topBar: 'from-indigo to-violet', title: 'from-indigo to-violet' }
+                { gradient: 'from-orange to-amber', bg: 'from-orange/5 to-amber/5', border: 'border-orange/20' },
+                { gradient: 'from-sky to-cyan', bg: 'from-sky/5 to-cyan/5', border: 'border-sky/20' },
+                { gradient: 'from-violet to-purple', bg: 'from-violet/5 to-purple/5', border: 'border-violet/20' }
               ];
-              const colorClass = projectColorClasses[index % projectColorClasses.length];
+              const colorClass = projectColorClasses[index];
               return (
                 <Card 
                   key={project.id}
-                  className={`hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br ${colorClass.bg} border-2 ${colorClass.border} hover:border-opacity-50`}
-                  onMouseEnter={() => setHoveredProject(project.id)}
-                  onMouseLeave={() => setHoveredProject(null)}
+                  className={`hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br ${colorClass.bg} border-2 ${colorClass.border}`}
                 >
                   <CardContent className="p-6 space-y-4">
-                    <div className={`w-full h-2 rounded-full bg-gradient-to-r ${colorClass.topBar} mb-4`}></div>
-                    <h3 className={`text-xl font-semibold bg-gradient-to-r ${colorClass.title} bg-clip-text text-transparent`}>{project.title}</h3>
+                    <div className={`w-full h-2 rounded-full bg-gradient-to-r ${colorClass.gradient} mb-4`}></div>
+                    <h3 className="text-xl font-semibold">{project.title}</h3>
                     <p className="text-muted-foreground">{project.description}</p>
                     <div className="flex flex-wrap gap-2">
-                      {project.tech.map((techItem, techIndex) => {
-                        const techColors: { [key: string]: string } = {
-                          'AWS': 'bg-orange/20 text-orange',
-                          'React': 'bg-sky/20 text-sky',
-                          'Kubernetes': 'bg-violet/20 text-violet',
-                          'AI': 'bg-emerald/20 text-emerald',
-                          'Docker': 'bg-cyan/20 text-cyan',
-                          'PostgreSQL': 'bg-indigo/20 text-indigo',
-                          'Jenkins': 'bg-rose/20 text-rose',
-                          'Stripe': 'bg-amber/20 text-amber'
-                        };
-                        return (
-                          <Badge key={techIndex} variant="secondary" className={`text-xs ${techColors[techItem] || 'bg-neutral/20 text-neutral-700'}`}>
-                            {techItem}
-                          </Badge>
-                        );
-                      })}
+                      {project.tech.map((tech, techIndex) => (
+                        <Badge key={techIndex} variant="secondary" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
                     </div>
-                    {hoveredProject === project.id && (
-                      <div className="animate-fade-in">
-                        <Button variant="outline" size="sm" className={`w-full border-2 ${colorClass.border} hover:bg-gradient-to-r ${colorClass.gradient}/10`}>
-                          <Play className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               );
@@ -420,16 +373,16 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
-            Choose Your Plan
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
+            Investment in Your Future
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="relative">
-              <CardHeader>
-                <CardTitle className="text-2xl">Course Only</CardTitle>
+            <Card className="relative p-8">
+              <CardHeader className="p-0 mb-6">
+                <CardTitle className="text-2xl mb-4">Course Only</CardTitle>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl text-muted-foreground line-through">₹25,000</span>
@@ -438,41 +391,19 @@ const CareerLevelUp = () => {
                   <p className="text-sm text-muted-foreground">Early Bird Price</p>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Full curriculum access
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    2 capstone projects
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Weekly hands-on labs
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Community access
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Office hours support
-                  </li>
-                </ul>
-                <Button className="w-full mt-6">
-                  Get Started
+              <CardContent className="p-0">
+                <Button className="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary">
+                  Enroll Now
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="relative border-2 border-emerald bg-gradient-to-br from-emerald/5 to-teal/5">
+            <Card className="relative border-2 border-emerald bg-gradient-to-br from-emerald/5 to-teal/5 p-8">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-emerald to-teal text-white">Most Popular</Badge>
+                <Badge className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-1">Most Popular</Badge>
               </div>
-              <CardHeader>
-                <CardTitle className="text-2xl">Placement Package</CardTitle>
+              <CardHeader className="p-0 mb-6">
+                <CardTitle className="text-2xl mb-4">Placement Package</CardTitle>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl text-muted-foreground line-through">₹35,000</span>
@@ -481,30 +412,8 @@ const CareerLevelUp = () => {
                   <p className="text-sm text-muted-foreground">Early Bird Price</p>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">Everything in Course Only +</p>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Resume revamp & optimization
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    LinkedIn & GitHub optimization
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    4 mock interviews
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    Job tracker & application toolkit
-                  </li>
-                </ul>
-                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm">👉 Start with Course Only, upgrade within 14 days by paying the difference.</p>
-                </div>
-                <Button className="w-full mt-6 bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald shadow-lg hover:shadow-xl transition-all">
+              <CardContent className="p-0">
+                <Button className="w-full bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald">
                   Get Full Package
                 </Button>
               </CardContent>
@@ -513,108 +422,10 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
-      {/* Bonuses */}
-      <section className="py-20 bg-gradient-to-br from-amber/5 to-orange/10">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-amber to-orange bg-clip-text text-transparent">
-            Exclusive Bonuses
-          </h2>
-          
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {bonuses.map((bonus, index) => {
-              const bonusColorClasses = [
-                { bg: 'from-amber/10 to-amber/5', border: 'border-amber/20', icon: 'text-amber' },
-                { bg: 'from-orange/10 to-orange/5', border: 'border-orange/20', icon: 'text-orange' },
-                { bg: 'from-rose/10 to-rose/5', border: 'border-rose/20', icon: 'text-rose' },
-                { bg: 'from-emerald/10 to-emerald/5', border: 'border-emerald/20', icon: 'text-emerald' }
-              ];
-              const colorClass = bonusColorClasses[index % bonusColorClasses.length];
-              return (
-                <div key={index} className={`flex items-center gap-3 p-4 bg-gradient-to-r ${colorClass.bg} rounded-lg border ${colorClass.border} hover:shadow-lg transition-all`}>
-                  <Star className={`h-5 w-5 ${colorClass.icon} flex-shrink-0`} />
-                  <span>{bonus}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Schedule */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
-            Schedule & Format
-          </h2>
-          
-          <Card className="max-w-4xl mx-auto">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Program Timeline</h3>
-                  <div className="space-y-2">
-                    <p className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      Demo: 18th Sep 2025
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-primary" />
-                      Mon-Fri: 8:30–10:00 AM IST (Live Classes)
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <Code className="h-4 w-4 text-primary" />
-                      Sat: 8-10 PM IST (Hands-on Labs)
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Support & Resources</h3>
-                  <div className="space-y-2">
-                    <p className="flex items-center gap-2">
-                      <Play className="h-4 w-4 text-primary" />
-                      All class recordings available
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4 text-primary" />
-                      WhatsApp community access
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-primary" />
-                      24-hr TA support SLA
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Instructor */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
-            Meet Your Instructor
-          </h2>
-          
-          <Card className="max-w-2xl mx-auto">
-            <CardContent className="p-8 text-center">
-              <div className="w-24 h-24 mx-auto bg-muted rounded-full flex items-center justify-center mb-6">
-                <User className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground">
-                9+ years in IT, 2 years as DevOps Engineer, 12 years training experience. 
-                Delivered 50+ projects across AWS, Python, DevOps, and AI.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
       {/* FAQ */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-gradient-to-br from-muted/30 to-sky/5">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             Frequently Asked Questions
           </h2>
           
@@ -636,17 +447,10 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-br from-indigo via-violet to-purple text-white relative overflow-hidden">
-        {/* Animated background circles */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-32 h-32 border border-cyan/30 rounded-full animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-24 h-24 border border-emerald/30 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-20 left-32 w-40 h-40 border border-amber/30 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
-        </div>
-        
-        <div className="container mx-auto px-4 text-center relative">
+      <section className="py-20 bg-gradient-to-r from-emerald to-teal text-white">
+        <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-white to-cyan bg-clip-text text-transparent">
+            <h2 className="text-3xl md:text-4xl font-bold">
               Ready to Transform Your Career?
             </h2>
             <p className="text-xl text-white/90">
@@ -655,33 +459,22 @@ const CareerLevelUp = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-amber to-orange hover:from-orange hover:to-rose text-white font-semibold px-8 py-3 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+                className="bg-white text-emerald hover:bg-white/90 font-semibold px-8 py-3"
               >
                 Enroll Now - Save ₹5,000
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border-2 border-cyan text-cyan hover:bg-gradient-to-r hover:from-cyan/20 hover:to-sky/20 backdrop-blur-sm px-8 py-3 transition-all"
+                className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3"
               >
                 <Phone className="mr-2 h-5 w-5" />
-                Book a Call
+                Schedule a Call
               </Button>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Sticky Footer CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-rose via-orange to-amber text-white p-4 shadow-2xl z-50 animate-pulse">
-        <div className="container mx-auto text-center">
-          <p className="font-semibold flex items-center justify-center gap-2">
-            <Rocket className="h-5 w-5 text-cyan" />
-            Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
-            <Flame className="h-5 w-5 text-yellow-300" />
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
