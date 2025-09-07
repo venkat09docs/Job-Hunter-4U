@@ -889,25 +889,6 @@ const CareerLevelUp = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
               Investment in Your Future
             </h2>
-            
-            {/* Limited Time Offer Timer */}
-            <Card className="bg-gradient-to-r from-red-500/10 to-rose-500/10 border-2 border-red-500/20 p-4">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Timer className="h-5 w-5 text-red-500" />
-                  <span className="font-semibold text-red-500">Limited Time Offer</span>
-                </div>
-                <div className="text-2xl font-bold text-red-500 mb-2">{formatTime(timeLeft)}</div>
-                <div className="text-sm text-muted-foreground mb-3">Enroll now to get</div>
-                <div className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-2 rounded-lg font-semibold text-sm">
-                  Job Hunter 1 Year Plan FREE
-                  <div className="text-xs opacity-90">(Worth ₹12,000)</div>
-                </div>
-                <Button className="mt-3 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1">
-                  View Job Hunter Pricing <ArrowRight className="h-3 w-3 ml-1" />
-                </Button>
-              </div>
-            </Card>
           </div>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -1071,6 +1052,23 @@ const CareerLevelUp = () => {
                     <Cloud className="w-8 h-8 text-orange mb-4 mx-auto" />
                     <h4 className="font-semibold text-foreground mb-2">AWS Basics</h4>
                     <p className="text-sm text-muted-foreground">Understand cloud fundamentals</p>
+                  </div>
+                </div>
+
+                {/* JobHunter Free Access */}
+                <div className="bg-gradient-to-r from-emerald/10 to-teal/10 rounded-xl p-6 border-2 border-emerald/20 mt-8">
+                  <div className="text-center space-y-3">
+                    <div className="flex items-center justify-center gap-2 text-emerald-600 font-bold text-xl">
+                      <Trophy className="w-6 h-6" />
+                      <span>🎁 EXCLUSIVE BONUS 🎁</span>
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">
+                      Get <span className="text-emerald-600">JobHunter 1-Year Plan FREE</span> with your enrollment!
+                    </p>
+                    <div className="bg-white/70 rounded-lg p-4 border border-emerald-200">
+                      <div className="text-2xl font-bold text-emerald-600">Worth ₹12,000</div>
+                      <p className="text-sm text-muted-foreground">Complete job hunting automation platform</p>
+                    </div>
                   </div>
                 </div>
 
