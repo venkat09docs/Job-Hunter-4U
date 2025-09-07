@@ -46,6 +46,7 @@ const CareerLevelUp = () => {
 
   // Callback dialog state
   const [isCallbackDialogOpen, setIsCallbackDialogOpen] = useState(false);
+  const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -230,10 +231,11 @@ const CareerLevelUp = () => {
                   
                   {/* CTA Buttons inside the board */}
                   <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-2 text-base font-semibold shadow-lg"
-                    >
+                     <Button 
+                       size="lg" 
+                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-2 text-base font-semibold shadow-lg"
+                       onClick={() => setIsCurriculumDialogOpen(true)}
+                     >
                       <Download className="mr-2 h-4 w-4" />
                       Download Curriculum
                     </Button>
@@ -1069,6 +1071,41 @@ const CareerLevelUp = () => {
               scrolling="yes" 
               id="Sc79wJpTEJecg4RKmXwp" 
               title="survey"
+              className="rounded-lg border border-border"
+            />
+            <script src="https://app.risenshinetechnologies.com/js/form_embed.js"></script>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Download Curriculum Dialog */}
+      <Dialog open={isCurriculumDialogOpen} onOpenChange={setIsCurriculumDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-auto p-0">
+          <DialogHeader className="p-6 pb-2 border-b">
+            <DialogTitle>Download Curriculum - Fill the Form</DialogTitle>
+          </DialogHeader>
+          <div className="p-6">
+            <iframe
+              src="https://app.risenshinetechnologies.com/widget/form/HOAiVP9Rs5P8XqcKn6p0"
+              style={{
+                width: "100%",
+                height: "432px",
+                border: "none",
+                borderRadius: "3px"
+              }}
+              id="inline-HOAiVP9Rs5P8XqcKn6p0"
+              data-layout="{'id':'INLINE'}"
+              data-trigger-type="alwaysShow"
+              data-trigger-value=""
+              data-activation-type="alwaysActivated"
+              data-activation-value=""
+              data-deactivation-type="neverDeactivate"
+              data-deactivation-value=""
+              data-form-name="Form - Download Curriculum for AI DevOps with AWS"
+              data-height="432"
+              data-layout-iframe-id="inline-HOAiVP9Rs5P8XqcKn6p0"
+              data-form-id="HOAiVP9Rs5P8XqcKn6p0"
+              title="Form - Download Curriculum for AI DevOps with AWS"
               className="rounded-lg border border-border"
             />
             <script src="https://app.risenshinetechnologies.com/js/form_embed.js"></script>
