@@ -149,7 +149,7 @@ const CareerLevelUp = () => {
     },
     {
       question: "What's your refund policy?",
-      answer: "30-day money-back guarantee if you're not satisfied with the program quality. We're confident you'll love the AI-enhanced learning experience."
+      answer: "This is a no refund policy as you get access to recorded videos and software that cannot be returned. All materials and resources become available to you immediately upon enrollment."
     },
     {
       question: "How is this different from other DevOps courses?",
