@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Download,
   GraduationCap,
@@ -42,6 +43,9 @@ const CareerLevelUp = () => {
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+
+  // Callback dialog state
+  const [isCallbackDialogOpen, setIsCallbackDialogOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -218,31 +222,34 @@ const CareerLevelUp = () => {
               </div>
 
               {/* Next Cohort Highlight */}
-              <div className="bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg p-4 border-2 border-violet/20">
-                <div className="text-center">
+              <div className="bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg p-6 border-2 border-violet/20">
+                <div className="text-center space-y-4">
                   <p className="text-lg font-semibold text-violet mb-1">🚀 Next Cohort</p>
                   <p className="text-2xl font-bold text-foreground">Starts on 18th Sept 2025</p>
                   <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
+                  
+                  {/* CTA Buttons inside the board */}
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-2 text-base font-semibold shadow-lg"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Curriculum
+                    </Button>
+                    <Button 
+                      size="lg" 
+                      variant="outline"
+                      className="border-2 border-violet text-violet hover:bg-violet/10 px-6 py-2 text-base font-semibold"
+                      onClick={() => setIsCallbackDialogOpen(true)}
+                    >
+                      <Phone className="mr-2 h-4 w-4" />
+                      Get a Callback
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-8 py-3 text-lg font-semibold shadow-lg"
-                >
-                  <Download className="mr-2 h-5 w-5" />
-                  Download Curriculum
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="border-2 border-foreground text-foreground hover:bg-muted px-8 py-3 text-lg font-semibold"
-                >
-                  Get a Callback
-                </Button>
-              </div>
             </div>
 
             {/* Right Hero Image */}
@@ -1043,6 +1050,31 @@ const CareerLevelUp = () => {
 
       {/* Add bottom padding to account for sticky footer */}
       <div className="h-16"></div>
+
+      {/* Callback Survey Dialog */}
+      <Dialog open={isCallbackDialogOpen} onOpenChange={setIsCallbackDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Get a Callback - Fill the Survey</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-0">
+            <iframe 
+              src="https://app.risenshinetechnologies.com/widget/survey/Sc79wJpTEJecg4RKmXwp" 
+              style={{
+                border: "none",
+                width: "100%",
+                height: "500px",
+                minHeight: "500px"
+              }}
+              scrolling="no" 
+              id="Sc79wJpTEJecg4RKmXwp" 
+              title="survey"
+              className="rounded-lg"
+            />
+            <script src="https://app.risenshinetechnologies.com/js/form_embed.js"></script>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
