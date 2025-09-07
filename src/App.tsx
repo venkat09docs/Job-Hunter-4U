@@ -69,6 +69,7 @@ import NotificationAnalytics from "./pages/NotificationAnalytics";
 import NotificationManagement from "./pages/NotificationManagement";
 import AffiliateManagementPage from "./pages/AffiliateManagement";
 import SocialProofManagement from "./pages/SocialProofManagement";
+import CareerLevelUp from "./pages/CareerLevelUp";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
@@ -472,6 +473,7 @@ const AppContent = () => {
           />
           <Route path="/blogs" element={<PublicBlogs />} />
           <Route path="/profile/:slug" element={<PublicProfile />} />
+          <Route path="/careerlevelup" element={<CareerLevelUp />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
