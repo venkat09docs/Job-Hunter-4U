@@ -1039,10 +1039,11 @@ const CareerLevelUp = () => {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3"
+                className="border-2 border-white bg-white/10 text-white hover:bg-white hover:text-emerald backdrop-blur-sm px-8 py-3"
+                onClick={() => setIsCallbackDialogOpen(true)}
               >
                 <Phone className="mr-2 h-5 w-5" />
-                Schedule a Call
+                Get a Callback
               </Button>
             </div>
           </div>
