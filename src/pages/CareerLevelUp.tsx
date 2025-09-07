@@ -85,28 +85,28 @@ const CareerLevelUp = () => {
 
   const curriculumLevels = [
     {
-      level: "Level 1 – Foundations",
-      topics: "Linux, Git, Python, Docker, AWS Basics (IAM/EC2/S3/VPC), CI/CD concepts, GenAI intro"
+      level: "Level 1 – Foundations (Weeks 1–2)",
+      topics: "Linux, Git, Python, Docker fundamentals • AWS core: IAM, EC2, S3, VPC • CI/CD overview, GenAI basics"
     },
     {
-      level: "Level 2 – AI for Devs/DevOps",
-      topics: "AI Agents for code generation, AI Automations for testing, GitHub Copilot, Cursor, Amazon Q"
+      level: "Level 2 – AI for DevOps & Infrastructure (Weeks 3–4)",
+      topics: "GitHub Copilot & Cursor workflows, Amazon Q Developer • Intro to PartyRock for AI-powered prototypes • AI-Driven IaC: Writing IaC with Terraform, Pulumi, Ansible, using AI assistants like Copilot, Cursor, and Kiro IDE; Agentic workflows, MCP servers, GitOps PR reviews, IaC security via Checkov/tfsec • StationOps for automated AWS infrastructure deployment and intelligent error handling; multi-env setup, domain integration, cost monitoring"
     },
     {
-      level: "Level 3 – Cloud GenAI on AWS",
-      topics: "Vibe Coding with Bedrock, SageMaker/Rekognition, CDK/Terraform AI Automations"
+      level: "Level 3 – AIOps & Operational Intelligence (Week 5)",
+      topics: "AIOps in DevOps: Use Python, Jupyter, and AI frameworks to automate root-cause analysis and incident response; integrate AI into SRE workflows • Broader AIOps concepts: anomaly detection, proactive logging, predictive maintenance, and self-healing ops"
     },
     {
-      level: "Level 4 – Implementation of AI Agents with Vibe Coding",
-      topics: "Advanced AI Agents development, Custom coding workflows, Automated deployment patterns, Production-ready integrations"
+      level: "Level 4 – AI Infrastructure Operations (Week 6–7)",
+      topics: "Bedrock, SageMaker/Rekognition; IaC with CDK/Terraform in AI workloads • Kubernetes essentials, K8sGPT for AI-gen diagnostics with Prometheus/Grafana • PromptOps pipelines: AI-generated CI/CD using Jenkins, GitHub, Terraform, Docker"
     },
     {
-      level: "Level 5 – Kubernetes + AIOps",
-      topics: "K8s essentials, K8sGPT diagnostics, PromptOps pipelines, Grafana/Prometheus"
+      level: "Level 5 – Production-Readiness & Validation (Weeks 8–9)",
+      topics: "MLOps & LLMOps Practice Tests: Hands-on scenario-based challenges in CI/CD pipelines for AI, Docker + Kubernetes troubleshooting, production LLM system design (RAG, monitoring, scaling)"
     },
     {
-      level: "Level 6 – Capstones & Job Readiness",
-      topics: "Choose 2 capstones (AI SaaS on AWS / Secure CI/CD with AI Chatbot / Database Agent), portfolio showcase, mock interviews"
+      level: "Level 6 – Capstones & Career Prep (Week 10)",
+      topics: "Choose two: • AI SaaS on AWS (auth, storage, billing, CDK) • Secure CI/CD Pipeline for AI chatbot: Git → Jenkins → SonarQube → Docker → EC2 • K8s AIOps with K8sGPT monitoring and dashboards • StationOps-driven AI infra deployment with scaling and cost alerts • Database AI Agent project using LangChain and Bedrock"
     }
   ];
 
