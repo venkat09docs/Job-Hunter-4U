@@ -986,6 +986,79 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
+      {/* Early Access Benefit */}
+      <section className="py-16 bg-gradient-to-r from-violet/10 via-indigo/10 to-purple/10">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="bg-gradient-to-r from-violet to-indigo bg-clip-text text-transparent mb-4">
+              <Gift className="w-12 h-12 mx-auto mb-4 text-violet" />
+              <h2 className="text-3xl md:text-4xl font-bold">
+                🎁 Exclusive Early Access Benefit
+              </h2>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-2xl border-2 border-violet/20 p-8 md:p-12 mt-8">
+              <div className="space-y-6">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Enroll Now & Start Your Journey Today!
+                </h3>
+                
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  Don't wait for the cohort to begin. <strong className="text-violet">Enroll today</strong> and get 
+                  <strong className="text-emerald"> immediate access</strong> to all prerequisite courses and materials.
+                </p>
+
+                <div className="grid md:grid-cols-3 gap-6 mt-8">
+                  <div className="bg-gradient-to-br from-violet/5 to-indigo/5 rounded-xl p-6 border border-violet/20">
+                    <BookOpen className="w-8 h-8 text-violet mb-4 mx-auto" />
+                    <h4 className="font-semibold text-foreground mb-2">Linux & Git Fundamentals</h4>
+                    <p className="text-sm text-muted-foreground">Master the basics before day 1</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-emerald/5 to-teal/5 rounded-xl p-6 border border-emerald/20">
+                    <Code className="w-8 h-8 text-emerald mb-4 mx-auto" />
+                    <h4 className="font-semibold text-foreground mb-2">Python Essentials</h4>
+                    <p className="text-sm text-muted-foreground">Get comfortable with scripting</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-orange/5 to-amber/5 rounded-xl p-6 border border-orange/20">
+                    <Cloud className="w-8 h-8 text-orange mb-4 mx-auto" />
+                    <h4 className="font-semibold text-foreground mb-2">AWS Basics</h4>
+                    <p className="text-sm text-muted-foreground">Understand cloud fundamentals</p>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-success/10 to-emerald/10 rounded-xl p-6 border-2 border-success/20 mt-8">
+                  <div className="flex items-center justify-center gap-3 text-success font-semibold text-lg">
+                    <Timer className="w-6 h-6" />
+                    <span>Start Today → Be Ahead → Excel in Cohort → Land Dream Job</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-violet to-indigo hover:from-indigo hover:to-violet text-white px-8 py-4 text-lg font-semibold shadow-lg"
+                  >
+                    <ArrowRight className="mr-2 h-5 w-5" />
+                    Enroll Now & Start Today
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="border-2 border-violet text-violet hover:bg-violet/10 px-8 py-4 text-lg font-semibold"
+                    onClick={() => setIsCallbackDialogOpen(true)}
+                  >
+                    <Phone className="mr-2 h-5 w-5" />
+                    Get More Details
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-12 bg-gradient-to-br from-muted/30 to-sky/5">
         <div className="container mx-auto px-4">
