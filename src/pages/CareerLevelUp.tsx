@@ -33,9 +33,12 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import heroImage from "@/assets/devops-aws-ai-hero.jpg";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const CareerLevelUp = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   
   // Dynamic seat counts
   const [plan1Seats] = useState(17); // 17 out of 25 seats filled
@@ -47,6 +50,43 @@ const CareerLevelUp = () => {
   // Callback dialog state
   const [isCallbackDialogOpen, setIsCallbackDialogOpen] = useState(false);
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
+
+  // Payment handler
+  const handleEnrollment = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('razorpay-create-order-simple', {
+        body: {
+          amount: 2000000, // ₹20,000 in paise (1 rupee = 100 paise)
+          currency: 'INR',
+          receipt: `enrollment_${Date.now()}`,
+          notes: {
+            product: 'DevOps AWS AI Course',
+            course_type: 'career_level_up'
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Open RazorPay checkout in a new tab
+        window.open(data.url, '_blank');
+      } else {
+        toast({
+          title: "Error",
+          description: "Unable to process payment. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -914,7 +954,10 @@ const CareerLevelUp = () => {
                     </li>
                   </ul>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white">
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white"
+                  onClick={handleEnrollment}
+                >
                   Enroll in Course Only
                 </Button>
               </CardContent>
@@ -966,7 +1009,10 @@ const CareerLevelUp = () => {
                     </li>
                   </ul>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white">
+                <Button 
+                  className="w-full bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white"
+                  onClick={handleEnrollment}
+                >
                   Get Placement Package
                 </Button>
               </CardContent>
@@ -1028,6 +1074,33 @@ const CareerLevelUp = () => {
                   </div>
                 </div>
 
+                {/* Limited Time Offer */}
+                <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-xl p-6 border-2 border-red-500/20 mt-8">
+                  <div className="text-center space-y-3">
+                    <div className="flex items-center justify-center gap-2 text-red-600 font-bold text-xl">
+                      <Zap className="w-6 h-6" />
+                      <span>⚡ LIMITED TIME OFFER ⚡</span>
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">
+                      Enroll in next 30 minutes and get <span className="text-emerald-600">3 BONUS courses</span> worth ₹15,000 FREE!
+                    </p>
+                    <div className="grid md:grid-cols-3 gap-4 mt-4">
+                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
+                        <span className="text-sm font-medium text-emerald-700">🎯 Interview Mastery</span>
+                      </div>
+                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
+                        <span className="text-sm font-medium text-emerald-700">💼 Resume Optimization</span>
+                      </div>
+                      <div className="bg-white/50 rounded-lg p-3 border border-emerald-200">
+                        <span className="text-sm font-medium text-emerald-700">🔥 Salary Negotiation</span>
+                      </div>
+                    </div>
+                    <div className="text-red-600 font-bold text-lg">
+                      ⏰ Hurry! Only {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')} minutes left!
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-gradient-to-r from-success/10 to-emerald/10 rounded-xl p-6 border-2 border-success/20 mt-8">
                   <div className="flex items-center justify-center gap-3 text-success font-semibold text-lg">
                     <Timer className="w-6 h-6" />
@@ -1039,6 +1112,7 @@ const CareerLevelUp = () => {
                   <Button 
                     size="lg" 
                     className="bg-gradient-to-r from-violet to-indigo hover:from-indigo hover:to-violet text-white px-8 py-4 text-lg font-semibold shadow-lg"
+                    onClick={handleEnrollment}
                   >
                     <ArrowRight className="mr-2 h-5 w-5" />
                     Enroll Now & Start Today
