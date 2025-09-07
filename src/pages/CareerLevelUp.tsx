@@ -133,20 +133,44 @@ const CareerLevelUp = () => {
 
   const faqs = [
     {
-      question: "Prerequisites?",
-      answer: "Basic coding knowledge is helpful but not required. We'll start from fundamentals."
+      question: "What prerequisites do I need for this bootcamp?",
+      answer: "Basic coding knowledge is helpful but not required. We'll start from fundamentals and guide you through Linux, Git, Python, and Docker basics."
     },
     {
-      question: "Tools provided?",
-      answer: "AWS Free Tier, GitHub, Docker, VS Code - all tools and resources included."
+      question: "What tools and resources are provided?",
+      answer: "AWS Free Tier access, GitHub Pro, Docker Desktop, VS Code, and all premium tools are included. You'll also get exclusive cheat sheets and 1000+ developer prompts worth ₹11,000."
     },
     {
-      question: "Job Guarantee?",
-      answer: "Comprehensive placement support with resume optimization, GitHub/LinkedIn enhancement, and job board strategies."
+      question: "Do you guarantee job placement?",
+      answer: "We provide comprehensive placement support with dedicated mentors, resume optimization, portfolio building, mock interviews, and access to our internal job portal with 100+ opportunities."
     },
     {
-      question: "Refund policy?",
-      answer: "30-day money-back guarantee if you're not satisfied with the program quality."
+      question: "What's your refund policy?",
+      answer: "30-day money-back guarantee if you're not satisfied with the program quality. We're confident you'll love the AI-enhanced learning experience."
+    },
+    {
+      question: "How is this different from other DevOps courses?",
+      answer: "We're the first to integrate AI Agents, AI Automations, and Vibe Coding into DevOps training. You'll learn to leverage GitHub Copilot, Cursor, Amazon Q, and build AI-powered infrastructure."
+    },
+    {
+      question: "Can I attend if I'm working full-time?",
+      answer: "Yes! Classes are scheduled for early mornings (8:30-10:00 AM IST) with weekend labs. All sessions are recorded, and you get 24-hour TA support through WhatsApp community."
+    },
+    {
+      question: "What AI tools will I master in this program?",
+      answer: "GitHub Copilot, Cursor IDE, Amazon Q Developer, AWS Bedrock, PartyRock, K8sGPT, and custom AI agents for infrastructure automation and monitoring."
+    },
+    {
+      question: "Are there any hidden costs or additional fees?",
+      answer: "No hidden costs. Everything is included - AWS credits, tools access, placement support, and all bonus materials. The only optional upgrade is the Placement Package."
+    },
+    {
+      question: "What happens after course completion?",
+      answer: "You'll showcase your capstone projects, get portfolio reviewed by industry experts, receive job referrals, and access our alumni network for continuous career support."
+    },
+    {
+      question: "Is there a free trial or demo available?",
+      answer: "Yes! We offer demo sessions for each cohort where you can experience our AI-enhanced teaching methodology and interact with instructors before enrolling."
     }
   ];
 
@@ -160,7 +184,7 @@ const CareerLevelUp = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-neutral-50 to-sky/5 py-16">
+      <section className="bg-gradient-to-br from-neutral-50 to-sky/5 py-12">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
@@ -271,7 +295,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* The Future Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             The Future Belongs to Those who Master AI
@@ -315,7 +339,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Bonuses Section */}
-      <section className="py-20 bg-gradient-to-br from-orange/5 to-amber/5">
+      <section className="py-12 bg-gradient-to-br from-orange/5 to-amber/5">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
             Exclusive Bonuses Worth ₹10,000+
@@ -396,7 +420,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Course Highlights */}
-      <section className="py-20 bg-gradient-to-br from-muted/30 to-sky/5">
+      <section className="py-12 bg-gradient-to-br from-muted/30 to-sky/5">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
             AI-Enhanced DevOps & AWS Course Highlights
@@ -429,7 +453,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Schedule & Format Section */}
-      <section className="py-20 bg-gradient-to-br from-violet/5 to-indigo/5">
+      <section className="py-12 bg-gradient-to-br from-violet/5 to-indigo/5">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
             Schedule & Format
@@ -508,7 +532,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Curriculum */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             Comprehensive Curriculum
@@ -543,7 +567,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Projects Section */}
-      <section className="py-20 bg-gradient-to-br from-muted/30 to-neutral-50">
+      <section className="py-12 bg-gradient-to-br from-muted/30 to-neutral-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             Capstone Projects You'll Build
@@ -581,8 +605,181 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
+      {/* Student Success Cards */}
+      <section className="py-12 bg-gradient-to-br from-emerald/5 to-teal/5">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
+            Student Success Stories
+          </h2>
+          <p className="text-center text-lg text-muted-foreground mb-16">
+            Real outcomes from our alumni who transformed their careers
+          </p>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-emerald/5 to-teal/10 border-2 border-emerald/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-emerald mb-2">65%</div>
+                  <div className="text-lg font-semibold mb-2">Salary Increase</div>
+                  <div className="text-muted-foreground">Priya Singh</div>
+                  <div className="text-sm text-muted-foreground">Jr. Developer → DevOps Engineer</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹8L → ₹13.2L at Infosys</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-violet/5 to-indigo/10 border-2 border-violet/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-violet mb-2">3</div>
+                  <div className="text-lg font-semibold mb-2">Job Offers</div>
+                  <div className="text-muted-foreground">Rahul Kumar</div>
+                  <div className="text-sm text-muted-foreground">Manual Tester → AI-DevOps Lead</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹6L → ₹18L at TCS</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-orange mb-2">45</div>
+                  <div className="text-lg font-semibold mb-2">Days to Job</div>
+                  <div className="text-muted-foreground">Anjali Patel</div>
+                  <div className="text-sm text-muted-foreground">Support Engineer → Cloud DevOps</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹5L → ₹12L at Wipro</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-sky/5 to-cyan/10 border-2 border-sky/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-sky mb-2">2x</div>
+                  <div className="text-lg font-semibold mb-2">Career Growth</div>
+                  <div className="text-muted-foreground">Vikram Sharma</div>
+                  <div className="text-sm text-muted-foreground">Fresher → Senior DevOps</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹0 → ₹15L at Accenture</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-rose/5 to-pink/10 border-2 border-rose/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-rose mb-2">100%</div>
+                  <div className="text-lg font-semibold mb-2">Remote Work</div>
+                  <div className="text-muted-foreground">Sneha Reddy</div>
+                  <div className="text-sm text-muted-foreground">IT Admin → DevOps Architect</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹7L → ₹22L at Microsoft</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-indigo/5 to-blue/10 border-2 border-indigo/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-indigo mb-2">90</div>
+                  <div className="text-lg font-semibold mb-2">Days Training</div>
+                  <div className="text-muted-foreground">Arjun Gupta</div>
+                  <div className="text-sm text-muted-foreground">Network Engineer → AI-DevOps</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹9L → ₹16L at Capgemini</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-12 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
+            What Our Alumni Say
+          </h2>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <Card className="p-6 hover:shadow-lg transition-all bg-gradient-to-br from-card/80 to-muted/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-orange text-2xl mb-4">"</div>
+                <p className="text-muted-foreground italic">
+                  "The AI integration in this program is incredible! Learning GitHub Copilot and Cursor transformed my coding speed by 300%. I went from struggling with basic DevOps to building AI-powered infrastructures. Best investment ever!"
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald/20 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-emerald" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Priya Singh</p>
+                    <p className="text-sm text-muted-foreground">DevOps Engineer at Infosys</p>
+                    <p className="text-sm text-orange">₹8L → ₹13.2L</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all bg-gradient-to-br from-card/80 to-muted/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-orange text-2xl mb-4">"</div>
+                <p className="text-muted-foreground italic">
+                  "The placement support is outstanding! They didn't just teach me DevOps, they prepared my entire portfolio, optimized my LinkedIn, and I got 3 job offers within 45 days of completing the program."
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-violet/20 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-violet" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Rahul Kumar</p>
+                    <p className="text-sm text-muted-foreground">AI-DevOps Lead at TCS</p>
+                    <p className="text-sm text-orange">₹6L → ₹18L</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all bg-gradient-to-br from-card/80 to-muted/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-orange text-2xl mb-4">"</div>
+                <p className="text-muted-foreground italic">
+                  "As a fresher, I was worried about competing with experienced developers. But the AI-enhanced learning approach and hands-on projects gave me confidence. Now I'm earning ₹15L as a Senior DevOps Engineer!"
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-sky/20 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-sky" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Vikram Sharma</p>
+                    <p className="text-sm text-muted-foreground">Senior DevOps at Accenture</p>
+                    <p className="text-sm text-orange">Fresher → ₹15L</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-all bg-gradient-to-br from-card/80 to-muted/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="text-orange text-2xl mb-4">"</div>
+                <p className="text-muted-foreground italic">
+                  "The future is AI + DevOps, and this program nailed it! Learning to build AI agents for infrastructure monitoring and automated deployments set me apart from other candidates. Remote work at ₹22L - dream come true!"
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-rose/20 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-rose" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Sneha Reddy</p>
+                    <p className="text-sm text-muted-foreground">DevOps Architect at Microsoft</p>
+                    <p className="text-sm text-orange">₹7L → ₹22L Remote</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">
@@ -726,7 +923,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-gradient-to-br from-muted/30 to-sky/5">
+      <section className="py-12 bg-gradient-to-br from-muted/30 to-sky/5">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             Frequently Asked Questions
@@ -750,7 +947,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-emerald to-teal text-white">
+      <section className="py-12 bg-gradient-to-r from-emerald to-teal text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
             <h2 className="text-3xl md:text-4xl font-bold">
@@ -787,6 +984,29 @@ const CareerLevelUp = () => {
           </div>
         </div>
       </section>
+
+      {/* Sticky Footer CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-orange to-amber text-white shadow-2xl border-t">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="text-center sm:text-left">
+              <p className="font-semibold text-sm sm:text-base">
+                🚀 Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs sm:text-sm">
+              <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+              <span className="text-white/60">•</span>
+              <a href="/terms-of-service" className="hover:underline">Terms</a>
+              <span className="text-white/60">•</span>
+              <a href="/contact" className="hover:underline">Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add bottom padding to account for sticky footer */}
+      <div className="h-16"></div>
     </div>
   );
 };
