@@ -1053,23 +1053,23 @@ const CareerLevelUp = () => {
 
       {/* Callback Survey Dialog */}
       <Dialog open={isCallbackDialogOpen} onOpenChange={setIsCallbackDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="p-6 pb-0">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-auto p-0">
+          <DialogHeader className="p-6 pb-2 border-b">
             <DialogTitle>Get a Callback - Fill the Survey</DialogTitle>
           </DialogHeader>
-          <div className="p-6 pt-0">
+          <div className="p-6">
             <iframe 
               src="https://app.risenshinetechnologies.com/widget/survey/Sc79wJpTEJecg4RKmXwp" 
               style={{
                 border: "none",
                 width: "100%",
-                height: "500px",
-                minHeight: "500px"
+                height: "700px",
+                minHeight: "600px"
               }}
-              scrolling="no" 
+              scrolling="yes" 
               id="Sc79wJpTEJecg4RKmXwp" 
               title="survey"
-              className="rounded-lg"
+              className="rounded-lg border border-border"
             />
             <script src="https://app.risenshinetechnologies.com/js/form_embed.js"></script>
           </div>
