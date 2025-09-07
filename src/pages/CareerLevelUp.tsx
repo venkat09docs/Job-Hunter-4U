@@ -349,13 +349,13 @@ const CareerLevelUp = () => {
       
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-orange to-amber text-white py-3 text-center font-medium">
-        Limited Scholarships Available | Admissions Open for Next Cohort
+        Limited Seats Available | Admissions Open for Next Cohort
       </div>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-background via-background/50 to-muted/20 py-16 lg:py-24">
+      <section className="bg-gradient-to-br from-background via-background/50 to-muted/20 py-8 lg:py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             {/* Left Content */}
             <div className="space-y-8 lg:pr-8">
               <div className="space-y-6">
@@ -389,25 +389,40 @@ const CareerLevelUp = () => {
                   Live Online
                 </Badge>
               </div>
+            </div>
 
-              {/* Next Cohort Highlight */}
-              <div className="bg-gradient-to-br from-violet/10 via-indigo/5 to-violet/5 rounded-2xl p-8 border-2 border-violet/20 shadow-lg backdrop-blur-sm">
-                <div className="text-center space-y-6">
+            {/* Right Side - Image and Next Cohort Board */}
+            <div className="space-y-6">
+              {/* Hero Image */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet/20 via-indigo/10 to-emerald/20 rounded-3xl transform rotate-1 scale-105 blur-xl opacity-60"></div>
+                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+                  <img 
+                    src={heroImage} 
+                    alt="AI-Enhanced DevOps & AWS Bootcamp" 
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Next Cohort Board */}
+              <div className="bg-gradient-to-br from-violet/10 via-indigo/5 to-violet/5 rounded-2xl p-6 border-2 border-violet/20 shadow-lg backdrop-blur-sm">
+                <div className="text-center space-y-4">
                   <div className="inline-flex items-center gap-2 bg-violet/10 rounded-full px-4 py-2">
                     <div className="w-2 h-2 bg-violet rounded-full animate-pulse"></div>
                     <span className="text-lg font-semibold text-violet">Next Cohort</span>
                   </div>
                   
                   <div className="space-y-2">
-                    <p className="text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
+                    <p className="text-2xl lg:text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
                     <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
                   </div>
                   
                   {/* CTA Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                  <div className="flex flex-col gap-3 pt-2">
                      <Button 
                        size="lg" 
-                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                        onClick={() => setIsCurriculumDialogOpen(true)}
                      >
                       <Download className="mr-2 h-5 w-5" />
@@ -416,27 +431,13 @@ const CareerLevelUp = () => {
                     <Button 
                       size="lg" 
                       variant="outline"
-                      className="border-2 border-violet text-violet hover:bg-violet/10 px-8 py-3 text-base font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                      className="border-2 border-violet text-violet hover:bg-violet/10 px-6 py-3 text-base font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                       onClick={() => setIsCallbackDialogOpen(true)}
                     >
                       <Phone className="mr-2 h-5 w-5" />
                       Get a Callback
                     </Button>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero Image */}
-            <div className="relative lg:pl-8">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet/20 via-indigo/10 to-emerald/20 rounded-3xl transform rotate-3 scale-105 blur-xl opacity-60"></div>
-                <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                  <img 
-                    src={heroImage} 
-                    alt="AI-Enhanced DevOps & AWS Bootcamp" 
-                    className="w-full h-auto object-cover"
-                  />
                 </div>
               </div>
             </div>
