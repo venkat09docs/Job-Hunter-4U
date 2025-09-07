@@ -25,6 +25,10 @@ import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 const CareerLevelUp = () => {
   const { user } = useAuth();
+  
+  // Dynamic seat counts
+  const [plan1Seats] = useState(17); // 17 out of 25 seats filled
+  const [plan2Seats] = useState(7);  // 7 out of 10 seats filled
 
   const highlights = [
     {
@@ -60,14 +64,18 @@ const CareerLevelUp = () => {
     },
     {
       level: "Level 3 – Cloud GenAI on AWS",
-      topics: "AI Workflows with Bedrock, SageMaker/Rekognition, CDK/Terraform AI Automations"
+      topics: "Vibe Coding with Bedrock, SageMaker/Rekognition, CDK/Terraform AI Automations"
     },
     {
-      level: "Level 4 – Kubernetes + AIOps",
+      level: "Level 4 – Implementation of AI Agents with Vibe Coding",
+      topics: "Advanced AI Agents development, Custom coding workflows, Automated deployment patterns, Production-ready integrations"
+    },
+    {
+      level: "Level 5 – Kubernetes + AIOps",
       topics: "K8s essentials, K8sGPT diagnostics, PromptOps pipelines, Grafana/Prometheus"
     },
     {
-      level: "Level 5 – Capstones & Job Readiness",
+      level: "Level 6 – Capstones & Job Readiness",
       topics: "Choose 2 capstones (AI SaaS on AWS / Secure CI/CD with AI Chatbot / Database Agent), portfolio showcase, mock interviews"
     }
   ];
@@ -135,7 +143,7 @@ const CareerLevelUp = () => {
               
               <p className="text-lg md:text-xl text-muted-foreground">
                 Become an in-demand DevOps engineer mastering <strong className="text-violet">AI Agents</strong>, 
-                <strong className="text-emerald"> AI Automations</strong>, and <strong className="text-orange">AI Workflows</strong>
+                <strong className="text-emerald"> AI Automations</strong>, and <strong className="text-orange">Vibe Coding</strong>
                 <br />
                 <strong>leveraging the power of GenAI</strong>
               </p>
@@ -191,7 +199,7 @@ const CareerLevelUp = () => {
                     <span className="text-sm font-semibold text-emerald">AI Agents</span>
                   </div>
                   <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-sky">AI Workflows</span>
+                    <span className="text-sm font-semibold text-sky">Vibe Coding</span>
                   </div>
                 </div>
               </div>
@@ -371,7 +379,7 @@ const CareerLevelUp = () => {
                 
                 <div className="mt-8 p-6 bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg border border-violet/20">
                   <h4 className="font-semibold text-center mb-2">Special Focus on AI Integration</h4>
-                  <p className="text-center text-muted-foreground">Learn to build and deploy <strong className="text-violet">AI Agents</strong>, create powerful <strong className="text-emerald">AI Automations</strong>, and design efficient <strong className="text-orange">AI Workflows</strong> in every module</p>
+                  <p className="text-center text-muted-foreground">Learn to build and deploy <strong className="text-violet">AI Agents</strong>, create powerful <strong className="text-emerald">AI Automations</strong>, and design efficient <strong className="text-orange">Vibe Coding</strong> in every module</p>
                 </div>
               </CardContent>
             </Card>
@@ -394,7 +402,8 @@ const CareerLevelUp = () => {
                   { bg: 'from-orange/10 to-amber/5', border: 'border-orange/20', text: 'text-orange' },
                   { bg: 'from-emerald/10 to-teal/5', border: 'border-emerald/20', text: 'text-emerald' },
                   { bg: 'from-sky/10 to-cyan/5', border: 'border-sky/20', text: 'text-sky' },
-                  { bg: 'from-violet/10 to-purple/5', border: 'border-violet/20', text: 'text-violet' }
+                  { bg: 'from-violet/10 to-purple/5', border: 'border-violet/20', text: 'text-violet' },
+                  { bg: 'from-indigo/10 to-blue/5', border: 'border-indigo/20', text: 'text-indigo' }
                 ];
                 const colorScheme = levelColorClasses[index];
                 return (
@@ -462,6 +471,11 @@ const CareerLevelUp = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Plan A: Course Only */}
             <Card className="relative p-8 border-2 border-primary/20">
+              <div className="absolute top-4 right-4">
+                <Badge variant="secondary" className="text-xs">
+                  {plan1Seats}/25 seats filled
+                </Badge>
+              </div>
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl mb-4 text-primary">Plan A: Course Only</CardTitle>
                 <div className="space-y-2">
@@ -508,6 +522,11 @@ const CareerLevelUp = () => {
             <Card className="relative border-2 border-emerald bg-gradient-to-br from-emerald/5 to-teal/5 p-8">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-1">Most Popular</Badge>
+              </div>
+              <div className="absolute top-4 right-4">
+                <Badge variant="outline" className="text-xs border-emerald text-emerald">
+                  {plan2Seats}/10 seats filled
+                </Badge>
               </div>
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl mb-4 text-emerald">Plan B: Placement Package</CardTitle>
