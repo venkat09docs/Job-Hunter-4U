@@ -58,69 +58,140 @@ const CareerLevelUp = () => {
   const [isCallbackDialogOpen, setIsCallbackDialogOpen] = useState(false);
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
 
-  // Load Razorpay script
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
-  // Payment handler
+  // Payment handler with authentication check
   const handleEnrollment = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      // Store the enrollment intent in sessionStorage
+      sessionStorage.setItem('enrollmentIntent', JSON.stringify({
+        courseName: 'DevOps AWS AI Course',
+        amount: 20000,
+        plan_duration: '10 weeks'
+      }));
+      // Navigate to auth page
+      window.location.href = '/auth';
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.functions.invoke('razorpay-create-order', {
+      const res = await loadRazorpay();
+      if (!res) {
+        toast({
+          title: "Error",
+          description: "Razorpay SDK failed to load. Please check your internet connection and try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create order using our edge function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
-          amount: 2000000, // ₹20,000 in paise (1 rupee = 100 paise)
+          amount: 20000, // ₹20,000 (amount is in rupees for this edge function)
           plan_name: 'DevOps AWS AI Course',
-          plan_duration: '10 weeks'
+          plan_duration: '10 weeks',
         }
       });
 
-      if (error) throw error;
-
-      if (data?.order_id) {
-        // Initialize Razorpay options
-        const options = {
-          key: data.key,
-          amount: data.amount,
-          currency: data.currency,
-          name: 'DevOps AWS AI Course',
-          description: 'AI-Enhanced DevOps & AWS Bootcamp',
-          order_id: data.order_id,
-          handler: (response: any) => {
-            toast({
-              title: "Payment Successful!",
-              description: "Your enrollment is confirmed. Welcome to the course!",
-            });
-          },
-          prefill: {
-            name: user?.user_metadata?.full_name || '',
-            email: user?.email || '',
-          },
-          theme: {
-            color: '#7c3aed'
-          }
-        };
-
-        // Open Razorpay checkout
-        const razorpay = new (window as any).Razorpay(options);
-        razorpay.open();
-      } else {
+      if (orderError || !orderData) {
+        console.error('Order creation error:', orderError);
         toast({
           title: "Error",
-          description: "Unable to process payment. Please try again.",
+          description: "Failed to create payment order. Please try again.",
           variant: "destructive"
         });
+        return;
       }
+
+      const options = {
+        key: orderData.key,
+        order_id: orderData.order_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "DevOps AWS AI Course",
+        description: "AI-Enhanced DevOps & AWS Bootcamp - Transform Your Career",
+        image: "/favicon.ico",
+        handler: async function (response: any) {
+          try {
+            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-verify-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            });
+
+            if (verifyError || !verifyData?.success) {
+              toast({
+                title: "Payment Verification Failed",
+                description: "Payment received but verification failed. Please contact support.",
+                variant: "destructive"
+              });
+              return;
+            }
+            
+            toast({
+              title: "🎉 Payment Successful!",
+              description: "Your enrollment is confirmed. Welcome to the DevOps AWS AI Course!",
+            });
+            
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            toast({
+              title: "Payment Processing Error",
+              description: "Payment may have been successful but activation failed. Please contact support.",
+              variant: "destructive"
+            });
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            // Payment modal dismissed
+          },
+          escape: true,
+          backdropclose: false
+        },
+        theme: { 
+          color: "#7c3aed",
+          backdrop_color: "rgba(0, 0, 0, 0.8)"
+        },
+        prefill: {
+          name: user?.user_metadata?.full_name || "",
+          email: user?.email || "", 
+          contact: ""
+        },
+        notes: {
+          course: 'DevOps AWS AI Course',
+          duration: '10 weeks'
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', function (response: any) {
+        toast({
+          title: "Payment Failed",
+          description: `${response.error.description}. Please try again.`,
+          variant: "destructive"
+        });
+      });
+      
+      paymentObject.open();
+      
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('Payment initialization error:', error);
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again later.",
+        description: "Failed to initialize payment. Please try again.",
         variant: "destructive"
       });
     }
@@ -1202,6 +1273,7 @@ const CareerLevelUp = () => {
               <Button 
                 size="lg" 
                 className="bg-white text-emerald hover:bg-white/90 font-semibold px-8 py-3"
+                onClick={handleEnrollment}
               >
                 Enroll Now - Save ₹5,000
               </Button>
