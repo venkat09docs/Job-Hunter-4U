@@ -37,27 +37,36 @@ const CareerLevelUp = () => {
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
 
   const techBadges = [
-    { name: "AWS", icon: Server },
-    { name: "Kubernetes", icon: Building },
-    { name: "GitHub", icon: GitBranch },
-    { name: "AI", icon: Bot }
+    { name: "AWS", icon: Server, color: "bg-orange/20 text-orange border-orange/30" },
+    { name: "Kubernetes", icon: Building, color: "bg-sky/20 text-sky border-sky/30" },
+    { name: "GitHub", icon: GitBranch, color: "bg-violet/20 text-violet border-violet/30" },
+    { name: "AI", icon: Bot, color: "bg-emerald/20 text-emerald border-emerald/30" }
   ];
 
   const targetAudience = [
     {
       icon: Rocket,
       title: "Final year students & freshers",
-      description: "Launch your tech career with in-demand skills"
+      description: "Launch your tech career with in-demand skills",
+      gradient: "from-rose to-pink",
+      iconBg: "bg-rose/20",
+      iconColor: "text-rose"
     },
     {
       icon: Globe,
       title: "IT professionals switching to DevOps & Cloud",
-      description: "Transition to high-growth cloud technologies"
+      description: "Transition to high-growth cloud technologies",
+      gradient: "from-cyan to-sky",
+      iconBg: "bg-cyan/20",
+      iconColor: "text-cyan"
     },
     {
       icon: Bot,
       title: "DevOps engineers upskilling with GenAI",
-      description: "Stay ahead with AI-powered automation"
+      description: "Stay ahead with AI-powered automation",
+      gradient: "from-lime to-emerald",
+      iconBg: "bg-lime/20",
+      iconColor: "text-lime"
     }
   ];
 
@@ -108,37 +117,49 @@ const CareerLevelUp = () => {
       id: "ai-saas",
       title: "AI SaaS on AWS",
       description: "End-to-end SaaS with auth + billing",
-      tech: ["AWS", "React", "Stripe", "AI"]
+      tech: ["AWS", "React", "Stripe", "AI"],
+      gradient: "from-orange to-amber",
+      borderColor: "border-orange/20"
     },
     {
       id: "k8sgpt",
       title: "K8sGPT AIOps",
       description: "AI-powered cluster troubleshooting",
-      tech: ["Kubernetes", "AI", "Monitoring"]
+      tech: ["Kubernetes", "AI", "Monitoring"],
+      gradient: "from-sky to-cyan",
+      borderColor: "border-sky/20"
     },
     {
       id: "cicd",
       title: "Secure CI/CD Pipeline",
       description: "AI chatbot with Jenkins, Docker, EC2",
-      tech: ["Jenkins", "Docker", "AWS", "AI"]
+      tech: ["Jenkins", "Docker", "AWS", "AI"],
+      gradient: "from-violet to-purple",
+      borderColor: "border-violet/20"
     },
     {
       id: "partyrock",
       title: "PartyRock Explainer",
       description: "AI-powered cloud learning app",
-      tech: ["AWS", "PartyRock", "Education"]
+      tech: ["AWS", "PartyRock", "Education"],
+      gradient: "from-emerald to-teal",
+      borderColor: "border-emerald/20"
     },
     {
       id: "database-agent",
       title: "Database Agent",
       description: "Natural language queries on Postgres",
-      tech: ["PostgreSQL", "NLP", "AI"]
+      tech: ["PostgreSQL", "NLP", "AI"],
+      gradient: "from-pink to-rose",
+      borderColor: "border-pink/20"
     },
     {
       id: "portfolio",
       title: "Portfolio Project",
       description: "Choose your own DevOps+AI build",
-      tech: ["Custom", "DevOps", "AI"]
+      tech: ["Custom", "DevOps", "AI"],
+      gradient: "from-indigo to-violet",
+      borderColor: "border-indigo/20"
     }
   ];
 
@@ -173,15 +194,15 @@ const CareerLevelUp = () => {
       <Navigation />
       
       {/* Urgency Banner */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 text-center">
+      <div className="bg-gradient-to-r from-orange to-rose text-white py-3 text-center animate-pulse">
         <div className="flex items-center justify-center gap-2">
-          <Flame className="h-5 w-5" />
+          <Flame className="h-5 w-5 text-amber" />
           <span className="font-semibold">Early Bird Discount — Save ₹5,000 | Limited Seats!</span>
         </div>
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-700 to-slate-800 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo via-violet to-purple text-white">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
@@ -223,7 +244,7 @@ const CareerLevelUp = () => {
                 {techBadges.map((tech, index) => {
                   const IconComponent = tech.icon;
                   return (
-                    <Badge key={index} variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm px-4 py-2">
+                    <Badge key={index} variant="secondary" className={`${tech.color} backdrop-blur-sm px-4 py-2 font-medium hover:scale-105 transition-transform`}>
                       <IconComponent className="h-4 w-4 mr-2" />
                       {tech.name}
                     </Badge>
@@ -234,14 +255,14 @@ const CareerLevelUp = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
                 <Button 
                   size="lg" 
-                  className="bg-white text-indigo-600 hover:bg-white/90 font-semibold px-8 py-3 text-lg"
+                  className="bg-gradient-to-r from-amber to-orange text-white hover:from-orange hover:to-rose font-semibold px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
                 >
                   Enroll Now <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-white text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3 text-lg"
+                  className="border-white text-white hover:bg-gradient-to-r hover:from-cyan/20 hover:to-sky/20 backdrop-blur-sm px-8 py-3 text-lg transition-all"
                 >
                   <BookOpen className="mr-2 h-5 w-5" />
                   View Syllabus
@@ -253,9 +274,9 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Who It's For */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-gradient-to-br from-neutral-50 to-sky/5">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">
             Who This Program Is For
           </h2>
           
@@ -263,10 +284,10 @@ const CareerLevelUp = () => {
             {targetAudience.map((audience, index) => {
               const IconComponent = audience.icon;
               return (
-                <Card key={index} className="bg-card/50 backdrop-blur-sm border border-border/50 hover:shadow-lg transition-all duration-300">
+                <Card key={index} className={`bg-gradient-to-br ${audience.gradient}/5 border-2 ${audience.gradient.includes('rose') ? 'border-rose/20' : audience.gradient.includes('cyan') ? 'border-cyan/20' : 'border-lime/20'} hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
                   <CardContent className="p-8 text-center space-y-4">
-                    <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
-                      <IconComponent className="h-8 w-8 text-primary" />
+                    <div className={`w-16 h-16 mx-auto ${audience.iconBg} rounded-full flex items-center justify-center`}>
+                      <IconComponent className={`h-8 w-8 ${audience.iconColor}`} />
                     </div>
                     <h3 className="text-xl font-semibold">{audience.title}</h3>
                     <p className="text-muted-foreground">{audience.description}</p>
@@ -279,58 +300,72 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Outcomes */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-gradient-to-br from-emerald/5 to-teal/10">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-emerald to-teal bg-clip-text text-transparent">
             What You'll Achieve
           </h2>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {outcomes.map((outcome, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-all duration-300">
-                <CardContent className="space-y-4 p-0">
-                  <div className="flex items-start gap-4">
-                    <CheckCircle className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
-                    <div>
-                      <h3 className="text-lg font-semibold mb-2">{outcome.title}</h3>
-                      <p className="text-muted-foreground">{outcome.description}</p>
+            {outcomes.map((outcome, index) => {
+              const colors = ['emerald', 'sky', 'violet', 'orange'];
+              const color = colors[index % colors.length];
+              return (
+                <Card key={index} className={`p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-${color}/20 bg-gradient-to-br from-${color}/5 to-white`}>
+                  <CardContent className="space-y-4 p-0">
+                    <div className="flex items-start gap-4">
+                      <CheckCircle className={`h-6 w-6 text-${color} mt-1 flex-shrink-0`} />
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">{outcome.title}</h3>
+                        <p className="text-muted-foreground">{outcome.description}</p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Curriculum */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-gradient-to-br from-violet/5 to-purple/10">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-violet to-purple bg-clip-text text-transparent">
             Curriculum by Level
           </h2>
           
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
-              {curriculumLevels.map((level, index) => (
-                <AccordionItem key={index} value={`level-${index}`} className="bg-card rounded-lg border">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                    <span className="text-lg font-semibold text-left">{level.level}</span>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-4">
-                    <p className="text-muted-foreground">{level.topics}</p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {curriculumLevels.map((level, index) => {
+                const levelColors = [
+                  { bg: 'from-rose/10 to-pink/5', border: 'border-rose/20', text: 'text-rose' },
+                  { bg: 'from-orange/10 to-amber/5', border: 'border-orange/20', text: 'text-orange' },
+                  { bg: 'from-emerald/10 to-teal/5', border: 'border-emerald/20', text: 'text-emerald' },
+                  { bg: 'from-sky/10 to-cyan/5', border: 'border-sky/20', text: 'text-sky' },
+                  { bg: 'from-violet/10 to-purple/5', border: 'border-violet/20', text: 'text-violet' }
+                ];
+                const colorScheme = levelColors[index];
+                return (
+                  <AccordionItem key={index} value={`level-${index}`} className={`bg-gradient-to-r ${colorScheme.bg} rounded-lg border-2 ${colorScheme.border} hover:shadow-lg transition-all`}>
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <span className={`text-lg font-semibold text-left ${colorScheme.text}`}>{level.level}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-4">
+                      <p className="text-muted-foreground">{level.topics}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
             </Accordion>
           </div>
         </div>
       </section>
 
       {/* Projects Gallery */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-gradient-to-br from-slate/2 to-neutral-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-indigo to-purple bg-clip-text text-transparent">
             Projects You'll Build
           </h2>
           
@@ -338,23 +373,34 @@ const CareerLevelUp = () => {
             {projects.map((project) => (
               <Card 
                 key={project.id}
-                className="hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                className={`hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br ${project.gradient}/5 border-2 ${project.borderColor} hover:border-opacity-50`}
                 onMouseEnter={() => setHoveredProject(project.id)}
                 onMouseLeave={() => setHoveredProject(null)}
               >
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold">{project.title}</h3>
+                  <div className={`w-full h-2 rounded-full bg-gradient-to-r ${project.gradient} mb-4`}></div>
+                  <h3 className={`text-xl font-semibold bg-gradient-to-r ${project.gradient} bg-clip-text text-transparent`}>{project.title}</h3>
                   <p className="text-muted-foreground">{project.description}</p>
                   <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {tech}
-                      </Badge>
-                    ))}
+                    {project.tech.map((tech, index) => {
+                      const techColors = {
+                        'AWS': 'bg-orange/20 text-orange',
+                        'React': 'bg-sky/20 text-sky',
+                        'Kubernetes': 'bg-violet/20 text-violet',
+                        'AI': 'bg-emerald/20 text-emerald',
+                        'Docker': 'bg-cyan/20 text-cyan',
+                        'PostgreSQL': 'bg-indigo/20 text-indigo'
+                      };
+                      return (
+                        <Badge key={index} variant="secondary" className={`text-xs ${techColors[tech as keyof typeof techColors] || 'bg-neutral/20 text-neutral-700'}`}>
+                          {tech}
+                        </Badge>
+                      );
+                    })}
                   </div>
                   {hoveredProject === project.id && (
                     <div className="animate-fade-in">
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button variant="outline" size="sm" className={`w-full border-2 ${project.borderColor} hover:bg-gradient-to-r ${project.gradient}/10`}>
                         <Play className="h-4 w-4 mr-2" />
                         View Details
                       </Button>
@@ -415,9 +461,9 @@ const CareerLevelUp = () => {
               </CardContent>
             </Card>
 
-            <Card className="relative border-primary">
+            <Card className="relative border-2 border-emerald bg-gradient-to-br from-emerald/5 to-teal/5">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
+                <Badge className="bg-gradient-to-r from-emerald to-teal text-white">Most Popular</Badge>
               </div>
               <CardHeader>
                 <CardTitle className="text-2xl">Placement Package</CardTitle>
@@ -425,7 +471,7 @@ const CareerLevelUp = () => {
                   <div className="flex items-center gap-2">
                     <span className="text-2xl text-muted-foreground line-through">₹35,000</span>
                   </div>
-                  <div className="text-4xl font-bold text-primary">₹30,000</div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-emerald to-teal bg-clip-text text-transparent">₹30,000</div>
                   <p className="text-sm text-muted-foreground">Early Bird Price</p>
                 </div>
               </CardHeader>
@@ -452,7 +498,7 @@ const CareerLevelUp = () => {
                 <div className="mt-4 p-3 bg-muted/50 rounded-lg">
                   <p className="text-sm">👉 Start with Course Only, upgrade within 14 days by paying the difference.</p>
                 </div>
-                <Button className="w-full mt-6">
+                <Button className="w-full mt-6 bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald shadow-lg hover:shadow-xl transition-all">
                   Get Full Package
                 </Button>
               </CardContent>
@@ -462,19 +508,23 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Bonuses */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-gradient-to-br from-amber/5 to-orange/10">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 text-foreground">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-amber to-orange bg-clip-text text-transparent">
             Exclusive Bonuses
           </h2>
           
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {bonuses.map((bonus, index) => (
-              <div key={index} className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg">
-                <Star className="h-5 w-5 text-primary flex-shrink-0" />
-                <span>{bonus}</span>
-              </div>
-            ))}
+            {bonuses.map((bonus, index) => {
+              const bonusColors = ['amber', 'orange', 'rose', 'emerald'];
+              const color = bonusColors[index % bonusColors.length];
+              return (
+                <div key={index} className={`flex items-center gap-3 p-4 bg-gradient-to-r from-${color}/10 to-${color}/5 rounded-lg border border-${color}/20 hover:shadow-lg transition-all`}>
+                  <Star className={`h-5 w-5 text-${color} flex-shrink-0`} />
+                  <span>{bonus}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -575,10 +625,17 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-700 text-white">
-        <div className="container mx-auto px-4 text-center">
+      <section className="py-20 bg-gradient-to-br from-indigo via-violet to-purple text-white relative overflow-hidden">
+        {/* Animated background circles */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-32 h-32 border border-cyan/30 rounded-full animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-24 h-24 border border-emerald/30 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute bottom-20 left-32 w-40 h-40 border border-amber/30 rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative">
           <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-4xl font-bold">
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-white to-cyan bg-clip-text text-transparent">
               Ready to Transform Your Career?
             </h2>
             <p className="text-xl text-white/90">
@@ -587,14 +644,14 @@ const CareerLevelUp = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-white text-indigo-600 hover:bg-white/90 font-semibold px-8 py-3"
+                className="bg-gradient-to-r from-amber to-orange hover:from-orange hover:to-rose text-white font-semibold px-8 py-3 shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
               >
                 Enroll Now - Save ₹5,000
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
-                className="border-white text-white hover:bg-white/10 backdrop-blur-sm px-8 py-3"
+                className="border-2 border-cyan text-cyan hover:bg-gradient-to-r hover:from-cyan/20 hover:to-sky/20 backdrop-blur-sm px-8 py-3 transition-all"
               >
                 <Phone className="mr-2 h-5 w-5" />
                 Book a Call
@@ -605,10 +662,12 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Sticky Footer CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 shadow-lg z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-rose via-orange to-amber text-white p-4 shadow-2xl z-50 animate-pulse">
         <div className="container mx-auto text-center">
-          <p className="font-semibold">
-            🚀 Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
+          <p className="font-semibold flex items-center justify-center gap-2">
+            <Rocket className="h-5 w-5 text-cyan" />
+            Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
+            <Flame className="h-5 w-5 text-yellow-300" />
           </p>
         </div>
       </div>
