@@ -137,12 +137,6 @@ const CareerLevelUp = () => {
             <div className="space-y-8">
               <p className="text-lg text-muted-foreground">Land your Premium Tech Job with</p>
               
-              <div className="text-center">
-                <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald to-teal bg-clip-text text-transparent">
-                  Learn It. Build It. Get Hired.
-                </p>
-              </div>
-              
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                 <span className="bg-gradient-to-r from-indigo to-violet bg-clip-text text-transparent">AI-Enhanced</span> DevOps & AWS Bootcamp
               </h1>

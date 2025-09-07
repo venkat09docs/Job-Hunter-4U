@@ -58,7 +58,7 @@ const Navigation = () => {
               Career Level Up
             </div>
             <div className="text-xs sm:text-sm lg:text-base text-primary/90 font-semibold truncate">
-              Smarter Job Hunting with AI
+              Learn It. Build It. Get Hired.
             </div>
           </div>
         </div>
