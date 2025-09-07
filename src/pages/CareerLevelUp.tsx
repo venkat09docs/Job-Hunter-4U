@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
+import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 const CareerLevelUp = () => {
   const { user } = useAuth();
@@ -47,26 +48,17 @@ const CareerLevelUp = () => {
     {
       icon: Rocket,
       title: "Final year students & freshers",
-      description: "Launch your tech career with in-demand skills",
-      gradient: "from-rose to-pink",
-      iconBg: "bg-rose/20",
-      iconColor: "text-rose"
+      description: "Launch your tech career with in-demand skills"
     },
     {
       icon: Globe,
       title: "IT professionals switching to DevOps & Cloud",
-      description: "Transition to high-growth cloud technologies",
-      gradient: "from-cyan to-sky",
-      iconBg: "bg-cyan/20",
-      iconColor: "text-cyan"
+      description: "Transition to high-growth cloud technologies"
     },
     {
       icon: Bot,
       title: "DevOps engineers upskilling with GenAI",
-      description: "Stay ahead with AI-powered automation",
-      gradient: "from-lime to-emerald",
-      iconBg: "bg-lime/20",
-      iconColor: "text-lime"
+      description: "Stay ahead with AI-powered automation"
     }
   ];
 
@@ -117,49 +109,37 @@ const CareerLevelUp = () => {
       id: "ai-saas",
       title: "AI SaaS on AWS",
       description: "End-to-end SaaS with auth + billing",
-      tech: ["AWS", "React", "Stripe", "AI"],
-      gradient: "from-orange to-amber",
-      borderColor: "border-orange/20"
+      tech: ["AWS", "React", "Stripe", "AI"]
     },
     {
       id: "k8sgpt",
       title: "K8sGPT AIOps",
       description: "AI-powered cluster troubleshooting",
-      tech: ["Kubernetes", "AI", "Monitoring"],
-      gradient: "from-sky to-cyan",
-      borderColor: "border-sky/20"
+      tech: ["Kubernetes", "AI", "Monitoring"]
     },
     {
       id: "cicd",
       title: "Secure CI/CD Pipeline",
       description: "AI chatbot with Jenkins, Docker, EC2",
-      tech: ["Jenkins", "Docker", "AWS", "AI"],
-      gradient: "from-violet to-purple",
-      borderColor: "border-violet/20"
+      tech: ["Jenkins", "Docker", "AWS", "AI"]
     },
     {
       id: "partyrock",
       title: "PartyRock Explainer",
       description: "AI-powered cloud learning app",
-      tech: ["AWS", "PartyRock", "Education"],
-      gradient: "from-emerald to-teal",
-      borderColor: "border-emerald/20"
+      tech: ["AWS", "PartyRock", "Education"]
     },
     {
       id: "database-agent",
       title: "Database Agent",
       description: "Natural language queries on Postgres",
-      tech: ["PostgreSQL", "NLP", "AI"],
-      gradient: "from-pink to-rose",
-      borderColor: "border-pink/20"
+      tech: ["PostgreSQL", "NLP", "AI"]
     },
     {
       id: "portfolio",
       title: "Portfolio Project",
       description: "Choose your own DevOps+AI build",
-      tech: ["Custom", "DevOps", "AI"],
-      gradient: "from-indigo to-violet",
-      borderColor: "border-indigo/20"
+      tech: ["Custom", "DevOps", "AI"]
     }
   ];
 
@@ -203,6 +183,14 @@ const CareerLevelUp = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo via-violet to-purple text-white">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 opacity-20">
+          <img 
+            src={heroImage} 
+            alt="DevOps AWS AI Background" 
+            className="w-full h-full object-cover"
+          />
+        </div>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
@@ -227,7 +215,7 @@ const CareerLevelUp = () => {
                 </span>
                 <span className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  Evening classes
+                  Live classes
                 </span>
                 <span className="flex items-center gap-2">
                   <Code className="h-5 w-5" />
@@ -284,10 +272,10 @@ const CareerLevelUp = () => {
             {targetAudience.map((audience, index) => {
               const IconComponent = audience.icon;
               return (
-                <Card key={index} className={`bg-gradient-to-br ${audience.gradient}/5 border-2 ${audience.gradient.includes('rose') ? 'border-rose/20' : audience.gradient.includes('cyan') ? 'border-cyan/20' : 'border-lime/20'} hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
+                <Card key={index} className="bg-gradient-to-br from-rose/5 to-pink/5 border-2 border-rose/20 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                   <CardContent className="p-8 text-center space-y-4">
-                    <div className={`w-16 h-16 mx-auto ${audience.iconBg} rounded-full flex items-center justify-center`}>
-                      <IconComponent className={`h-8 w-8 ${audience.iconColor}`} />
+                    <div className="w-16 h-16 mx-auto bg-rose/20 rounded-full flex items-center justify-center">
+                      <IconComponent className="h-8 w-8 text-rose" />
                     </div>
                     <h3 className="text-xl font-semibold">{audience.title}</h3>
                     <p className="text-muted-foreground">{audience.description}</p>
@@ -308,13 +296,18 @@ const CareerLevelUp = () => {
           
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {outcomes.map((outcome, index) => {
-              const colors = ['emerald', 'sky', 'violet', 'orange'];
-              const color = colors[index % colors.length];
+              const colorClasses = [
+                { card: 'from-emerald/5 to-white border-emerald/20', icon: 'text-emerald' },
+                { card: 'from-sky/5 to-white border-sky/20', icon: 'text-sky' },
+                { card: 'from-violet/5 to-white border-violet/20', icon: 'text-violet' },
+                { card: 'from-orange/5 to-white border-orange/20', icon: 'text-orange' }
+              ];
+              const colorClass = colorClasses[index % colorClasses.length];
               return (
-                <Card key={index} className={`p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-${color}/20 bg-gradient-to-br from-${color}/5 to-white`}>
+                <Card key={index} className={`p-6 hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br ${colorClass.card}`}>
                   <CardContent className="space-y-4 p-0">
                     <div className="flex items-start gap-4">
-                      <CheckCircle className={`h-6 w-6 text-${color} mt-1 flex-shrink-0`} />
+                      <CheckCircle className={`h-6 w-6 ${colorClass.icon} mt-1 flex-shrink-0`} />
                       <div>
                         <h3 className="text-lg font-semibold mb-2">{outcome.title}</h3>
                         <p className="text-muted-foreground">{outcome.description}</p>
@@ -338,14 +331,14 @@ const CareerLevelUp = () => {
           <div className="max-w-4xl mx-auto">
             <Accordion type="single" collapsible className="space-y-4">
               {curriculumLevels.map((level, index) => {
-                const levelColors = [
+                const levelColorClasses = [
                   { bg: 'from-rose/10 to-pink/5', border: 'border-rose/20', text: 'text-rose' },
                   { bg: 'from-orange/10 to-amber/5', border: 'border-orange/20', text: 'text-orange' },
                   { bg: 'from-emerald/10 to-teal/5', border: 'border-emerald/20', text: 'text-emerald' },
                   { bg: 'from-sky/10 to-cyan/5', border: 'border-sky/20', text: 'text-sky' },
                   { bg: 'from-violet/10 to-purple/5', border: 'border-violet/20', text: 'text-violet' }
                 ];
-                const colorScheme = levelColors[index];
+                const colorScheme = levelColorClasses[index];
                 return (
                   <AccordionItem key={index} value={`level-${index}`} className={`bg-gradient-to-r ${colorScheme.bg} rounded-lg border-2 ${colorScheme.border} hover:shadow-lg transition-all`}>
                     <AccordionTrigger className="px-6 py-4 hover:no-underline">
@@ -370,45 +363,58 @@ const CareerLevelUp = () => {
           </h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {projects.map((project) => (
-              <Card 
-                key={project.id}
-                className={`hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br ${project.gradient}/5 border-2 ${project.borderColor} hover:border-opacity-50`}
-                onMouseEnter={() => setHoveredProject(project.id)}
-                onMouseLeave={() => setHoveredProject(null)}
-              >
-                <CardContent className="p-6 space-y-4">
-                  <div className={`w-full h-2 rounded-full bg-gradient-to-r ${project.gradient} mb-4`}></div>
-                  <h3 className={`text-xl font-semibold bg-gradient-to-r ${project.gradient} bg-clip-text text-transparent`}>{project.title}</h3>
-                  <p className="text-muted-foreground">{project.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {project.tech.map((tech, index) => {
-                      const techColors = {
-                        'AWS': 'bg-orange/20 text-orange',
-                        'React': 'bg-sky/20 text-sky',
-                        'Kubernetes': 'bg-violet/20 text-violet',
-                        'AI': 'bg-emerald/20 text-emerald',
-                        'Docker': 'bg-cyan/20 text-cyan',
-                        'PostgreSQL': 'bg-indigo/20 text-indigo'
-                      };
-                      return (
-                        <Badge key={index} variant="secondary" className={`text-xs ${techColors[tech as keyof typeof techColors] || 'bg-neutral/20 text-neutral-700'}`}>
-                          {tech}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                  {hoveredProject === project.id && (
-                    <div className="animate-fade-in">
-                      <Button variant="outline" size="sm" className={`w-full border-2 ${project.borderColor} hover:bg-gradient-to-r ${project.gradient}/10`}>
-                        <Play className="h-4 w-4 mr-2" />
-                        View Details
-                      </Button>
+            {projects.map((project, index) => {
+              const projectColorClasses = [
+                { gradient: 'from-orange to-amber', bg: 'from-orange/5 to-amber/5', border: 'border-orange/20', topBar: 'from-orange to-amber', title: 'from-orange to-amber' },
+                { gradient: 'from-sky to-cyan', bg: 'from-sky/5 to-cyan/5', border: 'border-sky/20', topBar: 'from-sky to-cyan', title: 'from-sky to-cyan' },
+                { gradient: 'from-violet to-purple', bg: 'from-violet/5 to-purple/5', border: 'border-violet/20', topBar: 'from-violet to-purple', title: 'from-violet to-purple' },
+                { gradient: 'from-emerald to-teal', bg: 'from-emerald/5 to-teal/5', border: 'border-emerald/20', topBar: 'from-emerald to-teal', title: 'from-emerald to-teal' },
+                { gradient: 'from-pink to-rose', bg: 'from-pink/5 to-rose/5', border: 'border-pink/20', topBar: 'from-pink to-rose', title: 'from-pink to-rose' },
+                { gradient: 'from-indigo to-violet', bg: 'from-indigo/5 to-violet/5', border: 'border-indigo/20', topBar: 'from-indigo to-violet', title: 'from-indigo to-violet' }
+              ];
+              const colorClass = projectColorClasses[index % projectColorClasses.length];
+              return (
+                <Card 
+                  key={project.id}
+                  className={`hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 bg-gradient-to-br ${colorClass.bg} border-2 ${colorClass.border} hover:border-opacity-50`}
+                  onMouseEnter={() => setHoveredProject(project.id)}
+                  onMouseLeave={() => setHoveredProject(null)}
+                >
+                  <CardContent className="p-6 space-y-4">
+                    <div className={`w-full h-2 rounded-full bg-gradient-to-r ${colorClass.topBar} mb-4`}></div>
+                    <h3 className={`text-xl font-semibold bg-gradient-to-r ${colorClass.title} bg-clip-text text-transparent`}>{project.title}</h3>
+                    <p className="text-muted-foreground">{project.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.tech.map((techItem, techIndex) => {
+                        const techColors: { [key: string]: string } = {
+                          'AWS': 'bg-orange/20 text-orange',
+                          'React': 'bg-sky/20 text-sky',
+                          'Kubernetes': 'bg-violet/20 text-violet',
+                          'AI': 'bg-emerald/20 text-emerald',
+                          'Docker': 'bg-cyan/20 text-cyan',
+                          'PostgreSQL': 'bg-indigo/20 text-indigo',
+                          'Jenkins': 'bg-rose/20 text-rose',
+                          'Stripe': 'bg-amber/20 text-amber'
+                        };
+                        return (
+                          <Badge key={techIndex} variant="secondary" className={`text-xs ${techColors[techItem] || 'bg-neutral/20 text-neutral-700'}`}>
+                            {techItem}
+                          </Badge>
+                        );
+                      })}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                    {hoveredProject === project.id && (
+                      <div className="animate-fade-in">
+                        <Button variant="outline" size="sm" className={`w-full border-2 ${colorClass.border} hover:bg-gradient-to-r ${colorClass.gradient}/10`}>
+                          <Play className="h-4 w-4 mr-2" />
+                          View Details
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -516,11 +522,16 @@ const CareerLevelUp = () => {
           
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {bonuses.map((bonus, index) => {
-              const bonusColors = ['amber', 'orange', 'rose', 'emerald'];
-              const color = bonusColors[index % bonusColors.length];
+              const bonusColorClasses = [
+                { bg: 'from-amber/10 to-amber/5', border: 'border-amber/20', icon: 'text-amber' },
+                { bg: 'from-orange/10 to-orange/5', border: 'border-orange/20', icon: 'text-orange' },
+                { bg: 'from-rose/10 to-rose/5', border: 'border-rose/20', icon: 'text-rose' },
+                { bg: 'from-emerald/10 to-emerald/5', border: 'border-emerald/20', icon: 'text-emerald' }
+              ];
+              const colorClass = bonusColorClasses[index % bonusColorClasses.length];
               return (
-                <div key={index} className={`flex items-center gap-3 p-4 bg-gradient-to-r from-${color}/10 to-${color}/5 rounded-lg border border-${color}/20 hover:shadow-lg transition-all`}>
-                  <Star className={`h-5 w-5 text-${color} flex-shrink-0`} />
+                <div key={index} className={`flex items-center gap-3 p-4 bg-gradient-to-r ${colorClass.bg} rounded-lg border ${colorClass.border} hover:shadow-lg transition-all`}>
+                  <Star className={`h-5 w-5 ${colorClass.icon} flex-shrink-0`} />
                   <span>{bonus}</span>
                 </div>
               );
