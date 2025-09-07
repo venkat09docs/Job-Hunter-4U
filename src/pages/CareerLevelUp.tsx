@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -17,7 +17,14 @@ import {
   Trophy,
   Star,
   Zap,
-  User
+  User,
+  Gift,
+  FileText,
+  Cpu,
+  BookOpen,
+  Award,
+  Timer,
+  ArrowRight
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
@@ -29,6 +36,29 @@ const CareerLevelUp = () => {
   // Dynamic seat counts
   const [plan1Seats] = useState(17); // 17 out of 25 seats filled
   const [plan2Seats] = useState(7);  // 7 out of 10 seats filled
+
+  // Timer state
+  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 minutes in seconds
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const highlights = [
     {
@@ -165,6 +195,7 @@ const CareerLevelUp = () => {
                 <div className="text-center">
                   <p className="text-lg font-semibold text-violet mb-1">🚀 Next Cohort</p>
                   <p className="text-2xl font-bold text-foreground">Starts on 18th Sept 2025</p>
+                  <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
                 </div>
               </div>
 
@@ -279,6 +310,87 @@ const CareerLevelUp = () => {
                 <p className="text-muted-foreground">salary bump."</p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Bonuses Section */}
+      <section className="py-20 bg-gradient-to-br from-orange/5 to-amber/5">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
+            Exclusive Bonuses Worth ₹10,000+
+          </h2>
+          <p className="text-center text-lg text-muted-foreground mb-16">
+            Get these premium resources absolutely FREE with your enrollment
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-orange/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Code className="h-6 w-6 text-orange" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">GitHub Copilot & Cursor Cheat Sheets</h3>
+                    <p className="text-muted-foreground">Complete reference guides for AI-powered coding with shortcuts, best practices, and advanced techniques</p>
+                    <Badge className="mt-2 bg-orange/10 text-orange">Worth ₹2,000</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-violet/5 to-indigo/10 border-2 border-violet/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-violet/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Cpu className="h-6 w-6 text-violet" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">AWS PartyRock Mini-Build Templates</h3>
+                    <p className="text-muted-foreground">Ready-to-use templates for building AI applications on AWS with step-by-step implementation guides</p>
+                    <Badge className="mt-2 bg-violet/10 text-violet">Worth ₹3,000</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-emerald/5 to-teal/10 border-2 border-emerald/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-emerald/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FileText className="h-6 w-6 text-emerald" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">1000+ Prompts for Developers</h3>
+                    <p className="text-muted-foreground">Comprehensive collection of AI prompts for coding, debugging, documentation, and system design</p>
+                    <Badge className="mt-2 bg-emerald/10 text-emerald">Worth ₹3,500</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-sky/5 to-indigo/10 border-2 border-sky/20">
+              <CardContent className="space-y-4 p-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-sky/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Award className="h-6 w-6 text-sky" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">AWS AI Practitioner Exam Blueprint</h3>
+                    <p className="text-muted-foreground">Complete study guide and practice tests for AWS AI certification with insider tips and strategies</p>
+                    <Badge className="mt-2 bg-sky/10 text-sky">Worth ₹2,500</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange to-amber text-white px-6 py-3 rounded-full font-semibold">
+              <Gift className="h-5 w-5" />
+              Total Bonus Value: ₹11,000 - Yours FREE!
+            </div>
           </div>
         </div>
       </section>
@@ -472,9 +584,30 @@ const CareerLevelUp = () => {
       {/* Pricing */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
-            Investment in Your Future
-          </h2>
+          <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Investment in Your Future
+            </h2>
+            
+            {/* Limited Time Offer Timer */}
+            <Card className="bg-gradient-to-r from-red-500/10 to-rose-500/10 border-2 border-red-500/20 p-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Timer className="h-5 w-5 text-red-500" />
+                  <span className="font-semibold text-red-500">Limited Time Offer</span>
+                </div>
+                <div className="text-2xl font-bold text-red-500 mb-2">{formatTime(timeLeft)}</div>
+                <div className="text-sm text-muted-foreground mb-3">Enroll now to get</div>
+                <div className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-2 rounded-lg font-semibold text-sm">
+                  Job Hunter 1 Year Plan FREE
+                  <div className="text-xs opacity-90">(Worth ₹12,000)</div>
+                </div>
+                <Button className="mt-3 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1">
+                  View Job Hunter Pricing <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </div>
+            </Card>
+          </div>
           
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Plan A: Course Only */}
@@ -632,6 +765,7 @@ const CareerLevelUp = () => {
               <div className="text-center">
                 <p className="text-lg font-semibold text-white mb-1">🚀 Next Cohort</p>
                 <p className="text-2xl font-bold text-white">Starts on 18th Sept 2025</p>
+                <p className="text-lg font-medium text-white/80">at 8:30AM IST</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
