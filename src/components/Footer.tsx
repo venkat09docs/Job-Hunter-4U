@@ -28,11 +28,11 @@ const Footer = () => {
             <div className="flex items-center space-x-4">
               <img 
                 src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
-                alt="Job Hunter 4U Logo" 
+                alt="Career Level Up Logo" 
                 className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0"
               />
               <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Job Hunter 4U
+                Career Level Up
               </h3>
             </div>
             <p className="text-muted-foreground text-base">
@@ -94,7 +94,7 @@ const Footer = () => {
         {/* Bottom footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 Job Hunter 4U. A product by Rise n Shine Technologies. All Rights Reserved.
+            © 2025 Career Level Up. A product by Rise n Shine Technologies. All Rights Reserved.
           </p>
           
           {/* Social links */}

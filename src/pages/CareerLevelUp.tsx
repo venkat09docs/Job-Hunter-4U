@@ -204,7 +204,7 @@ const CareerLevelUp = () => {
       <section className="bg-gradient-to-r from-slate-900 to-slate-800 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h3 className="text-xl font-semibold text-orange mb-4">Job Hunter 4U Bootcamp Highlights</h3>
+            <h3 className="text-xl font-semibold text-orange mb-4">Career Level Up Bootcamp Highlights</h3>
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>

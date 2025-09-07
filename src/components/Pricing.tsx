@@ -394,7 +394,7 @@ const Pricing = () => {
         {/* Social proof and urgency */}
         <div className="mt-16 text-center space-y-8">
           <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
-            <h3 className="text-2xl font-bold mb-6">Why JobHunter 4U Users Get Hired Faster</h3>
+            <h3 className="text-2xl font-bold mb-6">Why Career Level Up Users Get Hired Faster</h3>
             
             <div className="grid sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
               <div className="space-y-1 md:space-y-2 text-center">

@@ -85,7 +85,7 @@ const Features = () => {
             <h3 className="text-2xl font-bold mb-4">
               Here's How{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                JobHunter 4 U
+                Career Level Up
               </span>{" "}
               Solves Every Problem
             </h3>
@@ -186,7 +186,7 @@ const Features = () => {
               className="w-full animate-pulse"
               onClick={() => navigate('/auth')}
             >
-              Join JobHunter 4 U Winners Platform Today - Just ₹699
+              Join Career Level Up Winners Platform Today - Just ₹699
             </Button>
           </div>
         </div>
