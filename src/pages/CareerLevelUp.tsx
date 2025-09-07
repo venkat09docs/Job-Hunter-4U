@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-import heroImage from "/lovable-uploads/7790abe8-91a8-4e8d-acbd-62f3a98c637b.png";
+import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
