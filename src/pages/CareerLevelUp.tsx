@@ -36,6 +36,13 @@ import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+// Razorpay type declaration
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 const CareerLevelUp = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,26 +58,57 @@ const CareerLevelUp = () => {
   const [isCallbackDialogOpen, setIsCallbackDialogOpen] = useState(false);
   const [isCurriculumDialogOpen, setIsCurriculumDialogOpen] = useState(false);
 
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   // Payment handler
   const handleEnrollment = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('razorpay-create-order-simple', {
         body: {
           amount: 2000000, // ₹20,000 in paise (1 rupee = 100 paise)
-          currency: 'INR',
-          receipt: `enrollment_${Date.now()}`,
-          notes: {
-            product: 'DevOps AWS AI Course',
-            course_type: 'career_level_up'
-          }
+          plan_name: 'DevOps AWS AI Course',
+          plan_duration: '10 weeks'
         }
       });
 
       if (error) throw error;
 
-      if (data?.url) {
-        // Open RazorPay checkout in a new tab
-        window.open(data.url, '_blank');
+      if (data?.order_id) {
+        // Initialize Razorpay options
+        const options = {
+          key: data.key,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'DevOps AWS AI Course',
+          description: 'AI-Enhanced DevOps & AWS Bootcamp',
+          order_id: data.order_id,
+          handler: (response: any) => {
+            toast({
+              title: "Payment Successful!",
+              description: "Your enrollment is confirmed. Welcome to the course!",
+            });
+          },
+          prefill: {
+            name: user?.user_metadata?.full_name || '',
+            email: user?.email || '',
+          },
+          theme: {
+            color: '#7c3aed'
+          }
+        };
+
+        // Open Razorpay checkout
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
       } else {
         toast({
           title: "Error",
@@ -1022,6 +1060,9 @@ const CareerLevelUp = () => {
               <h2 className="text-3xl md:text-4xl font-bold">
                 🎁 Exclusive Early Access Benefit
               </h2>
+              <h3 className="text-xl md:text-2xl font-semibold text-red-600 mt-4">
+                ⚡ Limited Time Offer ⚡
+              </h3>
             </div>
             
             <div className="bg-white rounded-2xl shadow-2xl border-2 border-violet/20 p-8 md:p-12 mt-8">
@@ -1029,6 +1070,9 @@ const CareerLevelUp = () => {
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground">
                   Enroll Now & Start Your Journey Today!
                 </h3>
+                <h4 className="text-lg md:text-xl font-semibold text-red-600">
+                  Enroll in the next 30 minutes and get all the following bonuses, which are worth of ₹15,000 free.
+                </h4>
                 
                 <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                   Don't wait for the cohort to begin. <strong className="text-violet">Enroll today</strong> and get 
