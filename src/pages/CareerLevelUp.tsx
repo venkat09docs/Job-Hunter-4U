@@ -405,7 +405,7 @@ const CareerLevelUp = () => {
                   { bg: 'from-violet/10 to-purple/5', border: 'border-violet/20', text: 'text-violet' },
                   { bg: 'from-indigo/10 to-blue/5', border: 'border-indigo/20', text: 'text-indigo' }
                 ];
-                const colorScheme = levelColorClasses[index];
+                const colorScheme = levelColorClasses[index] || levelColorClasses[0]; // Fallback to first color if index out of bounds
                 return (
                   <AccordionItem key={index} value={`level-${index}`} className={`bg-gradient-to-r ${colorScheme.bg} rounded-lg border-2 ${colorScheme.border} hover:shadow-lg transition-all`}>
                     <AccordionTrigger className="px-6 py-4 hover:no-underline">
