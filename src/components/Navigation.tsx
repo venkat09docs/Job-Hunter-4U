@@ -99,9 +99,26 @@ const Navigation = () => {
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
+              <NavigationMenuLink
+                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
+                onClick={() => handleNavigate('/careerlevelup')}
+              >
+                Career Level Up
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
               <NavigationMenuTrigger>Courses</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-1 lg:w-[600px]">
+                  <NavigationMenuLink
+                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
+                    onClick={() => handleNavigate('/careerlevelup')}
+                  >
+                    <div className="text-sm font-medium leading-none">Career Level Up Cohort</div>
+                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                      AI-Enhanced DevOps & AWS — 10-week intensive program
+                    </p>
+                  </NavigationMenuLink>
                   <NavigationMenuLink
                     className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer"
                     onClick={() => handleExternalLink('https://risenshinetechnologies.com/aws-cloud-engineer')}
@@ -224,6 +241,13 @@ const Navigation = () => {
                   onClick={() => scrollToSection('pricing')}
                 >
                   Pricing
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="justify-start"
+                  onClick={() => handleNavigate('/careerlevelup')}
+                >
+                  Career Level Up
                 </Button>
                 <Button
                   variant="ghost"
