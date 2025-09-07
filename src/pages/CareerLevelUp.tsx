@@ -31,7 +31,7 @@ import {
   Users
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import Navigation from "@/components/Navigation";
+
 import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -75,7 +75,7 @@ const CareerLevelUp = () => {
       // Store the enrollment intent in sessionStorage
       sessionStorage.setItem('enrollmentIntent', JSON.stringify({
         courseName: 'DevOps AWS AI Course',
-        amount: 20000,
+        amount: 2000000, // ₹20,000 in paise (20000 * 100)
         plan_duration: '10 weeks'
       }));
       // Navigate to auth page
@@ -97,7 +97,7 @@ const CareerLevelUp = () => {
       // Create order using our edge function
       const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-create-order', {
         body: {
-          amount: 20000, // ₹20,000 (amount is in rupees for this edge function)
+          amount: 2000000, // ₹20,000 in paise (20000 * 100)
           plan_name: 'DevOps AWS AI Course',
           plan_duration: '10 weeks',
         }
@@ -346,7 +346,6 @@ const CareerLevelUp = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
       
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-orange to-amber text-white py-3 text-center font-medium">
