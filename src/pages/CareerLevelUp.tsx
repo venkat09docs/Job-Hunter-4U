@@ -56,11 +56,11 @@ const CareerLevelUp = () => {
     },
     {
       level: "Level 2 – AI for Devs/DevOps",
-      topics: "GitHub Copilot, Cursor, Amazon Q, automated docs/tests"
+      topics: "AI Agents for code generation, AI Automations for testing, GitHub Copilot, Cursor, Amazon Q"
     },
     {
       level: "Level 3 – Cloud GenAI on AWS",
-      topics: "Bedrock, SageMaker/Rekognition, CDK/Terraform workflows"
+      topics: "AI Workflows with Bedrock, SageMaker/Rekognition, CDK/Terraform AI Automations"
     },
     {
       level: "Level 4 – Kubernetes + AIOps",
@@ -134,7 +134,8 @@ const CareerLevelUp = () => {
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground">
-                Become an in-demand DevOps engineer with this comprehensive course,
+                Become an in-demand DevOps engineer mastering <strong className="text-violet">AI Agents</strong>, 
+                <strong className="text-emerald"> AI Automations</strong>, and <strong className="text-orange">AI Workflows</strong>
                 <br />
                 <strong>leveraging the power of GenAI</strong>
               </p>
@@ -187,10 +188,10 @@ const CareerLevelUp = () => {
                     <span className="text-sm font-semibold text-violet">Kubernetes</span>
                   </div>
                   <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-emerald">GitHub Copilot</span>
+                    <span className="text-sm font-semibold text-emerald">AI Agents</span>
                   </div>
                   <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-                    <span className="text-sm font-semibold text-sky">Docker</span>
+                    <span className="text-sm font-semibold text-sky">AI Workflows</span>
                   </div>
                 </div>
               </div>
@@ -299,6 +300,85 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
+      {/* Schedule & Format Section */}
+      <section className="py-20 bg-gradient-to-br from-violet/5 to-indigo/5">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
+            Schedule & Format
+          </h2>
+          <p className="text-center text-lg text-muted-foreground mb-16">
+            Designed for working professionals with flexible learning options
+          </p>
+          
+          <div className="max-w-4xl mx-auto">
+            <Card className="p-8 bg-gradient-to-br from-card/80 to-muted/20 backdrop-blur-sm border-2 border-violet/20">
+              <CardContent className="p-0 space-y-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-violet/20 rounded-full flex items-center justify-center">
+                        <Calendar className="h-5 w-5 text-violet" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Demo Session</h4>
+                        <p className="text-muted-foreground">18th Sep 2025</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-emerald/20 rounded-full flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-emerald" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Live Classes</h4>
+                        <p className="text-muted-foreground">Mon-Fri 8:30–10:00 AM IST</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange/20 rounded-full flex items-center justify-center">
+                        <Code className="h-5 w-5 text-orange" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Hands-on Labs</h4>
+                        <p className="text-muted-foreground">Sat 8-10 PM IST</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-sky/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="h-5 w-5 text-sky" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Recordings Available</h4>
+                        <p className="text-muted-foreground">+ WhatsApp Community</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-rose/20 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-rose" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">TA Support</h4>
+                        <p className="text-muted-foreground">24-hr SLA</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 p-6 bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg border border-violet/20">
+                  <h4 className="font-semibold text-center mb-2">Special Focus on AI Integration</h4>
+                  <p className="text-center text-muted-foreground">Learn to build and deploy <strong className="text-violet">AI Agents</strong>, create powerful <strong className="text-emerald">AI Automations</strong>, and design efficient <strong className="text-orange">AI Workflows</strong> in every module</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Curriculum */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
@@ -379,43 +459,106 @@ const CareerLevelUp = () => {
             Investment in Your Future
           </h2>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="relative p-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Plan A: Course Only */}
+            <Card className="relative p-8 border-2 border-primary/20">
               <CardHeader className="p-0 mb-6">
-                <CardTitle className="text-2xl mb-4">Course Only</CardTitle>
+                <CardTitle className="text-2xl mb-4 text-primary">Plan A: Course Only</CardTitle>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl text-muted-foreground line-through">₹25,000</span>
                   </div>
                   <div className="text-4xl font-bold text-primary">₹20,000</div>
-                  <p className="text-sm text-muted-foreground">Early Bird Price</p>
+                  <p className="text-sm font-medium text-emerald">Early Bird Price</p>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                <Button className="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary">
-                  Enroll Now
+              <CardContent className="p-0 space-y-6">
+                <div>
+                  <h4 className="font-semibold mb-3">Includes:</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      Full curriculum with AI focus
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      2 capstone projects
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      Weekly hands-on labs
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      WhatsApp community access
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      Office hours with instructors
+                    </li>
+                  </ul>
+                </div>
+                <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white">
+                  Enroll in Course Only
                 </Button>
               </CardContent>
             </Card>
 
+            {/* Plan B: Placement Package */}
             <Card className="relative border-2 border-emerald bg-gradient-to-br from-emerald/5 to-teal/5 p-8">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-1">Most Popular</Badge>
               </div>
               <CardHeader className="p-0 mb-6">
-                <CardTitle className="text-2xl mb-4">Placement Package</CardTitle>
+                <CardTitle className="text-2xl mb-4 text-emerald">Plan B: Placement Package</CardTitle>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl text-muted-foreground line-through">₹35,000</span>
                   </div>
                   <div className="text-4xl font-bold bg-gradient-to-r from-emerald to-teal bg-clip-text text-transparent">₹30,000</div>
-                  <p className="text-sm text-muted-foreground">Early Bird Price</p>
+                  <p className="text-sm font-medium text-emerald">Early Bird Price</p>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
-                <Button className="w-full bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald">
-                  Get Full Package
+              <CardContent className="p-0 space-y-6">
+                <div>
+                  <h4 className="font-semibold mb-3">Everything in Course Only +</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      Resume revamp & optimization
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      LinkedIn profile enhancement
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      GitHub portfolio optimization  
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      4 comprehensive mock interviews
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-emerald" />
+                      Job tracker & application toolkit
+                    </li>
+                  </ul>
+                </div>
+                <Button className="w-full bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white">
+                  Get Placement Package
                 </Button>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Upgrade Note */}
+          <div className="mt-12 max-w-3xl mx-auto">
+            <Card className="p-6 bg-gradient-to-r from-sky/5 to-indigo/5 border border-sky/20">
+              <CardContent className="p-0 text-center">
+                <p className="text-muted-foreground">
+                  <span className="text-lg">👉</span> <strong>Start with Course Only</strong>, upgrade to Placement Package within 14 days by paying just the difference
+                </p>
               </CardContent>
             </Card>
           </div>
