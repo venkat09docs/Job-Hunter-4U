@@ -160,6 +160,14 @@ const CareerLevelUp = () => {
                 </Badge>
               </div>
 
+              {/* Next Cohort Highlight */}
+              <div className="bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg p-4 border-2 border-violet/20">
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-violet mb-1">🚀 Next Cohort</p>
+                  <p className="text-2xl font-bold text-foreground">Starts on 18th Sept 2025</p>
+                </div>
+              </div>
+
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
@@ -216,15 +224,15 @@ const CareerLevelUp = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">9+</div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">19+</div>
               <div className="text-lg text-white/80">Years of<br />excellence</div>
             </div>
             <div>
-              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">500+</div>
-              <div className="text-lg text-white/80">Recruitment<br />Partners</div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">100+</div>
+              <div className="text-lg text-white/80">Jobs from Internal<br />Job Portal</div>
             </div>
             <div>
-              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">15,000+</div>
+              <div className="text-4xl md:text-5xl font-bold text-orange mb-2">7,000+</div>
               <div className="text-lg text-white/80">Students<br />Placed</div>
             </div>
           </div>
@@ -328,7 +336,7 @@ const CareerLevelUp = () => {
                         <Calendar className="h-5 w-5 text-violet" />
                       </div>
                       <div>
-                        <h4 className="font-semibold">Demo Session</h4>
+                        <h4 className="font-semibold">Next Cohort</h4>
                         <p className="text-muted-foreground">18th Sep 2025</p>
                       </div>
                     </div>
@@ -618,6 +626,14 @@ const CareerLevelUp = () => {
             <p className="text-xl text-white/90">
               Join the next generation of AI-powered DevOps professionals
             </p>
+            
+            {/* Next Cohort Highlight */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="text-center">
+                <p className="text-lg font-semibold text-white mb-1">🚀 Next Cohort</p>
+                <p className="text-2xl font-bold text-white">Starts on 18th Sept 2025</p>
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
