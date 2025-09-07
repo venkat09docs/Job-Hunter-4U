@@ -576,6 +576,25 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
+      {/* About Career Level Up */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8 text-foreground">
+              About Career Level Up
+            </h2>
+            <div className="bg-card rounded-2xl p-8 shadow-elegant border">
+              <p className="text-lg leading-relaxed text-muted-foreground mb-6">
+                <strong className="text-foreground">Career Level Up</strong> is a flagship product from <span className="text-primary font-semibold">Rise n Shine Technologies</span>, designed to help students and professionals automate their job-hunting journey.
+              </p>
+              <p className="text-lg leading-relaxed text-muted-foreground">
+                With <span className="text-primary font-semibold">19+ years of training & IT experience</span>, Rise n Shine empowers job seekers with tools, AI automation, and proven strategies to land their dream careers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Curriculum */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
