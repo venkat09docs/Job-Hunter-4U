@@ -98,7 +98,7 @@ const CareerLevelUp = () => {
     },
     {
       level: "Level 4 – AI Infrastructure Operations (Week 6–7)",
-      topics: "Bedrock, SageMaker/Rekognition; IaC with CDK/Terraform in AI workloads • Kubernetes essentials, K8sGPT for AI-gen diagnostics with Prometheus/Grafana • PromptOps pipelines: AI-generated CI/CD using Jenkins, GitHub, Terraform, Docker"
+      topics: "Bedrock, IaC with CDK/Terraform in AI workloads • Kubernetes essentials, K8sGPT for AI-gen diagnostics with Prometheus/Grafana • PromptOps pipelines: AI-generated CI/CD using Jenkins, GitHub, Terraform, Docker"
     },
     {
       level: "Level 5 – Production-Readiness & Validation (Weeks 8–9)",
