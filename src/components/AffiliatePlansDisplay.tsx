@@ -1,12 +1,16 @@
 import React from 'react';
 import { useAffiliatePlanCommissions } from '@/hooks/useAffiliatePlanCommissions';
+import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DollarSign, TrendingUp, Zap, Star } from 'lucide-react';
 
 const AffiliatePlansDisplay = () => {
-  const { planCommissions, loading } = useAffiliatePlanCommissions();
+  const { planCommissions, loading: commissionsLoading } = useAffiliatePlanCommissions();
+  const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
+
+  const loading = commissionsLoading || plansLoading;
 
   if (loading) {
     return (
@@ -19,6 +23,14 @@ const AffiliatePlansDisplay = () => {
   }
 
   const activePlans = planCommissions.filter(plan => plan.is_active);
+
+  // Function to get actual plan price from database
+  const getActualPlanPrice = (planName: string): number => {
+    const matchingPlan = plansWithPrices.find(plan => 
+      plan.name.toLowerCase() === planName.toLowerCase()
+    );
+    return matchingPlan ? matchingPlan.price : getEstimatedPlanPrice(planName);
+  };
 
   return (
     <div className="space-y-6">
@@ -41,7 +53,7 @@ const AffiliatePlansDisplay = () => {
                 </Badge>
               </div>
               <CardDescription>
-                Earn ₹{((plan.commission_rate / 100) * getEstimatedPlanPrice(plan.plan_name)).toFixed(2)} 
+                Earn ₹{((plan.commission_rate / 100) * getActualPlanPrice(plan.plan_name)).toFixed(2)} 
                 {' '}commission per successful referral
               </CardDescription>
             </CardHeader>
@@ -56,13 +68,13 @@ const AffiliatePlansDisplay = () => {
               
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Estimated Plan Price:</span>
-                  <span className="font-medium">₹{getEstimatedPlanPrice(plan.plan_name).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Plan Price:</span>
+                  <span className="font-medium">₹{getActualPlanPrice(plan.plan_name).toFixed(2)}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Your Earning Per Sale:</span>
                   <span className="font-bold text-green-600">
-                    ₹{((plan.commission_rate / 100) * getEstimatedPlanPrice(plan.plan_name)).toFixed(2)}
+                    ₹{((plan.commission_rate / 100) * getActualPlanPrice(plan.plan_name)).toFixed(2)}
                   </span>
                 </div>
               </div>

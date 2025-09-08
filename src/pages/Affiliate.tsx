@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard, Settings } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, LayoutDashboard, CreditCard, Settings, TrendingUp } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import PayoutRequestDialog from '@/components/PayoutRequestDialog';
@@ -42,6 +43,15 @@ const Affiliate = () => {
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
+
+  // Set page title
+  React.useEffect(() => {
+    document.title = "Affiliate Program | Job Hunter 4U";
+    
+    return () => {
+      document.title = "Job Hunter 4U - Smart Job Hunting Platform | Rise n Shine Technologies";
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -168,15 +178,20 @@ const Affiliate = () => {
           </Alert>
         )}
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Dashboard</h2>
-            <p className="text-muted-foreground mt-1">
-              Track your referrals and earnings
-            </p>
-          </div>
-        </div>
+        {/* Tabs Navigation */}
+        <Tabs defaultValue="dashboard" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="plans" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Available Plans
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard" className="space-y-6">
 
         {/* Status Alert */}
         {!affiliateData.is_eligible && (
@@ -411,18 +426,18 @@ const Affiliate = () => {
           </CardContent>
         </Card>
 
-        {/* Plans Display */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Plans & Commissions</CardTitle>
-            <CardDescription>
-              View all available plans and their commission rates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+          </TabsContent>
+
+          <TabsContent value="plans" className="space-y-6">
+            <div>
+              <h2 className="text-xl font-semibold">Available Plans & Commissions</h2>
+              <p className="text-muted-foreground mt-1">
+                View all available plans and their commission rates
+              </p>
+            </div>
             <AffiliatePlansDisplay />
-          </CardContent>
-        </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Payout Request Dialog */}
         <PayoutRequestDialog
