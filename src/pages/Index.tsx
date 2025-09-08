@@ -5,12 +5,12 @@ import { useRole } from '@/hooks/useRole';
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import Testimonials from "@/components/Testimonials";
 import About from "@/components/About";
 import ActivityFeaturesShowcase from "@/components/ActivityFeaturesShowcase";
 import JobTrackerShowcase from "@/components/JobTrackerShowcase";
 import AIToolsSection from "@/components/AIToolsSection";
 import Pricing from "@/components/Pricing";
-import BuildProfileCTA from "@/components/BuildProfileCTA";
 import Footer from "@/components/Footer";
 import SocialProofPopup from "@/components/SocialProofPopup";
 
@@ -42,6 +42,7 @@ const Index = () => {
       <div id="features">
         <Features />
       </div>
+      <Testimonials />
       <About />
       <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
@@ -51,7 +52,6 @@ const Index = () => {
       <div id="pricing">
         <Pricing />
       </div>
-      <BuildProfileCTA />
       <Footer />
       
       {/* Social Proof Popup */}

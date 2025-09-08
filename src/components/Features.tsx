@@ -110,85 +110,41 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Testimonial section */}
-        <div className="bg-gradient-card rounded-2xl p-8 md:p-12 shadow-elegant border">
-          <div className="space-y-8">
-            {/* First Testimonial */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
-                ))}
-              </div>
-              <blockquote className="text-xl md:text-2xl font-medium">
-                "I tried every job board and networking hack, but nothing worked—until I automated my outreach. The AI agents found HR contacts, sent personalized messages, and followed up exactly when they needed to. I've never felt more confident in my job search."
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold">D</span>
-                </div>
-                <div>
-                  <div className="font-semibold">Deepak</div>
-                  <div className="text-muted-foreground">Software Engineer</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Second Testimonial */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-warning fill-current" />
-                ))}
-              </div>
-              <blockquote className="text-xl md:text-2xl font-medium">
-                "As a recent graduate, I didn't know where to start. The platform's step-by-step automation guided me through crafting a standout LinkedIn profile, targeting the right companies, and even prepping for interviews. I landed a full-time position before graduation!"
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-semibold">K</span>
-                </div>
-                <div>
-                  <div className="font-semibold">Kavya</div>
-                  <div className="text-muted-foreground">Software Engineer</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-primary/10 rounded-lg p-4 mb-4">
-              <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
-              <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
-            </div>
-            
-            <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-success" />
-                <span><strong>40% average salary boost</strong> </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-success" />
-                <span><strong>5x faster job Hunting</strong> </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-success" />
-                <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-success" />
-                <span><strong>Works for all levels:</strong> Students to CXOs</span>
-              </div>
-            </div>
-            
-            <Button 
-              variant="hero" 
-              size="lg" 
-              className="w-full animate-pulse"
-              onClick={() => navigate('/auth')}
-            >
-              Join Career Level Up Winners Platform Today - Just ₹699
-            </Button>
+        {/* CTA Section */}
+        <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20 text-center space-y-6">
+          <div className="bg-primary/10 rounded-lg p-4 mb-4">
+            <div className="text-2xl font-bold text-primary">⏰ Limited Time Offer</div>
+            <div className="text-sm text-muted-foreground">Join before midnight and save 70%</div>
           </div>
+          
+          <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span><strong>40% average salary boost</strong> </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span><strong>5x faster job Hunting</strong> </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span><strong>87% success rate</strong> (vs 12% traditional methods)</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-success" />
+              <span><strong>Works for all levels:</strong> Students to CXOs</span>
+            </div>
+          </div>
+          
+          <Button 
+            variant="hero" 
+            size="lg" 
+            className="w-full animate-pulse"
+            onClick={() => navigate('/auth')}
+          >
+            Join Career Level Up Winners Platform Today - Just ₹699
+          </Button>
         </div>
       </div>
     </section>

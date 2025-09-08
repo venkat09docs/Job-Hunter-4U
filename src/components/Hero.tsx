@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Search, Target, Users } from "lucide-react";
+import { ArrowRight, Search, Target, Users, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-job-hunters.jpg";
 
@@ -83,8 +83,8 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Hero image */}
-          <div className="relative">
+          {/* Hero image and CTA */}
+          <div className="relative space-y-6">
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img
                 src={heroImage}
@@ -92,20 +92,51 @@ const Hero = () => {
                 className="w-full h-auto object-cover"
               />
               <div className="absolute inset-0 bg-gradient-primary/10" />
-            </div>
-            
-            {/* Floating cards */}
-            <div className="absolute -top-4 -left-4 bg-card rounded-lg p-4 shadow-elegant border">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-success rounded-full animate-pulse" />
-                <span className="text-sm font-medium">Live Job Alerts</span>
+              
+              {/* Floating cards */}
+              <div className="absolute -top-4 -left-4 bg-card rounded-lg p-4 shadow-elegant border">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-success rounded-full animate-pulse" />
+                  <span className="text-sm font-medium">Live Job Alerts</span>
+                </div>
+              </div>
+              
+              <div className="absolute -bottom-4 -right-4 bg-card rounded-lg p-4 shadow-elegant border">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">92%</div>
+                  <div className="text-sm text-muted-foreground">Success Rate</div>
+                </div>
               </div>
             </div>
-            
-            <div className="absolute -bottom-4 -right-4 bg-card rounded-lg p-4 shadow-elegant border">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">92%</div>
-                <div className="text-sm text-muted-foreground">Success Rate</div>
+
+            {/* Build Profile CTA */}
+            <div className="bg-gradient-hero rounded-2xl p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-success/5"></div>
+              <div className="text-center relative z-10">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-success mb-4 shadow-glow">
+                  <User className="h-6 w-6 text-white" />
+                </div>
+                
+                <h3 className="text-2xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
+                  Build Profile for Free
+                </h3>
+                
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  Start your career transformation journey today. Create your professional profile and explore our tools at no cost.
+                </p>
+                
+                <Button
+                  size="lg"
+                  className="bg-gradient-primary hover:shadow-glow transition-all duration-300 w-full font-semibold"
+                  onClick={() => navigate('/auth')}
+                >
+                  Get Started for Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                
+                <p className="text-xs text-muted-foreground mt-3">
+                  No credit card required • Instant access
+                </p>
               </div>
             </div>
           </div>
