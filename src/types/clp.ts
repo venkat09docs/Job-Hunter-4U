@@ -67,7 +67,7 @@ export interface Question {
   correct_answers: any;
   marks: number;
   order_index: number;
-  metadata: Record<string, any>;
+  metadata: any;
   created_at: string;
 }
 
@@ -84,7 +84,7 @@ export interface Attempt {
   review_status: ReviewStatus;
   ip_address?: any;
   device_info?: string;
-  audit: Record<string, any>;
+  audit: any;
   created_at: string;
   updated_at: string;
   assignment?: Assignment;
