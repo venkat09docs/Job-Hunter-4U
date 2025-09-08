@@ -10,11 +10,23 @@ import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 
 const CLPDashboard = () => {
   const { user } = useAuth();
-  const { role: userRole } = useRole();
+  const { role: userRole, loading: roleLoading } = useRole();
   const { loading } = useCareerLevelProgram();
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Wait for role to load before checking permissions
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   const isAdmin = userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin';
@@ -59,28 +71,28 @@ const CLPDashboard = () => {
       title: 'Create Assignment',
       description: 'Build a new assignment for your course',
       icon: Plus,
-      path: '/career-level/assignments/new',
+      path: '/dashboard/career-level/assignments/new',
       color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
     },
     {
       title: 'Review Submissions',
       description: 'Check pending assignment submissions',
       icon: ClipboardCheck,
-      path: '/career-level/reviews',
+      path: '/dashboard/career-level/reviews',
       color: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'
     },
     {
       title: 'View Leaderboard',
       description: 'Monitor student progress and rankings',
       icon: Trophy,
-      path: '/career-level/leaderboard',
+      path: '/dashboard/career-level/leaderboard',
       color: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'
     },
     {
       title: 'Manage Courses',
       description: 'Organize courses and modules',
       icon: Eye,
-      path: '/career-level/courses',
+      path: '/dashboard/career-level/courses',
       color: 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200'
     }
   ];
