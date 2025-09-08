@@ -616,6 +616,44 @@ const CareerLevelUp = () => {
         </div>
       </section>
 
+      {/* Who It's For Section */}
+      <section className="py-12 bg-gradient-to-br from-background to-muted/20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
+            Who It's For
+          </h2>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="p-6 text-center hover:shadow-lg transition-all bg-card/50 backdrop-blur-sm border-2 border-orange/20 hover:border-orange/40">
+              <CardContent className="p-0">
+                <div className="text-4xl mb-4">🚀</div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  Final year students & freshers
+                </h3>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 text-center hover:shadow-lg transition-all bg-card/50 backdrop-blur-sm border-2 border-emerald/20 hover:border-emerald/40">
+              <CardContent className="p-0">
+                <div className="text-4xl mb-4">🌐</div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  IT professionals switching to DevOps & Cloud
+                </h3>
+              </CardContent>
+            </Card>
+
+            <Card className="p-6 text-center hover:shadow-lg transition-all bg-card/50 backdrop-blur-sm border-2 border-violet/20 hover:border-violet/40">
+              <CardContent className="p-0">
+                <div className="text-4xl mb-4">🤖</div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  DevOps engineers upskilling with GenAI
+                </h3>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Schedule & Format Section */}
       <section className="py-16 bg-gradient-to-br from-violet/5 via-indigo/5 to-emerald/5">
         <div className="container mx-auto px-4">
