@@ -52,6 +52,14 @@ export const useAffiliateAdmin = () => {
   const [payoutRequests, setPayoutRequests] = useState<PayoutRequestWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  
+  // Pagination and filtering state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending'>('all');
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (user?.id) {
@@ -60,17 +68,35 @@ export const useAffiliateAdmin = () => {
     } else {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, currentPage, searchQuery, statusFilter]);
 
   const fetchAffiliateUsers = async () => {
     try {
-      // Fetch affiliate users and their profiles separately
-      const { data, error } = await supabase
+      setLoading(true);
+      
+      // Build query with pagination
+      let query = supabase
         .from('affiliate_users')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
 
+      // Apply status filter
+      if (statusFilter !== 'all') {
+        query = query.eq('is_eligible', statusFilter === 'active');
+      }
+
+      // Apply pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+
       if (error) throw error;
+
+      // Set total count and calculate pages
+      setTotalUsers(count || 0);
+      setTotalPages(Math.max(1, Math.ceil((count || 0) / itemsPerPage)));
 
       // Fetch profiles for these users
       if (data && data.length > 0) {
@@ -81,17 +107,38 @@ export const useAffiliateAdmin = () => {
           .in('user_id', userIds);
 
         // Map profiles to affiliate users
-        const affiliateUsersWithProfiles = data.map(au => ({
+        let affiliateUsersWithProfiles = data.map(au => ({
           ...au,
           profiles: profiles?.find(p => p.user_id === au.user_id)
-        }));
+        })) as AffiliateUserWithProfile[];
 
-        setAffiliateUsers(affiliateUsersWithProfiles as AffiliateUserWithProfile[]);
+        // Apply search filter on client side (after getting profiles)
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          affiliateUsersWithProfiles = affiliateUsersWithProfiles.filter(user => {
+            const fullName = user.profiles?.full_name?.toLowerCase() || '';
+            const email = user.profiles?.email?.toLowerCase() || '';
+            const username = user.profiles?.username?.toLowerCase() || '';
+            const affiliateCode = user.affiliate_code?.toLowerCase() || '';
+            
+            return fullName.includes(query) || 
+                   email.includes(query) || 
+                   username.includes(query) || 
+                   affiliateCode.includes(query);
+          });
+        }
+
+        setAffiliateUsers(affiliateUsersWithProfiles);
       } else {
         setAffiliateUsers([]);
       }
     } catch (error: any) {
       console.error('Error fetching affiliate users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch affiliate users',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
@@ -255,6 +302,16 @@ export const useAffiliateAdmin = () => {
     refreshData: () => {
       fetchAffiliateUsers();
       fetchPayoutRequests();
-    }
+    },
+    // Pagination and filtering
+    currentPage,
+    totalPages,
+    totalUsers,
+    searchQuery,
+    statusFilter,
+    setCurrentPage,
+    setSearchQuery,
+    setStatusFilter,
+    itemsPerPage
   };
 };
