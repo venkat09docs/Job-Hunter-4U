@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -8,19 +8,101 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { supabase } from '@/integrations/supabase/client';
+import type { Course, Attempt, LeaderboardEntry } from '@/types/clp';
 
 const CLPDashboard = () => {
   const { user } = useAuth();
   const { role: userRole, loading: roleLoading } = useRole();
   const navigate = useNavigate();
-  const { loading } = useCareerLevelProgram();
+  const { loading, getCourses, getLeaderboard } = useCareerLevelProgram();
+  
+  const [dashboardStats, setDashboardStats] = useState({
+    totalCourses: 0,
+    activeStudents: 0,
+    pendingReviews: 0,
+    totalAssignments: 0
+  });
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
+  const [topPerformers, setTopPerformers] = useState<LeaderboardEntry[]>([]);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && userRole && !roleLoading) {
+      fetchDashboardData();
+    }
+  }, [user, userRole, roleLoading]);
+
+  const fetchDashboardData = async () => {
+    setDashboardLoading(true);
+    try {
+      // Fetch dashboard statistics
+      const [coursesData, attemptsData, leaderboardData, profilesData] = await Promise.all([
+        // Get total courses
+        supabase
+          .from('clp_courses')
+          .select('id')
+          .eq('is_active', true),
+        
+        // Get recent attempts for pending reviews
+        supabase
+          .from('clp_attempts')
+          .select(`
+            *,
+            assignment:clp_assignments(
+              title,
+              module:clp_modules(
+                title,
+                course:clp_courses(title)
+              )
+            )
+          `)
+          .eq('status', 'submitted')
+          .eq('review_status', 'pending')
+          .order('submitted_at', { ascending: false })
+          .limit(10),
+        
+        // Get leaderboard data
+        getLeaderboard(),
+        
+        // Get unique active students count
+        supabase
+          .from('clp_attempts')
+          .select('user_id')
+      ]);
+
+      // Count unique students
+      const uniqueStudents = new Set(profilesData.data?.map(p => p.user_id) || []).size;
+      
+      // Get total assignments count
+      const { data: assignmentsData } = await supabase
+        .from('clp_assignments')
+        .select('id')
+        .eq('is_published', true);
+
+      setDashboardStats({
+        totalCourses: coursesData.data?.length || 0,
+        activeStudents: uniqueStudents,
+        pendingReviews: attemptsData.data?.length || 0,
+        totalAssignments: assignmentsData?.length || 0
+      });
+
+      setRecentSubmissions(attemptsData.data || []);
+      setTopPerformers(leaderboardData.slice(0, 5));
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
 
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
   // Wait for role to load before checking permissions
-  if (roleLoading) {
+  if (roleLoading || dashboardLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -40,29 +122,29 @@ const CLPDashboard = () => {
   const stats = [
     {
       title: 'Total Courses',
-      value: '8',
-      change: '+2 this month',
+      value: dashboardStats.totalCourses.toString(),
+      change: 'Active courses',
       icon: BookOpen,
       color: 'text-blue-600'
     },
     {
       title: 'Active Students',
-      value: '245',
-      change: '+18 this week',
+      value: dashboardStats.activeStudents.toString(),
+      change: 'Enrolled students',
       icon: Users,
       color: 'text-green-600'
     },
     {
       title: 'Pending Reviews',
-      value: '23',
-      change: '4 urgent',
+      value: dashboardStats.pendingReviews.toString(),
+      change: 'Awaiting review',
       icon: ClipboardCheck,
       color: 'text-orange-600'
     },
     {
       title: 'Assignments',
-      value: '156',
-      change: '12 published today',
+      value: dashboardStats.totalAssignments.toString(),
+      change: 'Published assignments',
       icon: Trophy,
       color: 'text-purple-600'
     }
@@ -73,28 +155,28 @@ const CLPDashboard = () => {
       title: 'Create Assignment',
       description: 'Build a new assignment for your course',
       icon: Plus,
-      path: '/dashboard/career-level/assignments/new',
+      onClick: () => navigate('/dashboard/career-level/assignments/new'),
       color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
     },
     {
       title: 'Review Submissions',
       description: 'Check pending assignment submissions',
       icon: ClipboardCheck,
-      path: '/dashboard/career-level/reviews',
+      onClick: () => navigate('/dashboard/career-level/reviews'),
       color: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'
     },
     {
       title: 'View Leaderboard',
       description: 'Monitor student progress and rankings',
       icon: Trophy,
-      path: '/dashboard/career-level/leaderboard',
+      onClick: () => navigate('/dashboard/career-level/leaderboard'),
       color: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'
     },
     {
       title: 'Manage Courses',
       description: 'Organize courses and modules',
       icon: Eye,
-      path: '/dashboard/career-level/courses',
+      onClick: () => navigate('/dashboard/career-level/courses'),
       color: 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200'
     }
   ];
@@ -179,19 +261,17 @@ const CLPDashboard = () => {
                   key={index}
                   variant="outline"
                   className={`h-auto p-6 justify-start ${action.color}`}
-                  asChild
+                  onClick={action.onClick}
                 >
-                  <div className="cursor-pointer">
-                    <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-background/50">
-                        <action.icon className="h-6 w-6" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-semibold mb-1">{action.title}</h3>
-                        <p className="text-sm opacity-80">
-                          {action.description}
-                        </p>
-                      </div>
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-lg bg-background/50">
+                      <action.icon className="h-6 w-6" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold mb-1">{action.title}</h3>
+                      <p className="text-sm opacity-80">
+                        {action.description}
+                      </p>
                     </div>
                   </div>
                 </Button>
@@ -208,20 +288,31 @@ const CLPDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-4 w-4 text-primary" />
+                {recentSubmissions.length > 0 ? (
+                  recentSubmissions.slice(0, 5).map((submission) => (
+                    <div key={submission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <ClipboardCheck className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{submission.assignment?.title || 'Assignment'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {submission.assignment?.module?.course?.title || 'Course'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">React Fundamentals Quiz</p>
-                        <p className="text-sm text-muted-foreground">John Doe</p>
-                      </div>
+                      <Badge variant="outline" className="text-orange-600 border-orange-200">
+                        {submission.review_status === 'pending' ? 'Pending' : 'In Review'}
+                      </Badge>
                     </div>
-                    <Badge variant="outline">Pending</Badge>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No recent submissions</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
@@ -232,22 +323,29 @@ const CLPDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[1, 2, 3].map((item) => (
-                  <div key={item} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold text-sm">
-                        {item}
+                {topPerformers.length > 0 ? (
+                  topPerformers.slice(0, 5).map((performer, index) => (
+                    <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium">{performer.user?.full_name || performer.user?.username || 'Student'}</p>
+                          <p className="text-sm text-muted-foreground">{performer.points_total} points</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">Sarah Wilson</p>
-                        <p className="text-sm text-muted-foreground">Advanced React</p>
-                      </div>
+                      <Badge className="bg-gradient-primary">
+                        #{index + 1}
+                      </Badge>
                     </div>
-                    <Badge className="bg-gradient-primary">
-                      {95 - item * 2}%
-                    </Badge>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Trophy className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No performance data available</p>
                   </div>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>
