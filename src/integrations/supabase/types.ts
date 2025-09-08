@@ -829,6 +829,512 @@ export type Database = {
         }
         Relationships: []
       }
+      clp_answers: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          is_correct: boolean | null
+          marks_awarded: number | null
+          question_id: string
+          response: Json
+          updated_at: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          is_correct?: boolean | null
+          marks_awarded?: number | null
+          question_id: string
+          response?: Json
+          updated_at?: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          is_correct?: boolean | null
+          marks_awarded?: number | null
+          question_id?: string
+          response?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "clp_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clp_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "clp_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_assignments: {
+        Row: {
+          attachments_required: boolean | null
+          attempt_policy: Database["public"]["Enums"]["attempt_policy"] | null
+          created_at: string
+          created_by: string | null
+          due_at: string | null
+          duration_minutes: number | null
+          end_at: string | null
+          id: string
+          instructions: string | null
+          is_published: boolean | null
+          max_attempts: number | null
+          module_id: string
+          negative_marking: boolean | null
+          points_scale: Json | null
+          randomize_questions: boolean | null
+          rubric: Json | null
+          shuffle_options: boolean | null
+          start_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["assignment_type"]
+          updated_at: string
+          visible_from: string | null
+        }
+        Insert: {
+          attachments_required?: boolean | null
+          attempt_policy?: Database["public"]["Enums"]["attempt_policy"] | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string | null
+          duration_minutes?: number | null
+          end_at?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean | null
+          max_attempts?: number | null
+          module_id: string
+          negative_marking?: boolean | null
+          points_scale?: Json | null
+          randomize_questions?: boolean | null
+          rubric?: Json | null
+          shuffle_options?: boolean | null
+          start_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["assignment_type"]
+          updated_at?: string
+          visible_from?: string | null
+        }
+        Update: {
+          attachments_required?: boolean | null
+          attempt_policy?: Database["public"]["Enums"]["attempt_policy"] | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string | null
+          duration_minutes?: number | null
+          end_at?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean | null
+          max_attempts?: number | null
+          module_id?: string
+          negative_marking?: boolean | null
+          points_scale?: Json | null
+          randomize_questions?: boolean | null
+          rubric?: Json | null
+          shuffle_options?: boolean | null
+          start_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["assignment_type"]
+          updated_at?: string
+          visible_from?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_assignments_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "clp_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_assignments_visibility: {
+        Row: {
+          assignment_id: string
+          audience: Database["public"]["Enums"]["visibility_audience"]
+          cohort_id: string | null
+          created_at: string
+          id: string
+          user_ids: Json | null
+        }
+        Insert: {
+          assignment_id: string
+          audience?: Database["public"]["Enums"]["visibility_audience"]
+          cohort_id?: string | null
+          created_at?: string
+          id?: string
+          user_ids?: Json | null
+        }
+        Update: {
+          assignment_id?: string
+          audience?: Database["public"]["Enums"]["visibility_audience"]
+          cohort_id?: string | null
+          created_at?: string
+          id?: string
+          user_ids?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_assignments_visibility_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "clp_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_attempts: {
+        Row: {
+          assignment_id: string
+          audit: Json | null
+          created_at: string
+          device_info: string | null
+          id: string
+          ip_address: unknown | null
+          review_status: Database["public"]["Enums"]["review_status"] | null
+          score_numeric: number | null
+          score_points: number | null
+          started_at: string
+          status: Database["public"]["Enums"]["attempt_status"]
+          submitted_at: string | null
+          time_used_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          audit?: Json | null
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          review_status?: Database["public"]["Enums"]["review_status"] | null
+          score_numeric?: number | null
+          score_points?: number | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["attempt_status"]
+          submitted_at?: string | null
+          time_used_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          audit?: Json | null
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          review_status?: Database["public"]["Enums"]["review_status"] | null
+          score_numeric?: number | null
+          score_points?: number | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["attempt_status"]
+          submitted_at?: string | null
+          time_used_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_attempts_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "clp_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          data: Json | null
+          entity: string
+          entity_id: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          data?: Json | null
+          entity: string
+          entity_id: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          data?: Json | null
+          entity?: string
+          entity_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      clp_courses: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      clp_leaderboard: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          id: string
+          last_updated_at: string
+          module_id: string | null
+          points_total: number
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          last_updated_at?: string
+          module_id?: string | null
+          points_total?: number
+          user_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          last_updated_at?: string
+          module_id?: string | null
+          points_total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_leaderboard_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "clp_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clp_leaderboard_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "clp_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "clp_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_notifications: {
+        Row: {
+          assignment_id: string | null
+          created_at: string
+          id: string
+          payload: Json | null
+          sent_at: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sent_at?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          sent_at?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_notifications_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "clp_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_questions: {
+        Row: {
+          assignment_id: string
+          correct_answers: Json | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["question_kind"]
+          marks: number
+          metadata: Json | null
+          options: Json | null
+          order_index: number
+          prompt: string
+        }
+        Insert: {
+          assignment_id: string
+          correct_answers?: Json | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["question_kind"]
+          marks?: number
+          metadata?: Json | null
+          options?: Json | null
+          order_index?: number
+          prompt: string
+        }
+        Update: {
+          assignment_id?: string
+          correct_answers?: Json | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["question_kind"]
+          marks?: number
+          metadata?: Json | null
+          options?: Json | null
+          order_index?: number
+          prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_questions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "clp_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clp_reviews: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          id: string
+          published_at: string | null
+          reviewer_comments: string | null
+          reviewer_id: string
+          rubric_scores: Json | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          id?: string
+          published_at?: string | null
+          reviewer_comments?: string | null
+          reviewer_id: string
+          rubric_scores?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          published_at?: string | null
+          reviewer_comments?: string | null
+          reviewer_id?: string
+          rubric_scores?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clp_reviews_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "clp_attempts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_job_hunting_sessions: {
         Row: {
           completed: boolean
@@ -4450,6 +4956,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      auto_grade_attempt: {
+        Args: { attempt_id: string }
+        Returns: undefined
+      }
       award_profile_badges_for_user: {
         Args: { user_uuid: string }
         Returns: undefined
@@ -5034,6 +5544,10 @@ export type Database = {
         }
         Returns: string
       }
+      update_leaderboard_for_attempt: {
+        Args: { attempt_id: string }
+        Returns: undefined
+      }
       upsert_resume_data: {
         Args: {
           p_awards?: Json
@@ -5055,6 +5569,9 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "institute_admin" | "recruiter"
+      assignment_type: "mcq" | "tf" | "descriptive" | "task"
+      attempt_policy: "best" | "last"
+      attempt_status: "started" | "submitted" | "auto_submitted" | "invalidated"
       evidence_kind: "URL" | "EMAIL" | "SCREENSHOT" | "DATA_EXPORT"
       evidence_type:
         | "URL_REQUIRED"
@@ -5062,6 +5579,8 @@ export type Database = {
         | "SCREENSHOT_OK"
         | "DATA_EXPORT_OK"
       module_code: "RESUME" | "LINKEDIN" | "GITHUB"
+      question_kind: "mcq" | "tf" | "descriptive"
+      review_status: "pending" | "in_review" | "published"
       signal_kind:
         | "COMMENTED"
         | "REACTED"
@@ -5076,6 +5595,7 @@ export type Database = {
         | "PARTIALLY_VERIFIED"
         | "VERIFIED"
         | "REJECTED"
+      visibility_audience: "all" | "cohort" | "users"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5204,6 +5724,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "institute_admin", "recruiter"],
+      assignment_type: ["mcq", "tf", "descriptive", "task"],
+      attempt_policy: ["best", "last"],
+      attempt_status: ["started", "submitted", "auto_submitted", "invalidated"],
       evidence_kind: ["URL", "EMAIL", "SCREENSHOT", "DATA_EXPORT"],
       evidence_type: [
         "URL_REQUIRED",
@@ -5212,6 +5735,8 @@ export const Constants = {
         "DATA_EXPORT_OK",
       ],
       module_code: ["RESUME", "LINKEDIN", "GITHUB"],
+      question_kind: ["mcq", "tf", "descriptive"],
+      review_status: ["pending", "in_review", "published"],
       signal_kind: [
         "COMMENTED",
         "REACTED",
@@ -5228,6 +5753,7 @@ export const Constants = {
         "VERIFIED",
         "REJECTED",
       ],
+      visibility_audience: ["all", "cohort", "users"],
     },
   },
 } as const

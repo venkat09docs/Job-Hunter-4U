@@ -1,0 +1,429 @@
+import React, { useState, useEffect } from 'react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Upload, File, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { Question, Answer } from '@/types/clp';
+
+interface QuestionRendererProps {
+  question: Question;
+  questionNumber: number;
+  totalQuestions: number;
+  existingAnswer?: Answer;
+  onAnswerChange: (questionId: string, response: Record<string, any>) => void;
+  readonly?: boolean;
+  showCorrectAnswer?: boolean;
+  className?: string;
+}
+
+export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
+  question,
+  questionNumber,
+  totalQuestions,
+  existingAnswer,
+  onAnswerChange,
+  readonly = false,
+  showCorrectAnswer = false,
+  className
+}) => {
+  const [response, setResponse] = useState<Record<string, any>>(
+    existingAnswer?.response || {}
+  );
+  const [files, setFiles] = useState<File[]>([]);
+
+  useEffect(() => {
+    if (existingAnswer?.response) {
+      setResponse(existingAnswer.response);
+    }
+  }, [existingAnswer]);
+
+  const handleResponseChange = (newResponse: Record<string, any>) => {
+    setResponse(newResponse);
+    onAnswerChange(question.id, newResponse);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files || []);
+    setFiles(prev => [...prev, ...selectedFiles]);
+    
+    // Update response with file information
+    const fileInfo = selectedFiles.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type
+    }));
+    
+    handleResponseChange({
+      ...response,
+      files: [...(response.files || []), ...fileInfo]
+    });
+  };
+
+  const removeFile = (index: number) => {
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    
+    const newFileInfo = newFiles.map(file => ({
+      name: file.name,
+      size: file.size,
+      type: file.type
+    }));
+    
+    handleResponseChange({
+      ...response,
+      files: newFileInfo
+    });
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const renderMCQQuestion = () => {
+    const isMultiSelect = question.correct_answers.length > 1;
+    
+    if (isMultiSelect) {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground mb-4">
+            Select all correct answers:
+          </p>
+          {question.options.map((option, index) => {
+            const optionKey = `option_${index}`;
+            const isChecked = response.selectedOptions?.includes(optionKey) || false;
+            const isCorrect = showCorrectAnswer && 
+              question.correct_answers.includes(JSON.stringify([option]));
+            
+            return (
+              <div 
+                key={index} 
+                className={cn(
+                  'flex items-center space-x-2 p-3 rounded-lg border transition-colors',
+                  showCorrectAnswer && isCorrect && 'bg-green-50 border-green-200',
+                  showCorrectAnswer && !isCorrect && isChecked && 'bg-red-50 border-red-200'
+                )}
+              >
+                <Checkbox
+                  id={`q${question.id}_${index}`}
+                  checked={isChecked}
+                  disabled={readonly}
+                  onCheckedChange={(checked) => {
+                    if (readonly) return;
+                    
+                    const currentSelected = response.selectedOptions || [];
+                    const newSelected = checked
+                      ? [...currentSelected, optionKey]
+                      : currentSelected.filter((opt: string) => opt !== optionKey);
+                    
+                    handleResponseChange({
+                      ...response,
+                      selectedOptions: newSelected,
+                      value: newSelected.map((opt: string) => {
+                        const idx = parseInt(opt.split('_')[1]);
+                        return question.options[idx];
+                      })
+                    });
+                  }}
+                />
+                <Label 
+                  htmlFor={`q${question.id}_${index}`}
+                  className="flex-1 cursor-pointer"
+                >
+                  {option}
+                </Label>
+                {showCorrectAnswer && isCorrect && (
+                  <Badge className="bg-green-100 text-green-800">Correct</Badge>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    } else {
+      return (
+        <RadioGroup
+          value={response.selectedOption || ''}
+          onValueChange={(value) => {
+            if (readonly) return;
+            const selectedIndex = parseInt(value.split('_')[1]);
+            handleResponseChange({
+              ...response,
+              selectedOption: value,
+              value: question.options[selectedIndex]
+            });
+          }}
+          disabled={readonly}
+          className="space-y-3"
+        >
+          {question.options.map((option, index) => {
+            const optionKey = `option_${index}`;
+            const isSelected = response.selectedOption === optionKey;
+            const isCorrect = showCorrectAnswer && 
+              question.correct_answers.includes(JSON.stringify([option]));
+            
+            return (
+              <div 
+                key={index}
+                className={cn(
+                  'flex items-center space-x-2 p-3 rounded-lg border transition-colors',
+                  showCorrectAnswer && isCorrect && 'bg-green-50 border-green-200',
+                  showCorrectAnswer && !isCorrect && isSelected && 'bg-red-50 border-red-200'
+                )}
+              >
+                <RadioGroupItem value={optionKey} id={`q${question.id}_${index}`} />
+                <Label 
+                  htmlFor={`q${question.id}_${index}`}
+                  className="flex-1 cursor-pointer"
+                >
+                  {option}
+                </Label>
+                {showCorrectAnswer && isCorrect && (
+                  <Badge className="bg-green-100 text-green-800">Correct</Badge>
+                )}
+              </div>
+            );
+          })}
+        </RadioGroup>
+      );
+    }
+  };
+
+  const renderTrueFalseQuestion = () => {
+    const isCorrect = showCorrectAnswer && 
+      response.value && 
+      question.correct_answers.includes(JSON.stringify([response.value]));
+    const isIncorrect = showCorrectAnswer && 
+      response.value && 
+      !question.correct_answers.includes(JSON.stringify([response.value]));
+
+    return (
+      <RadioGroup
+        value={response.selectedOption || ''}
+        onValueChange={(value) => {
+          if (readonly) return;
+          const boolValue = value === 'true';
+          handleResponseChange({
+            ...response,
+            selectedOption: value,
+            value: boolValue ? 'True' : 'False'
+          });
+        }}
+        disabled={readonly}
+        className="space-y-3"
+      >
+        {['True', 'False'].map((option, index) => {
+          const optionKey = index === 0 ? 'true' : 'false';
+          const isSelected = response.selectedOption === optionKey;
+          const isCorrectOption = showCorrectAnswer && 
+            question.correct_answers.includes(JSON.stringify([option]));
+          
+          return (
+            <div 
+              key={option}
+              className={cn(
+                'flex items-center space-x-2 p-3 rounded-lg border transition-colors',
+                showCorrectAnswer && isCorrectOption && 'bg-green-50 border-green-200',
+                showCorrectAnswer && !isCorrectOption && isSelected && 'bg-red-50 border-red-200'
+              )}
+            >
+              <RadioGroupItem value={optionKey} id={`q${question.id}_${option}`} />
+              <Label 
+                htmlFor={`q${question.id}_${option}`}
+                className="flex-1 cursor-pointer font-medium"
+              >
+                {option}
+              </Label>
+              {showCorrectAnswer && isCorrectOption && (
+                <Badge className="bg-green-100 text-green-800">Correct</Badge>
+              )}
+            </div>
+          );
+        })}
+      </RadioGroup>
+    );
+  };
+
+  const renderDescriptiveQuestion = () => {
+    return (
+      <div className="space-y-4">
+        <Textarea
+          placeholder="Enter your answer here..."
+          value={response.text || ''}
+          onChange={(e) => {
+            if (readonly) return;
+            handleResponseChange({
+              ...response,
+              text: e.target.value,
+              value: e.target.value
+            });
+          }}
+          disabled={readonly}
+          className="min-h-[150px] resize-none"
+          maxLength={5000}
+        />
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>Minimum 50 words recommended</span>
+          <span>{(response.text || '').length}/5000 characters</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTaskQuestion = () => {
+    return (
+      <div className="space-y-6">
+        {/* Text Response */}
+        <div>
+          <Label className="text-sm font-medium mb-2 block">
+            Description/Notes
+          </Label>
+          <Textarea
+            placeholder="Describe your solution, approach, or any notes about the task..."
+            value={response.text || ''}
+            onChange={(e) => {
+              if (readonly) return;
+              handleResponseChange({
+                ...response,
+                text: e.target.value
+              });
+            }}
+            disabled={readonly}
+            className="min-h-[100px] resize-none"
+          />
+        </div>
+
+        {/* File Upload */}
+        <div>
+          <Label className="text-sm font-medium mb-2 block">
+            Attachments
+          </Label>
+          
+          {!readonly && (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
+              <input
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+                id={`file-upload-${question.id}`}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar"
+              />
+              <label
+                htmlFor={`file-upload-${question.id}`}
+                className="cursor-pointer flex flex-col items-center space-y-2"
+              >
+                <Upload className="w-8 h-8 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Click to upload files</p>
+                  <p className="text-xs text-muted-foreground">
+                    PDF, DOC, images, or ZIP files (max 10MB each)
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+
+          {/* File List */}
+          {files.length > 0 && (
+            <div className="space-y-2 mt-4">
+              {files.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                >
+                  <div className="flex items-center space-x-2">
+                    <File className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
+                  </div>
+                  {!readonly && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeFile(index)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderQuestionContent = () => {
+    switch (question.kind) {
+      case 'mcq':
+        return renderMCQQuestion();
+      case 'tf':
+        return renderTrueFalseQuestion();
+      case 'descriptive':
+        return renderDescriptiveQuestion();
+      default:
+        return renderTaskQuestion();
+    }
+  };
+
+  return (
+    <Card className={cn('w-full', className)}>
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Badge variant="outline" className="text-xs">
+                {questionNumber} of {totalQuestions}
+              </Badge>
+              <span className="text-base font-medium">
+                {question.prompt}
+              </span>
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {question.marks} {question.marks === 1 ? 'mark' : 'marks'}
+            </Badge>
+            {showCorrectAnswer && existingAnswer && (
+              <Badge 
+                variant={existingAnswer.is_correct ? 'default' : 'destructive'}
+                className="text-xs"
+              >
+                {existingAnswer.is_correct ? 'Correct' : 'Incorrect'}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {renderQuestionContent()}
+        
+        {/* Feedback Section */}
+        {showCorrectAnswer && existingAnswer?.feedback && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">Feedback:</h4>
+            <p className="text-blue-800 text-sm">{existingAnswer.feedback}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default QuestionRenderer;
