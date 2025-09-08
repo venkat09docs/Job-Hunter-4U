@@ -915,7 +915,7 @@ const CareerLevelUp = () => {
                         <Code className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold mb-2 text-yellow-300 drop-shadow-lg">Linux Fundamentals</h3>
+                        <h3 className="text-xl font-bold mb-2 text-white drop-shadow-lg font-semibold">Linux Fundamentals</h3>
                         <p className="text-blue-100 text-sm">Complete Linux course from basics to advanced</p>
                       </div>
                     </div>
@@ -1384,11 +1384,6 @@ const CareerLevelUp = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Plan A: Course Only */}
             <Card className="relative p-8 border-2 border-primary/20">
-              <div className="absolute top-4 right-4">
-                <Badge variant="secondary" className="text-xs">
-                  {plan1Seats}/25 seats filled
-                </Badge>
-              </div>
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl mb-4 text-primary">Plan A: Course Only</CardTitle>
                 <div className="space-y-2">
@@ -1439,11 +1434,6 @@ const CareerLevelUp = () => {
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-emerald to-teal text-white px-4 py-1">Most Popular</Badge>
               </div>
-              <div className="absolute top-4 right-4">
-                <Badge variant="outline" className="text-xs border-emerald text-emerald">
-                  {plan2Seats}/10 seats filled
-                </Badge>
-              </div>
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl mb-4 text-emerald">Plan B: Placement Package</CardTitle>
                 <div className="space-y-2">
@@ -1472,7 +1462,7 @@ const CareerLevelUp = () => {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-emerald" />
-                      4 comprehensive mock interviews
+                      Gamification with Leaderboard
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-emerald" />
