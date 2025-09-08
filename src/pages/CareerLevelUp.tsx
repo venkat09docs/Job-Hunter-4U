@@ -902,7 +902,7 @@ const CareerLevelUp = () => {
             {/* Playlist 1 - Linux Fundamentals */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-sky/5 to-cyan/10 border-2 border-sky/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJdJd3IKdiM4Om1hGo2Hsdt', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j1_uYX7f67ilUldIcOka2MY', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
@@ -942,7 +942,7 @@ const CareerLevelUp = () => {
             {/* Playlist 2 - Shell Scripting */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-emerald/5 to-teal/10 border-2 border-emerald/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FI_MY7HDP6ZnOax0hzavama', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j2K3kVOUzmw9Wey-9eF93fc', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
