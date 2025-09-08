@@ -835,7 +835,7 @@ const CareerLevelUp = () => {
             </p>
 
             {/* Highlighted Topics */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto mb-8">
               <div className="bg-gradient-to-br from-blue/10 to-cyan/10 border border-blue/20 rounded-lg p-4">
                 <div className="w-12 h-12 bg-blue/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Code className="h-6 w-6 text-blue" />
@@ -848,6 +848,13 @@ const CareerLevelUp = () => {
                   <Terminal className="h-6 w-6 text-emerald" />
                 </div>
                 <h3 className="font-semibold text-emerald text-sm">Shell Scripting</h3>
+              </div>
+
+              <div className="bg-gradient-to-br from-yellow/10 to-orange/10 border border-yellow/20 rounded-lg p-4">
+                <div className="w-12 h-12 bg-yellow/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <FileText className="h-6 w-6 text-yellow-600" />
+                </div>
+                <h3 className="font-semibold text-yellow-600 text-sm">Python</h3>
               </div>
               
               <div className="bg-gradient-to-br from-orange/10 to-amber/10 border border-orange/20 rounded-lg p-4">
@@ -864,10 +871,26 @@ const CareerLevelUp = () => {
                 <h3 className="font-semibold text-violet text-sm">DevOps Tools</h3>
               </div>
             </div>
+
+            {/* Subscribe CTA */}
+            <div className="text-center mb-12">
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-red to-orange hover:from-red-600 hover:to-orange-600 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                onClick={() => window.open('https://youtube.com/@RisenShineTechnologies?sub_confirmation=1', '_blank')}
+              >
+                <Youtube className="mr-3 h-6 w-6" />
+                Subscribe Now for FREE Access
+                <ExternalLink className="ml-3 h-5 w-5" />
+              </Button>
+              <p className="text-sm text-muted-foreground mt-4">
+                Join 50K+ DevOps learners • New videos every week • 100% FREE content
+              </p>
+            </div>
           </div>
 
           {/* YouTube Playlists Grid */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Playlist 1 - Linux Fundamentals */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue/5 to-cyan/10 border-2 border-blue/20 overflow-hidden"
@@ -948,7 +971,47 @@ const CareerLevelUp = () => {
               </CardContent>
             </Card>
 
-            {/* Playlist 3 - AWS Fundamentals */}
+            {/* Playlist 3 - Python Programming */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-yellow/5 to-orange/10 border-2 border-yellow/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJQYT5H2BuFSwYmfmKeS57P', '_blank')}
+            >
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-yellow-500 to-orange p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Python Programming</h3>
+                        <p className="text-yellow-100 text-sm">Python for DevOps and automation</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        18+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Learn Python programming from basics to advanced concepts for DevOps automation and scripting
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Playlist 4 - AWS Fundamentals */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20 overflow-hidden"
               onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FKok5gI1v4g4S-g-PLaW9YD', '_blank')}
@@ -988,7 +1051,7 @@ const CareerLevelUp = () => {
               </CardContent>
             </Card>
 
-            {/* Playlist 4 - DevOps Tools */}
+            {/* Playlist 5 - DevOps Tools */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-violet/5 to-purple/10 border-2 border-violet/20 overflow-hidden"
               onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJmEu_f4C4at8hGnUqU5SH4', '_blank')}
@@ -1027,22 +1090,46 @@ const CareerLevelUp = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Subscribe CTA */}
-          <div className="text-center mt-12">
-            <Button 
-              size="lg"
-              className="bg-gradient-to-r from-red to-orange hover:from-red-600 hover:to-orange-600 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-              onClick={() => window.open('https://youtube.com/@RisenShineTechnologies?sub_confirmation=1', '_blank')}
+            {/* Playlist 6 - GenAI for OpenAPI */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-pink/5 to-rose/10 border-2 border-pink/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJHA8RGE98-zN8OBcCMcnFh', '_blank')}
             >
-              <Youtube className="mr-3 h-6 w-6" />
-              Subscribe Now for FREE Access
-              <ExternalLink className="ml-3 h-5 w-5" />
-            </Button>
-            <p className="text-sm text-muted-foreground mt-4">
-              Join 50K+ DevOps learners • New videos every week • 100% FREE content
-            </p>
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-pink to-rose p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Zap className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">GenAI for OpenAPI</h3>
+                        <p className="text-pink-100 text-sm">AI-powered API development and automation</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        15+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Learn to integrate AI with APIs, OpenAPI specifications, and automated API documentation
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
