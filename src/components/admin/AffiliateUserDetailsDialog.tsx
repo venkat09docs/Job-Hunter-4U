@@ -245,8 +245,7 @@ const AffiliateUserDetailsDialog: React.FC<AffiliateUserDetailsDialogProps> = ({
                         {payoutSettings.payment_method === 'bank' ? 'Account Number' : 'UPI ID'}:
                       </span>
                       <span className="font-mono text-sm">
-                        {payoutSettings.account_details.replace(/./g, '*').slice(0, -4) + 
-                         payoutSettings.account_details.slice(-4)}
+                        {payoutSettings.account_details}
                       </span>
                     </div>
 
