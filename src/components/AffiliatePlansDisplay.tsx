@@ -122,19 +122,19 @@ const getEstimatedPlanPrice = (planName: string): number => {
   const normalizedName = planName.toLowerCase();
   
   if (normalizedName.includes('one week') || normalizedName.includes('7 day')) {
-    return 399;
+    return 699; // Updated to correct price
   } else if (normalizedName.includes('one month') || normalizedName.includes('1 month')) {
-    return 999;
+    return 1499; // Updated to correct price
   } else if (normalizedName.includes('3 month') || normalizedName.includes('quarterly')) {
-    return 2499;
+    return 3999; // Updated to correct price
   } else if (normalizedName.includes('6 month')) {
     return 6999;
   } else if (normalizedName.includes('1 year') || normalizedName.includes('annual') || normalizedName.includes('yearly') || normalizedName.includes('12 month')) {
-    return 8999;
+    return 11999; // Updated to correct price
   } else if (normalizedName.includes('plan a') || normalizedName.includes('course only')) {
-    return 20000; // Updated from 2999 to 20000
+    return 20000;
   } else if (normalizedName.includes('plan b') || normalizedName.includes('placement')) {
-    return 30000; // Updated from 4999 to 30000
+    return 30000;
   } else if (normalizedName.includes('premium')) {
     return 1999;
   }
