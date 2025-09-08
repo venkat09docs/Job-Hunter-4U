@@ -506,7 +506,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* The Future Section */}
-      <section className="py-12 bg-background">
+      <section id="ai-future" className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-foreground">
             The Future Belongs to Those who Master AI
@@ -1373,7 +1373,7 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Pricing */}
-      <section className="py-12 bg-background">
+      <section id="investment-pricing" className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground">

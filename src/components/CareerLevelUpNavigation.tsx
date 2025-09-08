@@ -69,7 +69,7 @@ const CareerLevelUpNavigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('hero')}
+                onClick={() => handleNavigate('/')}
               >
                 Home
               </NavigationMenuLink>
@@ -77,7 +77,7 @@ const CareerLevelUpNavigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('features')}
+                onClick={() => scrollToSection('ai-future')}
               >
                 Future of AI
               </NavigationMenuLink>
@@ -85,7 +85,7 @@ const CareerLevelUpNavigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('pricing')}
+                onClick={() => scrollToSection('investment-pricing')}
               >
                 Pricing
               </NavigationMenuLink>
@@ -201,21 +201,21 @@ const CareerLevelUpNavigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => scrollToSection('hero')}
+                  onClick={() => handleNavigate('/')}
                 >
                   Home
                 </Button>
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => scrollToSection('features')}
+                  onClick={() => scrollToSection('ai-future')}
                 >
                   Future of AI
                 </Button>
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => scrollToSection('investment-pricing')}
                 >
                   Pricing
                 </Button>
