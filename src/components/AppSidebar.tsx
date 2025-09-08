@@ -79,8 +79,7 @@ const githubItems = [
 ];
 
 const clpItems = [
-  { title: "My Assignments", url: "/dashboard/career-level/my-assignments", icon: ClipboardList, featureKey: null },
-  { title: "CLP Leaderboard", url: "/dashboard/career-level/leaderboard", icon: Trophy, featureKey: null },
+  { title: "Career Level Program", url: "/dashboard/career-level", icon: Trophy, featureKey: null },
 ];
 
 const clpAdminItems = [

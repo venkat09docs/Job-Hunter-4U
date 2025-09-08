@@ -73,11 +73,10 @@ import CareerLevelUp from "./pages/CareerLevelUp";
 
 // Career Level Program (CLP) imports
 import CLPDashboard from "./pages/career-level/CLPDashboard";
-import MyAssignments from "./pages/career-level/MyAssignments";
+import CareerLevelProgram from "./pages/career-level/CareerLevelProgram";
 import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
-import CLPLeaderboard from "./pages/career-level/CLPLeaderboard";
 import CLPCoursesManagement from "./pages/career-level/CLPCoursesManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
@@ -492,10 +491,18 @@ const AppContent = () => {
             } 
           />
           <Route 
+            path="/dashboard/career-level" 
+            element={
+              <ProtectedRoute>
+                <CareerLevelProgram />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/dashboard/career-level/my-assignments" 
             element={
               <ProtectedRoute>
-                <MyAssignments />
+                <CareerLevelProgram />
               </ProtectedRoute>
             } 
           />
@@ -523,11 +530,11 @@ const AppContent = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
+           <Route 
             path="/dashboard/career-level/leaderboard" 
             element={
               <ProtectedRoute>
-                <CLPLeaderboard />
+                <CareerLevelProgram />
               </ProtectedRoute>
             } 
            />
