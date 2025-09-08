@@ -5,6 +5,14 @@ const Testimonials = () => {
   return (
     <section className="py-12 bg-background">
       <div className="container px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+            What Our Users Are Saying
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Real success stories from job seekers who transformed their careers with our platform
+          </p>
+        </div>
         <div className="bg-gradient-card rounded-2xl p-8 md:p-12 shadow-elegant border">
           <div className="space-y-8">
             {/* First Testimonial */}

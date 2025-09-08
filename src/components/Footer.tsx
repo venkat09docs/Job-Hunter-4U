@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, MapPin, Twitter, Linkedin, Github } from "lucide-react";
+import { Mail, Phone, MapPin, Youtube, Linkedin, Github } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -100,7 +100,7 @@ const Footer = () => {
           {/* Social links */}
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon">
-              <Twitter className="w-4 h-4" />
+              <Youtube className="w-4 h-4" />
             </Button>
             <Button variant="ghost" size="icon">
               <Linkedin className="w-4 h-4" />

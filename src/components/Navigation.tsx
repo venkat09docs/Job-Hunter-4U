@@ -85,14 +85,6 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('ai-tools')}
-              >
-                AI Tools
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => scrollToSection('pricing')}
               >
                 Pricing
@@ -227,13 +219,6 @@ const Navigation = () => {
                   onClick={() => scrollToSection('features')}
                 >
                   Features
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => scrollToSection('ai-tools')}
-                >
-                  AI Tools
                 </Button>
                 <Button
                   variant="ghost"
