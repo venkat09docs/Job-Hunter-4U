@@ -35,7 +35,7 @@ import {
   Terminal
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import Navigation from "@/components/Navigation";
+import CareerLevelUpNavigation from "@/components/CareerLevelUpNavigation";
 
 import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -352,7 +352,7 @@ const CareerLevelUp = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <Navigation />
+      <CareerLevelUpNavigation />
       
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-orange to-amber text-white py-3 text-center font-medium">
