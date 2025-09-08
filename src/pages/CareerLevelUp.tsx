@@ -844,11 +844,11 @@ const CareerLevelUp = () => {
 
             {/* Highlighted Topics */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto mb-8">
-              <div className="bg-gradient-to-br from-blue/10 to-cyan/10 border border-blue/20 rounded-lg p-4">
-                <div className="w-12 h-12 bg-blue/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Code className="h-6 w-6 text-blue" />
+              <div className="bg-gradient-to-br from-emerald/20 to-teal/20 border border-emerald/40 rounded-lg p-4 shadow-lg">
+                <div className="w-12 h-12 bg-emerald/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Code className="h-6 w-6 text-emerald-700" />
                 </div>
-                <h3 className="font-semibold text-blue text-sm">Linux Mastery</h3>
+                <h3 className="font-semibold text-emerald-700 text-sm">Linux Mastery</h3>
               </div>
               
               <div className="bg-gradient-to-br from-emerald/10 to-teal/10 border border-emerald/20 rounded-lg p-4">
@@ -858,11 +858,11 @@ const CareerLevelUp = () => {
                 <h3 className="font-semibold text-emerald text-sm">Shell Scripting</h3>
               </div>
 
-              <div className="bg-gradient-to-br from-yellow/10 to-orange/10 border border-yellow/20 rounded-lg p-4">
-                <div className="w-12 h-12 bg-yellow/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <FileText className="h-6 w-6 text-yellow-600" />
+              <div className="bg-gradient-to-br from-violet/20 to-purple/20 border border-violet/40 rounded-lg p-4 shadow-lg">
+                <div className="w-12 h-12 bg-violet/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <FileText className="h-6 w-6 text-violet-700" />
                 </div>
-                <h3 className="font-semibold text-yellow-600 text-sm">Python</h3>
+                <h3 className="font-semibold text-violet-700 text-sm">Python</h3>
               </div>
               
               <div className="bg-gradient-to-br from-orange/10 to-amber/10 border border-orange/20 rounded-lg p-4">
@@ -892,7 +892,7 @@ const CareerLevelUp = () => {
                 <ExternalLink className="ml-3 h-5 w-5" />
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
-                Join 50K+ DevOps learners • New videos every week • 100% FREE content
+                Join 2K+ DevOps learners • New videos every week • 100% FREE content
               </p>
             </div>
           </div>
@@ -915,7 +915,7 @@ const CareerLevelUp = () => {
                         <Code className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold mb-2">Linux Fundamentals</h3>
+                        <h3 className="text-xl font-bold mb-2 text-yellow-300 drop-shadow-lg">Linux Fundamentals</h3>
                         <p className="text-blue-100 text-sm">Complete Linux course from basics to advanced</p>
                       </div>
                     </div>
