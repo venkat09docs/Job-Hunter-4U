@@ -982,7 +982,7 @@ const CareerLevelUp = () => {
             {/* Playlist 3 - Python Programming */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-yellow/5 to-orange/10 border-2 border-yellow/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJQYT5H2BuFSwYmfmKeS57P', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j1d0z5oop40L51pEh26COuH', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
@@ -1022,7 +1022,7 @@ const CareerLevelUp = () => {
             {/* Playlist 4 - AWS Fundamentals */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FKok5gI1v4g4S-g-PLaW9YD', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j1YTfYxa_vPLt2RMgDC1w14', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
@@ -1062,7 +1062,7 @@ const CareerLevelUp = () => {
             {/* Playlist 5 - DevOps Tools */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-violet/5 to-purple/10 border-2 border-violet/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJmEu_f4C4at8hGnUqU5SH4', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j0S-9tUixHfIFvw2FBXeFvL', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
@@ -1102,7 +1102,7 @@ const CareerLevelUp = () => {
             {/* Playlist 6 - GenAI for OpenAPI */}
             <Card 
               className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-pink/5 to-rose/10 border-2 border-pink/20 overflow-hidden"
-              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJHA8RGE98-zN8OBcCMcnFh', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/playlist?list=PLV-Ke6r5p-j0K9VVJ7HOqOBWoAtUa1FK9', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
