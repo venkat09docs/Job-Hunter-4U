@@ -9,11 +9,11 @@ const JobTrackerShowcase = () => {
   };
 
   return (
-    <section className="py-10 lg:py-16 bg-gradient-feature">
+    <section className="py-8 lg:py-12 bg-gradient-feature">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-success mb-6">
-            <div className="w-8 h-8 text-white">📊</div>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-success mb-6">
+            <div className="w-12 h-12 text-white text-4xl flex items-center justify-center">📊</div>
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
             Job Status Tracker

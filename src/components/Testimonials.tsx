@@ -3,7 +3,7 @@ import { Star } from "lucide-react";
 
 const Testimonials = () => {
   return (
-    <section className="py-12 bg-background">
+    <section className="py-8 bg-gradient-subtle">
       <div className="container px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">

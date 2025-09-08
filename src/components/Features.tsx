@@ -57,7 +57,7 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-12 bg-gradient-feature">
+    <section className="py-8 bg-gradient-feature">
       <div className="container px-4">
         {/* Pain Points Section */}
         <div className="text-center space-y-8 mb-16">
@@ -82,14 +82,14 @@ const Features = () => {
           </div>
           
           <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20">
-            <h3 className="text-2xl font-bold mb-4">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">
               Here's How{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
                 Career Level Up
               </span>{" "}
               Solves Every Problem
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-lg md:text-xl text-muted-foreground">
               Stop struggling alone. Join the platform who transformed their career with our AI-powered platform.
             </p>
           </div>
@@ -112,7 +112,7 @@ const Features = () => {
 
         {/* CTA Section */}
         <div className="bg-gradient-card rounded-2xl p-8 border border-primary/20 text-center space-y-6">
-          <h3 className="text-2xl font-bold">Don't Be The Last To Know</h3>
+          <h3 className="text-3xl md:text-4xl font-bold">Don't Be The Last To Know</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-success" />
