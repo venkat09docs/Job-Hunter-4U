@@ -438,11 +438,11 @@ const CareerLevelUp = () => {
                   
                   {/* Additional Keywords on Left Side */}
                   <div className="absolute top-4 left-4 space-y-2">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-indigo/20">
-                      <span className="text-sm font-bold text-indigo">Kubernetes</span>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-sky/20">
+                      <span className="text-sm font-bold text-sky">Vibe Coding</span>
                     </div>
                     <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-teal/20">
-                      <span className="text-sm font-bold text-teal">GenAI</span>
+                      <span className="text-sm font-bold text-teal">AI Agents</span>
                     </div>
                   </div>
                 </div>
@@ -682,77 +682,115 @@ const CareerLevelUp = () => {
       </section>
 
       {/* Schedule & Format Section */}
-      <section className="py-12 bg-gradient-to-br from-violet/5 to-indigo/5">
+      <section className="py-16 bg-gradient-to-br from-violet/5 via-indigo/5 to-emerald/5">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-            Schedule & Format
-          </h2>
-          <p className="text-center text-lg text-muted-foreground mb-16">
-            Designed for working professionals with flexible learning options
-          </p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+              Schedule & Format
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Designed for working professionals with flexible learning options and comprehensive support
+            </p>
+          </div>
           
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-8 bg-gradient-to-br from-card/80 to-muted/20 backdrop-blur-sm border-2 border-violet/20">
-              <CardContent className="p-0 space-y-6">
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-violet/20 rounded-full flex items-center justify-center">
-                        <Calendar className="h-5 w-5 text-violet" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Next Cohort</h4>
-                        <p className="text-muted-foreground">18th Sep 2025</p>
-                      </div>
+          <div className="max-w-6xl mx-auto">
+            {/* Main Info Cards */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {/* Next Cohort Card */}
+              <Card className="group relative overflow-hidden border-2 border-violet/20 bg-gradient-to-br from-violet/10 to-violet/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-violet to-indigo rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Calendar className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">Next Cohort</h3>
+                  <p className="text-2xl font-bold text-violet mb-1">18th Sep 2025</p>
+                  <p className="text-sm text-muted-foreground">Registration Open</p>
+                </CardContent>
+              </Card>
+
+              {/* Live Classes Card */}
+              <Card className="group relative overflow-hidden border-2 border-emerald/20 bg-gradient-to-br from-emerald/10 to-emerald/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald to-teal rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Clock className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">Live Classes</h3>
+                  <p className="text-lg font-bold text-emerald mb-1">Mon-Fri</p>
+                  <p className="text-sm text-muted-foreground">8:30–10:00 AM IST</p>
+                </CardContent>
+              </Card>
+
+              {/* Hands-on Labs Card */}
+              <Card className="group relative overflow-hidden border-2 border-orange/20 bg-gradient-to-br from-orange/10 to-orange/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange to-amber rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Code className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">Hands-on Labs</h3>
+                  <p className="text-lg font-bold text-orange mb-1">Saturday</p>
+                  <p className="text-sm text-muted-foreground">8-10 PM IST</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Support Features */}
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              {/* Recordings Available Card */}
+              <Card className="group relative overflow-hidden border-2 border-sky/20 bg-gradient-to-br from-sky/10 to-sky/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-sky to-blue rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <CheckCircle className="h-8 w-8 text-white" />
                     </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald/20 rounded-full flex items-center justify-center">
-                        <Clock className="h-5 w-5 text-emerald" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Live Classes</h4>
-                        <p className="text-muted-foreground">Mon-Fri 8:30–10:00 AM IST</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange/20 rounded-full flex items-center justify-center">
-                        <Code className="h-5 w-5 text-orange" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Hands-on Labs</h4>
-                        <p className="text-muted-foreground">Sat 8-10 PM IST</p>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-2 text-foreground">Recordings Available</h3>
+                      <p className="text-muted-foreground">Access all session recordings anytime</p>
+                      <div className="mt-2">
+                        <Badge variant="outline" className="border-sky text-sky bg-sky/10">
+                          + WhatsApp Community
+                        </Badge>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-sky/20 rounded-full flex items-center justify-center">
-                        <CheckCircle className="h-5 w-5 text-sky" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Recordings Available</h4>
-                        <p className="text-muted-foreground">+ WhatsApp Community</p>
-                      </div>
+                </CardContent>
+              </Card>
+
+              {/* TA Support Card */}
+              <Card className="group relative overflow-hidden border-2 border-rose/20 bg-gradient-to-br from-rose/10 to-rose/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-rose to-pink rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <User className="h-8 w-8 text-white" />
                     </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-rose/20 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-rose" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">TA Support</h4>
-                        <p className="text-muted-foreground">24-hr SLA</p>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold mb-2 text-foreground">TA Support</h3>
+                      <p className="text-muted-foreground">Dedicated Teaching Assistant support</p>
+                      <div className="mt-2">
+                        <Badge variant="outline" className="border-rose text-rose bg-rose/10">
+                          24-hr SLA
+                        </Badge>
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="mt-8 p-6 bg-gradient-to-r from-violet/10 to-indigo/10 rounded-lg border border-violet/20">
-                  <h4 className="font-semibold text-center mb-2">Special Focus on AI Integration</h4>
-                  <p className="text-center text-muted-foreground">Learn to build and deploy <strong className="text-violet">AI Agents</strong>, create powerful <strong className="text-emerald">AI Automations</strong>, and design efficient <strong className="text-orange">Vibe Coding</strong> in every module</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Special Focus Highlight */}
+            <Card className="bg-gradient-to-r from-violet/10 via-indigo/10 to-emerald/10 border-2 border-violet/20 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet/5 via-transparent to-emerald/5"></div>
+              <CardContent className="p-8 relative z-10">
+                <div className="text-center">
+                  <div className="flex justify-center items-center gap-2 mb-4">
+                    <Zap className="h-6 w-6 text-violet" />
+                    <h3 className="text-2xl font-bold text-foreground">Special Focus on AI Integration</h3>
+                    <Zap className="h-6 w-6 text-violet" />
+                  </div>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    Learn to build and deploy <span className="font-bold text-violet px-2 py-1 bg-violet/10 rounded-md">AI Agents</span>, 
+                    create powerful <span className="font-bold text-emerald px-2 py-1 bg-emerald/10 rounded-md">AI Automations</span>, 
+                    and design efficient <span className="font-bold text-orange px-2 py-1 bg-orange/10 rounded-md">Vibe Coding</span> in every module
+                  </p>
                 </div>
               </CardContent>
             </Card>
