@@ -29,7 +29,8 @@ const AffiliatePlansDisplay = () => {
     const matchingPlan = plansWithPrices.find(plan => 
       plan.name.toLowerCase() === planName.toLowerCase()
     );
-    return matchingPlan ? matchingPlan.price : getEstimatedPlanPrice(planName);
+    // If plan exists in database and has a valid price (not 0), use it; otherwise use estimated price
+    return matchingPlan && matchingPlan.price > 0 ? matchingPlan.price : getEstimatedPlanPrice(planName);
   };
 
   return (
@@ -122,16 +123,18 @@ const getEstimatedPlanPrice = (planName: string): number => {
   
   if (normalizedName.includes('one week') || normalizedName.includes('7 day')) {
     return 399;
-  } else if (normalizedName.includes('plan a') || normalizedName.includes('course only')) {
-    return 2999;
-  } else if (normalizedName.includes('plan b') || normalizedName.includes('placement')) {
-    return 4999;
-  } else if (normalizedName.includes('monthly') || normalizedName.includes('1 month')) {
+  } else if (normalizedName.includes('one month') || normalizedName.includes('1 month')) {
     return 999;
-  } else if (normalizedName.includes('quarterly') || normalizedName.includes('3 month')) {
+  } else if (normalizedName.includes('3 month') || normalizedName.includes('quarterly')) {
     return 2499;
-  } else if (normalizedName.includes('annual') || normalizedName.includes('yearly') || normalizedName.includes('12 month')) {
+  } else if (normalizedName.includes('6 month')) {
+    return 6999;
+  } else if (normalizedName.includes('1 year') || normalizedName.includes('annual') || normalizedName.includes('yearly') || normalizedName.includes('12 month')) {
     return 8999;
+  } else if (normalizedName.includes('plan a') || normalizedName.includes('course only')) {
+    return 20000; // Updated from 2999 to 20000
+  } else if (normalizedName.includes('plan b') || normalizedName.includes('placement')) {
+    return 30000; // Updated from 4999 to 30000
   } else if (normalizedName.includes('premium')) {
     return 1999;
   }
