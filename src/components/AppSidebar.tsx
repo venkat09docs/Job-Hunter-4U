@@ -63,6 +63,7 @@ const mainItems = [
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
+  { title: "Career Level Program", url: "/dashboard/career-level", icon: Award, featureKey: null },
   { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
 ];
 
