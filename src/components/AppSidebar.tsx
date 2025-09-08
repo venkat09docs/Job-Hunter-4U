@@ -85,8 +85,6 @@ const clpItems = [
 
 const clpAdminItems = [
   { title: "CLP Dashboard", url: "/dashboard/career-level/dashboard", icon: BarChart3, featureKey: null },
-  { title: "Create Assignment", url: "/dashboard/career-level/assignments/new", icon: Plus, featureKey: null },
-  { title: "CLP Leaderboard", url: "/dashboard/career-level/leaderboard", icon: Trophy, featureKey: null },
 ];
 
 const recruiterItems = [
