@@ -54,29 +54,7 @@ const Affiliate = () => {
     );
   }
 
-  // Check if user has active subscription
-  if (!hasActiveSubscription()) {
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Affiliate Program</h1>
-            <p className="text-muted-foreground mt-2">
-              Earn commissions by referring new users to our platform
-            </p>
-          </div>
-
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              You need an active subscription to join our affiliate program. 
-              Please upgrade your plan to get started.
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
+  // No need to check for active subscription anymore since users are auto-eligible
 
   // If user doesn't have affiliate account yet
   if (!affiliateData) {
@@ -94,7 +72,7 @@ const Affiliate = () => {
             <CardHeader>
               <CardTitle>Join Our Affiliate Program</CardTitle>
               <CardDescription>
-                Start earning 10% commission on every successful referral
+                Earn dynamic commissions by referring new users to our platform
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -103,7 +81,8 @@ const Affiliate = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground ml-4">
                   <li>• Get your unique affiliate link</li>
                   <li>• Share it with your network</li>
-                  <li>• Earn 10% commission on successful subscriptions</li>
+                  <li>• Earn up to 20% commission on successful subscriptions</li>
+                  <li>• Higher rates for longer plans</li>
                   <li>• Track your earnings and referrals</li>
                 </ul>
               </div>
@@ -259,9 +238,9 @@ const Affiliate = () => {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10%</div>
+              <div className="text-2xl font-bold">10-20%</div>
               <p className="text-xs text-muted-foreground">
-                Per successful referral
+                Based on plan selected
               </p>
             </CardContent>
           </Card>

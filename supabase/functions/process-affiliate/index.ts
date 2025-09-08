@@ -30,7 +30,7 @@ serve(async (req) => {
       throw new Error("Invalid JSON in request body");
     }
     
-    const { user_id, payment_amount, payment_id } = requestBody;
+    const { user_id, payment_amount, payment_id, plan_name } = requestBody;
 
     // Detailed validation with better logging
     if (!user_id) {
@@ -43,7 +43,7 @@ serve(async (req) => {
       throw new Error("Missing required field: payment_amount");
     }
 
-    console.log("🔍 Processing affiliate referral for user:", user_id, "amount:", payment_amount, "payment_id:", payment_id);
+    console.log("🔍 Processing affiliate referral for user:", user_id, "amount:", payment_amount, "payment_id:", payment_id, "plan:", plan_name);
 
     // First check if user exists
     const { data: userData, error: userError } = await supabaseClient.auth.admin.getUserById(user_id);
@@ -65,7 +65,8 @@ serve(async (req) => {
     const { data, error } = await supabaseClient.rpc('process_affiliate_referral', {
       p_referred_user_id: user_id,
       p_payment_amount: payment_amount,
-      p_payment_id: payment_id || null
+      p_payment_id: payment_id || null,
+      p_plan_name: plan_name || null
     });
 
     if (error) {

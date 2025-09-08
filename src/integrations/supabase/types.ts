@@ -139,6 +139,39 @@ export type Database = {
           },
         ]
       }
+      affiliate_plan_commissions: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          plan_name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          commission_rate?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          plan_name: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          plan_name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       affiliate_referrals: {
         Row: {
           affiliate_user_id: string
@@ -4488,6 +4521,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_commission_rate_for_plan: {
+        Args: { plan_name_param: string }
+        Returns: number
+      }
       get_dashboard_stats_consolidated: {
         Args: { target_user_id?: string }
         Returns: {
@@ -4848,11 +4885,18 @@ export type Database = {
         Returns: undefined
       }
       process_affiliate_referral: {
-        Args: {
-          p_payment_amount: number
-          p_payment_id?: string
-          p_referred_user_id: string
-        }
+        Args:
+          | {
+              p_payment_amount: number
+              p_payment_id?: string
+              p_plan_name?: string
+              p_referred_user_id: string
+            }
+          | {
+              p_payment_amount: number
+              p_payment_id?: string
+              p_referred_user_id: string
+            }
         Returns: Json
       }
       process_pending_webhooks: {

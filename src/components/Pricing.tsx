@@ -193,7 +193,8 @@ const Pricing = () => {
                 body: {
                   user_id: user?.id,
                   payment_amount: plan.price,
-                  payment_id: response.razorpay_payment_id
+                  payment_id: response.razorpay_payment_id,
+                  plan_name: plan.name
                 }
               });
             } catch (affiliateError) {

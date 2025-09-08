@@ -9,8 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, DollarSign, TrendingUp, UserCheck, CreditCard, CheckCircle, XCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Users, DollarSign, TrendingUp, UserCheck, CreditCard, CheckCircle, XCircle, Settings } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import AffiliatePlanCommissions from './AffiliatePlanCommissions';
 
 const AffiliateManagement = () => {
   const { affiliateUsers, payoutRequests, loading, updating, updateAffiliateEligibility, updatePayoutRequest } = useAffiliateAdmin();
@@ -67,12 +69,21 @@ const AffiliateManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold">Affiliate Management</h2>
-        <p className="text-muted-foreground mt-2">
-          Manage affiliate users and their eligibility
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">Affiliate Management</h2>
+        <p className="text-muted-foreground">
+          Manage affiliate users, their eligibility, and process payout requests
         </p>
       </div>
+
+      {/* Tabs for different sections */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Overview & Users</TabsTrigger>
+          <TabsTrigger value="commissions">Plan Commissions</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
 
       {/* Stats Cards - Only for Super Admin */}
       {isAdmin && (
@@ -351,6 +362,12 @@ const AffiliateManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+
+        <TabsContent value="commissions">
+          <AffiliatePlanCommissions />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
