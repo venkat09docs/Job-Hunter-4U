@@ -909,19 +909,7 @@ const CareerLevelUp = () => {
                   <div className="text-lg font-semibold mb-2">Salary Increase</div>
                   <div className="text-muted-foreground">Priya Singh</div>
                   <div className="text-sm text-muted-foreground">Jr. Developer → DevOps Engineer</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹8L → ₹13.2L at Infosys</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-violet/5 to-indigo/10 border-2 border-violet/20">
-              <CardContent className="space-y-4 p-0">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-violet mb-2">3</div>
-                  <div className="text-lg font-semibold mb-2">Job Offers</div>
-                  <div className="text-muted-foreground">Rahul Kumar</div>
-                  <div className="text-sm text-muted-foreground">Manual Tester → AI-DevOps Lead</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹6L → ₹18L at TCS</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹8L → ₹13.2L</div>
                 </div>
               </CardContent>
             </Card>
@@ -929,23 +917,11 @@ const CareerLevelUp = () => {
             <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20">
               <CardContent className="space-y-4 p-0">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-orange mb-2">45</div>
+                  <div className="text-4xl font-bold text-orange mb-2">65</div>
                   <div className="text-lg font-semibold mb-2">Days to Job</div>
                   <div className="text-muted-foreground">Anjali Patel</div>
                   <div className="text-sm text-muted-foreground">Support Engineer → Cloud DevOps</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹5L → ₹12L at Wipro</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-sky/5 to-cyan/10 border-2 border-sky/20">
-              <CardContent className="space-y-4 p-0">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-sky mb-2">2x</div>
-                  <div className="text-lg font-semibold mb-2">Career Growth</div>
-                  <div className="text-muted-foreground">Vikram Sharma</div>
-                  <div className="text-sm text-muted-foreground">Fresher → Senior DevOps</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹0 → ₹15L at Accenture</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹5L → ₹12L</div>
                 </div>
               </CardContent>
             </Card>
@@ -957,7 +933,7 @@ const CareerLevelUp = () => {
                   <div className="text-lg font-semibold mb-2">Remote Work</div>
                   <div className="text-muted-foreground">Sneha Reddy</div>
                   <div className="text-sm text-muted-foreground">IT Admin → DevOps Architect</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹7L → ₹22L at Microsoft</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹7L → ₹22L</div>
                 </div>
               </CardContent>
             </Card>
@@ -969,7 +945,7 @@ const CareerLevelUp = () => {
                   <div className="text-lg font-semibold mb-2">Days Training</div>
                   <div className="text-muted-foreground">Arjun Gupta</div>
                   <div className="text-sm text-muted-foreground">Network Engineer → AI-DevOps</div>
-                  <div className="text-sm text-orange font-medium mt-2">₹9L → ₹16L at Capgemini</div>
+                  <div className="text-sm text-orange font-medium mt-2">₹9L → ₹16L</div>
                 </div>
               </CardContent>
             </Card>
