@@ -113,8 +113,8 @@ const Hero = () => {
             <div className="bg-gradient-hero rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-success/5"></div>
               <div className="text-center relative z-10">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-success mb-4 shadow-glow">
-                  <User className="h-6 w-6 text-white" />
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-primary mb-4 shadow-glow">
+                  <User className="h-6 w-6 text-primary-foreground" />
                 </div>
                 
                 <h3 className="text-2xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
