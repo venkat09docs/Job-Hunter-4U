@@ -1,16 +1,18 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye } from 'lucide-react';
+import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 const CLPDashboard = () => {
   const { user } = useAuth();
   const { role: userRole, loading: roleLoading } = useRole();
+  const navigate = useNavigate();
   const { loading } = useCareerLevelProgram();
 
   if (!user) {
@@ -99,8 +101,34 @@ const CLPDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-6">
+          {/* Left side - Navigation */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-500" />
+              <span className="font-semibold">Career Level Program</span>
+            </div>
+          </div>
+          
+          {/* Right side - User Profile */}
+          <UserProfileDropdown />
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
+        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Career Level Program
