@@ -71,6 +71,14 @@ import AffiliateManagementPage from "./pages/AffiliateManagement";
 import SocialProofManagement from "./pages/SocialProofManagement";
 import CareerLevelUp from "./pages/CareerLevelUp";
 
+// Career Level Program (CLP) imports
+import CLPDashboard from "./pages/career-level/CLPDashboard";
+import MyAssignments from "./pages/career-level/MyAssignments";
+import AssignmentDetail from "./pages/career-level/AssignmentDetail";
+import CreateAssignment from "./pages/career-level/CreateAssignment";
+import AttemptAssignment from "./pages/career-level/AttemptAssignment";
+import CLPLeaderboard from "./pages/career-level/CLPLeaderboard";
+
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
 
@@ -473,6 +481,48 @@ const AppContent = () => {
           />
           <Route path="/blogs" element={<PublicBlogs />} />
           <Route path="/profile/:slug" element={<PublicProfile />} />
+          {/* Career Level Program (CLP) Routes */}
+          <Route 
+            path="/dashboard/career-level/dashboard" 
+            element={
+              <ProtectedRoute>
+                <CLPDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/my-assignments" 
+            element={
+              <ProtectedRoute>
+                <MyAssignments />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/assignment/:assignmentId" 
+            element={
+              <ProtectedRoute>
+                <AssignmentDetail />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/assignments/new" 
+            element={
+              <ProtectedRoute>
+                <CreateAssignment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/leaderboard" 
+            element={
+              <ProtectedRoute>
+                <CLPLeaderboard />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="/careerlevelup" element={<CareerLevelUp />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
