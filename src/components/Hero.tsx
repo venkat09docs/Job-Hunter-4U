@@ -53,27 +53,11 @@ const Hero = () => {
                   <span className="text-xs md:text-sm font-medium">5x Faster Hiring</span>
                 </div>
               </div>
-              <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                <p className="text-sm text-warning font-medium">
-                  🕒 Limited Time: Get access for just ₹699/week (Regular price: ₹1,999)
-                </p>
-              </div>
             </div>
 
-            {/* CTA buttons with urgency */}
+            {/* Rating and trust indicators */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  variant="hero" 
-                  size="lg" 
-                  className="group animate-pulse w-full sm:w-auto"
-                  onClick={() => navigate('/auth')}
-                >
-                  Build Profile - for Free
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1 md:gap-2 text-sm md:text-base text-muted-foreground">
                 <span>⭐⭐⭐⭐⭐</span>
                 <span className="hidden sm:inline">4.6/5 and 13 Years of Trust</span>
                 <span className="sm:hidden">4.6/5 Trust Score</span>

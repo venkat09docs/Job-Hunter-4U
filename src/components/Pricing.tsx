@@ -296,16 +296,6 @@ const Pricing = () => {
             <strong className="text-foreground">Your competitor is already using AI. Don't get left behind.</strong>
           </p>
           
-          <div className="bg-gradient-card rounded-lg p-6 max-w-md mx-auto border border-primary/20">
-            <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-primary">LIMITED TIME</div>
-              <div className="text-sm text-muted-foreground">70% OFF - Ends Soon</div>
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-lg line-through text-muted-foreground">₹1,999</span>
-                <span className="text-3xl font-bold text-success">₹699</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Pricing cards */}
