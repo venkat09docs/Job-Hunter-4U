@@ -34,7 +34,9 @@ import {
   Menu,
   X,
   Share2,
-  ClipboardList
+  ClipboardList,
+  Award,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -76,6 +78,17 @@ const githubItems = [
   { title: "GitHub Weekly", url: "/github-weekly", icon: Target, featureKey: "github_weekly" },
 ];
 
+const clpItems = [
+  { title: "My Assignments", url: "/dashboard/career-level/my-assignments", icon: ClipboardList, featureKey: null },
+  { title: "CLP Leaderboard", url: "/dashboard/career-level/leaderboard", icon: Trophy, featureKey: null },
+];
+
+const clpAdminItems = [
+  { title: "CLP Dashboard", url: "/dashboard/career-level/dashboard", icon: BarChart3, featureKey: null },
+  { title: "Create Assignment", url: "/dashboard/career-level/assignments/new", icon: Plus, featureKey: null },
+  { title: "CLP Leaderboard", url: "/dashboard/career-level/leaderboard", icon: Trophy, featureKey: null },
+];
+
 const recruiterItems = [
   { title: "Dashboard", url: "/recruiter", icon: Home },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
@@ -83,6 +96,7 @@ const recruiterItems = [
   { title: "Notification Analytics", url: "/admin/notification-analytics", icon: Bell },
   { title: "Notification Management", url: "/admin/notification-management", icon: Settings },
   { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
+  ...clpAdminItems,
 ];
 
 const instituteAdminItems = [
@@ -91,6 +105,7 @@ const instituteAdminItems = [
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
+  ...clpAdminItems,
 ];
 
 const adminItems = [
@@ -113,6 +128,7 @@ const adminItems = [
   { title: "Manage Subscriptions", url: "/dashboard/manage-subscriptions", icon: Settings },
   { title: "Recruiter Dashboard", url: "/recruiter", icon: Home },
   { title: "Post Job", url: "/recruiter/post-job", icon: PenTool },
+  ...clpAdminItems,
 ];
 
 export function AppSidebar() {
@@ -134,6 +150,7 @@ export function AppSidebar() {
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
   const [careerGrowthDialogOpen, setCareerGrowthDialogOpen] = useState(false);
   const [githubToolsDialogOpen, setGithubToolsDialogOpen] = useState(false);
+  const [clpOpen, setClpOpen] = useState(false);
 
   console.log('🔍 AppSidebar: All hooks called, continuing render');
 
@@ -164,6 +181,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const isJobHunterActive = jobHunterItems.some((i) => isActive(i.url));
   const isGitHubActive = githubItems.some((i) => isActive(i.url));
+  const isClpActive = clpItems.some((i) => isActive(i.url));
 
   const getInitials = () => {
     if (profile?.username) {
@@ -211,6 +229,13 @@ export function AppSidebar() {
             activeBg: 'bg-orange-50 dark:bg-orange-950/20',
             hoverBg: 'hover:bg-orange-50/50 dark:hover:bg-orange-950/10',
             icon: 'text-orange-500'
+          };
+        case 'clp':
+          return {
+            activeColor: 'text-purple-600 dark:text-purple-400',
+            activeBg: 'bg-purple-50 dark:bg-purple-950/20',
+            hoverBg: 'hover:bg-purple-50/50 dark:hover:bg-purple-950/10',
+            icon: 'text-purple-500'
           };
         default:
           return {
@@ -606,7 +631,44 @@ export function AppSidebar() {
                          </div>
                        )}
                   </div>
-                )}
+                 )}
+
+                {/* Career Level Program Section */}
+                <div className="mt-4">
+                    <button
+                      onClick={() => setClpOpen(!clpOpen)}
+                      className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                        isClpActive ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-purple-50/50 dark:hover:bg-purple-950/10'
+                      }`}
+                    >
+                      <Award className="h-5 w-5 flex-shrink-0 text-purple-500" />
+                      {!isCollapsed && (
+                        <>
+                          <span className="font-medium text-sm">Career Level Program</span>
+                          {clpOpen ? (
+                            <ChevronDown className="h-4 w-4 ml-auto text-purple-500" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 ml-auto text-purple-500" />
+                          )}
+                        </>
+                      )}
+                    </button>
+                    {clpOpen && !isCollapsed && (
+                      <div className="space-y-1 mt-1">
+                        {clpItems.map((item) => {
+                          const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                          return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="clp" />;
+                        })}
+                      </div>
+                    )}
+                    {isCollapsed && (
+                      <div className="space-y-1">
+                        {clpItems.map((item) => (
+                          <MenuItem key={item.title} item={item} sectionColor="clp" />
+                        ))}
+                      </div>
+                    )}
+                </div>
               </div>
             </div>
           )}
