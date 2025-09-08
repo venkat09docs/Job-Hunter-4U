@@ -515,6 +515,14 @@ const AppContent = () => {
             } 
           />
           <Route 
+            path="/dashboard/career-level/attempt/:attemptId" 
+            element={
+              <ProtectedRoute>
+                <AttemptAssignment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/dashboard/career-level/leaderboard" 
             element={
               <ProtectedRoute>

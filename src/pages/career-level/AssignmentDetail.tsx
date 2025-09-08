@@ -81,7 +81,7 @@ const AssignmentDetail: React.FC = () => {
     try {
       const attempt = await startAttempt(assignment.id);
       if (attempt) {
-        navigate(`/career-level/attempt/${attempt.id}`);
+        navigate(`/dashboard/career-level/attempt/${attempt.id}`);
       }
     } catch (error) {
       console.error('Error starting attempt:', error);
