@@ -188,11 +188,11 @@ const AIToolsSection = () => {
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {organizedTools[category.id]?.map((tool) => (
-                  <Card 
-                    key={tool.id} 
-                    className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50"
-                    onClick={handleToolClick}
-                  >
+                   <Card 
+                     key={tool.id} 
+                     className="group cursor-pointer hover:shadow-elegant transition-all duration-300 border-2 hover:border-primary/50 bg-gradient-card"
+                     onClick={handleToolClick}
+                   >
                     <CardHeader className="space-y-3">
                       {tool.image_url && (
                         <div className="w-full h-48 bg-muted rounded-lg overflow-hidden">

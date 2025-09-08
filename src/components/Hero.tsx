@@ -28,7 +28,7 @@ const Hero = () => {
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Tired of endless applications with no responses?</strong> Join the Platform where already job seekers who landed their dream jobs 5x faster using our AI-powered career platform. <span className="text-primary font-semibold">Average salary increase: 40%</span>
+                <strong className="text-foreground">Discover the career platform trusted by top job seekers</strong>—land your dream role up to 5x faster with AI-powered tools designed to elevate your job search. <span className="text-primary font-semibold">Users report an average salary boost of 40%.</span>
               </p>
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="text-sm text-destructive font-medium">

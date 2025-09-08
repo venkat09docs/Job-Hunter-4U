@@ -59,7 +59,7 @@ const ActivityFeaturesShowcase = () => {
   };
 
   return (
-    <section className="py-10 lg:py-16 bg-gradient-to-br from-background via-background/50 to-primary/5">
+    <section className="py-10 lg:py-16 bg-gradient-feature">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
@@ -78,14 +78,14 @@ const ActivityFeaturesShowcase = () => {
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-border/50"
+              className="group cursor-pointer hover:shadow-elegant transition-all duration-300 hover:scale-[1.02] border-border/50 bg-gradient-card hover:border-primary/30"
               onClick={() => handleFeatureClick(feature.route)}
             >
               <CardHeader className="pb-3">
-                <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center mb-3`}>
+                <div className="w-12 h-12 rounded-lg bg-gradient-primary text-white flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   {feature.icon}
                 </div>
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
+                <CardTitle className="text-lg bg-gradient-primary bg-clip-text text-transparent">{feature.title}</CardTitle>
                 <CardDescription className="text-sm leading-relaxed">
                   {feature.description}
                 </CardDescription>

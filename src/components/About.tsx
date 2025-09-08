@@ -1,14 +1,19 @@
 const About = () => {
   return (
-    <section id="about" className="py-10 bg-background">
+    <section id="about" className="py-10 bg-gradient-subtle">
       <div className="container px-4">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-info mb-6">
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-gradient-primary rounded-full"></div>
+            </div>
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-8 bg-gradient-primary bg-clip-text text-transparent">
             About Career Level Up
           </h2>
-          <div className="prose prose-lg mx-auto">
+          <div className="bg-card/50 rounded-2xl p-8 border border-border/50 backdrop-blur-sm">
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Career Level Up is a flagship product from Rise n Shine Technologies, designed to help students and professionals automate their job-hunting journey. With 19+ years of training & IT experience, Rise n Shine empowers job seekers with tools, AI automation, and proven strategies to land their dream careers.
+              Career Level Up is a flagship product from <span className="text-primary font-semibold">Rise n Shine Technologies</span>, designed to help students and professionals automate their job-hunting journey. With <span className="text-success font-semibold">19+ years of training & IT experience</span>, Rise n Shine empowers job seekers with tools, AI automation, and proven strategies to land their dream careers.
             </p>
           </div>
         </div>

@@ -57,7 +57,7 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-12 bg-muted/30">
+    <section className="py-12 bg-gradient-feature">
       <div className="container px-4">
         {/* Pain Points Section */}
         <div className="text-center space-y-8 mb-16">
@@ -98,12 +98,12 @@ const Features = () => {
         {/* Features grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16">
           {features.map((feature, index) => (
-            <Card key={index} className="p-4 md:p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 group">
+            <Card key={index} className="p-4 md:p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 group hover:border-primary/30">
               <div className="space-y-3 md:space-y-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-primary text-white rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <feature.icon className="w-5 h-5 md:w-6 md:h-6" />
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold">{feature.title}</h3>
+                <h3 className="text-lg md:text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent">{feature.title}</h3>
                 <p className="text-sm md:text-base text-muted-foreground">{feature.description}</p>
               </div>
             </Card>
