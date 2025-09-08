@@ -389,6 +389,27 @@ const CareerLevelUp = () => {
                   Live Online
                 </Badge>
               </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                 <Button 
+                   size="lg" 
+                   className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-8 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                   onClick={() => setIsCurriculumDialogOpen(true)}
+                 >
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Curriculum
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-2 border-violet text-violet hover:bg-violet/10 px-8 py-3 text-base font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                  onClick={() => setIsCallbackDialogOpen(true)}
+                >
+                  <Phone className="mr-2 h-5 w-5" />
+                  Get a Callback
+                </Button>
+              </div>
             </div>
 
             {/* Right Side - Image and Next Cohort Board */}
@@ -402,10 +423,32 @@ const CareerLevelUp = () => {
                     alt="AI-Enhanced DevOps & AWS Bootcamp" 
                     className="w-full h-auto object-cover"
                   />
+                  {/* Enhanced Tech Keywords Overlay */}
+                  <div className="absolute top-4 right-4 space-y-2">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-orange/20">
+                      <span className="text-sm font-bold text-orange">AWS</span>
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-violet/20">
+                      <span className="text-sm font-bold text-violet">AI</span>
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-emerald/20">
+                      <span className="text-sm font-bold text-emerald">DevOps</span>
+                    </div>
+                  </div>
+                  
+                  {/* Additional Keywords on Left Side */}
+                  <div className="absolute top-4 left-4 space-y-2">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-indigo/20">
+                      <span className="text-sm font-bold text-indigo">Kubernetes</span>
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg border border-teal/20">
+                      <span className="text-sm font-bold text-teal">GenAI</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Next Cohort Board */}
+              {/* Next Cohort Board - Simplified */}
               <div className="bg-gradient-to-br from-violet/10 via-indigo/5 to-violet/5 rounded-2xl p-6 border-2 border-violet/20 shadow-lg backdrop-blur-sm">
                 <div className="text-center space-y-4">
                   <div className="inline-flex items-center gap-2 bg-violet/10 rounded-full px-4 py-2">
@@ -416,27 +459,6 @@ const CareerLevelUp = () => {
                   <div className="space-y-2">
                     <p className="text-2xl lg:text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
                     <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
-                  </div>
-                  
-                  {/* CTA Buttons */}
-                  <div className="flex flex-col gap-3 pt-2">
-                     <Button 
-                       size="lg" 
-                       className="bg-gradient-to-r from-emerald to-teal hover:from-teal hover:to-emerald text-white px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                       onClick={() => setIsCurriculumDialogOpen(true)}
-                     >
-                      <Download className="mr-2 h-5 w-5" />
-                      Download Curriculum
-                    </Button>
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                      className="border-2 border-violet text-violet hover:bg-violet/10 px-6 py-3 text-base font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                      onClick={() => setIsCallbackDialogOpen(true)}
-                    >
-                      <Phone className="mr-2 h-5 w-5" />
-                      Get a Callback
-                    </Button>
                   </div>
                 </div>
               </div>
