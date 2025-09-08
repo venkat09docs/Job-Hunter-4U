@@ -57,7 +57,7 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-12 bg-muted/30">
       <div className="container px-4">
         {/* Pain Points Section */}
         <div className="text-center space-y-8 mb-16">

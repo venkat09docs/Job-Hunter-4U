@@ -59,7 +59,7 @@ const ActivityFeaturesShowcase = () => {
   };
 
   return (
-    <section className="py-16 lg:py-24 bg-gradient-to-br from-background via-background/50 to-primary/5">
+    <section className="py-10 lg:py-16 bg-gradient-to-br from-background via-background/50 to-primary/5">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">

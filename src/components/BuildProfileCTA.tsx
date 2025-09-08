@@ -10,7 +10,7 @@ const BuildProfileCTA = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-background via-background/50 to-primary/5">
+    <section className="py-12 bg-gradient-to-br from-background via-background/50 to-primary/5">
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-primary mb-6">

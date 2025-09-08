@@ -279,7 +279,7 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-20">
+    <section id="pricing" className="py-12">
       <div className="container px-4">
         {/* Header with FOMO */}
         <div className="text-center space-y-6 mb-16">

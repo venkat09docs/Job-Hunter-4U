@@ -12,7 +12,7 @@ const Hero = () => {
       <div className="absolute inset-0 bg-gradient-hero" />
       
       {/* Hero content */}
-      <div className="container relative z-10 px-4 py-20">
+      <div className="container relative z-10 px-4 py-16">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text content */}
           <div className="space-y-6 md:space-y-8 text-center lg:text-left">
