@@ -166,7 +166,7 @@ const CreateAssignment = () => {
         description: 'Assignment created successfully'
       });
 
-      navigate('/career-level/dashboard');
+      navigate('/dashboard/career-level/dashboard');
     } catch (error) {
       toast({
         title: 'Error',
@@ -275,7 +275,7 @@ const CreateAssignment = () => {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate('/career-level/dashboard')}
+            onClick={() => navigate('/dashboard/career-level/dashboard')}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -578,7 +578,7 @@ const CreateAssignment = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/career-level/dashboard')}
+                onClick={() => navigate('/dashboard/career-level/dashboard')}
               >
                 Cancel
               </Button>
