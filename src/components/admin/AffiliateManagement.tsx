@@ -24,10 +24,12 @@ import {
   Search,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Eye
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AffiliatePlanCommissions from './AffiliatePlanCommissions';
+import AffiliateUserDetailsDialog from './AffiliateUserDetailsDialog';
 
 const AffiliateManagement = () => {
   const { 
@@ -53,6 +55,8 @@ const AffiliateManagement = () => {
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [userDetailsDialogOpen, setUserDetailsDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   if (loading) {
     return (
@@ -264,16 +268,29 @@ const AffiliateManagement = () => {
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={affiliateUser.is_eligible}
-                        onCheckedChange={(checked) => updateAffiliateEligibility(affiliateUser.id, checked)}
-                        disabled={updating}
-                      />
-                      <span className="text-sm">
-                        {affiliateUser.is_eligible ? 'Eligible' : 'Disabled'}
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={affiliateUser.is_eligible}
+                          onCheckedChange={(checked) => updateAffiliateEligibility(affiliateUser.id, checked)}
+                          disabled={updating}
+                        />
+                        <span className="text-sm">
+                          {affiliateUser.is_eligible ? 'Eligible' : 'Disabled'}
+                        </span>
+                      </div>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedUser(affiliateUser);
+                          setUserDetailsDialogOpen(true);
+                        }}
+                        className="flex items-center gap-1"
+                      >
+                        <Eye className="h-3 w-3" />
+                        View Details
+                      </Button>
                   </div>
                 </div>
               ))}
@@ -479,6 +496,13 @@ const AffiliateManagement = () => {
         <TabsContent value="commissions">
           <AffiliatePlanCommissions />
         </TabsContent>
+
+        {/* User Details Dialog */}
+        <AffiliateUserDetailsDialog
+          open={userDetailsDialogOpen}
+          onOpenChange={setUserDetailsDialogOpen}
+          affiliateUser={selectedUser}
+        />
       </Tabs>
     </div>
   );

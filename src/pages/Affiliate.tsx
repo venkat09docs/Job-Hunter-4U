@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PayoutRequestDialog from '@/components/PayoutRequestDialog';
 import AffiliateSettingsDialog from '@/components/AffiliateSettingsDialog';
 import PayoutConfirmationDialog from '@/components/PayoutConfirmationDialog';
+import AffiliatePlansDisplay from '@/components/AffiliatePlansDisplay';
 
 const Affiliate = () => {
   const navigate = useNavigate();
@@ -407,6 +408,19 @@ const Affiliate = () => {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Plans Display */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Plans & Commissions</CardTitle>
+            <CardDescription>
+              View all available plans and their commission rates
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AffiliatePlansDisplay />
           </CardContent>
         </Card>
 
