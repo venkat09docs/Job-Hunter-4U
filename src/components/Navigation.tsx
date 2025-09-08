@@ -189,7 +189,7 @@ const Navigation = () => {
         <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
           <Button 
             onClick={() => handleNavigate('/auth')} 
-            className="hidden xl:inline-flex"
+            className="hidden lg:inline-flex"
             size="sm"
           >
             Build Resume for Free
