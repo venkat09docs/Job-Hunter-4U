@@ -79,15 +79,7 @@ const Navigation = () => {
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
                 onClick={() => scrollToSection('features')}
               >
-                Features
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => scrollToSection('ai-tools')}
-              >
-                AI Tools
+                Future of AI
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -101,9 +93,9 @@ const Navigation = () => {
             <NavigationMenuItem>
               <NavigationMenuLink
                 className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/careerlevelup')}
+                onClick={() => handleNavigate('/')}
               >
-                Career Level Up
+                Job Hunter
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -157,14 +149,6 @@ const Navigation = () => {
                   </NavigationMenuLink>
                 </div>
               </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                className={cn(navigationMenuTriggerStyle(), "cursor-pointer")}
-                onClick={() => handleNavigate('/auth')}
-              >
-                Recruiter
-              </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink
@@ -226,14 +210,7 @@ const Navigation = () => {
                   className="justify-start"
                   onClick={() => scrollToSection('features')}
                 >
-                  Features
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => scrollToSection('ai-tools')}
-                >
-                  AI Tools
+                  Future of AI
                 </Button>
                 <Button
                   variant="ghost"
@@ -245,9 +222,9 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start"
-                  onClick={() => handleNavigate('/careerlevelup')}
+                  onClick={() => handleNavigate('/')}
                 >
-                  Career Level Up
+                  Job Hunter
                 </Button>
                 <Button
                   variant="ghost"
@@ -255,13 +232,6 @@ const Navigation = () => {
                   onClick={() => handleNavigate('/courses')}
                 >
                   Courses
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => handleNavigate('/auth')}
-                >
-                  Recruiter
                 </Button>
                 <Button
                   variant="ghost"
