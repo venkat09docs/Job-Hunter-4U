@@ -901,12 +901,12 @@ const CareerLevelUp = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {/* Playlist 1 - Linux Fundamentals */}
             <Card 
-              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue/5 to-cyan/10 border-2 border-blue/20 overflow-hidden"
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-sky/5 to-cyan/10 border-2 border-sky/20 overflow-hidden"
               onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJdJd3IKdiM4Om1hGo2Hsdt', '_blank')}
             >
               <CardContent className="p-0">
                 <div className="relative">
-                  <div className="bg-gradient-to-br from-blue to-cyan p-8 text-white relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-sky to-cyan p-8 text-white relative overflow-hidden">
                     <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                       <PlayCircle className="h-8 w-8 text-white" />
                     </div>
@@ -916,7 +916,7 @@ const CareerLevelUp = () => {
                       </div>
                       <div>
                         <h3 className="text-xl font-bold mb-2 text-white drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)] font-semibold">Linux Fundamentals</h3>
-                        <p className="text-blue-100 text-sm">Complete Linux course from basics to advanced</p>
+                        <p className="text-sky-100 text-sm">Complete Linux course from basics to advanced</p>
                       </div>
                     </div>
                   </div>
