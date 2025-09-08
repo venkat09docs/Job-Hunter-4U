@@ -20,9 +20,6 @@ import type { Course, Module, CreateAssignmentData, CreateQuestionData } from '@
 const assignmentSchema = z.object({
   module_id: z.string().min(1, 'Module is required'),
   title: z.string().min(1, 'Title is required'),
-  type: z.enum(['mcq', 'tf', 'descriptive', 'task'], {
-    required_error: 'Assignment type is required',
-  }),
   instructions: z.string().optional(),
   visible_from: z.string().optional(),
   start_at: z.string().optional(),
