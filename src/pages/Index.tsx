@@ -42,8 +42,8 @@ const Index = () => {
       <div id="features">
         <Features />
       </div>
-      <Testimonials />
       <About />
+      <Testimonials />
       <ActivityFeaturesShowcase />
       <JobTrackerShowcase />
       <div id="ai-tools">
