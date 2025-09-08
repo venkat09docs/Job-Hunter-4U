@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   Clock, 
@@ -9,7 +9,9 @@ import {
   Trophy,
   FileText,
   Timer,
-  PlayCircle
+  PlayCircle,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,10 +25,12 @@ import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
 import type { AssignmentWithProgress, Attempt } from '@/types/clp';
 import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 const MyAssignments: React.FC = () => {
   const { user } = useAuth();
   const { role } = useRole();
+  const navigate = useNavigate();
   const { 
     loading, 
     getAssignmentsWithProgress, 
@@ -333,14 +337,41 @@ const MyAssignments: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">My Assignments</h1>
-        <p className="text-muted-foreground">
-          Track your progress and complete your career development assignments.
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Top Navigation Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-6">
+          {/* Left side - Navigation */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-500" />
+              <span className="font-semibold">Career Level Program</span>
+            </div>
+          </div>
+          
+          {/* Right side - User Profile */}
+          <UserProfileDropdown />
+        </div>
+      </header>
+
+      <div className="space-y-6 p-6">
+        {/* Page Header */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">My Assignments</h1>
+          <p className="text-muted-foreground">
+            Track your progress and complete your career development assignments.
+          </p>
+        </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -456,6 +487,7 @@ const MyAssignments: React.FC = () => {
           {renderRecentAttempts()}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };
