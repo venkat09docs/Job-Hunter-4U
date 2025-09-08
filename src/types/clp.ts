@@ -4,7 +4,7 @@ export type AssignmentType = 'mcq' | 'tf' | 'descriptive' | 'task';
 export type AttemptPolicy = 'best' | 'last';
 export type AttemptStatus = 'started' | 'submitted' | 'auto_submitted' | 'invalidated';
 export type ReviewStatus = 'pending' | 'in_review' | 'published';
-export type QuestionKind = 'mcq' | 'tf' | 'descriptive';
+export type QuestionKind = 'mcq' | 'tf' | 'descriptive' | 'task';
 export type VisibilityAudience = 'all' | 'cohort' | 'users';
 
 export interface Course {
@@ -200,7 +200,7 @@ export interface CreateAssignmentData {
 
 export interface CreateQuestionData {
   assignment_id: string;
-  kind: QuestionKind;
+  kind: 'mcq' | 'tf' | 'descriptive'; // Database only supports these three types
   prompt: string;
   options?: string[];
   correct_answers?: string[];

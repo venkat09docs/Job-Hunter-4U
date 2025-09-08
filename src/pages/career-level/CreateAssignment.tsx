@@ -42,7 +42,7 @@ type AssignmentFormData = z.infer<typeof assignmentSchema>;
 
 interface Question {
   id?: string;
-  kind: 'mcq' | 'tf' | 'descriptive';
+  kind: 'mcq' | 'tf' | 'descriptive' | 'task';
   prompt: string;
   options: string[];
   correct_answers: string[];
@@ -69,7 +69,6 @@ const CreateAssignment = () => {
   const form = useForm<AssignmentFormData>({
     resolver: zodResolver(assignmentSchema),
     defaultValues: {
-      type: 'mcq',
       randomize_questions: false,
       shuffle_options: false,
       negative_marking: false,
@@ -79,8 +78,6 @@ const CreateAssignment = () => {
       is_published: false,
     },
   });
-
-  const assignmentType = form.watch('type');
 
   useEffect(() => {
     loadCourses();
@@ -120,9 +117,9 @@ const CreateAssignment = () => {
 
   const addQuestion = () => {
     const newQuestion: Question = {
-      kind: assignmentType === 'task' ? 'descriptive' : assignmentType,
+      kind: 'mcq',
       prompt: '',
-      options: assignmentType === 'mcq' ? ['', '', '', ''] : assignmentType === 'tf' ? ['True', 'False'] : [],
+      options: ['', '', '', ''],
       correct_answers: [],
       marks: 1,
     };
@@ -141,16 +138,30 @@ const CreateAssignment = () => {
 
   const onSubmit = async (data: AssignmentFormData) => {
     try {
-      // Create assignment
-      const assignment = await createAssignment(data as CreateAssignmentData);
+      // Determine assignment type based on questions
+      const hasObjectiveQuestions = questions.some(q => ['mcq', 'tf'].includes(q.kind));
+      const hasSubjectiveQuestions = questions.some(q => ['descriptive', 'task'].includes(q.kind));
+      
+      let assignmentType: 'mcq' | 'tf' | 'descriptive' | 'task';
+      if (hasObjectiveQuestions && hasSubjectiveQuestions) {
+        assignmentType = 'mcq'; // Mixed type, default to mcq
+      } else if (questions.length > 0) {
+        assignmentType = questions[0].kind;
+      } else {
+        assignmentType = 'mcq'; // Default
+      }
+
+      // Create assignment with inferred type
+      const assignmentData = { ...data, type: assignmentType } as CreateAssignmentData;
+      const assignment = await createAssignment(assignmentData);
       if (!assignment) throw new Error('Failed to create assignment');
 
-      // Create questions for objective types
-      if (['mcq', 'tf'].includes(data.type) && questions.length > 0) {
+      // Create all questions
+      if (questions.length > 0) {
         for (const question of questions) {
           const questionData: CreateQuestionData = {
             assignment_id: assignment.id,
-            kind: question.kind,
+            kind: question.kind === 'task' ? 'descriptive' : question.kind, // Map task to descriptive for database
             prompt: question.prompt,
             options: question.options,
             correct_answers: question.correct_answers,
@@ -193,6 +204,40 @@ const CreateAssignment = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div>
+          <label className="text-sm font-medium">Question Type</label>
+          <Select 
+            value={question.kind}
+            onValueChange={(value: 'mcq' | 'tf' | 'descriptive' | 'task') => {
+              const updatedQuestion: Partial<Question> = { kind: value };
+              
+              // Reset options based on question type
+              if (value === 'mcq') {
+                updatedQuestion.options = ['', '', '', ''];
+                updatedQuestion.correct_answers = [];
+              } else if (value === 'tf') {
+                updatedQuestion.options = ['True', 'False'];
+                updatedQuestion.correct_answers = [];
+              } else {
+                updatedQuestion.options = [];
+                updatedQuestion.correct_answers = [];
+              }
+              
+              updateQuestion(index, updatedQuestion);
+            }}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mcq">Multiple Choice</SelectItem>
+              <SelectItem value="tf">True/False</SelectItem>
+              <SelectItem value="descriptive">Descriptive</SelectItem>
+              <SelectItem value="task">Task/Project</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div>
           <label className="text-sm font-medium">Question Prompt</label>
           <Textarea
@@ -343,45 +388,19 @@ const CreateAssignment = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Assignment Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., React Hooks Quiz" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Assignment Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="mcq">Multiple Choice</SelectItem>
-                            <SelectItem value="tf">True/False</SelectItem>
-                            <SelectItem value="descriptive">Descriptive</SelectItem>
-                            <SelectItem value="task">Task/Project</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assignment Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., React Hooks Quiz" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -544,23 +563,22 @@ const CreateAssignment = () => {
               </CardContent>
             </Card>
 
-            {/* Step 3: Questions (for MCQ/TF) */}
-            {['mcq', 'tf'].includes(assignmentType) && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-                        3
-                      </div>
-                      Questions ({questions.length})
-                    </CardTitle>
-                    <Button type="button" onClick={addQuestion} size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Question
-                    </Button>
-                  </div>
-                </CardHeader>
+            {/* Step 3: Questions */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                      3
+                    </div>
+                    Questions ({questions.length})
+                  </CardTitle>
+                  <Button type="button" onClick={addQuestion} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Question
+                  </Button>
+                </div>
+              </CardHeader>
                 <CardContent>
                   {questions.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
@@ -569,9 +587,8 @@ const CreateAssignment = () => {
                   ) : (
                     questions.map((question, index) => renderQuestionEditor(question, index))
                   )}
-                </CardContent>
-              </Card>
-            )}
+              </CardContent>
+            </Card>
 
             {/* Submit Buttons */}
             <div className="flex items-center justify-end gap-4">
