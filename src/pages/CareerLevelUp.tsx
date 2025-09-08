@@ -28,7 +28,11 @@ import {
   ArrowRight,
   Cloud,
   TrendingUp,
-  Users
+  Users,
+  Youtube,
+  PlayCircle,
+  ExternalLink,
+  Terminal
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
@@ -810,6 +814,235 @@ const CareerLevelUp = () => {
                 </Card>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* YouTube Playlist Section */}
+      <section className="py-16 bg-gradient-to-br from-red/5 via-orange/5 to-amber/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red to-orange text-white px-6 py-2 rounded-full font-semibold mb-6">
+              <Youtube className="h-5 w-5" />
+              FREE DevOps Master Course
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+              Complete DevOps Learning Path
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
+              Subscribe to our YouTube channel and get access to comprehensive DevOps tutorials covering everything from basics to advanced concepts
+            </p>
+
+            {/* Highlighted Topics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12">
+              <div className="bg-gradient-to-br from-blue/10 to-cyan/10 border border-blue/20 rounded-lg p-4">
+                <div className="w-12 h-12 bg-blue/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Code className="h-6 w-6 text-blue" />
+                </div>
+                <h3 className="font-semibold text-blue text-sm">Linux Mastery</h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-emerald/10 to-teal/10 border border-emerald/20 rounded-lg p-4">
+                <div className="w-12 h-12 bg-emerald/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Terminal className="h-6 w-6 text-emerald" />
+                </div>
+                <h3 className="font-semibold text-emerald text-sm">Shell Scripting</h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-orange/10 to-amber/10 border border-orange/20 rounded-lg p-4">
+                <div className="w-12 h-12 bg-orange/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Cloud className="h-6 w-6 text-orange" />
+                </div>
+                <h3 className="font-semibold text-orange text-sm">AWS Cloud</h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-violet/10 to-purple/10 border border-violet/20 rounded-lg p-4">
+                <div className="w-12 h-12 bg-violet/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Cpu className="h-6 w-6 text-violet" />
+                </div>
+                <h3 className="font-semibold text-violet text-sm">DevOps Tools</h3>
+              </div>
+            </div>
+          </div>
+
+          {/* YouTube Playlists Grid */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Playlist 1 - Linux Fundamentals */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue/5 to-cyan/10 border-2 border-blue/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJdJd3IKdiM4Om1hGo2Hsdt', '_blank')}
+            >
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-blue to-cyan p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Code className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Linux Fundamentals</h3>
+                        <p className="text-blue-100 text-sm">Complete Linux course from basics to advanced</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        25+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Master Linux commands, file systems, permissions, and shell scripting essential for DevOps
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Playlist 2 - Shell Scripting */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-emerald/5 to-teal/10 border-2 border-emerald/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FI_MY7HDP6ZnOax0hzavama', '_blank')}
+            >
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-emerald to-teal p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Terminal className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Shell Scripting Mastery</h3>
+                        <p className="text-emerald-100 text-sm">Bash scripting from zero to hero</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        20+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Learn advanced bash scripting, automation, and scripting best practices for DevOps workflows
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Playlist 3 - AWS Fundamentals */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-orange/5 to-amber/10 border-2 border-orange/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FKok5gI1v4g4S-g-PLaW9YD', '_blank')}
+            >
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-orange to-amber p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Cloud className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">AWS Cloud Essentials</h3>
+                        <p className="text-orange-100 text-sm">Complete AWS services and cloud computing</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        35+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Master AWS core services, IAM, EC2, S3, VPC, and cloud architecture patterns
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Playlist 4 - DevOps Tools */}
+            <Card 
+              className="group cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-violet/5 to-purple/10 border-2 border-violet/20 overflow-hidden"
+              onClick={() => window.open('https://youtube.com/playlist?list=PLxzKY3wu0_FJmEu_f4C4at8hGnUqU5SH4', '_blank')}
+            >
+              <CardContent className="p-0">
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-violet to-purple p-8 text-white relative overflow-hidden">
+                    <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                      <PlayCircle className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Cpu className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">DevOps Tools & CI/CD</h3>
+                        <p className="text-violet-100 text-sm">Docker, Kubernetes, Jenkins, and more</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <span className="flex items-center gap-2">
+                        <PlayCircle className="h-4 w-4" />
+                        30+ Videos
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Watch Now
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Complete DevOps toolchain including Docker, Kubernetes, Jenkins, and CI/CD pipelines
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Subscribe CTA */}
+          <div className="text-center mt-12">
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-red to-orange hover:from-red-600 hover:to-orange-600 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              onClick={() => window.open('https://youtube.com/@RisenShineTechnologies?sub_confirmation=1', '_blank')}
+            >
+              <Youtube className="mr-3 h-6 w-6" />
+              Subscribe Now for FREE Access
+              <ExternalLink className="ml-3 h-5 w-5" />
+            </Button>
+            <p className="text-sm text-muted-foreground mt-4">
+              Join 50K+ DevOps learners • New videos every week • 100% FREE content
+            </p>
           </div>
         </div>
       </section>
