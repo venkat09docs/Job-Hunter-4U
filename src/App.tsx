@@ -78,6 +78,7 @@ import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import CLPLeaderboard from "./pages/career-level/CLPLeaderboard";
+import CLPCoursesManagement from "./pages/career-level/CLPCoursesManagement";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
@@ -529,9 +530,17 @@ const AppContent = () => {
                 <CLPLeaderboard />
               </ProtectedRoute>
             } 
-          />
-          
-          <Route path="/careerlevelup" element={<CareerLevelUp />} />
+           />
+           <Route 
+             path="/dashboard/career-level/courses" 
+             element={
+               <ProtectedRoute>
+                 <CLPCoursesManagement />
+               </ProtectedRoute>
+             } 
+           />
+           
+           <Route path="/careerlevelup" element={<CareerLevelUp />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
