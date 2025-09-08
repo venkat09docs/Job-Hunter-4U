@@ -80,6 +80,8 @@ const AffiliateSettingsDialog: React.FC<AffiliateSettingsDialogProps> = ({
   const handlePayoutSubmit = async () => {
     try {
       await updatePayoutSettings(payoutForm);
+      // Close the dialog on successful save
+      onOpenChange(false);
     } catch (error) {
       // Error handled in hook
     }
@@ -88,6 +90,8 @@ const AffiliateSettingsDialog: React.FC<AffiliateSettingsDialogProps> = ({
   const handleNotificationSubmit = async () => {
     try {
       await updateSettings(notificationForm);
+      // Close the dialog on successful save
+      onOpenChange(false);
     } catch (error) {
       // Error handled in hook
     }
