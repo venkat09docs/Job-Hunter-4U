@@ -32,6 +32,9 @@ interface PayoutRequestWithDetails {
   processed_at?: string;
   admin_notes?: string;
   rejection_reason?: string;
+  confirmed_by_user: boolean;
+  confirmed_by_user_at?: string;
+  user_confirmation_notes?: string;
   created_at: string;
   updated_at: string;
   affiliate_users?: {

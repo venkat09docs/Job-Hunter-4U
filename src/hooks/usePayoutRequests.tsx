@@ -14,6 +14,9 @@ interface PayoutRequest {
   processed_at?: string;
   admin_notes?: string;
   rejection_reason?: string;
+  confirmed_by_user: boolean;
+  confirmed_by_user_at?: string;
+  user_confirmation_notes?: string;
   created_at: string;
   updated_at: string;
 }
@@ -91,6 +94,43 @@ export const usePayoutRequests = (affiliateUserId?: string) => {
     }
   };
 
+  const confirmPayoutReceipt = async (payoutId: string, confirmationNotes?: string) => {
+    try {
+      setRequesting(true);
+      const { data, error } = await supabase
+        .from('payout_requests')
+        .update({
+          confirmed_by_user: true,
+          confirmed_by_user_at: new Date().toISOString(),
+          user_confirmation_notes: confirmationNotes
+        })
+        .eq('id', payoutId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update local state
+      setPayoutRequests(prev => 
+        prev.map(req => req.id === payoutId ? (data as PayoutRequest) : req)
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Payout receipt confirmed successfully!',
+      });
+    } catch (error: any) {
+      console.error('Error confirming payout receipt:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to confirm payout receipt',
+        variant: 'destructive'
+      });
+    } finally {
+      setRequesting(false);
+    }
+  };
+
   const canRequestPayout = (affiliateData: any) => {
     if (!affiliateData || !affiliateData.created_at) return false;
     
@@ -106,6 +146,7 @@ export const usePayoutRequests = (affiliateUserId?: string) => {
     loading,
     requesting,
     requestPayout,
+    confirmPayoutReceipt,
     canRequestPayout,
     refreshPayoutRequests: fetchPayoutRequests
   };

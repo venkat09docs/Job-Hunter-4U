@@ -11,7 +11,8 @@ import { Copy, Users, DollarSign, Share2, AlertCircle, CheckCircle, ArrowLeft, L
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import PayoutRequestDialog from '@/components/PayoutRequestDialog';
-import PayoutSettingsDialog from '@/components/PayoutSettingsDialog';
+import AffiliateSettingsDialog from '@/components/AffiliateSettingsDialog';
+import PayoutConfirmationDialog from '@/components/PayoutConfirmationDialog';
 
 const Affiliate = () => {
   const navigate = useNavigate();
@@ -31,12 +32,15 @@ const Affiliate = () => {
     payoutRequests, 
     requesting, 
     requestPayout, 
+    confirmPayoutReceipt,
     canRequestPayout,
     refreshPayoutRequests 
   } = usePayoutRequests(affiliateData?.id);
 
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [selectedPayout, setSelectedPayout] = useState<any>(null);
 
   if (loading) {
     return (
@@ -337,31 +341,65 @@ const Affiliate = () => {
               <div className="space-y-4">
                 {payoutRequests.map((request) => (
                   <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <p className="font-medium">₹{request.requested_amount.toFixed(2)}</p>
                       <p className="text-sm text-muted-foreground">
                         Requested on {new Date(request.requested_at).toLocaleDateString()}
                       </p>
                       {request.admin_notes && (
                         <p className="text-sm text-muted-foreground">
-                          Note: {request.admin_notes}
+                          Admin Note: {request.admin_notes}
+                        </p>
+                      )}
+                      {request.confirmed_by_user && request.user_confirmation_notes && (
+                        <p className="text-sm text-green-600">
+                          Your note: {request.user_confirmation_notes}
                         </p>
                       )}
                     </div>
-                    <div className="text-right space-y-1">
-                      <Badge variant={
-                        request.status === 'completed' ? 'default' : 
-                        request.status === 'approved' || request.status === 'processing' ? 'secondary' : 
-                        request.status === 'rejected' ? 'destructive' : 'outline'
-                      }>
-                        {request.status === 'processing' ? 'Processing' :
-                         request.status === 'approved' ? 'Approved' :
-                         request.status === 'completed' ? 'Completed' :
-                         request.status === 'rejected' ? 'Rejected' : 'Pending'}
-                      </Badge>
+                    <div className="text-right space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={
+                          request.status === 'completed' ? 'default' : 
+                          request.status === 'approved' || request.status === 'processing' ? 'secondary' : 
+                          request.status === 'rejected' ? 'destructive' : 'outline'
+                        }>
+                          {request.status === 'processing' ? 'Processing' :
+                           request.status === 'approved' ? 'Approved' :
+                           request.status === 'completed' ? 'Completed' :
+                           request.status === 'rejected' ? 'Rejected' : 'Pending'}
+                        </Badge>
+                        {request.confirmed_by_user && (
+                          <Badge variant="outline" className="text-green-600">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Confirmed
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Show confirmation button for completed but unconfirmed payouts */}
+                      {request.status === 'completed' && !request.confirmed_by_user && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPayout(request);
+                            setConfirmationDialogOpen(true);
+                          }}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Confirm Receipt
+                        </Button>
+                      )}
+                      
                       {request.processed_at && (
                         <p className="text-xs text-muted-foreground">
                           {request.status === 'completed' ? 'Completed' : 'Updated'}: {new Date(request.processed_at).toLocaleDateString()}
+                        </p>
+                      )}
+                      {request.confirmed_by_user_at && (
+                        <p className="text-xs text-green-600">
+                          Confirmed: {new Date(request.confirmed_by_user_at).toLocaleDateString()}
                         </p>
                       )}
                     </div>
@@ -382,11 +420,20 @@ const Affiliate = () => {
           canRequest={canRequestPayout(affiliateData)}
         />
 
-        {/* Payout Settings Dialog */}
-        <PayoutSettingsDialog
+        {/* Affiliate Settings Dialog */}
+        <AffiliateSettingsDialog
           open={settingsDialogOpen}
           onOpenChange={setSettingsDialogOpen}
           affiliateId={affiliateData?.id || ''}
+        />
+
+        {/* Payout Confirmation Dialog */}
+        <PayoutConfirmationDialog
+          open={confirmationDialogOpen}
+          onOpenChange={setConfirmationDialogOpen}
+          payoutRequest={selectedPayout}
+          onConfirm={(notes) => confirmPayoutReceipt(selectedPayout?.id, notes)}
+          loading={requesting}
         />
       </div>
     </div>

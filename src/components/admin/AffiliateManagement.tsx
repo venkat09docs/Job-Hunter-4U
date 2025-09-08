@@ -344,11 +344,22 @@ const AffiliateManagement = () => {
                       <span className="font-medium">₹{request.requested_amount.toFixed(2)}</span> requested on{' '}
                       {new Date(request.requested_at).toLocaleDateString()}
                     </p>
-                    {request.admin_notes && (
-                      <p className="text-xs text-muted-foreground">
-                        Admin notes: {request.admin_notes}
-                      </p>
-                    )}
+                      {request.admin_notes && (
+                        <p className="text-xs text-muted-foreground">
+                          Admin notes: {request.admin_notes}
+                        </p>
+                      )}
+                      {request.confirmed_by_user && (
+                        <p className="text-xs text-green-600 flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          User confirmed receipt on {new Date(request.confirmed_by_user_at).toLocaleDateString()}
+                        </p>
+                      )}
+                      {request.user_confirmation_notes && (
+                        <p className="text-xs text-muted-foreground">
+                          User note: {request.user_confirmation_notes}
+                        </p>
+                      )}
                   </div>
                   
                   <div className="flex items-center gap-2">

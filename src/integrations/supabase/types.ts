@@ -139,6 +139,53 @@ export type Database = {
           },
         ]
       }
+      affiliate_notification_settings: {
+        Row: {
+          affiliate_user_id: string
+          auto_payout_enabled: boolean | null
+          auto_payout_threshold: number | null
+          commission_notifications: boolean | null
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          payout_notifications: boolean | null
+          referral_notifications: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          affiliate_user_id: string
+          auto_payout_enabled?: boolean | null
+          auto_payout_threshold?: number | null
+          commission_notifications?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          payout_notifications?: boolean | null
+          referral_notifications?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          affiliate_user_id?: string
+          auto_payout_enabled?: boolean | null
+          auto_payout_threshold?: number | null
+          commission_notifications?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          payout_notifications?: boolean | null
+          referral_notifications?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_notification_settings_affiliate_user_id_fkey"
+            columns: ["affiliate_user_id"]
+            isOneToOne: true
+            referencedRelation: "affiliate_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliate_plan_commissions: {
         Row: {
           commission_rate: number
@@ -3192,6 +3239,8 @@ export type Database = {
           affiliate_user_id: string
           approved_at: string | null
           approved_by: string | null
+          confirmed_by_user: boolean | null
+          confirmed_by_user_at: string | null
           created_at: string
           id: string
           processed_at: string | null
@@ -3200,12 +3249,15 @@ export type Database = {
           requested_at: string
           status: string
           updated_at: string
+          user_confirmation_notes: string | null
         }
         Insert: {
           admin_notes?: string | null
           affiliate_user_id: string
           approved_at?: string | null
           approved_by?: string | null
+          confirmed_by_user?: boolean | null
+          confirmed_by_user_at?: string | null
           created_at?: string
           id?: string
           processed_at?: string | null
@@ -3214,12 +3266,15 @@ export type Database = {
           requested_at?: string
           status?: string
           updated_at?: string
+          user_confirmation_notes?: string | null
         }
         Update: {
           admin_notes?: string | null
           affiliate_user_id?: string
           approved_at?: string | null
           approved_by?: string | null
+          confirmed_by_user?: boolean | null
+          confirmed_by_user_at?: string | null
           created_at?: string
           id?: string
           processed_at?: string | null
@@ -3228,6 +3283,7 @@ export type Database = {
           requested_at?: string
           status?: string
           updated_at?: string
+          user_confirmation_notes?: string | null
         }
         Relationships: []
       }
