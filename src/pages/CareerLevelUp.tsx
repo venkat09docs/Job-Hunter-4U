@@ -216,6 +216,16 @@ const CareerLevelUp = () => {
     }
   }, [user]);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Career Level Up | Learn It. Build It. Get Hired";
+    
+    // Cleanup function to reset title when component unmounts
+    return () => {
+      document.title = "Job Hunter 4U - Smart Job Hunting Platform | Rise n Shine Technologies";
+    };
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
