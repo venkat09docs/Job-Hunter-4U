@@ -915,7 +915,7 @@ const CareerLevelUp = () => {
                         <Code className="h-8 w-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold mb-2 text-white drop-shadow-lg font-semibold">Linux Fundamentals</h3>
+                        <h3 className="text-xl font-bold mb-2 text-white drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)] font-semibold">Linux Fundamentals</h3>
                         <p className="text-blue-100 text-sm">Complete Linux course from basics to advanced</p>
                       </div>
                     </div>
