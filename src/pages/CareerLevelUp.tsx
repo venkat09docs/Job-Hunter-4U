@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import CareerLevelUpNavigation from "@/components/CareerLevelUpNavigation";
+import CountdownTimer from "@/components/CountdownTimer";
 
 import heroImage from "@/assets/devops-aws-ai-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
@@ -463,9 +464,16 @@ const CareerLevelUp = () => {
                     <span className="text-lg font-semibold text-violet">Next Cohort</span>
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-2xl lg:text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
-                    <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-2xl lg:text-3xl font-bold text-foreground">Starts on 18th Sept 2025</p>
+                      <p className="text-lg font-medium text-muted-foreground">at 8:30AM IST</p>
+                    </div>
+                    
+                    {/* Countdown Timer */}
+                    <div className="flex justify-center">
+                      <CountdownTimer />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1635,11 +1643,18 @@ const CareerLevelUp = () => {
             </p>
             
             {/* Next Cohort Highlight */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="text-center">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <div className="text-center space-y-4">
                 <p className="text-lg font-semibold text-white mb-1">🚀 Next Cohort</p>
-                <p className="text-2xl font-bold text-white">Starts on 18th Sept 2025</p>
-                <p className="text-lg font-medium text-white/80">at 8:30AM IST</p>
+                <div className="space-y-2">
+                  <p className="text-2xl font-bold text-white">Starts on 18th Sept 2025</p>
+                  <p className="text-lg font-medium text-white/80">at 8:30AM IST</p>
+                </div>
+                
+                {/* Countdown Timer */}
+                <div className="flex justify-center">
+                  <CountdownTimer className="[&_.bg-orange\\/10]:bg-white/10 [&_.border-orange]:border-white/30 [&_.text-orange]:text-white [&_.text-muted-foreground]:text-white/70" />
+                </div>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
