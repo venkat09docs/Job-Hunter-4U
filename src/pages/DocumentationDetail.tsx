@@ -40,6 +40,58 @@ export default function DocumentationDetail() {
   };
 
   const doc = findDocContent();
+
+  // Split content into steps if it contains markdown headers
+  const parseContentSteps = (content: string) => {
+    if (!content) return [];
+    
+    const lines = content.split('\n');
+    const steps = [];
+    let currentStepContent = null;
+    let stepContent = [];
+    
+    for (const line of lines) {
+      if (line.startsWith('## Step ') || line.startsWith('## Day ')) {
+        // Save previous step
+        if (currentStepContent) {
+          steps.push({
+            ...currentStepContent,
+            content: stepContent.join('\n').trim()
+          });
+        }
+        
+        // Start new step
+        currentStepContent = {
+          id: steps.length + 1,
+          title: line.replace(/^## (Step \d+:|Day \d+:)\s*/, ''),
+          content: ''
+        };
+        stepContent = [];
+      } else if (currentStepContent) {
+        stepContent.push(line);
+      }
+    }
+    
+    // Save last step
+    if (currentStepContent) {
+      steps.push({
+        ...currentStepContent,
+        content: stepContent.join('\n').trim()
+      });
+    }
+    
+    return steps;
+  };
+
+  const contentSteps = doc?.content ? parseContentSteps(doc.content) : [];
+  const hasSteps = contentSteps.length > 0;
+
+  // This useEffect must always be called
+  useEffect(() => {
+    if (hasSteps && currentStep > contentSteps.length) {
+      setCurrentStep(1);
+    }
+  }, [hasSteps, contentSteps.length, currentStep]);
   
   // If no doc found, show error
   if (!doc) {
@@ -92,61 +144,12 @@ export default function DocumentationDetail() {
   };
 
   const handleStartEdit = () => {
-    setEditTitle(doc.title);
-    setEditDescription(doc.description || '');
-    setIsEditing(true);
+    if (doc) {
+      setEditTitle(doc.title);
+      setEditDescription(doc.description || '');
+      setIsEditing(true);
+    }
   };
-
-  // Split content into steps if it contains markdown headers
-  const parseContentSteps = (content: string) => {
-    if (!content) return [];
-    
-    const lines = content.split('\n');
-    const steps = [];
-    let currentStep = null;
-    let stepContent = [];
-    
-    for (const line of lines) {
-      if (line.startsWith('## Step ') || line.startsWith('## Day ')) {
-        // Save previous step
-        if (currentStep) {
-          steps.push({
-            ...currentStep,
-            content: stepContent.join('\n').trim()
-          });
-        }
-        
-        // Start new step
-        currentStep = {
-          id: steps.length + 1,
-          title: line.replace(/^## (Step \d+:|Day \d+:)\s*/, ''),
-          content: ''
-        };
-        stepContent = [];
-      } else if (currentStep) {
-        stepContent.push(line);
-      }
-    }
-    
-    // Save last step
-    if (currentStep) {
-      steps.push({
-        ...currentStep,
-        content: stepContent.join('\n').trim()
-      });
-    }
-    
-    return steps;
-  };
-
-  const contentSteps = doc.content ? parseContentSteps(doc.content) : [];
-  const hasSteps = contentSteps.length > 0;
-
-  useEffect(() => {
-    if (hasSteps && currentStep > contentSteps.length) {
-      setCurrentStep(1);
-    }
-  }, [hasSteps, contentSteps.length, currentStep]);
 
   return (
     <div className="min-h-screen bg-background">
