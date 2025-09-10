@@ -74,10 +74,20 @@ const handler = async (req: Request): Promise<Response> => {
           .eq('id', assignmentId)
           .select(`
             *,
-            career_task_templates(title, module, points_reward),
-            profiles(user_id, full_name)
+            career_task_templates!fk_career_task_assignments_template_id(title, module, points_reward)
           `)
           .single();
+
+        // Get user profile separately to avoid relationship conflicts
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .eq('user_id', careerData.user_id)
+          .single();
+          
+        if (!profileError && profileData) {
+          careerData.profiles = profileData;
+        }
 
         if (careerError) throw careerError;
         assignmentData = careerData;
