@@ -180,180 +180,155 @@ export default function KnowledgeBase() {
           </p>
         </div>
 
-        <div className="space-y-8">
-          {/* Step by Step Docs Section */}
-          {(effectiveIsAdmin || docData.some(cat => hasPublishedContent(cat))) && (
-              <Card className="h-fit">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        Step by Step Docs
-                      </CardTitle>
-                      <CardDescription>
-                        Follow detailed guides and documentation for all features
+        {/* Modern Card-Based Layout */}
+        {(effectiveIsAdmin || docData.some(cat => hasPublishedContent(cat))) && (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Documentation Categories</h2>
+              <p className="text-muted-foreground">Choose a category to explore our step-by-step guides</p>
+            </div>
+            
+            {/* Category Cards Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {docData.map((category) => {
+                const filteredDocs = getFilteredDocs(category.docs);
+                if (!effectiveIsAdmin && filteredDocs.length === 0) return null;
+                
+                return (
+                  <Card key={category.id} className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/20">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-3">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <FileText className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold">{category.name}</h3>
+                            <Badge variant="secondary" className="text-xs mt-1">
+                              {filteredDocs.length} guides
+                            </Badge>
+                          </div>
+                        </CardTitle>
+                        {effectiveIsAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleAddDoc(category.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <CardDescription className="mt-2">
+                        {category.id === "job-hunting" && "Master the art of job searching with our comprehensive guides"}
+                        {category.id === "linkedin-growth" && "Build your professional network and grow your LinkedIn presence"}
+                        {category.id === "github-weekly" && "Enhance your coding skills and maintain an active GitHub profile"}
                       </CardDescription>
-                    </div>
-                    {effectiveIsAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleAddDoc(activeDocCategory)}
-                        className="flex items-center gap-1"
-                      >
-                        <Plus className="h-3 w-3" />
-                        Add Doc
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Tabs value={activeDocCategory} onValueChange={setActiveDocCategory}>
-                    <TabsList className="grid w-full grid-cols-3">
-                      {docData.map((category) => (
-                        <TabsTrigger 
-                          key={category.id} 
-                          value={category.id}
-                          className="text-xs"
-                        >
-                          {category.name}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
+                    </CardHeader>
                     
-                    {docData.map((category) => {
-                      const filteredDocs = getFilteredDocs(category.docs);
-                      if (!isAdmin && filteredDocs.length === 0) return null;
-                      
-                      return (
-                        <TabsContent key={category.id} value={category.id}>
-                          <ScrollArea className="h-[400px] pr-4">
-                            <div className="space-y-4">
-                              {filteredDocs.map((doc) => {
-                                // Double-check filtering for non-admin users
-                                if (!effectiveIsAdmin && !doc.isPublished) {
-                                  console.log(`Skipping unpublished doc ${doc.id} for non-admin user`);
-                                  return null;
-                                }
-                                
-                                return (
-                                <div key={doc.id} className="group">
-                                  <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
-                                    <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
-                                      <CardContent className="p-4">
-                                        <div className="flex gap-3">
-                                          <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex items-center justify-center">
-                                            <FileText className="h-4 w-4 text-muted-foreground" />
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                              <h3 className="font-semibold text-sm">{doc.title}</h3>
-                                            {effectiveIsAdmin && (
-                                                <Badge variant={doc.isPublished ? "default" : "secondary"} className="text-xs">
-                                                  {doc.isPublished ? "Published" : "Draft"}
-                                                </Badge>
-                                              )}
-                                            </div>
-                                            <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                              {doc.description}
-                                            </p>
-                                            <div className="flex items-center justify-between">
-                                              <Badge variant="secondary" className="text-xs">
-                                                {doc.readTime}
-                                              </Badge>
-                                              <span className="text-xs text-muted-foreground">
-                                                Updated {doc.lastUpdated}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </CardContent>
-                                    </Link>
-                                    {effectiveIsAdmin && (
-                                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleToggleDocPublish(doc.id, category.id, doc.isPublished);
-                                          }}
-                                          className="h-8 w-8 p-0 hover:bg-primary/10"
-                                        >
-                                          {doc.isPublished ? (
-                                            <Eye className="h-3 w-3 text-green-600" />
-                                          ) : (
-                                            <EyeOff className="h-3 w-3 text-muted-foreground" />
-                                          )}
-                                        </Button>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleEditDoc(doc.id);
-                                          }}
-                                          className="h-8 w-8 p-0 hover:bg-primary/10"
-                                        >
-                                          <Edit className="h-3 w-3" />
-                                        </Button>
-                                        <AlertDialog>
-                                          <AlertDialogTrigger asChild>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                              }}
-                                              className="h-8 w-8 p-0 hover:bg-destructive/10"
-                                            >
-                                              <Trash2 className="h-3 w-3 text-destructive" />
-                                            </Button>
-                                          </AlertDialogTrigger>
-                                          <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle>Delete Documentation</AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                                Are you sure you want to delete "{doc.title}"? This action cannot be undone.
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={() => handleDeleteDoc(doc.id, category.id)}
-                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                              >
-                                                Delete
-                                              </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
+                    <CardContent className="pt-0">
+                      <ScrollArea className="h-[300px]">
+                        <div className="space-y-3">
+                          {filteredDocs.slice(0, 5).map((doc) => {
+                            if (!effectiveIsAdmin && !doc.isPublished) return null;
+                            
+                            return (
+                              <div key={doc.id} className="group/doc relative">
+                                <Link to={`/dashboard/knowledge-base/doc/${doc.id}`}>
+                                  <Card className="p-3 hover:bg-muted/50 transition-colors border-0 shadow-sm hover:shadow-md">
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <FileText className="h-3 w-3 text-primary" />
                                       </div>
-                                    )}
-                                </Card>
-                                </div>
-                                );
-                              }).filter(Boolean)}
-                              {filteredDocs.length === 0 && (
-                                <div className="text-center py-8 text-muted-foreground">
-                                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                  <p>No documentation in this category yet.</p>
-                                </div>
-                              )}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h4 className="font-medium text-sm truncate">{doc.title}</h4>
+                                          {effectiveIsAdmin && (
+                                            <Badge variant={doc.isPublished ? "default" : "secondary"} className="text-xs">
+                                              {doc.isPublished ? "Live" : "Draft"}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                          {doc.description}
+                                        </p>
+                                        <div className="flex items-center justify-between">
+                                          <Badge variant="outline" className="text-xs">
+                                            <Clock className="h-2 w-2 mr-1" />
+                                            {doc.readTime}
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">
+                                            {doc.lastUpdated}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </Card>
+                                </Link>
+                                
+                                {effectiveIsAdmin && (
+                                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/doc:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleToggleDocPublish(doc.id, category.id, doc.isPublished);
+                                      }}
+                                      className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    >
+                                      {doc.isPublished ? (
+                                        <Eye className="h-2 w-2 text-green-600" />
+                                      ) : (
+                                        <EyeOff className="h-2 w-2 text-muted-foreground" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEditDoc(doc.id);
+                                      }}
+                                      className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    >
+                                      <Edit className="h-2 w-2" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                          
+                          {filteredDocs.length > 5 && (
+                            <div className="pt-2 border-t">
+                              <Link to={`/dashboard/knowledge-base?category=${category.id}`}>
+                                <Button variant="ghost" size="sm" className="w-full text-xs">
+                                  View all {filteredDocs.length} guides
+                                  <ArrowLeft className="h-3 w-3 ml-1 rotate-180" />
+                                </Button>
+                              </Link>
                             </div>
-                          </ScrollArea>
-                        </TabsContent>
-                      );
-                    })}
-                  </Tabs>
-                </CardContent>
-              </Card>
-            )}
-        </div>
+                          )}
+                          
+                          {filteredDocs.length === 0 && (
+                            <div className="text-center py-6 text-muted-foreground">
+                              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-xs">No guides available</p>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
