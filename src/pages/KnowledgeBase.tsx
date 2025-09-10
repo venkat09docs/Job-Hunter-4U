@@ -15,21 +15,17 @@ import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
 import { toast } from "sonner";
 
 export default function KnowledgeBase() {
-  const { videoData, docData, toggleVideoPublishStatus, toggleDocPublishStatus, loading } = useKnowledgeBase();
-  const [activeVideoCategory, setActiveVideoCategory] = useState<string>("");
+  const { docData, toggleDocPublishStatus, loading } = useKnowledgeBase();
   const [activeDocCategory, setActiveDocCategory] = useState<string>("");
   const { isAdmin, role } = useRole();
   const navigate = useNavigate();
 
   // Set default active categories when data loads
   useEffect(() => {
-    if (videoData.length > 0 && !activeVideoCategory) {
-      setActiveVideoCategory(videoData[0].id);
-    }
     if (docData.length > 0 && !activeDocCategory) {
       setActiveDocCategory(docData[0].id);
     }
-  }, [videoData, docData, activeVideoCategory, activeDocCategory]);
+  }, [docData, activeDocCategory]);
 
   // 🧪 TEMPORARY: Force test as regular user (REMOVE IN PRODUCTION)
   const [forceRegularUser, setForceRegularUser] = useState(false);
@@ -41,7 +37,6 @@ export default function KnowledgeBase() {
   console.log('Actual role:', role, 'isAdmin:', isAdmin);
   console.log('Effective role:', effectiveRole, 'effectiveIsAdmin:', effectiveIsAdmin);
   console.log('Force regular user mode:', forceRegularUser);
-  console.log('Video data sample:', videoData[0]?.videos.map(v => ({ id: v.id, title: v.title, isPublished: v.isPublished })));
   console.log('Doc data sample:', docData[0]?.docs.map(d => ({ id: d.id, title: d.title, isPublished: d.isPublished })));
 
   const handleDeleteDoc = (docId: string, categoryId: string) => {
@@ -65,25 +60,6 @@ export default function KnowledgeBase() {
     toast.success(`Documentation ${!currentStatus ? 'published' : 'unpublished'} successfully`);
   };
 
-  const handleDeleteVideo = (videoId: string, categoryId: string) => {
-    console.log(`Deleting video ${videoId} from category ${categoryId}`);
-    toast.success("Video deleted successfully");
-  };
-
-  const handleEditVideo = (videoId: string) => {
-    console.log(`Editing video ${videoId}`);
-    toast.info("Video edit dialog would open here");
-  };
-
-  const handleUploadVideo = (categoryId: string) => {
-    console.log(`Uploading video to category ${categoryId}`);
-    toast.info("Upload video feature coming soon");
-  };
-
-  const handleToggleVideoPublish = (videoId: string, categoryId: string, currentStatus: boolean) => {
-    toggleVideoPublishStatus(videoId, categoryId);
-    toast.success(`Video ${!currentStatus ? 'published' : 'unpublished'} successfully`);
-  };
 
   // Filter content based on user role and publish status
   const getFilteredDocs = (docs: any[]) => {
@@ -106,31 +82,11 @@ export default function KnowledgeBase() {
     return publishedDocs;
   };
 
-  const getFilteredVideos = (videos: any[]) => {
-    console.log('🔍 getFilteredVideos called with:', videos.length, 'videos');
-    console.log('🔍 Role check - effectiveIsAdmin:', effectiveIsAdmin, 'effectiveRole:', effectiveRole);
-    
-    if (effectiveIsAdmin) {
-      console.log('✅ Admin user: showing all', videos.length, 'videos');
-      return videos; // Admin sees all
-    }
-    
-    const publishedVideos = videos.filter(video => {
-      console.log(`🎥 Video "${video.title}" (ID: ${video.id}): isPublished = ${video.isPublished}`);
-      return video.isPublished;
-    });
-    
-    console.log('🔒 Non-admin user: filtered from', videos.length, 'to', publishedVideos.length, 'published videos');
-    console.log('📋 Published videos:', publishedVideos.map(v => v.title));
-    
-    return publishedVideos;
-  };
 
   // Check if category has any published content
-  const hasPublishedContent = (category: any, type: 'docs' | 'videos') => {
+  const hasPublishedContent = (category: any) => {
     if (effectiveIsAdmin) return true; // Admin always sees sections
-    const content = type === 'docs' ? category.docs : category.videos;
-    return content.some((item: any) => item.isPublished);
+    return category.docs.some((item: any) => item.isPublished);
   };
 
   // Show loading state
@@ -204,183 +160,8 @@ export default function KnowledgeBase() {
         </div>
 
         <div className="space-y-8">
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Videos Section */}
-            {(effectiveIsAdmin || videoData.some(cat => hasPublishedContent(cat, 'videos'))) && (
-              <Card className="h-fit">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Play className="h-5 w-5" />
-                        Videos
-                      </CardTitle>
-                      <CardDescription>
-                        Watch expert-led tutorials and career development videos
-                      </CardDescription>
-                    </div>
-                    {effectiveIsAdmin && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUploadVideo(activeVideoCategory)}
-                        className="flex items-center gap-1"
-                      >
-                        <Upload className="h-3 w-3" />
-                        Upload Video
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-              <CardContent>
-                <Tabs value={activeVideoCategory} onValueChange={setActiveVideoCategory}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    {videoData.map((category) => (
-                      <TabsTrigger 
-                        key={category.id} 
-                        value={category.id}
-                        className="text-xs"
-                      >
-                        {category.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  
-                  {videoData.map((category) => {
-                    const filteredVideos = getFilteredVideos(category.videos);
-                    if (!isAdmin && filteredVideos.length === 0) return null;
-                    
-                    return (
-                      <TabsContent key={category.id} value={category.id}>
-                        <ScrollArea className="h-[500px] pr-4">
-                          <div className="space-y-4">
-                             {filteredVideos.map((video) => {
-                               // Double-check filtering for non-admin users
-                               if (!effectiveIsAdmin && !video.isPublished) {
-                                 console.log(`Skipping unpublished video ${video.id} for non-admin user`);
-                                 return null;
-                               }
-                               
-                               return (
-                               <div key={video.id} className="group">
-                                 <Card className="hover:shadow-md transition-shadow cursor-pointer relative">
-                                   <CardContent className="p-4">
-                                     <div className="flex gap-3">
-                                       <div className="flex-shrink-0 w-16 h-12 bg-muted rounded-md flex items-center justify-center">
-                                         <Play className="h-4 w-4 text-muted-foreground" />
-                                       </div>
-                                       <div className="flex-1 min-w-0">
-                                         <div className="flex items-center gap-2 mb-1">
-                                           <h3 className="font-semibold text-sm truncate">{video.title}</h3>
-                                              {effectiveIsAdmin && (
-                                             <Badge variant={video.isPublished ? "default" : "secondary"} className="text-xs">
-                                               {video.isPublished ? "Published" : "Draft"}
-                                             </Badge>
-                                           )}
-                                         </div>
-                                         <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                                           {video.description}
-                                         </p>
-                                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                           <div className="flex items-center gap-1">
-                                             <Clock className="h-3 w-3" />
-                                             {video.duration}
-                                           </div>
-                                           <div className="flex items-center gap-1">
-                                             <User className="h-3 w-3" />
-                                             {video.instructor}
-                                           </div>
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </CardContent>
-                                   {effectiveIsAdmin && (
-                                     <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                       <Button
-                                         variant="ghost"
-                                         size="sm"
-                                         onClick={(e) => {
-                                           e.preventDefault();
-                                           e.stopPropagation();
-                                           handleToggleVideoPublish(video.id, category.id, video.isPublished);
-                                         }}
-                                         className="h-8 w-8 p-0 hover:bg-primary/10"
-                                       >
-                                         {video.isPublished ? (
-                                           <Eye className="h-3 w-3 text-green-600" />
-                                         ) : (
-                                           <EyeOff className="h-3 w-3 text-muted-foreground" />
-                                         )}
-                                       </Button>
-                                       <Button
-                                         variant="ghost"
-                                         size="sm"
-                                         onClick={(e) => {
-                                           e.preventDefault();
-                                           e.stopPropagation();
-                                           handleEditVideo(video.id);
-                                         }}
-                                         className="h-8 w-8 p-0 hover:bg-primary/10"
-                                       >
-                                         <Edit className="h-3 w-3" />
-                                       </Button>
-                                       <AlertDialog>
-                                         <AlertDialogTrigger asChild>
-                                           <Button
-                                             variant="ghost"
-                                             size="sm"
-                                             onClick={(e) => {
-                                               e.preventDefault();
-                                               e.stopPropagation();
-                                             }}
-                                             className="h-8 w-8 p-0 hover:bg-destructive/10"
-                                           >
-                                             <Trash2 className="h-3 w-3 text-destructive" />
-                                           </Button>
-                                         </AlertDialogTrigger>
-                                         <AlertDialogContent>
-                                           <AlertDialogHeader>
-                                             <AlertDialogTitle>Delete Video</AlertDialogTitle>
-                                             <AlertDialogDescription>
-                                               Are you sure you want to delete "{video.title}"? This action cannot be undone.
-                                             </AlertDialogDescription>
-                                           </AlertDialogHeader>
-                                           <AlertDialogFooter>
-                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                             <AlertDialogAction
-                                               onClick={() => handleDeleteVideo(video.id, category.id)}
-                                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                             >
-                                               Delete
-                                             </AlertDialogAction>
-                                           </AlertDialogFooter>
-                                         </AlertDialogContent>
-                                       </AlertDialog>
-                                     </div>
-                                   )}
-                                 </Card>
-                               </div>
-                               );
-                             }).filter(Boolean)}
-                            {filteredVideos.length === 0 && (
-                              <div className="text-center py-8 text-muted-foreground">
-                                <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                <p>No videos in this category yet.</p>
-                              </div>
-                            )}
-                          </div>
-                        </ScrollArea>
-                      </TabsContent>
-                    );
-                  })}
-                </Tabs>
-              </CardContent>
-            </Card>
-            )}
-
-            {/* Step by Step Docs Section */}
-            {(effectiveIsAdmin || docData.some(cat => hasPublishedContent(cat, 'docs'))) && (
+          {/* Step by Step Docs Section */}
+          {(effectiveIsAdmin || docData.some(cat => hasPublishedContent(cat))) && (
               <Card className="h-fit">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -551,7 +332,6 @@ export default function KnowledgeBase() {
                 </CardContent>
               </Card>
             )}
-          </div>
         </div>
       </div>
     </div>
