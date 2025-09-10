@@ -69,11 +69,23 @@ export const DailySessionItem: React.FC<DailySessionItemProps> = ({
   const { getSessionStatus, completeSession } = useDailyJobHuntingSessions();
   const { getTasksForDate, fetchTasksForDate } = useDailyJobHuntingTasks();
   
-  // Check for pending extension requests
-  const { hasPendingRequest, refreshPendingStatus } = useJobHuntingExtensionRequests(
-    `daily-sessions-${dayKey}`,
-    user?.id
-  );
+  // Check for pending extension requests with error handling
+  let hasPendingRequest = false;
+  let refreshPendingStatus = () => {};
+  
+  try {
+    const hookResult = useJobHuntingExtensionRequests(
+      `daily-sessions-${dayKey}`,
+      user?.id
+    );
+    hasPendingRequest = hookResult.hasPendingRequest;
+    refreshPendingStatus = hookResult.refreshPendingStatus;
+  } catch (error) {
+    console.error('Error using useJobHuntingExtensionRequests hook:', error);
+    // Fallback: assume no pending request if hook fails
+    hasPendingRequest = false;
+    refreshPendingStatus = () => console.log('Hook not available, refresh skipped');
+  }
 
   const isToday = isSameDay(day.date, new Date());
   const progressPercentage = day.totalSessions > 0 ? (day.completedSessions / day.totalSessions) * 100 : 0;
