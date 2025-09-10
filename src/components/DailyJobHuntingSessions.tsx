@@ -7,9 +7,11 @@ import { CheckCircle2, Clock, ChevronDown, ChevronRight, Sun, Sunset, Moon, Targ
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useDailyJobHuntingSessions } from '@/hooks/useDailyJobHuntingSessions';
 import { useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
+import { useAuth } from '@/hooks/useAuth';
 import { DailyTaskCard } from './DailyTaskCard';
 import { getTaskDayAvailability, canUserInteractWithDayBasedTask, getTaskAvailabilityMessage } from '@/utils/dayBasedTaskValidation';
 import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
+import { useJobHuntingExtensionRequests } from '@/hooks/useJobHuntingExtensionRequests';
 
 interface SessionTask {
   id: string;
@@ -37,6 +39,7 @@ interface DailyActivity {
 }
 
 export const DailyJobHuntingSessions: React.FC = () => {
+  const { user } = useAuth();
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const { getDailyStats, getSessionStatus, completeSession, loading, sessions } = useDailyJobHuntingSessions();
   const { getTasksForDate, fetchTasksForDate, getDailyProgress } = useDailyJobHuntingTasks();
@@ -188,6 +191,12 @@ export const DailyJobHuntingSessions: React.FC = () => {
           const hasIncompleteSessions = day.completedSessions < day.totalSessions;
           const showExtensionRequest = !canInteract && dayAvailability.canRequestExtension && hasIncompleteSessions;
           
+          // Check for pending extension requests
+          const { hasPendingRequest, refreshPendingStatus } = useJobHuntingExtensionRequests(
+            `daily-sessions-${dayKey}`,
+            user?.id
+          );
+          
           return (
             <Collapsible key={dayKey} open={isExpanded} onOpenChange={() => toggleDay(dayKey)}>
               <CollapsibleTrigger asChild>
@@ -272,15 +281,17 @@ export const DailyJobHuntingSessions: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Extension Request Button */}
-                  {showExtensionRequest && (
-                    <div className="mb-3">
-                      <JobHuntingRequestReenableDialog
-                        assignmentId={`daily-sessions-${dayKey}`}
-                        taskTitle={`${day.dayName} Daily Job Hunting Sessions`}
-                      />
-                    </div>
-                  )}
+                   {/* Extension Request Button */}
+                   {showExtensionRequest && (
+                     <div className="mb-3">
+                       <JobHuntingRequestReenableDialog
+                         assignmentId={`daily-sessions-${dayKey}`}
+                         taskTitle={`${day.dayName} Daily Job Hunting Sessions`}
+                         hasPendingRequest={hasPendingRequest}
+                         onRequestSent={refreshPendingStatus}
+                       />
+                     </div>
+                   )}
                   
                   {day.sessions.map((session) => (
                     <Card key={session.id} className={session.completed ? 'bg-green-50 border-green-200' : ''}>

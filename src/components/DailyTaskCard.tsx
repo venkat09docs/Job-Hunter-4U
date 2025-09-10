@@ -19,6 +19,8 @@ import {
 import { format } from 'date-fns';
 import { DailyTask, TaskType, useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
 import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useJobHuntingExtensionRequests } from '@/hooks/useJobHuntingExtensionRequests';
 
 interface DailyTaskCardProps {
   taskType: TaskType;
@@ -46,12 +48,19 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
   showExtensionRequest = false,
   dayAvailability
 }) => {
+  const { user } = useAuth();
   const { taskConfigs, upsertTask, submitTask } = useDailyJobHuntingTasks();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [actualCount, setActualCount] = useState(task?.actual_count || 0);
   const [description, setDescription] = useState(task?.description || '');
   const [evidenceUrls, setEvidenceUrls] = useState<string[]>(task?.evidence_urls || ['']);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Check for pending extension requests
+  const { hasPendingRequest, refreshPendingStatus } = useJobHuntingExtensionRequests(
+    `daily-task-${taskType}-${date}`,
+    user?.id
+  );
 
   const config = taskConfigs[taskType];
   
@@ -186,6 +195,8 @@ export const DailyTaskCard: React.FC<DailyTaskCardProps> = ({
             <JobHuntingRequestReenableDialog
               assignmentId={`daily-task-${taskType}-${date}`}
               taskTitle={`${config.title} - ${format(new Date(date), 'MMM dd')}`}
+              hasPendingRequest={hasPendingRequest}
+              onRequestSent={refreshPendingStatus}
             />
           </div>
         )}

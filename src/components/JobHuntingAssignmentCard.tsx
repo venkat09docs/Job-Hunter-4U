@@ -33,6 +33,8 @@ import { validateEvidenceFiles } from '@/utils/fileValidation';
 import { retryWithBackoff } from '@/utils/retryWithBackoff';
 import { useTranslation } from '@/i18n';
 import { JobHuntingRequestReenableDialog } from '@/components/JobHuntingRequestReenableDialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useJobHuntingExtensionRequests } from '@/hooks/useJobHuntingExtensionRequests';
 
 interface JobHuntingAssignmentCardProps {
   assignment: JobHuntingAssignment;
@@ -43,6 +45,7 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   assignment,
   onUpdateStatus
 }) => {
+  const { user } = useAuth();
   const { submitEvidence } = useJobHuntingAssignments();
   const { t } = useTranslation();
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
@@ -52,6 +55,12 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
   const [files, setFiles] = useState<FileList | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [fileValidationErrors, setFileValidationErrors] = useState<string[]>([]);
+  
+  // Check for pending extension requests
+  const { hasPendingRequest, refreshPendingStatus } = useJobHuntingExtensionRequests(
+    assignment.id,
+    user?.id
+  );
 
   // Job hunting specific day validation
   const getJobHuntingDayAvailability = (taskTitle: string) => {
@@ -393,7 +402,8 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
                           <JobHuntingRequestReenableDialog
                             assignmentId={assignment.id}
                             taskTitle={assignment.template?.title || ''}
-                            onRequestSent={() => {/* refresh if needed */}}
+                            hasPendingRequest={hasPendingRequest}
+                            onRequestSent={refreshPendingStatus}
                           />
                         )}
                       </div>
@@ -532,7 +542,8 @@ export const JobHuntingAssignmentCard: React.FC<JobHuntingAssignmentCardProps> =
                           <JobHuntingRequestReenableDialog
                             assignmentId={assignment.id}
                             taskTitle={assignment.template?.title || ''}
-                            onRequestSent={() => {/* refresh if needed */}}
+                            hasPendingRequest={hasPendingRequest}
+                            onRequestSent={refreshPendingStatus}
                           />
                         )}
                       </div>
