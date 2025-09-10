@@ -47,14 +47,8 @@ export const JobHuntingRequestReenableDialog: React.FC<JobHuntingRequestReenable
         .insert({
           user_id: user.user.id,
           title: 'Job Hunting Extension Request',
-          message: `Extension requested for: ${taskTitle}. Reason: ${reason.trim()}`,
-          type: 'extension_request',
-          metadata: {
-            assignment_id: assignmentId,
-            task_title: taskTitle,
-            reason: reason.trim(),
-            request_type: 'job_hunting_extension'
-          }
+          message: `Extension requested for: ${taskTitle}. Reason: ${reason.trim()}. Assignment ID: ${assignmentId}`,
+          type: 'extension_request'
         });
 
       if (error) throw error;
