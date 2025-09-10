@@ -307,14 +307,14 @@ const handler = async (req: Request): Promise<Response> => {
         }
         
         // Get user profile separately
-        const { data: profileData, error: profileError } = await supabase
+        const { data: jobHuntingProfileData, error: jobHuntingProfileError } = await supabase
           .from('profiles')
           .select('user_id, full_name')
           .eq('user_id', assignmentData.user_id)
           .single();
           
-        if (!profileError && profileData) {
-          assignmentData.profiles = profileData;
+        if (!jobHuntingProfileError && jobHuntingProfileData) {
+          assignmentData.profiles = jobHuntingProfileData;
         }
 
         // Update evidence status
