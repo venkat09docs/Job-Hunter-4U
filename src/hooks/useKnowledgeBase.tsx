@@ -44,11 +44,332 @@ export const useKnowledgeBase = () => {
       // Profile Building Documentation - Comprehensive Step-by-Step Guides
       const profileBuildingDocs: KnowledgeBaseCategory[] = [
         {
+          id: 'job-hunting-assignments',
+          name: 'Job Hunting Assignments',
+          description: 'Complete guide to daily and weekly job hunting tasks with points system',
+          categoryType: 'documentation',
+          displayOrder: 1,
+          isActive: true,
+          docs: [
+            {
+              id: 'job-hunting-assignments-guide',
+              title: 'Job Hunting Assignments - Complete Guide',
+              description: 'Master daily and weekly job hunting assignments to accelerate your career search with our structured points system',
+              readTime: '35 min read',
+              lastUpdated: '1 day ago',
+              isPublished: true,
+              categoryId: 'job-hunting-assignments',
+              displayOrder: 1,
+              content: `# Job Hunting Assignments - Complete Guide
+
+## Overview
+Accelerate your job search with our structured assignment system designed to maximize your chances of landing your dream role. This comprehensive guide covers daily tasks, weekly assignments, and our points-based reward system.
+
+## Points System Overview
+Earn points for completing various job hunting activities. Points track your progress and unlock achievements:
+
+### Point Categories:
+- **Daily Tasks**: 1-15 points per task
+- **Weekly Assignments**: 15-50 points per assignment
+- **Premium Features**: 20-100 points for advanced activities
+- **Streaks**: Bonus multipliers for consistency
+
+### Point Values by Activity:
+- **Job Application**: 10-15 points
+- **LinkedIn Networking**: 5-10 points
+- **Follow-up Message**: 8-12 points
+- **Interview Preparation**: 15-25 points
+- **Resume Update**: 10-20 points
+- **Cover Letter Creation**: 8-15 points
+
+## Daily Job Hunting Tasks
+
+### Day-Based Follow-up System
+Our intelligent system tracks your job applications and creates follow-up tasks:
+
+#### Day 5 Follow-up Tasks (8-12 points each)
+**When**: 5 days after job application
+**Purpose**: Show continued interest and professionalism
+
+**Tasks Include:**
+1. **Application Status Inquiry** (10 pts)
+   - Send polite follow-up email to recruiter/hiring manager
+   - Express continued interest in the position
+   - Provide any additional information if requested
+
+2. **LinkedIn Connection Request** (8 pts)
+   - Connect with hiring manager or recruiter on LinkedIn
+   - Send personalized message referencing your application
+   - Follow company updates and engage appropriately
+
+**Example Day 5 Follow-up Email:**
+\`\`\`
+Subject: Following up on [Position Title] Application
+
+Dear [Hiring Manager Name],
+
+I hope this email finds you well. I submitted my application for the [Position Title] role at [Company Name] on [Date] and wanted to follow up to express my continued interest.
+
+I'm particularly excited about [specific aspect of role/company] and believe my experience in [relevant skill/achievement] would add significant value to your team.
+
+Please let me know if you need any additional information from me. I look forward to hearing about next steps.
+
+Best regards,
+[Your Name]
+\`\`\`
+
+#### Day 6 Follow-up Tasks (10-15 points each)
+**When**: 6 days after application
+**Purpose**: Demonstrate value and maintain visibility
+
+**Tasks Include:**
+1. **Value-Add Content Share** (12 pts)
+   - Share relevant industry article on LinkedIn
+   - Tag company or mention in thoughtful commentary
+   - Demonstrate industry knowledge and engagement
+
+2. **Referral Outreach** (15 pts)
+   - Identify employees at target company through LinkedIn
+   - Send personalized connection requests
+   - Request informational interviews or referrals
+
+#### Day 7 Follow-up Tasks (12-18 points each)
+**When**: 7 days after application
+**Purpose**: Final professional touch before extended patience
+
+**Tasks Include:**
+1. **Thank You + Next Steps** (15 pts)
+   - Send final follow-up acknowledging their time
+   - Offer to provide additional information
+   - Set expectation for future communication
+
+2. **Pipeline Update** (12 pts)
+   - Update application status in job tracker
+   - Schedule next follow-up if no response
+   - Move to appropriate status category
+
+## Weekly Job Hunting Assignments
+
+### Week Structure Overview
+Each week includes mandatory and optional assignments targeting different aspects of job searching:
+
+### Weekly Target Metrics (15-week program):
+- **15 Job Applications per week** (150-225 points)
+- **5 Referral Requests** (50-75 points)  
+- **10 Follow-up Messages** (80-120 points)
+- **5 LinkedIn Conversations** (50-75 points)
+
+### Weekly Assignment Categories:
+
+#### 1. Application Assignments (15-25 points each)
+**Weekly Target**: 15 quality applications
+
+**Tasks Include:**
+- **Job Research & Matching** (15 pts)
+  - Research company culture, values, recent news
+  - Customize resume for role requirements
+  - Identify key decision makers
+
+- **Application Customization** (20 pts)
+  - Tailor resume to job description (75%+ match)
+  - Write compelling cover letter
+  - Optimize LinkedIn profile for role
+
+- **Application Submission** (25 pts)
+  - Submit through company website when possible
+  - Track application in job tracker system
+  - Schedule follow-up reminders
+
+#### 2. Networking Assignments (10-20 points each)
+**Weekly Target**: 25 networking activities
+
+**Tasks Include:**
+- **LinkedIn Outreach** (10 pts per connection)
+  - Send 10 personalized connection requests weekly
+  - Target industry professionals and alumni
+  - Include specific reason for connecting
+
+- **Informational Interviews** (20 pts each)
+  - Schedule 2-3 informational interviews weekly
+  - Prepare thoughtful questions about role/industry
+  - Send thank you notes and maintain relationships
+
+- **Industry Events** (15 pts each)
+  - Attend 1-2 virtual or in-person networking events
+  - Engage in meaningful conversations
+  - Follow up with new connections within 48 hours
+
+#### 3. Skill Development Assignments (20-40 points each)
+**Weekly Target**: 2-3 learning activities
+
+**Tasks Include:**
+- **Technical Skills** (25 pts each)
+  - Complete online course modules
+  - Practice coding challenges or relevant skills
+  - Update resume with new competencies
+
+- **Interview Preparation** (30 pts each)
+  - Practice behavioral interview questions (STAR method)
+  - Research common technical questions for role
+  - Record mock interview sessions
+
+- **Industry Knowledge** (20 pts each)
+  - Read industry reports and trends
+  - Follow thought leaders on LinkedIn
+  - Share insights through content creation
+
+### Advanced Weekly Assignments (Premium Features)
+
+#### LinkedIn Automation Tasks (25-50 points each)
+- **Profile Optimization** (25 pts)
+- **Content Strategy** (30 pts)
+- **Engagement Campaign** (35 pts)
+- **Connection Management** (25 pts)
+
+#### GitHub Profile Enhancement (30-60 points each)
+- **Repository Organization** (30 pts)
+- **Documentation Updates** (25 pts)
+- **Open Source Contributions** (50 pts)
+- **Portfolio Showcase** (40 pts)
+
+## Assignment Tracking & Verification
+
+### Automatic Tracking
+The system automatically tracks:
+- Job applications submitted through integrated platforms
+- LinkedIn activities (connections, messages, posts)
+- GitHub commits and contributions
+- Calendar events and meetings
+
+### Manual Verification Required
+Some activities require evidence submission:
+- Email screenshots for follow-ups
+- Interview confirmations
+- Networking event attendance
+- Skill certification completions
+
+### Evidence Submission Process:
+1. **Capture Evidence**: Screenshots, emails, certificates
+2. **Upload to System**: Use evidence upload feature
+3. **Admin Review**: 24-48 hour verification process
+4. **Points Awarded**: Automatic point allocation upon approval
+
+## Streak System & Bonuses
+
+### Daily Streaks
+- **3-day streak**: 1.2x point multiplier
+- **7-day streak**: 1.5x point multiplier  
+- **14-day streak**: 2x point multiplier
+- **30-day streak**: 2.5x point multiplier
+
+### Weekly Consistency Bonuses
+- **Complete weekly targets**: 50 bonus points
+- **Exceed targets by 25%**: 100 bonus points
+- **Perfect week (all tasks)**: 200 bonus points
+
+## Success Metrics & Outcomes
+
+### Weekly Performance Indicators:
+- **Application Rate**: Target 15 per week
+- **Response Rate**: Track interview requests
+- **Network Growth**: LinkedIn connections
+- **Skill Progress**: Course completions
+
+### Expected Timeline Results:
+- **Week 1-2**: System familiarity, initial applications
+- **Week 3-5**: Interview requests, networking momentum
+- **Week 6-8**: Multiple interview rounds
+- **Week 9-12**: Job offers and negotiations
+- **Week 13-15**: Role transition and onboarding
+
+### Success Stories:
+> "Following the structured assignment plan, I received 8 interview requests in 4 weeks and landed my dream role at a Fortune 500 company." - Sarah M., Software Engineer
+
+> "The daily follow-up system helped me stay organized and professional. Got 3 job offers after 6 weeks!" - Michael R., Product Manager
+
+## Getting Started
+
+### Step 1: Initialize Your Week
+1. Navigate to Job Hunting Assignments page
+2. Click "Initialize Job Hunting Tasks"  
+3. System creates personalized weekly assignments
+4. Review and customize based on your schedule
+
+### Step 2: Set Up Tracking
+1. Connect LinkedIn and GitHub accounts
+2. Import existing job applications
+3. Set up email forwarding for follow-ups
+4. Configure notification preferences
+
+### Step 3: Begin Daily Tasks
+1. Start with job applications (highest priority)
+2. Schedule follow-up tasks automatically
+3. Engage in networking activities
+4. Track progress in dashboard
+
+### Step 4: Weekly Review
+1. Analyze performance metrics
+2. Adjust strategies based on results
+3. Plan next week's priorities
+4. Celebrate achievements and streaks
+
+## Pro Tips for Maximum Success
+
+### Application Strategy:
+- Apply early in the week (Monday-Wednesday)
+- Target 50% reach roles, 50% target level
+- Quality over quantity - research thoroughly
+- Use ATS-optimized resume formats
+
+### Follow-up Best Practices:
+- Professional but friendly tone
+- Add value in each communication
+- Respect communication preferences
+- Document all interactions
+
+### Networking Excellence:
+- Give before you receive
+- Maintain long-term relationships
+- Be authentic and genuine
+- Follow up consistently
+
+### Time Management:
+- Block calendar time for job hunting
+- Batch similar activities together
+- Use templates for efficiency
+- Set realistic daily goals
+
+## Troubleshooting Common Challenges
+
+### Low Response Rate:
+- Review resume ATS compatibility
+- Improve application targeting
+- Enhance LinkedIn profile visibility
+- Request referrals more actively
+
+### Overwhelming Task Load:
+- Prioritize high-value activities
+- Use time-blocking techniques
+- Leverage automation tools
+- Focus on consistency over perfection
+
+### Motivation Issues:
+- Track progress visually
+- Celebrate small wins
+- Join accountability groups
+- Remind yourself of career goals
+
+This comprehensive system transforms job hunting from chaotic activity into structured, measurable progress toward career success.`
+            }
+          ]
+        },
+        
+        {
           id: 'resume-profile',
           name: 'Resume Profile',
           description: 'Build a professional resume that passes ATS and attracts recruiters',
           categoryType: 'documentation',
-          displayOrder: 1,
+          displayOrder: 2,
           isActive: true,
           docs: [
             {
