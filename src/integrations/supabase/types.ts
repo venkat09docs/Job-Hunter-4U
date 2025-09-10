@@ -2295,6 +2295,51 @@ export type Database = {
           },
         ]
       }
+      job_hunting_extension_requests: {
+        Row: {
+          admin_notes: string | null
+          assignment_id: string
+          assignment_type: string
+          created_at: string
+          id: string
+          reason: string
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          assignment_id: string
+          assignment_type?: string
+          created_at?: string
+          id?: string
+          reason: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          assignment_id?: string
+          assignment_type?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_hunting_pipeline: {
         Row: {
           application_date: string | null

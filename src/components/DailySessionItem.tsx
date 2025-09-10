@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
@@ -11,6 +11,7 @@ import { DailyTaskCard } from './DailyTaskCard';
 import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
 import { useJobHuntingExtensionRequests } from '@/hooks/useJobHuntingExtensionRequests';
 import { Button } from './ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SessionTask {
   id: string;

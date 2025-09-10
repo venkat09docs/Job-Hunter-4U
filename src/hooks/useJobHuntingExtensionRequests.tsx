@@ -13,21 +13,22 @@ export const useJobHuntingExtensionRequests = (assignmentId: string, userId?: st
 
     try {
       const { data, error } = await supabase
-        .from('notifications')
-        .select('id')
+        .from('job_hunting_extension_requests')
+        .select('id, status')
         .eq('user_id', userId)
-        .eq('type', 'extension_request')
-        .ilike('message', `%${assignmentId}%`)
-        .single();
+        .eq('assignment_id', assignmentId)
+        .in('status', ['pending', 'approved'])
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking pending extension requests:', error);
+      if (error) {
+        console.error('Error checking extension requests:', error);
         setHasPendingRequest(false);
       } else {
-        setHasPendingRequest(!!data);
+        // Only show as pending if status is 'pending', not 'approved'
+        setHasPendingRequest(data?.status === 'pending');
       }
     } catch (error) {
-      console.error('Error checking pending extension requests:', error);
+      console.error('Error checking extension requests:', error);
       setHasPendingRequest(false);
     } finally {
       setLoading(false);
@@ -36,6 +37,33 @@ export const useJobHuntingExtensionRequests = (assignmentId: string, userId?: st
 
   useEffect(() => {
     checkPendingRequest();
+    
+    // Set up real-time subscription to listen for changes to extension requests
+    if (userId && assignmentId) {
+      const channel = supabase
+        .channel(`job-hunting-extension-requests-${assignmentId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'job_hunting_extension_requests',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            console.log('🔄 Extension request change detected:', payload);
+            // Refresh the pending status when changes occur
+            setTimeout(() => {
+              checkPendingRequest();
+            }, 500);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [assignmentId, userId]);
 
   const refreshPendingStatus = () => {

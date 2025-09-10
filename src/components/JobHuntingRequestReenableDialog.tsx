@@ -41,14 +41,14 @@ export const JobHuntingRequestReenableDialog: React.FC<JobHuntingRequestReenable
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
-      // Send notification to admins about the extension request
+      // Insert into job hunting extension requests table
       const { error } = await supabase
-        .from('notifications')
+        .from('job_hunting_extension_requests')
         .insert({
           user_id: user.user.id,
-          title: 'Job Hunting Extension Request',
-          message: `Extension requested for: ${taskTitle}. Reason: ${reason.trim()}. Assignment ID: ${assignmentId}`,
-          type: 'extension_request'
+          assignment_id: assignmentId,
+          assignment_type: 'daily_session',
+          reason: reason.trim()
         });
 
       if (error) throw error;

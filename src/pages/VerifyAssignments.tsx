@@ -18,6 +18,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { CheckCircle, XCircle, Clock, User, Calendar, Award, ArrowLeft, Building2, FileText, ExternalLink, Download, Mail, Github, Linkedin } from 'lucide-react';
 import { AdminReenableRequestsDialog } from '@/components/AdminReenableRequestsDialog';
 import { AdminGitHubReenableRequestsDialog } from '@/components/AdminGitHubReenableRequestsDialog';
+import { JobHuntingExtensionRequestsDialog } from '@/components/JobHuntingExtensionRequestsDialog';
 import { toast } from 'sonner';
 
 interface Assignment {
@@ -1484,6 +1485,7 @@ const VerifyAssignments = () => {
             </p>
           </div>
           <AdminReenableRequestsDialog />
+          <JobHuntingExtensionRequestsDialog />
         </TabsContent>
 
         <TabsContent value="github-request-extensions" className="space-y-4">
