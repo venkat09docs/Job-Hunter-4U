@@ -128,7 +128,28 @@ export default function KnowledgeBase() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      className="min-h-screen bg-background select-none"
+      style={{ 
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
+      onKeyDown={(e) => {
+        // Prevent Ctrl+C, Ctrl+A, Ctrl+S, Ctrl+P, F12, etc.
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 's' || e.key === 'p')) {
+          e.preventDefault();
+        }
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+          e.preventDefault();
+        }
+      }}
+    >
       {/* Top Navigation */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
@@ -207,7 +228,7 @@ export default function KnowledgeBase() {
                       
                       return (
                         <TabsContent key={category.id} value={category.id}>
-                          <ScrollArea className="h-[500px] pr-4">
+                          <ScrollArea className="h-[400px] pr-4">
                             <div className="space-y-4">
                               {filteredDocs.map((doc) => {
                                 // Double-check filtering for non-admin users

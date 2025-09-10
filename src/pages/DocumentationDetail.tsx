@@ -152,7 +152,28 @@ export default function DocumentationDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      className="min-h-screen bg-background select-none"
+      style={{ 
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
+      }}
+      onContextMenu={(e) => e.preventDefault()}
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
+      onKeyDown={(e) => {
+        // Prevent Ctrl+C, Ctrl+A, Ctrl+S, Ctrl+P, F12, etc.
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 's' || e.key === 'p')) {
+          e.preventDefault();
+        }
+        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+          e.preventDefault();
+        }
+      }}
+    >
       {/* Top Navigation */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
@@ -373,7 +394,15 @@ export default function DocumentationDetail() {
                       </div>
                       
                       <div className="prose prose-gray dark:prose-invert max-w-none">
-                        <div className="whitespace-pre-wrap text-foreground leading-relaxed">
+                        <div 
+                          className="whitespace-pre-wrap text-foreground leading-relaxed select-none"
+                          style={{ 
+                            userSelect: 'none',
+                            WebkitUserSelect: 'none',
+                            MozUserSelect: 'none',
+                            msUserSelect: 'none'
+                          }}
+                        >
                           {step.content}
                         </div>
                       </div>
@@ -384,7 +413,15 @@ export default function DocumentationDetail() {
                 {/* Content for docs without steps (show full markdown content) */}
                 {!hasSteps && doc.content && (
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-foreground leading-relaxed">
+                    <div 
+                      className="whitespace-pre-wrap text-foreground leading-relaxed select-none"
+                      style={{ 
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none',
+                        MozUserSelect: 'none',
+                        msUserSelect: 'none'
+                      }}
+                    >
                       {doc.content}
                     </div>
                   </div>
