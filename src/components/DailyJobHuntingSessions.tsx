@@ -10,8 +10,7 @@ import { useDailyJobHuntingTasks } from '@/hooks/useDailyJobHuntingTasks';
 import { useAuth } from '@/hooks/useAuth';
 import { DailyTaskCard } from './DailyTaskCard';
 import { getTaskDayAvailability, canUserInteractWithDayBasedTask, getTaskAvailabilityMessage } from '@/utils/dayBasedTaskValidation';
-import { JobHuntingRequestReenableDialog } from './JobHuntingRequestReenableDialog';
-import { useJobHuntingExtensionRequests } from '@/hooks/useJobHuntingExtensionRequests';
+import { DailySessionItem } from './DailySessionItem';
 
 interface SessionTask {
   id: string;
@@ -49,140 +48,185 @@ export const DailyJobHuntingSessions: React.FC = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const days: DailyActivity[] = [];
     
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i++) { // Monday to Saturday
       const date = addDays(weekStart, i);
+      const dayName = format(date, 'EEEE');
       const dayKey = format(date, 'yyyy-MM-dd');
+      
+      // Get session stats for this day
       const dailyStats = getDailyStats(dayKey);
       
-      const sessions: DailySession[] = [];
-      
-      // Morning session - available for all days except Saturday
-      if (i < 5) { // Monday to Friday only
-        sessions.push({
+      // Create session objects based on day type
+      const defaultSessions: DailySession[] = [
+        {
           id: `${dayKey}-morning`,
           name: 'Morning Session',
-          timeRange: '9:00 - 10:00 AM',
-          duration: '30-45 min',
+          timeRange: '9:00 AM - 11:00 AM',
+          duration: '2 hours',
           icon: Sun,
-          completed: !!getSessionStatus(dayKey, 'morning')?.completed,
-          completedAt: getSessionStatus(dayKey, 'morning')?.completed_at 
-            ? new Date(getSessionStatus(dayKey, 'morning')!.completed_at!) 
-            : undefined,
           tasks: [
-            { id: 'check-portals', description: 'Check all job portals (Naukri, Indeed, Foundit, LinkedIn Jobs)' },
-            { id: 'apply-jobs', description: 'Apply to relevant jobs with customized resume/cover letter' },
-            { id: 'update-tracker', description: 'Update tracker: Job Link + Date Applied + Status = Applied' }
-          ]
-        });
-      }
-      
-      // Afternoon session - available Monday to Thursday only
-      if (i < 4) { // Monday to Thursday only
-        sessions.push({
+            { id: '1', description: 'Review job market and identify 3-5 target companies' },
+            { id: '2', description: 'Update resume with recent achievements' },
+            { id: '3', description: 'Prepare cover letter templates' },
+          ],
+          completed: getSessionStatus(dayKey, 'morning')?.completed || false
+        },
+        {
           id: `${dayKey}-afternoon`,
           name: 'Afternoon Session',
-          timeRange: '2:00 - 2:20 PM',
-          duration: '15-20 min',
+          timeRange: '2:00 PM - 4:00 PM',
+          duration: '2 hours',
           icon: Sunset,
-          completed: !!getSessionStatus(dayKey, 'afternoon')?.completed,
-          completedAt: getSessionStatus(dayKey, 'afternoon')?.completed_at 
-            ? new Date(getSessionStatus(dayKey, 'afternoon')!.completed_at!) 
-            : undefined,
           tasks: [
-            { id: 'recheck-portals', description: 'Re-check for new job postings since morning' },
-            { id: 'apply-new', description: 'Apply immediately to any new relevant jobs' },
-            { id: 'update-tracker-2', description: 'Update job tracker with new applications' }
-          ]
-        });
-      }
-      
-      // Evening session - available Monday to Thursday only  
-      if (i < 4) { // Monday to Thursday only
-        sessions.push({
+            { id: '1', description: 'Submit 2-3 job applications' },
+            { id: '2', description: 'Connect with 5 professionals on LinkedIn' },
+            { id: '3', description: 'Research company culture and values' },
+          ],
+          completed: getSessionStatus(dayKey, 'afternoon')?.completed || false
+        },
+        {
           id: `${dayKey}-evening`,
           name: 'Evening Session',
-          timeRange: '6:00 - 6:20 PM',
-          duration: '15-20 min',
+          timeRange: '7:00 PM - 8:30 PM',
+          duration: '1.5 hours',
           icon: Moon,
-          completed: !!getSessionStatus(dayKey, 'evening')?.completed,
-          completedAt: getSessionStatus(dayKey, 'evening')?.completed_at 
-            ? new Date(getSessionStatus(dayKey, 'evening')!.completed_at!) 
-            : undefined,
           tasks: [
-            { id: 'review-applications', description: 'Review all applications done today' },
-            { id: 'add-recruiter', description: 'Add recruiter details if available' },
-            { id: 'mark-priority', description: 'Mark high-priority jobs (dream companies/exact skill match)' }
-          ]
-        });
-      }
+            { id: '1', description: 'Follow up on previous applications' },
+            { id: '2', description: 'Practice interview questions' },
+            { id: '3', description: 'Plan tomorrow\'s job search activities' },
+          ],
+          completed: getSessionStatus(dayKey, 'evening')?.completed || false
+        }
+      ];
+
+      // Calculate completion stats
+      const completedSessions = defaultSessions.filter(s => s.completed).length;
+      const totalSessions = defaultSessions.length;
       
       days.push({
         date,
-        dayName: format(date, 'EEEE'),
-        sessions,
-        totalSessions: sessions.length, // Dynamic based on actual sessions
-        completedSessions: dailyStats.completed
+        dayName,
+        sessions: defaultSessions,
+        totalSessions,
+        completedSessions
       });
     }
     
     return days;
-  }, [getDailyStats, getSessionStatus]);
-
-  const handleCompleteSession = async (dayKey: string, sessionType: 'morning' | 'afternoon' | 'evening') => {
-    await completeSession(dayKey, sessionType);
-  };
+  }, [sessions, getDailyStats, getSessionStatus]);
 
   const toggleDay = (dayKey: string) => {
-    const newExpanded = new Set(expandedDays);
-    if (newExpanded.has(dayKey)) {
-      newExpanded.delete(dayKey);
-    } else {
-      newExpanded.add(dayKey);
-    }
-    setExpandedDays(newExpanded);
+    setExpandedDays(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(dayKey)) {
+        newExpanded.delete(dayKey);
+      } else {
+        newExpanded.add(dayKey);
+      }
+      return newExpanded;
+    });
   };
 
+  const handleCompleteSession = async (sessionId: string, sessionType: 'morning' | 'afternoon' | 'evening', tasks: SessionTask[]) => {
+    // Session completion is handled in the DailySessionItem component
+  };
+
+  // Calculate weekly progress
+  const weeklyStats = React.useMemo(() => {
+    const totalSessions = currentWeek.reduce((sum, day) => sum + day.totalSessions, 0);
+    const completedSessions = currentWeek.reduce((sum, day) => sum + day.completedSessions, 0);
+    const daysFullyCompleted = currentWeek.filter(day => day.completedSessions === day.totalSessions && day.totalSessions > 0).length;
+    
+    return {
+      totalSessions,
+      completedSessions,
+      completionPercentage: totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0,
+      daysFullyCompleted
+    };
+  }, [currentWeek]);
+
   const getProgressColor = (completed: number, total: number) => {
-    const percentage = (completed / total) * 100;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
     if (percentage === 100) return 'bg-green-500';
-    if (percentage >= 67) return 'bg-yellow-500';
-    if (percentage >= 33) return 'bg-orange-500';
+    if (percentage >= 75) return 'bg-blue-500';
+    if (percentage >= 50) return 'bg-yellow-500';
+    if (percentage >= 25) return 'bg-orange-500';
     return 'bg-red-500';
   };
 
-  const getSessionIcon = (SessionIcon: React.ComponentType<{ className?: string }>, completed?: boolean) => (
-    <SessionIcon className={`h-4 w-4 ${completed ? 'text-green-600' : 'text-muted-foreground'}`} />
-  );
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Daily Job Hunting Sessions</CardTitle>
+            <CardDescription>Loading your weekly schedule...</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
-          Daily Job Hunting Sessions
-        </CardTitle>
-        <CardDescription>
-          Complete focused sessions daily to maximize your job search effectiveness (Mon-Thu: 3 sessions, Fri: 1 session, Sat: No sessions)
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {loading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-sm text-muted-foreground">Loading daily sessions...</div>
+    <div className="space-y-6">
+      {/* Weekly Progress Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Weekly Progress Overview
+          </CardTitle>
+          <CardDescription>
+            Track your daily job hunting sessions throughout the week
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{weeklyStats.completedSessions}</div>
+              <div className="text-sm text-muted-foreground">Sessions Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{weeklyStats.totalSessions}</div>
+              <div className="text-sm text-muted-foreground">Total Sessions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{weeklyStats.completionPercentage}%</div>
+              <div className="text-sm text-muted-foreground">Completion Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{weeklyStats.daysFullyCompleted}</div>
+              <div className="text-sm text-muted-foreground">Days Completed</div>
+            </div>
           </div>
-        )}
-        {currentWeek.map((day) => {
+          
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-2">
+              <span>Weekly Progress</span>
+              <span>{weeklyStats.completionPercentage}%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-3">
+              <div 
+                className={`h-3 rounded-full transition-all ${getProgressColor(weeklyStats.completedSessions, weeklyStats.totalSessions)}`}
+                style={{ width: `${weeklyStats.completionPercentage}%` }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Daily Sessions */}
+      <div className="space-y-4">
+        {currentWeek.map((day, dayIndex) => {
           const dayKey = format(day.date, 'yyyy-MM-dd');
           const isExpanded = expandedDays.has(dayKey);
-          const isToday = isSameDay(day.date, new Date());
-          const progressPercentage = day.totalSessions > 0 ? (day.completedSessions / day.totalSessions) * 100 : 0;
           
           // Calculate day index (0 = Monday, 1 = Tuesday, etc.)
           const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-          const dayIndex = Math.floor((day.date.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
+          const actualDayIndex = Math.floor((day.date.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
           
           // Day-based availability check for sessions
-          const dayTaskTitle = `Day ${dayIndex + 1}`;
+          const dayTaskTitle = `Day ${actualDayIndex + 1}`;
           const dayAvailability = getTaskDayAvailability(dayTaskTitle);
           const canInteract = canUserInteractWithDayBasedTask(dayTaskTitle, false); // No admin extension for now
           const availabilityMessage = getTaskAvailabilityMessage(dayTaskTitle, false);
@@ -191,220 +235,48 @@ export const DailyJobHuntingSessions: React.FC = () => {
           const hasIncompleteSessions = day.completedSessions < day.totalSessions;
           const showExtensionRequest = !canInteract && dayAvailability.canRequestExtension && hasIncompleteSessions;
           
-          // Check for pending extension requests
-          const { hasPendingRequest, refreshPendingStatus } = useJobHuntingExtensionRequests(
-            `daily-sessions-${dayKey}`,
-            user?.id
-          );
-          
           return (
-            <Collapsible key={dayKey} open={isExpanded} onOpenChange={() => toggleDay(dayKey)}>
-              <CollapsibleTrigger asChild>
-                <Card className={`cursor-pointer transition-colors hover:bg-muted/50 ${isToday ? 'ring-2 ring-primary' : ''}`}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">
-                              {day.dayName}
-                              {isToday && (
-                                <Badge variant="secondary" className="ml-2 text-xs">Today</Badge>
-                              )}
-                            </h3>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            {format(day.date, 'MMM dd')}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <div className="text-sm font-medium">
-                            {day.completedSessions}/{day.totalSessions} Sessions
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {Math.round(progressPercentage)}% Complete
-                          </div>
-                        </div>
-                        
-                        <div className="w-16">
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full transition-all ${getProgressColor(day.completedSessions, day.totalSessions)}`}
-                              style={{ width: `${progressPercentage}%` }}
-                            />
-                          </div>
-                        </div>
-                        
-                        {day.completedSessions === day.totalSessions && (
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent className="mt-2">
-                <div className="grid gap-3 pl-4">
-                  
-                  {/* Day Availability Warning */}
-                  {!canInteract && day.totalSessions > 0 && hasIncompleteSessions && (
-                    <div className={`p-3 rounded-lg text-sm ${
-                      dayAvailability.isPastDue
-                        ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                        : dayAvailability.isFutureDay 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-red-50 text-red-700 border border-red-200'
-                    }`}>
-                      <div className="flex items-center gap-2 font-medium">
-                        <AlertCircle className="w-4 h-4" />
-                        {availabilityMessage}
-                      </div>
-                      {dayAvailability.isPastDue && (
-                        <p className="text-xs mt-1">
-                          You missed the deadline for this day's sessions. Request an extension to complete them.
-                        </p>
-                      )}
-                      {dayAvailability.isFutureDay && (
-                        <p className="text-xs mt-1">
-                          These sessions will unlock automatically on {day.dayName}.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  
-                   {/* Extension Request Button */}
-                   {showExtensionRequest && (
-                     <div className="mb-3">
-                       <JobHuntingRequestReenableDialog
-                         assignmentId={`daily-sessions-${dayKey}`}
-                         taskTitle={`${day.dayName} Daily Job Hunting Sessions`}
-                         hasPendingRequest={hasPendingRequest}
-                         onRequestSent={refreshPendingStatus}
-                       />
-                     </div>
-                   )}
-                  
-                  {day.sessions.map((session) => (
-                    <Card key={session.id} className={session.completed ? 'bg-green-50 border-green-200' : ''}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            {getSessionIcon(session.icon, session.completed)}
-                            <div>
-                              <h4 className="font-medium text-sm">{session.name}</h4>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                <span>{session.timeRange}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {session.duration}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {session.completed ? (
-                            <div className="text-right">
-                              <Badge variant="default" className="text-xs">Completed</Badge>
-                              {session.completedAt && (
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  {format(session.completedAt, 'h:mm a')}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleCompleteSession(dayKey, session.id.includes('-morning') ? 'morning' : session.id.includes('-afternoon') ? 'afternoon' : 'evening')}
-                              disabled={loading || !canInteract}
-                            >
-                              {!canInteract ? 'Not Available' : 'Mark Complete'}
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          {session.tasks.map((task) => (
-                            <div key={task.id} className="flex items-start gap-2 text-sm">
-                              <div className={`mt-1 h-2 w-2 rounded-full ${task.completed ? 'bg-green-500' : 'bg-muted'}`} />
-                              <span className={task.completed ? 'text-muted-foreground line-through' : ''}>
-                                {task.description}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  {/* Show special message for Saturday when no sessions */}
-                  {day.totalSessions === 0 && (
-                    <Card className="bg-muted/30">
-                      <CardContent className="p-4 text-center">
-                        <div className="text-sm text-muted-foreground">
-                          No scheduled sessions - Rest day
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  
-                  {/* Daily Task Assignments */}
-                  <div className="mt-4 pt-4 border-t border-muted">
-                    <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                      <Target className="h-4 w-4 text-primary" />
-                      Daily Task Assignments
-                    </h4>
-                    <div className="space-y-3">
-                      {/* Job Applications - Only Monday through Thursday (day index 0-3) */}
-                      {dayIndex <= 3 && (
-                        <DailyTaskCard
-                          taskType="job_applications"
-                          date={dayKey}
-                          task={getTasksForDate(dayKey).find(t => t.task_type === 'job_applications')}
-                          onTaskUpdate={() => fetchTasksForDate(dayKey)}
-                          canInteract={canInteract}
-                          availabilityMessage={availabilityMessage}
-                          showExtensionRequest={showExtensionRequest}
-                          dayAvailability={dayAvailability}
-                        />
-                      )}
-                      <DailyTaskCard
-                        taskType="referral_requests"
-                        date={dayKey}
-                        task={getTasksForDate(dayKey).find(t => t.task_type === 'referral_requests')}
-                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
-                        canInteract={canInteract}
-                        availabilityMessage={availabilityMessage}
-                        showExtensionRequest={showExtensionRequest}
-                        dayAvailability={dayAvailability}
-                      />
-                      <DailyTaskCard
-                        taskType="follow_up_messages"
-                        date={dayKey}
-                        task={getTasksForDate(dayKey).find(t => t.task_type === 'follow_up_messages')}
-                        onTaskUpdate={() => fetchTasksForDate(dayKey)}
-                        canInteract={canInteract}
-                        availabilityMessage={availabilityMessage}
-                        showExtensionRequest={showExtensionRequest}
-                        dayAvailability={dayAvailability}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+            <DailySessionItem
+              key={dayKey}
+              day={day}
+              dayIndex={actualDayIndex}
+              dayKey={dayKey}
+              isExpanded={isExpanded}
+              onToggleDay={toggleDay}
+              canInteract={canInteract}
+              availabilityMessage={availabilityMessage}
+              showExtensionRequest={showExtensionRequest}
+              dayAvailability={{
+                ...dayAvailability,
+                isAvailable: canInteract
+              }}
+            />
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Weekly Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5" />
+            Weekly Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-muted-foreground">
+            <p className="mb-2">
+              Complete all daily sessions to maximize your job search effectiveness. Each session is designed to help you:
+            </p>
+            <ul className="list-disc ml-6 space-y-1">
+              <li>Stay organized and focused on your job search goals</li>
+              <li>Build momentum through consistent daily activities</li>
+              <li>Track your progress and identify improvement areas</li>
+              <li>Maintain a healthy work-life balance during job hunting</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
