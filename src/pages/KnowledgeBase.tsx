@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Play, FileText, Clock, User, ArrowLeft, Edit, Trash2, Plus, Upload, Eye, EyeOff } from "lucide-react";
+import { Play, FileText, Clock, User, ArrowLeft, Edit, Trash2, Plus, Upload, Eye, EyeOff, Briefcase, Network, Code, BookOpen } from "lucide-react";
 import { UserProfileDropdown } from "@/components/UserProfileDropdown";
 import { SubscriptionUpgrade, SubscriptionStatus } from "@/components/SubscriptionUpgrade";
 import { useRole } from "@/hooks/useRole";
@@ -189,7 +189,7 @@ export default function KnowledgeBase() {
             </div>
             
             {/* Category Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {docData.map((category) => {
                 const filteredDocs = getFilteredDocs(category.docs);
                 if (!effectiveIsAdmin && filteredDocs.length === 0) return null;
@@ -200,7 +200,10 @@ export default function KnowledgeBase() {
                       <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-3">
                           <div className="p-2 bg-primary/10 rounded-lg">
-                            <FileText className="h-6 w-6 text-primary" />
+                            {category.id === "profile-building" && <User className="h-6 w-6 text-primary" />}
+                            {category.id === "job-hunting" && <Briefcase className="h-6 w-6 text-primary" />}
+                            {category.id === "linkedin-growth" && <Network className="h-6 w-6 text-primary" />}
+                            {category.id === "github-weekly" && <Code className="h-6 w-6 text-primary" />}
                           </div>
                           <div>
                             <h3 className="text-lg font-semibold">{category.name}</h3>
@@ -221,6 +224,7 @@ export default function KnowledgeBase() {
                         )}
                       </div>
                       <CardDescription className="mt-2">
+                        {category.id === "profile-building" && "Create compelling professional profiles across platforms to showcase your expertise"}
                         {category.id === "job-hunting" && "Master the art of job searching with our comprehensive guides"}
                         {category.id === "linkedin-growth" && "Build your professional network and grow your LinkedIn presence"}
                         {category.id === "github-weekly" && "Enhance your coding skills and maintain an active GitHub profile"}
