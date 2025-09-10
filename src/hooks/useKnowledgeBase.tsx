@@ -42,11 +42,54 @@ export const useKnowledgeBase = () => {
 
       const documentationCategories: KnowledgeBaseCategory[] = [
         {
+          id: 'profile-building',
+          name: 'Profile Building Guides',
+          description: 'Build professional profiles across different platforms to showcase your skills',
+          categoryType: 'documentation',
+          displayOrder: 1,
+          isActive: true,
+          docs: [
+            {
+              id: 'resume-profile-guide',
+              title: 'Resume Profile Guide',
+              description: 'Create a compelling resume that stands out to recruiters and ATS systems',
+              readTime: '25 min read',
+              lastUpdated: '2 days ago',
+              isPublished: true,
+              categoryId: 'profile-building',
+              displayOrder: 1,
+              content: 'Comprehensive guide to building an effective resume with ATS optimization and recruiter appeal.'
+            },
+            {
+              id: 'linkedin-profile-guide',
+              title: 'LinkedIn Profile Guide',
+              description: 'Optimize your LinkedIn profile to attract opportunities and build your network',
+              readTime: '20 min read',
+              lastUpdated: '2 days ago',
+              isPublished: true,
+              categoryId: 'profile-building',
+              displayOrder: 2,
+              content: 'Step-by-step guide to creating a powerful LinkedIn profile that drives career growth.'
+            },
+            {
+              id: 'github-profile-guide',
+              title: 'GitHub Profile Guide',
+              description: 'Build an impressive GitHub profile that showcases your coding skills and projects',
+              readTime: '15 min read',
+              lastUpdated: '2 days ago',
+              isPublished: true,
+              categoryId: 'profile-building',
+              displayOrder: 3,
+              content: 'Complete guide to optimizing your GitHub profile for maximum developer impact.'
+            }
+          ]
+        },
+        {
           id: 'job-hunting',
           name: 'Job Hunting Assignments',
           description: 'Complete job hunting assignments with daily and weekly tasks plus points system',
           categoryType: 'documentation',
-          displayOrder: 1,
+          displayOrder: 2,
           isActive: true,
           docs: [
             {
