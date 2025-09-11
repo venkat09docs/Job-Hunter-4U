@@ -258,17 +258,32 @@ const CreateAssignment = () => {
                     onChange={(e) => {
                       const newOptions = [...question.options];
                       newOptions[optionIndex] = e.target.value;
-                      updateQuestion(index, { options: newOptions });
+                      
+                      // Update correct answers if this option was marked as correct
+                      let newCorrect = [...question.correct_answers];
+                      const oldOptionValue = question.options[optionIndex];
+                      if (newCorrect.includes(oldOptionValue)) {
+                        newCorrect = newCorrect.filter(ans => ans !== oldOptionValue);
+                        newCorrect.push(e.target.value);
+                      }
+                      
+                      updateQuestion(index, { options: newOptions, correct_answers: newCorrect });
                     }}
                     className={question.correct_answers.includes(option) ? "ring-2 ring-green-500" : ""}
                   />
                   <div className="flex items-center gap-1">
                     <Checkbox
-                      checked={question.correct_answers.includes(option)}
+                      checked={question.correct_answers.includes(option) && option.trim() !== ''}
                       onCheckedChange={(checked) => {
+                        if (option.trim() === '') {
+                          return; // Don't allow checking empty options
+                        }
+                        
                         let newCorrect = [...question.correct_answers];
                         if (checked) {
-                          newCorrect.push(option);
+                          if (!newCorrect.includes(option)) {
+                            newCorrect.push(option);
+                          }
                         } else {
                           newCorrect = newCorrect.filter(ans => ans !== option);
                         }
