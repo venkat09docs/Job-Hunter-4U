@@ -56,6 +56,8 @@ const CreateAssignment = () => {
     createAssignment, 
     updateAssignment,
     createQuestion,
+    updateQuestion: updateQuestionInDB,
+    deleteQuestion,
     getCourses, 
     getModulesByCourse,
     getAssignments,
@@ -236,6 +238,49 @@ const CreateAssignment = () => {
         const assignment = await updateAssignment(assignmentId, assignmentData);
         if (!assignment) throw new Error('Failed to update assignment');
 
+        // Get existing questions to compare
+        const existingQuestions = await getQuestionsByAssignment(assignmentId);
+        
+        // Handle questions update
+        for (let i = 0; i < questions.length; i++) {
+          const question = questions[i];
+          const questionData = {
+            assignment_id: assignmentId,
+            kind: question.kind === 'task' ? 'descriptive' : question.kind,
+            prompt: question.prompt,
+            options: question.options,
+            correct_answers: question.correct_answers,
+            marks: question.marks,
+            order_index: i,
+            metadata: {
+              expected_answer: question.expected_answer,
+              instructions: question.instructions
+            }
+          };
+
+          if (question.id && existingQuestions.find(eq => eq.id === question.id)) {
+            // Update existing question
+            await updateQuestionInDB(question.id, questionData);
+          } else {
+            // Create new question
+            const newQuestion = await createQuestion(questionData as CreateQuestionData);
+            if (newQuestion) {
+              const updatedQuestions = [...questions];
+              updatedQuestions[i] = { ...updatedQuestions[i], id: newQuestion.id };
+              setQuestions(updatedQuestions);
+            }
+          }
+        }
+
+        // Delete questions that were removed
+        const questionsToDelete = existingQuestions.filter(
+          eq => !questions.find(q => q.id === eq.id)
+        );
+        
+        for (const questionToDelete of questionsToDelete) {
+          await deleteQuestion(questionToDelete.id);
+        }
+
         toast({
           title: 'Success',
           description: 'Assignment updated successfully'
@@ -257,6 +302,10 @@ const CreateAssignment = () => {
               correct_answers: question.correct_answers,
               marks: question.marks,
               order_index: questions.indexOf(question),
+              metadata: {
+                expected_answer: question.expected_answer,
+                instructions: question.instructions
+              }
             };
             await createQuestion(questionData);
           }
@@ -270,6 +319,7 @@ const CreateAssignment = () => {
 
       navigate('/dashboard/career-level/assignments');
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: 'Error',
         description: isEditing ? 'Failed to update assignment' : 'Failed to create assignment',

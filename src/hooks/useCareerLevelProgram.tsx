@@ -696,23 +696,52 @@ export const useCareerLevelProgram = () => {
 
       if (error) throw error;
 
-      toast({
-        title: 'Success',
-        description: 'Assignment updated successfully'
-      });
-
       return assignment;
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update assignment',
-        variant: 'destructive'
-      });
-      return null;
+      console.error('Update assignment error:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
   }, [user, toast]);
+
+  const updateQuestion = useCallback(async (questionId: string, data: Partial<CreateQuestionData>): Promise<Question | null> => {
+    setLoading(true);
+    try {
+      const { data: question, error } = await supabase
+        .from('clp_questions')
+        .update(data)
+        .eq('id', questionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return question;
+    } catch (error: any) {
+      console.error('Update question error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const deleteQuestion = useCallback(async (questionId: string): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clp_questions')
+        .delete()
+        .eq('id', questionId);
+
+      if (error) throw error;
+      return true;
+    } catch (error: any) {
+      console.error('Delete question error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   return {
     loading,
@@ -731,6 +760,8 @@ export const useCareerLevelProgram = () => {
     deleteAssignment,
     // Question methods
     createQuestion,
+    updateQuestion,
+    deleteQuestion,
     getQuestionsByAssignment,
     // Attempt methods
     startAttempt,
