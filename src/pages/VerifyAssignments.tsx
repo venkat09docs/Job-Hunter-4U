@@ -585,11 +585,22 @@ const VerifyAssignments = () => {
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false }),
 
-      supabase
-        .from('github_user_tasks')
-        .select(`*, github_tasks (id, code, title, description, points_base)`)
-        .eq('status', 'SUBMITTED')
-        .order('created_at', { ascending: false }),
+      // Apply same filtering logic as LinkedIn tasks for GitHub
+      (() => {
+        let gitHubQuery = supabase
+          .from('github_user_tasks')
+          .select(`*, github_tasks (id, code, title, description, points_base)`)
+          .eq('status', 'SUBMITTED');
+        
+        // Apply same filtering as LinkedIn tasks
+        if (isRecruiter && nonInstituteUserIds.length > 0) {
+          gitHubQuery = gitHubQuery.in('user_id', nonInstituteUserIds);
+        } else if (isInstituteAdmin && instituteUserIds.length > 0) {
+          gitHubQuery = gitHubQuery.in('user_id', instituteUserIds);
+        }
+        
+        return gitHubQuery.order('created_at', { ascending: false });
+      })(),
 
       supabase
         .from('daily_job_hunting_tasks')
@@ -883,12 +894,22 @@ const VerifyAssignments = () => {
           .order('verified_at', { ascending: false })
           .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
 
-        supabase
-          .from('github_user_tasks')
-          .select(`*, github_tasks (id, code, title, description, points_base)`)
-          .eq('status', 'VERIFIED')
-          .order('created_at', { ascending: false })
-          .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3)),
+        // Apply same filtering logic as LinkedIn tasks for GitHub
+        (() => {
+          let gitHubQuery = supabase
+            .from('github_user_tasks')
+            .select(`*, github_tasks (id, code, title, description, points_base)`)
+            .eq('status', 'VERIFIED');
+          
+          // Apply filtering based on role (same as LinkedIn)
+          if ((isRecruiter || isInstituteAdmin) && linkedInUserFilter.length > 0) {
+            gitHubQuery = gitHubQuery.in('user_id', linkedInUserFilter);
+          }
+          
+          return gitHubQuery
+            .order('created_at', { ascending: false })
+            .range(0, Math.max(100, VERIFIED_PAGE_SIZE * 3));
+        })(),
 
         supabase
           .from('daily_job_hunting_tasks')
