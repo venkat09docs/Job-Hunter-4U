@@ -469,6 +469,18 @@ const Dashboard = () => {
     navigate('/dashboard/career-assignments');
   };
 
+  const handleJobApplicationsClick = () => {
+    navigate('/job-tracker');
+  };
+
+  const handleLinkedInGrowthClick = () => {
+    navigate('/linkedin-optimization');
+  };
+
+  const handleGitHubWeeklyClick = () => {
+    navigate('/github-weekly');
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'interviewing':
@@ -733,13 +745,13 @@ const Dashboard = () => {
                           </div>
                           <Progress value={githubProgress} className="mt-3 bg-green-200 dark:bg-green-800" />
                           <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            {githubProgress === 100 ? 'Profile Ready!' : `${repoMetrics.total - repoCompleted} tasks left`}
+                            {githubProgress === 100 ? 'Profile Ready!' : 'In Progress'}
                           </p>
                         </CardContent>
                       </Card>
 
                       {/* Job Application Status */}
-                      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800">
+                      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleJobApplicationsClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -757,7 +769,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* LinkedIn Growth Status */}
-                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -775,7 +787,7 @@ const Dashboard = () => {
                       </Card>
 
                        {/* GitHub Growth Status */}
-                       <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
+                       <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
                          <CardContent className="p-4">
                            <div className="flex items-center justify-between">
                              <div>
