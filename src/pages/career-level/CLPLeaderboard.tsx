@@ -142,7 +142,7 @@ const CLPLeaderboard = () => {
             <div className="hidden sm:block h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Career Level Program</span>
+              <span className="font-semibold">Skill Level Up Program</span>
             </div>
           </div>
           
@@ -155,7 +155,7 @@ const CLPLeaderboard = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Career Level Program Leaderboard
+            Skill Level Up Program Leaderboard
           </h1>
           <p className="text-muted-foreground">
             Track your progress and compete with peers across courses and modules

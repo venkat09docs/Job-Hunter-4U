@@ -380,7 +380,7 @@ const CareerLevelProgram: React.FC = () => {
               <div className="hidden sm:block h-4 w-px bg-border" />
               <div className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-purple-500" />
-                <span className="font-semibold">Career Level Program</span>
+                <span className="font-semibold">Skill Level Up Program</span>
               </div>
             </div>
             <UserProfileDropdown />
@@ -427,7 +427,7 @@ const CareerLevelProgram: React.FC = () => {
             <div className="hidden sm:block h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Career Level Program</span>
+              <span className="font-semibold">Skill Level Up Program</span>
             </div>
           </div>
           
@@ -440,7 +440,7 @@ const CareerLevelProgram: React.FC = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Career Level Program
+            Skill Level Up Program
           </h1>
           <p className="text-muted-foreground">
             Track your assignments and compete with peers in your learning journey
