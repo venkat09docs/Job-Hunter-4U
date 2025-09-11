@@ -248,6 +248,7 @@ const CreateAssignment = () => {
         {question.kind === 'mcq' && (
           <div>
             <label className="text-sm font-medium">Options</label>
+            <p className="text-xs text-muted-foreground mb-2">Check the box next to correct answer(s)</p>
             <div className="space-y-2 mt-2">
               {question.options.map((option, optionIndex) => (
                 <div key={optionIndex} className="flex items-center gap-2">
@@ -259,22 +260,33 @@ const CreateAssignment = () => {
                       newOptions[optionIndex] = e.target.value;
                       updateQuestion(index, { options: newOptions });
                     }}
+                    className={question.correct_answers.includes(option) ? "ring-2 ring-green-500" : ""}
                   />
-                  <Checkbox
-                    checked={question.correct_answers.includes(option)}
-                    onCheckedChange={(checked) => {
-                      let newCorrect = [...question.correct_answers];
-                      if (checked) {
-                        newCorrect.push(option);
-                      } else {
-                        newCorrect = newCorrect.filter(ans => ans !== option);
-                      }
-                      updateQuestion(index, { correct_answers: newCorrect });
-                    }}
-                  />
+                  <div className="flex items-center gap-1">
+                    <Checkbox
+                      checked={question.correct_answers.includes(option)}
+                      onCheckedChange={(checked) => {
+                        let newCorrect = [...question.correct_answers];
+                        if (checked) {
+                          newCorrect.push(option);
+                        } else {
+                          newCorrect = newCorrect.filter(ans => ans !== option);
+                        }
+                        updateQuestion(index, { correct_answers: newCorrect });
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">Correct</span>
+                  </div>
                 </div>
               ))}
             </div>
+            {question.correct_answers.length > 0 && (
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs">
+                  {question.correct_answers.length} correct answer(s) selected
+                </Badge>
+              </div>
+            )}
           </div>
         )}
 
