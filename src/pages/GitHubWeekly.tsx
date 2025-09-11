@@ -54,7 +54,8 @@ import { GitHubWeeklyHistory } from '@/components/GitHubWeeklyHistory';
 import { GitHubRequestReenableDialog } from '@/components/GitHubRequestReenableDialog';
 import { 
   isDueDatePassed,
-  isDueDateInAssignmentWeek
+  isDueDateInAssignmentWeek,
+  canUserInteractWithTask
 } from '@/utils/dueDateValidation';
 import { 
   getTaskDayAvailability,
@@ -435,33 +436,38 @@ const GitHubWeekly = () => {
     );
   };
 
-  // Helper function to calculate day-based due date with 48-hour window
-  const calculateDayDueDate = (displayOrder: number) => {
+  // Helper function to calculate simple day-based due date (matching LinkedIn logic)
+  const calculateSimpleDueDate = (task: any) => {
+    // Use the actual due_at from the database if available
+    if (task.due_at) {
+      return new Date(task.due_at);
+    }
+    
+    // Fallback calculation for tasks without due_at (shouldn't happen with new logic)
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // Calculate this week's Monday (start of week)
-    const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1; // Sunday is 6 days from Monday
+    // Get Monday of current week
+    const daysFromMonday = currentDay === 0 ? 6 : currentDay - 1;
     const thisMonday = new Date(today);
     thisMonday.setDate(today.getDate() - daysFromMonday);
     
-    // Calculate due date for the specific day (48 hours after Monday)
-    const taskDueDate = new Date(thisMonday);
-    taskDueDate.setDate(thisMonday.getDate() + (displayOrder - 1)); // Day 1 = Monday, Day 2 = Tuesday, etc.
-    taskDueDate.setHours(23, 59, 59, 999); // End of day
+    // Simple due date logic: next day evening (except Sunday)
+    const displayOrder = task.github_tasks?.display_order || 1;
+    let dueDate = new Date(thisMonday);
     
-    // Add 48 hours buffer
-    const dueWith48Hours = new Date(taskDueDate);
-    dueWith48Hours.setDate(taskDueDate.getDate() + 2);
+    if (displayOrder === 7) {
+      // Sunday tasks are due on Sunday evening (same day)
+      dueDate.setDate(thisMonday.getDate() + 6); // Sunday
+      dueDate.setHours(23, 59, 59, 999);
+    } else {
+      // Other tasks are due the next day evening
+      dueDate.setDate(thisMonday.getDate() + displayOrder); // Next day after assignment
+      dueDate.setHours(23, 59, 59, 999);
+    }
     
-    return dueWith48Hours;
-  };
-
-  // Helper function to check if task is expired (past 48-hour window)
-  const isTaskExpired = (displayOrder: number) => {
-    const dueDate = calculateDayDueDate(displayOrder);
-    return new Date() > dueDate;
+    return dueDate;
   };
 
   // Helper function to format description with bullet points
@@ -502,21 +508,21 @@ const GitHubWeekly = () => {
     const canInteractDayBased = canUserInteractWithDayBasedTask(task.github_tasks?.title || '', task.admin_extended);
     const dayAvailabilityMessage = getTaskAvailabilityMessage(task.github_tasks?.title || '', task.admin_extended);
     
-    // Get display order from task for fallback calculations
-    const displayOrder = task.github_tasks?.display_order || 1;
-    const dueDate = calculateDayDueDate(displayOrder);
-    const isExpired = isTaskExpired(displayOrder);
+    // Get due date from task (now using simple logic)
+    const dueDate = calculateSimpleDueDate(task);
+    const duePassed = isDueDatePassed(dueDate);
+    const canInteractDueDate = canUserInteractWithTask(dueDate, task.admin_extended);
     
     // Combined availability - use day-based if task has Day X format, otherwise use due date
-    const canInteract = hasDay ? canInteractDayBased : (!isExpired || task.status === 'VERIFIED');
+    const canInteract = hasDay ? canInteractDayBased : canInteractDueDate;
     
     // Only show extension request for incomplete tasks that are past due
     const isTaskCompleteOrSubmitted = ['VERIFIED', 'SUBMITTED', 'PARTIALLY_VERIFIED'].includes(task.status);
-    const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : isExpired);
+    const showExtensionRequest = !isTaskCompleteOrSubmitted && (hasDay ? dayAvailability.canRequestExtension : (duePassed && !canInteractDueDate));
     
     // Only show warning messages for incomplete tasks
     const showDayWarning = hasDay && !canInteract && !isTaskCompleteOrSubmitted;
-    const showExpirationWarning = !hasDay && isExpired && !isTaskCompleteOrSubmitted;
+    const showExpirationWarning = !hasDay && duePassed && !canInteractDueDate && !isTaskCompleteOrSubmitted;
     
     // Extract day number from GitHub task title (e.g., "Day 1 – Planning & Setup" -> "Monday")
     const extractDayFromTitle = (title: string): string => {
@@ -538,7 +544,8 @@ const GitHubWeekly = () => {
     
     // Parse title to get day number and activity name
     const titleParts = (task.github_tasks?.title || task.title || '').split(' – ');
-    const dayPart = titleParts[0] || `Day ${displayOrder}`;
+    const taskDisplayOrder = task.github_tasks?.display_order || 1;
+    const dayPart = titleParts[0] || `Day ${taskDisplayOrder}`;
     const activityName = titleParts[1] || 'GitHub Activity';
     
     return (
@@ -547,7 +554,7 @@ const GitHubWeekly = () => {
           ? 'border-l-green-500 bg-gradient-to-br from-green-50 to-emerald-50/30' 
           : task.status === 'SUBMITTED' 
           ? 'border-l-blue-500 bg-gradient-to-br from-blue-50 to-sky-50/30'
-          : (hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted) || (!hasDay && isExpired && !isTaskCompleteOrSubmitted)
+          : (hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted) || (!hasDay && duePassed && !canInteractDueDate && !isTaskCompleteOrSubmitted)
           ? 'border-l-red-500 bg-gradient-to-br from-red-50 to-rose-50/30 opacity-80'
           : hasDay && dayAvailability.isFutureDay
           ? 'border-l-blue-400 bg-gradient-to-br from-blue-50 to-sky-50/30 opacity-60'
@@ -580,7 +587,7 @@ const GitHubWeekly = () => {
           <div className="text-xs text-right">
             <div className={`flex items-center gap-1 justify-end ${
               (hasDay && dayAvailability.isPastDue && !isTaskCompleteOrSubmitted) || 
-              (!hasDay && isExpired && !isTaskCompleteOrSubmitted) 
+              (!hasDay && duePassed && !canInteractDueDate && !isTaskCompleteOrSubmitted) 
                 ? 'text-red-600 font-medium' : 'text-muted-foreground'
             }`}>
               <Clock className="h-3 w-3" />
@@ -610,14 +617,14 @@ const GitHubWeekly = () => {
                 </Badge>
               )}
               
-              {!hasDay && isExpired && !isTaskCompleteOrSubmitted && (
+              {!hasDay && duePassed && !canInteractDueDate && !isTaskCompleteOrSubmitted && (
                 <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
                   <AlertTriangle className="h-3 w-3 mr-1" />
                   Expired
                 </Badge>
               )}
               
-              {!hasDay && !isExpired && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
+              {!hasDay && !duePassed && hoursUntilDue <= 24 && hoursUntilDue > 0 && (
                 <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
                   <Clock className="h-3 w-3 mr-1" />
                   {hoursUntilDue}h left

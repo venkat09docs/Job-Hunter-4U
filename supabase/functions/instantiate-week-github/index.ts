@@ -148,34 +148,29 @@ Deno.serve(async (req) => {
     // Calculate which day of the week to start creating tasks from
     const weekDayIndex = currentDay === 0 ? 6 : currentDay - 1; // Convert to 0=Monday, 6=Sunday
     
-    // Create tasks for current day through Sunday
+    // Create tasks for current day through Sunday using LinkedIn's simple due date logic
     const userTasks = [];
     for (let dayIndex = weekDayIndex; dayIndex < 7; dayIndex++) {
       const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       const assignmentDay = dayNames[dayIndex];
+      const dayAssignment = dayIndex + 1; // 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
       
-      // Calculate due date based on day:
-      // Monday-Friday: 48 hours later
-      // Saturday-Sunday: 24 hours later (by Sunday 11:59 PM)
+      // Use LinkedIn's simple due date logic:
+      // Sunday tasks are due on Sunday evening (same day)
+      // All other tasks are due next day evening
       let dueDate = new Date(startOfWeek);
-      dueDate.setDate(startOfWeek.getDate() + dayIndex); // Set to assignment day
       
-      if (dayIndex <= 4) { // Monday through Friday (0-4)
-        // 48 hours later, but not beyond Sunday
-        dueDate.setDate(dueDate.getDate() + 2);
-        if (dueDate.getDay() === 1) { // If it would be Monday, set to Sunday instead
-          dueDate.setDate(dueDate.getDate() - 1);
-        }
-      } else { // Saturday and Sunday (5-6)
-        // 24 hours later (by Sunday)
-        dueDate.setDate(startOfWeek.getDate() + 6); // Set to Sunday
+      if (dayAssignment === 7) {
+        // Sunday tasks are due on Sunday evening (same day)
+        dueDate.setDate(startOfWeek.getDate() + 6); // Sunday
+        dueDate.setHours(23, 59, 59, 999);
+      } else {
+        // Other tasks are due the next day evening
+        // Day 1 (Monday) -> Due Tuesday evening
+        // Day 2 (Tuesday) -> Due Wednesday evening, etc.
+        dueDate.setDate(startOfWeek.getDate() + dayAssignment); // Next day after assignment
+        dueDate.setHours(23, 59, 59, 999);
       }
-      
-      dueDate.setHours(23, 59, 59, 999); // End of day
-      
-      // Convert to IST (UTC+5:30)
-      const istOffset = 5.5 * 60 * 60 * 1000;
-      const dueDateIST = new Date(dueDate.getTime() + istOffset);
 
       // For each day, assign one task (rotate through available tasks)
       const taskIndex = dayIndex % weeklyTasks.length;
@@ -186,12 +181,12 @@ Deno.serve(async (req) => {
         task_id: selectedTask.id,
         period: `${currentPeriod}-${assignmentDay}`,
         repo_id: null,
-        due_at: dueDateIST.toISOString(),
+        due_at: dueDate.toISOString(),
         status: 'NOT_STARTED' as const,
         score_awarded: 0,
       });
       
-      console.log(`Assigning ${selectedTask.title} for ${assignmentDay}, due: ${dueDateIST.toISOString()}`);
+      console.log(`Assigning ${selectedTask.title} for ${assignmentDay}, due: ${dueDate.toISOString()}`);
     }
 
     const { data: createdTasks, error: createError } = await supabaseClient
