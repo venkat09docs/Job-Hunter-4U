@@ -62,37 +62,36 @@ const AIGeneralistsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Program Board and Action Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* AI Generalists Program Board */}
-        <div className="lg:col-span-2">
-          <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 rounded-2xl p-6">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
-              AI Generalists Program
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
-            </p>
-          </div>
+      {/* Header with Three Boards in Same Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* AI Generalists Program Board - Takes more space */}
+        <div className="lg:col-span-6">
+          <Card className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 border-primary/20 h-full">
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
+                AI Generalists Program
+              </h2>
+              <p className="text-muted-foreground">
+                Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
+              </p>
+            </CardContent>
+          </Card>
         </div>
         
-        {/* Action Cards */}
-        <div className="space-y-4">
-          {/* Join Community Card */}
-          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-gradient-to-r from-emerald to-teal w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+        {/* Join Community Board */}
+        <div className="lg:col-span-3">
+          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
+            <CardContent className="p-6 flex flex-col justify-between h-full">
+              <div>
+                <div className="bg-gradient-to-r from-emerald to-teal w-10 h-10 rounded-full flex items-center justify-center mb-3">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground">
-                    Join Our Community
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Connect with 10,000+ AI professionals
-                  </p>
-                </div>
+                <h3 className="font-bold text-foreground mb-2">
+                  Join Our Community
+                </h3>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Connect with 10,000+ AI professionals and enthusiasts worldwide
+                </p>
               </div>
               <Button 
                 size="sm"
@@ -105,22 +104,22 @@ const AIGeneralistsTab: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-          
-          {/* Advanced Programs Card */}
-          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-gradient-to-r from-violet to-purple w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+        </div>
+        
+        {/* Advanced Programs Board */}
+        <div className="lg:col-span-3">
+          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
+            <CardContent className="p-6 flex flex-col justify-between h-full">
+              <div>
+                <div className="bg-gradient-to-r from-violet to-purple w-10 h-10 rounded-full flex items-center justify-center mb-3">
                   <ExternalLink className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground">
-                    Advanced Programs
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Explore specialized AI tracks
-                  </p>
-                </div>
+                <h3 className="font-bold text-foreground mb-2">
+                  Advanced Programs
+                </h3>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Explore specialized AI tracks and advanced learning paths
+                </p>
               </div>
               <Button 
                 size="sm"
