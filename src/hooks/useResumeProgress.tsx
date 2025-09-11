@@ -59,7 +59,20 @@ export const useResumeProgress = () => {
           const experience = Array.isArray(data.experience) ? (data.experience as unknown as ResumeData['experience']) : [{ company: '', role: '', duration: '', description: '' }];
           const education = Array.isArray(data.education) ? (data.education as unknown as ResumeData['education']) : [{ institution: '', degree: '', duration: '', gpa: '' }];
           const skillsInterests = data.skills_interests as any || {};
-          const certAwards = Array.isArray(data.certifications_awards) ? (data.certifications_awards as unknown as string[]) : [''];
+          
+          // Handle both old and new data formats - match exactly what ResumeBuilder does
+          let certifications = [''];
+          let awards = [''];
+          
+          if (data.awards && Array.isArray(data.awards)) {
+            // New format: awards are stored separately
+            awards = (data.awards as string[]).length > 0 ? (data.awards as string[]) : [''];
+          }
+          
+          if (data.certifications_awards && Array.isArray(data.certifications_awards)) {
+            // If we have the old combined format and no separate awards, keep them as certifications
+            certifications = (data.certifications_awards as string[]).length > 0 ? (data.certifications_awards as string[]) : [''];
+          }
 
           const resumeData: ResumeData = {
             personalDetails: {
@@ -74,8 +87,8 @@ export const useResumeProgress = () => {
             education: education,
             skills: Array.isArray(skillsInterests.skills) ? (skillsInterests.skills as string[]) : [''],
             interests: Array.isArray(skillsInterests.interests) ? (skillsInterests.interests as string[]) : [''],
-            certifications: certAwards,
-            awards: [''],
+            certifications: certifications,
+            awards: awards,
             professionalSummary: data.professional_summary || ''
           };
 
