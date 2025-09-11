@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
           .from('linkedin_user_tasks')
           .update({
             status: isApproved ? 'VERIFIED' : 'REJECTED',
-            score_awarded: scoreAwarded,
+            score_awarded: pointsEarned, // Use pointsEarned instead of scoreAwarded
             verification_notes: verificationNotes
           })
           .eq('id', assignmentId)
@@ -236,7 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
           .from('github_user_tasks')
           .update({
             status: isApproved ? 'VERIFIED' : 'REJECTED',
-            score_awarded: scoreAwarded,
+            score_awarded: pointsEarned, // Use pointsEarned instead of scoreAwarded
             verification_notes: verificationNotes
           })
           .eq('id', assignmentId)
@@ -375,18 +375,33 @@ const handler = async (req: Request): Promise<Response> => {
         
         const { error: pointsError } = await supabase
           .from('user_activity_points')
-          .insert({
+          .upsert({
             user_id: userId,
             activity_date: new Date().toISOString().split('T')[0],
             activity_type: `${assignmentType}_task_completion`,
             activity_id: assignmentId,
             points_earned: pointsEarned
+          }, {
+            onConflict: 'user_id,activity_id,activity_date'
           });
 
         if (pointsError) {
           console.error('Error awarding points:', pointsError);
         } else {
           console.log(`🎯 Awarded ${pointsEarned} points to user ${userId} for ${taskTitle}`);
+        }
+      } else if (!isApproved) {
+        // If rejected, remove any existing points for this task
+        const { error: removePointsError } = await supabase
+          .from('user_activity_points')
+          .delete()
+          .eq('user_id', userId)
+          .eq('activity_id', assignmentId);
+
+        if (removePointsError) {
+          console.error('Error removing points for rejected task:', removePointsError);
+        } else {
+          console.log(`❌ Removed points for rejected task ${assignmentId} from user ${userId}`);
         }
       }
     }
