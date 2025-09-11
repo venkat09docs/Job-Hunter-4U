@@ -60,6 +60,7 @@ const mainItems = [
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
+  { title: "Check Level Up", url: "/dashboard/career-growth", icon: TrendingUp, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
@@ -546,83 +547,6 @@ export function AppSidebar() {
                     )}
                 </div>
 
-                {/* GitHub Section - Only for IT users */}
-                {isIT() && (
-                  <div className="mt-4">
-                      <button
-                        onClick={() => setGitHubOpen(!githubOpen)}
-                        className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                          isGitHubActive ? 'text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-orange-50/50 dark:hover:bg-orange-950/10'
-                        }`}
-                      >
-                        <Github className="h-5 w-5 flex-shrink-0 text-orange-500" />
-                        {!isCollapsed && (
-                          <>
-                            <span className="font-medium text-sm">GitHub Tools</span>
-                            {githubOpen ? (
-                              <ChevronDown className="h-4 w-4 ml-auto text-orange-500" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 ml-auto text-orange-500" />
-                            )}
-                          </>
-                        )}
-                      </button>
-                       {githubOpen && !isCollapsed && (
-                          <div className="space-y-1 mt-1">
-                            {githubItems.map((item) => {
-                              // Check for high tier subscription plans
-                              const subscriberPlan = profile?.subscription_plan;
-                              const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                              
-                              // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
-                              if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
-                                  && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
-                                return null;
-                              }
-                              
-                              // Hide GitHub Weekly for free, one-week, and one-month plan users
-                              if (item.title === "GitHub Weekly") {
-                                const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
-                                const currentPlan = subscriberPlan || "Free Plan";
-                                if (restrictedPlans.includes(currentPlan)) {
-                                  return null;
-                                }
-                              }
-                              
-                              const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                              return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="github" />;
-                            })}
-                          </div>
-                       )}
-                        {isCollapsed && (
-                         <div className="space-y-1">
-                           {githubItems.map((item) => {
-                             // Check for high tier subscription plans
-                             const subscriberPlan = profile?.subscription_plan;
-                             const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                             
-                             // Hide GitHub Optimization and GitHub Activity Tracker for users with high tier plans
-                             if ((item.title === "GitHub Optimization" || item.title === "GitHub Activity Tracker") 
-                                 && subscriberPlan && highTierPlans.includes(subscriberPlan)) {
-                               return null;
-                             }
-                             
-                             // Hide GitHub Weekly for free, one-week, and one-month plan users
-                             if (item.title === "GitHub Weekly") {
-                               const restrictedPlans = ["Free Plan", "One Week Plan", "One Month Plan"];
-                               const currentPlan = subscriberPlan || "Free Plan";
-                               if (restrictedPlans.includes(currentPlan)) {
-                                 return null;
-                               }
-                             }
-                             
-                             const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                             return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={isCollapsed} sectionColor="github" />;
-                           })}
-                         </div>
-                       )}
-                  </div>
-                  )}
 
               </div>
             </div>
