@@ -62,41 +62,74 @@ const AIGeneralistsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Program Title and Action Buttons */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 rounded-2xl p-6 flex-1">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
-            AI Generalists Program
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
-          </p>
+      {/* Header with Three Equal Height Boards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* AI Generalists Program Board */}
+        <div className="lg:col-span-2">
+          <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 rounded-2xl p-6 h-full flex flex-col justify-between">
+            <div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
+                AI Generalists Program
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
+              </p>
+            </div>
+          </div>
         </div>
         
-        <div className="flex gap-3 flex-shrink-0">
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 hover:bg-primary/10 hover:border-primary/30"
-            onClick={() => {
-              // TODO: Navigate to community
-              console.log('Join Community clicked');
-            }}
-          >
-            <MessageSquare className="h-4 w-4" />
-            Join Community
-          </Button>
+        {/* Join Community Board */}
+        <div className="space-y-4">
+          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
+            <CardContent className="p-6 flex flex-col justify-between h-full">
+              <div>
+                <div className="bg-gradient-to-r from-emerald to-teal w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                  <MessageSquare className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">
+                  Join Our Community
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                  Connect with 10,000+ AI professionals and enthusiasts worldwide. Share knowledge, get help, and grow together.
+                </p>
+              </div>
+              <Button 
+                className="w-full bg-gradient-to-r from-emerald to-teal hover:from-emerald-dark hover:to-teal-dark shadow-lg"
+                onClick={() => {
+                  console.log('Join Community clicked');
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Join Community
+              </Button>
+            </CardContent>
+          </Card>
           
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 hover:bg-primary/10 hover:border-primary/30"
-            onClick={() => {
-              // TODO: Navigate to advanced programs
-              console.log('Advanced Programs clicked');
-            }}
-          >
-            <ExternalLink className="h-4 w-4" />
-            Advanced Programs
-          </Button>
+          {/* Advanced Programs Board */}
+          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
+            <CardContent className="p-6 flex flex-col justify-between h-full">
+              <div>
+                <div className="bg-gradient-to-r from-violet to-purple w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                  <ExternalLink className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-3">
+                  Advanced Programs
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                  Explore specialized AI tracks including Machine Learning Engineering, AI Leadership, and Deep Learning Mastery.
+                </p>
+              </div>
+              <Button 
+                className="w-full bg-gradient-to-r from-violet to-purple hover:from-violet-dark hover:to-purple-dark shadow-lg"
+                onClick={() => {
+                  console.log('Advanced Programs clicked');
+                }}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Programs
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
