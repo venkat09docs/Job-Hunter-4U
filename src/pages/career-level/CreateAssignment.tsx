@@ -62,6 +62,7 @@ const CreateAssignment = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const form = useForm<AssignmentFormData>({
     resolver: zodResolver(assignmentSchema),
@@ -121,6 +122,7 @@ const CreateAssignment = () => {
       marks: 1,
     };
     setQuestions([...questions, newQuestion]);
+    setCurrentQuestionIndex(questions.length);
   };
 
   const updateQuestion = (index: number, updatedQuestion: Partial<Question>) => {
@@ -130,7 +132,13 @@ const CreateAssignment = () => {
   };
 
   const removeQuestion = (index: number) => {
-    setQuestions(questions.filter((_, i) => i !== index));
+    const newQuestions = questions.filter((_, i) => i !== index);
+    setQuestions(newQuestions);
+    if (currentQuestionIndex >= newQuestions.length && newQuestions.length > 0) {
+      setCurrentQuestionIndex(newQuestions.length - 1);
+    } else if (newQuestions.length === 0) {
+      setCurrentQuestionIndex(0);
+    }
   };
 
   const onSubmit = async (data: AssignmentFormData) => {
@@ -273,7 +281,8 @@ const CreateAssignment = () => {
                   />
                   <div className="flex items-center gap-1">
                     <Checkbox
-                      checked={question.correct_answers.includes(option) && option.trim() !== ''}
+                      checked={question.correct_answers.includes(option)}
+                      disabled={option.trim() === ''}
                       onCheckedChange={(checked) => {
                         if (option.trim() === '') {
                           return; // Don't allow checking empty options
@@ -595,22 +604,52 @@ const CreateAssignment = () => {
                     <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                       3
                     </div>
-                    Questions ({questions.length})
+                    Questions
+                    {questions.length > 0 && (
+                      <Badge variant="secondary" className="ml-2">
+                        {currentQuestionIndex + 1} of {questions.length}
+                      </Badge>
+                    )}
                   </CardTitle>
-                  <Button type="button" onClick={addQuestion} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Question
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button type="button" onClick={addQuestion} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Question
+                    </Button>
+                    
+                    {questions.length > 1 && (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
+                          disabled={currentQuestionIndex === 0}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+                          disabled={currentQuestionIndex === questions.length - 1}
+                        >
+                          Next
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
-                <CardContent>
-                  {questions.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No questions added yet. Click "Add Question" to get started.
-                    </div>
-                  ) : (
-                    questions.map((question, index) => renderQuestionEditor(question, index))
-                  )}
+              <CardContent>
+                {questions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No questions added yet. Click "Add Question" to get started.
+                  </div>
+                ) : (
+                  renderQuestionEditor(questions[currentQuestionIndex], currentQuestionIndex)
+                )}
               </CardContent>
             </Card>
 
