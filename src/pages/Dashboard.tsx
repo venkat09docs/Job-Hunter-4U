@@ -368,16 +368,19 @@ const Dashboard = () => {
       : 0;
   })();
   const githubProgress = (() => {
-    // Calculate GitHub progress from GitHub sub-category assignments
-    if (!assignments || assignments.length === 0) return repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0;
+    // Calculate GitHub progress from GitHub sub-category assignments to match Profile Assignments page
+    if (!assignments || assignments.length === 0) return 0;
     const githubTasks = assignments.filter(a => {
       const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
       const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-      return templateTitle.includes('github') || templateCategory.includes('github');
+      // Check for GitHub-related tasks in sub-categories to match Profile Assignments calculation
+      return templateTitle.includes('github') || templateCategory.includes('github') || 
+             (a.career_task_templates?.sub_category_id && 
+              templateTitle.includes('git') || templateCategory.includes('git'));
     });
     return githubTasks.length > 0 
       ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
-      : (repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0);
+      : 0;
   })();
   
   console.log('🔍 Dashboard GitHub Debug:', {
