@@ -62,70 +62,73 @@ const AIGeneralistsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Three Equal Height Boards */}
+      {/* Header with Program Board and Action Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* AI Generalists Program Board */}
         <div className="lg:col-span-2">
-          <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 rounded-2xl p-6 h-full flex flex-col justify-between">
-            <div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
-                AI Generalists Program
-              </h2>
-              <p className="text-muted-foreground text-lg">
-                Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
-              </p>
-            </div>
+          <div className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 rounded-2xl p-6">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
+              AI Generalists Program
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Master the foundations and advanced concepts of Artificial Intelligence through hands-on projects and expert guidance
+            </p>
           </div>
         </div>
         
-        {/* Join Community Board */}
+        {/* Action Cards */}
         <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
-            <CardContent className="p-6 flex flex-col justify-between h-full">
-              <div>
-                <div className="bg-gradient-to-r from-emerald to-teal w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <MessageSquare className="h-6 w-6 text-white" />
+          {/* Join Community Card */}
+          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-gradient-to-r from-emerald to-teal w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <MessageSquare className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">
-                  Join Our Community
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                  Connect with 10,000+ AI professionals and enthusiasts worldwide. Share knowledge, get help, and grow together.
-                </p>
+                <div>
+                  <h3 className="font-bold text-foreground">
+                    Join Our Community
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Connect with 10,000+ AI professionals
+                  </p>
+                </div>
               </div>
               <Button 
-                className="w-full bg-gradient-to-r from-emerald to-teal hover:from-emerald-dark hover:to-teal-dark shadow-lg"
+                size="sm"
+                className="w-full bg-gradient-to-r from-emerald to-teal hover:from-emerald-dark hover:to-teal-dark"
                 onClick={() => {
                   console.log('Join Community clicked');
                 }}
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Join Community
+                Join Now
               </Button>
             </CardContent>
           </Card>
           
-          {/* Advanced Programs Board */}
-          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col">
-            <CardContent className="p-6 flex flex-col justify-between h-full">
-              <div>
-                <div className="bg-gradient-to-r from-violet to-purple w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <ExternalLink className="h-6 w-6 text-white" />
+          {/* Advanced Programs Card */}
+          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-gradient-to-r from-violet to-purple w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <ExternalLink className="h-5 w-5 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-foreground mb-3">
-                  Advanced Programs
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                  Explore specialized AI tracks including Machine Learning Engineering, AI Leadership, and Deep Learning Mastery.
-                </p>
+                <div>
+                  <h3 className="font-bold text-foreground">
+                    Advanced Programs
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Explore specialized AI tracks
+                  </p>
+                </div>
               </div>
               <Button 
-                className="w-full bg-gradient-to-r from-violet to-purple hover:from-violet-dark hover:to-purple-dark shadow-lg"
+                size="sm"
+                className="w-full bg-gradient-to-r from-violet to-purple hover:from-violet-dark hover:to-purple-dark"
                 onClick={() => {
                   console.log('Advanced Programs clicked');
                 }}
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
                 View Programs
               </Button>
             </CardContent>
@@ -147,7 +150,7 @@ const AIGeneralistsTab: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {courses.map((course) => (
             <Card key={course.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
               <div className="relative">
