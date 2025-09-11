@@ -152,13 +152,6 @@ const CLPDashboard = () => {
 
   const quickActions = [
     {
-      title: 'Create Assignment',
-      description: 'Build a new assignment for your course',
-      icon: Plus,
-      onClick: () => navigate('/dashboard/career-level/assignments/new'),
-      color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
-    },
-    {
       title: 'Manage Assignments',
       description: 'View and edit existing assignments',
       icon: Eye,
