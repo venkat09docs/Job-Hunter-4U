@@ -521,7 +521,7 @@ export function AppSidebar() {
                       <Target className="h-5 w-5 flex-shrink-0 text-green-500" />
                       {!isCollapsed && (
                         <>
-                          <span className="font-medium text-sm">Job Hunter</span>
+                          <span className="font-medium text-sm">Job Hunter Level Up</span>
                           {jobHunterOpen ? (
                             <ChevronDown className="h-4 w-4 ml-auto text-green-500" />
                           ) : (
