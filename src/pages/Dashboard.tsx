@@ -330,6 +330,29 @@ const Dashboard = () => {
   
   console.log('Dashboard: Rendering main content');
 
+  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
+    const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
+    const key = format(date, 'yyyy-MM-dd');
+    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
+    const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
+    return { label: format(date, 'EEE'), total };
+  });
+
+  const jobStatusData = [
+    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--chart-wishlist))' },
+    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--chart-applied))' },
+    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--chart-interviewing))' },
+    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--chart-negotiating))' },
+    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--chart-accepted))' },
+    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--chart-not-selected))' },
+    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
+    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
+  ];
+
+  const repoCompleted = repoMetrics.completed;
+  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
+  const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
+
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
   const resumeProgress = getModuleProgress('RESUME');
   const linkedinProgress = (() => {
@@ -365,29 +388,6 @@ const Dashboard = () => {
     githubLoading
   });
 
-  const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
-    const key = format(date, 'yyyy-MM-dd');
-    const dayData = (weeklyDailyBreakdown[key] || {}) as Record<string, number>;
-    const total = Object.values(dayData).reduce((sum, v) => sum + (v || 0), 0);
-    return { label: format(date, 'EEE'), total };
-  });
-
-  const jobStatusData = [
-    { name: 'Wishlist', value: jobStatusCounts.wishlist, color: 'hsl(var(--chart-wishlist))' },
-    { name: 'Applied', value: jobStatusCounts.applied, color: 'hsl(var(--chart-applied))' },
-    { name: 'Interviewing', value: jobStatusCounts.interviewing, color: 'hsl(var(--chart-interviewing))' },
-    { name: 'Negotiating', value: jobStatusCounts.negotiating, color: 'hsl(var(--chart-negotiating))' },
-    { name: 'Accepted', value: jobStatusCounts.accepted, color: 'hsl(var(--chart-accepted))' },
-    { name: 'Not Selected', value: jobStatusCounts.not_selected, color: 'hsl(var(--chart-not-selected))' },
-    { name: 'No Response', value: jobStatusCounts.no_response, color: 'hsl(var(--chart-no-response))' },
-    { name: 'Archived', value: jobStatusCounts.archived, color: 'hsl(var(--chart-archived))' },
-  ];
-
-  const repoCompleted = repoMetrics.completed;
-  const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
-  const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
-  
   // GitHub Weekly progress calculation
   const githubWeeklyCompleted = weeklyTasks.filter(task => 
     task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED'
