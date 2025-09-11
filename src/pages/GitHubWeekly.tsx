@@ -438,12 +438,6 @@ const GitHubWeekly = () => {
 
   // Helper function to calculate simple day-based due date (matching LinkedIn logic)
   const calculateSimpleDueDate = (task: any) => {
-    // Use the actual due_at from the database if available
-    if (task.due_at) {
-      return new Date(task.due_at);
-    }
-    
-    // Fallback calculation for tasks without due_at (shouldn't happen with new logic)
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
