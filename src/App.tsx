@@ -70,6 +70,7 @@ import NotificationManagement from "./pages/NotificationManagement";
 import AffiliateManagementPage from "./pages/AffiliateManagement";
 import SocialProofManagement from "./pages/SocialProofManagement";
 import CareerLevelUp from "./pages/CareerLevelUp";
+import ProgressLevelUp from "./pages/ProgressLevelUp";
 
 // Career Level Program (CLP) imports
 import CLPDashboard from "./pages/career-level/CLPDashboard";
@@ -496,6 +497,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CareerLevelProgram />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/progress-level-up" 
+            element={
+              <ProtectedRoute>
+                <ProgressLevelUp />
               </ProtectedRoute>
             } 
           />

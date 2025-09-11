@@ -58,6 +58,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { title: "Skill Level Up", url: "/dashboard/career-level", icon: Award, featureKey: null },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
+  { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "Check Level Up", url: "/dashboard/career-growth", icon: TrendingUp, featureKey: null },
@@ -482,8 +483,8 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items - Part 1: Up to Profile Level Up */}
-                {mainItems.slice(0, 3).map((item) => {
+                {/* Main Menu Items - Part 1: Up to Progress Level Up */}
+                {mainItems.slice(0, 4).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
@@ -547,8 +548,8 @@ export function AppSidebar() {
                     )}
                 </div>
 
-                {/* Main Menu Items - Part 2: After Profile Level Up */}
-                {mainItems.slice(3).map((item) => {
+                {/* Main Menu Items - Part 2: After Progress Level Up */}
+                {mainItems.slice(4).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
