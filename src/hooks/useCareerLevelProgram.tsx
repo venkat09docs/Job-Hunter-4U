@@ -705,6 +705,36 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
+  const publishAssignment = useCallback(async (assignmentId: string): Promise<boolean> => {
+    if (!user) return false;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clp_assignments')
+        .update({ is_published: true })
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment published successfully'
+      });
+
+      return true;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to publish assignment',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
   const updateQuestion = useCallback(async (questionId: string, data: Partial<CreateQuestionData>): Promise<Question | null> => {
     setLoading(true);
     try {
@@ -754,6 +784,7 @@ export const useCareerLevelProgram = () => {
     // Assignment methods
     createAssignment,
     updateAssignment,
+    publishAssignment,
     getAssignmentsByModule,
     getAssignments,
     getAssignmentsWithProgress,

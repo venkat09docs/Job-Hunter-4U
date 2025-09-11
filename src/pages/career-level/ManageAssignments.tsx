@@ -19,7 +19,8 @@ import {
   Clock,
   Users,
   Filter,
-  Plus
+  Plus,
+  Send
 } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
@@ -38,7 +39,8 @@ const ManageAssignments = () => {
     getAssignments, 
     getCourses, 
     getModulesByCourse,
-    deleteAssignment 
+    deleteAssignment,
+    publishAssignment
   } = useCareerLevelProgram();
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -110,6 +112,31 @@ const ManageAssignments = () => {
       toast({
         title: "Error",
         description: "Failed to delete assignment",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePublishAssignment = async (assignmentId: string) => {
+    if (!confirm('Are you sure you want to publish this assignment? Students will be able to access it immediately.')) {
+      return;
+    }
+
+    try {
+      await publishAssignment(assignmentId);
+      // Update the assignment in the local state
+      setAssignments(assignments.map(a => 
+        a.id === assignmentId ? { ...a, is_published: true } : a
+      ));
+      toast({
+        title: "Success",
+        description: "Assignment published successfully"
+      });
+    } catch (error) {
+      console.error('Error publishing assignment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish assignment",
         variant: "destructive"
       });
     }
@@ -399,12 +426,20 @@ const ManageAssignments = () => {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="flex-1"
                       onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}/edit`)}
                     >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
+                      <Edit className="w-4 h-4" />
                     </Button>
+                    {!assignment.is_published && (
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => handlePublishAssignment(assignment.id)}
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       size="sm"

@@ -219,6 +219,16 @@ const CreateAssignment = () => {
 
   const onSubmit = async (data: AssignmentFormData) => {
     try {
+      // Clean timestamp fields - convert empty strings to null
+      const cleanedData = {
+        ...data,
+        visible_from: data.visible_from || null,
+        start_at: data.start_at || null,
+        end_at: data.end_at || null,
+        due_at: data.due_at || null,
+        duration_minutes: data.duration_minutes || null,
+      };
+
       // Determine assignment type based on questions
       const hasObjectiveQuestions = questions.some(q => ['mcq', 'tf'].includes(q.kind));
       const hasSubjectiveQuestions = questions.some(q => ['descriptive', 'task'].includes(q.kind));
@@ -234,7 +244,7 @@ const CreateAssignment = () => {
 
       if (isEditing && assignmentId) {
         // Update existing assignment
-        const assignmentData = { ...data, type: assignmentType } as Partial<CreateAssignmentData>;
+        const assignmentData = { ...cleanedData, type: assignmentType } as Partial<CreateAssignmentData>;
         const assignment = await updateAssignment(assignmentId, assignmentData);
         if (!assignment) throw new Error('Failed to update assignment');
 
@@ -287,7 +297,7 @@ const CreateAssignment = () => {
         });
       } else {
         // Create assignment with inferred type
-        const assignmentData = { ...data, type: assignmentType } as CreateAssignmentData;
+        const assignmentData = { ...cleanedData, type: assignmentType } as CreateAssignmentData;
         const assignment = await createAssignment(assignmentData);
         if (!assignment) throw new Error('Failed to create assignment');
 
