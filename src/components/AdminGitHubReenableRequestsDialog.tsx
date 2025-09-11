@@ -119,6 +119,10 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Not authenticated');
 
+      // Get the user ID from the request for point deduction
+      const request = requests.find(r => r.id === requestId);
+      if (!request) throw new Error('Request not found');
+
       // Update the github_user_task to extend it
       const { error: taskError } = await supabase
         .from('github_user_tasks')
@@ -131,6 +135,23 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
         .eq('id', userTaskId);
 
       if (taskError) throw taskError;
+
+      // Deduct 5 points from user's activity points for extension
+      const { error: pointsError } = await supabase
+        .from('user_activity_points')
+        .insert({
+          user_id: request.user_id,
+          activity_type: 'extension_penalty',
+          activity_id: `github_extension_${requestId}`,
+          activity_date: new Date().toDateString(),
+          points_earned: -5,
+          activity_description: 'Points deducted for approved GitHub task extension'
+        });
+
+      if (pointsError) {
+        console.error('Error deducting points:', pointsError);
+        // Continue anyway as extension is more important than points
+      }
 
       // Update the request status
       const { error: requestError } = await supabase
@@ -145,7 +166,7 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
 
       if (requestError) throw requestError;
 
-      toast.success('GitHub task extension approved successfully!');
+      toast.success('GitHub task extension approved successfully! (5 points deducted)');
       
       // Remove from local state
       setRequests(prev => prev.filter(r => r.id !== requestId));
