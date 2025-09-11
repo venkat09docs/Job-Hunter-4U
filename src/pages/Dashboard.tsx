@@ -8,6 +8,7 @@ import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
+import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
@@ -61,6 +62,7 @@ const Dashboard = () => {
   const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
+  const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
   const { isIT } = useUserIndustry();
   const { metrics: networkMetrics, loading: networkGrowthLoading, refreshMetrics: refreshNetworkMetrics } = useNetworkGrowthMetrics();
   
@@ -285,7 +287,7 @@ const Dashboard = () => {
   console.log('Dashboard: loading =', loading);
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading || pointsLoading || statsLoading) {
+  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -362,8 +364,15 @@ const Dashboard = () => {
   const repoCompleted = repoMetrics.completed;
   const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
   const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
-  const flowCompleted = weeklyFlowCompleted;
-  const flowRemaining = Math.max(0, WEEKLY_TARGET - flowCompleted);
+  
+  // GitHub Weekly progress calculation
+  const githubWeeklyCompleted = weeklyTasks.filter(task => 
+    task.status === 'VERIFIED' || task.status === 'PARTIALLY_VERIFIED'
+  ).length;
+  const githubWeeklyTotal = weeklyTasks.length || 7; // Default to 7 if no tasks
+  const flowCompleted = githubWeeklyCompleted;
+  const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
+  const weeklyTarget = githubWeeklyTotal;
 
   const handleSignOut = async () => {
     try {
@@ -727,22 +736,22 @@ const Dashboard = () => {
                         </CardContent>
                       </Card>
 
-                      {/* GitHub Growth Status */}
-                      <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Growth</p>
-                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{flowCompleted}/{WEEKLY_TARGET}</p>
-                            </div>
-                            <BarChart3 className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                          </div>
-                          <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
-                          <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
-                            {flowCompleted >= WEEKLY_TARGET ? 'Weekly goal met!' : `${WEEKLY_TARGET - flowCompleted} sessions left`}
-                          </div>
-                        </CardContent>
-                      </Card>
+                       {/* GitHub Growth Status */}
+                       <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800">
+                         <CardContent className="p-4">
+                           <div className="flex items-center justify-between">
+                             <div>
+                               <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
+                               <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyCompleted}/{githubWeeklyTotal}</p>
+                             </div>
+                             <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                           </div>
+                           <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
+                           <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
+                             {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete!' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
+                           </div>
+                         </CardContent>
+                       </Card>
                     </div>
                   </CardContent>
                 </Card>
@@ -868,12 +877,12 @@ const Dashboard = () => {
 
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">Weekly Flow</span>
-                          <span className="text-sm text-muted-foreground">{flowCompleted}/{WEEKLY_TARGET}</span>
+                          <span className="text-sm font-medium">Weekly Tasks</span>
+                          <span className="text-sm text-muted-foreground">{githubWeeklyCompleted}/{githubWeeklyTotal}</span>
                         </div>
-                        <Progress value={(flowCompleted / WEEKLY_TARGET) * 100} className="h-2" />
+                        <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="h-2" />
                         <p className="text-xs text-muted-foreground mt-1">
-                          {flowRemaining > 0 ? `${flowRemaining} sessions remaining` : 'Weekly target met! 🎉'}
+                          {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete! 🎉' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
                         </p>
                       </div>
 
