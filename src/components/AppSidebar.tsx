@@ -496,6 +496,17 @@ export function AppSidebar() {
                     }
                   }
                   
+                  // Special condition for Progress Level Up - only show for premium plan subscribers (3+ months)
+                  if (item.title === "Progress Level Up") {
+                    const subscriberPlan = profile?.subscription_plan;
+                    const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                    
+                    // Only show Progress Level Up for users with premium plans
+                    if (!subscriberPlan || !premiumPlans.includes(subscriberPlan)) {
+                      return null;
+                    }
+                  }
+                  
                   // Hide specific items for high tier subscription users
                   const subscriberPlan = profile?.subscription_plan;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
@@ -557,6 +568,17 @@ export function AppSidebar() {
                     
                     // Hide Level Up for users without eligible plans
                     if (!subscriberPlan || !eligiblePlans.includes(subscriberPlan)) {
+                      return null;
+                    }
+                  }
+                  
+                  // Special condition for Check Level Up - only show for basic/no subscription users
+                  if (item.title === "Check Level Up") {
+                    const subscriberPlan = profile?.subscription_plan;
+                    const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                    
+                    // Only show Check Level Up for users without premium plans
+                    if (subscriberPlan && premiumPlans.includes(subscriberPlan)) {
                       return null;
                     }
                   }
