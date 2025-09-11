@@ -431,6 +431,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleResumeClick = () => {
+    navigate('/dashboard/career-assignments');
+  };
+
+  const handleLinkedInClick = () => {
+    navigate('/dashboard/career-assignments');
+  };
+
+  const handleGitHubClick = () => {
+    navigate('/dashboard/career-assignments');
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'interviewing':
@@ -650,7 +662,7 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="grid grid-cols-2 gap-3">
                       {/* Resume Status */}
-                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -667,7 +679,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* LinkedIn Status */}
-                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800">
+                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -684,7 +696,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* GitHub Status */}
-                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -854,50 +866,7 @@ const Dashboard = () => {
 
               {/* Right Column */}
               <div className="space-y-4 lg:space-y-6">
-                {/* GitHub Activities Card */}
-                {isIT() && (
-                  <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
-                        <Github className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        GitHub Activities
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">Profile Setup</span>
-                          <span className="text-sm text-muted-foreground">{repoCompleted}/{repoMetrics.total}</span>
-                        </div>
-                        <Progress value={repoPercent} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {repoPending} tasks remaining
-                        </p>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium">Weekly Tasks</span>
-                          <span className="text-sm text-muted-foreground">{githubWeeklyCompleted}/{githubWeeklyTotal}</span>
-                        </div>
-                        <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="h-2" />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete! 🎉' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
-                        </p>
-                      </div>
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={handleViewGithubTracker}
-                      >
-                        View GitHub Tracker
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-
+                {/* Removed GitHub Activities section as requested */}
               </div>
             </div>
 
