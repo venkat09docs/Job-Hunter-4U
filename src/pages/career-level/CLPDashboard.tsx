@@ -9,6 +9,8 @@ import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home } from 'lucide
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CourseManagementTab from '@/components/CourseManagementTab';
 import type { Course, Attempt, LeaderboardEntry } from '@/types/clp';
 
 const CLPDashboard = () => {
@@ -16,6 +18,7 @@ const CLPDashboard = () => {
   const { role: userRole, loading: roleLoading } = useRole();
   const navigate = useNavigate();
   const { loading, getCourses, getLeaderboard } = useCareerLevelProgram();
+  const [activeTab, setActiveTab] = useState('overview');
   
   const [dashboardStats, setDashboardStats] = useState({
     totalCourses: 0,
@@ -220,6 +223,19 @@ const CLPDashboard = () => {
           </p>
         </div>
 
+        {/* Admin Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="courses">Courses</TabsTrigger>
+            <TabsTrigger value="assignments">Assignments</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
@@ -280,76 +296,131 @@ const CLPDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Submissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentSubmissions.length > 0 ? (
-                  recentSubmissions.slice(0, 5).map((submission) => (
-                    <div key={submission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <ClipboardCheck className="h-4 w-4 text-primary" />
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Submissions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentSubmissions.length > 0 ? (
+                      recentSubmissions.slice(0, 5).map((submission) => (
+                        <div key={submission.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                              <ClipboardCheck className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{submission.assignment?.title || 'Assignment'}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {submission.assignment?.module?.course?.title || 'Course'}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-orange-600 border-orange-200">
+                            {submission.review_status === 'pending' ? 'Pending' : 'In Review'}
+                          </Badge>
                         </div>
-                        <div>
-                          <p className="font-medium">{submission.assignment?.title || 'Assignment'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {submission.assignment?.module?.course?.title || 'Course'}
-                          </p>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No recent submissions</p>
                       </div>
-                      <Badge variant="outline" className="text-orange-600 border-orange-200">
-                        {submission.review_status === 'pending' ? 'Pending' : 'In Review'}
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No recent submissions</p>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Performers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topPerformers.length > 0 ? (
-                  topPerformers.slice(0, 5).map((performer, index) => (
-                    <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold text-sm">
-                          {index + 1}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Performers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {topPerformers.length > 0 ? (
+                      topPerformers.slice(0, 5).map((performer, index) => (
+                        <div key={performer.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-white font-bold text-sm">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="font-medium">{performer.user?.full_name || performer.user?.username || 'Student'}</p>
+                              <p className="text-sm text-muted-foreground">{performer.points_total} points</p>
+                            </div>
+                          </div>
+                          <Badge className="bg-gradient-primary">
+                            #{index + 1}
+                          </Badge>
                         </div>
-                        <div>
-                          <p className="font-medium">{performer.user?.full_name || performer.user?.username || 'Student'}</p>
-                          <p className="text-sm text-muted-foreground">{performer.points_total} points</p>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Trophy className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No performance data available</p>
                       </div>
-                      <Badge className="bg-gradient-primary">
-                        #{index + 1}
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Trophy className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No performance data available</p>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Courses Tab */}
+          <TabsContent value="courses" className="space-y-6">
+            <CourseManagementTab />
+          </TabsContent>
+
+          {/* Assignments Tab */}
+          <TabsContent value="assignments" className="space-y-6">
+            <div className="text-center py-16">
+              <ClipboardCheck className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
+                Assignment Management
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Assignment management features will be available here.
+              </p>
+              <Button onClick={() => navigate('/dashboard/career-level/assignments')}>
+                Go to Assignments
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews" className="space-y-6">
+            <div className="text-center py-16">
+              <Eye className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
+                Review Management
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Review pending submissions and provide feedback.
+              </p>
+              <Button onClick={() => navigate('/dashboard/career-level/reviews')}>
+                Review Submissions
+              </Button>
+            </div>
+          </TabsContent>
+
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard" className="space-y-6">
+            <div className="text-center py-16">
+              <Trophy className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
+                Leaderboard Analytics
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                View detailed leaderboard analytics and student rankings.
+              </p>
+              <Button onClick={() => navigate('/dashboard/career-level/leaderboard')}>
+                View Leaderboard
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -36,6 +36,7 @@ import type {
 import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import AIGeneralistsTab from '@/components/AIGeneralistsTab';
 
 const CareerLevelProgram: React.FC = () => {
   const { user } = useAuth();
@@ -63,8 +64,8 @@ const CareerLevelProgram: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedModule, setSelectedModule] = useState<string>('all');
   
-  // Get active tab from URL params or default to 'assignments'
-  const activeTab = searchParams.get('tab') || 'assignments';
+  // Get active tab from URL params or default to 'ai-generalists'
+  const activeTab = searchParams.get('tab') || 'ai-generalists';
 
   useEffect(() => {
     if (user) {
@@ -449,10 +450,16 @@ const CareerLevelProgram: React.FC = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="ai-generalists">AI Generalists</TabsTrigger>
             <TabsTrigger value="assignments">My Assignments</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>
+
+          {/* AI Generalists Tab */}
+          <TabsContent value="ai-generalists" className="space-y-6">
+            <AIGeneralistsTab />
+          </TabsContent>
 
           {/* My Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
