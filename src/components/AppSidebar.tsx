@@ -497,14 +497,20 @@ export function AppSidebar() {
                   
                   // Remove Progress Level Up condition since it's moved
                   
-                  // Hide specific items for high tier subscription users
+                  // Hide specific items for subscription users
                   const subscriberPlan = profile?.subscription_plan;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const hiddenItems = ["Career Growth Activities", "Career Growth Report"];
+                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
                   
-                  if (subscriberPlan && 
-                      highTierPlans.includes(subscriberPlan) && 
-                      hiddenItems.includes(item.title)) {
+                  // Hide Career Growth Report for all subscription users (low and high tier)
+                  if (item.title === "Career Growth Report" && subscriberPlan && 
+                      (lowTierPlans.includes(subscriberPlan) || highTierPlans.includes(subscriberPlan))) {
+                    return null;
+                  }
+                  
+                  // Hide Career Growth Activities only for high tier subscription users
+                  if (item.title === "Career Growth Activities" && subscriberPlan && 
+                      highTierPlans.includes(subscriberPlan)) {
                     return null;
                   }
                   
@@ -591,14 +597,20 @@ export function AppSidebar() {
                     }
                   }
                   
-                  // Hide specific items for high tier subscription users
+                  // Hide specific items for subscription users
                   const subscriberPlan = profile?.subscription_plan;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const hiddenItems = ["Career Growth Activities", "Career Growth Report"];
+                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
                   
-                  if (subscriberPlan && 
-                      highTierPlans.includes(subscriberPlan) && 
-                      hiddenItems.includes(item.title)) {
+                  // Hide Career Growth Report for all subscription users (low and high tier)
+                  if (item.title === "Career Growth Report" && subscriberPlan && 
+                      (lowTierPlans.includes(subscriberPlan) || highTierPlans.includes(subscriberPlan))) {
+                    return null;
+                  }
+                  
+                  // Hide Career Growth Activities only for high tier subscription users
+                  if (item.title === "Career Growth Activities" && subscriberPlan && 
+                      highTierPlans.includes(subscriberPlan)) {
                     return null;
                   }
                   
