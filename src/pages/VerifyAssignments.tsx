@@ -558,38 +558,11 @@ const VerifyAssignments = () => {
       nonInstituteUserIds = Array.from(nonInstituteUsers);
     }
     
-    // Build LinkedIn query based on user role
-    let linkedInQuery = supabase
+    // Build LinkedIn query - RLS policies now handle role-based filtering
+    const linkedInQuery = supabase
       .from('linkedin_user_tasks')
       .select(`*, linkedin_tasks (id, code, title, description, points_base)`)
-      .eq('status', 'SUBMITTED');
-    
-    if (isRecruiter) {
-      // Recruiters only see LinkedIn assignments from non-institute users
-      if (nonInstituteUserIds.length > 0) {
-        linkedInQuery = linkedInQuery.in('user_id', nonInstituteUserIds);
-      } else {
-        // If no non-institute users, return empty result
-        linkedInQuery = linkedInQuery.eq('user_id', 'no-matches-found');
-      }
-    } else if (isInstituteAdmin && primaryInstitute?.id) {
-      // Institute admins only see LinkedIn assignments from their institute users
-      const { data: instituteUsers } = await supabase
-        .from('user_assignments')
-        .select('user_id')
-        .eq('institute_id', primaryInstitute.id)
-        .eq('is_active', true);
-      
-      const instituteUserIdsForAdmin = instituteUsers?.map(u => u.user_id).filter(Boolean) || [];
-      
-      if (instituteUserIdsForAdmin.length > 0) {
-        linkedInQuery = linkedInQuery.in('user_id', instituteUserIdsForAdmin);
-      } else {
-        // If no institute users, return empty result
-        linkedInQuery = linkedInQuery.eq('user_id', 'no-matches-found');
-      }
-    }
-    // Super admins see all LinkedIn assignments (no additional filtering)
+      .eq('status', 'SUBMITTED')
     
     // Fetch all assignment types in parallel with optimized queries
     const [careerResult, linkedInResult, jobHuntingResult, gitHubResult, dailyTasksResult] = await Promise.all([
