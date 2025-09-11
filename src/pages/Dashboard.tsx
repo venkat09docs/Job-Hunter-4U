@@ -145,33 +145,6 @@ const Dashboard = () => {
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
-  // Calculate progress percentages using career assignments data to sync with Profile Assignments page
-  const resumeProgress = getModuleProgress('RESUME');
-  const linkedinProgress = (() => {
-    // Calculate LinkedIn progress from LinkedIn sub-category assignments
-    if (!assignments || assignments.length === 0) return 0;
-    const linkedinTasks = assignments.filter(a => {
-      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-      return templateTitle.includes('linkedin') || templateCategory.includes('linkedin');
-    });
-    return linkedinTasks.length > 0 
-      ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
-      : 0;
-  })();
-  const githubProgress = (() => {
-    // Calculate GitHub progress from GitHub sub-category assignments
-    if (!assignments || assignments.length === 0) return repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0;
-    const githubTasks = assignments.filter(a => {
-      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
-      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
-      return templateTitle.includes('github') || templateCategory.includes('github');
-    });
-    return githubTasks.length > 0 
-      ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
-      : (repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0);
-  })();
-  
   // All useState hooks - MUST be called unconditionally - removed job-related state (now from optimized hook)
   const [jobsLoading, setJobsLoading] = useState(false); // Keep for compatibility
   const [weeklyDailyBreakdown, setWeeklyDailyBreakdown] = useState<Record<string, Record<string, number>>>({});
@@ -357,14 +330,6 @@ const Dashboard = () => {
   
   console.log('Dashboard: Rendering main content');
 
-  console.log('🔍 Dashboard GitHub Debug:', {
-    isIT: isIT(),
-    industry: profile?.industry,
-    githubProgress,
-    githubTasks: githubTasks?.length || 0,
-    githubLoading
-  });
-
   const weeklyChartData = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), index);
     const key = format(date, 'yyyy-MM-dd');
@@ -387,6 +352,41 @@ const Dashboard = () => {
   const repoCompleted = repoMetrics.completed;
   const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
   const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
+  
+  // Calculate progress percentages using career assignments data to sync with Profile Assignments page
+  const resumeProgress = getModuleProgress('RESUME');
+  const linkedinProgress = (() => {
+    // Calculate LinkedIn progress from LinkedIn sub-category assignments
+    if (!assignments || assignments.length === 0) return 0;
+    const linkedinTasks = assignments.filter(a => {
+      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+      return templateTitle.includes('linkedin') || templateCategory.includes('linkedin');
+    });
+    return linkedinTasks.length > 0 
+      ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
+      : 0;
+  })();
+  const githubProgress = (() => {
+    // Calculate GitHub progress from GitHub sub-category assignments
+    if (!assignments || assignments.length === 0) return repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0;
+    const githubTasks = assignments.filter(a => {
+      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+      return templateTitle.includes('github') || templateCategory.includes('github');
+    });
+    return githubTasks.length > 0 
+      ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
+      : (repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0);
+  })();
+  
+  console.log('🔍 Dashboard GitHub Debug:', {
+    isIT: isIT(),
+    industry: profile?.industry,
+    githubProgress,
+    githubTasks: githubTasks?.length || 0,
+    githubLoading
+  });
   
   // GitHub Weekly progress calculation
   const githubWeeklyCompleted = weeklyTasks.filter(task => 
