@@ -56,14 +56,14 @@ import PricingDialog from "./PricingDialog";
 
 const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
+  { title: "Skill Level Up", url: "/dashboard/career-level", icon: Award, featureKey: null },
+  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Build Profile", url: "/dashboard/build-my-profile", icon: User, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
-  { title: "Career Level Program", url: "/dashboard/career-level", icon: Award, featureKey: null },
   { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
 ];
 
