@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -50,14 +50,20 @@ interface Question {
 
 const CreateAssignment = () => {
   const navigate = useNavigate();
+  const { assignmentId } = useParams<{ assignmentId: string }>();
   const { toast } = useToast();
   const { 
     createAssignment, 
+    updateAssignment,
     createQuestion,
     getCourses, 
     getModulesByCourse,
+    getAssignments,
+    getQuestionsByAssignment,
     loading 
   } = useCareerLevelProgram();
+  
+  const isEditing = Boolean(assignmentId);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
@@ -65,6 +71,7 @@ const CreateAssignment = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [loadingAssignment, setLoadingAssignment] = useState(false);
 
   const form = useForm<AssignmentFormData>({
     resolver: zodResolver(assignmentSchema),
@@ -81,6 +88,9 @@ const CreateAssignment = () => {
 
   useEffect(() => {
     loadCourses();
+    if (isEditing && assignmentId) {
+      loadAssignmentForEditing(assignmentId);
+    }
   }, []);
 
   useEffect(() => {
@@ -88,6 +98,68 @@ const CreateAssignment = () => {
       loadModules(selectedCourse);
     }
   }, [selectedCourse]);
+
+  const loadAssignmentForEditing = async (assignmentId: string) => {
+    setLoadingAssignment(true);
+    try {
+      const assignments = await getAssignments();
+      const assignment = assignments.find(a => a.id === assignmentId);
+      
+      if (assignment) {
+        // Load the course and module data first
+        if (assignment.module?.course_id) {
+          setSelectedCourse(assignment.module.course_id);
+          await loadModules(assignment.module.course_id);
+        }
+        
+        // Set form values
+        form.reset({
+          module_id: assignment.module_id,
+          title: assignment.title,
+          instructions: assignment.instructions || '',
+          visible_from: assignment.visible_from ? new Date(assignment.visible_from).toISOString().slice(0, 16) : '',
+          start_at: assignment.start_at ? new Date(assignment.start_at).toISOString().slice(0, 16) : '',
+          end_at: assignment.end_at ? new Date(assignment.end_at).toISOString().slice(0, 16) : '',
+          due_at: assignment.due_at ? new Date(assignment.due_at).toISOString().slice(0, 16) : '',
+          duration_minutes: assignment.duration_minutes || undefined,
+          randomize_questions: assignment.randomize_questions || false,
+          shuffle_options: assignment.shuffle_options || false,
+          negative_marking: assignment.negative_marking || false,
+          max_attempts: assignment.max_attempts || 1,
+          attempt_policy: assignment.attempt_policy || 'best',
+          attachments_required: assignment.attachments_required || false,
+          is_published: assignment.is_published || false,
+        });
+        
+        // Load existing questions
+        try {
+          const questionsData = await getQuestionsByAssignment(assignmentId);
+          const formattedQuestions: Question[] = questionsData.map(q => ({
+            id: q.id,
+            kind: q.kind,
+            prompt: q.prompt,
+            options: Array.isArray(q.options) ? q.options : [],
+            correct_answers: Array.isArray(q.correct_answers) ? q.correct_answers : [],
+            expected_answer: q.metadata?.expected_answer || '',
+            instructions: q.metadata?.instructions || '',
+            marks: Number(q.marks) || 1,
+          }));
+          setQuestions(formattedQuestions);
+        } catch (error) {
+          console.error('Error loading questions:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading assignment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load assignment for editing',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingAssignment(false);
+    }
+  };
 
   const loadCourses = async () => {
     try {
@@ -158,37 +230,49 @@ const CreateAssignment = () => {
         assignmentType = 'mcq'; // Default
       }
 
-      // Create assignment with inferred type
-      const assignmentData = { ...data, type: assignmentType } as CreateAssignmentData;
-      const assignment = await createAssignment(assignmentData);
-      if (!assignment) throw new Error('Failed to create assignment');
+      if (isEditing && assignmentId) {
+        // Update existing assignment
+        const assignmentData = { ...data, type: assignmentType } as Partial<CreateAssignmentData>;
+        const assignment = await updateAssignment(assignmentId, assignmentData);
+        if (!assignment) throw new Error('Failed to update assignment');
 
-      // Create all questions
-      if (questions.length > 0) {
-        for (const question of questions) {
-          const questionData: CreateQuestionData = {
-            assignment_id: assignment.id,
-            kind: question.kind === 'task' ? 'descriptive' : question.kind, // Map task to descriptive for database
-            prompt: question.prompt,
-            options: question.options,
-            correct_answers: question.correct_answers,
-            marks: question.marks,
-            order_index: questions.indexOf(question),
-          };
-          await createQuestion(questionData);
+        toast({
+          title: 'Success',
+          description: 'Assignment updated successfully'
+        });
+      } else {
+        // Create assignment with inferred type
+        const assignmentData = { ...data, type: assignmentType } as CreateAssignmentData;
+        const assignment = await createAssignment(assignmentData);
+        if (!assignment) throw new Error('Failed to create assignment');
+
+        // Create all questions
+        if (questions.length > 0) {
+          for (const question of questions) {
+            const questionData: CreateQuestionData = {
+              assignment_id: assignment.id,
+              kind: question.kind === 'task' ? 'descriptive' : question.kind, // Map task to descriptive for database
+              prompt: question.prompt,
+              options: question.options,
+              correct_answers: question.correct_answers,
+              marks: question.marks,
+              order_index: questions.indexOf(question),
+            };
+            await createQuestion(questionData);
+          }
         }
+
+        toast({
+          title: 'Success',
+          description: 'Assignment created successfully'
+        });
       }
 
-      toast({
-        title: 'Success',
-        description: 'Assignment created successfully'
-      });
-
-      navigate('/dashboard/career-level/dashboard');
+      navigate('/dashboard/career-level/assignments');
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to create assignment',
+        description: isEditing ? 'Failed to update assignment' : 'Failed to create assignment',
         variant: 'destructive'
       });
     }
@@ -374,6 +458,17 @@ const CreateAssignment = () => {
     </Card>
   );
 
+  if (loadingAssignment) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading assignment...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -381,14 +476,18 @@ const CreateAssignment = () => {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate('/dashboard/career-level/dashboard')}
+            onClick={() => navigate('/dashboard/career-level/assignments')}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            Back to Assignments
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">Create Assignment</h1>
-          <p className="text-muted-foreground">Build a new assignment for your students</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            {isEditing ? 'Edit Assignment' : 'Create Assignment'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isEditing ? 'Update your assignment details and questions' : 'Build a new assignment for your students'}
+          </p>
         </div>
 
         <Form {...form}>
@@ -690,9 +789,9 @@ const CreateAssignment = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || loadingAssignment}>
                 <Save className="h-4 w-4 mr-2" />
-                Create Assignment
+                {isEditing ? 'Update Assignment' : 'Create Assignment'}
               </Button>
             </div>
           </form>

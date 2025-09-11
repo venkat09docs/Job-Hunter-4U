@@ -679,6 +679,41 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
+  const updateAssignment = useCallback(async (assignmentId: string, data: Partial<CreateAssignmentData>): Promise<Assignment | null> => {
+    if (!user) return null;
+    
+    setLoading(true);
+    try {
+      const { data: assignment, error } = await supabase
+        .from('clp_assignments')
+        .update(data)
+        .eq('id', assignmentId)
+        .select(`
+          *,
+          module:clp_modules(*,course:clp_courses(*))
+        `)
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment updated successfully'
+      });
+
+      return assignment;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update assignment',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
   return {
     loading,
     // Course methods
@@ -689,6 +724,7 @@ export const useCareerLevelProgram = () => {
     getModulesByCourse,
     // Assignment methods
     createAssignment,
+    updateAssignment,
     getAssignmentsByModule,
     getAssignments,
     getAssignmentsWithProgress,

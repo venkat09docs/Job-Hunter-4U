@@ -391,7 +391,7 @@ const ManageAssignments = () => {
                       variant="outline" 
                       size="sm" 
                       className="flex-1"
-                      onClick={() => navigate(`/dashboard/career-level/assignment/${assignment.id}`)}
+                      onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}`)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View
