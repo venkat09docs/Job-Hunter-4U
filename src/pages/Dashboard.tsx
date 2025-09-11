@@ -470,11 +470,11 @@ const Dashboard = () => {
   };
 
   const handleJobApplicationsClick = () => {
-    navigate('/job-tracker');
+    navigate('/dashboard/job-tracker');
   };
 
   const handleLinkedInGrowthClick = () => {
-    navigate('/linkedin-optimization');
+    navigate('/career-activities');
   };
 
   const handleGitHubWeeklyClick = () => {
