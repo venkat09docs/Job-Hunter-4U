@@ -64,7 +64,7 @@ const mainItems = [
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
-  { title: "Affiliate", url: "/affiliate", icon: Share2, featureKey: null },
+  { title: "Affiliate Income Level Up", url: "/affiliate", icon: Share2, featureKey: null },
 ];
 
 const jobHunterItems = [
@@ -482,8 +482,8 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items */}
-                {mainItems.map((item) => {
+                {/* Main Menu Items - Part 1: Up to Profile Level Up */}
+                {mainItems.slice(0, 3).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
@@ -546,6 +546,34 @@ export function AppSidebar() {
                       </div>
                     )}
                 </div>
+
+                {/* Main Menu Items - Part 2: After Profile Level Up */}
+                {mainItems.slice(3).map((item) => {
+                  // Special condition for Level Up - only show for premium plan subscribers
+                  if (item.title === "Level Up") {
+                    const subscriberPlan = profile?.subscription_plan;
+                    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                    
+                    // Hide Level Up for users without eligible plans
+                    if (!subscriberPlan || !eligiblePlans.includes(subscriberPlan)) {
+                      return null;
+                    }
+                  }
+                  
+                  // Hide specific items for high tier subscription users
+                  const subscriberPlan = profile?.subscription_plan;
+                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const hiddenItems = ["Career Growth Activities", "Career Growth Report"];
+                  
+                  if (subscriberPlan && 
+                      highTierPlans.includes(subscriberPlan) && 
+                      hiddenItems.includes(item.title)) {
+                    return null;
+                  }
+                  
+                  const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                  return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
+                })}
 
 
               </div>
