@@ -611,18 +611,17 @@ const CareerAssignments = () => {
                   : 'Complete tasks to build your professional profile'
                 }
               </p>
-              {categoryFilter && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate('/dashboard/career-assignments')}
-                  className="mt-2 text-sm text-muted-foreground hover:text-primary"
-                >
-                  ← View all categories
-                </Button>
-              )}
             </div>
           </div>
+          
+          {/* Build Profile Button */}
+          <Button 
+            onClick={() => navigate('/dashboard/build-my-profile')}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            <User className="w-4 h-4 mr-2" />
+            Build Profile
+          </Button>
         </div>
 
         {/* Premium Feature Notice */}
