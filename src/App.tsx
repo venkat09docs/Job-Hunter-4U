@@ -78,6 +78,7 @@ import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import CLPCoursesManagement from "./pages/career-level/CLPCoursesManagement";
+import CLPManageAssignments from "./pages/career-level/ManageAssignments";
 
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
@@ -519,6 +520,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CreateAssignment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/assignments" 
+            element={
+              <ProtectedRoute>
+                <CLPManageAssignments />
               </ProtectedRoute>
             } 
           />

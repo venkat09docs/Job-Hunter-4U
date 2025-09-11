@@ -159,6 +159,13 @@ const CLPDashboard = () => {
       color: 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
     },
     {
+      title: 'Manage Assignments',
+      description: 'View and edit existing assignments',
+      icon: Eye,
+      onClick: () => navigate('/dashboard/career-level/assignments'),
+      color: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+    },
+    {
       title: 'Review Submissions',
       description: 'Check pending assignment submissions',
       icon: ClipboardCheck,
@@ -175,7 +182,7 @@ const CLPDashboard = () => {
     {
       title: 'Manage Courses',
       description: 'Organize courses and modules',
-      icon: Eye,
+      icon: BookOpen,
       onClick: () => navigate('/dashboard/career-level/courses'),
       color: 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200'
     }
@@ -255,7 +262,7 @@ const CLPDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {quickActions.map((action, index) => (
                 <Button
                   key={index}

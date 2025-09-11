@@ -215,6 +215,34 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
+  const getAssignments = useCallback(async (): Promise<Assignment[]> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clp_assignments')
+        .select(`
+          *,
+          module:clp_modules(
+            *,
+            course:clp_courses(*)
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch assignments',
+        variant: 'destructive'
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
   const getAssignmentsWithProgress = useCallback(async (): Promise<AssignmentWithProgress[]> => {
     if (!user) return [];
     
@@ -248,22 +276,26 @@ export const useCareerLevelProgram = () => {
       const assignmentsWithProgress: AssignmentWithProgress[] = assignments?.map(assignment => {
         const userAttempts = attempts?.filter(a => a.assignment_id === assignment.id) || [];
         const canAttempt = userAttempts?.length < assignment.max_attempts;
-        const attemptsRemaining = Math.max(0, assignment.max_attempts - userAttempts?.length);
-        
+        const attemptsRemaining = Math.max(0, assignment.max_attempts - userAttempts.length);
+
         // Determine status
-        let status: 'draft' | 'scheduled' | 'open' | 'closed' | 'grading' | 'published' = 'draft';
         const now = new Date();
-        const startAt = assignment.start_at ? new Date(assignment.start_at) : null;
-        const endAt = assignment.end_at ? new Date(assignment.end_at) : null;
+        let status: any = 'draft';
         
-        if (!assignment.is_published) {
-          status = 'draft';
-        } else if (startAt && startAt > now) {
-          status = 'scheduled';
-        } else if (endAt && endAt < now) {
-          status = 'closed';
-        } else {
-          status = 'open';
+        if (assignment.is_published) {
+          const visible_from = assignment.visible_from ? new Date(assignment.visible_from) : null;
+          const start_at = assignment.start_at ? new Date(assignment.start_at) : null;
+          const end_at = assignment.end_at ? new Date(assignment.end_at) : null;
+
+          if (end_at && now > end_at) {
+            status = 'closed';
+          } else if (start_at && now < start_at) {
+            status = 'scheduled';
+          } else if (visible_from && now < visible_from) {
+            status = 'scheduled';
+          } else {
+            status = 'open';
+          }
         }
 
         return {
@@ -279,10 +311,40 @@ export const useCareerLevelProgram = () => {
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to fetch assignments',
+        description: error.message || 'Failed to fetch assignments with progress',
         variant: 'destructive'
       });
       return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  const deleteAssignment = useCallback(async (assignmentId: string): Promise<boolean> => {
+    if (!user) return false;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clp_assignments')
+        .delete()
+        .eq('id', assignmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment deleted successfully'
+      });
+
+      return true;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete assignment',
+        variant: 'destructive'
+      });
+      return false;
     } finally {
       setLoading(false);
     }
@@ -352,9 +414,8 @@ export const useCareerLevelProgram = () => {
         .insert({
           assignment_id: assignmentId,
           user_id: user.id,
-          status: 'started',
-          ip_address: '0.0.0.0', // Could be enhanced with actual IP detection
-          device_info: navigator.userAgent
+          started_at: new Date().toISOString(),
+          status: 'started'
         })
         .select(`
           *,
@@ -365,8 +426,8 @@ export const useCareerLevelProgram = () => {
       if (error) throw error;
 
       toast({
-        title: 'Assignment Started',
-        description: 'Your attempt has begun. Good luck!'
+        title: 'Success',
+        description: 'Assignment attempt started'
       });
 
       return attempt;
@@ -396,8 +457,8 @@ export const useCareerLevelProgram = () => {
       if (error) throw error;
 
       toast({
-        title: 'Assignment Submitted',
-        description: 'Your answers have been submitted successfully!'
+        title: 'Success',
+        description: 'Assignment submitted successfully'
       });
 
       return true;
@@ -448,25 +509,28 @@ export const useCareerLevelProgram = () => {
   }, [user, toast]);
 
   // Answer Management
-  const submitAnswer = useCallback(async (data: SubmitAnswerData): Promise<boolean> => {
+  const submitAnswer = useCallback(async (data: SubmitAnswerData): Promise<Answer | null> => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { data: answer, error } = await supabase
         .from('clp_answers')
         .upsert({
           ...data,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
-      return true;
+      return answer;
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save answer',
+        description: error.message || 'Failed to submit answer',
         variant: 'destructive'
       });
-      return false;
+      return null;
     } finally {
       setLoading(false);
     }
@@ -545,8 +609,8 @@ export const useCareerLevelProgram = () => {
       if (error) throw error;
 
       toast({
-        title: 'Review Published',
-        description: 'The review has been published to the student'
+        title: 'Success',
+        description: 'Review published successfully'
       });
 
       return true;
@@ -568,21 +632,41 @@ export const useCareerLevelProgram = () => {
     try {
       let query = supabase
         .from('clp_leaderboard')
-        .select('*')
-        .order('points_total', { ascending: false })
-        .limit(50);
+        .select('*');
 
       if (courseId) {
         query = query.eq('course_id', courseId);
       }
+      
       if (moduleId) {
         query = query.eq('module_id', moduleId);
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query
+        .order('points_total', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
-      return data || [];
+      
+      // Fetch user profiles separately to avoid relation issues
+      const userIds = data?.map(entry => entry.user_id) || [];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, profile_image_url')
+        .in('id', userIds);
+
+      // Combine the data
+      const leaderboardWithUsers = data?.map(entry => ({
+        ...entry,
+        user: profiles?.find(profile => profile.id === entry.user_id) || {
+          id: entry.user_id,
+          full_name: null,
+          username: null,
+          profile_image_url: null
+        }
+      })) || [];
+
+      return leaderboardWithUsers;
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -606,7 +690,9 @@ export const useCareerLevelProgram = () => {
     // Assignment methods
     createAssignment,
     getAssignmentsByModule,
+    getAssignments,
     getAssignmentsWithProgress,
+    deleteAssignment,
     // Question methods
     createQuestion,
     getQuestionsByAssignment,
