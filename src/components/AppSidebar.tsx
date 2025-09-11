@@ -58,7 +58,6 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { title: "Skill Level Up", url: "/dashboard/career-level", icon: Award, featureKey: null },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
-  { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "Check Level Up", url: "/dashboard/career-growth", icon: TrendingUp, featureKey: null },
@@ -483,8 +482,8 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items - Part 1: Up to Progress Level Up */}
-                {mainItems.slice(0, 4).map((item) => {
+                {/* Main Menu Items - Part 1: Up to Profile Level Up */}
+                {mainItems.slice(0, 3).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
@@ -496,16 +495,7 @@ export function AppSidebar() {
                     }
                   }
                   
-                  // Special condition for Progress Level Up - only show for premium plan subscribers (3+ months)
-                  if (item.title === "Progress Level Up") {
-                    const subscriberPlan = profile?.subscription_plan;
-                    const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                    
-                    // Only show Progress Level Up for users with premium plans
-                    if (!subscriberPlan || !premiumPlans.includes(subscriberPlan)) {
-                      return null;
-                    }
-                  }
+                  // Remove Progress Level Up condition since it's moved
                   
                   // Hide specific items for high tier subscription users
                   const subscriberPlan = profile?.subscription_plan;
@@ -559,8 +549,26 @@ export function AppSidebar() {
                     )}
                 </div>
 
-                {/* Main Menu Items - Part 2: After Progress Level Up */}
-                {mainItems.slice(4).map((item) => {
+                {/* Progress Level Up - Right after Job Hunter */}
+                {(() => {
+                  const subscriberPlan = profile?.subscription_plan;
+                  const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  
+                  // Only show Progress Level Up for users with premium plans
+                  if (!subscriberPlan || !premiumPlans.includes(subscriberPlan)) {
+                    return null;
+                  }
+                  
+                  const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
+                  return (
+                    <div className="mt-4">
+                      <MenuItem key={progressItem.title} item={progressItem} />
+                    </div>
+                  );
+                })()}
+
+                {/* Main Menu Items - Part 2: After Job Hunter and Progress Level Up */}
+                {mainItems.slice(3).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
