@@ -65,6 +65,8 @@ export interface Question {
   prompt: string;
   options: any;
   correct_answers: any;
+  expected_answer?: string; // For descriptive questions - admin's expected answer
+  instructions?: string; // For task/project questions - detailed instructions
   marks: number;
   order_index: number;
   metadata: any;

@@ -43,6 +43,8 @@ interface Question {
   prompt: string;
   options: string[];
   correct_answers: string[];
+  expected_answer?: string; // For descriptive questions - admin's expected answer
+  instructions?: string; // For task/project questions - detailed instructions
   marks: number;
 }
 
@@ -329,6 +331,32 @@ const CreateAssignment = () => {
                 <SelectItem value="False">False</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        )}
+
+        {question.kind === 'descriptive' && (
+          <div>
+            <label className="text-sm font-medium">Expected Answer</label>
+            <p className="text-xs text-muted-foreground mb-2">Provide the expected answer for admin verification</p>
+            <Textarea
+              placeholder="Enter the expected answer for this descriptive question..."
+              value={question.expected_answer || ''}
+              onChange={(e) => updateQuestion(index, { expected_answer: e.target.value })}
+              className="mt-1 min-h-[100px]"
+            />
+          </div>
+        )}
+
+        {question.kind === 'task' && (
+          <div>
+            <label className="text-sm font-medium">Instructions</label>
+            <p className="text-xs text-muted-foreground mb-2">Provide detailed instructions for this task/project</p>
+            <Textarea
+              placeholder="Enter detailed instructions for this task or project..."
+              value={question.instructions || ''}
+              onChange={(e) => updateQuestion(index, { instructions: e.target.value })}
+              className="mt-1 min-h-[120px]"
+            />
           </div>
         )}
 
