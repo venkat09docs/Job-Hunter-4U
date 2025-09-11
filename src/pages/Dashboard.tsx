@@ -1,10 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useResumeProgress } from '@/hooks/useResumeProgress';
+import { useCareerAssignments } from '@/hooks/useCareerAssignments';
 import { useOptimizedUserPoints } from '@/hooks/useOptimizedUserPoints';
 import { useOptimizedDashboardStats } from '@/hooks/useOptimizedDashboardStats';
 import { useOptimizedLeaderboard } from '@/hooks/useOptimizedLeaderboard';
-import { useLinkedInProgress } from '@/hooks/useLinkedInProgress';
 import { useLinkedInNetworkProgress } from '@/hooks/useLinkedInNetworkProgress';
 import { useNetworkGrowthMetrics } from '@/hooks/useNetworkGrowthMetrics';
 import { useGitHubProgress } from '@/hooks/useGitHubProgress';
@@ -58,8 +57,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   // Progress and metrics hooks
-  const { progress: resumeProgress, loading: resumeLoading } = useResumeProgress();
-  const { completionPercentage: linkedinProgress, loading: linkedinLoading, refreshProgress: refreshLinkedInProgress } = useLinkedInProgress();
+  const { getModuleProgress, assignments } = useCareerAssignments();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
@@ -146,6 +144,33 @@ const Dashboard = () => {
 
   // All available subscription plans for upgrade dialog
   const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  
+  // Calculate progress percentages using career assignments data to sync with Profile Assignments page
+  const resumeProgress = getModuleProgress('RESUME');
+  const linkedinProgress = (() => {
+    // Calculate LinkedIn progress from LinkedIn sub-category assignments
+    if (!assignments || assignments.length === 0) return 0;
+    const linkedinTasks = assignments.filter(a => {
+      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+      return templateTitle.includes('linkedin') || templateCategory.includes('linkedin');
+    });
+    return linkedinTasks.length > 0 
+      ? Math.round((linkedinTasks.filter(t => t.status === 'verified').length / linkedinTasks.length) * 100)
+      : 0;
+  })();
+  const githubProgress = (() => {
+    // Calculate GitHub progress from GitHub sub-category assignments
+    if (!assignments || assignments.length === 0) return repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0;
+    const githubTasks = assignments.filter(a => {
+      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+      return templateTitle.includes('github') || templateCategory.includes('github');
+    });
+    return githubTasks.length > 0 
+      ? Math.round((githubTasks.filter(t => t.status === 'verified').length / githubTasks.length) * 100)
+      : (repoMetrics.total > 0 ? Math.round((repoCompleted / repoMetrics.total) * 100) : 0);
+  })();
   
   // All useState hooks - MUST be called unconditionally - removed job-related state (now from optimized hook)
   const [jobsLoading, setJobsLoading] = useState(false); // Keep for compatibility
@@ -272,7 +297,7 @@ const Dashboard = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, refreshLinkedInProgress, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, refreshWeeklyFlow]);
+  }, [user?.id, refreshGitHubProgress, refreshNetworkMetrics, fetchWeeklyDailyBreakdown, refreshWeeklyFlow]);
 
   // Early redirect for recruiters to their specific dashboard
   useEffect(() => {
@@ -287,7 +312,7 @@ const Dashboard = () => {
   console.log('Dashboard: loading =', loading);
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (loading || resumeLoading || linkedinLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
+  if (loading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -332,8 +357,6 @@ const Dashboard = () => {
   
   console.log('Dashboard: Rendering main content');
 
-  // GitHub Activities tracker metrics
-  const githubProgress = isIT() ? getGitHubProgress() : 0;
   console.log('🔍 Dashboard GitHub Debug:', {
     isIT: isIT(),
     industry: profile?.industry,
