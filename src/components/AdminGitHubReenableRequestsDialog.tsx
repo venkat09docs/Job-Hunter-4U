@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { canAdminExtendTask } from '@/utils/dueDateValidation';
+import { useRole } from '@/hooks/useRole';
 
 interface GitHubReenableRequest {
   id: string;
@@ -47,11 +48,48 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
+  const { isAdmin, isRecruiter, isInstituteAdmin } = useRole();
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Get role-based user filtering (same logic as VerifyAssignments.tsx)
+      let filteredUserIds: string[] = [];
+      
+      if (isInstituteAdmin) {
+        // Get users from institutes managed by this admin
+        const { data: managedInstitutes } = await supabase
+          .from('institute_admin_assignments')
+          .select('institute_id')
+          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .eq('is_active', true);
+
+        if (managedInstitutes && managedInstitutes.length > 0) {
+          const { data: instituteUsers } = await supabase
+            .from('user_assignments')
+            .select('user_id')
+            .in('institute_id', managedInstitutes.map(inst => inst.institute_id))
+            .eq('is_active', true);
+          
+          filteredUserIds = instituteUsers?.map(u => u.user_id) || [];
+        }
+      } else if (isRecruiter) {
+        // Get users NOT assigned to any institute
+        const { data: allUsers } = await supabase
+          .from('profiles')
+          .select('user_id');
+        
+        const { data: instituteUsers } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .eq('is_active', true);
+        
+        const instituteUserIds = new Set(instituteUsers?.map(u => u.user_id) || []);
+        filteredUserIds = allUsers?.filter(u => !instituteUserIds.has(u.user_id)).map(u => u.user_id) || [];
+      }
+
+      // Build the query with role-based filtering
+      let query = supabase
         .from('github_task_reenable_requests')
         .select(`
           *,
@@ -64,8 +102,19 @@ export const AdminGitHubReenableRequestsDialog: React.FC = () => {
             )
           )
         `)
-        .eq('status', 'pending')
-        .order('requested_at', { ascending: false });
+        .eq('status', 'pending');
+
+      // Apply user filtering for non-admin roles
+      if (!isAdmin && filteredUserIds.length > 0) {
+        query = query.in('user_id', filteredUserIds);
+      } else if (!isAdmin && filteredUserIds.length === 0) {
+        // No users to show for this role
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await query.order('requested_at', { ascending: false });
 
       if (error) throw error;
 
