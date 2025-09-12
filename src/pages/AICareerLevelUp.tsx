@@ -243,7 +243,7 @@ export default function AICareerLevelUp() {
       
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 text-center font-medium">
-        Limited Seats Available | Admissions Open for Next Cohort
+        Join Now 5 Days Challenge Program | To Start Your AI Enhanced Career
       </div>
 
       {/* Hero Section */}
@@ -2193,7 +2193,7 @@ export default function AICareerLevelUp() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <div className="text-center sm:text-left">
               <p className="font-semibold text-sm sm:text-base">
-                🚀 Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
+                🚀 Join Now to Transform Your Career Into an AI Generalist
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm">
