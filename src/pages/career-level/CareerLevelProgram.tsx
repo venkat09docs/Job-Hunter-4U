@@ -37,6 +37,7 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import AIGeneralistsTab from '@/components/AIGeneralistsTab';
+import AssignmentManagementTab from '@/components/admin/AssignmentManagementTab';
 
 const CareerLevelProgram: React.FC = () => {
   const { user } = useAuth();
@@ -450,13 +451,16 @@ const CareerLevelProgram: React.FC = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="ai-generalists">AI Generalists</TabsTrigger>
+          <TabsList className={`grid w-full ${role === 'admin' || role === 'recruiter' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+            <TabsTrigger value="ai-generalists">Skill Developer Programs</TabsTrigger>
             <TabsTrigger value="assignments">My Assignments</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            {(role === 'admin' || role === 'recruiter') && (
+              <TabsTrigger value="manage-assignments">Assignments</TabsTrigger>
+            )}
           </TabsList>
 
-          {/* AI Generalists Tab */}
+          {/* Skill Developer Programs Tab */}
           <TabsContent value="ai-generalists" className="space-y-6">
             <AIGeneralistsTab />
           </TabsContent>
@@ -821,6 +825,13 @@ const CareerLevelProgram: React.FC = () => {
               </Card>
             )}
           </TabsContent>
+
+          {/* Assignment Management Tab - Only for Admins */}
+          {(role === 'admin' || role === 'recruiter') && (
+            <TabsContent value="manage-assignments" className="space-y-6">
+              <AssignmentManagementTab />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

@@ -8,13 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Save, X, Play } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { AppSidebar } from '@/components/AppSidebar';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 
 interface Assignment {
   id: string;
@@ -64,8 +61,8 @@ const VALID_PROFILE_CATEGORIES = [
   'interview_preparation'
 ];
 
-export default function ManageAssignments() {
-  const { isAdmin, loading } = useRole();
+export default function AssignmentManagementTab() {
+  const { isAdmin } = useRole();
   const [activeCategory, setActiveCategory] = useState('profile');
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -383,9 +380,6 @@ export default function ManageAssignments() {
             }
           }
 
-          console.log('🔍 GitHub Assignment Update - Instructions:', assignmentForm.instructions);
-          console.log('🔍 GitHub Assignment Update - Parsed bonus_rules:', bonusRules);
-
           const { error } = await supabase
             .from('github_tasks')
             .update({
@@ -400,12 +394,7 @@ export default function ManageAssignments() {
             })
             .eq('id', editingAssignment.id);
           
-          if (error) {
-            console.error('🔍 GitHub Assignment Update Error:', error);
-            throw error;
-          }
-          
-          console.log('🔍 GitHub Assignment Updated successfully');
+          if (error) throw error;
         }
         
         toast.success('Assignment updated successfully');
@@ -493,9 +482,6 @@ export default function ManageAssignments() {
             }
           }
 
-          console.log('🔍 GitHub Assignment Create - Instructions:', assignmentForm.instructions);
-          console.log('🔍 GitHub Assignment Create - Parsed bonus_rules:', bonusRules);
-
           const { error } = await supabase
             .from('github_tasks')
             .insert({
@@ -514,12 +500,7 @@ export default function ManageAssignments() {
               evidence_types: ['URL_REQUIRED']
             });
           
-          if (error) {
-            console.error('🔍 GitHub Assignment Create Error:', error);
-            throw error;
-          }
-          
-          console.log('🔍 GitHub Assignment Created successfully');
+          if (error) throw error;
         }
         
         toast.success('Assignment created successfully');
@@ -539,8 +520,6 @@ export default function ManageAssignments() {
     }
 
     try {
-      console.log('Deleting assignment with ID:', assignmentId, 'Category:', activeCategory);
-      
       if (activeCategory === 'profile') {
         const { error } = await supabase
           .from('career_task_templates')
@@ -568,7 +547,7 @@ export default function ManageAssignments() {
         // Determine which table to delete from based on the assignment
         const assignmentToDelete = assignments.find(a => a.id === assignmentId);
         const isInterviewPrep = assignmentToDelete?.source === 'career_task_templates' || 
-                                assignmentToDelete?.category === 'interview_preparation';
+                               assignmentToDelete?.category === 'interview_preparation';
         
         if (isInterviewPrep) {
           // Delete interview preparation assignment from career_task_templates
@@ -588,20 +567,13 @@ export default function ManageAssignments() {
           if (error) throw error;
         }
       } else if (activeCategory === 'github') {
-        console.log('Deleting GitHub assignment with ID:', assignmentId);
-        
         // Step 1: Get all user tasks that reference this assignment
         const { data: userTasksToDelete, error: fetchError } = await supabase
           .from('github_user_tasks')
           .select('id, user_id')
           .eq('task_id', assignmentId);
         
-        if (fetchError) {
-          console.error('Error fetching user tasks:', fetchError);
-          throw fetchError;
-        }
-        
-        console.log('Found user tasks to delete:', userTasksToDelete?.length || 0, userTasksToDelete);
+        if (fetchError) throw fetchError;
         
         // Step 2: Delete all records in sequence with verification
         if (userTasksToDelete && userTasksToDelete.length > 0) {
@@ -612,69 +584,27 @@ export default function ManageAssignments() {
               .delete()
               .eq('user_task_id', userTask.id);
             
-            if (evidenceError) {
-              console.error('Error deleting evidence for user task:', userTask.id, evidenceError);
-              throw evidenceError;
-            }
+            if (evidenceError) throw evidenceError;
           }
-          console.log('Successfully deleted all evidence records');
           
-          // Then delete all user tasks with individual verification
+          // Then delete all user tasks
           for (const userTask of userTasksToDelete) {
-            console.log('Attempting to delete user task:', userTask.id);
-            
-            // Delete the user task
             const { error: deleteError } = await supabase
               .from('github_user_tasks')
               .delete()
               .eq('id', userTask.id);
             
-            if (deleteError) {
-              console.error('Error deleting user task:', userTask.id, deleteError);
-              throw deleteError;
-            }
-            
-            // Verify it was actually deleted
-            const { data: verifyDeleted } = await supabase
-              .from('github_user_tasks')
-              .select('id')
-              .eq('id', userTask.id);
-            
-            if (verifyDeleted && verifyDeleted.length > 0) {
-              console.error('User task still exists after deletion:', userTask.id);
-              throw new Error(`Failed to delete user task ${userTask.id}`);
-            }
-            
-            console.log('Successfully verified deletion of user task:', userTask.id);
+            if (deleteError) throw deleteError;
           }
         }
         
-        // Step 3: Final verification - ensure no user tasks remain for this assignment
-        const { data: finalCheck } = await supabase
-          .from('github_user_tasks')
-          .select('id')
-          .eq('task_id', assignmentId);
-        
-        if (finalCheck && finalCheck.length > 0) {
-          console.error('CRITICAL: User tasks still exist after all deletions:', finalCheck);
-          throw new Error(`Cannot proceed: ${finalCheck.length} user tasks still reference assignment ${assignmentId}`);
-        }
-        
-        console.log('✅ All user tasks successfully deleted and verified');
-        
-        // Step 4: Now delete the github_tasks record
-        console.log('Deleting github_tasks record with ID:', assignmentId);
-        const { error, count } = await supabase
+        // Step 3: Delete the github_tasks record
+        const { error } = await supabase
           .from('github_tasks')
           .delete()
           .eq('id', assignmentId);
         
-        if (error) {
-          console.error('Error deleting github_tasks:', error);
-          throw error;
-        }
-        
-        console.log('✅ Successfully deleted GitHub assignment, count:', count);
+        if (error) throw error;
       }
       
       toast.success('Assignment deleted successfully');
@@ -719,7 +649,6 @@ export default function ManageAssignments() {
       setIsGeneratingInstructions(false);
     }
   };
-
 
   const resetForm = () => {
     setAssignmentForm({
@@ -772,7 +701,6 @@ export default function ManageAssignments() {
 
         if (error) throw error;
         
-        // Refresh the data
         await fetchSubCategories();
         toast.success('Sub category deleted successfully');
       } catch (error) {
@@ -813,7 +741,6 @@ export default function ManageAssignments() {
         toast.success('Sub category created successfully');
       }
       
-      // Refresh the data
       await fetchSubCategories();
       resetSubCategoryForm();
     } catch (error) {
@@ -833,477 +760,446 @@ export default function ManageAssignments() {
     setShowAddSubCategory(false);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-96">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-              <p className="text-muted-foreground">
-                You don't have permission to access this page.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="text-center py-8">
+        <h3 className="text-lg font-semibold text-muted-foreground">Access Denied</h3>
+        <p className="text-sm text-muted-foreground">You don't have permission to access assignment management.</p>
       </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="border-b bg-card">
-          <div className="container mx-auto flex items-center justify-between p-4">
-            <div>
-              <h1 className="text-2xl font-bold">Manage Assignments</h1>
-              <p className="text-muted-foreground">
-                Create and manage assignments across all categories
-              </p>
-            </div>
-            <UserProfileDropdown />
-          </div>
-        </div>
+    <div className="space-y-6">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold">Assignment Management</h2>
+        <p className="text-muted-foreground">Create and manage assignments across all categories</p>
+      </div>
 
-        <div className="container mx-auto p-6">
-          <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              {MAIN_CATEGORIES.map((category) => (
-                <TabsTrigger key={category.id} value={category.id}>
-                  {category.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          {MAIN_CATEGORIES.map((category) => (
+            <TabsTrigger key={category.id} value={category.id}>
+              {category.name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-            {MAIN_CATEGORIES.map((category) => (
-              <TabsContent key={category.id} value={category.id} className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">{category.name}</h2>
-                  <div className="flex gap-2">
-                    {/* Only show "Add Sub Category" for non-LinkedIn assignments */}
-                    {activeCategory !== 'linkedin' && (
-                      <Button onClick={() => {
-                        resetSubCategoryForm();
-                        setShowAddSubCategory(true);
-                      }}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Sub Category
-                      </Button>
-                    )}
-                    <Button onClick={() => setShowAddAssignment(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Assignment
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Sub Categories Section - Only show for non-LinkedIn assignments */}
+        {MAIN_CATEGORIES.map((category) => (
+          <TabsContent key={category.id} value={category.id} className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold">{category.name}</h3>
+              <div className="flex gap-2">
+                {/* Only show "Add Sub Category" for non-LinkedIn assignments */}
                 {activeCategory !== 'linkedin' && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Sub Categories</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {subCategories.map((subCategory) => (
-                          <div key={subCategory.id} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-medium">{subCategory.name}</h4>
-                              <Badge variant={subCategory.is_active ? "default" : "secondary"}>
-                                {subCategory.is_active ? "Active" : "Inactive"}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {subCategory.description}
-                            </p>
-                             <div className="flex gap-2">
-                               <Button 
-                                 size="sm" 
-                                 variant="outline"
-                                 onClick={() => startEditSubCategory(subCategory)}
-                               >
-                                 <Edit className="h-3 w-3" />
-                               </Button>
-                               <Button 
-                                 size="sm" 
-                                 variant="outline"
-                                 onClick={() => handleDeleteSubCategory(subCategory.id)}
-                               >
-                                 <Trash2 className="h-3 w-3" />
-                               </Button>
-                             </div>
-                          </div>
-                        ))}
-                        {subCategories.length === 0 && (
-                          <div className="col-span-full text-center py-8 text-muted-foreground">
-                            No sub categories found. Create one to get started.
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <Button onClick={() => {
+                    resetSubCategoryForm();
+                    setShowAddSubCategory(true);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Sub Category
+                  </Button>
                 )}
+                <Button onClick={() => setShowAddAssignment(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Assignment
+                </Button>
+              </div>
+            </div>
 
-                {/* Assignments Section */}
-                <Card>
-                   <CardHeader>
-                     <div className="flex justify-between items-center">
-                       <CardTitle>Assignments</CardTitle>
-                       {/* Show subcategory filter only for job_hunter */}
-                       {activeCategory === 'job_hunter' && subCategories.length > 0 && (
-                         <div className="flex items-center gap-2">
-                           <Label htmlFor="subcategory-filter" className="text-sm font-medium">Filter by:</Label>
-                           <Select
-                             value={selectedSubCategory}
-                             onValueChange={setSelectedSubCategory}
+            {/* Sub Categories Section - Only show for non-LinkedIn assignments */}
+            {activeCategory !== 'linkedin' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sub Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {subCategories.map((subCategory) => (
+                      <div key={subCategory.id} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{subCategory.name}</h4>
+                          <Badge variant={subCategory.is_active ? "default" : "secondary"}>
+                            {subCategory.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {subCategory.description}
+                        </p>
+                         <div className="flex gap-2">
+                           <Button 
+                             size="sm" 
+                             variant="outline"
+                             onClick={() => startEditSubCategory(subCategory)}
                            >
-                             <SelectTrigger className="w-[180px]">
-                               <SelectValue placeholder="All Categories" />
-                             </SelectTrigger>
-                             <SelectContent>
-                               <SelectItem value="all">All Categories</SelectItem>
-                               {subCategories.map((subCategory) => (
-                                 <SelectItem key={subCategory.id} value={subCategory.id}>
-                                   {subCategory.name}
-                                 </SelectItem>
-                               ))}
-                             </SelectContent>
-                           </Select>
+                             <Edit className="h-3 w-3" />
+                           </Button>
+                           <Button 
+                             size="sm" 
+                             variant="outline"
+                             onClick={() => handleDeleteSubCategory(subCategory.id)}
+                           >
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
                          </div>
-                       )}
-                     </div>
-                   </CardHeader>
-                   <CardContent>
-                    {isLoading ? (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p>Loading assignments...</p>
                       </div>
-                    ) : (
-                       <div className="space-y-4">
-                         {assignments
-                           .filter(assignment => {
-                             // Filter by selected subcategory for job_hunter
-                             if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
-                               return assignment.sub_category_id === selectedSubCategory;
-                             }
-                             return true;
-                           })
-                           .map((assignment) => (
-                            <div key={assignment.id} className="p-4 border rounded-lg">
-                              <div className="flex justify-between items-start mb-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-medium">{assignment.title}</h4>
-                                    {assignment.category === 'interview_preparation' && (
-                                      <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                        Interview Prep
-                                      </Badge>
-                                    )}
-                                    {/* Show subcategory badge for job_hunter assignments */}
-                                    {activeCategory === 'job_hunter' && assignment.sub_category_id && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        {subCategories.find(sc => sc.id === assignment.sub_category_id)?.name || 'Uncategorized'}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    {assignment.description}
-                                  </p>
-                                  <div className="flex gap-2 flex-wrap">
-                                    <Badge variant="outline">{assignment.category}</Badge>
-                                    {assignment.points_reward && (
-                                      <Badge variant="secondary">{assignment.points_reward} pts</Badge>
-                                    )}
-                                    {assignment.difficulty && (
-                                      <Badge variant="outline">{assignment.difficulty}</Badge>
-                                    )}
-                                    <Badge variant={assignment.is_active ? "default" : "secondary"}>
-                                      {assignment.is_active ? "Active" : "Inactive"}
-                                    </Badge>
-                                    {assignment.source && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {assignment.source === 'career_task_templates' ? 'Career Tasks' : 'Job Hunter Tasks'}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => startEditAssignment(assignment)}
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => handleDeleteAssignment(assignment.id)}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                    ))}
+                    {subCategories.length === 0 && (
+                      <div className="col-span-full text-center py-8 text-muted-foreground">
+                        No sub categories found. Create one to get started.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Assignments Section */}
+            <Card>
+               <CardHeader>
+                 <div className="flex justify-between items-center">
+                   <CardTitle>Assignments</CardTitle>
+                   {/* Show subcategory filter only for job_hunter */}
+                   {activeCategory === 'job_hunter' && subCategories.length > 0 && (
+                     <div className="flex items-center gap-2">
+                       <Label htmlFor="subcategory-filter" className="text-sm font-medium">Filter by:</Label>
+                       <Select
+                         value={selectedSubCategory}
+                         onValueChange={setSelectedSubCategory}
+                       >
+                         <SelectTrigger className="w-[180px]">
+                           <SelectValue placeholder="All Categories" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="all">All Categories</SelectItem>
+                           {subCategories.map((subCategory) => (
+                             <SelectItem key={subCategory.id} value={subCategory.id}>
+                               {subCategory.name}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   )}
+                 </div>
+               </CardHeader>
+               <CardContent>
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p>Loading assignments...</p>
+                  </div>
+                ) : (
+                   <div className="space-y-4">
+                     {assignments
+                       .filter(assignment => {
+                         // Filter by selected subcategory for job_hunter
+                         if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
+                           return assignment.sub_category_id === selectedSubCategory;
+                         }
+                         return true;
+                       })
+                       .map((assignment) => (
+                        <div key={assignment.id} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-medium">{assignment.title}</h4>
+                                {assignment.category === 'interview_preparation' && (
+                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                    Interview Prep
+                                  </Badge>
+                                )}
+                                {/* Show subcategory badge for job_hunter assignments */}
+                                {activeCategory === 'job_hunter' && assignment.sub_category_id && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {subCategories.find(sc => sc.id === assignment.sub_category_id)?.name || 'Uncategorized'}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {assignment.description}
+                              </p>
+                              <div className="flex gap-2 flex-wrap">
+                                <Badge variant="outline">{assignment.category}</Badge>
+                                {assignment.points_reward && (
+                                  <Badge variant="secondary">{assignment.points_reward} pts</Badge>
+                                )}
+                                {assignment.difficulty && (
+                                  <Badge variant="outline">{assignment.difficulty}</Badge>
+                                )}
+                                <Badge variant={assignment.is_active ? "default" : "secondary"}>
+                                  {assignment.is_active ? "Active" : "Inactive"}
+                                </Badge>
+                                {assignment.source && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {assignment.source === 'career_task_templates' ? 'Career Tasks' : 'Job Hunter Tasks'}
+                                  </Badge>
+                                )}
                               </div>
                             </div>
-                         ))}
-                         {assignments
-                           .filter(assignment => {
-                             if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
-                               return assignment.sub_category_id === selectedSubCategory;
-                             }
-                             return true;
-                           }).length === 0 && (
-                           <div className="text-center py-8 text-muted-foreground">
-                             {selectedSubCategory !== 'all' ? 'No assignments found in this category.' : 'No assignments found. Create one to get started.'}
-                           </div>
-                         )}
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => startEditAssignment(assignment)}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleDeleteAssignment(assignment.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                     ))}
+                     {assignments
+                       .filter(assignment => {
+                         if (activeCategory === 'job_hunter' && selectedSubCategory !== 'all') {
+                           return assignment.sub_category_id === selectedSubCategory;
+                         }
+                         return true;
+                       }).length === 0 && (
+                       <div className="text-center py-8 text-muted-foreground">
+                         {selectedSubCategory !== 'all' ? 'No assignments found in this category.' : 'No assignments found. Create one to get started.'}
                        </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
-
-        {/* Assignment Form Dialog */}
-        <Dialog open={showAddAssignment} onOpenChange={setShowAddAssignment}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {editingAssignment ? 'Edit Assignment' : 'Add New Assignment'}
-              </DialogTitle>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={assignmentForm.title}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
-                  placeholder="Enter assignment title"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={assignmentForm.description}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, description: e.target.value })}
-                  placeholder="Enter assignment description"
-                  rows={3}
-                />
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="instructions">Instructions</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateInstructions}
-                    disabled={isGeneratingInstructions || !assignmentForm.title || !assignmentForm.description}
-                    className="h-8"
-                  >
-                    {isGeneratingInstructions ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
-                        Generating...
-                      </>
-                    ) : (
-                      'Generate Instructions'
-                    )}
-                  </Button>
-                </div>
-                <Textarea
-                  id="instructions"
-                  value={assignmentForm.instructions}
-                  onChange={(e) => setAssignmentForm({ ...assignmentForm, instructions: e.target.value })}
-                  placeholder="Enter step-by-step instructions for users (use bullet points with •)"
-                  rows={4}
-                />
-              </div>
-              
-              <div className={`grid ${activeCategory === 'linkedin' ? 'grid-cols-2' : 'grid-cols-2'} gap-4`}>
-                {/* Only show category selector for non-LinkedIn assignments */}
-                {activeCategory !== 'linkedin' && (
-                  <div>
-                    <Label htmlFor="category">
-                      {activeCategory === 'profile' ? 'Sub-Category' : 'Category (Sub Category)'}
-                    </Label>
-                    <Select
-                      value={assignmentForm.category}
-                      onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          activeCategory === 'profile' ? 'Select a sub-category' : 'Select a sub category'
-                        } />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activeCategory === 'profile' ? (
-                          // Show sub-categories for profile assignments
-                          subCategories.length > 0 ? (
-                            subCategories.map((subCategory) => (
-                              <SelectItem key={subCategory.id} value={subCategory.id}>
-                                {subCategory.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-categories" disabled>
-                              No sub categories available
-                            </SelectItem>
-                          )
-                        ) : (
-                          // Show sub-categories for other tabs
-                          subCategories.length > 0 ? (
-                            subCategories.map((subCategory) => (
-                              <SelectItem key={subCategory.id} value={subCategory.id}>
-                                {subCategory.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-categories" disabled>
-                              No sub categories available
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                     )}
+                   </div>
                 )}
-                
-                <div>
-                  <Label htmlFor="points">Points Reward</Label>
-                  <Input
-                    id="points"
-                    type="number"
-                    value={assignmentForm.points_reward}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, points_reward: parseInt(e.target.value) })}
-                    min="1"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="order">Display Order</Label>
-                  <Input
-                    id="order"
-                    type="number"
-                    value={assignmentForm.display_order}
-                    onChange={(e) => setAssignmentForm({ ...assignmentForm, display_order: parseInt(e.target.value) })}
-                    min="0"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="difficulty">Difficulty</Label>
-                  <Select
-                    value={assignmentForm.difficulty}
-                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, difficulty: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="active">Status</Label>
-                  <Select
-                    value={assignmentForm.is_active ? "active" : "inactive"}
-                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, is_active: value === "active" })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={resetForm}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button onClick={handleSaveAssignment}>
-                <Save className="h-4 w-4 mr-2" />
-                {editingAssignment ? 'Update' : 'Create'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
 
-        {/* Sub Category Form Dialog */}
-        <Dialog open={showAddSubCategory} onOpenChange={setShowAddSubCategory}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingSubCategory ? 'Edit Sub Category' : 'Add New Sub Category'}</DialogTitle>
-            </DialogHeader>
+      {/* Assignment Form Dialog */}
+      <Dialog open={showAddAssignment} onOpenChange={setShowAddAssignment}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingAssignment ? 'Edit Assignment' : 'Add New Assignment'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={assignmentForm.title}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, title: e.target.value })}
+                placeholder="Enter assignment title"
+              />
+            </div>
             
-            <div className="space-y-4">
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={assignmentForm.description}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, description: e.target.value })}
+                placeholder="Enter assignment description"
+                rows={3}
+              />
+            </div>
+            
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="instructions">Instructions</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateInstructions}
+                  disabled={isGeneratingInstructions || !assignmentForm.title || !assignmentForm.description}
+                  className="h-8"
+                >
+                  {isGeneratingInstructions ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate Instructions'
+                  )}
+                </Button>
+              </div>
+              <Textarea
+                id="instructions"
+                value={assignmentForm.instructions}
+                onChange={(e) => setAssignmentForm({ ...assignmentForm, instructions: e.target.value })}
+                placeholder="Enter step-by-step instructions for users (use bullet points with •)"
+                rows={4}
+              />
+            </div>
+            
+            <div className={`grid ${activeCategory === 'linkedin' ? 'grid-cols-2' : 'grid-cols-2'} gap-4`}>
+              {/* Only show category selector for non-LinkedIn assignments */}
+              {activeCategory !== 'linkedin' && (
+                <div>
+                  <Label htmlFor="category">
+                    {activeCategory === 'profile' ? 'Sub-Category' : 'Category (Sub Category)'}
+                  </Label>
+                  <Select
+                    value={assignmentForm.category}
+                    onValueChange={(value) => setAssignmentForm({ ...assignmentForm, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={
+                        activeCategory === 'profile' ? 'Select a sub-category' : 'Select a sub category'
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeCategory === 'profile' ? (
+                        // Show sub-categories for profile assignments
+                        subCategories.length > 0 ? (
+                          subCategories.map((subCategory) => (
+                            <SelectItem key={subCategory.id} value={subCategory.id}>
+                              {subCategory.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-categories" disabled>
+                            No sub categories available
+                          </SelectItem>
+                        )
+                      ) : (
+                        // Show sub-categories for other tabs
+                        subCategories.length > 0 ? (
+                          subCategories.map((subCategory) => (
+                            <SelectItem key={subCategory.id} value={subCategory.id}>
+                              {subCategory.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-categories" disabled>
+                            No sub categories available
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <div>
-                <Label htmlFor="subcat-name">Name</Label>
+                <Label htmlFor="points">Points Reward</Label>
                 <Input
-                  id="subcat-name"
-                  value={subCategoryForm.name}
-                  onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
-                  placeholder="Enter sub category name"
+                  id="points"
+                  type="number"
+                  value={assignmentForm.points_reward}
+                  onChange={(e) => setAssignmentForm({ ...assignmentForm, points_reward: parseInt(e.target.value) })}
+                  min="1"
                 />
               </div>
               
               <div>
-                <Label htmlFor="subcat-description">Description</Label>
-                <Textarea
-                  id="subcat-description"
-                  value={subCategoryForm.description}
-                  onChange={(e) => setSubCategoryForm({ ...subCategoryForm, description: e.target.value })}
-                  placeholder="Enter sub category description"
-                  rows={3}
+                <Label htmlFor="order">Display Order</Label>
+                <Input
+                  id="order"
+                  type="number"
+                  value={assignmentForm.display_order}
+                  onChange={(e) => setAssignmentForm({ ...assignmentForm, display_order: parseInt(e.target.value) })}
+                  min="0"
                 />
               </div>
             </div>
             
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={resetSubCategoryForm}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
-              <Button onClick={handleSaveSubCategory}>
-                <Save className="h-4 w-4 mr-2" />
-                {editingSubCategory ? 'Update' : 'Create'}
-              </Button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="difficulty">Difficulty</Label>
+                <Select
+                  value={assignmentForm.difficulty}
+                  onValueChange={(value) => setAssignmentForm({ ...assignmentForm, difficulty: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="active">Status</Label>
+                <Select
+                  value={assignmentForm.is_active ? "active" : "inactive"}
+                  onValueChange={(value) => setAssignmentForm({ ...assignmentForm, is_active: value === "active" })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </SidebarInset>
-    </SidebarProvider>
+          </div>
+          
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={resetForm}>
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAssignment}>
+              <Save className="h-4 w-4 mr-2" />
+              {editingAssignment ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sub Category Form Dialog */}
+      <Dialog open={showAddSubCategory} onOpenChange={setShowAddSubCategory}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingSubCategory ? 'Edit Sub Category' : 'Add New Sub Category'}</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="subcat-name">Name</Label>
+              <Input
+                id="subcat-name"
+                value={subCategoryForm.name}
+                onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
+                placeholder="Enter sub category name"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="subcat-description">Description</Label>
+              <Textarea
+                id="subcat-description"
+                value={subCategoryForm.description}
+                onChange={(e) => setSubCategoryForm({ ...subCategoryForm, description: e.target.value })}
+                placeholder="Enter sub category description"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={resetSubCategoryForm}>
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button onClick={handleSaveSubCategory}>
+              <Save className="h-4 w-4 mr-2" />
+              {editingSubCategory ? 'Update' : 'Create'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
