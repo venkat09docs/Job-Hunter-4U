@@ -58,7 +58,7 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
   { 
     title: "Skill Level Up", 
-    url: (isAdmin || isInstituteAdmin || isRecruiter) ? "/dashboard/career-level" : "/dashboard/skill-level", 
+    url: "/dashboard/skill-level", 
     icon: Award, 
     featureKey: null 
   },
@@ -86,6 +86,7 @@ const githubItems = [
 
 const clpAdminItems = [
   { title: "CLP Dashboard", url: "/dashboard/career-level/dashboard", icon: BarChart3, featureKey: null },
+  { title: "Career Level Up Program", url: "/dashboard/career-level", icon: GraduationCap, featureKey: null },
 ];
 
 const recruiterItems = [
