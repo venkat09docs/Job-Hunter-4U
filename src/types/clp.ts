@@ -12,6 +12,7 @@ export interface Course {
   title: string;
   code: string;
   description?: string;
+  category: string;
   is_active: boolean;
   created_by?: string;
   created_at: string;
@@ -168,6 +169,7 @@ export interface CreateCourseData {
   title: string;
   code: string;
   description?: string;
+  category?: string;
   is_active?: boolean;
 }
 

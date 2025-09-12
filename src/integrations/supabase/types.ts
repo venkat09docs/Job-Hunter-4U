@@ -1092,6 +1092,7 @@ export type Database = {
       }
       clp_courses: {
         Row: {
+          category: string | null
           code: string
           created_at: string
           created_by: string | null
@@ -1102,6 +1103,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           code: string
           created_at?: string
           created_by?: string | null
@@ -1112,6 +1114,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           code?: string
           created_at?: string
           created_by?: string | null

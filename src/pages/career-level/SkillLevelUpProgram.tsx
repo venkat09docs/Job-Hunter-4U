@@ -35,7 +35,7 @@ import type {
 import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import AIGeneralistsTab from '@/components/AIGeneralistsTab';
+import SkillDeveloperProgramsTab from '@/components/SkillDeveloperProgramsTab';
 
 const SkillLevelUpProgram: React.FC = () => {
   const { user } = useAuth();
@@ -62,8 +62,8 @@ const SkillLevelUpProgram: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedModule, setSelectedModule] = useState<string>('all');
   
-  // Get active tab from URL params or default to 'ai-generalists'
-  const activeTab = searchParams.get('tab') || 'ai-generalists';
+  // Get active tab from URL params or default to 'skill-programs'
+  const activeTab = searchParams.get('tab') || 'skill-programs';
 
   useEffect(() => {
     if (user) {
@@ -456,7 +456,7 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Skill Developer Programs Tab */}
           <TabsContent value="skill-programs" className="space-y-6">
-            <AIGeneralistsTab />
+            <SkillDeveloperProgramsTab />
           </TabsContent>
 
           {/* My Assignments Tab */}
