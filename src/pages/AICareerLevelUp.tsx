@@ -36,7 +36,10 @@ import {
    BookOpen,
    GraduationCap,
    Cpu,
-   Building2
+   Building2,
+   Check,
+   Loader2,
+   Crown
 } from "lucide-react";
 import { Github } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
@@ -1554,112 +1557,244 @@ export default function AICareerLevelUp() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Plan A: Course Only */}
-            <Card className="relative p-8 border-2 border-primary/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white">
-              <CardContent className="p-0">
-                <div className="mb-6">
-                  <h3 className="text-3xl font-bold mb-4 text-primary">Plan A: Course Only</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl text-gray-500 line-through">₹25,000</span>
-                    </div>
-                    <div className="text-5xl font-bold text-primary">₹20,000</div>
-                    <p className="text-lg font-medium text-emerald-600">Early Bird Price</p>
+          {/* Investment Plans - 5 Plans from Main Landing Page */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 max-w-7xl mx-auto">
+            {/* One Week Plan */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">One Week Plan</h3>
+                  <p className="text-sm text-muted-foreground">Quick access to all career tools</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">699.00</span>
+                    <span className="text-sm text-muted-foreground">/1 week</span>
                   </div>
                 </div>
                 
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-semibold mb-4 text-xl">Includes:</h4>
-                    <ul className="space-y-3 text-gray-700">
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Full curriculum with AI focus
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        2 capstone projects
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Weekly hands-on labs
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        WhatsApp community access
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Office hours with instructors
-                      </li>
-                    </ul>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">AI-powered job matching</span>
                   </div>
-                  
-                  <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white py-4 text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-                    Enroll in Course Only
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Resume builder & optimization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">LinkedIn optimization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Job tracker & analytics</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">All premium features included</span>
+                  </div>
                 </div>
-              </CardContent>
+                
+                <Button 
+                  variant="outline"
+                  size="sm" 
+                  className="w-full"
+                >
+                  Get Started
+                </Button>
+              </div>
             </Card>
 
-            {/* Plan B: Placement Package */}
-            <Card className="relative border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 text-lg font-bold shadow-lg">
-                  Most Popular
-                </Badge>
-              </div>
-              
-              <CardContent className="p-0">
-                <div className="mb-6">
-                  <h3 className="text-3xl font-bold mb-4 text-emerald-700">Plan B: Placement Package</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl text-gray-500 line-through">₹35,000</span>
-                    </div>
-                    <div className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">₹30,000</div>
-                    <p className="text-lg font-medium text-emerald-600">Early Bird Price</p>
+            {/* One Month Plan */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">One Month Plan</h3>
+                  <p className="text-sm text-muted-foreground">Perfect for focused job searching</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">1499.00</span>
+                    <span className="text-sm text-muted-foreground">/1 month</span>
                   </div>
                 </div>
                 
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-semibold mb-4 text-xl text-emerald-800">Everything in Course Only +</h4>
-                    <ul className="space-y-3 text-gray-700">
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Resume revamp & optimization
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        LinkedIn profile enhancement
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        GitHub portfolio optimization  
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Gamification with Leaderboard
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-600" />
-                        Job tracker & application toolkit
-                      </li>
-                    </ul>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Everything in 1 Week Plan +</span>
                   </div>
-                  
-                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-teal-600 hover:to-emerald-600 text-white py-4 text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
-                    Get Placement Package
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
+                  </div>
                 </div>
-              </CardContent>
+                
+                <Button 
+                  variant="outline"
+                  size="sm" 
+                  className="w-full"
+                >
+                  Get Started
+                </Button>
+              </div>
+            </Card>
+
+            {/* 3 Months Plan - Most Popular */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 ring-2 ring-primary ring-offset-2 scale-105">
+              <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
+                <Star className="w-3 h-3 mr-1" />
+                Most Popular
+              </Badge>
+              
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">3 Months Plan</h3>
+                  <p className="text-sm text-muted-foreground">Best value for comprehensive career growth</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">3999.00</span>
+                    <span className="text-sm text-muted-foreground">/3 months</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Everything in 1 Month Plan +</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">1 Live personal Mock Interview</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Free - Linux, Shell and AWS Courses</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="hero"
+                  size="sm" 
+                  className="w-full"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Get Started
+                </Button>
+              </div>
+            </Card>
+
+            {/* 6 Months Plan */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">6 Months Plan</h3>
+                  <p className="text-sm text-muted-foreground">Extended career development package</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">6999.00</span>
+                    <span className="text-sm text-muted-foreground">/6 months</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Everything in 3 Months Plan +</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Video Based Bio Links</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Digital Profile</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">the AI-Powered Super AI Tools access</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Free - DevOps with AWS and Python Course</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="outline"
+                  size="sm" 
+                  className="w-full"
+                >
+                  Get Started
+                </Button>
+              </div>
+            </Card>
+
+            {/* 1 Year Plan */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">1 Year Plan</h3>
+                  <p className="text-sm text-muted-foreground">Complete career transformation package</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">11999.00</span>
+                    <span className="text-sm text-muted-foreground">/1 year</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Everything in 6 Months Plan +</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">AI Automation Bootcamp</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Vibe Coding Tools [No coding required]</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Reverse Engineering Strategy to land Dream job as fast as</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Automated Job-Hunting Process</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="outline"
+                  size="sm" 
+                  className="w-full"
+                >
+                  Get Started
+                </Button>
+              </div>
             </Card>
           </div>
-          
+
           {/* Upgrade Note */}
           <div className="mt-16 max-w-4xl mx-auto">
             <Card className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
@@ -1669,7 +1804,7 @@ export default function AICareerLevelUp() {
                   <h4 className="text-2xl font-bold text-gray-800">Flexible Upgrade Option</h4>
                 </div>
                 <p className="text-lg text-gray-700 leading-relaxed">
-                  <strong>Start with Course Only</strong>, then upgrade to Placement Package within 14 days by paying just the difference
+                  <strong>Start with any plan</strong>, then upgrade to a higher plan within 14 days by paying just the difference
                 </p>
               </CardContent>
             </Card>
