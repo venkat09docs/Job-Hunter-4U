@@ -1582,16 +1582,16 @@ export default function AICareerLevelUp() {
                 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">Everything in 1 Month Plan +</span>
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Level 2 Program Available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Level 3 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-xs text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">1 Live personal Mock Interview</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
