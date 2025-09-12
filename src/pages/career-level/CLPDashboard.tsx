@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseManagementTab from '@/components/CourseManagementTab';
 import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
+import CLPReviewManagement from '@/components/admin/CLPReviewManagement';
 import type { Course, Attempt, LeaderboardEntry } from '@/types/clp';
 
 const CLPDashboard = () => {
@@ -166,7 +167,7 @@ const CLPDashboard = () => {
       title: 'Review Submissions',
       description: 'Check pending assignment submissions',
       icon: ClipboardCheck,
-      onClick: () => navigate('/dashboard/career-level/reviews'),
+      onClick: () => setActiveTab('reviews'),
       color: 'bg-green-50 hover:bg-green-100 text-green-700 border-green-200'
     },
     {
@@ -381,18 +382,7 @@ const CLPDashboard = () => {
 
           {/* Reviews Tab */}
           <TabsContent value="reviews" className="space-y-6">
-            <div className="text-center py-16">
-              <Eye className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                Review Management
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Review pending submissions and provide feedback.
-              </p>
-              <Button onClick={() => navigate('/dashboard/career-level/reviews')}>
-                Review Submissions
-              </Button>
-            </div>
+            <CLPReviewManagement />
           </TabsContent>
 
           {/* Leaderboard Tab */}
