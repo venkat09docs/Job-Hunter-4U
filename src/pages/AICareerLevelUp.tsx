@@ -1597,6 +1597,10 @@ export default function AICareerLevelUp() {
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-xs text-warning">Free - Linux, Shell and AWS Courses</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Free - DevOps with AWS and Python Course</span>
+                  </div>
                 </div>
                 
                 <Button 
@@ -1633,6 +1637,14 @@ export default function AICareerLevelUp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Level 1 Program Available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Level 4 Program Available</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-xs text-warning">Video Based Bio Links</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1642,10 +1654,6 @@ export default function AICareerLevelUp() {
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-xs text-warning">the AI-Powered Super AI Tools access</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Free - DevOps with AWS and Python Course</span>
                   </div>
                 </div>
                 
