@@ -75,6 +75,7 @@ import ProgressLevelUp from "./pages/ProgressLevelUp";
 // Career Level Program (CLP) imports
 import CLPDashboard from "./pages/career-level/CLPDashboard";
 import CareerLevelProgram from "./pages/career-level/CareerLevelProgram";
+import SkillLevelUpProgram from "./pages/career-level/SkillLevelUpProgram";
 import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
@@ -497,6 +498,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CareerLevelProgram />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/skill-level" 
+            element={
+              <ProtectedRoute>
+                <SkillLevelUpProgram />
               </ProtectedRoute>
             } 
           />
