@@ -13,7 +13,16 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
         {/* Course Image */}
-        <div className="h-48 bg-gradient-to-br from-primary via-purple to-teal relative overflow-hidden">
+        <div className="h-48 relative overflow-hidden">
+          {course.image ? (
+            <img 
+              src={course.image} 
+              alt={course.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary via-purple to-teal" />
+          )}
           <div className="absolute inset-0 bg-black/20" />
           <div className="absolute top-4 left-4">
             <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30">
