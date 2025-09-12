@@ -477,7 +477,7 @@ const SkillLevelUpProgram: React.FC = () => {
                 <div className="flex items-center">
                   <Clock className="w-8 h-8 text-orange-500 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+                    <p className="text-sm font-medium text-muted-foreground">Pending</p>
                     <p className="text-2xl font-bold">{activeAssignments.length}</p>
                   </div>
                 </div>
@@ -513,58 +513,93 @@ const SkillLevelUpProgram: React.FC = () => {
               </Card>
             </div>
 
-            {/* Assignment Sections */}
-            <div className="space-y-8">
-              {/* Upcoming Assignments */}
-              {upcomingAssignments.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <PlayCircle className="w-5 h-5 text-blue-500" />
-                    Available Assignments ({upcomingAssignments.length})
-                  </h2>
+            {/* Assignment Subtabs */}
+            <Tabs defaultValue="available" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="available" className="flex items-center gap-2">
+                  <PlayCircle className="w-4 h-4" />
+                  Available ({upcomingAssignments.length})
+                </TabsTrigger>
+                <TabsTrigger value="pending" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Pending ({activeAssignments.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Completed ({completedAssignments.length})
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Available Assignments Tab */}
+              <TabsContent value="available" className="space-y-4">
+                {upcomingAssignments.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {upcomingAssignments.map(renderAssignmentCard)}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <PlayCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Available Assignments</h3>
+                      <p className="text-sm text-muted-foreground">
+                        All assignments are either in progress or completed.
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
 
-              {/* Active Assignments */}
-              {activeAssignments.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-orange-500" />
-                    In Progress ({activeAssignments.length})
-                  </h2>
+              {/* Pending Assignments Tab */}
+              <TabsContent value="pending" className="space-y-4">
+                {activeAssignments.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {activeAssignments.map(renderAssignmentCard)}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Pending Assignments</h3>
+                      <p className="text-sm text-muted-foreground">
+                        You don't have any assignments in progress at the moment.
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
 
-              {/* Completed Assignments */}
-              {completedAssignments.length > 0 && (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    Completed ({completedAssignments.length})
-                  </h2>
+              {/* Completed Assignments Tab */}
+              <TabsContent value="completed" className="space-y-4">
+                {completedAssignments.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {completedAssignments.map(renderAssignmentCard)}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <Card className="p-8">
+                    <div className="text-center">
+                      <CheckCircle2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Completed Assignments</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Complete some assignments to see them here.
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
 
-              {/* Empty State */}
-              {assignments.length === 0 && (
-                <div className="text-center py-12">
+            {/* Empty State for no assignments at all */}
+            {assignments.length === 0 && (
+              <Card className="p-12">
+                <div className="text-center">
                   <BookOpen className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No Assignments Yet</h3>
                   <p className="text-muted-foreground">
                     Check back later for new assignments to complete.
                   </p>
                 </div>
-              )}
-            </div>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Leaderboard Tab */}
