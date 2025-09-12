@@ -11,6 +11,7 @@ import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseManagementTab from '@/components/CourseManagementTab';
+import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
 import type { Course, Attempt, LeaderboardEntry } from '@/types/clp';
 
 const CLPDashboard = () => {
@@ -375,18 +376,7 @@ const CLPDashboard = () => {
 
           {/* Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
-            <div className="text-center py-16">
-              <ClipboardCheck className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                Assignment Management
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Assignment management features will be available here.
-              </p>
-              <Button onClick={() => navigate('/dashboard/career-level/assignments')}>
-                Go to Assignments
-              </Button>
-            </div>
+            <CLPAssignmentManagementTab />
           </TabsContent>
 
           {/* Reviews Tab */}
