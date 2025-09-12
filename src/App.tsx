@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useAuth } from "@/hooks/useAuth";
 import { ensureConsistentDomain } from "@/utils/domainRedirect";
@@ -73,7 +73,6 @@ import ProgressLevelUp from "./pages/ProgressLevelUp";
 
 // Career Level Program (CLP) imports
 import CLPDashboard from "./pages/career-level/CLPDashboard";
-import CareerLevelProgram from "./pages/career-level/CareerLevelProgram";
 import SkillLevelUpProgram from "./pages/career-level/SkillLevelUpProgram";
 import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
@@ -501,14 +500,6 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/dashboard/career-level/my-assignments" 
-            element={
-              <ProtectedRoute>
-                <CareerLevelProgram />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/dashboard/career-level/assignment/:assignmentId" 
             element={
               <ProtectedRoute>
@@ -542,11 +533,7 @@ const AppContent = () => {
           />
            <Route 
             path="/dashboard/career-level/leaderboard" 
-            element={
-              <ProtectedRoute>
-                <CareerLevelProgram />
-              </ProtectedRoute>
-            } 
+            element={<Navigate to="/dashboard/career-level/dashboard" replace />} 
            />
            <Route 
              path="/dashboard/career-level/courses" 

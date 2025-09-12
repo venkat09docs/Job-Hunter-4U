@@ -193,9 +193,9 @@ const AssignmentDetail: React.FC = () => {
       {/* Header */}
       <div className="flex items-start gap-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/career-level/my-assignments">
+          <Link to="/dashboard/career-level/dashboard">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Assignments
+            Back to Dashboard
           </Link>
         </Button>
         

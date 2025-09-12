@@ -211,7 +211,7 @@ const CLPDashboard = () => {
   const isAdmin = userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin';
 
   if (!isAdmin) {
-    return <Navigate to="/dashboard/career-level/my-assignments" replace />;
+    return <Navigate to="/dashboard/career-level/dashboard" replace />;
   }
 
   const stats = [

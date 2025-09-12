@@ -162,7 +162,7 @@ const AttemptAssignment = () => {
           title: 'Assignment Submitted',
           description: 'Your answers have been submitted successfully!'
         });
-        navigate('/dashboard/career-level/my-assignments');
+        navigate('/dashboard/career-level/dashboard');
       }
     } catch (error) {
       toast({
@@ -210,11 +210,11 @@ const AttemptAssignment = () => {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <Button
             variant="ghost"
-            onClick={() => navigate('/dashboard/career-level/my-assignments')}
+            onClick={() => navigate('/dashboard/career-level/dashboard')}
             className="mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Assignments
+            Back to Dashboard
           </Button>
 
           <Card>
