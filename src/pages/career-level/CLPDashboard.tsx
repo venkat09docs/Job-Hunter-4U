@@ -5,21 +5,24 @@ import { useRole } from '@/hooks/useRole';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home } from 'lucide-react';
+import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CourseManagementTab from '@/components/CourseManagementTab';
 import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
 import CLPReviewManagement from '@/components/admin/CLPReviewManagement';
-import type { Course, Attempt, LeaderboardEntry } from '@/types/clp';
+import type { Course, Attempt, LeaderboardEntry, Module } from '@/types/clp';
+import { cn } from '@/lib/utils';
 
 const CLPDashboard = () => {
   const { user } = useAuth();
   const { role: userRole, loading: roleLoading } = useRole();
   const navigate = useNavigate();
-  const { loading, getCourses, getLeaderboard } = useCareerLevelProgram();
+  const { loading, getCourses, getLeaderboard, getModulesByCourse } = useCareerLevelProgram();
   const [activeTab, setActiveTab] = useState('overview');
   
   const [dashboardStats, setDashboardStats] = useState({
@@ -31,12 +34,35 @@ const CLPDashboard = () => {
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [topPerformers, setTopPerformers] = useState<LeaderboardEntry[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  
+  // Leaderboard specific state
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedModule, setSelectedModule] = useState<string>('all');
 
   useEffect(() => {
     if (user && userRole && !roleLoading) {
       fetchDashboardData();
+      loadCourses();
+      loadLeaderboard();
     }
   }, [user, userRole, roleLoading]);
+
+  useEffect(() => {
+    if (selectedCourse !== 'all') {
+      loadModules(selectedCourse);
+    } else {
+      setModules([]);
+    }
+    setSelectedModule('all');
+    loadLeaderboard();
+  }, [selectedCourse]);
+
+  useEffect(() => {
+    loadLeaderboard();
+  }, [selectedModule]);
 
   const fetchDashboardData = async () => {
     setDashboardLoading(true);
@@ -101,6 +127,70 @@ const CLPDashboard = () => {
       setDashboardLoading(false);
     }
   };
+
+  // Leaderboard functions
+  const loadCourses = async () => {
+    try {
+      const coursesData = await getCourses();
+      setCourses(coursesData);
+    } catch (error) {
+      console.error('Failed to load courses:', error);
+    }
+  };
+
+  const loadModules = async (courseId: string) => {
+    try {
+      const modulesData = await getModulesByCourse(courseId);
+      setModules(modulesData);
+    } catch (error) {
+      console.error('Failed to load modules:', error);
+    }
+  };
+
+  const loadLeaderboard = async () => {
+    try {
+      const courseId = selectedCourse !== 'all' ? selectedCourse : undefined;
+      const moduleId = selectedModule !== 'all' ? selectedModule : undefined;
+      
+      const data = await getLeaderboard(courseId, moduleId);
+      setLeaderboardData(data);
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+    }
+  };
+
+  // Helper functions for leaderboard
+  const getRankIcon = (position: number) => {
+    switch (position) {
+      case 1:
+        return <Trophy className="h-5 w-5 text-yellow-500" />;
+      case 2:
+        return <Medal className="h-5 w-5 text-gray-400" />;
+      case 3:
+        return <Award className="h-5 w-5 text-amber-600" />;
+      default:
+        return <span className="text-sm font-bold text-muted-foreground">#{position}</span>;
+    }
+  };
+
+  const getPositionStyles = (position: number) => {
+    switch (position) {
+      case 1:
+        return "bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200";
+      case 2:
+        return "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200";
+      case 3:
+        return "bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200";
+      default:
+        return "bg-background border-border";
+    }
+  };
+
+  // Leaderboard calculations
+  const currentUserEntry = leaderboardData.find(entry => entry.user_id === user?.id);
+  const currentUserRank = currentUserEntry 
+    ? leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
+    : null;
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -387,18 +477,252 @@ const CLPDashboard = () => {
 
           {/* Leaderboard Tab */}
           <TabsContent value="leaderboard" className="space-y-6">
-            <div className="text-center py-16">
-              <Trophy className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                Leaderboard Analytics
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                View detailed leaderboard analytics and student rankings.
-              </p>
-              <Button onClick={() => navigate('/dashboard/career-level/leaderboard')}>
-                View Leaderboard
-              </Button>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total Participants
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {leaderboardData.length}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-blue-600">
+                      <Users className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Your Rank
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {currentUserRank ? `#${currentUserRank}` : 'Not ranked'}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-purple-600">
+                      <Trophy className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Your Points
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {currentUserEntry?.points_total || 0}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-green-600">
+                      <Award className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Filter Rankings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Course</label>
+                    <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Courses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Courses</SelectItem>
+                        {courses.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Module</label>
+                    <Select 
+                      value={selectedModule} 
+                      onValueChange={setSelectedModule}
+                      disabled={selectedCourse === 'all'}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Modules" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Modules</SelectItem>
+                        {modules.map((module) => (
+                          <SelectItem key={module.id} value={module.id}>
+                            {module.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button onClick={loadLeaderboard} disabled={loading}>
+                      Refresh Rankings
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Leaderboard */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Rankings
+                  </span>
+                  {selectedCourse !== 'all' && (
+                    <Badge variant="secondary">
+                      {courses.find(c => c.id === selectedCourse)?.title}
+                      {selectedModule !== 'all' && modules.length > 0 && (
+                        <span className="ml-2">
+                          • {modules.find(m => m.id === selectedModule)?.title}
+                        </span>
+                      )}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : leaderboardData.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      No rankings available
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Complete assignments to appear on the leaderboard
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {leaderboardData.map((entry, index) => {
+                      const position = index + 1;
+                      const isCurrentUser = entry.user_id === user?.id;
+                      
+                      return (
+                        <div
+                          key={entry.id}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-lg border transition-colors",
+                            getPositionStyles(position),
+                            isCurrentUser ? "ring-2 ring-primary ring-opacity-50" : ""
+                          )}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-10 h-10">
+                              {getRankIcon(position)}
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={entry.user?.profile_image_url} />
+                                <AvatarFallback>
+                                  {entry.user?.full_name?.charAt(0) || 
+                                   entry.user?.username?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">
+                                    {entry.user?.full_name || entry.user?.username || 'Anonymous'}
+                                  </p>
+                                  {isCurrentUser && (
+                                    <Badge variant="outline" className="text-xs">
+                                      You
+                                    </Badge>
+                                  )}
+                                </div>
+                                {entry.user?.username && entry.user?.full_name && (
+                                  <p className="text-sm text-muted-foreground">
+                                    @{entry.user.username}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-primary">
+                              {entry.points_total}
+                            </p>
+                            <p className="text-sm text-muted-foreground">points</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Your Performance Section */}
+            {currentUserEntry && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        #{currentUserRank}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Current Rank</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        {currentUserEntry.points_total}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Total Points</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        {leaderboardData.length > 0 ? 
+                          Math.round(((leaderboardData.length - (currentUserRank || 0) + 1) / leaderboardData.length) * 100) : 0
+                        }%
+                      </div>
+                      <div className="text-sm text-muted-foreground">Percentile</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
