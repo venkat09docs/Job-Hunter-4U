@@ -679,7 +679,7 @@ export default function AICareerLevelUp() {
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
               <Trophy className="w-4 h-4 mr-2" />
-              Level Up Your Skills
+              Level 2 Program
             </Badge>
             <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
               Master These Key Activities
@@ -1007,6 +1007,236 @@ export default function AICareerLevelUp() {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Portfolio</h3>
                   <p className="text-gray-300">Digital Showcase</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Level 3 Program - Job Hunter Level Up */}
+      <section className="py-20 px-4 bg-gradient-to-br from-orange-600 via-red-600 to-pink-600">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm font-bold">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Level 3 Program
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              Land Your Dream Job
+            </h2>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              Advanced job hunting strategies and tools to secure your ideal position
+            </p>
+          </div>
+
+          <div className="relative">
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {/* Find Your Next Role */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-700 to-indigo-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-blue-800 to-indigo-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Target className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Job Search
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Find Your Next Role
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            AI-Powered Job Discovery
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Discover relevant job opportunities using AI-powered matching algorithms that align with your skills and career goals.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-blue-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Smart Job Matching</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-blue-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Company Insights</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-blue-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Application Tracking</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-blue-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Explore Opportunities
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* Job Tracker */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-green-700 to-emerald-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-green-800 to-emerald-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-green-600/20 to-emerald-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <TrendingUp className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Pipeline
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Job Tracker Pipeline
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Manage Your Applications
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Organize and track all your job applications through a comprehensive pipeline management system.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-green-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Application Pipeline</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Status Tracking</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Follow-up Reminders</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-green-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Manage Pipeline
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* Job Search History */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-purple-700 to-violet-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-purple-800 to-violet-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-violet-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Clock className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Analytics
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Job Search History
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Track Your Progress
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Analyze your job search journey with detailed history, statistics, and insights to improve your strategy.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-purple-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Search Analytics</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-purple-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Performance Metrics</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-purple-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Success Patterns</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-purple-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          View Analytics
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="left-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+              <CarouselNext className="right-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+            </Carousel>
+
+            {/* Job Hunter Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Target className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Smart Search</h3>
+                  <p className="text-white/90">AI-Powered Job Discovery</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <TrendingUp className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Pipeline</h3>
+                  <p className="text-white/90">Application Management</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Clock className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Analytics</h3>
+                  <p className="text-white/90">Success Tracking</p>
                 </CardContent>
               </Card>
             </div>
