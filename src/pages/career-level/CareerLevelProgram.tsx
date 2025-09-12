@@ -37,7 +37,7 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import AIGeneralistsTab from '@/components/AIGeneralistsTab';
-import AssignmentManagementTab from '@/components/admin/AssignmentManagementTab';
+import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
 
 const CareerLevelProgram: React.FC = () => {
   const { user } = useAuth();
@@ -829,7 +829,7 @@ const CareerLevelProgram: React.FC = () => {
           {/* Assignment Management Tab - Only for Admins */}
           {(role === 'admin' || role === 'recruiter') && (
             <TabsContent value="manage-assignments" className="space-y-6">
-              <AssignmentManagementTab />
+              <CLPAssignmentManagementTab />
             </TabsContent>
           )}
         </Tabs>
