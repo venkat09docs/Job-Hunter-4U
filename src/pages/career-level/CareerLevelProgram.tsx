@@ -37,6 +37,7 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import AIGeneralistsTab from '@/components/AIGeneralistsTab';
+import ManageAssignmentsTab from '@/components/ManageAssignmentsTab';
 
 const CareerLevelProgram: React.FC = () => {
   const { user } = useAuth();
@@ -461,115 +462,121 @@ const CareerLevelProgram: React.FC = () => {
             <AIGeneralistsTab />
           </TabsContent>
 
-          {/* My Assignments Tab */}
+          {/* Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Available</p>
-                    <p className="text-2xl font-bold">{upcomingAssignments.length}</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <Clock className="w-8 h-8 text-orange-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-                    <p className="text-2xl font-bold">{activeAssignments.length}</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-bold">{completedAssignments.length}</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <Trophy className="w-8 h-8 text-purple-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                    <p className="text-2xl font-bold">
-                      {attempts.reduce((sum, attempt) => sum + attempt.score_points, 0)}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Assignment Tabs */}
-            <Tabs defaultValue="upcoming" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="upcoming">
-                  Available ({upcomingAssignments.length})
-                </TabsTrigger>
-                <TabsTrigger value="active">
-                  In Progress ({activeAssignments.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed">
-                  Completed ({completedAssignments.length})
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="upcoming" className="space-y-4">
-                {upcomingAssignments.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {upcomingAssignments.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8 text-center">
-                    <PlayCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-medium mb-2">No assignments available</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Check back later for new assignments or contact your instructor.
-                    </p>
+            {role === 'admin' || role === 'recruiter' || role === 'institute_admin' ? (
+              <ManageAssignmentsTab />
+            ) : (
+              <>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card className="p-4">
+                    <div className="flex items-center">
+                      <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Available</p>
+                        <p className="text-2xl font-bold">{upcomingAssignments.length}</p>
+                      </div>
+                    </div>
                   </Card>
-                )}
-              </TabsContent>
-
-              <TabsContent value="active" className="space-y-4">
-                {activeAssignments.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {activeAssignments.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8 text-center">
-                    <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-medium mb-2">No active assignments</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Start an assignment to see it here.
-                    </p>
+                  
+                  <Card className="p-4">
+                    <div className="flex items-center">
+                      <Clock className="w-8 h-8 text-orange-500 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+                        <p className="text-2xl font-bold">{activeAssignments.length}</p>
+                      </div>
+                    </div>
                   </Card>
-                )}
-              </TabsContent>
-
-              <TabsContent value="completed" className="space-y-4">
-                {completedAssignments.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {completedAssignments.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8 text-center">
-                    <CheckCircle2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-medium mb-2">No completed assignments</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Complete assignments to see them here.
-                    </p>
+                  
+                  <Card className="p-4">
+                    <div className="flex items-center">
+                      <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                        <p className="text-2xl font-bold">{completedAssignments.length}</p>
+                      </div>
+                    </div>
                   </Card>
-                )}
-              </TabsContent>
-            </Tabs>
+                  
+                  <Card className="p-4">
+                    <div className="flex items-center">
+                      <Trophy className="w-8 h-8 text-purple-500 mr-3" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Total Points</p>
+                        <p className="text-2xl font-bold">
+                          {attempts.reduce((sum, attempt) => sum + attempt.score_points, 0)}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Assignment Tabs */}
+                <Tabs defaultValue="upcoming" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="upcoming">
+                      Available ({upcomingAssignments.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="active">
+                      In Progress ({activeAssignments.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="completed">
+                      Completed ({completedAssignments.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="upcoming" className="space-y-4">
+                    {upcomingAssignments.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {upcomingAssignments.map(renderAssignmentCard)}
+                      </div>
+                    ) : (
+                      <Card className="p-8 text-center">
+                        <PlayCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">No assignments available</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Check back later for new assignments or contact your instructor.
+                        </p>
+                      </Card>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="active" className="space-y-4">
+                    {activeAssignments.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {activeAssignments.map(renderAssignmentCard)}
+                      </div>
+                    ) : (
+                      <Card className="p-8 text-center">
+                        <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">No active assignments</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Start an assignment to see it here.
+                        </p>
+                      </Card>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="completed" className="space-y-4">
+                    {completedAssignments.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {completedAssignments.map(renderAssignmentCard)}
+                      </div>
+                    ) : (
+                      <Card className="p-8 text-center">
+                        <CheckCircle2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">No completed assignments</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Complete assignments to see them here.
+                        </p>
+                      </Card>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </>
+            )}
           </TabsContent>
 
           {/* Leaderboard Tab */}
