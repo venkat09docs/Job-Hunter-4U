@@ -60,8 +60,12 @@ const CLPDashboard = () => {
   const [courseForm, setCourseForm] = useState({
     title: '',
     description: '',
-    code: ''
+    code: '',
+    category: ''
   });
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
   const [moduleForm, setModuleForm] = useState({
     title: '',
     description: '',
@@ -74,6 +78,7 @@ const CLPDashboard = () => {
       loadCourses();
       loadLeaderboard();
       fetchCoursesData();
+      fetchCategories();
     }
   }, [user, userRole, roleLoading]);
 
@@ -201,6 +206,38 @@ const CLPDashboard = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clp_courses')
+        .select('category')
+        .not('category', 'is', null)
+        .neq('category', '');
+
+      if (error) throw error;
+
+      const uniqueCategories = [...new Set(data?.map(item => item.category).filter(Boolean))] as string[];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    try {
+      setCategories(prev => [...prev, newCategory.trim()]);
+      setCourseForm(prev => ({ ...prev, category: newCategory.trim() }));
+      setNewCategory('');
+      setIsCreateCategoryOpen(false);
+      toast.success('Category created successfully');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast.error('Failed to create category');
+    }
+  };
+
   const handleCreateCourse = async () => {
     try {
       const { data, error } = await supabase
@@ -209,6 +246,7 @@ const CLPDashboard = () => {
           title: courseForm.title,
           description: courseForm.description,
           code: courseForm.code,
+          category: courseForm.category,
           created_by: user?.id
         }])
         .select()
@@ -217,9 +255,10 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => [data, ...prev]);
-      setCourseForm({ title: '', description: '', code: '' });
+      setCourseForm({ title: '', description: '', code: '', category: '' });
       setIsCreateCourseOpen(false);
       toast.success('Course created successfully');
+      fetchCategories(); // Refresh categories
     } catch (error) {
       console.error('Error creating course:', error);
       toast.error('Failed to create course');
@@ -235,7 +274,8 @@ const CLPDashboard = () => {
         .update({
           title: courseForm.title,
           description: courseForm.description,
-          code: courseForm.code
+          code: courseForm.code,
+          category: courseForm.category
         })
         .eq('id', editingCourse.id)
         .select()
@@ -244,9 +284,10 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => prev.map(c => c.id === editingCourse.id ? data : c));
-      setCourseForm({ title: '', description: '', code: '' });
+      setCourseForm({ title: '', description: '', code: '', category: '' });
       setEditingCourse(null);
       toast.success('Course updated successfully');
+      fetchCategories(); // Refresh categories
     } catch (error) {
       console.error('Error updating course:', error);
       toast.error('Failed to update course');
@@ -330,7 +371,8 @@ const CLPDashboard = () => {
     setCourseForm({
       title: course.title,
       description: course.description || '',
-      code: course.code
+      code: course.code,
+      category: course.category || ''
     });
   };
 
@@ -565,39 +607,6 @@ const CLPDashboard = () => {
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {quickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className={`h-auto p-6 justify-start ${action.color}`}
-                  onClick={action.onClick}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 rounded-lg bg-background/50">
-                      <action.icon className="h-6 w-6" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold mb-1">{action.title}</h3>
-                      <p className="text-sm opacity-80">
-                        {action.description}
-                      </p>
-                    </div>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -716,6 +725,63 @@ const CLPDashboard = () => {
                         value={courseForm.code}
                         onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="course-category">Category</Label>
+                      <div className="flex gap-2">
+                        <Select 
+                          value={courseForm.category} 
+                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select or create category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="icon">
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Create New Category</DialogTitle>
+                              <DialogDescription>
+                                Add a new category for courses
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="category-name">Category Name</Label>
+                                <Input
+                                  id="category-name"
+                                  placeholder="Enter category name"
+                                  value={newCategory}
+                                  onChange={(e) => setNewCategory(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => {
+                                setIsCreateCategoryOpen(false);
+                                setNewCategory('');
+                              }}>
+                                Cancel
+                              </Button>
+                              <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
+                                Create Category
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="course-description">Description</Label>
@@ -881,6 +947,63 @@ const CLPDashboard = () => {
                       value={courseForm.code}
                       onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-course-category">Category</Label>
+                    <div className="flex gap-2">
+                      <Select 
+                        value={courseForm.category} 
+                        onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select or create category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="icon">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Create New Category</DialogTitle>
+                            <DialogDescription>
+                              Add a new category for courses
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="edit-category-name">Category Name</Label>
+                              <Input
+                                id="edit-category-name"
+                                placeholder="Enter category name"
+                                value={newCategory}
+                                onChange={(e) => setNewCategory(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button variant="outline" onClick={() => {
+                              setIsCreateCategoryOpen(false);
+                              setNewCategory('');
+                            }}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
+                              Create Category
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="edit-course-description">Description</Label>
