@@ -204,27 +204,27 @@ export default function AICareerLevelUp() {
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      role: "AI Engineer at TechCorp",
+      name: "Aparna",
+      role: "AI Engineer",
       quote: "This program transformed my career from a traditional role to an AI specialist in just 6 months!",
       rating: 5,
-      avatar: "SJ",
+      avatar: "AP",
       color: "bg-gradient-to-br from-pink-500 to-purple-600"
     },
     {
-      name: "Raj Patel",
+      name: "Pruthvi Raju",
       role: "Freelance AI Consultant",
       quote: "The solopreneur track helped me build my own SaaS product. Now I'm running a profitable business.",
       rating: 5,
-      avatar: "RP",
+      avatar: "PR",
       color: "bg-gradient-to-br from-blue-500 to-cyan-600"
     },
     {
-      name: "Emily Chen",
+      name: "Venugopal",
       role: "Fresh Graduate",
       quote: "As a fresh graduate, this program gave me the competitive edge I needed to land my first AI job.",
       rating: 5,
-      avatar: "EC",
+      avatar: "VG",
       color: "bg-gradient-to-br from-green-500 to-teal-600"
     }
   ];
@@ -1625,38 +1625,6 @@ export default function AICareerLevelUp() {
         </div>
       </section>
 
-      {/* Course Highlights */}
-      <section className="py-12 bg-gradient-to-br from-gray-100 to-sky-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-gray-900">
-            AI-Enhanced DevOps & AWS Course Highlights
-          </h2>
-          <p className="text-center text-lg text-muted-foreground mb-16">
-            Applications Open for New Cohort | Limited Scholarships Available
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {highlights.map((highlight, index) => {
-              const IconComponent = highlight.icon;
-              return (
-                <Card key={index} className="p-6 hover:shadow-lg transition-all bg-white">
-                  <CardContent className="space-y-4 p-0">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold mb-2">{highlight.title}</h3>
-                        <p className="text-gray-600">{highlight.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* The Future Section */}
       <section className="py-12 bg-white">
