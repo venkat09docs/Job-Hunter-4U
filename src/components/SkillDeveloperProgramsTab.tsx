@@ -7,6 +7,88 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import type { Course } from '@/types/clp';
 
+// Course Card Component - Moved before main component
+const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
+  return (
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+      <div className="relative">
+        {/* Course Image */}
+        <div className="h-48 bg-gradient-to-br from-primary via-purple to-teal relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute top-4 left-4">
+            <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30">
+              {course.code}
+            </Badge>
+          </div>
+          <div className="absolute top-4 right-4">
+            <Badge className="bg-white/90 text-primary text-xs">
+              {course.category}
+            </Badge>
+          </div>
+          <div className="absolute bottom-4 right-4">
+            <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-lg text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+              {course.title}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>8 hours</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                <span>124</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-amber text-amber" />
+              <span className="text-sm font-medium">4.8</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex gap-2">
+              <Badge variant="secondary" className="text-xs">
+                Beginner
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                Certificate
+              </Badge>
+            </div>
+            
+            <Button 
+              size="sm" 
+              className="group/btn"
+              onClick={() => {
+                // TODO: Navigate to course detail or enrollment
+                console.log('Enroll in course:', course.id);
+              }}
+            >
+              <span>Enroll</span>
+              <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const SkillDeveloperProgramsTab: React.FC = () => {
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -219,88 +301,6 @@ const SkillDeveloperProgramsTab: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
-
-// Course Card Component
-const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
-  return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-      <div className="relative">
-        {/* Course Image */}
-        <div className="h-48 bg-gradient-to-br from-primary via-purple to-teal relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute top-4 left-4">
-            <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30">
-              {course.code}
-            </Badge>
-          </div>
-          <div className="absolute top-4 right-4">
-            <Badge className="bg-white/90 text-primary text-xs">
-              {course.category}
-            </Badge>
-          </div>
-          <div className="absolute bottom-4 right-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-semibold text-lg text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-              {course.title}
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {course.description || "Comprehensive course covering fundamental concepts and practical applications"}
-            </p>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>8 hours</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                <span>124</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-amber text-amber" />
-              <span className="text-sm font-medium">4.8</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex gap-2">
-              <Badge variant="secondary" className="text-xs">
-                Beginner
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                Certificate
-              </Badge>
-            </div>
-            
-            <Button 
-              size="sm" 
-              className="group/btn"
-              onClick={() => {
-                // TODO: Navigate to course detail or enrollment
-                console.log('Enroll in course:', course.id);
-              }}
-            >
-              <span>Enroll</span>
-              <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 };
 
