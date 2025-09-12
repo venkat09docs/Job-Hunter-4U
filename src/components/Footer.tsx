@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Phone, MapPin, Youtube, Linkedin, Github } from "lucide-react";
+import { Mail, Phone, MapPin, Youtube, Linkedin, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -99,14 +99,35 @@ const Footer = () => {
           
           {/* Social links */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Youtube className="w-4 h-4" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="bg-background/80 hover:bg-background/90 border border-border/20"
+              asChild
+            >
+              <a href="https://www.youtube.com/@career-levelup" target="_blank" rel="noopener noreferrer">
+                <Youtube className="w-4 h-4" />
+              </a>
             </Button>
-            <Button variant="ghost" size="icon">
-              <Linkedin className="w-4 h-4" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="bg-background/80 hover:bg-background/90 border border-border/20"
+              asChild
+            >
+              <a href="https://www.linkedin.com/in/gvenkat09" target="_blank" rel="noopener noreferrer">
+                <Linkedin className="w-4 h-4" />
+              </a>
             </Button>
-            <Button variant="ghost" size="icon">
-              <Github className="w-4 h-4" />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="bg-background/80 hover:bg-background/90 border border-border/20"
+              asChild
+            >
+              <a href="https://www.instagram.com/rnstechnologies?igsh=MTM1emgzOHQxczJteg==&utm_source=ig_contact_invite" target="_blank" rel="noopener noreferrer">
+                <Instagram className="w-4 h-4" />
+              </a>
             </Button>
           </div>
         </div>
