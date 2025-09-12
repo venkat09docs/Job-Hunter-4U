@@ -51,6 +51,7 @@ import jobHuntingImage from "@/assets/smart-job-hunting.jpg";
 import solopreneurImage from "@/assets/solopreneur-journey.jpg";
 
 export default function AICareerLevelUp() {
+  console.log("✅ AICareerLevelUp loading - Bot icons replaced with Cpu");
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
 
