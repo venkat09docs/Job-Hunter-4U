@@ -52,6 +52,7 @@ import skillsImage from "@/assets/ai-skills-learning.jpg";
 import portfolioImage from "@/assets/digital-portfolio.jpg";
 import jobHuntingImage from "@/assets/smart-job-hunting.jpg";
 import solopreneurImage from "@/assets/solopreneur-journey.jpg";
+import devopsHeroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp loading - Bot icons replaced with Cpu");
@@ -214,46 +215,63 @@ export default function AICareerLevelUp() {
           <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
         
-        <div className="relative container mx-auto max-w-7xl px-4 py-20 text-center z-10">
-          <Badge variant="secondary" className="mb-8 bg-white/20 text-white border-white/30 backdrop-blur-sm animate-fade-in">
-            <Sparkles className="w-4 h-4 mr-2" />
-            🚀 Transform Your Career Today
-          </Badge>
-          
-          <h1 className="text-5xl md:text-8xl font-bold text-white mb-8 leading-tight animate-fade-in">
-            AI Enhanced –<br />
-            <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
-              Career Level Up
-            </span>
-          </h1>
-          
-          {/* Highlighted Tagline */}
-          <div className="relative mb-12 animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-cyan-400/20 blur-xl rounded-full"></div>
-            <p className="relative text-2xl md:text-4xl font-bold bg-gradient-to-r from-yellow-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent border-2 border-white/30 rounded-2xl py-6 px-8 backdrop-blur-sm">
-              #TransformYourCareerIntoAnAIGeneralist
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 animate-fade-in">
-            <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300">
-              Start Your AI Career Today
-              <ArrowRight className="ml-3 h-6 w-6" />
-            </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white/50 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg">
-              Explore Curriculum
-            </Button>
-          </div>
-          
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
-                <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                <div className="text-sm text-white/90">{stat.label}</div>
+        <div className="relative container mx-auto max-w-7xl px-4 py-20 z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left side - Content */}
+            <div className="text-center lg:text-left">
+              <Badge variant="secondary" className="mb-8 bg-white/20 text-white border-white/30 backdrop-blur-sm animate-fade-in">
+                <Sparkles className="w-4 h-4 mr-2" />
+                🚀 Transform Your Career Today
+              </Badge>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight animate-fade-in">
+                AI Enhanced –<br />
+                <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
+                  Career Level Up
+                </span>
+              </h1>
+              
+              {/* Updated Tagline */}
+              <div className="relative mb-12 animate-fade-in">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-pink-400/20 to-cyan-400/20 blur-xl rounded-full"></div>
+                <p className="relative text-xl md:text-2xl font-bold bg-gradient-to-r from-yellow-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent border-2 border-white/30 rounded-2xl py-6 px-8 backdrop-blur-sm">
+                  Transform Your Career Into An AI Generalist
+                </p>
               </div>
-            ))}
+              
+              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center mb-16 animate-fade-in">
+                <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300">
+                  Start Your AI Career Today
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </Button>
+                <Button size="lg" variant="outline" className="border-2 border-white/50 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg">
+                  Explore Curriculum
+                </Button>
+              </div>
+              
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto lg:mx-0">
+                {stats.map((stat, index) => (
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                    <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
+                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-sm text-white/90">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right side - DevOps Hero Image */}
+            <div className="hidden lg:block relative">
+              <div className="relative">
+                <img 
+                  src={devopsHeroImage} 
+                  alt="AI DevOps AWS Career Transformation" 
+                  className="w-full h-auto rounded-2xl shadow-2xl border border-white/20"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent rounded-2xl"></div>
+              </div>
+            </div>
           </div>
 
           {/* Scroll Indicator */}
