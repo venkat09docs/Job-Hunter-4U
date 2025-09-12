@@ -33,8 +33,10 @@ import {
   DollarSign,
   Briefcase,
   ChevronDown,
-  BookOpen,
-  GraduationCap
+   BookOpen,
+   GraduationCap,
+   Bot,
+   Building2
 } from "lucide-react";
 import { Github } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
@@ -1237,6 +1239,246 @@ export default function AICareerLevelUp() {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Analytics</h3>
                   <p className="text-white/90">Success Tracking</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Level 4 Program - Vibe Coding */}
+      <section className="py-20 px-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm font-bold">
+              <Rocket className="w-4 h-4 mr-2" />
+              Level 4 Program
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              Vibe Coding Mastery
+            </h2>
+            <p className="text-xl text-white/90 max-w-3xl mx-auto">
+              For non-IT professionals ready to build SaaS applications and AI-powered solutions without traditional programming
+            </p>
+          </div>
+
+          <div className="relative">
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {/* SaaS Application Builder */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-violet-700 to-purple-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-violet-800 to-purple-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-purple-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Code className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              No-Code
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            SaaS App Builder
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Visual Application Development
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Build fully functional SaaS applications using visual programming tools and AI-powered code generation.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-violet-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Drag & Drop Interface</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-violet-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">AI Code Generation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-violet-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">One-Click Deployment</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-violet-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Start Building
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* AI Agents & Automation */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-pink-700 to-rose-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-pink-800 to-rose-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-pink-600/20 to-rose-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Bot className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              AI Powered
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            AI Agents & Automation
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Intelligent Workflow Automation
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Create sophisticated AI agents and automated workflows that handle business processes intelligently.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-pink-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Conversational AI</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-pink-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Process Automation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-pink-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Smart Integrations</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-pink-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Build AI Agents
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* Solopreneur Business Tools */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-amber-700 to-orange-800 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Feature Header */}
+                      <div className="bg-gradient-to-r from-amber-800 to-orange-900 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-amber-600/20 to-orange-600/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Building2 className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Business
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Solopreneur Suite
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            One-Person Business Empire
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Feature Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Launch and scale your one-person business with AI-powered tools for marketing, sales, and operations.
+                        </p>
+
+                        {/* Feature Benefits */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-amber-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Business Automation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-amber-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Revenue Optimization</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-amber-200">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Market Analysis</span>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-amber-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Start Your Business
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="left-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+              <CarouselNext className="right-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+            </Carousel>
+
+            {/* Vibe Coding Features */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-16">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-violet-500 to-purple-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <User className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Profile Build</h3>
+                  <p className="text-white/90">Digital Presence</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Network Growth</h3>
+                  <p className="text-white/90">LinkedIn Expansion</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Bot className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">AI Automation</h3>
+                  <p className="text-white/90">Smart Workflows</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <TrendingUp className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Business Scale</h3>
+                  <p className="text-white/90">Revenue Growth</p>
                 </CardContent>
               </Card>
             </div>
