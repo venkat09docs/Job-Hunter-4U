@@ -1098,6 +1098,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          image: string | null
           is_active: boolean
           title: string
           updated_at: string
@@ -1109,6 +1110,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          image?: string | null
           is_active?: boolean
           title: string
           updated_at?: string
@@ -1120,6 +1122,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          image?: string | null
           is_active?: boolean
           title?: string
           updated_at?: string
