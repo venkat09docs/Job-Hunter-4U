@@ -37,7 +37,6 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import AIGeneralistsTab from '@/components/AIGeneralistsTab';
-import ManageAssignmentsTab from '@/components/ManageAssignmentsTab';
 
 const CareerLevelProgram: React.FC = () => {
   const { user } = useAuth();
@@ -462,289 +461,365 @@ const CareerLevelProgram: React.FC = () => {
             <AIGeneralistsTab />
           </TabsContent>
 
-          {/* Assignments Tab - Show different content based on user role */}
+          {/* My Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
-            {role === 'admin' || role === 'recruiter' || role === 'institute_admin' ? (
-              // Show management interface for admins
-              <ManageAssignmentsTab />
-            ) : (
-              // Show student assignments interface
-              <>
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card className="p-4">
-                    <div className="flex items-center">
-                      <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Available</p>
-                        <p className="text-2xl font-bold">{upcomingAssignments.length}</p>
-                      </div>
-                    </div>
-                  </Card>
-                  
-                  <Card className="p-4">
-                    <div className="flex items-center">
-                      <Clock className="w-8 h-8 text-orange-500 mr-3" />
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-                        <p className="text-2xl font-bold">{activeAssignments.length}</p>
-                      </div>
-                    </div>
-                  </Card>
-                  
-                  <Card className="p-4">
-                    <div className="flex items-center">
-                      <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                        <p className="text-2xl font-bold">{completedAssignments.length}</p>
-                      </div>
-                    </div>
-                  </Card>
-                  
-                  <Card className="p-4">
-                    <div className="flex items-center">
-                      <Trophy className="w-8 h-8 text-purple-500 mr-3" />
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                        <p className="text-2xl font-bold">
-                          {attempts.reduce((sum, attempt) => 
-                            sum + (attempt.score_numeric || 0), 0
-                          ).toFixed(0)}
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-
-                {/* Assignment Status Tabs */}
-                <Tabs defaultValue="available" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="available">Available ({upcomingAssignments.length})</TabsTrigger>
-                    <TabsTrigger value="in-progress">In Progress ({activeAssignments.length})</TabsTrigger>
-                    <TabsTrigger value="completed">Completed ({completedAssignments.length})</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="available" className="space-y-4">
-                    {upcomingAssignments.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">No Available Assignments</h3>
-                        <p className="text-muted-foreground">All assignments have been completed or are not yet available.</p>
-                      </Card>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {upcomingAssignments.map(renderAssignmentCard)}
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="in-progress" className="space-y-4">
-                    {activeAssignments.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">No Assignments in Progress</h3>
-                        <p className="text-muted-foreground">Start an assignment to see it here.</p>
-                      </Card>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {activeAssignments.map(renderAssignmentCard)}
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="completed" className="space-y-4">
-                    {completedAssignments.length === 0 ? (
-                      <Card className="p-8 text-center">
-                        <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <h3 className="text-lg font-semibold mb-2">No Completed Assignments</h3>
-                        <p className="text-muted-foreground">Complete an assignment to see your results here.</p>
-                      </Card>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {completedAssignments.map(renderAssignmentCard)}
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </>
-            )}
-          </TabsContent>
-
-          {/* Leaderboard Tab */}
-          <TabsContent value="leaderboard" className="space-y-6">
-            {/* Leaderboard Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="p-4">
                 <div className="flex items-center">
-                  <Users className="w-8 h-8 text-blue-500 mr-3" />
+                  <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Participants</p>
-                    <p className="text-2xl font-bold">{leaderboardData.length}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Available</p>
+                    <p className="text-2xl font-bold">{upcomingAssignments.length}</p>
                   </div>
                 </div>
               </Card>
               
               <Card className="p-4">
                 <div className="flex items-center">
-                  <Trophy className="w-8 h-8 text-yellow-500 mr-3" />
+                  <Clock className="w-8 h-8 text-orange-500 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Your Rank</p>
-                    <p className="text-2xl font-bold">
-                      {currentUserRank ? `#${currentUserRank}` : 'N/A'}
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+                    <p className="text-2xl font-bold">{activeAssignments.length}</p>
                   </div>
                 </div>
               </Card>
               
               <Card className="p-4">
                 <div className="flex items-center">
-                  <Award className="w-8 h-8 text-purple-500 mr-3" />
+                  <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Your Score</p>
+                    <p className="text-sm font-medium text-muted-foreground">Completed</p>
+                    <p className="text-2xl font-bold">{completedAssignments.length}</p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-4">
+                <div className="flex items-center">
+                  <Trophy className="w-8 h-8 text-purple-500 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Points</p>
                     <p className="text-2xl font-bold">
-                      {currentUserEntry?.points_total?.toFixed(1) || '0.0'}
+                      {attempts.reduce((sum, attempt) => sum + attempt.score_points, 0)}
                     </p>
                   </div>
                 </div>
               </Card>
             </div>
 
-            {/* Filters */}
-            <Card className="p-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Filter by Course</label>
-                  <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Courses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Courses</SelectItem>
-                      {courses.map((course) => (
-                        <SelectItem key={course.id} value={course.id}>
-                          {course.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Filter by Module</label>
-                  <Select 
-                    value={selectedModule} 
-                    onValueChange={setSelectedModule}
-                    disabled={selectedCourse === 'all'}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Modules" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Modules</SelectItem>
-                      {modules.map((module) => (
-                        <SelectItem key={module.id} value={module.id}>
-                          {module.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </Card>
+            {/* Assignment Tabs */}
+            <Tabs defaultValue="upcoming" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="upcoming">
+                  Available ({upcomingAssignments.length})
+                </TabsTrigger>
+                <TabsTrigger value="active">
+                  In Progress ({activeAssignments.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  Completed ({completedAssignments.length})
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Your Performance */}
-            {currentUserEntry && (
-              <Card className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Medal className="w-5 h-5 mr-2 text-blue-600" />
-                  Your Performance
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  <div>
-                    <p className="text-2xl font-bold text-blue-600">#{currentUserRank}</p>
-                    <p className="text-sm text-muted-foreground">Rank</p>
+              <TabsContent value="upcoming" className="space-y-4">
+                {upcomingAssignments.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {upcomingAssignments.map(renderAssignmentCard)}
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-green-600">{currentUserEntry.points_total.toFixed(1)}</p>
-                    <p className="text-sm text-muted-foreground">Total Score</p>
+                ) : (
+                  <Card className="p-8 text-center">
+                    <PlayCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-medium mb-2">No assignments available</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Check back later for new assignments or contact your instructor.
+                    </p>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="active" className="space-y-4">
+                {activeAssignments.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {activeAssignments.map(renderAssignmentCard)}
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-purple-600">N/A</p>
-                    <p className="text-sm text-muted-foreground">Completed</p>
+                ) : (
+                  <Card className="p-8 text-center">
+                    <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-medium mb-2">No active assignments</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Start an assignment to see it here.
+                    </p>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="completed" className="space-y-4">
+                {completedAssignments.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {completedAssignments.map(renderAssignmentCard)}
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-orange-600">N/A</p>
-                    <p className="text-sm text-muted-foreground">Avg Score</p>
+                ) : (
+                  <Card className="p-8 text-center">
+                    <CheckCircle2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-medium mb-2">No completed assignments</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Complete assignments to see them here.
+                    </p>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Total Participants
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {leaderboardData.length}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-blue-600">
+                      <Users className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Your Rank
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {currentUserRank ? `#${currentUserRank}` : 'Not ranked'}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-purple-600">
+                      <Trophy className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Your Points
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {currentUserEntry?.points_total || 0}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-muted text-green-600">
+                      <Award className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" />
+                  Filter Rankings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Course</label>
+                    <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Courses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Courses</SelectItem>
+                        {courses.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex-1">
+                    <label className="text-sm font-medium mb-2 block">Module</label>
+                    <Select 
+                      value={selectedModule} 
+                      onValueChange={setSelectedModule}
+                      disabled={selectedCourse === 'all'}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Modules" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Modules</SelectItem>
+                        {modules.map((module) => (
+                          <SelectItem key={module.id} value={module.id}>
+                            {module.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button onClick={loadLeaderboard} disabled={loading}>
+                      Refresh Rankings
+                    </Button>
                   </div>
                 </div>
-              </Card>
-            )}
+              </CardContent>
+            </Card>
 
             {/* Leaderboard */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Trophy className="w-5 h-5 mr-2" />
-                  Leaderboard
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5" />
+                    Rankings
+                  </span>
+                  {selectedCourse !== 'all' && (
+                    <Badge variant="secondary">
+                      {courses.find(c => c.id === selectedCourse)?.title}
+                      {selectedModule !== 'all' && modules.length > 0 && (
+                        <span className="ml-2">
+                          • {modules.find(m => m.id === selectedModule)?.title}
+                        </span>
+                      )}
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {leaderboardData.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">No Leaderboard Data</h3>
-                    <p className="text-muted-foreground">Complete some assignments to appear on the leaderboard!</p>
+                {loading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : leaderboardData.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      No rankings available
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Complete assignments to appear on the leaderboard
+                    </p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {leaderboardData.map((entry, index) => (
-                      <div
-                        key={entry.user_id}
-                        className={cn(
-                          "flex items-center justify-between p-4 rounded-lg border transition-colors",
-                          getPositionStyles(index + 1),
-                          entry.user_id === user?.id && "ring-2 ring-blue-500"
-                        )}
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center justify-center w-8 h-8">
-                            {getRankIcon(index + 1)}
-                          </div>
-                          
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={entry.user?.profile_image_url} alt={entry.user?.full_name || entry.user?.username} />
-                              <AvatarFallback>
-                                {(entry.user?.full_name || entry.user?.username || 'U').charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-semibold">
-                                {entry.user?.full_name || entry.user?.username || 'Anonymous User'}
-                                {entry.user_id === user?.id && (
-                                  <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
+                  <div className="space-y-3">
+                    {leaderboardData.map((entry, index) => {
+                      const position = index + 1;
+                      const isCurrentUser = entry.user_id === user?.id;
+                      
+                      return (
+                        <div
+                          key={entry.id}
+                          className={`
+                            flex items-center justify-between p-4 rounded-lg border transition-colors
+                            ${getPositionStyles(position)}
+                            ${isCurrentUser ? 'ring-2 ring-primary ring-opacity-50' : ''}
+                          `}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-10 h-10">
+                              {getRankIcon(position)}
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={entry.user?.profile_image_url} />
+                                <AvatarFallback>
+                                  {entry.user?.full_name?.charAt(0) || 
+                                   entry.user?.username?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">
+                                    {entry.user?.full_name || entry.user?.username || 'Anonymous'}
+                                  </p>
+                                  {isCurrentUser && (
+                                    <Badge variant="outline" className="text-xs">
+                                      You
+                                    </Badge>
+                                  )}
+                                </div>
+                                {entry.user?.username && entry.user?.full_name && (
+                                  <p className="text-sm text-muted-foreground">
+                                    @{entry.user.username}
+                                  </p>
                                 )}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Participant
-                              </p>
+                              </div>
                             </div>
                           </div>
+
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-primary">
+                              {entry.points_total}
+                            </p>
+                            <p className="text-sm text-muted-foreground">points</p>
+                          </div>
                         </div>
-                        
-                        <div className="text-right">
-                          <p className="text-lg font-bold">{entry.points_total.toFixed(1)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Points
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
             </Card>
+
+            {/* Your Performance Section */}
+            {currentUserEntry && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        #{currentUserRank}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Current Rank</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        {currentUserEntry.points_total}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Total Points</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">
+                        {leaderboardData.length > 0 ? 
+                          Math.round(((leaderboardData.length - (currentUserRank || 0) + 1) / leaderboardData.length) * 100) : 0
+                        }%
+                      </div>
+                      <div className="text-sm text-muted-foreground">Percentile</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
