@@ -1655,6 +1655,10 @@ export default function AICareerLevelUp() {
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-xs text-warning">the AI-Powered Super AI Tools access</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">Vibe Coding Tools [No coding required]</span>
+                  </div>
                 </div>
                 
                 <Button 
@@ -1687,14 +1691,6 @@ export default function AICareerLevelUp() {
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
                     <span className="text-xs">Everything in 6 Months Plan +</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">AI Automation Bootcamp</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Vibe Coding Tools [No coding required]</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
