@@ -35,7 +35,7 @@ import {
   ChevronDown,
    BookOpen,
    GraduationCap,
-   Bot,
+   Cpu,
    Building2
 } from "lucide-react";
 import { Github } from "lucide-react";
@@ -1332,7 +1332,7 @@ export default function AICareerLevelUp() {
                         <div className="relative z-10">
                           <div className="flex items-center justify-center gap-3 mb-3">
                             <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                              <Bot className="h-8 w-8 text-white" />
+                              <Cpu className="h-8 w-8 text-white" />
                             </div>
                             <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
                               AI Powered
@@ -1465,7 +1465,7 @@ export default function AICareerLevelUp() {
               <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <Bot className="h-8 w-8 text-white" />
+                    <Cpu className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">AI Automation</h3>
                   <p className="text-white/90">Smart Workflows</p>
