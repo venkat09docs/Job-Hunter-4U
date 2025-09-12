@@ -485,14 +485,6 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/dashboard/career-level" 
-            element={
-              <ProtectedRoute>
-                <CareerLevelProgram />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/dashboard/skill-level" 
             element={
               <ProtectedRoute>

@@ -86,7 +86,7 @@ const githubItems = [
 
 const clpAdminItems = [
   { title: "CLP Dashboard", url: "/dashboard/career-level/dashboard", icon: BarChart3, featureKey: null },
-  { title: "Career Level Up Program", url: "/dashboard/career-level", icon: GraduationCap, featureKey: null },
+  
 ];
 
 const recruiterItems = [
