@@ -243,7 +243,7 @@ export default function AICareerLevelUp() {
       
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 text-center font-medium">
-        Join Now 5 Days Challenge Program | To Start Your AI Enhanced Career
+        Join Now 30 Days Challenge Programme | To Start Your AI Enhanced Career
       </div>
 
       {/* Hero Section */}
@@ -545,7 +545,7 @@ export default function AICareerLevelUp() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
             <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
               <CardContent className="p-10 text-center">
                 <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
@@ -578,6 +578,30 @@ export default function AICareerLevelUp() {
                 <h3 className="text-2xl font-bold mb-4 text-gray-900">IT & Non-IT Professionals</h3>
                 <p className="text-gray-700 leading-relaxed text-lg">
                   Working professionals ready to transition or upskill in AI
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
+              <CardContent className="p-10 text-center">
+                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                  <Briefcase className="h-12 w-12 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">Freelancers</h3>
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  Independent professionals seeking to integrate AI into their services
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg">
+              <CardContent className="p-10 text-center">
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-3xl w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                  <Rocket className="h-12 w-12 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">Solopreneurs</h3>
+                <p className="text-gray-700 leading-relaxed text-lg">
+                  One-person businesses looking to leverage AI for competitive advantage
                 </p>
               </CardContent>
             </Card>
