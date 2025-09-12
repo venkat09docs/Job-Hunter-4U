@@ -69,6 +69,14 @@ export default function AICareerLevelUp() {
     setCourses(coursesData);
   };
 
+  // Scroll to section function
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const benefits = [
     {
       icon: Briefcase,
@@ -249,11 +257,20 @@ export default function AICareerLevelUp() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center animate-fade-in">
-                <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => scrollToSection('investment-plans')}
+                >
                   Start Your AI Career Today
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
-                <Button size="lg" variant="outline" className="border-2 border-white/50 text-white hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-2 border-white/80 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm px-8 py-4 text-lg font-semibold shadow-lg"
+                  onClick={() => scrollToSection('four-levels')}
+                >
                   Explore Curriculum
                 </Button>
               </div>
@@ -431,7 +448,7 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Four Levels Overview */}
-      <section className="py-20 px-4 bg-white">
+      <section id="four-levels" className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-orange-500 to-pink-600 text-white border-0">
@@ -1580,7 +1597,7 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Investment in Your Future */}
-      <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
+      <section id="investment-plans" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0">
