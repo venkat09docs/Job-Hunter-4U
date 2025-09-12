@@ -1538,6 +1538,145 @@ export default function AICareerLevelUp() {
         </div>
       </section>
 
+      {/* Investment in Your Future */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Pricing Plans
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+              Investment in Your Future
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Choose the perfect plan to accelerate your AI career transformation
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Plan A: Course Only */}
+            <Card className="relative p-8 border-2 border-primary/20 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-white">
+              <CardContent className="p-0">
+                <div className="mb-6">
+                  <h3 className="text-3xl font-bold mb-4 text-primary">Plan A: Course Only</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl text-gray-500 line-through">₹25,000</span>
+                    </div>
+                    <div className="text-5xl font-bold text-primary">₹20,000</div>
+                    <p className="text-lg font-medium text-emerald-600">Early Bird Price</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-4 text-xl">Includes:</h4>
+                    <ul className="space-y-3 text-gray-700">
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Full curriculum with AI focus
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        2 capstone projects
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Weekly hands-on labs
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        WhatsApp community access
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Office hours with instructors
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <Button className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white py-4 text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                    Enroll in Course Only
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Plan B: Placement Package */}
+            <Card className="relative border-2 border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-2 text-lg font-bold shadow-lg">
+                  Most Popular
+                </Badge>
+              </div>
+              
+              <CardContent className="p-0">
+                <div className="mb-6">
+                  <h3 className="text-3xl font-bold mb-4 text-emerald-700">Plan B: Placement Package</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl text-gray-500 line-through">₹35,000</span>
+                    </div>
+                    <div className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">₹30,000</div>
+                    <p className="text-lg font-medium text-emerald-600">Early Bird Price</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-4 text-xl text-emerald-800">Everything in Course Only +</h4>
+                    <ul className="space-y-3 text-gray-700">
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Resume revamp & optimization
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        LinkedIn profile enhancement
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        GitHub portfolio optimization  
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Gamification with Leaderboard
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-emerald-600" />
+                        Job tracker & application toolkit
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-teal-600 hover:to-emerald-600 text-white py-4 text-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                    Get Placement Package
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Upgrade Note */}
+          <div className="mt-16 max-w-4xl mx-auto">
+            <Card className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
+              <CardContent className="p-0 text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <span className="text-3xl">👉</span>
+                  <h4 className="text-2xl font-bold text-gray-800">Flexible Upgrade Option</h4>
+                </div>
+                <p className="text-lg text-gray-700 leading-relaxed">
+                  <strong>Start with Course Only</strong>, then upgrade to Placement Package within 14 days by paying just the difference
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-20 px-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600">
         <div className="container mx-auto max-w-5xl text-center">
