@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Edit2, Eye, Home, Search, MoreVertical, Trash2 } from 'lucide-react';
+import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Edit2, Eye, Home, Search, MoreVertical, Trash2, Grid3X3, List } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { Course, Module } from '@/types/clp';
 
 const CLPCoursesManagement = () => {
@@ -27,6 +28,7 @@ const CLPCoursesManagement = () => {
   const [modules, setModules] = useState<Record<string, Module[]>>({});
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
   const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -351,7 +353,7 @@ const CLPCoursesManagement = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -361,101 +363,210 @@ const CLPCoursesManagement = () => {
               className="pl-10"
             />
           </div>
+          
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'list' | 'grid')}>
+            <ToggleGroupItem value="list" aria-label="List view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <Grid3X3 className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredCourses.map((course) => (
-            <Card key={course.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-lg">{course.title}</CardTitle>
-                      <Badge variant="secondary">{course.code}</Badge>
-                    </div>
-                    {course.description && (
-                      <p className="text-sm text-muted-foreground">{course.description}</p>
-                    )}
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => openEditCourse(course)}>
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit Course
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDeleteCourse(course.id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Course
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Modules Section */}
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium flex items-center gap-2">
-                      <ClipboardCheck className="h-4 w-4" />
-                      Modules ({modules[course.id]?.length || 0})
-                    </h4>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCourseId(course.id);
-                        setModuleForm({ title: '', description: '', order_index: (modules[course.id]?.length || 0) + 1 });
-                        setIsCreateModuleOpen(true);
-                      }}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add Module
-                    </Button>
-                  </div>
-
-                  {modules[course.id]?.length > 0 ? (
-                    <div className="space-y-2">
-                      {modules[course.id].slice(0, 3).map((module) => (
-                        <div key={module.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{module.title}</p>
-                            {module.description && (
-                              <p className="text-xs text-muted-foreground">{module.description}</p>
-                            )}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteModule(module.id, course.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+        {/* Courses Display */}
+        {viewMode === 'list' ? (
+          /* List View */
+          <div className="space-y-4">
+            {filteredCourses.map((course) => (
+              <Card key={course.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-primary/10 p-2 rounded-lg">
+                          <BookOpen className="h-5 w-5 text-primary" />
                         </div>
-                      ))}
-                      {modules[course.id].length > 3 && (
-                        <p className="text-xs text-muted-foreground">
-                          +{modules[course.id].length - 3} more modules
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-semibold">{course.title}</h3>
+                            <Badge variant="secondary">{course.code}</Badge>
+                            <Badge variant="outline" className="text-xs">{course.category}</Badge>
+                          </div>
+                          {course.description && (
+                            <p className="text-sm text-muted-foreground">{course.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                          <ClipboardCheck className="h-4 w-4" />
+                          <span>{modules[course.id]?.length || 0} modules</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          <span>Active course</span>
+                        </div>
+                      </div>
+                      
+                      {modules[course.id]?.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {modules[course.id].slice(0, 3).map((module) => (
+                            <Badge key={module.id} variant="outline" className="text-xs">
+                              {module.title}
+                            </Badge>
+                          ))}
+                          {modules[course.id].length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{modules[course.id].length - 3} more
+                            </Badge>
+                          )}
+                        </div>
                       )}
                     </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No modules yet</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Navigate to course detail/view
+                          navigate(`/dashboard/career-level/courses/${course.id}`);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => openEditCourse(course)}
+                      >
+                        <Edit2 className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDeleteCourse(course.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          /* Grid View */
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => (
+              <Card key={course.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-lg">{course.title}</CardTitle>
+                        <Badge variant="secondary">{course.code}</Badge>
+                      </div>
+                      {course.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Modules Section */}
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <ClipboardCheck className="h-4 w-4" />
+                        Modules ({modules[course.id]?.length || 0})
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCourseId(course.id);
+                          setModuleForm({ title: '', description: '', order_index: (modules[course.id]?.length || 0) + 1 });
+                          setIsCreateModuleOpen(true);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Module
+                      </Button>
+                    </div>
+
+                    {modules[course.id]?.length > 0 ? (
+                      <div className="space-y-2">
+                        {modules[course.id].slice(0, 2).map((module) => (
+                          <div key={module.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium truncate">{module.title}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteModule(module.id, course.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                        {modules[course.id].length > 2 && (
+                          <p className="text-xs text-muted-foreground">
+                            +{modules[course.id].length - 2} more modules
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No modules yet</p>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => {
+                          // Navigate to course detail/view
+                          navigate(`/dashboard/career-level/courses/${course.id}`);
+                        }}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => openEditCourse(course)}
+                      >
+                        <Edit2 className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1 text-destructive hover:text-destructive"
+                        onClick={() => handleDeleteCourse(course.id)}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {filteredCourses.length === 0 && (
           <div className="text-center py-12">

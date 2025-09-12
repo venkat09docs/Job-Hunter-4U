@@ -100,12 +100,18 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   }, []);
 
   const loadCourses = async () => {
-    const coursesData = await getCourses();
-    setCourses(coursesData);
-    
-    // Extract unique categories
-    const uniqueCategories = [...new Set(coursesData.map(course => course.category))];
-    setCategories(uniqueCategories);
+    try {
+      const coursesData = await getCourses();
+      setCourses(coursesData);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(coursesData.map(course => course.category || 'General'))];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      setCourses([]);
+      setCategories([]);
+    }
   };
 
   const formatDuration = (hours: number) => {
@@ -118,14 +124,15 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   // Filter courses by selected category
   const filteredCourses = selectedCategory === 'all' 
     ? courses 
-    : courses.filter(course => course.category === selectedCategory);
+    : courses.filter(course => (course.category || 'General') === selectedCategory);
 
   // Group courses by category for display
   const coursesByCategory = courses.reduce((acc, course) => {
-    if (!acc[course.category]) {
-      acc[course.category] = [];
+    const category = course.category || 'General';
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[course.category].push(course);
+    acc[category].push(course);
     return acc;
   }, {} as Record<string, Course[]>);
 
