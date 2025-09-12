@@ -61,7 +61,8 @@ const CLPDashboard = () => {
     title: '',
     description: '',
     code: '',
-    category: ''
+    category: '',
+    image: null as File | null
   });
   const [categories, setCategories] = useState<string[]>([]);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -240,6 +241,31 @@ const CLPDashboard = () => {
 
   const handleCreateCourse = async () => {
     try {
+      let imageUrl = '';
+      
+      // Handle image upload if image is selected
+      if (courseForm.image) {
+        const fileExt = courseForm.image.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `course-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('course-images')
+          .upload(filePath, courseForm.image);
+
+        if (uploadError) {
+          console.error('Image upload error:', uploadError);
+          toast.error('Failed to upload image');
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('course-images')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
       const { data, error } = await supabase
         .from('clp_courses')
         .insert([{
@@ -247,6 +273,7 @@ const CLPDashboard = () => {
           description: courseForm.description,
           code: courseForm.code,
           category: courseForm.category,
+          image: imageUrl,
           created_by: user?.id
         }])
         .select()
@@ -255,7 +282,7 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => [data, ...prev]);
-      setCourseForm({ title: '', description: '', code: '', category: '' });
+      setCourseForm({ title: '', description: '', code: '', category: '', image: null });
       setIsCreateCourseOpen(false);
       toast.success('Course created successfully');
       fetchCategories(); // Refresh categories
@@ -269,13 +296,39 @@ const CLPDashboard = () => {
     if (!editingCourse) return;
 
     try {
+      let imageUrl = editingCourse.image || '';
+      
+      // Handle image upload if new image is selected
+      if (courseForm.image) {
+        const fileExt = courseForm.image.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `course-images/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('course-images')
+          .upload(filePath, courseForm.image);
+
+        if (uploadError) {
+          console.error('Image upload error:', uploadError);
+          toast.error('Failed to upload image');
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('course-images')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
       const { data, error } = await supabase
         .from('clp_courses')
         .update({
           title: courseForm.title,
           description: courseForm.description,
           code: courseForm.code,
-          category: courseForm.category
+          category: courseForm.category,
+          image: imageUrl
         })
         .eq('id', editingCourse.id)
         .select()
@@ -284,7 +337,7 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => prev.map(c => c.id === editingCourse.id ? data : c));
-      setCourseForm({ title: '', description: '', code: '', category: '' });
+      setCourseForm({ title: '', description: '', code: '', category: '', image: null });
       setEditingCourse(null);
       toast.success('Course updated successfully');
       fetchCategories(); // Refresh categories
@@ -372,7 +425,8 @@ const CLPDashboard = () => {
       title: course.title,
       description: course.description || '',
       code: course.code,
-      category: course.category || ''
+      category: course.category || '',
+      image: null
     });
   };
 
@@ -784,6 +838,22 @@ const CLPDashboard = () => {
                       </div>
                     </div>
                     <div>
+                      <Label htmlFor="course-image">Course Image</Label>
+                      <Input
+                        id="course-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setCourseForm(prev => ({ ...prev, image: file }));
+                        }}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload an image to display at the top of the course
+                      </p>
+                    </div>
+                    <div>
                       <Label htmlFor="course-description">Description</Label>
                       <Textarea
                         id="course-description"
@@ -822,22 +892,35 @@ const CLPDashboard = () => {
             <div className="space-y-4">
               {filteredCourses.map((course) => (
                 <Card key={course.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="bg-primary/10 p-2 rounded-lg">
-                            <BookOpen className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-lg font-semibold">{course.title}</h3>
-                              <Badge variant="secondary">{course.code}</Badge>
-                              <Badge variant="outline" className="text-xs">{course.category}</Badge>
+                  <CardContent className="p-0">
+                    {/* Course Image */}
+                    {course.image && (
+                      <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-muted">
+                        <img 
+                          src={course.image} 
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                              <BookOpen className="h-5 w-5 text-primary" />
                             </div>
-                            {course.description && (
-                              <p className="text-sm text-muted-foreground">{course.description}</p>
-                            )}
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-semibold">{course.title}</h3>
+                                <Badge variant="secondary">{course.code}</Badge>
+                                <Badge variant="outline" className="text-xs">{course.category}</Badge>
+                              </div>
+                              {course.description && (
+                                <p className="text-sm text-muted-foreground">{course.description}</p>
+                              )}
+                            </div>
                           </div>
                         </div>
                         
@@ -1004,6 +1087,22 @@ const CLPDashboard = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-course-image">Course Image</Label>
+                    <Input
+                      id="edit-course-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setCourseForm(prev => ({ ...prev, image: file }));
+                      }}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Upload an image to display at the top of the course
+                    </p>
                   </div>
                   <div>
                     <Label htmlFor="edit-course-description">Description</Label>
