@@ -895,13 +895,81 @@ export default function AICareerLevelUp() {
                     </CardContent>
                   </Card>
                 </CarouselItem>
+
+                {/* Digital Portfolio Activity */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Activity Header */}
+                      <div className="bg-gradient-to-r from-emerald-700 to-teal-800 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Globe className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Portfolio
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Digital Portfolio
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Showcase Your Complete Journey
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Activity Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Create a comprehensive digital portfolio that showcases your skills, projects, achievements, and professional journey.
+                        </p>
+
+                        {/* Activity Features */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Project Showcase</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Skills Documentation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Achievement Gallery</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Indicator */}
+                        <div className="mb-6">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/80">Progress</span>
+                            <span className="text-white font-semibold">Creating Showcase</span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2">
+                            <div className="bg-gradient-to-r from-emerald-400 to-teal-500 h-2 rounded-full w-3/4"></div>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-emerald-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Build Portfolio
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
               </CarouselContent>
               <CarouselPrevious className="left-2 bg-white/80 hover:bg-white shadow-lg border-0" />
               <CarouselNext className="right-2 bg-white/80 hover:bg-white shadow-lg border-0" />
             </Carousel>
 
             {/* Level Up Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-16">
               <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -929,6 +997,16 @@ export default function AICareerLevelUp() {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Code</h3>
                   <p className="text-gray-300">Technical Showcase</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Globe className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Portfolio</h3>
+                  <p className="text-gray-300">Digital Showcase</p>
                 </CardContent>
               </Card>
             </div>
