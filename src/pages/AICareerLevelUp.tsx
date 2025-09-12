@@ -1799,19 +1799,11 @@ export default function AICareerLevelUp() {
             Join thousands of successful graduates and start your AI journey today
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+          <div className="flex justify-center">
             <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold px-12 py-4 text-xl shadow-2xl transform hover:scale-105 transition-all duration-300">
-              Enroll Now - 50% Off
+              Enroll Now
               <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white/50 text-white hover:bg-white/10 backdrop-blur-sm px-10 py-4 text-xl">
-              Download Free Guide
-            </Button>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 inline-block">
-            <p className="text-white font-semibold text-lg mb-2">🎯 Early Bird Special Ending Soon!</p>
-            <p className="text-white/90">Save $500 + Get Premium Mentorship Included</p>
           </div>
         </div>
       </section>
