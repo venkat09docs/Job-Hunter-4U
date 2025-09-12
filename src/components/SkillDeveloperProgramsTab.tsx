@@ -13,7 +13,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
         {/* Course Image */}
-        <div className="h-48 relative overflow-hidden">
+        <div className="h-56 relative overflow-hidden">
           {course.image ? (
             <img 
               src={course.image} 
