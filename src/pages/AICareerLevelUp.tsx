@@ -2,6 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { 
   Brain, 
   User, 
   Target, 
@@ -25,8 +32,13 @@ import {
   AlertTriangle,
   DollarSign,
   Briefcase,
-  ChevronDown
+  ChevronDown,
+  BookOpen,
+  GraduationCap
 } from "lucide-react";
+import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
+import { useState, useEffect } from "react";
+import type { Course } from "@/types/clp";
 
 // Import generated images
 import heroImage from "@/assets/ai-career-hero.jpg";
@@ -36,6 +48,18 @@ import jobHuntingImage from "@/assets/smart-job-hunting.jpg";
 import solopreneurImage from "@/assets/solopreneur-journey.jpg";
 
 export default function AICareerLevelUp() {
+  const { getCourses, loading } = useCareerLevelProgram();
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const loadCourses = async () => {
+    const coursesData = await getCourses();
+    setCourses(coursesData);
+  };
+
   const benefits = [
     {
       icon: Briefcase,
@@ -505,6 +529,146 @@ export default function AICareerLevelUp() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Level One Courses Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Level One Program
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gray-900">
+              Career Level Up Courses
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              Comprehensive courses designed to elevate your career to the next level
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="text-center py-20">
+              <GraduationCap className="h-24 w-24 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Courses Coming Soon
+              </h3>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Our comprehensive Career Level Up courses are being prepared. Stay tuned for exciting learning opportunities!
+              </p>
+            </div>
+          ) : (
+            <div className="relative">
+              <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {courses.map((course, index) => (
+                    <CarouselItem key={course.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                      <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:scale-105 bg-white border-0 shadow-lg overflow-hidden">
+                        <CardContent className="p-0 h-full">
+                          {/* Course Header */}
+                          <div className={`bg-gradient-to-r ${
+                            index % 4 === 0 ? 'from-indigo-500 to-purple-600' :
+                            index % 4 === 1 ? 'from-blue-500 to-cyan-600' :
+                            index % 4 === 2 ? 'from-purple-500 to-pink-600' :
+                            'from-orange-500 to-red-600'
+                          } p-6`}>
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+                                <BookOpen className="h-6 w-6 text-white" />
+                              </div>
+                              <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                                {course.category || 'General'}
+                              </Badge>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2 line-clamp-2">
+                              {course.title}
+                            </h3>
+                            <p className="text-white/90 text-sm">
+                              Course Code: {course.code}
+                            </p>
+                          </div>
+
+                          {/* Course Content */}
+                          <div className="p-6">
+                            <p className="text-gray-700 mb-6 line-clamp-3 leading-relaxed">
+                              {course.description || 'Comprehensive course content designed to enhance your skills and advance your career in the modern workplace.'}
+                            </p>
+
+                            {/* Course Features */}
+                            <div className="space-y-3 mb-6">
+                              <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="text-sm">Interactive Learning</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="text-sm">Practical Projects</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="text-sm">Certification</span>
+                              </div>
+                            </div>
+
+                            {/* Action Button */}
+                            <Button className={`w-full bg-gradient-to-r ${
+                              index % 4 === 0 ? 'from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700' :
+                              index % 4 === 1 ? 'from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700' :
+                              index % 4 === 2 ? 'from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700' :
+                              'from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
+                            } text-white font-semibold shadow-lg transform hover:scale-105 transition-all duration-300`}>
+                              Explore Course
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+                <CarouselNext className="right-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+              </Carousel>
+
+              {/* Course Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+                <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6 text-center">
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <BookOpen className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{courses.length}+</h3>
+                    <p className="text-gray-700">Available Courses</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6 text-center">
+                    <div className="bg-gradient-to-br from-green-500 to-teal-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <GraduationCap className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">100%</h3>
+                    <p className="text-gray-700">Practical Learning</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6 text-center">
+                    <div className="bg-gradient-to-br from-orange-500 to-pink-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                      <Award className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Certified</h3>
+                    <p className="text-gray-700">Industry Recognition</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
