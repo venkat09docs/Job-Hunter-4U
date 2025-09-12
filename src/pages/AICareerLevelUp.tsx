@@ -34,7 +34,8 @@ import {
   Briefcase,
   ChevronDown,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Github
 } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useState, useEffect } from "react";
@@ -669,6 +670,269 @@ export default function AICareerLevelUp() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Level Up Activities Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-16 animate-fade-in">
+            <Badge className="mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-0 font-bold">
+              <Trophy className="w-4 h-4 mr-2" />
+              Level Up Your Skills
+            </Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              Master These Key Activities
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Build your professional foundation with our three core level-up activities
+            </p>
+          </div>
+
+          <div className="relative">
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {/* Profile Build Activity */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-indigo-600 to-purple-700 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Activity Header */}
+                      <div className="bg-gradient-to-r from-indigo-700 to-purple-800 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <User className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Foundation
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            Profile Build
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Build Your Professional Identity
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Activity Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Create a compelling professional profile that showcases your skills, experience, and achievements to stand out to employers.
+                        </p>
+
+                        {/* Activity Features */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Resume Optimization</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Personal Branding</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Professional Portfolio</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Indicator */}
+                        <div className="mb-6">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/80">Progress</span>
+                            <span className="text-white font-semibold">Build Foundation</span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2">
+                            <div className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full w-1/3"></div>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-indigo-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Start Building Profile
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* LinkedIn Network Growth Activity */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-600 to-cyan-700 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Activity Header */}
+                      <div className="bg-gradient-to-r from-blue-700 to-cyan-800 p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Users className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Networking
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            LinkedIn Network Growth
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Expand Your Professional Network
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Activity Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Grow your LinkedIn network strategically, engage with industry professionals, and build meaningful connections.
+                        </p>
+
+                        {/* Activity Features */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Connection Building</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Content Creation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Engagement Strategies</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Indicator */}
+                        <div className="mb-6">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/80">Progress</span>
+                            <span className="text-white font-semibold">Growing Network</span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2">
+                            <div className="bg-gradient-to-r from-blue-400 to-cyan-500 h-2 rounded-full w-2/3"></div>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-blue-700 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Grow Your Network
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+
+                {/* GitHub Repository Activity */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-gray-800 to-gray-900 border-0 shadow-xl overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Activity Header */}
+                      <div className="bg-gradient-to-r from-gray-900 to-black p-6 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-gray-700/20 to-gray-500/20 backdrop-blur-sm"></div>
+                        <div className="relative z-10">
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                              <Github className="h-8 w-8 text-white" />
+                            </div>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-0 backdrop-blur-sm">
+                              Development
+                            </Badge>
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            GitHub Repository
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Showcase Your Technical Skills
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Activity Content */}
+                      <div className="p-6 text-white">
+                        <p className="text-white/90 mb-6 leading-relaxed">
+                          Build and maintain a professional GitHub profile with quality repositories that demonstrate your coding abilities.
+                        </p>
+
+                        {/* Activity Features */}
+                        <div className="space-y-3 mb-6">
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Repository Creation</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Code Quality</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-green-300">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Project Documentation</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Indicator */}
+                        <div className="mb-6">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white/80">Progress</span>
+                            <span className="text-white font-semibold">Building Portfolio</span>
+                          </div>
+                          <div className="w-full bg-white/20 rounded-full h-2">
+                            <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-2 rounded-full w-1/2"></div>
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button className="w-full bg-white text-gray-800 hover:bg-gray-100 font-semibold shadow-lg transform hover:scale-105 transition-all duration-300">
+                          Build Repositories
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="left-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+              <CarouselNext className="right-2 bg-white/80 hover:bg-white shadow-lg border-0" />
+            </Carousel>
+
+            {/* Level Up Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <User className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Profile</h3>
+                  <p className="text-gray-300">Professional Foundation</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Network</h3>
+                  <p className="text-gray-300">Professional Connections</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-white/15">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gradient-to-br from-gray-600 to-gray-800 p-3 rounded-xl w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <Github className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Code</h3>
+                  <p className="text-gray-300">Technical Showcase</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </section>
 
