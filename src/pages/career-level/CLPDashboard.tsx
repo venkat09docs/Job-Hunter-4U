@@ -203,7 +203,7 @@ const CLPDashboard = () => {
             <div className="hidden sm:block h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Skill Level Up Program</span>
+              <span className="font-semibold">Career Level Up Program</span>
             </div>
           </div>
           
@@ -216,7 +216,7 @@ const CLPDashboard = () => {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Skill Level Up Program
+            Career Level Up Program
           </h1>
           <p className="text-muted-foreground">
             Manage courses, assignments, and track student progress

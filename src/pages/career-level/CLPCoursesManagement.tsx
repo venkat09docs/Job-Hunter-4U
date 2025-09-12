@@ -291,7 +291,7 @@ const CLPCoursesManagement = () => {
               Course Management
             </h1>
             <p className="text-muted-foreground">
-              Create and manage courses and modules for the Skill Level Up Program
+              Create and manage courses and modules for the Career Level Up Program
             </p>
           </div>
 
@@ -306,7 +306,7 @@ const CLPCoursesManagement = () => {
               <DialogHeader>
                 <DialogTitle>Create New Course</DialogTitle>
                 <DialogDescription>
-                  Add a new course to the Skill Level Up Program
+                  Add a new course to the Career Level Up Program
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">

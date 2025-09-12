@@ -355,7 +355,7 @@ const MyAssignments: React.FC = () => {
             <div className="hidden sm:block h-4 w-px bg-border" />
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Skill Level Up Program</span>
+              <span className="font-semibold">Career Level Up Program</span>
             </div>
           </div>
           
