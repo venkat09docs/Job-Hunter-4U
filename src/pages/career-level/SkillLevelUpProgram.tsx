@@ -449,13 +449,13 @@ const SkillLevelUpProgram: React.FC = () => {
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="ai-generalists">AI Generalists</TabsTrigger>
+            <TabsTrigger value="skill-programs">Skill Developer Programs</TabsTrigger>
             <TabsTrigger value="assignments">My Assignments</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>
 
-          {/* AI Generalists Tab */}
-          <TabsContent value="ai-generalists" className="space-y-6">
+          {/* Skill Developer Programs Tab */}
+          <TabsContent value="skill-programs" className="space-y-6">
             <AIGeneralistsTab />
           </TabsContent>
 
