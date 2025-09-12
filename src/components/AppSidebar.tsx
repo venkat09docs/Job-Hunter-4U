@@ -54,9 +54,14 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import PricingDialog from "./PricingDialog";
 
-const mainItems = [
+const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Skill Level Up", url: "/dashboard/career-level", icon: Award, featureKey: null },
+  { 
+    title: "Skill Level Up", 
+    url: (isAdmin || isInstituteAdmin || isRecruiter) ? "/dashboard/career-level" : "/dashboard/skill-level", 
+    icon: Award, 
+    featureKey: null 
+  },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
@@ -483,7 +488,7 @@ export function AppSidebar() {
               )}
               <div className="space-y-1">
                 {/* Main Menu Items - Part 1: Up to Profile Level Up */}
-                {mainItems.slice(0, 3).map((item) => {
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(0, 3).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
@@ -574,7 +579,7 @@ export function AppSidebar() {
                 })()}
 
                 {/* Main Menu Items - Part 2: After Job Hunter and Progress Level Up */}
-                {mainItems.slice(3).map((item) => {
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(3).map((item) => {
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
                     const subscriberPlan = profile?.subscription_plan;
