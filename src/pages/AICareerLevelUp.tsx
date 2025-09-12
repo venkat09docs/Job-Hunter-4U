@@ -45,6 +45,7 @@ import { Github } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useState, useEffect } from "react";
 import type { Course } from "@/types/clp";
+import Navigation from "@/components/Navigation";
 
 // Import generated images
 import heroImage from "@/assets/ai-career-hero.jpg";
@@ -200,6 +201,14 @@ export default function AICareerLevelUp() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <Navigation />
+      
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 text-center font-medium">
+        Limited Seats Available | Admissions Open for Next Cohort
+      </div>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
         {/* Hero Background Image */}
@@ -1779,8 +1788,28 @@ export default function AICareerLevelUp() {
         </div>
       </section>
 
+      {/* Sticky Footer CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-2xl border-t">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="text-center sm:text-left">
+              <p className="font-semibold text-sm sm:text-base">
+                🚀 Join Now — Early Bird ₹5,000 Off | Limited to First 25 Seats
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs sm:text-sm">
+              <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+              <span className="text-white/60">•</span>
+              <a href="/terms-of-service" className="hover:underline">Terms</a>
+              <span className="text-white/60">•</span>
+              <a href="/contact" className="hover:underline">Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4">
+      <footer className="bg-gray-900 text-white py-16 px-4 pb-20">{/* Added pb-20 to account for sticky banner */}
         <div className="container mx-auto max-w-7xl">
           <div className="grid md:grid-cols-4 gap-12">
             <div className="col-span-2">
