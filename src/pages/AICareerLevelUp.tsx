@@ -193,9 +193,9 @@ export default function AICareerLevelUp() {
   ];
 
   const stats = [
-    { icon: Users, value: "10,000+", label: "Students Enrolled", color: "text-blue-600" },
+    { icon: Users, value: "6,000+", label: "Students Enrolled", color: "text-blue-600" },
     { icon: Trophy, value: "95%", label: "Job Success Rate", color: "text-green-600" },
-    { icon: Star, value: "4.9/5", label: "Average Rating", color: "text-yellow-600" },
+    { icon: Star, value: "4.8/5", label: "Average Rating", color: "text-yellow-600" },
     { icon: Clock, value: "6 Months", label: "Average Completion", color: "text-purple-600" }
   ];
 
@@ -225,10 +225,10 @@ export default function AICareerLevelUp() {
         </div>
         
         <div className="relative container mx-auto max-w-7xl px-4 py-20 z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left side - Content */}
-            <div className="text-center lg:text-left">
-              <Badge variant="secondary" className="mb-8 bg-white/20 text-white border-white/30 backdrop-blur-sm animate-fade-in">
+            <div className="text-center lg:text-left flex flex-col justify-center min-h-[600px]">
+              <Badge variant="secondary" className="mb-8 bg-white/20 text-white border-white/30 backdrop-blur-sm animate-fade-in mx-auto lg:mx-0 w-fit">
                 <Sparkles className="w-4 h-4 mr-2" />
                 🚀 Transform Your Career Today
               </Badge>
@@ -248,7 +248,7 @@ export default function AICareerLevelUp() {
                 </p>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center mb-16 animate-fade-in">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start items-center animate-fade-in">
                 <Button size="lg" className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300">
                   Start Your AI Career Today
                   <ArrowRight className="ml-3 h-6 w-6" />
@@ -257,30 +257,41 @@ export default function AICareerLevelUp() {
                   Explore Curriculum
                 </Button>
               </div>
-              
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto lg:mx-0">
-                {stats.map((stat, index) => (
-                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
-                    <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
-                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-sm text-white/90">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* Right side - DevOps Hero Image */}
-            <div className="hidden lg:block relative">
-              <div className="relative">
+            {/* Right side - Image and Stats */}
+            <div className="hidden lg:block relative flex flex-col justify-center">
+              <div className="relative mb-8">
                 <img 
                   src={devopsHeroImage} 
-                  alt="AI DevOps AWS Career Transformation" 
+                  alt="AI DevOps AWS Career Transformation with AI Agents, Vibe Coding, GenAI, Cloud & DevOps" 
                   className="w-full h-auto rounded-2xl shadow-2xl border border-white/20"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent rounded-2xl"></div>
               </div>
+              
+              {/* Stats Grid - Below Image */}
+              <div className="grid grid-cols-2 gap-4">
+                {stats.map((stat, index) => (
+                  <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                    <stat.icon className={`h-6 w-6 ${stat.color} mx-auto mb-2`} />
+                    <div className="text-lg font-bold text-white mb-1 text-center">{stat.value}</div>
+                    <div className="text-xs text-white/90 text-center">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
+          </div>
+
+          {/* Mobile Stats Grid - Show on mobile */}
+          <div className="lg:hidden grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto">
+            {stats.map((stat, index) => (
+              <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/30 hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+                <stat.icon className={`h-6 w-6 ${stat.color} mx-auto mb-2`} />
+                <div className="text-lg font-bold text-white mb-1 text-center">{stat.value}</div>
+                <div className="text-xs text-white/90 text-center">{stat.label}</div>
+              </div>
+            ))}
           </div>
 
           {/* Scroll Indicator */}
