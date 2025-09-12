@@ -77,7 +77,7 @@ import SkillLevelUpProgram from "./pages/career-level/SkillLevelUpProgram";
 import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
-import CLPCoursesManagement from "./pages/career-level/CLPCoursesManagement";
+
 
 
 import NotificationPreferences from "./pages/NotificationPreferences";
@@ -534,14 +534,6 @@ const AppContent = () => {
            <Route 
             path="/dashboard/career-level/leaderboard" 
             element={<Navigate to="/dashboard/career-level/dashboard" replace />} 
-           />
-           <Route 
-             path="/dashboard/career-level/courses" 
-             element={
-               <ProtectedRoute>
-                 <CLPCoursesManagement />
-               </ProtectedRoute>
-             } 
            />
            
            <Route path="/careerlevelup" element={<CareerLevelUp />} />

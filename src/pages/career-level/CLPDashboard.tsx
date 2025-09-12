@@ -5,14 +5,18 @@ import { useRole } from '@/hooks/useRole';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import CourseManagementTab from '@/components/CourseManagementTab';
 import CLPAssignmentManagementTab from '@/components/admin/CLPAssignmentManagementTab';
 import CLPReviewManagement from '@/components/admin/CLPReviewManagement';
 import type { Course, Attempt, LeaderboardEntry, Module } from '@/types/clp';
@@ -42,11 +46,34 @@ const CLPDashboard = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedModule, setSelectedModule] = useState<string>('all');
 
+  // Course management specific state
+  const [courseModules, setCourseModules] = useState<Record<string, Module[]>>({});
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
+  const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [editingModule, setEditingModule] = useState<Module | null>(null);
+
+  // Course form states
+  const [courseForm, setCourseForm] = useState({
+    title: '',
+    description: '',
+    code: ''
+  });
+  const [moduleForm, setModuleForm] = useState({
+    title: '',
+    description: '',
+    order_index: 0
+  });
+
   useEffect(() => {
     if (user && userRole && !roleLoading) {
       fetchDashboardData();
       loadCourses();
       loadLeaderboard();
+      fetchCoursesData();
     }
   }, [user, userRole, roleLoading]);
 
@@ -59,6 +86,14 @@ const CLPDashboard = () => {
     setSelectedModule('all');
     loadLeaderboard();
   }, [selectedCourse]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && ['overview', 'courses', 'assignments', 'reviews', 'leaderboard'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, []);
 
   useEffect(() => {
     loadLeaderboard();
@@ -127,6 +162,182 @@ const CLPDashboard = () => {
       setDashboardLoading(false);
     }
   };
+
+  // Course management functions
+  const fetchCoursesData = async () => {
+    setCoursesLoading(true);
+    try {
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('clp_courses')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (coursesError) throw coursesError;
+
+      setCourses(coursesData || []);
+
+      // Fetch modules for each course
+      const modulesData: Record<string, Module[]> = {};
+      for (const course of coursesData || []) {
+        const { data: courseModules, error: modulesError } = await supabase
+          .from('clp_modules')
+          .select('*')
+          .eq('course_id', course.id)
+          .eq('is_active', true)
+          .order('order_index', { ascending: true });
+
+        if (!modulesError && courseModules) {
+          modulesData[course.id] = courseModules;
+        }
+      }
+      setCourseModules(modulesData);
+      
+    } catch (error) {
+      console.error('Error fetching courses data:', error);
+      toast.error('Failed to load courses data');
+    } finally {
+      setCoursesLoading(false);
+    }
+  };
+
+  const handleCreateCourse = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clp_courses')
+        .insert([{
+          title: courseForm.title,
+          description: courseForm.description,
+          code: courseForm.code,
+          created_by: user?.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCourses(prev => [data, ...prev]);
+      setCourseForm({ title: '', description: '', code: '' });
+      setIsCreateCourseOpen(false);
+      toast.success('Course created successfully');
+    } catch (error) {
+      console.error('Error creating course:', error);
+      toast.error('Failed to create course');
+    }
+  };
+
+  const handleUpdateCourse = async () => {
+    if (!editingCourse) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('clp_courses')
+        .update({
+          title: courseForm.title,
+          description: courseForm.description,
+          code: courseForm.code
+        })
+        .eq('id', editingCourse.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCourses(prev => prev.map(c => c.id === editingCourse.id ? data : c));
+      setCourseForm({ title: '', description: '', code: '' });
+      setEditingCourse(null);
+      toast.success('Course updated successfully');
+    } catch (error) {
+      console.error('Error updating course:', error);
+      toast.error('Failed to update course');
+    }
+  };
+
+  const handleCreateModule = async () => {
+    if (!selectedCourseId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('clp_modules')
+        .insert([{
+          title: moduleForm.title,
+          description: moduleForm.description,
+          course_id: selectedCourseId,
+          order_index: moduleForm.order_index
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCourseModules(prev => ({
+        ...prev,
+        [selectedCourseId]: [...(prev[selectedCourseId] || []), data].sort((a, b) => a.order_index - b.order_index)
+      }));
+      setModuleForm({ title: '', description: '', order_index: 0 });
+      setIsCreateModuleOpen(false);
+      setSelectedCourseId(null);
+      toast.success('Module created successfully');
+    } catch (error) {
+      console.error('Error creating module:', error);
+      toast.error('Failed to create module');
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('clp_courses')
+        .update({ is_active: false })
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      setCourses(prev => prev.filter(c => c.id !== courseId));
+      toast.success('Course deleted successfully');
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast.error('Failed to delete course');
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string, courseId: string) => {
+    if (!confirm('Are you sure you want to delete this module? This action cannot be undone.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('clp_modules')
+        .update({ is_active: false })
+        .eq('id', moduleId);
+
+      if (error) throw error;
+
+      setCourseModules(prev => ({
+        ...prev,
+        [courseId]: prev[courseId]?.filter(m => m.id !== moduleId) || []
+      }));
+      toast.success('Module deleted successfully');
+    } catch (error) {
+      console.error('Error deleting module:', error);
+      toast.error('Failed to delete module');
+    }
+  };
+
+  const openEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setCourseForm({
+      title: course.title,
+      description: course.description || '',
+      code: course.code
+    });
+  };
+
+  const filteredCourses = courses.filter(course =>
+    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Leaderboard functions
   const loadCourses = async () => {
@@ -271,7 +482,7 @@ const CLPDashboard = () => {
       title: 'Manage Courses',
       description: 'Organize courses and modules',
       icon: BookOpen,
-      onClick: () => navigate('/dashboard/career-level/courses'),
+      onClick: () => setActiveTab('courses'),
       color: 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200'
     }
   ];
@@ -462,7 +673,286 @@ const CLPDashboard = () => {
 
           {/* Courses Tab */}
           <TabsContent value="courses" className="space-y-6">
-            <CourseManagementTab />
+            {/* Page Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground mb-2">
+                  Course Management
+                </h2>
+                <p className="text-muted-foreground">
+                  Create and manage courses and modules for the Career Level Up Program
+                </p>
+              </div>
+
+              <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Course
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Course</DialogTitle>
+                    <DialogDescription>
+                      Add a new course to the Career Level Up Program
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="course-title">Course Title</Label>
+                      <Input
+                        id="course-title"
+                        placeholder="Enter course title"
+                        value={courseForm.title}
+                        onChange={(e) => setCourseForm(prev => ({ ...prev, title: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="course-code">Course Code</Label>
+                      <Input
+                        id="course-code"
+                        placeholder="Enter course code (e.g., CS101)"
+                        value={courseForm.code}
+                        onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="course-description">Description</Label>
+                      <Textarea
+                        id="course-description"
+                        placeholder="Enter course description"
+                        value={courseForm.description}
+                        onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCreateCourse} disabled={!courseForm.title || !courseForm.code}>
+                      Create Course
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Search courses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            {/* Courses List */}
+            <div className="space-y-4">
+              {filteredCourses.map((course) => (
+                <Card key={course.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="bg-primary/10 p-2 rounded-lg">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="text-lg font-semibold">{course.title}</h3>
+                              <Badge variant="secondary">{course.code}</Badge>
+                              <Badge variant="outline" className="text-xs">{course.category}</Badge>
+                            </div>
+                            {course.description && (
+                              <p className="text-sm text-muted-foreground">{course.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                          <div className="flex items-center gap-1">
+                            <ClipboardCheck className="h-4 w-4" />
+                            <span>{courseModules[course.id]?.length || 0} modules</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>Active course</span>
+                          </div>
+                        </div>
+                        
+                        {courseModules[course.id]?.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {courseModules[course.id].slice(0, 3).map((module) => (
+                              <Badge key={module.id} variant="outline" className="text-xs">
+                                {module.title}
+                              </Badge>
+                            ))}
+                            {courseModules[course.id].length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{courseModules[course.id].length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            // TODO: Implement course detail view functionality
+                            toast.info('Course detail view coming soon!');
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => openEditCourse(course)}
+                        >
+                          <Edit2 className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDeleteCourse(course.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {filteredCourses.length === 0 && (
+              <div className="text-center py-12">
+                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No courses found</h3>
+                <p className="text-muted-foreground mb-4">
+                  {searchTerm ? 'Try adjusting your search terms' : 'Create your first course to get started'}
+                </p>
+                {!searchTerm && (
+                  <Button onClick={() => setIsCreateCourseOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Course
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Edit Course Dialog */}
+            <Dialog open={!!editingCourse} onOpenChange={(open) => !open && setEditingCourse(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Course</DialogTitle>
+                  <DialogDescription>
+                    Update the course information
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-course-title">Course Title</Label>
+                    <Input
+                      id="edit-course-title"
+                      placeholder="Enter course title"
+                      value={courseForm.title}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, title: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-course-code">Course Code</Label>
+                    <Input
+                      id="edit-course-code"
+                      placeholder="Enter course code (e.g., CS101)"
+                      value={courseForm.code}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-course-description">Description</Label>
+                    <Textarea
+                      id="edit-course-description"
+                      placeholder="Enter course description"
+                      value={courseForm.description}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEditingCourse(null)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleUpdateCourse} disabled={!courseForm.title || !courseForm.code}>
+                    Update Course
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Create Module Dialog */}
+            <Dialog open={isCreateModuleOpen} onOpenChange={setIsCreateModuleOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Module</DialogTitle>
+                  <DialogDescription>
+                    Add a new module to the selected course
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="module-title">Module Title</Label>
+                    <Input
+                      id="module-title"
+                      placeholder="Enter module title"
+                      value={moduleForm.title}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, title: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="module-description">Description</Label>
+                    <Textarea
+                      id="module-description"
+                      placeholder="Enter module description"
+                      value={moduleForm.description}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="module-order">Order Index</Label>
+                    <Input
+                      id="module-order"
+                      type="number"
+                      min="0"
+                      placeholder="Enter display order"
+                      value={moduleForm.order_index}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCreateModuleOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateModule} disabled={!moduleForm.title}>
+                    Create Module
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Assignments Tab */}
