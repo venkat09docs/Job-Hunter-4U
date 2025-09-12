@@ -449,7 +449,7 @@ const SkillLevelUpProgram: React.FC = () => {
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="skill-programs">Skill Developer Programs</TabsTrigger>
+            <TabsTrigger value="skill-programs">Skill Development Programs</TabsTrigger>
             <TabsTrigger value="assignments">My Assignments</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>

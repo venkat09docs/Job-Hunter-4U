@@ -173,16 +173,34 @@ const SkillDeveloperProgramsTab: React.FC = () => {
     <div className="space-y-6">
       {/* Header with Three Boards in Same Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Skill Developer Programs Board - Takes more space */}
+        {/* YouTube Channel Access Board - Takes more space */}
         <div className="lg:col-span-6">
-          <Card className="bg-gradient-to-r from-primary/10 via-purple/10 to-teal/10 border-primary/20 h-full">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple bg-clip-text text-transparent mb-3">
-                Skill Developer Programs
-              </h2>
-              <p className="text-muted-foreground">
-                Master various skills and technologies through structured learning paths and hands-on projects
-              </p>
+          <Card className="bg-gradient-to-r from-red-500/10 via-red-600/10 to-red-700/10 border-red-500/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full"
+                onClick={() => window.open('https://youtube.com', '_blank')}>
+            <CardContent className="p-6 flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-gradient-to-r from-red-500 to-red-600 w-12 h-12 rounded-full flex items-center justify-center">
+                    <ExternalLink className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Join Our Community Advanced Programs
+                  </h2>
+                </div>
+                <p className="text-muted-foreground mb-4">
+                  Access exclusive video tutorials, live sessions, and advanced programming courses on our YouTube channel
+                </p>
+                <Button 
+                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open('https://youtube.com', '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Go to YouTube Channel
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
