@@ -34,9 +34,9 @@ import {
   Briefcase,
   ChevronDown,
   BookOpen,
-  GraduationCap,
-  Github
+  GraduationCap
 } from "lucide-react";
+import { Github } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useState, useEffect } from "react";
 import type { Course } from "@/types/clp";
