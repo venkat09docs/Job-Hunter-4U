@@ -1015,7 +1015,7 @@ export default function AICareerLevelUp() {
       </section>
 
       {/* Level 3 Program - Job Hunter Level Up */}
-      <section className="py-20 px-4 bg-gradient-to-br from-orange-600 via-red-600 to-pink-600">
+      <section className="py-20 px-4 bg-gradient-to-br from-teal-700 via-emerald-700 to-cyan-700">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm font-bold">
