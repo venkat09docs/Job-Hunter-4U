@@ -56,13 +56,15 @@ import PricingDialog from "./PricingDialog";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
+  { title: "Build Profile", url: "/build-my-profile", icon: User, featureKey: null, showForNonSubscribers: true },
   { 
     title: "Skill Level Up", 
     url: "/dashboard/skill-level", 
     icon: Award, 
-    featureKey: null 
+    featureKey: null,
+    requiresSubscription: true
   },
-  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
+  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null, requiresSubscription: true },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
   { title: "Check Level Up", url: "/dashboard/career-growth", icon: TrendingUp, featureKey: null },
@@ -488,11 +490,30 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items - Part 1: Up to Profile Level Up */}
-                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(0, 3).map((item) => {
+                {/* Main Menu Items - Filter based on subscription status */}
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
+                  const subscriberPlan = profile?.subscription_plan;
+                  const hasActiveSubscription = subscriberPlan && subscriberPlan !== "Free Plan" && subscriberPlan !== null;
+                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
+                  
+                  // Show Build Profile only for users WITHOUT active subscriptions
+                  if (item.showForNonSubscribers && hasActiveSubscription) {
+                    return null;
+                  }
+                  
+                  // Hide Build Profile for users WITH active subscriptions
+                  if (item.title === "Build Profile" && hasActiveSubscription) {
+                    return null;
+                  }
+                  
+                  // Hide Skill Level Up and Profile Level Up for users WITHOUT subscriptions
+                  if (item.requiresSubscription && !hasActiveSubscription) {
+                    return null;
+                  }
+                  
                   // Special condition for Level Up - only show for premium plan subscribers
                   if (item.title === "Level Up") {
-                    const subscriberPlan = profile?.subscription_plan;
                     const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
                     
                     // Hide Level Up for users without eligible plans
@@ -500,13 +521,6 @@ export function AppSidebar() {
                       return null;
                     }
                   }
-                  
-                  // Remove Progress Level Up condition since it's moved
-                  
-                  // Hide specific items for subscription users
-                  const subscriberPlan = profile?.subscription_plan;
-                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
                   
                   // Hide Career Growth Report for all subscription users (low and high tier)
                   if (item.title === "Career Growth Report" && subscriberPlan && 
@@ -521,7 +535,7 @@ export function AppSidebar() {
                   }
                   
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                  return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
+                  return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
                 })}
 
                 {/* Job Hunter Section */}
