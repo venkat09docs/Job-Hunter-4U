@@ -161,23 +161,28 @@ export default function InstituteManagement() {
             .eq('assignment_type', 'batch')
             .eq('is_active', true);
 
-          // Get institute admin name using maybeSingle to avoid errors
-          const { data: adminAssignment } = await supabase
+          // Get institute admin names - there might be multiple admins
+          const { data: adminAssignments } = await supabase
             .from('institute_admin_assignments')
-            .select('user_id')
+            .select(`
+              user_id,
+              profiles!inner(full_name, email)
+            `)
             .eq('institute_id', institute.id)
-            .eq('is_active', true)
-            .maybeSingle();
+            .eq('is_active', true);
 
           let adminName = 'Not Assigned';
-          if (adminAssignment) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name, email')
-              .eq('user_id', adminAssignment.user_id)
-              .maybeSingle();
+          if (adminAssignments && adminAssignments.length > 0) {
+            // If multiple admins, show the first one with count
+            const firstAdmin = adminAssignments[0];
+            const adminProfile = firstAdmin.profiles as any;
+            const primaryAdminName = adminProfile?.full_name || adminProfile?.email || 'Unknown Admin';
             
-            adminName = profile?.full_name || profile?.email || 'Not Assigned';
+            if (adminAssignments.length === 1) {
+              adminName = primaryAdminName;
+            } else {
+              adminName = `${primaryAdminName} (+${adminAssignments.length - 1} more)`;
+            }
           }
 
           return {
