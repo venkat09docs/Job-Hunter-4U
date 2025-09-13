@@ -540,9 +540,9 @@ export default function UserManagement() {
       setLoadingUsers(true);
       
       if (isAdmin) {
-        console.log('🔍 Fetching users as super admin (including ALL users)...');
+        console.log('🔍 Fetching users as super admin (excluding institute students)...');
         
-        // Super admin should see ALL users including institute students
+        // Super admin should see users but exclude institute students
         const { data: profiles, error: profilesError } = await supabase
           .rpc('get_all_users_for_admin');
 
@@ -560,12 +560,26 @@ export default function UserManagement() {
           return;
         }
 
-        // Super admin sees ALL users - no exclusions
-        console.log(`✅ Found ${profiles.length} total users, showing all users to super admin`);
+        // Get all users with institute assignments to exclude them
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from('user_assignments')
+          .select('user_id')
+          .eq('is_active', true);
 
-        // Get user roles for all users
-        const userIds = profiles.map(p => p.user_id);
-        console.log('🔍 Fetching roles for all users:', userIds.length);
+        if (assignmentsError) {
+          console.error('❌ Error fetching user assignments:', assignmentsError);
+          throw assignmentsError;
+        }
+
+        // Filter out institute users (users with assignments)
+        const instituteUserIds = new Set(assignments?.map(a => a.user_id) || []);
+        const filteredProfiles = profiles.filter(profile => !instituteUserIds.has(profile.user_id));
+        
+        console.log(`✅ Found ${profiles.length} total users, excluded ${instituteUserIds.size} institute users, showing ${filteredProfiles.length} users`);
+
+        // Get user roles for filtered users
+        const userIds = filteredProfiles.map(p => p.user_id);
+        console.log('🔍 Fetching roles for filtered users:', userIds.length);
         
         const { data: roles, error: rolesError } = await supabase
           .from('user_roles')
@@ -577,7 +591,7 @@ export default function UserManagement() {
         if (rolesError) throw rolesError;
 
         // Combine profiles with roles
-        const usersWithRoles = profiles.map(profile => {
+        const usersWithRoles = filteredProfiles.map(profile => {
           const userRole = roles?.find(r => r.user_id === profile.user_id);
           return {
             ...profile,
