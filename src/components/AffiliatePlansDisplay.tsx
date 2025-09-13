@@ -121,9 +121,7 @@ const AffiliatePlansDisplay = () => {
 const getEstimatedPlanPrice = (planName: string): number => {
   const normalizedName = planName.toLowerCase();
   
-  if (normalizedName.includes('one week') || normalizedName.includes('7 day')) {
-    return 699; // Updated to correct price
-  } else if (normalizedName.includes('one month') || normalizedName.includes('1 month')) {
+  if (normalizedName.includes('one month') || normalizedName.includes('1 month')) {
     return 1499; // Updated to correct price
   } else if (normalizedName.includes('3 month') || normalizedName.includes('quarterly')) {
     return 3999; // Updated to correct price

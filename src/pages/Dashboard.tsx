@@ -107,7 +107,7 @@ const Dashboard = () => {
   const hasRestrictedPlanForBadgeLeaders = () => {
     if (isAdmin || isRecruiter) return false;
     if (!profile?.subscription_plan || !hasActiveSubscription()) return true;
-    return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
+    return ['One Month Plan'].includes(profile.subscription_plan);
   };
 
   // Debug logging for subscription status
@@ -131,7 +131,7 @@ const Dashboard = () => {
   const canAccessStatusTracker = () => {
     if (isAdmin || isRecruiter) return true;
     if (!profile?.subscription_plan) return true; // Free users
-    return ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan);
+    return ['One Month Plan'].includes(profile.subscription_plan);
   };
 
   // Check if user can access Level Up Status (3M, 6M, 1Y plans)
@@ -143,7 +143,7 @@ const Dashboard = () => {
   };
 
   // All available subscription plans for upgrade dialog
-  const allSubscriptionPlans = ['One Week Plan', 'One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const allSubscriptionPlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
   // All useState hooks - MUST be called unconditionally - removed job-related state (now from optimized hook)
   const [jobsLoading, setJobsLoading] = useState(false); // Keep for compatibility
@@ -555,7 +555,7 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      {profile?.subscription_plan && ['One Week Plan', 'One Month Plan'].includes(profile.subscription_plan) 
+                      {profile?.subscription_plan && ['One Month Plan'].includes(profile.subscription_plan) 
                         ? `Upgrade from your ${profile.subscription_plan} to access Badge Leaders` 
                         : 'Available with 3 Months, 6 Months, or 1 Year plans'
                       }
@@ -620,7 +620,7 @@ const Dashboard = () => {
             {/* Status Tracker and Level Up Status - Side by Side */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
               
-              {/* Status Tracker - Only for Free, 1-week, 1-month plan users */}
+              {/* Status Tracker - Only for Free, 1-month plan users */}
               {canAccessStatusTracker() && (
                 <Card>
                   <CardHeader>

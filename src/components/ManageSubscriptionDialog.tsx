@@ -27,33 +27,20 @@ const ManageSubscriptionDialog = ({ open, onOpenChange }: ManageSubscriptionDial
 
   const plans = [
     {
-      name: "One Week Plan",
-      price: 699,
-      duration: "1 week",
-      days: 7,
-      description: "Quick access to all career tools",
-      features: [
-        "AI-powered job matching",
-        "Resume builder & optimization",
-        "LinkedIn optimization", 
-        "Job tracker & analytics",
-        "AI career assistant",
-        "Portfolio builder",
-        "Interview preparation",
-        "All premium features included"
-      ],
-      popular: false,
-      variant: "outline" as const,
-      icon: Zap
-    },
-    {
       name: "One Month Plan",
       price: 1499,
       duration: "1 month",
       days: 30,
       description: "Perfect for focused job searching",
       features: [
-        "Everything in 1 Week Plan +"
+        "AI-powered job matching",
+        "Resume builder & optimization",
+        "LinkedIn optimization",
+        "Job tracker & analytics",
+        "AI career assistant",
+        "Portfolio builder",
+        "Interview preparation",
+        "All premium features included"
       ],
       bonuses: [
         "1-time personal review of Resume, LinkedIn and GitHub Profile"

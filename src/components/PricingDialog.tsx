@@ -29,10 +29,10 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
 
   const plans = [
     {
-      name: "One Week Plan",
-      price: 699,
-      duration: "1 week",
-      description: "Quick access to all career tools",
+      name: "One Month Plan",
+      price: 1499,
+      duration: "1 month",
+      description: "Perfect for focused job searching",
       features: [
         "AI-powered job matching",
         "Resume builder & optimization",
@@ -42,18 +42,6 @@ const PricingDialog = ({ eligiblePlans }: PricingDialogProps = {}) => {
         "Portfolio builder",
         "Interview preparation",
         "All premium features included"
-      ],
-      popular: false,
-      variant: "outline" as const,
-      icon: Zap
-    },
-    {
-      name: "One Month Plan",
-      price: 1499,
-      duration: "1 month",
-      description: "Perfect for focused job searching",
-      features: [
-        "Everything in 1 Week Plan +"
       ],
       bonuses: [
         "1-time personal review of Resume, LinkedIn and GitHub Profile"

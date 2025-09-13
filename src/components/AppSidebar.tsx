@@ -495,7 +495,7 @@ export function AppSidebar() {
                   const subscriberPlan = profile?.subscription_plan;
                   const hasActiveSubscription = subscriberPlan && subscriberPlan !== "Free Plan" && subscriberPlan !== null;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
+                  const lowTierPlans = ["One Month Plan"];
                   
                   // Show Build Profile only for users WITHOUT active subscriptions
                   if (item.showForNonSubscribers && hasActiveSubscription) {
@@ -620,7 +620,7 @@ export function AppSidebar() {
                   // Hide specific items for subscription users
                   const subscriberPlan = profile?.subscription_plan;
                   const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const lowTierPlans = ["One Week Plan", "One Month Plan"];
+                  const lowTierPlans = ["One Month Plan"];
                   
                   // Hide Career Growth Report for all subscription users (low and high tier)
                   if (item.title === "Career Growth Report" && subscriberPlan && 
@@ -694,7 +694,7 @@ export function AppSidebar() {
               Career Growth Activities and Reports are available with our starter plans.
             </p>
           </DialogHeader>
-          <PricingDialog eligiblePlans={["One Week Plan", "One Month Plan"]} />
+          <PricingDialog eligiblePlans={["One Month Plan"]} />
         </DialogContent>
       </Dialog>
       
@@ -709,7 +709,7 @@ export function AppSidebar() {
               GitHub Optimization and GitHub Activity Tracker are available with our starter plans.
             </p>
           </DialogHeader>
-          <PricingDialog eligiblePlans={["One Week Plan", "One Month Plan"]} />
+          <PricingDialog eligiblePlans={["One Month Plan"]} />
         </DialogContent>
       </Dialog>
     </div>
