@@ -24,11 +24,11 @@ const Index = () => {
     if (!loading && user && !hasLoggedOut) {
       // Redirect recruiters to their dashboard
       if (isRecruiter && !isAdmin && !isInstituteAdmin) {
-        navigate('/recruiter');
+        navigate('/recruiter', { replace: true });
         return;
       }
       // Default dashboard redirect for regular users
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [user, loading, hasLoggedOut, navigate, isRecruiter, isAdmin, isInstituteAdmin]);
 

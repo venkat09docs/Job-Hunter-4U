@@ -2,18 +2,24 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const NotFound = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Redirect to home after 5 seconds
+    // Redirect after 5 seconds - to dashboard if logged in, otherwise to home
     const timer = setTimeout(() => {
-      navigate('/');
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, user]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
@@ -29,11 +35,11 @@ const NotFound = () => {
         </div>
         
         <Button 
-          onClick={() => navigate('/')} 
+          onClick={() => user ? navigate('/dashboard') : navigate('/')} 
           className="inline-flex items-center gap-2"
         >
           <Home className="w-4 h-4" />
-          Take me home now
+          {user ? 'Take me to dashboard' : 'Take me home now'}
         </Button>
       </div>
     </div>
