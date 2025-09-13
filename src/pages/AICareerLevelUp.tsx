@@ -2092,11 +2092,11 @@ export default function AICareerLevelUp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Free Linux Shell and AWS Courses</span>
+                    <span className="text-base text-foreground">Free Linux Shell and AWS Courses</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Free DevOps with AWS and Python course</span>
+                    <span className="text-base text-foreground">Free DevOps with AWS and Python Course</span>
                   </div>
                 </div>
                 
@@ -2136,49 +2136,49 @@ export default function AICareerLevelUp() {
                   {/* Level 1 Program Features */}
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">AI Resume Builder & ATS Optimization</span>
+                    <span className="text-base text-foreground">AI Resume Builder & ATS Optimization</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">LinkedIn Profile Enhancement Tools</span>
+                    <span className="text-base text-foreground">LinkedIn Profile Enhancement Tools</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Job Application Tracking System</span>
+                    <span className="text-base text-foreground">Job Application Tracking System</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Interview Preparation Resources</span>
+                    <span className="text-base text-foreground">Interview Preparation Resources</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Career Growth Analytics Dashboard</span>
+                    <span className="text-base text-foreground">Career Growth Analytics Dashboard</span>
                   </div>
                   {/* Level 4 Program Features */}
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Advanced Portfolio Building Tools</span>
+                    <span className="text-base text-foreground">Advanced Portfolio Building Tools</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Technical Skills Assessment Platform</span>
+                    <span className="text-base text-foreground">Technical Skills Assessment Platform</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Industry-Specific Job Matching</span>
+                    <span className="text-base text-foreground">Industry-Specific Job Matching</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Networking Strategy & Tools</span>
+                    <span className="text-base text-foreground">Networking Strategy & Tools</span>
                   </div>
                   {/* Existing features */}
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
+                    <span className="text-base text-foreground">Free Access to Career Growth Live Cohort on every Saturday</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
+                    <span className="text-base text-foreground">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
                   </div>
                 </div>
                 
@@ -2217,19 +2217,19 @@ export default function AICareerLevelUp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Video Based Bio Links</span>
+                    <span className="text-base text-foreground">Video Based Bio Links</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Digital Profile</span>
+                    <span className="text-base text-foreground">Digital Profile</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">the AI-Powered Super AI Tools access</span>
+                    <span className="text-base text-foreground">the AI-Powered Super AI Tools access</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Vibe Coding Tools [No coding required]</span>
+                    <span className="text-base text-foreground">Vibe Coding Tools [No coding required]</span>
                   </div>
                 </div>
                 
@@ -2267,11 +2267,11 @@ export default function AICareerLevelUp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Reverse Engineering Strategy to land Dream job as fast as</span>
+                    <span className="text-base text-foreground">Reverse Engineering Strategy to land Dream job as fast as</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Automated Job-Hunting Process</span>
+                    <span className="text-base text-foreground">Automated Job-Hunting Process</span>
                   </div>
                 </div>
                 
@@ -2287,20 +2287,6 @@ export default function AICareerLevelUp() {
             </Card>
           </div>
 
-          {/* Upgrade Note */}
-          <div className="mt-16 max-w-4xl mx-auto">
-            <Card className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-lg">
-              <CardContent className="p-0 text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <span className="text-3xl">👉</span>
-                  <h4 className="text-2xl font-bold text-gray-800">Flexible Upgrade Option</h4>
-                </div>
-                <p className="text-lg text-gray-700 leading-relaxed">
-                  <strong>Start with any plan</strong>, then upgrade to a higher plan within 14 days by paying just the difference
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
