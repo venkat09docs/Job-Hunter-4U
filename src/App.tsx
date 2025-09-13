@@ -83,6 +83,7 @@ import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import AllNotifications from "./pages/AllNotifications";
 import AICareerLevelUp from "./pages/AICareerLevelUp";
+import Student from "./pages/Student";
 
 const queryClient = new QueryClient();
 
@@ -539,7 +540,8 @@ const AppContent = () => {
            />
            
            <Route path="/careerlevelup" element={<CareerLevelUp />} />
-          <Route path="/ai-career-level-up" element={<AICareerLevelUp />} />
+            <Route path="/ai-career-level-up" element={<AICareerLevelUp />} />
+            <Route path="/student" element={<Student />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
