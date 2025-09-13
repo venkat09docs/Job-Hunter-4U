@@ -67,7 +67,6 @@ const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: 
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null, requiresSubscription: true },
   { title: "Career Growth Activities", url: "/dashboard/career-growth-activities", icon: TrendingUp, featureKey: "career_growth_activities" },
   { title: "Career Growth Report", url: "/dashboard/career-growth", icon: BarChart3, featureKey: "career_growth_report" },
-  { title: "Check Level Up", url: "/dashboard/career-growth", icon: TrendingUp, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
@@ -111,7 +110,6 @@ const instituteAdminItems = [
 ];
 
 const adminItems = [
-  { title: "Dashboard", url: "/admin", icon: BarChart3 },
   { title: "Admin Dashboard", url: "/admin", icon: Shield },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
@@ -262,13 +260,13 @@ export function AppSidebar() {
       item.title === "Job Search History"
     );
     
-    // Special handling for Career Growth features - show dialog with 1-week and 1-month plans only
+    // Special handling for Career Growth features - ALL subscription plans have access
     const isCareerGrowthPremium = isPremium && (
       item.title === "Career Growth Activities" || 
       item.title === "Career Growth Report"
     );
     
-    // Special handling for GitHub Tools - show dialog with 1-week and 1-month plans only
+    // Special handling for GitHub Tools - ALL subscription plans have access
     const isGitHubToolsPremium = isPremium && (
       item.title === "GitHub Optimization" || 
       item.title === "GitHub Activity Tracker"
@@ -494,8 +492,9 @@ export function AppSidebar() {
                 {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
                   const subscriberPlan = profile?.subscription_plan;
                   const hasActiveSubscription = subscriberPlan && subscriberPlan !== "Free Plan" && subscriberPlan !== null;
-                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const lowTierPlans = ["One Month Plan"];
+                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const currentPlan = profile?.subscription_plan;
+                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
                   
                   // Show Build Profile only for users WITHOUT active subscriptions
                   if (item.showForNonSubscribers && hasActiveSubscription) {
@@ -522,17 +521,7 @@ export function AppSidebar() {
                     }
                   }
                   
-                  // Hide Career Growth Report for all subscription users (low and high tier)
-                  if (item.title === "Career Growth Report" && subscriberPlan && 
-                      (lowTierPlans.includes(subscriberPlan) || highTierPlans.includes(subscriberPlan))) {
-                    return null;
-                  }
-                  
-                  // Hide Career Growth Activities only for high tier subscription users
-                  if (item.title === "Career Growth Activities" && subscriberPlan && 
-                      highTierPlans.includes(subscriberPlan)) {
-                    return null;
-                  }
+                  // All subscription users have same access - no restrictions
                   
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
@@ -578,10 +567,12 @@ export function AppSidebar() {
                 {/* Progress Level Up - Right after Job Hunter */}
                 {(() => {
                   const subscriberPlan = profile?.subscription_plan;
-                  const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const currentPlan = profile?.subscription_plan;
+                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
                   
-                  // Only show Progress Level Up for users with premium plans
-                  if (!subscriberPlan || !premiumPlans.includes(subscriberPlan)) {
+                  // Show Progress Level Up for all subscription users
+                  if (!subscriberPlan || !allSubscriptionPlans.includes(subscriberPlan)) {
                     return null;
                   }
                   
@@ -619,20 +610,11 @@ export function AppSidebar() {
                   
                   // Hide specific items for subscription users
                   const subscriberPlan = profile?.subscription_plan;
-                  const highTierPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const lowTierPlans = ["One Month Plan"];
+                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
+                  const currentPlan = profile?.subscription_plan;
+                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
                   
-                  // Hide Career Growth Report for all subscription users (low and high tier)
-                  if (item.title === "Career Growth Report" && subscriberPlan && 
-                      (lowTierPlans.includes(subscriberPlan) || highTierPlans.includes(subscriberPlan))) {
-                    return null;
-                  }
-                  
-                  // Hide Career Growth Activities only for high tier subscription users
-                  if (item.title === "Career Growth Activities" && subscriberPlan && 
-                      highTierPlans.includes(subscriberPlan)) {
-                    return null;
-                  }
+                  // All subscription users have same access - no restrictions
                   
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} />;

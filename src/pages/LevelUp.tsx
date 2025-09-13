@@ -394,7 +394,6 @@ const LevelUp = () => {
             githubCommits={totalGitHubCommits}
             subscriptionPlan={profile?.subscription_plan}
             careerLoading={careerLoading}
-            onGoldBadgeUpgradeRequired={() => setGoldBadgeUpgradeDialogOpen(true)}
           />
           </div>
         </div>

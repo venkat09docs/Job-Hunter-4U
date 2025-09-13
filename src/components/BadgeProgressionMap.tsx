@@ -47,7 +47,6 @@ interface BadgeProgressionMapProps {
   githubRepos?: number;
   subscriptionPlan?: string | null;
   careerLoading?: boolean;
-  onGoldBadgeUpgradeRequired?: () => void; // Callback for 3-months plan users clicking gold badge
 }
 
 const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
@@ -65,7 +64,6 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   githubRepos = 0,
   subscriptionPlan = null,
   careerLoading = false,
-  onGoldBadgeUpgradeRequired,
 }) => {
   const navigate = useNavigate();
   const { isIT } = useUserIndustry();
@@ -77,13 +75,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
   };
 
   // Check if user has premium subscription plan (6-month or 1-year)
-  const hasPremiumPlan = () => {
-    return subscriptionPlan === '6 Months Plan' || subscriptionPlan === '1 Year Plan';
-  };
-
-  // Check if user has 3-months plan
-  const hasThreeMonthsPlan = () => {
-    return subscriptionPlan === '3 Months Plan';
+  // Check if user has any subscription plan - all plans have same functionality
+  const hasAnySubscription = () => {
+    const allPlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
+    return allPlans.includes(subscriptionPlan || '');
   };
 
   // Calculate progress for each badge - progressive system
@@ -330,10 +325,10 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
           title: 'Profile Perfectionist',
           description: 'Complete your digital profile portfolio',
           tier: 'gold',
-          progress: hasPremiumPlan() ? calculateProfileProgress('gold') : 0, // Show progress only if subscription is valid
-          criteria: hasPremiumPlan() ? 'Complete Digital Profile tasks (100%)' : 'Subscription required: 6-month or 1-year plan for digital profile',
-          nextAction: hasPremiumPlan() ? 'Build Portfolio' : 'Upgrade Plan',
-          link: hasPremiumPlan() ? '/dashboard/career-assignments?category=digital' : '#',
+          progress: hasAnySubscription() ? calculateProfileProgress('gold') : 0, // Show progress only if subscription is valid
+          criteria: hasAnySubscription() ? 'Complete Digital Profile tasks (100%)' : 'Subscription required for digital profile',
+          nextAction: hasAnySubscription() ? 'Build Portfolio' : 'Upgrade Plan',
+          link: hasAnySubscription() ? '/dashboard/career-assignments?category=digital' : '#',
           code: 'profile_perfectionist'
         },
         {
@@ -599,7 +594,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                                     {badge.title} {isAwarded ? '🏆' : ''}
                                   </h4>
                                    <p className="text-xs text-muted-foreground">
-                                      {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Complete previous badge to unlock')}
+                                      {isAwarded ? `Badge earned! ${badge.description}` : (isUnlocked ? badge.description : (badge.tier === 'gold' && category.id === 'profile' && !hasAnySubscription()) ? 'Subscription required for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Complete previous badge to unlock')}
                                     </p>
                                 </div>
 
@@ -613,7 +608,7 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                                     } as React.CSSProperties}
                                   />
                                     <p className="text-xs text-muted-foreground">
-                                      {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Subscription required: 6-month or 1-year plan for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Unlock requirements not met')}
+                                      {isAwarded ? 'Congratulations! Badge earned!' : (isUnlocked ? badge.criteria : (badge.tier === 'gold' && category.id === 'profile' && !hasAnySubscription()) ? 'Subscription required for digital profile' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'GitHub profile available only for IT professionals' : 'Unlock requirements not met')}
                                     </p>
                                 </div>
 
@@ -629,22 +624,16 @@ const BadgeProgressionMap: React.FC<BadgeProgressionMapProps> = ({
                                     color: isAwarded ? tierColor : (isUnlocked ? tierColor : '#9CA3AF'),
                                     backgroundColor: isAwarded ? `${tierColor}05` : 'transparent'
                                   }}
-                                  disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
+                                  disabled={!isUnlocked || (badge.tier === 'gold' && category.id === 'profile' && !hasAnySubscription()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT())}
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     
-                                    // Special handling for gold badge clicks by 3-months plan users
-                                    if (badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan() && onGoldBadgeUpgradeRequired) {
-                                      onGoldBadgeUpgradeRequired();
-                                      return;
-                                    }
-                                    
-                                    if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan() && !hasThreeMonthsPlan()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
+                                    if (isUnlocked && !((badge.tier === 'gold' && category.id === 'profile' && !hasAnySubscription()) || (badge.tier === 'diamond' && category.id === 'profile' && !isIT()))) {
                                       navigate(badge.link);
                                     }
                                   }}
                                 >
-                                  {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && hasThreeMonthsPlan()) ? 'Upgrade to Continue' : (badge.tier === 'gold' && category.id === 'profile' && !hasPremiumPlan()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
+                                  {isAwarded ? 'Badge Earned!' : (isUnlocked ? ((badge.tier === 'gold' && category.id === 'profile' && !hasAnySubscription()) ? 'Upgrade Required' : (badge.tier === 'diamond' && category.id === 'profile' && !isIT()) ? 'IT Only' : badge.nextAction) : 'Locked')}
                                 </Button>
                               </CardContent>
 
