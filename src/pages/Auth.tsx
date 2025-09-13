@@ -40,13 +40,8 @@ const Auth = () => {
       // Only redirect if email is verified
       const isVerified = user.email_confirmed_at !== null;
       if (isVerified) {
-        // Check for enrollment intent first
-        const enrollmentIntent = sessionStorage.getItem('enrollmentIntent');
-        if (enrollmentIntent) {
-          navigate('/careerlevelup', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
+      // Always redirect to dashboard by default
+      navigate('/dashboard', { replace: true });
       }
     }
   }, [user, authLoading, isSigningOut, hasLoggedOut, navigate]);
@@ -190,13 +185,10 @@ const Auth = () => {
           description: 'You have successfully signed in.',
         });
         
-        // Check if user came from enrollment or pricing page
-        const enrollmentIntent = sessionStorage.getItem('enrollmentIntent');
+        // Check if user came from pricing page
         const selectedPlan = sessionStorage.getItem('selectedPlan');
         
-        if (enrollmentIntent) {
-          navigate('/careerlevelup');
-        } else if (selectedPlan) {
+        if (selectedPlan) {
           sessionStorage.removeItem('selectedPlan');
           setShowPlanDialog(true);
         } else {
