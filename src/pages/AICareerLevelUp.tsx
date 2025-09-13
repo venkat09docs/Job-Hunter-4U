@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +52,6 @@ import {
 } from "lucide-react";
 import { Github, Instagram } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import type { Course } from "@/types/clp";
 import Navigation from "@/components/Navigation";
 
@@ -64,20 +64,26 @@ import solopreneurImage from "@/assets/solopreneur-journey.jpg";
 import devopsHeroImage from "@/assets/devops-aws-ai-hero.jpg";
 
 export default function AICareerLevelUp() {
-  console.log("✅ AICareerLevelUp loading - Bot icons replaced with Cpu");
+  console.log("✅ AICareerLevelUp component starting");
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
   const navigate = useNavigate();
 
+  console.log("✅ About to define handleEnrollClick");
   const handleEnrollClick = () => {
+    console.log("✅ handleEnrollClick called");
     sessionStorage.setItem('enrollmentIntent', 'true');
     navigate('/auth');
   };
 
+  console.log("✅ About to define handlePricingClick");
   const handlePricingClick = () => {
+    console.log("✅ handlePricingClick called");
     sessionStorage.setItem('selectedPlan', 'true');
     navigate('/auth');
   };
+  
+  console.log("✅ Functions defined successfully");
 
   useEffect(() => {
     loadCourses();
