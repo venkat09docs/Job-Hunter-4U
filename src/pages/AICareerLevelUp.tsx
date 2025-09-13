@@ -290,6 +290,10 @@ export default function AICareerLevelUp() {
                 🚀 Transform Your Career Today
               </Badge>
               
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-semibold text-white/90 mb-6 animate-fade-in">
+                How to plan your career for 2025 and not be replaced by AI?
+              </h2>
+              
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight animate-fade-in">
                 AI Enhanced –<br />
                 <span className="bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent animate-pulse">
