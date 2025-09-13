@@ -511,18 +511,6 @@ export function AppSidebar() {
                     return null;
                   }
                   
-                  // Special condition for Level Up - only show for premium plan subscribers
-                  if (item.title === "Level Up") {
-                    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                    
-                    // Hide Level Up for users without eligible plans
-                    if (!subscriberPlan || !eligiblePlans.includes(subscriberPlan)) {
-                      return null;
-                    }
-                  }
-                  
-                  // All subscription users have same access - no restrictions
-                  
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
                 })}
@@ -564,12 +552,10 @@ export function AppSidebar() {
                     )}
                 </div>
 
-                {/* Progress Level Up - Right after Job Hunter */}
+                {/* Progress Level Up - Show for all subscription users */}
                 {(() => {
                   const subscriberPlan = profile?.subscription_plan;
                   const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const currentPlan = profile?.subscription_plan;
-                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
                   
                   // Show Progress Level Up for all subscription users
                   if (!subscriberPlan || !allSubscriptionPlans.includes(subscriberPlan)) {
@@ -579,46 +565,10 @@ export function AppSidebar() {
                   const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
                   return (
                     <div className="mt-4">
-                      <MenuItem key={progressItem.title} item={progressItem} />
+                      <MenuItem key={progressItem.title} item={progressItem} sectionColor="main" />
                     </div>
                   );
                 })()}
-
-                {/* Main Menu Items - Part 2: After Job Hunter and Progress Level Up */}
-                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(3).map((item) => {
-                  // Special condition for Level Up - only show for premium plan subscribers
-                  if (item.title === "Level Up") {
-                    const subscriberPlan = profile?.subscription_plan;
-                    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                    
-                    // Hide Level Up for users without eligible plans
-                    if (!subscriberPlan || !eligiblePlans.includes(subscriberPlan)) {
-                      return null;
-                    }
-                  }
-                  
-                  // Special condition for Check Level Up - only show for basic/no subscription users
-                  if (item.title === "Check Level Up") {
-                    const subscriberPlan = profile?.subscription_plan;
-                    const premiumPlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                    
-                    // Only show Check Level Up for users without premium plans
-                    if (subscriberPlan && premiumPlans.includes(subscriberPlan)) {
-                      return null;
-                    }
-                  }
-                  
-                  // Hide specific items for subscription users
-                  const subscriberPlan = profile?.subscription_plan;
-                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const currentPlan = profile?.subscription_plan;
-                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
-                  
-                  // All subscription users have same access - no restrictions
-                  
-                  const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                  return <MenuItem key={item.title} item={item} isPremium={isPremium} />;
-                })}
 
 
               </div>
