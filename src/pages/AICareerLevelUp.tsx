@@ -2051,8 +2051,62 @@ export default function AICareerLevelUp() {
             </p>
           </div>
           
-          {/* Investment Plans - 3 Plans Only */}
-          <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+          {/* Investment Plans - 4 Plans */}
+          <div className="grid sm:grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto">
+            {/* 1 Month Plan */}
+            <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300">
+              <div className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-bold">1 Month Plan</h3>
+                  <p className="text-sm text-muted-foreground">Perfect for focused job searching</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-xs text-muted-foreground">₹</span>
+                    <span className="text-2xl font-bold">1499.00</span>
+                    <span className="text-sm text-muted-foreground">/1 month</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">AI-powered job matching</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Resume builder & optimization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">LinkedIn optimization</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">Job tracker & analytics</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-success flex-shrink-0" />
+                    <span className="text-xs">AI career assistant</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-xs text-warning">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  variant="outline"
+                  size="sm" 
+                  className="w-full"
+                  onClick={handlePricingClick}
+                >
+                  Get Started
+                </Button>
+              </div>
+            </Card>
+
             {/* 3 Months Plan - Most Popular */}
             <Card className="relative p-6 bg-gradient-card border-0 shadow-elegant hover:shadow-glow transition-all duration-300 ring-2 ring-primary ring-offset-2 scale-105">
               <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
