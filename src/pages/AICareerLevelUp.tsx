@@ -51,6 +51,7 @@ import {
 import { Github, Instagram } from "lucide-react";
 import { useCareerLevelProgram } from "@/hooks/useCareerLevelProgram";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Course } from "@/types/clp";
 import Navigation from "@/components/Navigation";
 
@@ -66,6 +67,17 @@ export default function AICareerLevelUp() {
   console.log("✅ AICareerLevelUp loading - Bot icons replaced with Cpu");
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
+  const navigate = useNavigate();
+
+  const handleEnrollClick = () => {
+    sessionStorage.setItem('enrollmentIntent', 'true');
+    navigate('/auth');
+  };
+
+  const handlePricingClick = () => {
+    sessionStorage.setItem('selectedPlan', 'true');
+    navigate('/auth');
+  };
 
   useEffect(() => {
     loadCourses();
@@ -291,7 +303,7 @@ export default function AICareerLevelUp() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold px-10 py-4 text-lg shadow-2xl transform hover:scale-105 transition-all duration-300"
-                  onClick={() => scrollToSection('investment-plans')}
+                  onClick={handleEnrollClick}
                 >
                   Start Your AI Career Today
                   <ArrowRight className="ml-3 h-6 w-6" />
@@ -2079,6 +2091,7 @@ export default function AICareerLevelUp() {
                   variant="hero"
                   size="sm" 
                   className="w-full"
+                  onClick={handlePricingClick}
                 >
                   <Zap className="w-4 h-4 mr-2" />
                   Get Started
@@ -2137,6 +2150,7 @@ export default function AICareerLevelUp() {
                   variant="outline"
                   size="sm" 
                   className="w-full"
+                  onClick={handlePricingClick}
                 >
                   Get Started
                 </Button>
@@ -2178,6 +2192,7 @@ export default function AICareerLevelUp() {
                   variant="outline"
                   size="sm" 
                   className="w-full"
+                  onClick={handlePricingClick}
                 >
                   Get Started
                 </Button>
@@ -2217,7 +2232,11 @@ export default function AICareerLevelUp() {
           </p>
           
           <div className="flex justify-center">
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-bold px-12 py-4 text-xl shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <Button 
+              size="lg" 
+              className="bg-white text-purple-600 hover:bg-gray-100 font-bold px-12 py-4 text-xl shadow-2xl transform hover:scale-105 transition-all duration-300"
+              onClick={handleEnrollClick}
+            >
               Enroll Now
               <ArrowRight className="ml-3 h-6 w-6" />
             </Button>
