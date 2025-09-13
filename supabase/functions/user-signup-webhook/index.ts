@@ -162,6 +162,7 @@ Deno.serve(async (req) => {
     const rnsInstituteId = '8a75a3b2-9e8d-44ab-9f9a-a005fb822f80'
     const itBatchId = 'acd2af9d-b906-4dc8-a250-fc5e47736e6a'
     const nonItBatchId = '37bb5110-42d7-43ea-8854-b2bfee404dd8'
+    const rnsInstituteAdminId = 'ec2027a6-4486-4feb-bc7b-bd0c6631ca57' // g.venkat09 - RNS Tech Institute Admin
     
     const batchId = userIndustry === 'IT' ? itBatchId : nonItBatchId
     const batchName = userIndustry === 'IT' ? 'IT Batch' : 'Non-IT Batch'
@@ -185,6 +186,7 @@ Deno.serve(async (req) => {
           institute_id: rnsInstituteId,
           batch_id: batchId,
           assignment_type: 'auto_signup',
+          assigned_by: rnsInstituteAdminId,
           is_active: true
         })
 
