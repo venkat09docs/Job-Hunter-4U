@@ -2092,7 +2092,7 @@ export default function AICareerLevelUp() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Free Linux Shell and Database Courses</span>
+                    <span className="text-sm text-warning">Free Linux Shell and AWS Courses</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
@@ -2133,14 +2133,45 @@ export default function AICareerLevelUp() {
                 </div>
                 
                 <div className="space-y-2">
+                  {/* Level 1 Program Features */}
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Level 2 Program Available</span>
+                    <span className="text-sm text-warning">AI Resume Builder & ATS Optimization</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Level 3 Program Available</span>
+                    <span className="text-sm text-warning">LinkedIn Profile Enhancement Tools</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Job Application Tracking System</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Interview Preparation Resources</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Career Growth Analytics Dashboard</span>
+                  </div>
+                  {/* Level 4 Program Features */}
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Advanced Portfolio Building Tools</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Technical Skills Assessment Platform</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Industry-Specific Job Matching</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Networking Strategy & Tools</span>
+                  </div>
+                  {/* Existing features */}
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
                     <span className="text-sm text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
@@ -2183,14 +2214,6 @@ export default function AICareerLevelUp() {
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
                     <span className="text-sm">Everything in 3 Months Plan +</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Level 1 Program Available</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-sm text-warning">Level 4 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
