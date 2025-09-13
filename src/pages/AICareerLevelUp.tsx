@@ -2072,27 +2072,31 @@ export default function AICareerLevelUp() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">AI-powered job matching</span>
+                    <span className="text-sm">ATS verified Resume</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">Resume builder & optimization</span>
+                    <span className="text-sm">Resume builder & optimization</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">LinkedIn optimization</span>
+                    <span className="text-sm">LinkedIn optimization</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">Job tracker & analytics</span>
+                    <span className="text-sm">Job tracker & analytics</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">AI career assistant</span>
+                    <span className="text-sm">AI career assistant</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
+                    <span className="text-sm text-warning">Free Linux Shell and Database Courses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
+                    <span className="text-sm text-warning">Free DevOps with AWS and Python course</span>
                   </div>
                 </div>
                 
@@ -2131,23 +2135,19 @@ export default function AICareerLevelUp() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Level 2 Program Available</span>
+                    <span className="text-sm text-warning">Level 2 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Level 3 Program Available</span>
+                    <span className="text-sm text-warning">Level 3 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
+                    <span className="text-sm text-warning">Free Access to Career Growth Live Cohort on every Saturday</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Free - Linux, Shell and AWS Courses</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Free - DevOps with AWS and Python Course</span>
+                    <span className="text-sm text-warning">1-time personal review of Resume, LinkedIn and GitHub Profile</span>
                   </div>
                 </div>
                 
@@ -2182,31 +2182,31 @@ export default function AICareerLevelUp() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">Everything in 3 Months Plan +</span>
+                    <span className="text-sm">Everything in 3 Months Plan +</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Level 1 Program Available</span>
+                    <span className="text-sm text-warning">Level 1 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Level 4 Program Available</span>
+                    <span className="text-sm text-warning">Level 4 Program Available</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Video Based Bio Links</span>
+                    <span className="text-sm text-warning">Video Based Bio Links</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Digital Profile</span>
+                    <span className="text-sm text-warning">Digital Profile</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">the AI-Powered Super AI Tools access</span>
+                    <span className="text-sm text-warning">the AI-Powered Super AI Tools access</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Vibe Coding Tools [No coding required]</span>
+                    <span className="text-sm text-warning">Vibe Coding Tools [No coding required]</span>
                   </div>
                 </div>
                 
@@ -2240,15 +2240,15 @@ export default function AICareerLevelUp() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-xs">Everything in 6 Months Plan +</span>
+                    <span className="text-sm">Everything in 6 Months Plan +</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Reverse Engineering Strategy to land Dream job as fast as</span>
+                    <span className="text-sm text-warning">Reverse Engineering Strategy to land Dream job as fast as</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-warning flex-shrink-0" />
-                    <span className="text-xs text-warning">Automated Job-Hunting Process</span>
+                    <span className="text-sm text-warning">Automated Job-Hunting Process</span>
                   </div>
                 </div>
                 
