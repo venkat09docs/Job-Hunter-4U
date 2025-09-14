@@ -136,7 +136,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     STORAGE_KEY, courseId, activeTab, showSectionForm, showChapterForm, selectedSectionId,
     sectionTitle, sectionDescription, chapterTitle, chapterDescription,
     chapterType, chapterVideoUrl, chapterArticleContent, chapterDuration,
-    editingSection, editingChapter
+    editingSection?.id, editingChapter?.id  // Use IDs only to prevent object reference changes
   ]);
 
   // Load form state from localStorage
@@ -270,7 +270,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         window.removeEventListener('beforeunload', handleBeforeUnload);
       };
     }
-  }, [open, courseId, isAdmin, loadFormState, saveFormState]);
+  }, [open, courseId, isAdmin, loadFormState]);  // Removed saveFormState to prevent circular dependency
 
   // Save form state whenever form fields change (immediate save on typing)
   useEffect(() => {
@@ -282,11 +282,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       return () => clearTimeout(timeoutId);
     }
   }, [
-    open, courseId, saveFormState, activeTab, showSectionForm, showChapterForm,
+    open, courseId, activeTab, showSectionForm, showChapterForm,
     selectedSectionId, sectionTitle, sectionDescription, chapterTitle,
     chapterDescription, chapterType, chapterVideoUrl, chapterArticleContent,
-    chapterDuration, editingSection, editingChapter
-  ]);
+    chapterDuration
+  ]); // Removed saveFormState, editingSection, editingChapter to prevent circular deps
 
   // Also save on window blur (when switching tabs) and page visibility change
   useEffect(() => {
@@ -321,7 +321,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       window.removeEventListener('beforeunload', handleBlur);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [open, courseId, saveFormState, loadFormState]);
+  }, [open, courseId, loadFormState]);  // Removed saveFormState to prevent circular dependency
 
   // Restore editing states after sections load
   useEffect(() => {
@@ -525,34 +525,38 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             </Button>
           </div>
         ) : (
-          <div className="relative z-10">
+          <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 relative z-30 pointer-events-auto">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-muted" style={{ pointerEvents: 'auto' }}>
                 <TabsTrigger 
                   value="sections" 
-                  className="relative z-40 cursor-pointer pointer-events-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                  onClick={() => console.log('🏷️ Sections tab clicked')}
+                  className="cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   Sections
                 </TabsTrigger>
                 <TabsTrigger 
                   value="chapters" 
-                  className="relative z-40 cursor-pointer pointer-events-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                  onClick={() => console.log('🏷️ Chapters tab clicked')}
+                  className="cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  style={{ pointerEvents: 'auto' }}
                 >
                   Chapters
                 </TabsTrigger>
               </TabsList>
 
-          <TabsContent value="sections" className="space-y-4 relative z-10">
+          <TabsContent value="sections" className="space-y-4" style={{ pointerEvents: 'auto' }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Sections</h3>
               <Button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   console.log('➕ Add Section button clicked');
                   setShowSectionForm(true);
                 }} 
-                className="flex items-center gap-2 relative z-30 pointer-events-auto cursor-pointer hover:bg-primary/90"
+                className="flex items-center gap-2 cursor-pointer hover:bg-primary/90"
+                style={{ pointerEvents: 'auto' }}
+                type="button"
               >
                 <Plus className="h-4 w-4" />
                 Add Section
@@ -628,22 +632,30 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             console.log('🖊️ Edit section clicked for:', section.id);
                             handleEditSection(section);
                           }}
-                          className="relative z-30 pointer-events-auto cursor-pointer"
+                          className="cursor-pointer"
+                          style={{ pointerEvents: 'auto' }}
+                          type="button"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             console.log('🗑️ Delete section clicked for:', section.id);
                             handleDeleteSection(section.id);
                           }}
-                          className="relative z-30 pointer-events-auto cursor-pointer"
+                          className="cursor-pointer"
+                          style={{ pointerEvents: 'auto' }}
+                          type="button"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -670,22 +682,30 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   console.log('🖊️ Edit chapter clicked for:', chapter.id);
                                   handleEditChapter(chapter);
                                 }}
-                                className="relative z-30 pointer-events-auto cursor-pointer"
+                                className="cursor-pointer"
+                                style={{ pointerEvents: 'auto' }}
+                                type="button"
                               >
                                 <Edit3 className="h-3 w-3" />
                               </Button>
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   console.log('🗑️ Delete chapter clicked for:', chapter.id);
                                   handleDeleteChapter(chapter.id);
                                 }}
-                                className="relative z-30 pointer-events-auto cursor-pointer"
+                                className="cursor-pointer"
+                                style={{ pointerEvents: 'auto' }}
+                                type="button"
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
@@ -708,15 +728,19 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           </TabsContent>
 
           {/* Chapters Tab */}
-          <TabsContent value="chapters" className="space-y-4 relative z-10">
+          <TabsContent value="chapters" className="space-y-4" style={{ pointerEvents: 'auto' }}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Chapters</h3>
               <Button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   console.log('➕ Add Chapter button clicked');
                   setShowChapterForm(true);
                 }} 
-                className="flex items-center gap-2 relative z-30 pointer-events-auto cursor-pointer hover:bg-primary/90"
+                className="flex items-center gap-2 cursor-pointer hover:bg-primary/90"
+                style={{ pointerEvents: 'auto' }}
+                type="button"
               >
                 <Plus className="h-4 w-4" />
                 Add Chapter
