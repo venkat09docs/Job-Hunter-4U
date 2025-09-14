@@ -14,10 +14,9 @@ export default function DigitalPortfolio() {
   const [showPricing, setShowPricing] = useState(false);
 
   const handleOpenPortfolio = () => {
-    // Check if user has active subscription (any paid plan)
+    // Check if user has at least 6 months subscription (6 Months Plan or 1 Year Plan)
     const hasRequiredSubscription = profile?.subscription_active && 
-      profile?.subscription_plan && 
-      profile.subscription_plan !== "Free Plan";
+      (profile?.subscription_plan === '6 Months Plan' || profile?.subscription_plan === '1 Year Plan');
     
     if (hasRequiredSubscription) {
       window.open("https://app.funnelshubpro.com/", "_blank", "noopener,noreferrer");
@@ -27,10 +26,9 @@ export default function DigitalPortfolio() {
   };
 
   const handleOpenSuperAI = () => {
-    // Check if user has active subscription (any paid plan)
+    // Check if user has at least 6 months subscription (6 Months Plan or 1 Year Plan)
     const hasRequiredSubscription = profile?.subscription_active && 
-      profile?.subscription_plan && 
-      profile.subscription_plan !== "Free Plan";
+      (profile?.subscription_plan === '6 Months Plan' || profile?.subscription_plan === '1 Year Plan');
     
     if (hasRequiredSubscription) {
       window.open("https://chatgpt.com/g/g-6748bbe08e948191a4f8ebcb26a77c94-superai-advanced-ai-assistant", "_blank", "noopener,noreferrer");
@@ -130,10 +128,10 @@ export default function DigitalPortfolio() {
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-foreground mb-2">Subscription Required</h2>
               <p className="text-muted-foreground">
-                Access to Digital Portfolio and Super AI requires an active subscription. Please upgrade your plan to continue.
+                Access to Digital Portfolio and Super AI requires either a 6 Months Plan or 1 Year Plan subscription. Please upgrade your plan to continue.
               </p>
             </div>
-            <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+            <PricingDialog eligiblePlans={["6 Months Plan", "1 Year Plan"]} />
             <button
               onClick={() => setShowPricing(false)}
               className="mt-4 px-4 py-2 bg-muted rounded-md hover:bg-muted/80 w-full"
