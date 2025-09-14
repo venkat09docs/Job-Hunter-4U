@@ -5089,6 +5089,10 @@ export type Database = {
           username: string
         }[]
       }
+      get_assigner_for_institute: {
+        Args: { institute_id_param: string }
+        Returns: string
+      }
       get_badge_leaders_github_repository: {
         Args: Record<PropertyKey, never>
         Returns: {
