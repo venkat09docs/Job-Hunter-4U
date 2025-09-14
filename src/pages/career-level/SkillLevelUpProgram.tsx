@@ -13,7 +13,8 @@ import {
   Home,
   Medal,
   Award,
-  Users
+  Users,
+  Lock
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import type { 
   AssignmentWithProgress, 
@@ -36,11 +38,15 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import SkillDeveloperProgramsTab from '@/components/SkillDeveloperProgramsTab';
+import PricingDialog from '@/components/PricingDialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const SkillLevelUpProgram: React.FC = () => {
   const { user } = useAuth();
+  const { profile, hasActiveSubscription } = useProfile();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
   
   const { 
     loading, 
@@ -366,6 +372,9 @@ const SkillLevelUpProgram: React.FC = () => {
     );
   };
 
+  // Check if user needs to upgrade (no subscription or one month plan)
+  const needsUpgrade = !hasActiveSubscription() || (profile?.subscription_plan === 'One Month Plan');
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -404,6 +413,106 @@ const SkillLevelUpProgram: React.FC = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Show upgrade page for unsubscribed users and one month plan users
+  if (needsUpgrade) {
+    return (
+      <>
+        <div className="min-h-screen bg-background">
+          {/* Top Navigation Header */}
+          <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-16 items-center justify-between px-6">
+              {/* Left side - Navigation */}
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2"
+                >
+                  <Home className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Button>
+                <div className="hidden sm:block h-4 w-px bg-border" />
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-purple-500" />
+                  <span className="font-semibold">Skill Level Up Program</span>
+                </div>
+              </div>
+              
+              {/* Right side - User Profile */}
+              <UserProfileDropdown />
+            </div>
+          </header>
+
+          <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="text-center">
+              <div className="mb-8">
+                <Lock className="h-24 w-24 mx-auto mb-6 text-muted-foreground" />
+                <h1 className="text-4xl font-bold text-foreground mb-4">
+                  Unlock Skill Level Up Program
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  {profile?.subscription_plan === 'One Month Plan' 
+                    ? `Upgrade from your ${profile.subscription_plan} to access advanced skill development programs, assignments, and compete on leaderboards.`
+                    : 'Access advanced skill development programs, track assignments, and compete on leaderboards with a subscription plan.'
+                  }
+                </p>
+              </div>
+
+              <Card className="max-w-md mx-auto mb-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 justify-center">
+                    <Trophy className="h-6 w-6 text-purple-500" />
+                    Premium Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-left space-y-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Interactive skill development programs</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Timed assignments and assessments</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Competitive leaderboards</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Progress tracking and analytics</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">Certificates and badges</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button 
+                onClick={() => setPricingDialogOpen(true)}
+                size="lg"
+                className="px-8 py-6 text-lg"
+              >
+                <Trophy className="h-5 w-5 mr-2" />
+                Upgrade Plan
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
+            <PricingDialog />
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
