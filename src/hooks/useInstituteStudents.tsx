@@ -92,7 +92,7 @@ export const useInstituteStudents = () => {
         .in('batch_id', batchIds)
         .in('institute_id', instituteIds)
         .eq('is_active', true)
-        .eq('assignment_type', 'batch');
+        .in('assignment_type', ['batch', 'institute']); // Include both types
 
       if (assignmentError) throw assignmentError;
 

@@ -199,7 +199,7 @@ export const StudentsManagement = () => {
           )
         `)
         .eq('is_active', true)
-        .eq('assignment_type', 'batch');
+        .in('assignment_type', ['batch', 'institute']); // Include both types
 
       if (targetInstituteId) {
         assignmentsQuery = assignmentsQuery.eq('institute_id', targetInstituteId);

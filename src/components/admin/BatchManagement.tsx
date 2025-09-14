@@ -207,7 +207,7 @@ export const BatchManagement = () => {
               .from('user_assignments')
               .select('*', { count: 'exact', head: true })
               .eq('batch_id', batch.id)
-              .eq('assignment_type', 'batch')
+              .in('assignment_type', ['batch', 'institute']) // Include both types
               .eq('is_active', true);
 
             return {
@@ -252,7 +252,7 @@ export const BatchManagement = () => {
               .from('user_assignments')
               .select('*', { count: 'exact', head: true })
               .eq('batch_id', batch.id)
-              .eq('assignment_type', 'batch')
+              .in('assignment_type', ['batch', 'institute']) // Include both types
               .eq('is_active', true);
 
             return {
@@ -310,7 +310,7 @@ export const BatchManagement = () => {
             .from('user_assignments')
             .select('*', { count: 'exact', head: true })
             .eq('batch_id', batch.id)
-            .eq('assignment_type', 'batch')
+            .in('assignment_type', ['batch', 'institute']) // Include both types
             .eq('is_active', true);
 
           return {
@@ -436,7 +436,7 @@ export const BatchManagement = () => {
         .from('user_assignments')
         .select('id, user_id, assigned_at')
         .eq('batch_id', batch.id)
-        .eq('assignment_type', 'batch')
+        .in('assignment_type', ['batch', 'institute']) // Include both types
         .eq('is_active', true);
 
       if (assignmentError) throw assignmentError;
