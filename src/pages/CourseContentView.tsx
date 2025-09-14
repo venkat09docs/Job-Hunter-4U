@@ -246,38 +246,25 @@ const CourseContentView: React.FC = () => {
             console.log('Final embed URL:', embedUrl);
 
             return (
-              <div className="space-y-4">
-                <div className="relative w-full">
-                  {/* Responsive video container with maximum space utilization */}
-                  <div 
-                    className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
-                    style={{ 
-                      aspectRatio: '16/9',
-                      maxHeight: 'min(85vh, 800px)' // Increased height limit for better space usage
-                    }}
-                  >
-                    <iframe
-                      src={embedUrl}
-                      className="absolute inset-0 w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={chapter.title}
-                      style={{ border: 'none' }}
-                    />
-                  </div>
+              <div className="relative w-full">
+                {/* Responsive video container with maximum space utilization */}
+                <div 
+                  className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
+                  style={{ 
+                    aspectRatio: '16/9',
+                    maxHeight: 'min(90vh, 900px)' // Increased height limit for maximum space usage
+                  }}
+                >
+                  <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={chapter.title}
+                    style={{ border: 'none' }}
+                  />
                 </div>
-                {chapter.description && (
-                  <div className="prose prose-sm max-w-none">
-                    <p className="text-muted-foreground">{chapter.description}</p>
-                  </div>
-                )}
-                {chapter.duration_minutes && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Play className="h-4 w-4" />
-                    <span>Duration: {chapter.duration_minutes} minutes</span>
-                  </div>
-                )}
               </div>
             );
           } catch (error) {
@@ -530,9 +517,9 @@ const CourseContentView: React.FC = () => {
             <>
               {/* Chapter Content - Full Height */}
               <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex-1 overflow-auto">
-                  <div className="p-2 lg:p-4">
-                    <div className="max-w-6xl mx-auto">
+                <div className="flex-1">
+                  <div className="p-2 lg:p-4 h-full">
+                    <div className="max-w-7xl mx-auto h-full">
                       {renderChapterContent(selectedChapter)}
                     </div>
                   </div>
