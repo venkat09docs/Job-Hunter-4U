@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -68,17 +68,43 @@ const SkillLevelUpProgram: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedModule, setSelectedModule] = useState<string>('all');
   
+  // Internal loading state to avoid multiple loading indicators
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  
   // Get active tab from URL params or default to 'skill-programs'
   const activeTab = searchParams.get('tab') || 'skill-programs';
 
-  useEffect(() => {
-    if (user) {
-      loadData();
-      loadCourses();
-      loadLeaderboard();
+  // Optimized initial data loading - combine all API calls
+  const loadAllData = useCallback(async () => {
+    if (!user) return;
+    
+    setIsInitialLoading(true);
+    try {
+      // Load all data in parallel for better performance
+      const [assignmentsData, attemptsData, coursesData, leaderboardData] = await Promise.all([
+        getAssignmentsWithProgress(),
+        getAttemptsByUser(),
+        getCourses(),
+        getLeaderboard()
+      ]);
+      
+      setAssignments(assignmentsData);
+      setAttempts(attemptsData);
+      setCourses(coursesData);
+      setLeaderboardData(leaderboardData);
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+    } finally {
+      setIsInitialLoading(false);
     }
-  }, [user]);
+  }, [user, getAssignmentsWithProgress, getAttemptsByUser, getCourses, getLeaderboard]);
 
+  // Load initial data only once
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
+
+  // Handle course/module changes for leaderboard (optimized)
   useEffect(() => {
     if (selectedCourse !== 'all') {
       loadModules(selectedCourse);
@@ -86,48 +112,10 @@ const SkillLevelUpProgram: React.FC = () => {
       setModules([]);
     }
     setSelectedModule('all');
-    loadLeaderboard();
   }, [selectedCourse]);
 
-  useEffect(() => {
-    loadLeaderboard();
-  }, [selectedModule]);
-
-  const handleTabChange = (value: string) => {
-    setSearchParams({ tab: value });
-  };
-
-  // Load data for My Assignments
-  const loadData = async () => {
-    const [assignmentsData, attemptsData] = await Promise.all([
-      getAssignmentsWithProgress(),
-      getAttemptsByUser()
-    ]);
-    
-    setAssignments(assignmentsData);
-    setAttempts(attemptsData);
-  };
-
-  // Load data for Leaderboard
-  const loadCourses = async () => {
-    try {
-      const coursesData = await getCourses();
-      setCourses(coursesData);
-    } catch (error) {
-      console.error('Failed to load courses:', error);
-    }
-  };
-
-  const loadModules = async (courseId: string) => {
-    try {
-      const modulesData = await getModulesByCourse(courseId);
-      setModules(modulesData);
-    } catch (error) {
-      console.error('Failed to load modules:', error);
-    }
-  };
-
-  const loadLeaderboard = async () => {
+  // Optimized leaderboard loading
+  const loadLeaderboardOptimized = useCallback(async () => {
     try {
       const courseId = selectedCourse !== 'all' ? selectedCourse : undefined;
       const moduleId = selectedModule !== 'all' ? selectedModule : undefined;
@@ -137,10 +125,55 @@ const SkillLevelUpProgram: React.FC = () => {
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
     }
+  }, [selectedCourse, selectedModule, getLeaderboard]);
+
+  useEffect(() => {
+    if (!isInitialLoading) {
+      loadLeaderboardOptimized();
+    }
+  }, [selectedModule, loadLeaderboardOptimized, isInitialLoading]);
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
   };
 
-  // Helper functions for My Assignments
-  const getStatusColor = (status: string) => {
+  // Load modules for selected course
+  const loadModules = useCallback(async (courseId: string) => {
+    try {
+      const modulesData = await getModulesByCourse(courseId);
+      setModules(modulesData);
+    } catch (error) {
+      console.error('Failed to load modules:', error);
+    }
+  }, [getModulesByCourse]);
+
+  // Memoized calculations for better performance
+  const filteredAssignments = useMemo(() => ({
+    upcoming: assignments.filter(a => 
+      a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
+    ),
+    active: assignments.filter(a => 
+      a.userAttempts.some(attempt => attempt.status === 'started')
+    ),
+    completed: assignments.filter(a => 
+      a.userAttempts.some(attempt => 
+        attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+      )
+    )
+  }), [assignments]);
+
+  // Memoized leaderboard calculations
+  const leaderboardStats = useMemo(() => {
+    const currentUserEntry = leaderboardData.find(entry => entry.user_id === user?.id);
+    const currentUserRank = currentUserEntry 
+      ? leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
+      : null;
+    
+    return { currentUserEntry, currentUserRank };
+  }, [leaderboardData, user?.id]);
+
+  // Helper functions for My Assignments (memoized)
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'open': return 'bg-green-500';
       case 'scheduled': return 'bg-blue-500';
@@ -148,9 +181,9 @@ const SkillLevelUpProgram: React.FC = () => {
       case 'draft': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
-  };
+  }, []);
 
-  const getAttemptStatusColor = (status: string) => {
+  const getAttemptStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'submitted': return 'bg-green-500';
       case 'started': return 'bg-blue-500';
@@ -158,27 +191,27 @@ const SkillLevelUpProgram: React.FC = () => {
       case 'invalidated': return 'bg-red-500';
       default: return 'bg-gray-500';
     }
-  };
+  }, []);
 
-  const formatDateTime = (dateString: string) => {
+  const formatDateTime = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
+  }, []);
 
-  const getDaysRemaining = (dueDate: string) => {
+  const getDaysRemaining = useCallback((dueDate: string) => {
     const now = new Date();
     const due = new Date(dueDate);
     const diffTime = due.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
-  };
+  }, []);
 
-  // Helper functions for Leaderboard
-  const getRankIcon = (position: number) => {
+  // Helper functions for Leaderboard (memoized)
+  const getRankIcon = useCallback((position: number) => {
     switch (position) {
       case 1:
         return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -189,9 +222,9 @@ const SkillLevelUpProgram: React.FC = () => {
       default:
         return <span className="text-sm font-bold text-muted-foreground">#{position}</span>;
     }
-  };
+  }, []);
 
-  const getPositionStyles = (position: number) => {
+  const getPositionStyles = useCallback((position: number) => {
     switch (position) {
       case 1:
         return "bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200";
@@ -202,30 +235,10 @@ const SkillLevelUpProgram: React.FC = () => {
       default:
         return "bg-background border-border";
     }
-  };
+  }, []);
 
-  // Filter assignments by status
-  const upcomingAssignments = assignments.filter(a => 
-    a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
-  );
-  
-  const activeAssignments = assignments.filter(a => 
-    a.userAttempts.some(attempt => attempt.status === 'started')
-  );
-  
-  const completedAssignments = assignments.filter(a => 
-    a.userAttempts.some(attempt => 
-      attempt.status === 'submitted' || attempt.status === 'auto_submitted'
-    )
-  );
-
-  // Leaderboard calculations
-  const currentUserEntry = leaderboardData.find(entry => entry.user_id === user?.id);
-  const currentUserRank = currentUserEntry 
-    ? leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
-    : null;
-
-  const renderAssignmentCard = (assignment: AssignmentWithProgress) => {
+  // Memoized assignment card rendering for better performance
+  const renderAssignmentCard = useCallback((assignment: AssignmentWithProgress) => {
     const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
     const isCompleted = assignment.userAttempts.some(a => 
       a.status === 'submitted' || a.status === 'auto_submitted'
@@ -370,7 +383,7 @@ const SkillLevelUpProgram: React.FC = () => {
         </CardContent>
       </Card>
     );
-  };
+  }, [getStatusColor, formatDateTime, getDaysRemaining]); // Added dependencies for useCallback
 
   // Check if user needs to upgrade (no subscription)
   const needsUpgrade = !hasActiveSubscription();
@@ -577,7 +590,7 @@ const SkillLevelUpProgram: React.FC = () => {
                   <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Available</p>
-                    <p className="text-2xl font-bold">{upcomingAssignments.length}</p>
+                    <p className="text-2xl font-bold">{filteredAssignments.upcoming.length}</p>
                   </div>
                 </div>
               </Card>
@@ -587,7 +600,7 @@ const SkillLevelUpProgram: React.FC = () => {
                   <Clock className="w-8 h-8 text-orange-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                    <p className="text-2xl font-bold">{activeAssignments.length}</p>
+                    <p className="text-2xl font-bold">{filteredAssignments.active.length}</p>
                   </div>
                 </div>
               </Card>
@@ -597,7 +610,7 @@ const SkillLevelUpProgram: React.FC = () => {
                   <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-bold">{completedAssignments.length}</p>
+                    <p className="text-2xl font-bold">{filteredAssignments.completed.length}</p>
                   </div>
                 </div>
               </Card>
@@ -627,23 +640,23 @@ const SkillLevelUpProgram: React.FC = () => {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="available" className="flex items-center gap-2">
                   <PlayCircle className="w-4 h-4" />
-                  Available ({upcomingAssignments.length})
+                  Available ({filteredAssignments.upcoming.length})
                 </TabsTrigger>
                 <TabsTrigger value="pending" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  Pending ({activeAssignments.length})
+                  Pending ({filteredAssignments.active.length})
                 </TabsTrigger>
                 <TabsTrigger value="completed" className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
-                  Completed ({completedAssignments.length})
+                  Completed ({filteredAssignments.completed.length})
                 </TabsTrigger>
               </TabsList>
 
               {/* Available Assignments Tab */}
               <TabsContent value="available" className="space-y-4">
-                {upcomingAssignments.length > 0 ? (
+                {filteredAssignments.upcoming.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {upcomingAssignments.map(renderAssignmentCard)}
+                    {filteredAssignments.upcoming.map(renderAssignmentCard)}
                   </div>
                 ) : (
                   <Card className="p-8">
@@ -660,9 +673,9 @@ const SkillLevelUpProgram: React.FC = () => {
 
               {/* Pending Assignments Tab */}
               <TabsContent value="pending" className="space-y-4">
-                {activeAssignments.length > 0 ? (
+                {filteredAssignments.active.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {activeAssignments.map(renderAssignmentCard)}
+                    {filteredAssignments.active.map(renderAssignmentCard)}
                   </div>
                 ) : (
                   <Card className="p-8">
@@ -679,9 +692,9 @@ const SkillLevelUpProgram: React.FC = () => {
 
               {/* Completed Assignments Tab */}
               <TabsContent value="completed" className="space-y-4">
-                {completedAssignments.length > 0 ? (
+                {filteredAssignments.completed.length > 0 ? (
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {completedAssignments.map(renderAssignmentCard)}
+                    {filteredAssignments.completed.map(renderAssignmentCard)}
                   </div>
                 ) : (
                   <Card className="p-8">
@@ -747,7 +760,7 @@ const SkillLevelUpProgram: React.FC = () => {
             </div>
 
             {/* Current User Rank */}
-            {currentUserRank && (
+            {leaderboardStats.currentUserRank && (
               <Card className="border-2 border-primary/20 bg-primary/5">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -758,13 +771,13 @@ const SkillLevelUpProgram: React.FC = () => {
                       <div>
                         <h3 className="text-lg font-semibold">Your Rank</h3>
                         <p className="text-sm text-muted-foreground">
-                          You're currently ranked #{currentUserRank} out of {leaderboardData.length} participants
+                          You're currently ranked #{leaderboardStats.currentUserRank} out of {leaderboardData.length} participants
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-primary">
-                        {currentUserEntry?.points_total || 0}
+                        {leaderboardStats.currentUserEntry?.points_total || 0}
                       </p>
                       <p className="text-sm text-muted-foreground">points</p>
                     </div>
