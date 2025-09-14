@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/types/clp';
 
 // Course Card Component - Moved before main component
 const CourseCard: React.FC<{ 
   course: Course; 
+  isEnrolled: boolean;
   onEnrollCourse?: (courseId: string, courseTitle: string) => void;
-}> = ({ course, onEnrollCourse }) => {
+  onViewCourse?: (courseId: string) => void;
+}> = ({ course, isEnrolled, onEnrollCourse, onViewCourse }) => {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
@@ -86,10 +89,17 @@ const CourseCard: React.FC<{
             
             <Button 
               size="sm" 
+              variant={isEnrolled ? "outline" : "default"}
               className="group/btn"
-              onClick={() => onEnrollCourse?.(course.id, course.title)}
+              onClick={() => {
+                if (isEnrolled) {
+                  onViewCourse?.(course.id);
+                } else {
+                  onEnrollCourse?.(course.id, course.title);
+                }
+              }}
             >
-              <span>Enroll Now</span>
+              <span>{isEnrolled ? "View Course" : "Enroll Now"}</span>
               <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
             </Button>
           </div>
@@ -106,6 +116,7 @@ interface SkillDeveloperProgramsTabProps {
 const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ onEnrollCourse }) => {
   const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
+  const { goals } = useLearningGoals();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
@@ -137,6 +148,15 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
       // Fallback to direct navigation if no handler provided
       navigate(`/course/${courseId}`);
     }
+  };
+
+  const handleViewCourse = (courseId: string) => {
+    // Navigate directly to course content view
+    navigate(`/course-content/${courseId}`);
+  };
+
+  const isUserEnrolled = (courseId: string) => {
+    return goals.some(goal => goal.course_id === courseId);
   };
 
   const formatDuration = (hours: number) => {
@@ -261,8 +281,10 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
                 {categoryCourses.map((course) => (
                 <CourseCard 
                   key={course.id} 
-                  course={course} 
+                  course={course}
+                  isEnrolled={isUserEnrolled(course.id)}
                   onEnrollCourse={handleEnrollCourse}
+                  onViewCourse={handleViewCourse}
                 />
                 ))}
               </div>
@@ -275,8 +297,10 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
           {filteredCourses.map((course) => (
           <CourseCard 
             key={course.id} 
-            course={course} 
+            course={course}
+            isEnrolled={isUserEnrolled(course.id)}
             onEnrollCourse={handleEnrollCourse}
+            onViewCourse={handleViewCourse}
           />
           ))}
         </div>
