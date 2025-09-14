@@ -57,6 +57,8 @@ export function LearningGoalsSection({
   }, [getCourses]);
 
   // Load course progress for goals with course_id (read-only, no updates)
+  // TEMPORARILY DISABLED TO FIX INFINITE LOOP
+  /*
   useEffect(() => {
     const loadCourseProgress = async () => {
       const progressData: Record<string, any> = {};
@@ -81,6 +83,7 @@ export function LearningGoalsSection({
       loadCourseProgress();
     }
   }, [goalIds, getCourseProgress]);
+  */
 
   // Clear processed updates when goals change significantly
   useEffect(() => {

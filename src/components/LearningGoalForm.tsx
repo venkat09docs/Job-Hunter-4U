@@ -48,7 +48,8 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
   });
   const [resources, setResources] = useState<Resource[]>(goal?.resources || []);
 
-  // Load courses for selection
+  // Load courses for selection - TEMPORARILY DISABLED
+  /*
   useEffect(() => {
     const loadCourses = async () => {
       try {
@@ -60,6 +61,7 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
     };
     loadCourses();
   }, [getCourses]);
+  */
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
