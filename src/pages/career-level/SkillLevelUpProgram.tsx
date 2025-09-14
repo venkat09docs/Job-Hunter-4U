@@ -466,7 +466,7 @@ const SkillLevelUpProgram: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open('https://youtube.com', '_blank')}
+                  onClick={() => window.open('https://www.youtube.com/@career-levelup', '_blank')}
                   className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
@@ -477,10 +477,7 @@ const SkillLevelUpProgram: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    // TODO: Add community link
-                    console.log('Career Level Up Community clicked');
-                  }}
+                  onClick={() => window.open('https://members.risenshinetechnologies.com/communities/groups/career-level-up/home', '_blank')}
                   className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
                 >
                   <Users className="h-4 w-4" />
