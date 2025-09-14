@@ -11,6 +11,16 @@ import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import type { LearningGoal, CreateLearningGoalData } from '@/hooks/useLearningGoals';
 
+const resourceTypes = [
+  { value: 'documentation', label: 'Documentation' },
+  { value: 'course', label: 'Online Course' },
+  { value: 'book', label: 'Book' },
+  { value: 'video', label: 'Video Tutorial' },
+  { value: 'article', label: 'Article' },
+  { value: 'practice', label: 'Practice Platform' },
+  { value: 'other', label: 'Other' }
+];
+
 interface LearningGoalFormProps {
   goal?: LearningGoal;
   onSubmit: (data: CreateLearningGoalData) => void;
@@ -85,16 +95,6 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
 
     onSubmit(goalData);
   };
-
-  const resourceTypes = [
-    { value: 'documentation', label: 'Documentation' },
-    { value: 'course', label: 'Online Course' },
-    { value: 'book', label: 'Book' },
-    { value: 'video', label: 'Video Tutorial' },
-    { value: 'article', label: 'Article' },
-    { value: 'practice', label: 'Practice Platform' },
-    { value: 'other', label: 'Other' }
-  ];
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
