@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp, ExternalLink, Trophy } from 'lucide-react';
+import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp, ExternalLink, Trophy, RefreshCw } from 'lucide-react';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
@@ -53,7 +53,7 @@ export function LearningGoalsSection({
     loadCourses();
   }, [getCourses]);
 
-  // Load course progress for goals with course_id
+  // Load course progress for goals with course_id (read-only, no updates)
   useEffect(() => {
     const loadCourseProgress = async () => {
       const progressData: Record<string, any> = {};
@@ -64,32 +64,6 @@ export function LearningGoalsSection({
             const progress = await getCourseProgress(goal.course_id);
             if (progress) {
               progressData[goal.id] = progress;
-              
-              // Create unique key for this update
-              const updateKey = `${goal.id}-${progress.progress_percentage}`;
-              
-              // Only process if we haven't already handled this exact progress for this goal
-              if (!processedUpdates.current.has(updateKey) && progress.progress_percentage !== goal.progress) {
-                processedUpdates.current.add(updateKey);
-                
-                // Update goal progress
-                updateGoal(goal.id, { progress: progress.progress_percentage }).then(() => {
-                  // Check if course is completed and award points
-                  if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
-                    awardLearningGoalPoints(goal.id).then((result) => {
-                      if (result.success) {
-                        toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
-                      }
-                    }).catch(error => {
-                      console.error('Error awarding points:', error);
-                    });
-                  }
-                }).catch(error => {
-                  console.error('Error updating goal progress:', error);
-                  // Remove from processed set on error so it can be retried
-                  processedUpdates.current.delete(updateKey);
-                });
-              }
             }
           } catch (error) {
             console.error('Error loading course progress:', error);
@@ -103,7 +77,7 @@ export function LearningGoalsSection({
     if (goals.length > 0) {
       loadCourseProgress();
     }
-  }, [goals, getCourseProgress, updateGoal, awardLearningGoalPoints]);
+  }, [goals.map(g => g.id).join(','), getCourseProgress]);
 
   // Clear processed updates when goals change significantly
   useEffect(() => {
@@ -134,6 +108,36 @@ export function LearningGoalsSection({
     setEditingGoal(null);
     if (onFormClosed) {
       onFormClosed();
+    }
+  };
+
+  const handleSyncProgress = async (goalId: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal || !goal.course_id) return;
+
+    try {
+      const progress = await getCourseProgress(goal.course_id);
+      if (progress && progress.progress_percentage !== goal.progress) {
+        const success = await updateGoal(goalId, { progress: progress.progress_percentage });
+        if (success) {
+          toast.success('Progress synced successfully!');
+          
+          // Check if course is completed and award points
+          if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
+            try {
+              const result = await awardLearningGoalPoints(goalId);
+              if (result.success) {
+                toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
+              }
+            } catch (error) {
+              console.error('Error awarding points:', error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing progress:', error);
+      toast.error('Failed to sync progress');
     }
   };
 
@@ -378,6 +382,17 @@ export function LearningGoalsSection({
                             </div>
                           </DialogContent>
                         </Dialog>
+                        {goal.course_id && courseProgress[goal.id] && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            onClick={() => handleSyncProgress(goal.id)}
+                            title="Sync course progress"
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" onClick={() => setEditingGoal(goal)}>
                           <Edit className="h-4 w-4" />
                         </Button>
