@@ -130,12 +130,17 @@ const SkillDeveloperProgramsTab: React.FC = () => {
     return `${hours}${hours === 1 ? ' hour' : ' hours'}`;
   };
 
-  // Filter courses by selected category
-  const filteredCourses = selectedCategory === 'all' 
+  // Filter courses by selected category and sort by order_index
+  const filteredCourses = (selectedCategory === 'all' 
     ? courses 
-    : courses.filter(course => (course.category || 'General') === selectedCategory);
+    : courses.filter(course => (course.category || 'General') === selectedCategory))
+    .sort((a, b) => {
+      const orderA = (a as any).order_index || 999;
+      const orderB = (b as any).order_index || 999;
+      return orderA - orderB;
+    });
 
-  // Group courses by category for display
+  // Group courses by category for display and sort each category by order_index
   const coursesByCategory = courses.reduce((acc, course) => {
     const category = course.category || 'General';
     if (!acc[category]) {
@@ -144,6 +149,15 @@ const SkillDeveloperProgramsTab: React.FC = () => {
     acc[category].push(course);
     return acc;
   }, {} as Record<string, Course[]>);
+
+  // Sort courses within each category by order_index
+  Object.keys(coursesByCategory).forEach(category => {
+    coursesByCategory[category].sort((a, b) => {
+      const orderA = (a as any).order_index || 999;
+      const orderB = (b as any).order_index || 999;
+      return orderA - orderB;
+    });
+  });
 
   if (loading) {
     return (
