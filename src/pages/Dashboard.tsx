@@ -636,303 +636,287 @@ const Dashboard = () => {
             </Card>
 
 
-            {/* Status Tracker and Level Up Status - Side by Side */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-              
-              {/* Status Tracker - Only for Free, 1-month plan users */}
-              {canAccessStatusTracker() && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Status Tracker
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-3">
+            {/* Status Tracker - Only for Free, 1-month plan users */}
+            {canAccessStatusTracker() && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Status Tracker
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">Resume</p>
+                            <p className="text-lg font-bold">{resumeProgress}%</p>
+                          </div>
+                          <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                        <Progress value={resumeProgress} className="mt-3" />
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">LinkedIn</p>
+                            <p className="text-lg font-bold">{linkedinProgress}%</p>
+                          </div>
+                          <Users className="h-6 w-6 text-primary" />
+                        </div>
+                        <Progress value={linkedinProgress} className="mt-3" />
+                      </CardContent>
+                    </Card>
+
+                    {isIT() && (
                       <Card>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-medium text-muted-foreground">Resume</p>
-                              <p className="text-lg font-bold">{resumeProgress}%</p>
+                              <p className="text-xs font-medium text-muted-foreground">GitHub</p>
+                              <p className="text-lg font-bold">{githubProgress}%</p>
                             </div>
-                            <FileText className="h-6 w-6 text-primary" />
+                            <Github className="h-6 w-6 text-primary" />
                           </div>
-                          <Progress value={resumeProgress} className="mt-3" />
+                          <Progress value={githubProgress} className="mt-3" />
                         </CardContent>
                       </Card>
-
-                      <Card>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground">LinkedIn</p>
-                              <p className="text-lg font-bold">{linkedinProgress}%</p>
-                            </div>
-                            <Users className="h-6 w-6 text-primary" />
-                          </div>
-                          <Progress value={linkedinProgress} className="mt-3" />
-                        </CardContent>
-                      </Card>
-
-                      {isIT() && (
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-muted-foreground">GitHub</p>
-                                <p className="text-lg font-bold">{githubProgress}%</p>
-                              </div>
-                              <Github className="h-6 w-6 text-primary" />
-                            </div>
-                            <Progress value={githubProgress} className="mt-3" />
-                          </CardContent>
-                        </Card>
-                      )}
-
-                      <Card>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground">Job Apps</p>
-                              <p className="text-lg font-bold">{totalJobApplications}</p>
-                            </div>
-                            <Briefcase className="h-6 w-6 text-primary" />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Level Up Status - Only for 3M, 6M, 1Y plan users */}
-              {canAccessLevelUpStatus() ? (
-                <Card className="border-gradient-primary">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Level Up Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Responsive Grid: 2 rows of 3 cards each */}
-                    <div className="space-y-4">
-                      {/* First Row: Resume, LinkedIn, GitHub */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                        {/* Resume Status */}
-                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume</p>
-                                <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeProgress}%</p>
-                              </div>
-                              <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <Progress value={resumeProgress} className="mt-3 bg-blue-200 dark:bg-blue-800" />
-                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                              {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* LinkedIn Status */}
-                        <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn</p>
-                                <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
-                              </div>
-                              <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            </div>
-                            <Progress value={linkedinProgress} className="mt-3 bg-indigo-200 dark:bg-indigo-800" />
-                            <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
-                              {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        {/* GitHub Status */}
-                        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub</p>
-                                <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
-                              </div>
-                              <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
-                            </div>
-                            <Progress value={githubProgress} className="mt-3 bg-green-200 dark:bg-green-800" />
-                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                              {githubProgress === 100 ? 'Profile Ready!' : 'In Progress'}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-
-                      {/* Second Row: Applications, LinkedIn Growth, GitHub Weekly */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                        {/* Job Application Status */}
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleJobApplicationsClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Applications</p>
-                                <p className="text-lg font-bold text-orange-900 dark:text-orange-100">{totalJobApplications}</p>
-                              </div>
-                              <Briefcase className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
-                              {totalJobApplications === 0 ? 'Start applying!' : 
-                               totalJobApplications < 10 ? 'Keep applying!' : 
-                               'Great progress!'}
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        {/* LinkedIn Growth Status */}
-                        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                                <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0}</p>
-                              </div>
-                              <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div className="mt-3 text-xs text-purple-600 dark:text-purple-400">
-                              {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
-                               (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
-                               'Strong network!'}
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        {/* GitHub Weekly Status */}
-                        <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
-                                <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyCompleted}/{githubWeeklyTotal}</p>
-                              </div>
-                              <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                            </div>
-                            <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
-                            <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
-                              {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete!' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Level Up Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12">
-                      <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold mb-2">Level Up Status</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Advanced tracking available with premium subscription plans
-                      </p>
-                      <SubscriptionUpgrade featureName="Level Up Status" eligiblePlans={eligiblePlans}>
-                        <Button>Upgrade Plan</Button>
-                      </SubscriptionUpgrade>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
-              {/* Left Column */}
-              <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-
-                {/* Recent Job Applications */}
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-                        <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        Recent Job Applications
-                      </CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleViewAllJobs}
-                      >
-                        View All
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {jobsLoading ? (
-                      <div className="space-y-3">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="animate-pulse">
-                            <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                            <div className="h-3 bg-muted rounded w-1/2"></div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : recentJobs && recentJobs.length > 0 ? (
-                      <div className="space-y-3">
-                        {recentJobs && recentJobs.map((job) => (
-                          <div
-                            key={job.id}
-                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                            onClick={() => handleJobClick(job.id)}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium truncate">{job.job_title}</p>
-                              <p className="text-sm text-muted-foreground truncate">{job.company_name}</p>
-                            </div>
-                            <div className="flex items-center gap-2 ml-4">
-                              <Badge variant={getStatusBadgeVariant(job.status)}>
-                                {job.status}
-                              </Badge>
-                              <p className="text-xs text-muted-foreground hidden sm:block">
-                                {formatDistanceToNow(new Date(job.created_at))} ago
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                        <p className="text-muted-foreground">No job applications yet</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-3"
-                          onClick={handleStartJobSearch}
-                        >
-                          Start Job Search
-                        </Button>
-                      </div>
                     )}
-                  </CardContent>
-                </Card>
-              </div>
 
-              {/* Right Column */}
-              <div className="space-y-4 lg:space-y-6">
-                {/* Removed GitHub Activities section as requested */}
-              </div>
-            </div>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground">Job Apps</p>
+                            <p className="text-lg font-bold">{totalJobApplications}</p>
+                          </div>
+                          <Briefcase className="h-6 w-6 text-primary" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Level Up Status - Full Width */}
+            {canAccessLevelUpStatus() ? (
+              <Card className="border-gradient-primary">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Level Up Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Responsive Grid: 2 rows of 3 cards each */}
+                  <div className="space-y-4">
+                    {/* First Row: Resume, LinkedIn, GitHub */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                      {/* Resume Status */}
+                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume</p>
+                              <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeProgress}%</p>
+                            </div>
+                            <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <Progress value={resumeProgress} className="mt-3 bg-blue-200 dark:bg-blue-800" />
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                            {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      {/* LinkedIn Status */}
+                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn</p>
+                              <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
+                            </div>
+                            <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <Progress value={linkedinProgress} className="mt-3 bg-indigo-200 dark:bg-indigo-800" />
+                          <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                            {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      {/* GitHub Status */}
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub</p>
+                              <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
+                            </div>
+                            <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
+                          </div>
+                          <Progress value={githubProgress} className="mt-3 bg-green-200 dark:bg-green-800" />
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                            {githubProgress === 100 ? 'Profile Ready!' : 'In Progress'}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Second Row: Applications, LinkedIn Growth, GitHub Weekly */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                      {/* Job Application Status */}
+                      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleJobApplicationsClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Applications</p>
+                              <p className="text-lg font-bold text-orange-900 dark:text-orange-100">{totalJobApplications}</p>
+                            </div>
+                            <Briefcase className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                          </div>
+                          <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
+                            {totalJobApplications === 0 ? 'Start applying!' : 
+                             totalJobApplications < 10 ? 'Keep applying!' : 
+                             'Great progress!'}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* LinkedIn Growth Status */}
+                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
+                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0}</p>
+                            </div>
+                            <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="mt-3 text-xs text-purple-600 dark:text-purple-400">
+                            {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
+                             (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
+                             'Strong network!'}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* GitHub Weekly Status */}
+                      <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
+                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyCompleted}/{githubWeeklyTotal}</p>
+                            </div>
+                            <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                          </div>
+                          <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
+                          <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
+                            {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete!' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Level Up Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Level Up Status</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Advanced tracking available with premium subscription plans
+                    </p>
+                    <SubscriptionUpgrade featureName="Level Up Status" eligiblePlans={eligiblePlans}>
+                      <Button>Upgrade Plan</Button>
+                    </SubscriptionUpgrade>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recent Job Applications - Full Width */}
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                    <Briefcase className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    Recent Job Applications
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleViewAllJobs}
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {jobsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                        <div className="h-3 bg-muted rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentJobs && recentJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    {recentJobs && recentJobs.map((job) => (
+                      <div
+                        key={job.id}
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => handleJobClick(job.id)}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{job.job_title}</p>
+                          <p className="text-sm text-muted-foreground truncate">{job.company_name}</p>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <Badge variant={getStatusBadgeVariant(job.status)}>
+                            {job.status}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground hidden sm:block">
+                            {formatDistanceToNow(new Date(job.created_at))} ago
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-muted-foreground">No job applications yet</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-3"
+                      onClick={handleStartJobSearch}
+                    >
+                      Start Job Search
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
           </div>
         </div>
