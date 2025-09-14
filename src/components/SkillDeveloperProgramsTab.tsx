@@ -7,14 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useRole } from '@/hooks/useRole';
 import { CourseContentDialog } from '@/components/CourseContentDialog';
+import { CourseContentViewer } from '@/components/CourseContentViewer';
 import type { Course } from '@/types/clp';
 
 // Course Card Component - Moved before main component
 const CourseCard: React.FC<{ 
   course: Course; 
   onManageContent?: (courseId: string, courseTitle: string) => void;
+  onEnrollCourse?: (courseId: string, courseTitle: string) => void;
   showManageButton?: boolean;
-}> = ({ course, onManageContent, showManageButton = false }) => {
+}> = ({ course, onManageContent, onEnrollCourse, showManageButton = false }) => {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
@@ -103,12 +105,9 @@ const CourseCard: React.FC<{
               <Button 
                 size="sm" 
                 className="group/btn"
-                onClick={() => {
-                  // TODO: Navigate to course detail or enrollment
-                  console.log('Enroll in course:', course.id);
-                }}
+                onClick={() => onEnrollCourse?.(course.id, course.title)}
               >
-                <span>Enroll</span>
+                <span>Enroll Now</span>
                 <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
               </Button>
             )}
@@ -126,6 +125,7 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [contentViewerOpen, setContentViewerOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
@@ -150,6 +150,11 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   const handleManageContent = (courseId: string, courseTitle: string) => {
     setSelectedCourse({ id: courseId, title: courseTitle });
     setContentDialogOpen(true);
+  };
+
+  const handleEnrollCourse = (courseId: string, courseTitle: string) => {
+    setSelectedCourse({ id: courseId, title: courseTitle });
+    setContentViewerOpen(true);
   };
 
   const formatDuration = (hours: number) => {
@@ -276,6 +281,7 @@ const SkillDeveloperProgramsTab: React.FC = () => {
                     key={course.id} 
                     course={course} 
                     onManageContent={handleManageContent}
+                    onEnrollCourse={handleEnrollCourse}
                     showManageButton={isAdmin}
                   />
                 ))}
@@ -291,6 +297,7 @@ const SkillDeveloperProgramsTab: React.FC = () => {
               key={course.id} 
               course={course} 
               onManageContent={handleManageContent}
+              onEnrollCourse={handleEnrollCourse}
               showManageButton={isAdmin}
             />
           ))}
@@ -302,6 +309,16 @@ const SkillDeveloperProgramsTab: React.FC = () => {
         <CourseContentDialog
           open={contentDialogOpen}
           onOpenChange={setContentDialogOpen}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Course Content Viewer */}
+      {selectedCourse && (
+        <CourseContentViewer
+          open={contentViewerOpen}
+          onOpenChange={setContentViewerOpen}
           courseId={selectedCourse.id}
           courseTitle={selectedCourse.title}
         />
