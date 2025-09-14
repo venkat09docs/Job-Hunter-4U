@@ -248,12 +248,12 @@ const CourseContentView: React.FC = () => {
             return (
               <div className="space-y-4">
                 <div className="relative w-full">
-                  {/* Responsive video container with proper aspect ratio handling */}
+                  {/* Responsive video container with maximum space utilization */}
                   <div 
                     className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
                     style={{ 
                       aspectRatio: '16/9',
-                      maxHeight: 'min(70vh, 600px)' // Limit height on large screens
+                      maxHeight: 'min(85vh, 800px)' // Increased height limit for better space usage
                     }}
                   >
                     <iframe
@@ -531,8 +531,8 @@ const CourseContentView: React.FC = () => {
               {/* Chapter Content - Full Height */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex-1 overflow-auto">
-                  <div className="p-4 lg:p-6 xl:p-8">
-                    <div className="max-w-5xl mx-auto">
+                  <div className="p-2 lg:p-4">
+                    <div className="max-w-6xl mx-auto">
                       {renderChapterContent(selectedChapter)}
                     </div>
                   </div>
