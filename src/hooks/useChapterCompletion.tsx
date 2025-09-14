@@ -117,7 +117,7 @@ export const useChapterCompletion = () => {
         return {
           total_chapters: data[0].total_chapters || 0,
           completed_chapters: data[0].completed_chapters || 0,
-          progress_percentage: parseFloat(data[0].progress_percentage) || 0
+          progress_percentage: Number(data[0].progress_percentage) || 0
         };
       }
 
