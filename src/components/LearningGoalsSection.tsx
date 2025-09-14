@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +39,9 @@ export function LearningGoalsSection({
   const [courses, setCourses] = useState<any[]>([]);
   const [courseProgress, setCourseProgress] = useState<Record<string, any>>({});
   const processedUpdates = useRef<Set<string>>(new Set());
+  
+  // Memoize goals IDs to prevent unnecessary re-renders
+  const goalIds = useMemo(() => goals.map(g => g.id).join(','), [goals]);
 
   // Load courses for selection
   useEffect(() => {
@@ -77,7 +80,7 @@ export function LearningGoalsSection({
     if (goals.length > 0) {
       loadCourseProgress();
     }
-  }, [goals.map(g => g.id).join(','), getCourseProgress]);
+  }, [goalIds, getCourseProgress]);
 
   // Clear processed updates when goals change significantly
   useEffect(() => {
