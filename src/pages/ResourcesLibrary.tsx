@@ -989,12 +989,11 @@ const ResourcesLibrary = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[800px]">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[600px]">
             <TabsTrigger value="saved-resumes">Saved Resumes</TabsTrigger>
             <TabsTrigger value="saved-cover-letters">Cover Letters</TabsTrigger>
             <TabsTrigger value="saved-readme-files">README Files</TabsTrigger>
             <TabsTrigger value="content-mgmt">Content Mgmt</TabsTrigger>
-            <TabsTrigger value="skills-learning">Skills / Learning</TabsTrigger>
           </TabsList>
 
           <TabsContent value="saved-resumes" className="mt-6">
@@ -1574,11 +1573,6 @@ const ResourcesLibrary = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          {/* Skills/Learning Tab */}
-          <TabsContent value="skills-learning" className="mt-6">
-            <LearningGoalsSection />
           </TabsContent>
         </Tabs>
 
