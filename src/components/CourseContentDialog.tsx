@@ -524,10 +524,24 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             </Button>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={(value) => {
+            console.log('🏷️ Tab change requested:', { from: activeTab, to: value });
+            setActiveTab(value);
+          }} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="sections">Sections</TabsTrigger>
-              <TabsTrigger value="chapters">Chapters</TabsTrigger>
+              <TabsTrigger 
+                value="sections" 
+                onClick={() => console.log('🔴 Sections tab clicked')}
+              >
+                Sections
+              </TabsTrigger>
+              <TabsTrigger 
+                value="chapters" 
+                onClick={() => console.log('🔵 Chapters tab clicked')}
+                className="cursor-pointer"
+              >
+                Chapters
+              </TabsTrigger>
             </TabsList>
 
           {/* Sections Tab */}
@@ -578,7 +592,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={handleSaveSection} disabled={loading} className="flex items-center gap-2">
+                    <Button onClick={handleSaveSection} disabled={false} className="flex items-center gap-2">
                       <Save className="h-4 w-4" />
                       {editingSection ? 'Update' : 'Create'} Section
                     </Button>
@@ -660,7 +674,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           <TabsContent value="chapters" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Course Chapters</h3>
-              <Button onClick={() => setShowChapterForm(true)} className="flex items-center gap-2">
+              <Button 
+                onClick={() => {
+                  console.log('➕ Add Chapter button clicked');
+                  setShowChapterForm(true);
+                }} 
+                className="flex items-center gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 Add Chapter
               </Button>
@@ -802,7 +822,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                   )}
 
                   <div className="flex gap-2">
-                    <Button onClick={handleSaveChapter} disabled={loading} className="flex items-center gap-2">
+                    <Button onClick={handleSaveChapter} disabled={false} className="flex items-center gap-2">
                       <Save className="h-4 w-4" />
                       {editingChapter ? 'Update' : 'Create'} Chapter
                     </Button>
