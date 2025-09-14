@@ -56,7 +56,7 @@ import PricingDialog from "./PricingDialog";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
+  { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null, requiresSubscription: true },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
@@ -240,6 +240,9 @@ export function AppSidebar() {
     // Special handling for AI-Powered Career Tools to check subscription before opening
     const isAICareerTools = item.title === "AI-Powered Career Tools";
     
+    // Special handling for Skill Level Up to check subscription
+    const isSkillLevelUp = item.title === "Skill Level Up" && item.requiresSubscription;
+    
     // Special handling for GitHub Weekly - show subscription dialog instead of navigating
     const isGitHubWeekly = item.title === "GitHub Weekly" && isPremium;
     
@@ -288,6 +291,17 @@ export function AppSidebar() {
       }
     };
     
+    const handleSkillLevelUpClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      // Check if user has active subscription
+      if (!profile?.subscription_plan || profile.subscription_plan === "Free Plan") {
+        setSubscriptionDialogOpen(true);
+      } else {
+        // User has subscription, proceed to navigate normally
+        window.location.href = item.url;
+      }
+    };
+    
     const menuItem = isAICareerTools ? (
       <div
         onClick={handleAICareerToolsClick}
@@ -305,6 +319,27 @@ export function AppSidebar() {
                 <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               }
             </div>
+          </div>
+        )}
+      </div>
+    ) : isSkillLevelUp ? (
+      <div
+        onClick={handleSkillLevelUpClick}
+        className={`flex items-center gap-3 ${isSubItem ? 'pl-8 pr-3' : 'px-3'} py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
+          currentPath === item.url 
+            ? `${colors.activeColor} ${colors.activeBg}`
+            : `text-foreground hover:text-accent-foreground ${colors.hoverBg}`
+        }`}
+      >
+        <item.icon className={`${isSubItem ? 'h-4 w-4' : 'h-5 w-5'} flex-shrink-0 ${colors.icon}`} />
+        {!isCollapsed && (
+          <div className="flex items-center justify-between flex-1 min-w-0">
+            <span className="text-sm truncate">
+              {item.title}
+            </span>
+            {(!profile?.subscription_plan || profile.subscription_plan === "Free Plan") && 
+              <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+            }
           </div>
         )}
       </div>
