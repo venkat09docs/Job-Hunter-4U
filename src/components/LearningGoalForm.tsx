@@ -52,6 +52,7 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
   }, [getCourses]);
 
   const handleInputChange = (field: string, value: string) => {
+    console.log('LearningGoalForm handleInputChange:', { field, value, currentFormData: formData });
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -97,7 +98,9 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
   ];
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <>
+      {console.log('LearningGoalForm rendering, formData:', formData)}
+      <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           {goal ? 'Edit Learning Goal' : 'Create New Learning Goal'}
@@ -275,5 +278,6 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
         </form>
       </CardContent>
     </Card>
+    </>
   );
 }
