@@ -305,7 +305,7 @@ export function AppSidebar() {
       
       // Check if user has active subscription (any paid plan)
       const hasValidSubscription = profile?.subscription_plan && 
-        ["1 Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan) &&
+        ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan) &&
         hasActiveSubscription();
       
       console.log('🔍 Has Valid Subscription:', hasValidSubscription);

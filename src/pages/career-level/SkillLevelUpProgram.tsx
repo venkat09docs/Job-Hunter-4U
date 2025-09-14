@@ -372,8 +372,8 @@ const SkillLevelUpProgram: React.FC = () => {
     );
   };
 
-  // Check if user needs to upgrade (no subscription or one month plan)
-  const needsUpgrade = !hasActiveSubscription() || (profile?.subscription_plan === 'One Month Plan');
+  // Check if user needs to upgrade (no subscription)
+  const needsUpgrade = !hasActiveSubscription();
 
   if (loading) {
     return (
@@ -416,7 +416,7 @@ const SkillLevelUpProgram: React.FC = () => {
     );
   }
 
-  // Show upgrade page for unsubscribed users and one month plan users
+  // Show upgrade page for unsubscribed users
   if (needsUpgrade) {
     return (
       <>
