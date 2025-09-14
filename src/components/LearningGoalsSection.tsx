@@ -7,10 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp, ExternalLink } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Edit, Trash2, BookOpen, Target, Calendar, AlertTriangle, TrendingUp, ExternalLink, Trophy } from 'lucide-react';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useChapterCompletion } from '@/hooks/useChapterCompletion';
 import { LearningGoalForm } from '@/components/LearningGoalForm';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface LearningGoalsSectionProps {
   shouldOpenForm?: boolean;
@@ -26,10 +30,70 @@ export function LearningGoalsSection({
   onFormClosed 
 }: LearningGoalsSectionProps) {
   const { goals, loading, createGoal, updateGoal, deleteGoal, getGoalStatus } = useLearningGoals();
+  const { getCourses } = useCareerLevelProgram();
+  const { getCourseProgress, awardLearningGoalPoints } = useChapterCompletion();
   const [showForm, setShowForm] = useState(shouldOpenForm);
   const [editingGoal, setEditingGoal] = useState<any>(null);
   const [progressGoal, setProgressGoal] = useState<any>(null);
   const [progressValue, setProgressValue] = useState(0);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [courseProgress, setCourseProgress] = useState<Record<string, any>>({});
+
+  // Load courses for selection
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const coursesData = await getCourses();
+        setCourses(coursesData);
+      } catch (error) {
+        console.error('Error loading courses:', error);
+      }
+    };
+    loadCourses();
+  }, [getCourses]);
+
+  // Load course progress for goals with course_id
+  useEffect(() => {
+    const loadCourseProgress = async () => {
+      const progressData: Record<string, any> = {};
+      
+      for (const goal of goals) {
+        if (goal.course_id) {
+          try {
+            const progress = await getCourseProgress(goal.course_id);
+            if (progress) {
+              progressData[goal.id] = progress;
+              
+              // Update goal progress if course progress has changed
+              if (progress.progress_percentage !== goal.progress) {
+                await updateGoal(goal.id, { progress: progress.progress_percentage });
+                
+                // Check if course is completed and award points
+                if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
+                  try {
+                    const result = await awardLearningGoalPoints(goal.id);
+                    if (result.success) {
+                      toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
+                    }
+                  } catch (error) {
+                    console.error('Error awarding points:', error);
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error loading course progress:', error);
+          }
+        }
+      }
+      
+      setCourseProgress(progressData);
+    };
+
+    if (goals.length > 0) {
+      loadCourseProgress();
+    }
+  }, [goals, getCourseProgress, updateGoal, awardLearningGoalPoints]);
 
   const handleCreate = async (data: any) => {
     const success = await createGoal(data);
@@ -176,6 +240,13 @@ export function LearningGoalsSection({
                         {goal.description && (
                           <div className="text-sm text-muted-foreground">{goal.description}</div>
                         )}
+                        {goal.course_id && (
+                          <div className="text-xs text-blue-600 mt-1">
+                            📚 Linked to course • {courseProgress[goal.id] ? 
+                              `${courseProgress[goal.id].completed_chapters}/${courseProgress[goal.id].total_chapters} chapters completed` 
+                              : 'Loading...'}
+                          </div>
+                        )}
                         {goal.resources && goal.resources.length > 0 && (
                           <div className="text-xs text-muted-foreground mt-1">
                             {goal.resources.length} resource(s) available
@@ -191,9 +262,19 @@ export function LearningGoalsSection({
                     <TableCell>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm">{goal.progress}%</span>
+                          <span className="text-sm">{goal.course_id && courseProgress[goal.id] 
+                            ? Math.round(courseProgress[goal.id].progress_percentage) 
+                            : goal.progress}%</span>
+                          {goal.completion_bonus_points > 0 && (
+                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                              <Trophy className="h-3 w-3 mr-1" />
+                              +{goal.completion_bonus_points} pts
+                            </Badge>
+                          )}
                         </div>
-                        <Progress value={goal.progress} className="h-2 w-20" />
+                        <Progress value={goal.course_id && courseProgress[goal.id] 
+                          ? courseProgress[goal.id].progress_percentage 
+                          : goal.progress} className="h-2 w-20" />
                       </div>
                     </TableCell>
                     <TableCell>

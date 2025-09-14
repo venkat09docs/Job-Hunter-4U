@@ -15,6 +15,9 @@ export interface LearningGoal {
   priority: 'low' | 'medium' | 'high';
   resources?: Array<{ name: string; url: string; type: string }>;
   notes?: string;
+  course_id?: string;
+  reward_points_awarded?: boolean;
+  completion_bonus_points?: number;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +30,7 @@ export interface CreateLearningGoalData {
   priority: 'low' | 'medium' | 'high';
   resources?: Array<{ name: string; url: string; type: string }>;
   notes?: string;
+  course_id?: string | null;
 }
 
 export interface UpdateLearningGoalData extends Partial<CreateLearningGoalData> {
@@ -51,7 +55,18 @@ export function useLearningGoals() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGoals((data || []) as LearningGoal[]);
+
+      const transformedGoals = (data || []).map((goal: any) => ({
+        ...goal,
+        resources: Array.isArray(goal.resources) ? goal.resources as { name: string; url: string; type: string; }[] : [],
+        status: (goal.status as 'not_started' | 'in_progress' | 'completed') || 'not_started',
+        priority: (goal.priority as 'low' | 'medium' | 'high') || 'medium',
+        course_id: goal.course_id || undefined,
+        reward_points_awarded: goal.reward_points_awarded || false,
+        completion_bonus_points: goal.completion_bonus_points || 0
+      })) as LearningGoal[];
+
+      setGoals(transformedGoals);
     } catch (error) {
       console.error('Error fetching learning goals:', error);
       toast({
@@ -64,8 +79,8 @@ export function useLearningGoals() {
     }
   };
 
-  const createGoal = async (goalData: CreateLearningGoalData): Promise<LearningGoal | null> => {
-    if (!user) return null;
+  const createGoal = async (goalData: CreateLearningGoalData): Promise<boolean> => {
+    if (!user) return false;
 
     try {
       const { data, error } = await supabase
@@ -81,13 +96,18 @@ export function useLearningGoals() {
 
       if (error) throw error;
 
-      setGoals(prev => [data as LearningGoal, ...prev]);
+      const transformedGoal = {
+        ...data,
+        resources: Array.isArray(data.resources) ? data.resources as { name: string; url: string; type: string; }[] : []
+      } as LearningGoal;
+
+      setGoals(prev => [transformedGoal, ...prev]);
       toast({
         title: 'Success',
         description: 'Learning goal created successfully'
       });
 
-      return data as LearningGoal;
+      return true;
     } catch (error) {
       console.error('Error creating learning goal:', error);
       toast({
@@ -95,7 +115,7 @@ export function useLearningGoals() {
         description: 'Failed to create learning goal',
         variant: 'destructive'
       });
-      return null;
+      return false;
     }
   };
 
@@ -110,7 +130,12 @@ export function useLearningGoals() {
 
       if (error) throw error;
 
-      setGoals(prev => prev.map(goal => goal.id === id ? data as LearningGoal : goal));
+      const transformedGoal = {
+        ...data,
+        resources: Array.isArray(data.resources) ? data.resources as { name: string; url: string; type: string; }[] : []
+      } as LearningGoal;
+
+      setGoals(prev => prev.map(goal => goal.id === id ? transformedGoal : goal));
       toast({
         title: 'Success',
         description: 'Learning goal updated successfully'

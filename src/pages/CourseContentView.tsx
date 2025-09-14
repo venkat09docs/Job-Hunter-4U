@@ -470,38 +470,38 @@ const CourseContentView: React.FC = () => {
                     </CollapsibleTrigger>
                     <CollapsibleContent className="ml-8 space-y-2 mt-2">
                       {section.chapters.map((chapter) => (
-                        <button
-                          key={chapter.id}
-                          onClick={() => setSelectedChapter(chapter)}
-                          className={`w-full text-left p-4 rounded-lg transition-all duration-200 group border ${
-                            selectedChapter?.id === chapter.id 
-                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm' 
-                              : 'hover:bg-muted/50 border-transparent hover:border-muted-foreground/20 hover:shadow-sm'
-                          } ${
-                            completedChapters.has(chapter.id) 
-                              ? 'bg-green-50 border-green-300' 
-                              : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                              {getContentTypeIcon(chapter.content_type)}
-                              {completedChapters.has(chapter.id) && (
-                                <CheckCircle2 className="h-4 w-4 text-green-600" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <span className="font-semibold text-sm lg:text-base block line-clamp-1 group-hover:text-primary transition-colors">
-                                {chapter.title}
-                              </span>
-                              {chapter.duration_minutes && (
-                                <span className="text-xs lg:text-sm text-muted-foreground mt-1 block">
-                                  {chapter.duration_minutes} minutes
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </button>
+                         <button
+                           key={chapter.id}
+                           onClick={() => setSelectedChapter(chapter)}
+                           className={`w-full text-left p-4 rounded-lg transition-all duration-200 group border ${
+                             selectedChapter?.id === chapter.id 
+                               ? 'bg-primary/10 text-primary border-primary/30 shadow-sm' 
+                               : 'hover:bg-muted/50 border-transparent hover:border-muted-foreground/20 hover:shadow-sm'
+                           } ${
+                             completedChapters.has(chapter.id) 
+                               ? 'bg-green-50 border-green-300' 
+                               : ''
+                           }`}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="flex items-center gap-2">
+                               {getContentTypeIcon(chapter.content_type)}
+                               {completedChapters.has(chapter.id) && (
+                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
+                               )}
+                             </div>
+                             <div className="flex-1 min-w-0">
+                               <span className="font-semibold text-sm lg:text-base block line-clamp-1 group-hover:text-primary transition-colors">
+                                 {chapter.title}
+                               </span>
+                               {chapter.duration_minutes && (
+                                 <span className="text-xs lg:text-sm text-muted-foreground mt-1 block">
+                                   {chapter.duration_minutes} minutes
+                                 </span>
+                               )}
+                             </div>
+                           </div>
+                         </button>
                       ))}
                     </CollapsibleContent>
                   </Collapsible>

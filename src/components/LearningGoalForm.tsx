@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus, Link, Trash2 } from 'lucide-react';
-import { LearningGoal, CreateLearningGoalData } from '@/hooks/useLearningGoals';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Trash2, ExternalLink, Save, X } from 'lucide-react';
+import { useLearningGoals } from '@/hooks/useLearningGoals';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import type { LearningGoal, CreateLearningGoalData } from '@/hooks/useLearningGoals';
 
 interface LearningGoalFormProps {
   goal?: LearningGoal;
@@ -23,54 +25,65 @@ interface Resource {
 }
 
 export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: LearningGoalFormProps) {
-  const [formData, setFormData] = useState<CreateLearningGoalData>({
-    skill_name: '',
-    description: '',
-    start_date: '',
-    end_date: '',
-    priority: 'medium',
-    resources: [],
-    notes: ''
+  const { getCourses } = useCareerLevelProgram();
+  const [courses, setCourses] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
+    skill_name: goal?.skill_name || '',
+    description: goal?.description || '',
+    start_date: goal?.start_date ? new Date(goal.start_date).toISOString().split('T')[0] : '',
+    end_date: goal?.end_date ? new Date(goal.end_date).toISOString().split('T')[0] : '',
+    priority: goal?.priority || 'medium',
+    notes: goal?.notes || '',
+    course_id: goal?.course_id || ''
   });
+  const [resources, setResources] = useState<Resource[]>(goal?.resources || []);
 
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [newResource, setNewResource] = useState({ name: '', url: '', type: 'documentation' });
-
+  // Load courses for selection
   useEffect(() => {
-    if (goal) {
-      setFormData({
-        skill_name: goal.skill_name,
-        description: goal.description || '',
-        start_date: goal.start_date,
-        end_date: goal.end_date,
-        priority: goal.priority,
-        notes: goal.notes || ''
-      });
-      setResources(goal.resources || []);
-    }
-  }, [goal]);
+    const loadCourses = async () => {
+      try {
+        const coursesData = await getCourses();
+        setCourses(coursesData);
+      } catch (error) {
+        console.error('Error loading courses:', error);
+      }
+    };
+    loadCourses();
+  }, [getCourses]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      resources: resources.length > 0 ? resources : undefined
-    });
-  };
-
-  const handleInputChange = (field: keyof CreateLearningGoalData, value: string) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const addResource = () => {
-    if (newResource.name && newResource.url) {
-      setResources(prev => [...prev, newResource]);
-      setNewResource({ name: '', url: '', type: 'documentation' });
-    }
+    const newResource = { name: '', url: '', type: 'documentation' };
+    setResources(prev => [...prev, newResource]);
+  };
+
+  const updateResource = (index: number, field: keyof Resource, value: string) => {
+    setResources(prev => prev.map((resource, i) => 
+      i === index ? { ...resource, [field]: value } : resource
+    ));
   };
 
   const removeResource = (index: number) => {
     setResources(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.skill_name.trim() || !formData.start_date || !formData.end_date) {
+      return;
+    }
+
+    const goalData: CreateLearningGoalData = {
+      ...formData,
+      resources: resources.filter(r => r.name && r.url),
+      course_id: formData.course_id || null
+    };
+
+    onSubmit(goalData);
   };
 
   const resourceTypes = [
@@ -95,19 +108,42 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Skill Name */}
-          <div className="space-y-2">
-            <Label htmlFor="skill_name">Skill/Technology Name *</Label>
-            <Input
-              id="skill_name"
-              value={formData.skill_name}
-              onChange={(e) => handleInputChange('skill_name', e.target.value)}
-              placeholder="e.g., React.js, Python, Machine Learning"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="skill_name">Skill/Goal Name *</Label>
+              <Input
+                id="skill_name"
+                type="text"
+                value={formData.skill_name}
+                onChange={(e) => handleInputChange('skill_name', e.target.value)}
+                placeholder="e.g., Learn React Development"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="course_id">Link to Course (Optional)</Label>
+              <Select value={formData.course_id} onValueChange={(value) => handleInputChange('course_id', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a course to track" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Course Linked</SelectItem>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.course_id && (
+                <p className="text-xs text-muted-foreground">
+                  Progress will be automatically tracked based on chapter completion
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -119,7 +155,6 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
             />
           </div>
 
-          {/* Date Range */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_date">Start Date *</Label>
@@ -144,10 +179,9 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
             </div>
           </div>
 
-          {/* Priority */}
           <div className="space-y-2">
             <Label htmlFor="priority">Priority</Label>
-            <Select value={formData.priority} onValueChange={(value: 'low' | 'medium' | 'high') => handleInputChange('priority', value)}>
+            <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
@@ -159,76 +193,61 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
             </Select>
           </div>
 
-          {/* Resources */}
           <div className="space-y-3">
-            <Label>Learning Resources</Label>
-            
-            {/* Add Resource Form */}
-            <div className="grid grid-cols-12 gap-2 p-3 border rounded-lg bg-muted/50">
-              <div className="col-span-4">
-                <Input
-                  placeholder="Resource name"
-                  value={newResource.name}
-                  onChange={(e) => setNewResource(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-              <div className="col-span-4">
-                <Input
-                  placeholder="URL"
-                  type="url"
-                  value={newResource.url}
-                  onChange={(e) => setNewResource(prev => ({ ...prev, url: e.target.value }))}
-                />
-              </div>
-              <div className="col-span-3">
-                <Select value={newResource.type} onValueChange={(value) => setNewResource(prev => ({ ...prev, type: value }))}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {resourceTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-1">
-                <Button type="button" onClick={addResource} size="sm" className="h-10">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex items-center justify-between">
+              <Label>Learning Resources</Label>
+              <Button type="button" onClick={addResource} size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Resource
+              </Button>
             </div>
-
-            {/* Resources List */}
-            {resources.length > 0 && (
-              <div className="space-y-2">
-                {resources.map((resource, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Link className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{resource.name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {resourceTypes.find(t => t.value === resource.type)?.label}
-                      </Badge>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeResource(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+            
+            {resources.map((resource, index) => (
+              <div key={index} className="grid grid-cols-12 gap-2 p-3 border rounded-lg">
+                <div className="col-span-4">
+                  <Input
+                    placeholder="Resource name"
+                    value={resource.name}
+                    onChange={(e) => updateResource(index, 'name', e.target.value)}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <Input
+                    placeholder="URL"
+                    type="url"
+                    value={resource.url}
+                    onChange={(e) => updateResource(index, 'url', e.target.value)}
+                  />
+                </div>
+                <div className="col-span-3">
+                  <Select value={resource.type} onValueChange={(value) => updateResource(index, 'type', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {resourceTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-1">
+                  <Button 
+                    type="button" 
+                    onClick={() => removeResource(index)} 
+                    size="sm" 
+                    variant="outline"
+                    className="h-10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            )}
+            ))}
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
@@ -240,10 +259,14 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
             />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2 pt-4">
-            <Button type="submit" disabled={isLoading || !formData.skill_name || !formData.start_date || !formData.end_date}>
-              {isLoading ? 'Saving...' : goal ? 'Update Goal' : 'Create Goal'}
+            <Button 
+              type="submit" 
+              disabled={isLoading || !formData.skill_name.trim() || !formData.start_date || !formData.end_date}
+              className="flex-1"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {goal ? 'Update Goal' : 'Create Goal'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel

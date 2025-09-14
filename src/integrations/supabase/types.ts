@@ -2993,6 +2993,8 @@ export type Database = {
       }
       learning_goals: {
         Row: {
+          completion_bonus_points: number | null
+          course_id: string | null
           created_at: string
           description: string | null
           end_date: string
@@ -3001,6 +3003,7 @@ export type Database = {
           priority: string
           progress: number
           resources: Json | null
+          reward_points_awarded: boolean | null
           skill_name: string
           start_date: string
           status: string
@@ -3008,6 +3011,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          completion_bonus_points?: number | null
+          course_id?: string | null
           created_at?: string
           description?: string | null
           end_date: string
@@ -3016,6 +3021,7 @@ export type Database = {
           priority?: string
           progress?: number
           resources?: Json | null
+          reward_points_awarded?: boolean | null
           skill_name: string
           start_date: string
           status?: string
@@ -3023,6 +3029,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          completion_bonus_points?: number | null
+          course_id?: string | null
           created_at?: string
           description?: string | null
           end_date?: string
@@ -3031,6 +3039,7 @@ export type Database = {
           priority?: string
           progress?: number
           resources?: Json | null
+          reward_points_awarded?: boolean | null
           skill_name?: string
           start_date?: string
           status?: string
@@ -4969,6 +4978,33 @@ export type Database = {
           },
         ]
       }
+      user_chapter_completions: {
+        Row: {
+          chapter_id: string
+          completed_at: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chapter_id: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chapter_id?: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_inputs: {
         Row: {
           created_at: string | null
@@ -5115,6 +5151,10 @@ export type Database = {
         Args: { attempt_id: string }
         Returns: undefined
       }
+      award_learning_goal_completion_points: {
+        Args: { p_learning_goal_id: string }
+        Returns: Json
+      }
       award_profile_badges_for_user: {
         Args: { user_uuid: string }
         Returns: undefined
@@ -5249,6 +5289,14 @@ export type Database = {
       get_commission_rate_for_plan: {
         Args: { plan_name_param: string }
         Returns: number
+      }
+      get_course_progress: {
+        Args: { p_course_id: string; p_user_id: string }
+        Returns: {
+          completed_chapters: number
+          progress_percentage: number
+          total_chapters: number
+        }[]
       }
       get_dashboard_stats_consolidated: {
         Args: { target_user_id?: string }
