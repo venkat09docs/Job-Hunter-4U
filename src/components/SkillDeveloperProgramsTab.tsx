@@ -99,7 +99,11 @@ const CourseCard: React.FC<{
   );
 };
 
-const SkillDeveloperProgramsTab: React.FC = () => {
+interface SkillDeveloperProgramsTabProps {
+  onEnrollCourse?: (courseId: string, courseTitle: string) => void;
+}
+
+const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ onEnrollCourse }) => {
   const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -126,8 +130,13 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   };
 
   const handleEnrollCourse = (courseId: string, courseTitle: string) => {
-    // Navigate to the course content page using React Router
-    navigate(`/course/${courseId}`);
+    // Call the parent's onEnrollCourse handler to redirect to learning goals tab
+    if (onEnrollCourse) {
+      onEnrollCourse(courseId, courseTitle);
+    } else {
+      // Fallback to direct navigation if no handler provided
+      navigate(`/course/${courseId}`);
+    }
   };
 
   const formatDuration = (hours: number) => {

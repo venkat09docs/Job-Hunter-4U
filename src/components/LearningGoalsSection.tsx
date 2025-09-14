@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,21 @@ import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { LearningGoalForm } from '@/components/LearningGoalForm';
 import { format } from 'date-fns';
 
-export function LearningGoalsSection() {
+interface LearningGoalsSectionProps {
+  shouldOpenForm?: boolean;
+  courseInfo?: { id: string; title: string };
+  onGoalCreated?: (courseId: string) => void;
+  onFormClosed?: () => void;
+}
+
+export function LearningGoalsSection({ 
+  shouldOpenForm = false, 
+  courseInfo, 
+  onGoalCreated, 
+  onFormClosed 
+}: LearningGoalsSectionProps) {
   const { goals, loading, createGoal, updateGoal, deleteGoal, getGoalStatus } = useLearningGoals();
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(shouldOpenForm);
   const [editingGoal, setEditingGoal] = useState<any>(null);
   const [progressGoal, setProgressGoal] = useState<any>(null);
   const [progressValue, setProgressValue] = useState(0);
@@ -23,6 +35,26 @@ export function LearningGoalsSection() {
     const success = await createGoal(data);
     if (success) {
       setShowForm(false);
+      // If this was triggered by course enrollment, redirect to course content
+      if (courseInfo && onGoalCreated) {
+        onGoalCreated(courseInfo.id);
+      }
+    }
+  };
+
+  // Effect to handle opening form when shouldOpenForm prop changes
+  useEffect(() => {
+    if (shouldOpenForm && courseInfo) {
+      setShowForm(true);
+    }
+  }, [shouldOpenForm, courseInfo]);
+
+  // Handle form cancel with callback
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingGoal(null);
+    if (onFormClosed) {
+      onFormClosed();
     }
   };
 
@@ -79,14 +111,17 @@ export function LearningGoalsSection() {
   };
 
   if (showForm || editingGoal) {
+    // Pre-populate form with course info if available
+    const goalData = editingGoal || (courseInfo ? {
+      skill_name: courseInfo.title,
+      description: `Learning goal for ${courseInfo.title} course`
+    } : null);
+
     return (
       <LearningGoalForm
-        goal={editingGoal}
+        goal={goalData}
         onSubmit={editingGoal ? handleEdit : handleCreate}
-        onCancel={() => {
-          setShowForm(false);
-          setEditingGoal(null);
-        }}
+        onCancel={handleFormCancel}
         isLoading={loading}
       />
     );

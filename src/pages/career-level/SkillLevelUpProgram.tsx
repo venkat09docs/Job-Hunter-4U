@@ -70,6 +70,10 @@ const SkillLevelUpProgram: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedModule, setSelectedModule] = useState<string>('all');
   
+  // State for course enrollment flow
+  const [pendingCourseEnrollment, setPendingCourseEnrollment] = useState<{ id: string; title: string } | null>(null);
+  const [shouldOpenLearningGoalForm, setShouldOpenLearningGoalForm] = useState(false);
+  
   // Internal loading state to avoid multiple loading indicators
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   
@@ -137,6 +141,24 @@ const SkillLevelUpProgram: React.FC = () => {
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
+  };
+
+  // Handle course enrollment - redirect to learning goals tab
+  const handleCourseEnrollment = (courseId: string, courseTitle: string) => {
+    setPendingCourseEnrollment({ id: courseId, title: courseTitle });
+    setShouldOpenLearningGoalForm(true);
+    setSearchParams({ tab: 'completed-learning' });
+  };
+
+  // Handle learning goal creation - redirect to course content
+  const handleLearningGoalCreated = (courseId: string) => {
+    navigate(`/course/${courseId}`);
+  };
+
+  // Handle learning goal form closed
+  const handleLearningGoalFormClosed = () => {
+    setPendingCourseEnrollment(null);
+    setShouldOpenLearningGoalForm(false);
   };
 
   // Load modules for selected course
@@ -633,7 +655,7 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Skill Developer Programs Tab */}
           <TabsContent value="skill-programs" className="space-y-6">
-            <SkillDeveloperProgramsTab />
+            <SkillDeveloperProgramsTab onEnrollCourse={handleCourseEnrollment} />
           </TabsContent>
 
           {/* My Assignments Tab */}
@@ -780,9 +802,14 @@ const SkillLevelUpProgram: React.FC = () => {
           </TabsContent>
 
           {/* Completed Learning Tab */}
-              <TabsContent value="completed-learning" className="space-y-6">
-                <LearningGoalsSection />
-              </TabsContent>
+          <TabsContent value="completed-learning" className="space-y-6">
+            <LearningGoalsSection 
+              shouldOpenForm={shouldOpenLearningGoalForm}
+              courseInfo={pendingCourseEnrollment}
+              onGoalCreated={handleLearningGoalCreated}
+              onFormClosed={handleLearningGoalFormClosed}
+            />
+          </TabsContent>
 
           {/* Leaderboard Tab */}
           <TabsContent value="leaderboard" className="space-y-6">
