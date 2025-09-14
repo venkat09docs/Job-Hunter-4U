@@ -25,6 +25,8 @@ interface Chapter {
   content_data: any;
   order_index: number;
   duration_minutes?: number;
+  video_url?: string;
+  article_content?: string;
 }
 
 interface Course {
@@ -145,70 +147,104 @@ const CourseContentView: React.FC = () => {
     console.log('Rendering chapter content:', chapter);
     const { content_type, content_data } = chapter;
     console.log('Content type:', content_type);
-    console.log('Content data:', content_data);
+    console.log('Raw chapter data:', JSON.stringify(chapter, null, 2));
 
     switch (content_type) {
       case 'video':
-        // Check different possible locations for video URL
-        const videoUrl = content_data?.video_url || content_data?.videoUrl || content_data?.url;
+        // Check for video URL in multiple locations - it's stored directly on chapter, not in content_data
+        let videoUrl = null;
+        
+        if (chapter) {
+          videoUrl = (chapter as any).video_url ||  // Direct property on chapter
+                    content_data?.video_url || 
+                    content_data?.videoUrl || 
+                    content_data?.url || 
+                    content_data?.video ||
+                    (content_data?.content && content_data.content.video_url) ||
+                    (content_data?.content && content_data.content.videoUrl) ||
+                    (content_data?.video_data && content_data.video_data.url) ||
+                    (content_data?.video_data && content_data.video_data.video_url);
+        }
+        
         console.log('Video URL found:', videoUrl);
+        console.log('Chapter keys:', chapter ? Object.keys(chapter) : 'No chapter data');
+        console.log('Content data keys:', content_data ? Object.keys(content_data) : 'No content_data');
         
         if (videoUrl) {
           // Check if it's a YouTube, Vimeo, or Loom URL and convert to embed format
           let embedUrl = videoUrl;
           
-          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-            const videoId = videoUrl.includes('youtu.be') 
-              ? videoUrl.split('/').pop()?.split('?')[0]
-              : new URL(videoUrl).searchParams.get('v');
-            embedUrl = `https://www.youtube.com/embed/${videoId}`;
-          } else if (videoUrl.includes('vimeo.com')) {
-            const videoId = videoUrl.split('/').pop();
-            embedUrl = `https://player.vimeo.com/video/${videoId}`;
-          } else if (videoUrl.includes('loom.com')) {
-            const videoId = videoUrl.split('/').pop()?.split('?')[0];
-            embedUrl = `https://www.loom.com/embed/${videoId}`;
-          }
+          try {
+            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+              const videoId = videoUrl.includes('youtu.be') 
+                ? videoUrl.split('/').pop()?.split('?')[0]
+                : new URL(videoUrl).searchParams.get('v');
+              embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (videoUrl.includes('vimeo.com')) {
+              const videoId = videoUrl.split('/').pop();
+              embedUrl = `https://player.vimeo.com/video/${videoId}`;
+            } else if (videoUrl.includes('loom.com')) {
+              const videoId = videoUrl.split('/').pop()?.split('?')[0];
+              embedUrl = `https://www.loom.com/embed/${videoId}`;
+            }
 
-          console.log('Embed URL:', embedUrl);
+            console.log('Final embed URL:', embedUrl);
 
-          return (
-            <div className="space-y-4">
-              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                <iframe
-                  src={embedUrl}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+            return (
+              <div className="space-y-4">
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={chapter.title}
+                  />
+                </div>
+                {chapter.description && (
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-muted-foreground">{chapter.description}</p>
+                  </div>
+                )}
+                {chapter.duration_minutes && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Play className="h-4 w-4" />
+                    <span>Duration: {chapter.duration_minutes} minutes</span>
+                  </div>
+                )}
               </div>
-              {content_data.description && (
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground">{content_data.description}</p>
-                </div>
-              )}
-              {chapter.duration_minutes && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Play className="h-4 w-4" />
-                  <span>Duration: {chapter.duration_minutes} minutes</span>
-                </div>
-              )}
-            </div>
-          );
+            );
+          } catch (error) {
+            console.error('Error processing video URL:', error);
+            return (
+              <div className="text-center py-8 text-muted-foreground">
+                <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Error loading video</p>
+                <p className="text-xs mt-2">Invalid video URL format</p>
+              </div>
+            );
+          }
         } else {
-          console.log('No video URL found in content_data');
+          console.log('No video URL found. Chapter data:', chapter);
           return (
             <div className="text-center py-8 text-muted-foreground">
               <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Video content not available</p>
               <p className="text-xs mt-2">No video URL found</p>
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-xs">Debug: Show chapter data</summary>
+                <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-h-40">
+                  {JSON.stringify(chapter, null, 2)}
+                </pre>
+              </details>
             </div>
           );
         }
 
       case 'article':
-        const articleContent = content_data?.article_content || content_data?.content;
+        // Check for article content in chapter or content_data
+        const articleContent = (chapter as any).article_content || content_data?.article_content || content_data?.content;
         if (articleContent) {
           return (
             <div className="prose prose-sm max-w-none">
@@ -224,12 +260,19 @@ const CourseContentView: React.FC = () => {
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Article content not available</p>
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-xs">Debug: Show chapter data</summary>
+                <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-h-40">
+                  {JSON.stringify(chapter, null, 2)}
+                </pre>
+              </details>
             </div>
           );
         }
 
       case 'document':
-        const documentContent = content_data?.document_content || content_data?.content;
+        // Check for document content in chapter or content_data
+        const documentContent = (chapter as any).article_content || content_data?.document_content || content_data?.content;
         return (
           <div className="space-y-4">
             {documentContent ? (
@@ -244,9 +287,15 @@ const CourseContentView: React.FC = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <Download className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Document content not available</p>
+                <details className="mt-4 text-left">
+                  <summary className="cursor-pointer text-xs">Debug: Show chapter data</summary>
+                  <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto max-h-40">
+                    {JSON.stringify(chapter, null, 2)}
+                  </pre>
+                </details>
               </div>
             )}
-            {content_data.attachments && content_data.attachments.length > 0 && (
+            {content_data?.attachments && content_data.attachments.length > 0 && (
               <div className="border-t pt-4">
                 <h4 className="font-medium text-sm mb-2">Attachments:</h4>
                 <div className="space-y-2">
@@ -298,7 +347,7 @@ const CourseContentView: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/career-level/skill-level-up-program')}
+              onClick={() => navigate('/dashboard/skill-level')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
