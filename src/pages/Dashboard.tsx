@@ -511,6 +511,14 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <Button 
+                onClick={() => navigate('/dashboard/resume-builder?tab=resume')}
+                variant="default"
+                className="hidden sm:flex"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Build a Free Resume
+              </Button>
               <div className="hidden sm:flex">
                 <SubscriptionStatus />
               </div>
