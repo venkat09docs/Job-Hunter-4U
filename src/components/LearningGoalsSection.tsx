@@ -63,23 +63,6 @@ export function LearningGoalsSection({
             const progress = await getCourseProgress(goal.course_id);
             if (progress) {
               progressData[goal.id] = progress;
-              
-              // Update goal progress if course progress has changed
-              if (progress.progress_percentage !== goal.progress) {
-                await updateGoal(goal.id, { progress: progress.progress_percentage });
-                
-                // Check if course is completed and award points
-                if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
-                  try {
-                    const result = await awardLearningGoalPoints(goal.id);
-                    if (result.success) {
-                      toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
-                    }
-                  } catch (error) {
-                    console.error('Error awarding points:', error);
-                  }
-                }
-              }
             }
           } catch (error) {
             console.error('Error loading course progress:', error);
@@ -93,7 +76,37 @@ export function LearningGoalsSection({
     if (goals.length > 0) {
       loadCourseProgress();
     }
-  }, [goals, getCourseProgress, updateGoal, awardLearningGoalPoints]);
+  }, [goals, getCourseProgress]);
+
+  // Handle progress updates and point awards separately
+  useEffect(() => {
+    const handleProgressUpdates = async () => {
+      for (const goal of goals) {
+        if (goal.course_id && courseProgress[goal.id]) {
+          const progress = courseProgress[goal.id];
+          
+          // Update goal progress if course progress has changed
+          if (progress.progress_percentage !== goal.progress) {
+            await updateGoal(goal.id, { progress: progress.progress_percentage });
+            
+            // Check if course is completed and award points
+            if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
+              try {
+                const result = await awardLearningGoalPoints(goal.id);
+                if (result.success) {
+                  toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
+                }
+              } catch (error) {
+                console.error('Error awarding points:', error);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    handleProgressUpdates();
+  }, [courseProgress, updateGoal, awardLearningGoalPoints]);
 
   const handleCreate = async (data: any) => {
     const success = await createGoal(data);
