@@ -148,25 +148,29 @@ const SkillLevelUpProgram: React.FC = () => {
   }, [getModulesByCourse]);
 
   // Memoized calculations for better performance
-  const filteredAssignments = useMemo(() => ({
-    upcoming: assignments.filter(a => 
-      a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
-    ),
-    active: assignments.filter(a => 
-      a.userAttempts.some(attempt => attempt.status === 'started')
-    ),
-    completed: assignments.filter(a => 
-      a.userAttempts.some(attempt => 
-        attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+  const filteredAssignments = useMemo(() => {
+    const safeAssignments = assignments || [];
+    return {
+      upcoming: safeAssignments.filter(a => 
+        a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
+      ),
+      active: safeAssignments.filter(a => 
+        a.userAttempts.some(attempt => attempt.status === 'started')
+      ),
+      completed: safeAssignments.filter(a => 
+        a.userAttempts.some(attempt => 
+          attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+        )
       )
-    )
-  }), [assignments]);
+    };
+  }, [assignments]);
 
   // Memoized leaderboard calculations
   const leaderboardStats = useMemo(() => {
-    const currentUserEntry = leaderboardData.find(entry => entry.user_id === user?.id);
+    const safeLeaderboardData = leaderboardData || [];
+    const currentUserEntry = safeLeaderboardData.find(entry => entry.user_id === user?.id);
     const currentUserRank = currentUserEntry 
-      ? leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
+      ? safeLeaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
       : null;
     
     return { currentUserEntry, currentUserRank };
@@ -388,7 +392,7 @@ const SkillLevelUpProgram: React.FC = () => {
   // Check if user needs to upgrade (no subscription)
   const needsUpgrade = !hasActiveSubscription();
 
-  if (loading) {
+  if (loading || isInitialLoading) {
     return (
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -620,15 +624,15 @@ const SkillLevelUpProgram: React.FC = () => {
                   <Trophy className="w-8 h-8 text-purple-500 mr-3" />
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                    <p className="text-2xl font-bold">
-                      {assignments.reduce((total, assignment) => {
-                        const bestAttempt = assignment.userAttempts
-                          .filter(a => a.score_points !== null)
-                          .reduce((max, attempt) => 
-                            Math.max(max, attempt.score_points || 0), 0
-                          );
-                        return total + bestAttempt;
-                      }, 0)}
+                     <p className="text-2xl font-bold">
+                       {(assignments || []).reduce((total, assignment) => {
+                         const bestAttempt = assignment.userAttempts
+                           .filter(a => a.score_points !== null)
+                           .reduce((max, attempt) => 
+                             Math.max(max, attempt.score_points || 0), 0
+                           );
+                         return total + bestAttempt;
+                       }, 0)}
                     </p>
                   </div>
                 </div>
