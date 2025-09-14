@@ -87,12 +87,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
 
-  useEffect(() => {
-    if (open && courseId) {
-      loadSections();
-    }
-  }, [open, courseId]);
-
   // Check admin access
   if (!isAdmin) {
     return (
@@ -122,6 +116,12 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     );
     setSections(sectionsWithChapters);
   };
+
+  useEffect(() => {
+    if (open && courseId) {
+      loadSections();
+    }
+  }, [open, courseId]);
 
   const handleSaveSection = async () => {
     if (!sectionTitle.trim()) {
