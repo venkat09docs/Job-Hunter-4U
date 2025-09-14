@@ -128,7 +128,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
-  const { profile } = useProfile();
+  const { profile, hasActiveSubscription } = useProfile();
   const { isAdmin, isInstituteAdmin, isRecruiter, loading: roleLoading } = useRole();
   const { canAccessFeature } = usePremiumFeatures();
   const { isIT } = useUserIndustry();
@@ -283,7 +283,7 @@ export function AppSidebar() {
     const handleAICareerToolsClick = (e: React.MouseEvent) => {
       e.preventDefault();
       // Check if user has active subscription
-      if (!profile?.subscription_plan || profile.subscription_plan === "Free Plan") {
+      if (!hasActiveSubscription()) {
         setSubscriptionDialogOpen(true);
       } else {
         // User has subscription, proceed to open in new tab
@@ -294,7 +294,7 @@ export function AppSidebar() {
     const handleSkillLevelUpClick = (e: React.MouseEvent) => {
       e.preventDefault();
       // Check if user has active subscription
-      if (!profile?.subscription_plan || profile.subscription_plan === "Free Plan") {
+      if (!hasActiveSubscription()) {
         setSubscriptionDialogOpen(true);
       } else {
         // User has subscription, proceed to navigate normally
@@ -315,7 +315,7 @@ export function AppSidebar() {
             </span>
             <div className="flex items-center gap-2">
               <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
-              {(!profile?.subscription_plan || profile.subscription_plan === "Free Plan") && 
+              {!hasActiveSubscription() && 
                 <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               }
             </div>
@@ -337,7 +337,7 @@ export function AppSidebar() {
             <span className="text-sm truncate">
               {item.title}
             </span>
-            {(!profile?.subscription_plan || profile.subscription_plan === "Free Plan") && 
+            {!hasActiveSubscription() && 
               <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
             }
           </div>
@@ -516,7 +516,9 @@ export function AppSidebar() {
                 {/* Main Menu Items in specified order */}
                 {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                  return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
+                  // Don't pass isPremium for Skill Level Up since it has custom subscription handling
+                  const shouldPassPremium = item.title !== "Skill Level Up" ? isPremium : false;
+                  return <MenuItem key={item.title} item={item} isPremium={shouldPassPremium} sectionColor="main" />;
                 })}
 
                 {/* Job Hunter Level Up */}
