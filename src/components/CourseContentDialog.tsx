@@ -53,6 +53,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   courseId,
   courseTitle
 }) => {
+  console.log('🚀 CourseContentDialog: Component rendering', {
+    open,
+    courseId,
+    courseTitle,
+    timestamp: new Date().toISOString()
+  });
+  
   const { isAdmin } = useRole();
   const { toast } = useToast();
   const {
@@ -197,6 +204,25 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     }
   }, [STORAGE_KEY]);
 
+  // Detect component mount/unmount cycles
+  useEffect(() => {
+    console.log('🎬 CourseContentDialog: Component MOUNTED');
+    
+    return () => {
+      console.log('💀 CourseContentDialog: Component UNMOUNTING - This indicates a page reload!');
+    };
+  }, []);
+  
+  // Track state changes to detect resets
+  useEffect(() => {
+    console.log('📝 CourseContentDialog: Form state changed:', {
+      sectionTitle: sectionTitle || 'empty',
+      chapterTitle: chapterTitle || 'empty',
+      chapterDescription: chapterDescription || 'empty',
+      activeTab,
+      hasFormData: !!(sectionTitle || chapterTitle || chapterDescription)
+    });
+  }, [sectionTitle, chapterTitle, chapterDescription, activeTab]);
   const loadSections = async () => {
     const sectionsData = await getSectionsByCourse(courseId);
     const sectionsWithChapters = await Promise.all(
@@ -215,7 +241,35 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       loadFormState();
       loadSections();
     }
-  }, [open, courseId, isAdmin, loadFormState]);
+    
+    // Add component lifecycle debugging
+    if (open) {
+      console.log('🎭 Dialog opened - adding page event listeners');
+      
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          console.log('👋 Dialog: Page becoming hidden, saving state...');
+          saveFormState();
+        } else {
+          console.log('👁️ Dialog: Page becoming visible, checking state...');
+        }
+      };
+      
+      const handleBeforeUnload = () => {
+        console.log('⚠️ Dialog: Page about to unload - THIS IS THE PROBLEM!');
+        saveFormState();
+      };
+      
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      
+      return () => {
+        console.log('🧹 Dialog: Cleaning up event listeners');
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+      };
+    }
+  }, [open, courseId, isAdmin, loadFormState, saveFormState]);
 
   // Save form state whenever form fields change (immediate save on typing)
   useEffect(() => {

@@ -28,6 +28,48 @@ const CLPDashboard = () => {
   const { user } = useAuth();
   const { role: userRole, loading: roleLoading } = useRole();
   const navigate = useNavigate();
+  // Enhanced debugging for page visibility and focus events
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      console.log('👁️ CLPDashboard: Page visibility changed:', {
+        hidden: document.hidden,
+        visibilityState: document.visibilityState,
+        timestamp: new Date().toISOString()
+      });
+    };
+    
+    const handleFocus = () => {
+      console.log('🎯 CLPDashboard: Window gained focus');
+    };
+    
+    const handleBlur = () => {
+      console.log('😴 CLPDashboard: Window lost focus');
+    };
+    
+    const handleBeforeUnload = (e) => {
+      console.log('⚠️ CLPDashboard: Page about to unload/refresh!', e);
+    };
+    
+    const handleUnload = (e) => {
+      console.log('🚪 CLPDashboard: Page unloading/refreshing!', e);
+    };
+    
+    // Add all event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, []);
+  
   const { loading, getCourses, getLeaderboard, getModulesByCourse } = useCareerLevelProgram();
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -522,16 +564,26 @@ const CLPDashboard = () => {
 
   const handleOpenContentDialog = (course: Course) => {
     console.log('🚀 Opening content dialog for course:', course.title);
+    console.log('📊 Current component state before opening dialog:', {
+      contentDialogOpen,
+      selectedCourseForContent: selectedCourseForContent?.title,
+      coursesLength: courses.length,
+      userRole,
+      timestamp: new Date().toISOString()
+    });
     setSelectedCourseForContent(course);
     setContentDialogOpen(true);
   };
 
   const handleCloseContentDialog = (open: boolean) => {
-    console.log('🔴 Closing content dialog:', !open);
+    console.log('🔴 Dialog onOpenChange called with:', open);
     if (!open) {
+      console.log('🔴 Closing content dialog and clearing state');
       setContentDialogOpen(false);
       // Clear the saved dialog state when explicitly closed
       localStorage.removeItem(DIALOG_STORAGE_KEY);
+    } else {
+      console.log('🟢 Dialog should stay open');
     }
   };
 
