@@ -695,50 +695,32 @@ export const StudentsManagement = () => {
   };
 
   const handleDelete = async (student: Student) => {
-    if (!confirm(`Are you sure you want to remove ${student.full_name || 'this student'} from the batch? This will also deactivate their user account.`)) return;
+    if (!confirm(`Are you sure you want to permanently delete ${student.full_name || 'this student'}? This will completely remove all their data and cannot be undone.`)) return;
 
     try {
-      // Deactivate user assignment
-      const { error: assignmentError } = await supabase
-        .from('user_assignments')
-        .update({ is_active: false })
-        .eq('id', student.id);
+      // Use the comprehensive delete-user edge function that handles all table references
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: student.user_id }
+      });
 
-      if (assignmentError) throw assignmentError;
-
-      // Also deactivate all other assignments for this user if needed
-      await supabase
-        .from('user_assignments')
-        .update({ is_active: false })
-        .eq('user_id', student.user_id);
-
-      // Delete user roles
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', student.user_id);
-
-      // Delete profile
-      await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', student.user_id);
-
-      // Delete from auth.users using admin API
-      const { error: authError } = await supabase.auth.admin.deleteUser(student.user_id);
-      if (authError) {
-        console.error('Auth deletion error:', authError);
+      if (error) throw error;
+      
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to delete user completely');
       }
 
       toast({
         title: 'Success',
-        description: 'Student removed successfully',
+        description: 'Student deleted completely from system',
       });
+      
+      // Refresh the data to show updated list
       fetchData(instituteId);
     } catch (error: any) {
+      console.error('Delete user error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to remove student',
+        description: error.message || 'Failed to delete student completely',
         variant: 'destructive',
       });
     }
