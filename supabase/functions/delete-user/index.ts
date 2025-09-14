@@ -65,21 +65,63 @@ serve(async (req) => {
       )
     }
 
-    // Check if user has admin role
+    // Check if user has admin or institute admin role
     const { data: userRole, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .single()
 
-    if (roleError || userRole?.role !== 'admin') {
+    const isAdmin = userRole?.role === 'admin'
+    const isInstituteAdmin = userRole?.role === 'institute_admin'
+
+    if (roleError || (!isAdmin && !isInstituteAdmin)) {
       return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
+        JSON.stringify({ error: 'Admin or Institute Admin access required' }),
         { 
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
+    }
+
+    // If institute admin, verify they can manage this user
+    if (isInstituteAdmin) {
+      // Get the institutes this user is assigned to
+      const { data: userInstitutes, error: userInstError } = await supabase
+        .from('user_assignments')
+        .select('institute_id')
+        .eq('user_id', user_id)
+        .eq('is_active', true)
+
+      if (userInstError || !userInstitutes || userInstitutes.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'User is not assigned to any institute' }),
+          { 
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      // Check if the admin manages any of these institutes
+      const instituteIds = userInstitutes.map(ua => ua.institute_id)
+      const { data: adminInstitutes, error: adminInstError } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .in('institute_id', instituteIds)
+
+      if (adminInstError || !adminInstitutes || adminInstitutes.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'You can only delete students from your managed institutes' }),
+          { 
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
     }
 
     // Delete all user-related data in order (using admin client to bypass RLS)
