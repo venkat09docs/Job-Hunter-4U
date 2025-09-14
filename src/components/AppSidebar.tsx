@@ -293,14 +293,28 @@ export function AppSidebar() {
     
     const handleSkillLevelUpClick = (e: React.MouseEvent) => {
       e.preventDefault();
+      
+      // Debug logging
+      console.log('🔍 Skill Level Up Debug:', {
+        profile_subscription_plan: profile?.subscription_plan,
+        hasActiveSubscription: hasActiveSubscription(),
+        isAdmin,
+        profile_subscription_start_date: profile?.subscription_start_date,
+        profile_subscription_end_date: profile?.subscription_end_date
+      });
+      
       // Check if user has active subscription (any paid plan)
       const hasValidSubscription = profile?.subscription_plan && 
         ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan) &&
         hasActiveSubscription();
       
+      console.log('🔍 Has Valid Subscription:', hasValidSubscription);
+      
       if (!hasValidSubscription && !isAdmin) {
+        console.log('🔍 Opening subscription dialog');
         setSubscriptionDialogOpen(true);
       } else {
+        console.log('🔍 Navigating to Skill Level Up');
         // User has subscription or is admin, proceed to navigate normally
         window.location.href = item.url;
       }
