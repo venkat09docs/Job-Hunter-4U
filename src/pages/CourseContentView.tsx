@@ -7,7 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useCourseContent } from '@/hooks/useCourseContent';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useChapterCompletion } from '@/hooks/useChapterCompletion';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { toast } from 'sonner';
 
 interface Section {
   id: string;
@@ -46,6 +48,7 @@ const CourseContentView: React.FC = () => {
   const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
+  const { markChapterComplete, isChapterComplete, loading: chapterLoading } = useChapterCompletion();
 
   useEffect(() => {
     if (courseId) {
@@ -53,6 +56,12 @@ const CourseContentView: React.FC = () => {
       loadCourseContent();
     }
   }, [courseId]);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      loadCompletedChapters();
+    }
+  }, [sections]);
 
   const loadCourseData = async () => {
     try {
@@ -106,6 +115,29 @@ const CourseContentView: React.FC = () => {
     }
   };
 
+  const loadCompletedChapters = async () => {
+    try {
+      const allChapters: string[] = [];
+      sections.forEach(section => {
+        section.chapters.forEach(chapter => {
+          allChapters.push(chapter.id);
+        });
+      });
+
+      const completedIds = await Promise.all(
+        allChapters.map(async (chapterId) => {
+          const isComplete = await isChapterComplete(chapterId);
+          return isComplete ? chapterId : null;
+        })
+      );
+
+      const completed = completedIds.filter(Boolean) as string[];
+      setCompletedChapters(new Set(completed));
+    } catch (error) {
+      console.error('Error loading completed chapters:', error);
+    }
+  };
+
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => {
       const newSet = new Set(prev);
@@ -156,11 +188,27 @@ const CourseContentView: React.FC = () => {
     return currentSectionIndex < sections.length - 1 ? sections[currentSectionIndex + 1] : null;
   };
 
-  const handleMarkComplete = () => {
+  const handleMarkComplete = async () => {
     if (selectedChapter) {
-      setCompletedChapters(prev => new Set([...prev, selectedChapter.id]));
-      // Here you could also save to database or local storage
-      console.log('Chapter marked as complete:', selectedChapter.id);
+      const success = await markChapterComplete(selectedChapter.id);
+      if (success) {
+        setCompletedChapters(prev => new Set([...prev, selectedChapter.id]));
+        
+        // Auto-navigate to next chapter if available
+        const nextChapter = getNextChapter();
+        if (nextChapter) {
+          setSelectedChapter(nextChapter);
+          // Open the section containing the next chapter
+          const nextSection = sections.find(section => 
+            section.chapters.some(ch => ch.id === nextChapter.id)
+          );
+          if (nextSection) {
+            setOpenSections(prev => new Set([...prev, nextSection.id]));
+          }
+        } else {
+          toast.success('Congratulations! You have completed this course section!');
+        }
+      }
     }
   };
 
@@ -548,10 +596,20 @@ const CourseContentView: React.FC = () => {
                     <div className="w-full sm:flex-1 sm:w-auto flex justify-center">
                       <Button
                         onClick={handleMarkComplete}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                        disabled={completedChapters.has(selectedChapter.id) || chapterLoading}
+                        className={`flex items-center gap-2 w-full sm:w-auto ${
+                          completedChapters.has(selectedChapter.id)
+                            ? 'bg-green-600 hover:bg-green-600 cursor-default'
+                            : 'bg-green-600 hover:bg-green-700'
+                        }`}
                       >
                         <CheckCircle2 className="h-4 w-4" />
-                        Mark as Complete
+                        {completedChapters.has(selectedChapter.id)
+                          ? 'Completed'
+                          : chapterLoading
+                          ? 'Marking...'
+                          : 'Mark as Complete'
+                        }
                       </Button>
                     </div>
 
