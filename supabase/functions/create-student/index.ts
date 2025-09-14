@@ -16,9 +16,9 @@ serve(async (req) => {
     console.log('🚀 Starting create-student function')
     
     const requestBody = await req.json()
-    const { email, password, full_name, username, batch_id, institute_id, industry } = requestBody
+    const { email, password, full_name, username, batch_id, institute_id, industry, phone_number } = requestBody
     
-    console.log('📝 Request data:', { email, full_name, username, batch_id, institute_id, industry })
+    console.log('📝 Request data:', { email, full_name, username, batch_id, institute_id, industry, phone_number })
 
     // Validate required fields
     if (!email || !password || !full_name || !username || !batch_id || !institute_id) {
@@ -114,6 +114,7 @@ serve(async (req) => {
       user_metadata: {
         full_name,
         username,
+        phone_number: phone_number || '',
         industry: industry || 'IT',
       },
       email_confirm: true, // Auto-confirm email
@@ -159,6 +160,7 @@ serve(async (req) => {
         full_name,
         username,
         email,
+        phone_number: phone_number || '',
         industry: industry || 'IT',
       }, {
         onConflict: 'user_id'

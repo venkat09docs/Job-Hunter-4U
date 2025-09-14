@@ -81,6 +81,7 @@ interface StudentFormData {
   email: string;
   full_name: string;
   username: string;
+  phone_number: string;
   batch_id: string;
   password: string;
   industry: string;
@@ -101,6 +102,7 @@ export const StudentsManagement = () => {
     email: '',
     full_name: '',
     username: '',
+    phone_number: '',
     batch_id: '',
     password: '',
     industry: 'IT',
@@ -305,6 +307,7 @@ export const StudentsManagement = () => {
             password: formData.password,
             full_name: formData.full_name,
             username: formData.username,
+            phone_number: formData.phone_number,
             batch_id: formData.batch_id,
             institute_id: instituteId,
             industry: formData.industry,
@@ -328,6 +331,7 @@ export const StudentsManagement = () => {
         email: '',
         full_name: '',
         username: '',
+        phone_number: '',
         batch_id: '',
         password: '',
         industry: 'IT',
@@ -687,6 +691,7 @@ export const StudentsManagement = () => {
       email: student.email || '',
       full_name: student.full_name || '',
       username: student.username || '',
+      phone_number: '', // Phone number not available in existing data
       batch_id: student.batch_id || '',
       password: '', // Don't populate password for editing
       industry: student.industry || 'IT',
@@ -874,6 +879,7 @@ export const StudentsManagement = () => {
                   email: '',
                   full_name: '',
                   username: '',
+                  phone_number: '',
                   batch_id: '',
                   password: '',
                   industry: 'IT',
@@ -924,6 +930,17 @@ export const StudentsManagement = () => {
                   placeholder="Enter student username"
                   required
                   disabled={!!editingStudent}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone_number">Phone/WhatsApp Number</Label>
+                <Input
+                  id="phone_number"
+                  type="tel"
+                  value={formData.phone_number}
+                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                  placeholder="Enter phone or WhatsApp number"
                 />
               </div>
 
