@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,6 +81,65 @@ const CLPDashboard = () => {
   // Course content dialog state
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [selectedCourseForContent, setSelectedCourseForContent] = useState<Course | null>(null);
+
+  // Enhanced dialog state persistence to survive tab switches
+  const DIALOG_STORAGE_KEY = 'clp-dialog-state';
+
+  // Save dialog state to localStorage
+  const saveDialogState = useCallback(() => {
+    try {
+      if (contentDialogOpen && selectedCourseForContent) {
+        const dialogState = {
+          isOpen: contentDialogOpen,
+          courseId: selectedCourseForContent.id,
+          courseTitle: selectedCourseForContent.title,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(DIALOG_STORAGE_KEY, JSON.stringify(dialogState));
+        console.log('💾 Dialog state saved:', dialogState);
+      }
+    } catch (error) {
+      console.error('❌ Error saving dialog state:', error);
+    }
+  }, [contentDialogOpen, selectedCourseForContent]);
+
+  // Load dialog state from localStorage
+  const loadDialogState = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(DIALOG_STORAGE_KEY);
+      if (saved) {
+        const dialogState = JSON.parse(saved);
+        const isRecent = dialogState.timestamp && (Date.now() - dialogState.timestamp) < 30 * 60 * 1000; // 30 minutes
+        
+        if (isRecent && dialogState.isOpen) {
+          console.log('📂 Restoring dialog state:', dialogState);
+          // Find the course to restore
+          const course = courses.find(c => c.id === dialogState.courseId);
+          if (course) {
+            setSelectedCourseForContent(course);
+            setContentDialogOpen(true);
+          }
+        } else {
+          localStorage.removeItem(DIALOG_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading dialog state:', error);
+      localStorage.removeItem(DIALOG_STORAGE_KEY);
+    }
+  }, [courses]);
+
+  // Save dialog state when it changes
+  useEffect(() => {
+    saveDialogState();
+  }, [saveDialogState]);
+
+  // Load dialog state when courses are loaded
+  useEffect(() => {
+    if (courses.length > 0) {
+      loadDialogState();
+    }
+  }, [courses, loadDialogState]);
 
   useEffect(() => {
     if (user && userRole && !roleLoading) {
@@ -462,8 +521,18 @@ const CLPDashboard = () => {
   };
 
   const handleOpenContentDialog = (course: Course) => {
+    console.log('🚀 Opening content dialog for course:', course.title);
     setSelectedCourseForContent(course);
     setContentDialogOpen(true);
+  };
+
+  const handleCloseContentDialog = (open: boolean) => {
+    console.log('🔴 Closing content dialog:', !open);
+    if (!open) {
+      setContentDialogOpen(false);
+      // Clear the saved dialog state when explicitly closed
+      localStorage.removeItem(DIALOG_STORAGE_KEY);
+    }
   };
 
   const filteredCourses = courses.filter(course => {
@@ -1580,7 +1649,7 @@ const CLPDashboard = () => {
       {selectedCourseForContent && (
         <CourseContentDialog
           open={contentDialogOpen}
-          onOpenChange={setContentDialogOpen}
+          onOpenChange={handleCloseContentDialog}
           courseId={selectedCourseForContent.id}
           courseTitle={selectedCourseForContent.title}
         />
