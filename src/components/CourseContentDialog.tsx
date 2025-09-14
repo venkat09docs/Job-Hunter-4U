@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -87,6 +87,67 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
 
+  // Storage keys for persistence
+  const STORAGE_KEY = `course-content-form-${courseId}`;
+
+  // Save form state to localStorage
+  const saveFormState = useCallback(() => {
+    const formState = {
+      activeTab,
+      showSectionForm,
+      showChapterForm,
+      selectedSectionId,
+      sectionTitle,
+      sectionDescription,
+      chapterTitle,
+      chapterDescription,
+      chapterType,
+      chapterVideoUrl,
+      chapterArticleContent,
+      chapterDuration,
+      editingSection: editingSection?.id || null,
+      editingChapter: editingChapter?.id || null,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
+  }, [
+    STORAGE_KEY, activeTab, showSectionForm, showChapterForm, selectedSectionId,
+    sectionTitle, sectionDescription, chapterTitle, chapterDescription,
+    chapterType, chapterVideoUrl, chapterArticleContent, chapterDuration,
+    editingSection, editingChapter
+  ]);
+
+  // Load form state from localStorage
+  const loadFormState = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const formState = JSON.parse(saved);
+        setActiveTab(formState.activeTab || 'sections');
+        setShowSectionForm(formState.showSectionForm || false);
+        setShowChapterForm(formState.showChapterForm || false);
+        setSelectedSectionId(formState.selectedSectionId || '');
+        setSectionTitle(formState.sectionTitle || '');
+        setSectionDescription(formState.sectionDescription || '');
+        setChapterTitle(formState.chapterTitle || '');
+        setChapterDescription(formState.chapterDescription || '');
+        setChapterType(formState.chapterType || 'article');
+        setChapterVideoUrl(formState.chapterVideoUrl || '');
+        setChapterArticleContent(formState.chapterArticleContent || '');
+        setChapterDuration(formState.chapterDuration || 0);
+        
+        // Note: editingSection and editingChapter will be set when sections load
+        // We store their IDs for restoration
+      }
+    } catch (error) {
+      console.error('Error loading form state:', error);
+    }
+  }, [STORAGE_KEY]);
+
+  // Clear form state from localStorage
+  const clearFormState = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+  }, [STORAGE_KEY]);
+
   const loadSections = async () => {
     const sectionsData = await getSectionsByCourse(courseId);
     const sectionsWithChapters = await Promise.all(
@@ -100,9 +161,52 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
   useEffect(() => {
     if (open && courseId && isAdmin) {
+      loadFormState();
       loadSections();
     }
-  }, [open, courseId, isAdmin]);
+  }, [open, courseId, isAdmin, loadFormState]);
+
+  // Save form state whenever form fields change
+  useEffect(() => {
+    if (open && courseId) {
+      saveFormState();
+    }
+  }, [
+    open, courseId, saveFormState, activeTab, showSectionForm, showChapterForm,
+    selectedSectionId, sectionTitle, sectionDescription, chapterTitle,
+    chapterDescription, chapterType, chapterVideoUrl, chapterArticleContent,
+    chapterDuration, editingSection, editingChapter
+  ]);
+
+  // Restore editing states after sections load
+  useEffect(() => {
+    if (sections.length > 0) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const formState = JSON.parse(saved);
+          if (formState.editingSection) {
+            const section = sections.find(s => s.id === formState.editingSection);
+            if (section) {
+              setEditingSection(section);
+            }
+          }
+          if (formState.editingChapter) {
+            // Find chapter across all sections
+            for (const section of sections) {
+              const chapter = section.chapters?.find(c => c.id === formState.editingChapter);
+              if (chapter) {
+                setEditingChapter(chapter);
+                break;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error restoring editing states:', error);
+      }
+    }
+  }, [sections, STORAGE_KEY]);
 
   const handleSaveSection = async () => {
     if (!sectionTitle.trim()) {
@@ -130,6 +234,10 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
     resetSectionForm();
     loadSections();
+    toast({
+      title: "Success",
+      description: `Section ${editingSection ? 'updated' : 'created'} successfully`
+    });
   };
 
   const handleSaveChapter = async () => {
@@ -162,6 +270,10 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
     resetChapterForm();
     loadSections();
+    toast({
+      title: "Success",
+      description: `Chapter ${editingChapter ? 'updated' : 'created'} successfully`
+    });
   };
 
   const resetSectionForm = () => {
@@ -169,6 +281,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setSectionDescription('');
     setEditingSection(null);
     setShowSectionForm(false);
+    // Clear the form state from localStorage after successful operations
+    clearFormState();
   };
 
   const resetChapterForm = () => {
@@ -181,6 +295,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setEditingChapter(null);
     setShowChapterForm(false);
     setSelectedSectionId('');
+    // Clear the form state from localStorage after successful operations
+    clearFormState();
   };
 
   const handleEditSection = (section: Section) => {
