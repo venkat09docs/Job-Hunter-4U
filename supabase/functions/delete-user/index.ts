@@ -87,14 +87,24 @@ serve(async (req) => {
 
     // If institute admin, verify they can manage this user
     if (isInstituteAdmin) {
-      // Get the institutes this user is assigned to
+      // Get the institutes this user is assigned to (including inactive assignments)
       const { data: userInstitutes, error: userInstError } = await supabase
         .from('user_assignments')
         .select('institute_id')
         .eq('user_id', user_id)
-        .eq('is_active', true)
 
-      if (userInstError || !userInstitutes || userInstitutes.length === 0) {
+      if (userInstError) {
+        console.error('Error fetching user institutes:', userInstError)
+        return new Response(
+          JSON.stringify({ error: 'Error checking user institute assignments' }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      if (!userInstitutes || userInstitutes.length === 0) {
         return new Response(
           JSON.stringify({ error: 'User is not assigned to any institute' }),
           { 
@@ -113,7 +123,18 @@ serve(async (req) => {
         .eq('is_active', true)
         .in('institute_id', instituteIds)
 
-      if (adminInstError || !adminInstitutes || adminInstitutes.length === 0) {
+      if (adminInstError) {
+        console.error('Error checking admin institutes:', adminInstError)
+        return new Response(
+          JSON.stringify({ error: 'Error verifying admin permissions' }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
+      if (!adminInstitutes || adminInstitutes.length === 0) {
         return new Response(
           JSON.stringify({ error: 'You can only delete students from your managed institutes' }),
           { 

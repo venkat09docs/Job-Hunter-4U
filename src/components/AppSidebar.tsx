@@ -83,7 +83,6 @@ const clpAdminItems = [
 
 const recruiterItems = [
   { title: "Dashboard", url: "/recruiter", icon: Home },
-  { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Affiliate Management", url: "/admin/affiliate-management", icon: Share2 },
   { title: "Notification Analytics", url: "/admin/notification-analytics", icon: Bell },
   { title: "Notification Management", url: "/admin/notification-management", icon: Settings },
