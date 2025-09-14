@@ -418,19 +418,19 @@ const CourseContentView: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)]">
         {/* Sidebar - Course Navigation */}
-        <div className="w-80 border-r bg-muted/20 flex flex-col">
+        <div className="w-full lg:w-80 xl:w-96 border-b lg:border-r lg:border-b-0 bg-muted/20 flex flex-col max-h-64 lg:max-h-none overflow-hidden">
           {/* Sidebar Header */}
-          <div className="p-4 border-b bg-background">
+          <div className="p-4 lg:p-6 border-b bg-background">
             <div>
-              <h3 className="font-semibold text-lg line-clamp-1">{course?.title || 'Course Content'}</h3>
-              <p className="text-sm text-muted-foreground">Navigate through sections and chapters</p>
+              <h3 className="font-semibold text-lg lg:text-xl line-clamp-1">{course?.title || 'Course Content'}</h3>
+              <p className="text-sm lg:text-base text-muted-foreground">Navigate through sections and chapters</p>
             </div>
           </div>
 
           {/* Course Content Navigation */}
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4 lg:p-6">
             {loading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => (
@@ -449,53 +449,57 @@ const CourseContentView: React.FC = () => {
                 <p className="text-sm text-muted-foreground">No content available</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {sections.map((section) => (
                   <Collapsible
                     key={section.id}
                     open={openSections.has(section.id)}
                     onOpenChange={() => toggleSection(section.id)}
                   >
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-4 rounded-lg hover:bg-muted/50 transition-all duration-200 group text-left border border-transparent hover:border-muted-foreground/20 hover:shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           {openSections.has(section.id) ? (
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                           ) : (
-                            <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                           )}
                         </div>
-                        <span className="font-medium text-sm">{section.title}</span>
+                        <span className="font-semibold text-base lg:text-lg group-hover:text-primary transition-colors">{section.title}</span>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs lg:text-sm px-2 py-1">
                         {section.chapters.length}
                       </Badge>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="ml-6 space-y-1">
+                    <CollapsibleContent className="ml-8 space-y-2 mt-2">
                       {section.chapters.map((chapter) => (
                         <button
                           key={chapter.id}
                           onClick={() => setSelectedChapter(chapter)}
-                          className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors ${
+                          className={`w-full text-left p-4 rounded-lg transition-all duration-200 group border ${
                             selectedChapter?.id === chapter.id 
-                              ? 'bg-primary/10 text-primary border-l-2 border-primary' 
-                              : ''
+                              ? 'bg-primary/10 text-primary border-primary/30 shadow-sm' 
+                              : 'hover:bg-muted/50 border-transparent hover:border-muted-foreground/20 hover:shadow-sm'
                           } ${
                             completedChapters.has(chapter.id) 
-                              ? 'bg-green-50 border-l-2 border-green-400' 
+                              ? 'bg-green-50 border-green-300' 
                               : ''
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            {getContentTypeIcon(chapter.content_type)}
-                            <span className="flex-1">{chapter.title}</span>
-                            <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              {getContentTypeIcon(chapter.content_type)}
                               {completedChapters.has(chapter.id) && (
-                                <CheckCircle2 className="h-3 w-3 text-green-600" />
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
                               )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="font-semibold text-sm lg:text-base block line-clamp-1 group-hover:text-primary transition-colors">
+                                {chapter.title}
+                              </span>
                               {chapter.duration_minutes && (
-                                <span className="text-xs text-muted-foreground">
-                                  {chapter.duration_minutes}m
+                                <span className="text-xs lg:text-sm text-muted-foreground mt-1 block">
+                                  {chapter.duration_minutes} minutes
                                 </span>
                               )}
                             </div>
@@ -511,39 +515,41 @@ const CourseContentView: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {selectedChapter ? (
             <>
               {/* Chapter Content - Full Height */}
-              <div className="flex-1 flex flex-col">
-                <ScrollArea className="flex-1 p-6">
-                  {renderChapterContent(selectedChapter)}
+              <div className="flex-1 flex flex-col min-h-0">
+                <ScrollArea className="flex-1 p-4 lg:p-6 xl:p-8">
+                  <div className="max-w-4xl mx-auto">
+                    {renderChapterContent(selectedChapter)}
+                  </div>
                 </ScrollArea>
                 
                 {/* Navigation Controls */}
-                <div className="border-t bg-background p-6">
-                  <div className="flex items-center justify-between max-w-4xl mx-auto">
+                <div className="border-t bg-background p-4 lg:p-6">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
                     {/* Previous Button */}
-                    <div className="flex-1">
+                    <div className="w-full sm:flex-1 sm:w-auto">
                       {getPreviousChapter() ? (
                         <Button
                           variant="outline"
                           onClick={() => setSelectedChapter(getPreviousChapter()!)}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 w-full sm:w-auto"
                         >
                           <ArrowLeft className="h-4 w-4" />
                           Previous
                         </Button>
                       ) : (
-                        <div /> // Empty div for spacing
+                        <div className="hidden sm:block" /> // Empty div for spacing on desktop
                       )}
                     </div>
 
                     {/* Mark as Complete */}
-                    <div className="flex-1 flex justify-center">
+                    <div className="w-full sm:flex-1 sm:w-auto flex justify-center">
                       <Button
                         onClick={handleMarkComplete}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                       >
                         <CheckCircle2 className="h-4 w-4" />
                         Mark as Complete
@@ -551,11 +557,11 @@ const CourseContentView: React.FC = () => {
                     </div>
 
                     {/* Next Button or Next Section */}
-                    <div className="flex-1 flex justify-end">
+                    <div className="w-full sm:flex-1 sm:w-auto flex justify-end">
                       {getNextChapter() ? (
                         <Button
                           onClick={() => setSelectedChapter(getNextChapter()!)}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 w-full sm:w-auto"
                         >
                           Next
                           <ArrowRight className="h-4 w-4" />
@@ -563,7 +569,7 @@ const CourseContentView: React.FC = () => {
                       ) : getNextSection() ? (
                         <Button
                           onClick={handleGoToNextSection}
-                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                         >
                           Go to Next Section
                           <ArrowRight className="h-4 w-4" />
@@ -572,7 +578,7 @@ const CourseContentView: React.FC = () => {
                         <Button
                           variant="outline"
                           disabled
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 w-full sm:w-auto"
                         >
                           Course Complete
                           <CheckCircle2 className="h-4 w-4" />
@@ -580,28 +586,14 @@ const CourseContentView: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  
-                  {/* Chapter Info */}
-                  <div className="text-center mt-4 text-sm text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2">
-                      {getContentTypeIcon(selectedChapter.content_type)}
-                      <span>{selectedChapter.title}</span>
-                      {selectedChapter.duration_minutes && (
-                        <>
-                          <span>•</span>
-                          <span>{selectedChapter.duration_minutes} minutes</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center p-4">
               <div className="text-center">
                 <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-                <h3 className="text-lg font-medium mb-2">Select a Chapter</h3>
+                <h3 className="text-lg lg:text-xl font-medium mb-2">Select a Chapter</h3>
                 <p className="text-muted-foreground">
                   Choose a chapter from the sidebar to start learning
                 </p>
