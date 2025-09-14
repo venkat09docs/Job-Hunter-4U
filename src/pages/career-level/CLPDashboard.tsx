@@ -62,6 +62,8 @@ const CLPDashboard = () => {
     description: '',
     code: '',
     category: '',
+    order_index: 0,
+    industry_type: 'both' as 'IT' | 'non-IT' | 'both',
     image: null as File | null
   });
   const [categories, setCategories] = useState<string[]>([]);
@@ -273,6 +275,8 @@ const CLPDashboard = () => {
           description: courseForm.description,
           code: courseForm.code,
           category: courseForm.category,
+          order_index: courseForm.order_index,
+          industry_type: courseForm.industry_type,
           image: imageUrl,
           created_by: user?.id
         }])
@@ -282,7 +286,15 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => [data, ...prev]);
-      setCourseForm({ title: '', description: '', code: '', category: '', image: null });
+      setCourseForm({ 
+        title: '', 
+        description: '', 
+        code: '', 
+        category: '', 
+        order_index: 0, 
+        industry_type: 'both', 
+        image: null 
+      });
       setIsCreateCourseOpen(false);
       toast.success('Course created successfully');
       fetchCategories(); // Refresh categories
@@ -328,6 +340,8 @@ const CLPDashboard = () => {
           description: courseForm.description,
           code: courseForm.code,
           category: courseForm.category,
+          order_index: courseForm.order_index,
+          industry_type: courseForm.industry_type,
           image: imageUrl
         })
         .eq('id', editingCourse.id)
@@ -337,7 +351,15 @@ const CLPDashboard = () => {
       if (error) throw error;
 
       setCourses(prev => prev.map(c => c.id === editingCourse.id ? data : c));
-      setCourseForm({ title: '', description: '', code: '', category: '', image: null });
+      setCourseForm({ 
+        title: '', 
+        description: '', 
+        code: '', 
+        category: '', 
+        order_index: 0, 
+        industry_type: 'both', 
+        image: null 
+      });
       setEditingCourse(null);
       toast.success('Course updated successfully');
       fetchCategories(); // Refresh categories
@@ -426,6 +448,8 @@ const CLPDashboard = () => {
       description: course.description || '',
       code: course.code,
       category: course.category || '',
+      order_index: (course as any).order_index || 0,
+      industry_type: (course as any).industry_type || 'both',
       image: null
     });
   };
@@ -835,8 +859,35 @@ const CLPDashboard = () => {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                      </div>
-                    </div>
+                       </div>
+                     </div>
+                     <div>
+                       <Label htmlFor="course-order">Order</Label>
+                       <Input
+                         id="course-order"
+                         type="number"
+                         min="0"
+                         placeholder="Enter display order (0 for first)"
+                         value={courseForm.order_index}
+                         onChange={(e) => setCourseForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+                       />
+                     </div>
+                     <div>
+                       <Label htmlFor="course-industry">Industry Type</Label>
+                       <Select 
+                         value={courseForm.industry_type} 
+                         onValueChange={(value: 'IT' | 'non-IT' | 'both') => setCourseForm(prev => ({ ...prev, industry_type: value }))}
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select industry type" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="IT">IT</SelectItem>
+                           <SelectItem value="non-IT">Non-IT</SelectItem>
+                           <SelectItem value="both">Both</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
                     <div>
                       <Label htmlFor="course-image">Course Image</Label>
                       <Input

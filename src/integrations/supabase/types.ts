@@ -1099,7 +1099,9 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          industry_type: string | null
           is_active: boolean
+          order_index: number | null
           title: string
           updated_at: string
         }
@@ -1111,7 +1113,9 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          industry_type?: string | null
           is_active?: boolean
+          order_index?: number | null
           title: string
           updated_at?: string
         }
@@ -1123,7 +1127,9 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          industry_type?: string | null
           is_active?: boolean
+          order_index?: number | null
           title?: string
           updated_at?: string
         }
