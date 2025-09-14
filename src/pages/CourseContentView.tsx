@@ -247,15 +247,25 @@ const CourseContentView: React.FC = () => {
 
             return (
               <div className="space-y-4">
-                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={chapter.title}
-                  />
+                <div className="relative w-full">
+                  {/* Responsive video container with proper aspect ratio handling */}
+                  <div 
+                    className="relative w-full bg-gray-100 rounded-lg overflow-hidden"
+                    style={{ 
+                      aspectRatio: '16/9',
+                      maxHeight: 'min(70vh, 600px)' // Limit height on large screens
+                    }}
+                  >
+                    <iframe
+                      src={embedUrl}
+                      className="absolute inset-0 w-full h-full"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={chapter.title}
+                      style={{ border: 'none' }}
+                    />
+                  </div>
                 </div>
                 {chapter.description && (
                   <div className="prose prose-sm max-w-none">
@@ -520,11 +530,13 @@ const CourseContentView: React.FC = () => {
             <>
               {/* Chapter Content - Full Height */}
               <div className="flex-1 flex flex-col min-h-0">
-                <ScrollArea className="flex-1 p-4 lg:p-6 xl:p-8">
-                  <div className="max-w-4xl mx-auto">
-                    {renderChapterContent(selectedChapter)}
+                <div className="flex-1 overflow-auto">
+                  <div className="p-4 lg:p-6 xl:p-8">
+                    <div className="max-w-5xl mx-auto">
+                      {renderChapterContent(selectedChapter)}
+                    </div>
                   </div>
-                </ScrollArea>
+                </div>
                 
                 {/* Navigation Controls */}
                 <div className="border-t bg-background p-4 lg:p-6">
