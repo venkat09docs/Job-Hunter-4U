@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, Filter } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useRole } from '@/hooks/useRole';
+import { CourseContentDialog } from '@/components/CourseContentDialog';
 import type { Course } from '@/types/clp';
 
 // Course Card Component - Moved before main component
-const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
+const CourseCard: React.FC<{ 
+  course: Course; 
+  onManageContent?: (courseId: string, courseTitle: string) => void;
+  showManageButton?: boolean;
+}> = ({ course, onManageContent, showManageButton = false }) => {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
@@ -39,6 +45,19 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
               <BookOpen className="h-5 w-5 text-white" />
             </div>
           </div>
+          {showManageButton && (
+            <div className="absolute bottom-4 left-4">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => onManageContent?.(course.id, course.title)}
+                className="bg-white/90 hover:bg-white text-primary border-0 shadow-md"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Content
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       
@@ -80,17 +99,19 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
               </Badge>
             </div>
             
-            <Button 
-              size="sm" 
-              className="group/btn"
-              onClick={() => {
-                // TODO: Navigate to course detail or enrollment
-                console.log('Enroll in course:', course.id);
-              }}
-            >
-              <span>Enroll</span>
-              <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
-            </Button>
+            {!showManageButton && (
+              <Button 
+                size="sm" 
+                className="group/btn"
+                onClick={() => {
+                  // TODO: Navigate to course detail or enrollment
+                  console.log('Enroll in course:', course.id);
+                }}
+              >
+                <span>Enroll</span>
+                <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
@@ -100,9 +121,12 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
 
 const SkillDeveloperProgramsTab: React.FC = () => {
   const { getCourses, loading } = useCareerLevelProgram();
+  const { isAdmin } = useRole();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     loadCourses();
@@ -121,6 +145,11 @@ const SkillDeveloperProgramsTab: React.FC = () => {
       setCourses([]);
       setCategories([]);
     }
+  };
+
+  const handleManageContent = (courseId: string, courseTitle: string) => {
+    setSelectedCourse({ id: courseId, title: courseTitle });
+    setContentDialogOpen(true);
   };
 
   const formatDuration = (hours: number) => {
@@ -243,7 +272,12 @@ const SkillDeveloperProgramsTab: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {categoryCourses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
+                  <CourseCard 
+                    key={course.id} 
+                    course={course} 
+                    onManageContent={handleManageContent}
+                    showManageButton={isAdmin}
+                  />
                 ))}
               </div>
             </div>
@@ -253,9 +287,24 @@ const SkillDeveloperProgramsTab: React.FC = () => {
         // Display filtered courses when specific category is selected
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
+            <CourseCard 
+              key={course.id} 
+              course={course} 
+              onManageContent={handleManageContent}
+              showManageButton={isAdmin}
+            />
           ))}
         </div>
+      )}
+
+      {/* Course Content Management Dialog */}
+      {selectedCourse && (
+        <CourseContentDialog
+          open={contentDialogOpen}
+          onOpenChange={setContentDialogOpen}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
       )}
     </div>
   );
