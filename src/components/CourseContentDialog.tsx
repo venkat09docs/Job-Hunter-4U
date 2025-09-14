@@ -87,25 +87,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
 
-  // Check admin access
-  if (!isAdmin) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Access Denied</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-8">
-            <p>Only super administrators can manage course content.</p>
-            <Button onClick={() => onOpenChange(false)} className="mt-4">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   const loadSections = async () => {
     const sectionsData = await getSectionsByCourse(courseId);
     const sectionsWithChapters = await Promise.all(
@@ -118,10 +99,10 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   };
 
   useEffect(() => {
-    if (open && courseId) {
+    if (open && courseId && isAdmin) {
       loadSections();
     }
-  }, [open, courseId]);
+  }, [open, courseId, isAdmin]);
 
   const handleSaveSection = async () => {
     if (!sectionTitle.trim()) {
@@ -273,11 +254,19 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="sections">Sections</TabsTrigger>
-            <TabsTrigger value="chapters">Chapters</TabsTrigger>
-          </TabsList>
+        {!isAdmin ? (
+          <div className="text-center py-8">
+            <p>Only super administrators can manage course content.</p>
+            <Button onClick={() => onOpenChange(false)} className="mt-4">
+              Close
+            </Button>
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="sections">Sections</TabsTrigger>
+              <TabsTrigger value="chapters">Chapters</TabsTrigger>
+            </TabsList>
 
           {/* Sections Tab */}
           <TabsContent value="sections" className="space-y-4">
@@ -573,6 +562,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             )}
           </TabsContent>
         </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );
