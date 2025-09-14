@@ -55,7 +55,6 @@ export function LearningGoalsSection({
 
   // Load course progress for goals with course_id (read-only, no updates)
   useEffect(() => {
-    console.log('LearningGoalsSection useEffect triggered for course progress loading, goals length:', goals.length);
     const loadCourseProgress = async () => {
       const progressData: Record<string, any> = {};
       

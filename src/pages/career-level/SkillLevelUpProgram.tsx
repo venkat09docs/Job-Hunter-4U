@@ -151,15 +151,15 @@ const SkillLevelUpProgram: React.FC = () => {
   };
 
   // Handle learning goal creation - redirect to course content
-  const handleLearningGoalCreated = (courseId: string) => {
+  const handleLearningGoalCreated = useCallback((courseId: string) => {
     navigate(`/course/${courseId}`);
-  };
+  }, [navigate]);
 
   // Handle learning goal form closed
-  const handleLearningGoalFormClosed = () => {
+  const handleLearningGoalFormClosed = useCallback(() => {
     setPendingCourseEnrollment(null);
     setShouldOpenLearningGoalForm(false);
-  };
+  }, []);
 
   // Load modules for selected course
   const loadModules = useCallback(async (courseId: string) => {
