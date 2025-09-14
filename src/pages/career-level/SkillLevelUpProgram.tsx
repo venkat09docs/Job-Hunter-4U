@@ -562,55 +562,52 @@ const SkillLevelUpProgram: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Top Navigation Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-6">
-          {/* Left side - Navigation */}
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Button>
-            <div className="hidden sm:block h-4 w-px bg-border" />
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-purple-500" />
-              <span className="font-semibold">Skill Level Up Program</span>
-            </div>
-          </div>
-          
-          {/* Right side - Action Buttons and User Profile */}
-          <div className="flex items-center gap-3">
-            {/* YouTube Channel Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('https://youtube.com', '_blank')}
-              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">Go to YouTube Channel</span>
-            </Button>
-            
-            {/* Career Level Up Community Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // TODO: Add community link
-                console.log('Career Level Up Community clicked');
-              }}
-              className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
-            >
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Career Level Up Community</span>
-            </Button>
-            
-            <UserProfileDropdown />
-          </div>
-        </div>
+         <div className="container flex h-16 items-center justify-between px-6">
+           {/* Left side - Navigation */}
+           <div className="flex items-center gap-4">
+             <Button
+               variant="ghost"
+               size="sm"
+               onClick={() => navigate('/dashboard')}
+               className="flex items-center gap-2"
+             >
+               <Home className="h-4 w-4" />
+               <span className="hidden sm:inline">Dashboard</span>
+             </Button>
+             <div className="hidden sm:block h-4 w-px bg-border" />
+             <div className="flex items-center gap-2">
+               <Trophy className="h-5 w-5 text-purple-500" />
+               <span className="font-semibold">Skill Level Up Program</span>
+             </div>
+           </div>
+           
+           {/* Right side - Action Buttons and User Profile */}
+           <div className="flex items-center gap-3">
+             {/* YouTube Channel Button */}
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={() => window.open('https://www.youtube.com/@career-levelup', '_blank')}
+               className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
+             >
+               <ExternalLink className="h-4 w-4" />
+               <span className="hidden sm:inline">Go to YouTube Channel</span>
+             </Button>
+             
+             {/* Career Level Up Community Button */}
+             <Button
+               variant="outline"
+               size="sm"
+               onClick={() => window.open('https://members.risenshinetechnologies.com/communities/groups/career-level-up/home', '_blank')}
+               className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+             >
+               <Users className="h-4 w-4" />
+               <span className="hidden sm:inline">Career Level Up Community</span>
+             </Button>
+             
+             <UserProfileDropdown />
+           </div>
+         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
