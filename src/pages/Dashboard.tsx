@@ -92,7 +92,7 @@ const Dashboard = () => {
   const { leaderboard: optimizedLeaderboard, loading: leaderboardLoading } = useOptimizedLeaderboard();
   
   // Define eligible subscription plans for Badge Leaders and Leaderboard
-  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const eligiblePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
   // Check if user has eligible subscription
   const hasEligibleSubscription = () => {
@@ -589,7 +589,7 @@ const Dashboard = () => {
                     <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">Badge Leaders</h3>
                     <p className="text-muted-foreground mb-4">
-                      Available with 3 Months, 6 Months, or 1 Year plans
+                      Available with premium subscription plans
                     </p>
                     <SubscriptionUpgrade featureName="Badge Leaders" eligiblePlans={eligiblePlans}>
                       <Button>Upgrade Plan</Button>
@@ -838,7 +838,7 @@ const Dashboard = () => {
                       <Lock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">Level Up Status</h3>
                       <p className="text-muted-foreground mb-4">
-                        Advanced tracking available with 3 Months, 6 Months, or 1 Year plans
+                        Advanced tracking available with premium subscription plans
                       </p>
                       <SubscriptionUpgrade featureName="Level Up Status" eligiblePlans={eligiblePlans}>
                         <Button>Upgrade Plan</Button>

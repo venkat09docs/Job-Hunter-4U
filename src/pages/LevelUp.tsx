@@ -244,10 +244,10 @@ const LevelUp = () => {
   const totalGitHubCommits = getTotalCommitsAllTime();
 
   // Define eligible subscription plans for Level Up
-  const eligiblePlans = ['3 Months Plan', '6 Months Plan', '1 Year Plan'];
+  const eligiblePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
-  // Define eligible plans for gold badge upgrade (6-month and 1-year only)
-  const goldBadgeUpgradePlans = ['6 Months Plan', '1 Year Plan'];
+  // Define eligible plans for gold badge upgrade (all paid plans)
+  const goldBadgeUpgradePlans = ['One Month Plan', '3 Months Plan', '6 Months Plan', '1 Year Plan'];
   
   // Check if user has eligible subscription
   const hasEligibleSubscription = () => {

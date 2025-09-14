@@ -619,10 +619,10 @@ export function AppSidebar() {
               Upgrade for Career Growth Features
             </DialogTitle>
             <p className="text-center text-muted-foreground">
-              Career Growth Activities and Reports are available with our starter plans.
+              Career Growth Activities and Reports are available with all our subscription plans.
             </p>
           </DialogHeader>
-          <PricingDialog eligiblePlans={["One Month Plan"]} />
+          <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
         </DialogContent>
       </Dialog>
       
@@ -634,10 +634,10 @@ export function AppSidebar() {
               Upgrade for GitHub Tools
             </DialogTitle>
             <p className="text-center text-muted-foreground">
-              GitHub Optimization and GitHub Activity Tracker are available with our starter plans.
+              GitHub Optimization and GitHub Activity Tracker are available with all our subscription plans.
             </p>
           </DialogHeader>
-          <PricingDialog eligiblePlans={["One Month Plan"]} />
+          <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
         </DialogContent>
       </Dialog>
     </div>

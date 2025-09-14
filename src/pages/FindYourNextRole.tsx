@@ -985,7 +985,7 @@ const FindYourNextRole = () => {
       console.log('No subscription plan found, access denied');
       return false;
     }
-    const eligiblePlans = ["3 Months Plan", "6 Months Plan", "1 Year Plan"];
+    const eligiblePlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
     const hasAccess = eligiblePlans.includes(profile.subscription_plan);
     console.log('LinkedIn Jobs Access Check:', {
       currentPlan: profile.subscription_plan,
@@ -2370,7 +2370,7 @@ const FindYourNextRole = () => {
                       Get access to the latest LinkedIn job postings with our premium plans
                     </p>
                   </DialogHeader>
-                  <PricingDialog eligiblePlans={["3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
+                  <PricingDialog eligiblePlans={["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"]} />
                 </DialogContent>
               </Dialog>
         </div>
