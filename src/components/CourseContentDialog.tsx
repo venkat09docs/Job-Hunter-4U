@@ -90,27 +90,36 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   // Storage keys for persistence
   const STORAGE_KEY = `course-content-form-${courseId}`;
 
-  // Save form state to localStorage
+  // Save form state to localStorage immediately
   const saveFormState = useCallback(() => {
-    const formState = {
-      activeTab,
-      showSectionForm,
-      showChapterForm,
-      selectedSectionId,
-      sectionTitle,
-      sectionDescription,
-      chapterTitle,
-      chapterDescription,
-      chapterType,
-      chapterVideoUrl,
-      chapterArticleContent,
-      chapterDuration,
-      editingSection: editingSection?.id || null,
-      editingChapter: editingChapter?.id || null,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
+    if (!courseId) return;
+    
+    try {
+      const formState = {
+        activeTab,
+        showSectionForm,
+        showChapterForm,
+        selectedSectionId,
+        sectionTitle,
+        sectionDescription,
+        chapterTitle,
+        chapterDescription,
+        chapterType,
+        chapterVideoUrl,
+        chapterArticleContent,
+        chapterDuration,
+        editingSection: editingSection?.id || null,
+        editingChapter: editingChapter?.id || null,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
+      console.log('Form state saved to localStorage:', formState);
+    } catch (error) {
+      console.error('Error saving form state:', error);
+    }
   }, [
-    STORAGE_KEY, activeTab, showSectionForm, showChapterForm, selectedSectionId,
+    STORAGE_KEY, courseId, activeTab, showSectionForm, showChapterForm, selectedSectionId,
     sectionTitle, sectionDescription, chapterTitle, chapterDescription,
     chapterType, chapterVideoUrl, chapterArticleContent, chapterDuration,
     editingSection, editingChapter
@@ -118,34 +127,52 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
   // Load form state from localStorage
   const loadFormState = useCallback(() => {
+    if (!courseId) return;
+    
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      console.log('Loading form state from localStorage:', saved);
+      
       if (saved) {
         const formState = JSON.parse(saved);
-        setActiveTab(formState.activeTab || 'sections');
-        setShowSectionForm(formState.showSectionForm || false);
-        setShowChapterForm(formState.showChapterForm || false);
-        setSelectedSectionId(formState.selectedSectionId || '');
-        setSectionTitle(formState.sectionTitle || '');
-        setSectionDescription(formState.sectionDescription || '');
-        setChapterTitle(formState.chapterTitle || '');
-        setChapterDescription(formState.chapterDescription || '');
-        setChapterType(formState.chapterType || 'article');
-        setChapterVideoUrl(formState.chapterVideoUrl || '');
-        setChapterArticleContent(formState.chapterArticleContent || '');
-        setChapterDuration(formState.chapterDuration || 0);
         
-        // Note: editingSection and editingChapter will be set when sections load
-        // We store their IDs for restoration
+        // Check if the saved state is recent (within 24 hours)
+        const isRecent = formState.timestamp && (Date.now() - formState.timestamp) < 24 * 60 * 60 * 1000;
+        
+        if (isRecent) {
+          console.log('Restoring form state:', formState);
+          
+          setActiveTab(formState.activeTab || 'sections');
+          setShowSectionForm(formState.showSectionForm || false);
+          setShowChapterForm(formState.showChapterForm || false);
+          setSelectedSectionId(formState.selectedSectionId || '');
+          setSectionTitle(formState.sectionTitle || '');
+          setSectionDescription(formState.sectionDescription || '');
+          setChapterTitle(formState.chapterTitle || '');
+          setChapterDescription(formState.chapterDescription || '');
+          setChapterType(formState.chapterType || 'article');
+          setChapterVideoUrl(formState.chapterVideoUrl || '');
+          setChapterArticleContent(formState.chapterArticleContent || '');
+          setChapterDuration(formState.chapterDuration || 0);
+        } else {
+          // Clear old data
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
     } catch (error) {
       console.error('Error loading form state:', error);
+      localStorage.removeItem(STORAGE_KEY);
     }
-  }, [STORAGE_KEY]);
+  }, [STORAGE_KEY, courseId]);
 
   // Clear form state from localStorage
   const clearFormState = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      console.log('Form state cleared from localStorage');
+    } catch (error) {
+      console.error('Error clearing form state:', error);
+    }
   }, [STORAGE_KEY]);
 
   const loadSections = async () => {
@@ -166,10 +193,14 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     }
   }, [open, courseId, isAdmin, loadFormState]);
 
-  // Save form state whenever form fields change
+  // Save form state whenever form fields change (immediate save on typing)
   useEffect(() => {
     if (open && courseId) {
-      saveFormState();
+      const timeoutId = setTimeout(() => {
+        saveFormState();
+      }, 300); // Debounce saves by 300ms
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [
     open, courseId, saveFormState, activeTab, showSectionForm, showChapterForm,
@@ -177,6 +208,23 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     chapterDescription, chapterType, chapterVideoUrl, chapterArticleContent,
     chapterDuration, editingSection, editingChapter
   ]);
+
+  // Also save on window blur (when switching tabs)
+  useEffect(() => {
+    const handleBlur = () => {
+      if (open && courseId) {
+        saveFormState();
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('beforeunload', handleBlur);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('beforeunload', handleBlur);
+    };
+  }, [open, courseId, saveFormState]);
 
   // Restore editing states after sections load
   useEffect(() => {
@@ -238,6 +286,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       title: "Success",
       description: `Section ${editingSection ? 'updated' : 'created'} successfully`
     });
+    // Clear form state after successful operation
+    clearFormState();
   };
 
   const handleSaveChapter = async () => {
@@ -274,6 +324,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       title: "Success",
       description: `Chapter ${editingChapter ? 'updated' : 'created'} successfully`
     });
+    // Clear form state after successful operation
+    clearFormState();
   };
 
   const resetSectionForm = () => {
@@ -281,8 +333,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setSectionDescription('');
     setEditingSection(null);
     setShowSectionForm(false);
-    // Clear the form state from localStorage after successful operations
-    clearFormState();
+    // Don't clear localStorage on reset - only clear after successful operations
   };
 
   const resetChapterForm = () => {
@@ -295,8 +346,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setEditingChapter(null);
     setShowChapterForm(false);
     setSelectedSectionId('');
-    // Clear the form state from localStorage after successful operations
-    clearFormState();
+    // Don't clear localStorage on reset - only clear after successful operations
   };
 
   const handleEditSection = (section: Section) => {
@@ -410,7 +460,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     <Input
                       id="section-title"
                       value={sectionTitle}
-                      onChange={(e) => setSectionTitle(e.target.value)}
+                      onChange={(e) => {
+                        setSectionTitle(e.target.value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                       placeholder="Enter section title"
                     />
                   </div>
@@ -419,7 +473,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     <Textarea
                       id="section-description"
                       value={sectionDescription}
-                      onChange={(e) => setSectionDescription(e.target.value)}
+                      onChange={(e) => {
+                        setSectionDescription(e.target.value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                       placeholder="Enter section description"
                     />
                   </div>
@@ -526,7 +584,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="chapter-section">Section</Label>
-                      <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
+                      <Select value={selectedSectionId} onValueChange={(value) => {
+                        setSelectedSectionId(value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select section" />
                         </SelectTrigger>
@@ -542,7 +604,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     
                     <div>
                       <Label htmlFor="chapter-type">Content Type</Label>
-                      <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document') => setChapterType(value)}>
+                      <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document') => {
+                        setChapterType(value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -560,7 +626,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     <Input
                       id="chapter-title"
                       value={chapterTitle}
-                      onChange={(e) => setChapterTitle(e.target.value)}
+                      onChange={(e) => {
+                        setChapterTitle(e.target.value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                       placeholder="Enter chapter title"
                     />
                   </div>
@@ -570,7 +640,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     <Textarea
                       id="chapter-description"
                       value={chapterDescription}
-                      onChange={(e) => setChapterDescription(e.target.value)}
+                      onChange={(e) => {
+                        setChapterDescription(e.target.value);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                       placeholder="Enter chapter description"
                     />
                   </div>
@@ -581,9 +655,17 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                   {chapterType === 'video' && (
                     <VideoEmbedComponent
                       videoUrl={chapterVideoUrl}
-                      onChange={setChapterVideoUrl}
+                      onChange={(url) => {
+                        setChapterVideoUrl(url);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                       duration={chapterDuration}
-                      onDurationChange={setChapterDuration}
+                      onDurationChange={(duration) => {
+                        setChapterDuration(duration);
+                        // Save immediately on change
+                        setTimeout(() => saveFormState(), 100);
+                      }}
                     />
                   )}
 
@@ -593,7 +675,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                       <div className="mt-2">
                         <RichTextEditor
                           value={chapterArticleContent}
-                          onChange={setChapterArticleContent}
+                          onChange={(content) => {
+                            setChapterArticleContent(content);
+                            // Save immediately on change
+                            setTimeout(() => saveFormState(), 100);
+                          }}
                           placeholder="Write your article content here..."
                           height="400px"
                         />
@@ -607,7 +693,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                       <div className="mt-2">
                         <RichTextEditor
                           value={chapterArticleContent}
-                          onChange={setChapterArticleContent}
+                          onChange={(content) => {
+                            setChapterArticleContent(content);
+                            // Save immediately on change
+                            setTimeout(() => saveFormState(), 100);
+                          }}
                           placeholder="Enter document content or instructions..."
                           height="300px"
                         />
