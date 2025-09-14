@@ -1553,7 +1553,7 @@ const CLPDashboard = () => {
                   </div>
 
                   <div className="flex items-end">
-                    <Button onClick={loadLeaderboard} disabled={loading}>
+                    <Button onClick={loadLeaderboard} disabled={dashboardLoading}>
                       Refresh Rankings
                     </Button>
                   </div>
@@ -1582,7 +1582,7 @@ const CLPDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {dashboardLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
