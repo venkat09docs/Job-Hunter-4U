@@ -293,11 +293,15 @@ export function AppSidebar() {
     
     const handleSkillLevelUpClick = (e: React.MouseEvent) => {
       e.preventDefault();
-      // Check if user has active subscription
-      if (!hasActiveSubscription()) {
+      // Check if user has active subscription (any paid plan)
+      const hasValidSubscription = profile?.subscription_plan && 
+        ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan) &&
+        hasActiveSubscription();
+      
+      if (!hasValidSubscription && !isAdmin) {
         setSubscriptionDialogOpen(true);
       } else {
-        // User has subscription, proceed to navigate normally
+        // User has subscription or is admin, proceed to navigate normally
         window.location.href = item.url;
       }
     };
@@ -337,7 +341,9 @@ export function AppSidebar() {
             <span className="text-sm truncate">
               {item.title}
             </span>
-            {!hasActiveSubscription() && 
+            {(!hasActiveSubscription() || !profile?.subscription_plan || 
+              !["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan)) && 
+              !isAdmin && 
               <Lock className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
             }
           </div>
