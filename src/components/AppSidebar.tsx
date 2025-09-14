@@ -486,96 +486,57 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items - Filter based on subscription status */}
+                {/* Main Menu Items - Show all items regardless of subscription status */}
                 {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
-                  const subscriberPlan = profile?.subscription_plan;
-                  const hasActiveSubscription = subscriberPlan && subscriberPlan !== "Free Plan" && subscriberPlan !== null;
-                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  const currentPlan = profile?.subscription_plan;
-                  const hasAnySubscription = currentPlan && allSubscriptionPlans.includes(currentPlan);
-                  
-                  // Show Build Profile only for users WITHOUT active subscriptions
-                  if (item.showForNonSubscribers && hasActiveSubscription) {
-                    return null;
-                  }
-                  
-                  // Hide Build Profile for users WITH active subscriptions
-                  if (item.title === "Build Profile" && hasActiveSubscription) {
-                    return null;
-                  }
-                  
-                  // Hide Skill Level Up and Profile Level Up for users WITHOUT subscriptions
-                  if (item.requiresSubscription && !hasActiveSubscription) {
-                    return null;
-                  }
-                  
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
                 })}
 
-                {/* Job Hunter Level Up - Show after Profile Level Up */}
-                {(() => {
-                  const subscriberPlan = profile?.subscription_plan;
-                  const hasActiveSubscription = subscriberPlan && subscriberPlan !== "Free Plan" && subscriberPlan !== null;
-                  
-                  if (!hasActiveSubscription) return null;
-                  
-                  return (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setJobHunterOpen(!jobHunterOpen)}
-                        className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
-                          isJobHunterActive ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-green-50/50 dark:hover:bg-green-950/10'
-                        }`}
-                      >
-                        <Target className="h-5 w-5 flex-shrink-0 text-green-500" />
-                        {!isCollapsed && (
-                          <>
-                            <span className="font-medium text-sm">Job Hunter Level Up</span>
-                            {jobHunterOpen ? (
-                              <ChevronDown className="h-4 w-4 ml-auto text-green-500" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 ml-auto text-green-500" />
-                            )}
-                          </>
+                {/* Job Hunter Level Up - Show for all users */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => setJobHunterOpen(!jobHunterOpen)}
+                    className={`flex items-center gap-3 px-3 py-2.5 mx-2 my-0.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+                      isJobHunterActive ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20' : 'text-foreground hover:text-accent-foreground hover:bg-green-50/50 dark:hover:bg-green-950/10'
+                    }`}
+                  >
+                    <Target className="h-5 w-5 flex-shrink-0 text-green-500" />
+                    {!isCollapsed && (
+                      <>
+                        <span className="font-medium text-sm">Job Hunter Level Up</span>
+                        {jobHunterOpen ? (
+                          <ChevronDown className="h-4 w-4 ml-auto text-green-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 ml-auto text-green-500" />
                         )}
-                      </button>
-                      {jobHunterOpen && !isCollapsed && (
-                        <div className="space-y-1 mt-1">
-                          {jobHunterItems.map((item) => {
-                            const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
-                            return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="jobhunter" />;
-                          })}
-                        </div>
-                      )}
-                      {isCollapsed && (
-                        <div className="space-y-1">
-                          {jobHunterItems.map((item) => (
-                            <MenuItem key={item.title} item={item} sectionColor="jobhunter" />
-                          ))}
-                        </div>
-                      )}
+                      </>
+                    )}
+                  </button>
+                  {jobHunterOpen && !isCollapsed && (
+                    <div className="space-y-1 mt-1">
+                      {jobHunterItems.map((item) => {
+                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                        return <MenuItem key={item.title} item={item} isPremium={isPremium} isSubItem={true} sectionColor="jobhunter" />;
+                      })}
                     </div>
-                  );
-                })()}
+                  )}
+                  {isCollapsed && (
+                    <div className="space-y-1">
+                      {jobHunterItems.map((item) => {
+                        const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                        return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="jobhunter" />;
+                      })}
+                    </div>
+                  )}
+                </div>
 
-                {/* Progress Level Up - Show after Job Hunter Level Up */}
-                {(() => {
-                  const subscriberPlan = profile?.subscription_plan;
-                  const allSubscriptionPlans = ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"];
-                  
-                  // Show Progress Level Up for all subscription users
-                  if (!subscriberPlan || !allSubscriptionPlans.includes(subscriberPlan)) {
-                    return null;
-                  }
-                  
-                  const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
-                  return (
-                    <div className="mt-4">
-                      <MenuItem key={progressItem.title} item={progressItem} sectionColor="main" />
-                    </div>
-                  );
-                })()}
+                {/* Progress Level Up - Show for all users */}
+                <div className="mt-4">
+                  {(() => {
+                    const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
+                    return <MenuItem key={progressItem.title} item={progressItem} sectionColor="main" />;
+                  })()}
+                </div>
 
 
               </div>
