@@ -50,13 +50,23 @@ const Dashboard = () => {
   const WEEKLY_TARGET = 3;
   
   // ALL REACT HOOKS MUST BE CALLED FIRST - UNCONDITIONALLY AND IN SAME ORDER EVERY TIME
-  const { user, signOut, hasLoggedOut } = useAuth();
-  const { profile, analytics, loading, incrementAnalytics, hasActiveSubscription } = useProfile();
-  const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
+  const { user, signOut, hasLoggedOut, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Progress and metrics hooks
+  // Early redirect for signed-out users - do this immediately after auth hooks
+  useEffect(() => {
+    if (!authLoading && (!user || hasLoggedOut)) {
+      console.log('Dashboard: User signed out, redirecting to auth...');
+      navigate('/auth');
+    }
+  }, [user, hasLoggedOut, authLoading, navigate]);
+
+  // Only proceed with other hooks if user is authenticated
+  const { profile, analytics, loading: profileLoading, incrementAnalytics, hasActiveSubscription } = useProfile();
+  const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
+  
+  // Progress and metrics hooks - only if user exists
   const { getModuleProgress, assignments } = useCareerAssignments();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
@@ -274,18 +284,24 @@ const Dashboard = () => {
 
   // Early redirect for recruiters to their specific dashboard
   useEffect(() => {
-    if (!loading && user && !hasLoggedOut && isRecruiter && !isAdmin && !isInstituteAdmin) {
+    if (!authLoading && !profileLoading && user && !hasLoggedOut && isRecruiter && !isAdmin && !isInstituteAdmin) {
       navigate('/recruiter');
     }
-  }, [user, loading, hasLoggedOut, navigate, isRecruiter, isAdmin, isInstituteAdmin]);
+  }, [user, authLoading, profileLoading, hasLoggedOut, navigate, isRecruiter, isAdmin, isInstituteAdmin]);
 
   // AFTER ALL HOOKS - Now safe to do conditional rendering
   console.log('Dashboard: user =', user);
   console.log('Dashboard: profile =', profile);
-  console.log('Dashboard: loading =', loading);
+  console.log('Dashboard: authLoading =', authLoading);
+  console.log('Dashboard: profileLoading =', profileLoading);
+  
+  // If user is signed out or being redirected, don't render anything
+  if (!authLoading && (!user || hasLoggedOut)) {
+    return null;
+  }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (loading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -298,7 +314,7 @@ const Dashboard = () => {
     );
   }
   
-  if (loading) {
+  if (authLoading || profileLoading) {
     console.log('Dashboard showing loading state');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -308,12 +324,6 @@ const Dashboard = () => {
         </div>
       </div>
     );
-  }
-  
-  if (!user) {
-    console.log('Dashboard: No user, redirecting to auth...');
-    navigate('/auth');
-    return null;
   }
 
   if (!profile) {
