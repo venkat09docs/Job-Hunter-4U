@@ -39,7 +39,7 @@ import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import SkillDeveloperProgramsTab from '@/components/SkillDeveloperProgramsTab';
-import { CompletedLearningGoals } from '@/components/CompletedLearningGoals';
+import { LearningGoalsSection } from '@/components/LearningGoalsSection';
 import PricingDialog from '@/components/PricingDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
@@ -627,7 +627,7 @@ const SkillLevelUpProgram: React.FC = () => {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="skill-programs">Skill Development Programs</TabsTrigger>
             <TabsTrigger value="assignments">My Assignments</TabsTrigger>
-            <TabsTrigger value="completed-learning">Completed Learning</TabsTrigger>
+            <TabsTrigger value="completed-learning">Track Learning Goals</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>
 
@@ -780,9 +780,9 @@ const SkillLevelUpProgram: React.FC = () => {
           </TabsContent>
 
           {/* Completed Learning Tab */}
-          <TabsContent value="completed-learning" className="space-y-6">
-            <CompletedLearningGoals />
-          </TabsContent>
+              <TabsContent value="completed-learning" className="space-y-6">
+                <LearningGoalsSection />
+              </TabsContent>
 
           {/* Leaderboard Tab */}
           <TabsContent value="leaderboard" className="space-y-6">
