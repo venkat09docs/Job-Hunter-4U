@@ -374,9 +374,15 @@ const Auth = () => {
                     <Input
                       id="signup-phone"
                       type="tel"
-                      placeholder="Enter your phone or WhatsApp number"
+                      placeholder="Enter your phone or WhatsApp number (10 digits)"
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, ''); // Only allow numbers
+                        if (value.length <= 10) { // Max 10 digits
+                          setPhoneNumber(value);
+                        }
+                      }}
+                      maxLength={10}
                       required
                     />
                   </div>

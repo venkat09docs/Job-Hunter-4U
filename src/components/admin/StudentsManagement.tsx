@@ -221,11 +221,11 @@ export const StudentsManagement = () => {
         return;
       }
 
-      // Get user profiles with email, full_name, username and subscription info
+      // Get user profiles with email, full_name, username, phone_number and subscription info
       console.log('🔍 Fetching profiles for user IDs:', userIds);
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('user_id, full_name, email, username, industry, subscription_active, subscription_plan, subscription_end_date')
+        .select('user_id, full_name, email, username, phone_number, industry, subscription_active, subscription_plan, subscription_end_date')
         .in('user_id', userIds);
 
       console.log('📋 Profiles query result:', { profiles, profilesError });
@@ -282,13 +282,14 @@ export const StudentsManagement = () => {
 
         if (assignmentError) throw assignmentError;
 
-        // Update student profile if name or email changed
-        if (formData.full_name || formData.email) {
+        // Update student profile if name, email, or phone changed
+        if (formData.full_name || formData.email || formData.phone_number) {
           const { error: profileError } = await supabase
             .from('profiles')
             .update({
               full_name: formData.full_name,
               email: formData.email,
+              phone_number: formData.phone_number,
             })
             .eq('user_id', editingStudent.user_id);
 
@@ -685,13 +686,21 @@ export const StudentsManagement = () => {
     applyFilters();
   }, [filterType, selectedBatch, searchName, students]);
 
-  const handleEdit = (student: Student) => {
+  const handleEdit = async (student: Student) => {
     setEditingStudent(student);
+    
+    // Fetch phone number from the profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('phone_number')
+      .eq('user_id', student.user_id)
+      .single();
+    
     setFormData({
       email: student.email || '',
       full_name: student.full_name || '',
       username: student.username || '',
-      phone_number: '', // Phone number not available in existing data
+      phone_number: profile?.phone_number || '',
       batch_id: student.batch_id || '',
       password: '', // Don't populate password for editing
       industry: student.industry || 'IT',
@@ -939,8 +948,14 @@ export const StudentsManagement = () => {
                   id="phone_number"
                   type="tel"
                   value={formData.phone_number}
-                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                  placeholder="Enter phone or WhatsApp number"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Only allow numbers
+                    if (value.length <= 10) { // Max 10 digits
+                      setFormData({ ...formData, phone_number: value });
+                    }
+                  }}
+                  placeholder="Enter phone or WhatsApp number (10 digits max)"
+                  maxLength={10}
                 />
               </div>
 
