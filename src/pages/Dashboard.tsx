@@ -511,7 +511,7 @@ const Dashboard = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              {!hasActiveSubscription() && (
+              {(!profile?.subscription_active || !hasActiveSubscription()) && (
                 <Button 
                   onClick={() => navigate('/dashboard/resume-builder?tab=resume')}
                   variant="default"
