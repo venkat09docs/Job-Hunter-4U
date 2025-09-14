@@ -527,16 +527,18 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         ) : (
           <div className="relative z-10">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 relative z-20">
+              <TabsList className="grid w-full grid-cols-2 mb-6 relative z-30 pointer-events-auto">
                 <TabsTrigger 
                   value="sections" 
-                  className="relative z-30 cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="relative z-40 cursor-pointer pointer-events-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  onClick={() => console.log('🏷️ Sections tab clicked')}
                 >
                   Sections
                 </TabsTrigger>
                 <TabsTrigger 
                   value="chapters" 
-                  className="relative z-30 cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="relative z-40 cursor-pointer pointer-events-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  onClick={() => console.log('🏷️ Chapters tab clicked')}
                 >
                   Chapters
                 </TabsTrigger>
@@ -546,8 +548,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Sections</h3>
               <Button 
-                onClick={() => setShowSectionForm(true)} 
-                className="flex items-center gap-2 relative z-20 cursor-pointer hover:bg-primary/90"
+                onClick={() => {
+                  console.log('➕ Add Section button clicked');
+                  setShowSectionForm(true);
+                }} 
+                className="flex items-center gap-2 relative z-30 pointer-events-auto cursor-pointer hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4" />
                 Add Section
@@ -620,10 +625,26 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEditSection(section)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            console.log('🖊️ Edit section clicked for:', section.id);
+                            handleEditSection(section);
+                          }}
+                          className="relative z-30 pointer-events-auto cursor-pointer"
+                        >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteSection(section.id)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            console.log('🗑️ Delete section clicked for:', section.id);
+                            handleDeleteSection(section.id);
+                          }}
+                          className="relative z-30 pointer-events-auto cursor-pointer"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -646,10 +667,26 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                               )}
                             </div>
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm" onClick={() => handleEditChapter(chapter)}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => {
+                                  console.log('🖊️ Edit chapter clicked for:', chapter.id);
+                                  handleEditChapter(chapter);
+                                }}
+                                className="relative z-30 pointer-events-auto cursor-pointer"
+                              >
                                 <Edit3 className="h-3 w-3" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteChapter(chapter.id)}>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => {
+                                  console.log('🗑️ Delete chapter clicked for:', chapter.id);
+                                  handleDeleteChapter(chapter.id);
+                                }}
+                                className="relative z-30 pointer-events-auto cursor-pointer"
+                              >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
@@ -675,8 +712,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Chapters</h3>
               <Button 
-                onClick={() => setShowChapterForm(true)} 
-                className="flex items-center gap-2 relative z-20 cursor-pointer hover:bg-primary/90"
+                onClick={() => {
+                  console.log('➕ Add Chapter button clicked');
+                  setShowChapterForm(true);
+                }} 
+                className="flex items-center gap-2 relative z-30 pointer-events-auto cursor-pointer hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4" />
                 Add Chapter
