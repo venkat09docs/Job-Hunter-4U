@@ -4051,6 +4051,7 @@ export type Database = {
           leetcode_url: string | null
           linkedin_url: string | null
           location: string | null
+          phone_number: string | null
           profile_image_url: string | null
           subscription_active: boolean | null
           subscription_end_date: string | null
@@ -4075,6 +4076,7 @@ export type Database = {
           leetcode_url?: string | null
           linkedin_url?: string | null
           location?: string | null
+          phone_number?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null
@@ -4099,6 +4101,7 @@ export type Database = {
           leetcode_url?: string | null
           linkedin_url?: string | null
           location?: string | null
+          phone_number?: string | null
           profile_image_url?: string | null
           subscription_active?: boolean | null
           subscription_end_date?: string | null

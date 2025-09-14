@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
     // Get user profile and assignment information
     const { data: profile } = await supabase
       .from('profiles')
-      .select('industry, full_name, username, email')
+      .select('industry, full_name, username, email, phone_number')
       .eq('user_id', userId)
       .single()
     
@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
       created_at: userData.created_at,
       updated_at: userData.updated_at || new Date().toISOString(),
       email_verified: userData.email_confirmed_at ? true : false,
-      phone: userData.phone || '',
+      phone: profile?.phone_number || userData.phone || userData.raw_user_meta_data?.phone_number || '',
       app_metadata: userData.app_metadata || {},
       user_metadata: userData.user_metadata || userData.raw_user_meta_data || {},
       raw_user_meta_data: userData.raw_user_meta_data || {},

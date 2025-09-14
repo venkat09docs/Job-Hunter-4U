@@ -20,6 +20,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [industry, setIndustry] = useState<'IT' | 'Non-IT' | ''>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -57,7 +58,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || !username || !industry) {
+    if (!email || !password || !username || !phoneNumber || !industry) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields",
@@ -103,6 +104,7 @@ const Auth = () => {
         username: username,
         full_name: username,
         'Display Name': username,
+        phone_number: phoneNumber,
         industry: industry
       };
       
@@ -364,6 +366,17 @@ const Auth = () => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Phone/WhatsApp Number</Label>
+                    <Input
+                      id="signup-phone"
+                      type="tel"
+                      placeholder="Enter your phone or WhatsApp number"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                     />
                   </div>
