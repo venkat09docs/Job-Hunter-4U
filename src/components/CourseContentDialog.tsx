@@ -509,7 +509,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto z-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -525,17 +525,30 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             </Button>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="sections">Sections</TabsTrigger>
-              <TabsTrigger value="chapters">Chapters</TabsTrigger>
-            </TabsList>
+          <div className="relative z-10">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 relative z-20">
+                <TabsTrigger 
+                  value="sections" 
+                  className="relative z-30 cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Sections
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="chapters" 
+                  className="relative z-30 cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
+                  Chapters
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Sections Tab */}
-          <TabsContent value="sections" className="space-y-4">
-            <div className="flex justify-between items-center">
+          <TabsContent value="sections" className="space-y-4 relative z-10">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Sections</h3>
-              <Button onClick={() => setShowSectionForm(true)} className="flex items-center gap-2">
+              <Button 
+                onClick={() => setShowSectionForm(true)} 
+                className="flex items-center gap-2 relative z-20 cursor-pointer hover:bg-primary/90"
+              >
                 <Plus className="h-4 w-4" />
                 Add Section
               </Button>
@@ -658,10 +671,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           </TabsContent>
 
           {/* Chapters Tab */}
-          <TabsContent value="chapters" className="space-y-4">
-            <div className="flex justify-between items-center">
+          <TabsContent value="chapters" className="space-y-4 relative z-10">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Course Chapters</h3>
-              <Button onClick={() => setShowChapterForm(true)} className="flex items-center gap-2">
+              <Button 
+                onClick={() => setShowChapterForm(true)} 
+                className="flex items-center gap-2 relative z-20 cursor-pointer hover:bg-primary/90"
+              >
                 <Plus className="h-4 w-4" />
                 Add Chapter
               </Button>
@@ -865,6 +881,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             )}
           </TabsContent>
         </Tabs>
+        </div>
         )}
       </DialogContent>
     </Dialog>
