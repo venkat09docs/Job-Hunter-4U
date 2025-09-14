@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -43,6 +43,7 @@ const CourseContentView: React.FC = () => {
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
 
@@ -115,6 +116,60 @@ const CourseContentView: React.FC = () => {
       }
       return newSet;
     });
+  };
+
+  // Navigation helper functions
+  const getPreviousChapter = (): Chapter | null => {
+    if (!selectedChapter) return null;
+    
+    let allChapters: Chapter[] = [];
+    sections.forEach(section => {
+      allChapters = [...allChapters, ...section.chapters];
+    });
+    
+    const currentIndex = allChapters.findIndex(ch => ch.id === selectedChapter.id);
+    return currentIndex > 0 ? allChapters[currentIndex - 1] : null;
+  };
+
+  const getNextChapter = (): Chapter | null => {
+    if (!selectedChapter) return null;
+    
+    let allChapters: Chapter[] = [];
+    sections.forEach(section => {
+      allChapters = [...allChapters, ...section.chapters];
+    });
+    
+    const currentIndex = allChapters.findIndex(ch => ch.id === selectedChapter.id);
+    return currentIndex < allChapters.length - 1 ? allChapters[currentIndex + 1] : null;
+  };
+
+  const getNextSection = (): Section | null => {
+    if (!selectedChapter) return null;
+    
+    const currentSection = sections.find(section => 
+      section.chapters.some(ch => ch.id === selectedChapter.id)
+    );
+    
+    if (!currentSection) return null;
+    
+    const currentSectionIndex = sections.findIndex(s => s.id === currentSection.id);
+    return currentSectionIndex < sections.length - 1 ? sections[currentSectionIndex + 1] : null;
+  };
+
+  const handleMarkComplete = () => {
+    if (selectedChapter) {
+      setCompletedChapters(prev => new Set([...prev, selectedChapter.id]));
+      // Here you could also save to database or local storage
+      console.log('Chapter marked as complete:', selectedChapter.id);
+    }
+  };
+
+  const handleGoToNextSection = () => {
+    const nextSection = getNextSection();
+    if (nextSection && nextSection.chapters.length > 0) {
+      setSelectedChapter(nextSection.chapters[0]);
+      setOpenSections(prev => new Set([...prev, nextSection.id]));
+    }
   };
 
   const getContentTypeIcon = (contentType: string) => {
@@ -425,16 +480,25 @@ const CourseContentView: React.FC = () => {
                             selectedChapter?.id === chapter.id 
                               ? 'bg-primary/10 text-primary border-l-2 border-primary' 
                               : ''
+                          } ${
+                            completedChapters.has(chapter.id) 
+                              ? 'bg-green-50 border-l-2 border-green-400' 
+                              : ''
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             {getContentTypeIcon(chapter.content_type)}
                             <span className="flex-1">{chapter.title}</span>
-                            {chapter.duration_minutes && (
-                              <span className="text-xs text-muted-foreground">
-                                {chapter.duration_minutes}m
-                              </span>
-                            )}
+                            <div className="flex items-center gap-1">
+                              {completedChapters.has(chapter.id) && (
+                                <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              )}
+                              {chapter.duration_minutes && (
+                                <span className="text-xs text-muted-foreground">
+                                  {chapter.duration_minutes}m
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -450,31 +514,88 @@ const CourseContentView: React.FC = () => {
         <div className="flex-1 flex flex-col">
           {selectedChapter ? (
             <>
-              {/* Chapter Header */}
-              <div className="p-6 border-b bg-background">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {getContentTypeIcon(selectedChapter.content_type)}
-                      <Badge 
-                        variant="outline" 
-                        className={getContentTypeBadgeColor(selectedChapter.content_type)}
-                      >
-                        {selectedChapter.content_type.charAt(0).toUpperCase() + selectedChapter.content_type.slice(1)}
-                      </Badge>
+              {/* Chapter Content - Full Height */}
+              <div className="flex-1 flex flex-col">
+                <ScrollArea className="flex-1 p-6">
+                  {renderChapterContent(selectedChapter)}
+                </ScrollArea>
+                
+                {/* Navigation Controls */}
+                <div className="border-t bg-background p-6">
+                  <div className="flex items-center justify-between max-w-4xl mx-auto">
+                    {/* Previous Button */}
+                    <div className="flex-1">
+                      {getPreviousChapter() ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedChapter(getPreviousChapter()!)}
+                          className="flex items-center gap-2"
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Previous
+                        </Button>
+                      ) : (
+                        <div /> // Empty div for spacing
+                      )}
                     </div>
-                    <h2 className="text-xl font-semibold">{selectedChapter.title}</h2>
-                    {selectedChapter.description && (
-                      <p className="text-muted-foreground mt-1">{selectedChapter.description}</p>
-                    )}
+
+                    {/* Mark as Complete */}
+                    <div className="flex-1 flex justify-center">
+                      <Button
+                        onClick={handleMarkComplete}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        Mark as Complete
+                      </Button>
+                    </div>
+
+                    {/* Next Button or Next Section */}
+                    <div className="flex-1 flex justify-end">
+                      {getNextChapter() ? (
+                        <Button
+                          onClick={() => setSelectedChapter(getNextChapter()!)}
+                          className="flex items-center gap-2"
+                        >
+                          Next
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      ) : getNextSection() ? (
+                        <Button
+                          onClick={handleGoToNextSection}
+                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                        >
+                          Go to Next Section
+                          <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          disabled
+                          className="flex items-center gap-2"
+                        >
+                          Course Complete
+                          <CheckCircle2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Chapter Info */}
+                  <div className="text-center mt-4 text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2">
+                      {getContentTypeIcon(selectedChapter.content_type)}
+                      <span>{selectedChapter.title}</span>
+                      {selectedChapter.duration_minutes && (
+                        <>
+                          <span>•</span>
+                          <span>{selectedChapter.duration_minutes} minutes</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Chapter Content */}
-              <ScrollArea className="flex-1 p-6">
-                {renderChapterContent(selectedChapter)}
-              </ScrollArea>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
