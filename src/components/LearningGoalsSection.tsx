@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ export function LearningGoalsSection({
   const [progressValue, setProgressValue] = useState(0);
   const [courses, setCourses] = useState<any[]>([]);
   const [courseProgress, setCourseProgress] = useState<Record<string, any>>({});
+  const processedUpdates = useRef<Set<string>>(new Set());
 
   // Load courses for selection
   useEffect(() => {
@@ -63,6 +64,32 @@ export function LearningGoalsSection({
             const progress = await getCourseProgress(goal.course_id);
             if (progress) {
               progressData[goal.id] = progress;
+              
+              // Create unique key for this update
+              const updateKey = `${goal.id}-${progress.progress_percentage}`;
+              
+              // Only process if we haven't already handled this exact progress for this goal
+              if (!processedUpdates.current.has(updateKey) && progress.progress_percentage !== goal.progress) {
+                processedUpdates.current.add(updateKey);
+                
+                // Update goal progress
+                updateGoal(goal.id, { progress: progress.progress_percentage }).then(() => {
+                  // Check if course is completed and award points
+                  if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
+                    awardLearningGoalPoints(goal.id).then((result) => {
+                      if (result.success) {
+                        toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
+                      }
+                    }).catch(error => {
+                      console.error('Error awarding points:', error);
+                    });
+                  }
+                }).catch(error => {
+                  console.error('Error updating goal progress:', error);
+                  // Remove from processed set on error so it can be retried
+                  processedUpdates.current.delete(updateKey);
+                });
+              }
             }
           } catch (error) {
             console.error('Error loading course progress:', error);
@@ -76,37 +103,12 @@ export function LearningGoalsSection({
     if (goals.length > 0) {
       loadCourseProgress();
     }
-  }, [goals, getCourseProgress]);
+  }, [goals, getCourseProgress, updateGoal, awardLearningGoalPoints]);
 
-  // Handle progress updates and point awards separately
+  // Clear processed updates when goals change significantly
   useEffect(() => {
-    const handleProgressUpdates = async () => {
-      for (const goal of goals) {
-        if (goal.course_id && courseProgress[goal.id]) {
-          const progress = courseProgress[goal.id];
-          
-          // Update goal progress if course progress has changed
-          if (progress.progress_percentage !== goal.progress) {
-            await updateGoal(goal.id, { progress: progress.progress_percentage });
-            
-            // Check if course is completed and award points
-            if (progress.progress_percentage >= 100 && !goal.reward_points_awarded) {
-              try {
-                const result = await awardLearningGoalPoints(goal.id);
-                if (result.success) {
-                  toast.success(`🎉 Course completed! You earned ${result.points_awarded} points!`);
-                }
-              } catch (error) {
-                console.error('Error awarding points:', error);
-              }
-            }
-          }
-        }
-      }
-    };
-
-    handleProgressUpdates();
-  }, [courseProgress, updateGoal, awardLearningGoalPoints]);
+    processedUpdates.current.clear();
+  }, [goals.length]);
 
   const handleCreate = async (data: any) => {
     const success = await createGoal(data);
