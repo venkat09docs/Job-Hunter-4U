@@ -137,11 +137,10 @@ const Dashboard = () => {
     return !hasActiveSubscription();
   };
 
-  // Check if user can access Status Tracker (free, 1-week, 1-month plans)
+  // Check if user can access Status Tracker (only unsubscribed users)
   const canAccessStatusTracker = () => {
     if (isAdmin || isRecruiter) return true;
-    if (!profile?.subscription_plan) return true; // Free users
-    return ['One Month Plan'].includes(profile.subscription_plan);
+    return !hasActiveSubscription(); // Only unsubscribed users
   };
 
   // Check if user can access Level Up Status (3M, 6M, 1Y plans)
