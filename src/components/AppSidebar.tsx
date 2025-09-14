@@ -533,15 +533,15 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items in specified order */}
-                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
+                {/* First show items up to Profile Level Up */}
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(0, 3).map((item) => {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   // Don't pass isPremium for Skill Level Up since it has custom subscription handling
                   const shouldPassPremium = item.title !== "Skill Level Up" ? isPremium : false;
                   return <MenuItem key={item.title} item={item} isPremium={shouldPassPremium} sectionColor="main" />;
                 })}
 
-                {/* Job Hunter Level Up */}
+                {/* Job Hunter Level Up - moved to top */}
                 <div className="mt-4">
                   <button
                     onClick={() => setJobHunterOpen(!jobHunterOpen)}
@@ -579,13 +579,21 @@ export function AppSidebar() {
                   )}
                 </div>
 
-                {/* Progress Level Up */}
+                {/* Progress Level Up - moved below JobHunter Level Up */}
                 <div className="mt-4">
                   {(() => {
                     const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
                     return <MenuItem key={progressItem.title} item={progressItem} sectionColor="main" />;
                   })()}
                 </div>
+
+                {/* Remaining main menu items */}
+                {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).slice(3).map((item) => {
+                  const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
+                  // Don't pass isPremium for Skill Level Up since it has custom subscription handling
+                  const shouldPassPremium = item.title !== "Skill Level Up" ? isPremium : false;
+                  return <MenuItem key={item.title} item={item} isPremium={shouldPassPremium} sectionColor="main" />;
+                })}
 
               </div>
             </div>
