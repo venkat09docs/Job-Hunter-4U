@@ -34,7 +34,7 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
     end_date: goal?.end_date ? new Date(goal.end_date).toISOString().split('T')[0] : '',
     priority: goal?.priority || 'medium',
     notes: goal?.notes || '',
-    course_id: goal?.course_id || ''
+    course_id: goal?.course_id || 'none'
   });
   const [resources, setResources] = useState<Resource[]>(goal?.resources || []);
 
@@ -80,7 +80,7 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
     const goalData: CreateLearningGoalData = {
       ...formData,
       resources: resources.filter(r => r.name && r.url),
-      course_id: formData.course_id || null
+      course_id: formData.course_id && formData.course_id !== "none" ? formData.course_id : null
     };
 
     onSubmit(goalData);
@@ -128,7 +128,7 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
                   <SelectValue placeholder="Select a course to track" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Course Linked</SelectItem>
+                  <SelectItem value="none">No Course Linked</SelectItem>
                   {courses.map((course) => (
                     <SelectItem key={course.id} value={course.id}>
                       {course.title}
