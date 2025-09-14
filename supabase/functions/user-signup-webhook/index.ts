@@ -138,73 +138,68 @@ Deno.serve(async (req) => {
 
     const userId = userData.user_id || userData.id
     
-    // Get user's industry from profile or metadata
-    let userIndustry = 'Non-IT' // Default to Non-IT
+    // Wait a moment for database trigger to complete profile creation and assignment
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
-    if (userData.raw_user_meta_data?.industry) {
-      userIndustry = userData.raw_user_meta_data.industry
-    } else {
-      // Check profile table for industry
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('industry')
-        .eq('user_id', userId)
-        .single()
-      
-      if (profile?.industry) {
-        userIndustry = profile.industry
-      }
+    // Get user's industry and assignment details from database 
+    // (Database trigger should have already created profile and assignments)
+    let userIndustry = 'IT' // Default to IT
+    let assignmentInfo = null
+    
+    // Get user profile and assignment information
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('industry, full_name, username, email')
+      .eq('user_id', userId)
+      .single()
+    
+    if (profile?.industry) {
+      userIndustry = profile.industry
     }
     
-    console.log(`User ${userId} industry: ${userIndustry}`)
-
-    // Auto-assign to RNS Tech Institute with appropriate batch
-    const rnsInstituteId = '8a75a3b2-9e8d-44ab-9f9a-a005fb822f80'
-    const itBatchId = 'acd2af9d-b906-4dc8-a250-fc5e47736e6a'
-    const nonItBatchId = '37bb5110-42d7-43ea-8854-b2bfee404dd8'
-    const rnsInstituteAdminId = 'ec2027a6-4486-4feb-bc7b-bd0c6631ca57' // g.venkat09 - RNS Tech Institute Admin
-    
-    const batchId = userIndustry === 'IT' ? itBatchId : nonItBatchId
-    const batchName = userIndustry === 'IT' ? 'IT Batch' : 'Non-IT Batch'
-    
-    console.log(`Auto-assigning user ${userId} to RNS Tech Institute ${batchName}`)
-    
-    // Check if user is already assigned to any institute
-    const { data: existingAssignment } = await supabase
+    // Get assignment information
+    const { data: assignment } = await supabase
       .from('user_assignments')
-      .select('id')
+      .select(`
+        institute_id,
+        batch_id,
+        assignment_type,
+        institutes:institute_id (name, code),
+        batches:batch_id (name, code)
+      `)
       .eq('user_id', userId)
       .eq('is_active', true)
-      .limit(1)
-
-    if (!existingAssignment || existingAssignment.length === 0) {
-      // Auto-assign to RNS Tech Institute with appropriate batch
-      const { error: assignmentError } = await supabase
-        .from('user_assignments')
-        .insert({
-          user_id: userId,
-          institute_id: rnsInstituteId,
-          batch_id: batchId,
-          assignment_type: 'auto_signup',
-          assigned_by: rnsInstituteAdminId,
-          is_active: true
-        })
-
-      if (assignmentError) {
-        console.error('❌ Failed to auto-assign user to RNS Tech Institute:', assignmentError)
-      } else {
-        console.log(`✅ User successfully auto-assigned to RNS Tech Institute ${batchName}`)
+      .single()
+    
+    if (assignment) {
+      assignmentInfo = {
+        institute_id: assignment.institute_id,
+        batch_id: assignment.batch_id,
+        batch_type: userIndustry,
+        institute_name: assignment.institutes?.name,
+        batch_name: assignment.batches?.name,
+        institute_code: assignment.institutes?.code,
+        batch_code: assignment.batches?.code
       }
+      console.log(`✅ User ${userId} found assigned to ${assignment.institutes?.name} (${assignment.batches?.name})`)
     } else {
-      console.log('👤 User already has institute assignment, skipping auto-assignment')
+      console.log(`⚠️ No assignment found for user ${userId}, this might indicate trigger failure`)
+      // Fallback assignment info
+      assignmentInfo = {
+        institute_id: '8a75a3b2-9e8d-44ab-9f9a-a005fb822f80',
+        batch_id: userIndustry === 'IT' ? 'acd2af9d-b906-4dc8-a250-fc5e47736e6a' : '37bb5110-42d7-43ea-8854-b2bfee404dd8',
+        batch_type: userIndustry,
+        institute_name: 'RNS Tech', 
+        batch_name: userIndustry === 'IT' ? 'IT' : 'Non-IT'
+      }
     }
 
     // Prepare comprehensive user details for webhook
     const webhookPayload = {
       user_id: userId,
-      email: userData.email,
-      full_name: userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email?.split('@')[0],
-      username: userData.username || userData.raw_user_meta_data?.username || userData.email?.split('@')[0],
+      email: profile?.email || userData.email,
+      full_name: profile?.full_name || userData.full_name || userData.raw_user_meta_data?.full_name || userData.raw_user_meta_data?.['Display Name'] || userData.email?.split('@')[0],
+      username: profile?.username || userData.username || userData.raw_user_meta_data?.username || userData.email?.split('@')[0],
       industry: userIndustry,
       created_at: userData.created_at,
       updated_at: userData.updated_at || new Date().toISOString(),
@@ -219,11 +214,7 @@ Deno.serve(async (req) => {
       confirmed_at: userData.confirmed_at || userData.email_confirmed_at,
       role: userData.role || 'authenticated',
       signup_source: 'web_application',
-      institute_assignment: {
-        institute_id: rnsInstituteId,
-        batch_id: batchId,
-        batch_type: userIndustry === 'IT' ? 'IT' : 'Non-IT'
-      },
+      institute_assignment: assignmentInfo,
       timestamp: new Date().toISOString()
     }
 
@@ -264,7 +255,9 @@ Deno.serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Webhook sent successfully',
-        webhook_response: responseData
+        webhook_response: responseData,
+        user_profile: profile,
+        institute_assignment: assignmentInfo
       }),
       { 
         status: 200, 
