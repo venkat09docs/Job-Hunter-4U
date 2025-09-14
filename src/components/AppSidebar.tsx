@@ -56,15 +56,8 @@ import PricingDialog from "./PricingDialog";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Build Profile", url: "/build-my-profile", icon: User, featureKey: null, showForNonSubscribers: true },
-  { 
-    title: "Skill Level Up", 
-    url: "/dashboard/skill-level", 
-    icon: Award, 
-    featureKey: null,
-    requiresSubscription: true
-  },
-  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null, requiresSubscription: true },
+  { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
+  { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
   { title: "Knowledge Base", url: "/dashboard/knowledge-base", icon: BookOpen, featureKey: null },
@@ -486,13 +479,13 @@ export function AppSidebar() {
                 </h3>
               )}
               <div className="space-y-1">
-                {/* Main Menu Items - Show all items regardless of subscription status */}
+                {/* Main Menu Items in specified order */}
                 {getMainItems(isAdmin, isInstituteAdmin, isRecruiter).map((item) => {
                   const isPremium = item.featureKey && !canAccessFeature(item.featureKey);
                   return <MenuItem key={item.title} item={item} isPremium={isPremium} sectionColor="main" />;
                 })}
 
-                {/* Job Hunter Level Up - Show for all users */}
+                {/* Job Hunter Level Up */}
                 <div className="mt-4">
                   <button
                     onClick={() => setJobHunterOpen(!jobHunterOpen)}
@@ -530,14 +523,13 @@ export function AppSidebar() {
                   )}
                 </div>
 
-                {/* Progress Level Up - Show for all users */}
+                {/* Progress Level Up */}
                 <div className="mt-4">
                   {(() => {
                     const progressItem = { title: "Progress Level Up", url: "/dashboard/progress-level-up", icon: ClipboardList, featureKey: null };
                     return <MenuItem key={progressItem.title} item={progressItem} sectionColor="main" />;
                   })()}
                 </div>
-
 
               </div>
             </div>
