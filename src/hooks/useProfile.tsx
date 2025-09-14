@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
+import { useNavigate } from 'react-router-dom';
 import { clearSubscriptionCache } from '@/utils/cacheManager';
 
 interface Profile {
@@ -35,8 +36,9 @@ interface Analytics {
 }
 
 export const useProfile = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [analytics, setAnalytics] = useState<Analytics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,15 @@ export const useProfile = () => {
           .single();
 
         if (createError) {
-          setProfile(null);
+          console.error('Profile creation failed:', createError);
+          toast({
+            title: 'Profile Error',
+            description: 'Unable to create user profile. Please sign in again.',
+            variant: 'destructive'
+          });
+          await signOut();
+          navigate('/auth');
+          return;
         } else {
           setProfile(newProfile);
         }
@@ -89,7 +99,14 @@ export const useProfile = () => {
         setProfile(data);
       }
     } catch (error: any) {
-      setProfile(null);
+      console.error('Profile fetch error:', error);
+      toast({
+        title: 'Profile Error',
+        description: 'Unable to load user profile. Please sign in again.',
+        variant: 'destructive'
+      });
+      await signOut();
+      navigate('/auth');
     } finally {
       setLoading(false);
     }
