@@ -14,7 +14,8 @@ import {
   Medal,
   Award,
   Users,
-  Lock
+  Lock,
+  ExternalLink
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -459,8 +460,35 @@ const SkillLevelUpProgram: React.FC = () => {
                 </div>
               </div>
               
-              {/* Right side - User Profile */}
-              <UserProfileDropdown />
+              {/* Right side - Action Buttons and User Profile */}
+              <div className="flex items-center gap-3">
+                {/* YouTube Channel Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('https://youtube.com', '_blank')}
+                  className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="hidden sm:inline">Go to YouTube Channel</span>
+                </Button>
+                
+                {/* Career Level Up Community Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // TODO: Add community link
+                    console.log('Career Level Up Community clicked');
+                  }}
+                  className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">Career Level Up Community</span>
+                </Button>
+                
+                <UserProfileDropdown />
+              </div>
             </div>
           </header>
 
@@ -556,8 +584,35 @@ const SkillLevelUpProgram: React.FC = () => {
             </div>
           </div>
           
-          {/* Right side - User Profile */}
-          <UserProfileDropdown />
+          {/* Right side - Action Buttons and User Profile */}
+          <div className="flex items-center gap-3">
+            {/* YouTube Channel Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('https://youtube.com', '_blank')}
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline">Go to YouTube Channel</span>
+            </Button>
+            
+            {/* Career Level Up Community Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // TODO: Add community link
+                console.log('Career Level Up Community clicked');
+              }}
+              className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Career Level Up Community</span>
+            </Button>
+            
+            <UserProfileDropdown />
+          </div>
         </div>
       </header>
 

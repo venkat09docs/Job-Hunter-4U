@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, MessageSquare, ExternalLink, Filter } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, Filter } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -194,97 +194,6 @@ const SkillDeveloperProgramsTab: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Three Boards in Same Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* YouTube Channel Access Board - Takes more space */}
-        <div className="lg:col-span-6">
-          <Card className="bg-gradient-to-r from-red-500/10 via-red-600/10 to-red-700/10 border-red-500/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full"
-                onClick={() => window.open('https://youtube.com', '_blank')}>
-            <CardContent className="p-6 flex items-center justify-between h-full">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-gradient-to-r from-red-500 to-red-600 w-12 h-12 rounded-full flex items-center justify-center">
-                    <ExternalLink className="h-6 w-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Join Our Community Advanced Programs
-                  </h2>
-                </div>
-                <p className="text-muted-foreground mb-4">
-                  Access exclusive video tutorials, live sessions, and advanced programming courses on our YouTube channel
-                </p>
-                <Button 
-                  className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open('https://youtube.com', '_blank');
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Go to YouTube Channel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Join Community Board */}
-        <div className="lg:col-span-3">
-          <Card className="bg-gradient-to-br from-emerald/10 via-teal/10 to-cyan/10 border-emerald/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
-            <CardContent className="p-6 flex flex-col justify-between h-full">
-              <div>
-                <div className="bg-gradient-to-r from-emerald to-teal w-10 h-10 rounded-full flex items-center justify-center mb-3">
-                  <MessageSquare className="h-5 w-5 text-white" />
-                </div>
-                <h3 className="font-bold text-foreground mb-2">
-                  Join Our Community
-                </h3>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Connect with 10,000+ professionals and enthusiasts worldwide
-                </p>
-              </div>
-              <Button 
-                size="sm"
-                className="w-full bg-gradient-to-r from-emerald to-teal hover:from-emerald-dark hover:to-teal-dark"
-                onClick={() => {
-                  console.log('Join Community clicked');
-                }}
-              >
-                Join Now
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Advanced Programs Board */}
-        <div className="lg:col-span-3">
-          <Card className="bg-gradient-to-br from-violet/10 via-purple/10 to-pink/10 border-violet/20 hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
-            <CardContent className="p-6 flex flex-col justify-between h-full">
-              <div>
-                <div className="bg-gradient-to-r from-violet to-purple w-10 h-10 rounded-full flex items-center justify-center mb-3">
-                  <ExternalLink className="h-5 w-5 text-white" />
-                </div>
-                <h3 className="font-bold text-foreground mb-2">
-                  Advanced Programs
-                </h3>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Explore specialized tracks and advanced learning paths
-                </p>
-              </div>
-              <Button 
-                size="sm"
-                className="w-full bg-gradient-to-r from-violet to-purple hover:from-violet-dark hover:to-purple-dark"
-                onClick={() => {
-                  console.log('Advanced Programs clicked');
-                }}
-              >
-                View Programs
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
       {/* Category Filter */}
       {categories.length > 0 && (
         <div className="flex items-center gap-4">
