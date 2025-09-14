@@ -78,6 +78,7 @@ import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import CourseContentView from "./pages/CourseContentView";
+import CourseContentManagement from "./pages/CourseContentManagement";
 
 
 
@@ -540,6 +541,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CourseContentView />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/course/:courseId/content" 
+            element={
+              <ProtectedRoute>
+                <CourseContentManagement />
               </ProtectedRoute>
             } 
           />

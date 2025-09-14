@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search, FileText } from 'lucide-react';
 import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
-import { CourseContentDialog } from '@/components/CourseContentDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -120,69 +119,7 @@ const CLPDashboard = () => {
     order_index: 0
   });
 
-  // Course content dialog state
-  const [contentDialogOpen, setContentDialogOpen] = useState(false);
-  const [selectedCourseForContent, setSelectedCourseForContent] = useState<Course | null>(null);
-
-  // Enhanced dialog state persistence to survive tab switches
-  const DIALOG_STORAGE_KEY = 'clp-dialog-state';
-
-  // Save dialog state to localStorage
-  const saveDialogState = useCallback(() => {
-    try {
-      if (contentDialogOpen && selectedCourseForContent) {
-        const dialogState = {
-          isOpen: contentDialogOpen,
-          courseId: selectedCourseForContent.id,
-          courseTitle: selectedCourseForContent.title,
-          timestamp: Date.now()
-        };
-        localStorage.setItem(DIALOG_STORAGE_KEY, JSON.stringify(dialogState));
-        console.log('💾 Dialog state saved:', dialogState);
-      }
-    } catch (error) {
-      console.error('❌ Error saving dialog state:', error);
-    }
-  }, [contentDialogOpen, selectedCourseForContent]);
-
-  // Load dialog state from localStorage
-  const loadDialogState = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(DIALOG_STORAGE_KEY);
-      if (saved) {
-        const dialogState = JSON.parse(saved);
-        const isRecent = dialogState.timestamp && (Date.now() - dialogState.timestamp) < 30 * 60 * 1000; // 30 minutes
-        
-        if (isRecent && dialogState.isOpen) {
-          console.log('📂 Restoring dialog state:', dialogState);
-          // Find the course to restore
-          const course = courses.find(c => c.id === dialogState.courseId);
-          if (course) {
-            setSelectedCourseForContent(course);
-            setContentDialogOpen(true);
-          }
-        } else {
-          localStorage.removeItem(DIALOG_STORAGE_KEY);
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error loading dialog state:', error);
-      localStorage.removeItem(DIALOG_STORAGE_KEY);
-    }
-  }, [courses]);
-
-  // Save dialog state when it changes
-  useEffect(() => {
-    saveDialogState();
-  }, [saveDialogState]);
-
-  // Load dialog state when courses are loaded
-  useEffect(() => {
-    if (courses.length > 0) {
-      loadDialogState();
-    }
-  }, [courses, loadDialogState]);
-
+  // Enhanced debugging for page visibility and focus events
   useEffect(() => {
     if (user && userRole && !roleLoading) {
       fetchDashboardData();
@@ -562,29 +499,9 @@ const CLPDashboard = () => {
     });
   };
 
-  const handleOpenContentDialog = (course: Course) => {
-    console.log('🚀 Opening content dialog for course:', course.title);
-    console.log('📊 Current component state before opening dialog:', {
-      contentDialogOpen,
-      selectedCourseForContent: selectedCourseForContent?.title,
-      coursesLength: courses.length,
-      userRole,
-      timestamp: new Date().toISOString()
-    });
-    setSelectedCourseForContent(course);
-    setContentDialogOpen(true);
-  };
-
-  const handleCloseContentDialog = (open: boolean) => {
-    console.log('🔴 Dialog onOpenChange called with:', open);
-    if (!open) {
-      console.log('🔴 Closing content dialog and clearing state');
-      setContentDialogOpen(false);
-      // Clear the saved dialog state when explicitly closed
-      localStorage.removeItem(DIALOG_STORAGE_KEY);
-    } else {
-      console.log('🟢 Dialog should stay open');
-    }
+  const handleNavigateToContentManagement = (course: Course) => {
+    console.log('🚀 Navigating to content management for course:', course.title);
+    navigate(`/dashboard/career-level/course/${course.id}/content`);
   };
 
   const filteredCourses = courses.filter(course => {
@@ -1181,7 +1098,7 @@ const CLPDashboard = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => handleOpenContentDialog(course)}
+                              onClick={() => handleNavigateToContentManagement(course)}
                             >
                               <FileText className="h-4 w-4 mr-1" />
                               Add Content
@@ -1696,16 +1613,6 @@ const CLPDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      {/* Course Content Dialog */}
-      {selectedCourseForContent && (
-        <CourseContentDialog
-          open={contentDialogOpen}
-          onOpenChange={handleCloseContentDialog}
-          courseId={selectedCourseForContent.id}
-          courseTitle={selectedCourseForContent.title}
-        />
-      )}
     </div>
   );
 };
