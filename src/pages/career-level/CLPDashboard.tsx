@@ -50,6 +50,7 @@ const CLPDashboard = () => {
   const [courseModules, setCourseModules] = useState<Record<string, Module[]>>({});
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
   const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -454,10 +455,15 @@ const CLPDashboard = () => {
     });
   };
 
-  const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.code.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategoryFilter === 'all' || 
+      course.category === selectedCategoryFilter;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   // Leaderboard functions
   const loadCourses = async () => {
@@ -943,6 +949,24 @@ const CLPDashboard = () => {
                   className="pl-10"
                 />
               </div>
+              <div className="w-48">
+                <Select 
+                  value={selectedCategoryFilter} 
+                  onValueChange={setSelectedCategoryFilter}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Courses List */}
@@ -1049,9 +1073,9 @@ const CLPDashboard = () => {
                 <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No courses found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm ? 'Try adjusting your search terms' : 'Create your first course to get started'}
+                  {searchTerm || selectedCategoryFilter !== 'all' ? 'Try adjusting your search or filter criteria' : 'Create your first course to get started'}
                 </p>
-                {!searchTerm && (
+                {!(searchTerm || selectedCategoryFilter !== 'all') && (
                   <Button onClick={() => setIsCreateCourseOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Course
