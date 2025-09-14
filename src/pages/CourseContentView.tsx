@@ -1,0 +1,447 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useCourseContent } from '@/hooks/useCourseContent';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+
+interface Section {
+  id: string;
+  title: string;
+  description?: string;
+  order_index: number;
+  chapters: Chapter[];
+}
+
+interface Chapter {
+  id: string;
+  title: string;
+  description?: string;
+  content_type: 'video' | 'article' | 'document';
+  content_data: any;
+  order_index: number;
+  duration_minutes?: number;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+const CourseContentView: React.FC = () => {
+  const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
+  const [course, setCourse] = useState<Course | null>(null);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
+  const { getCourses } = useCareerLevelProgram();
+
+  useEffect(() => {
+    if (courseId) {
+      loadCourseData();
+      loadCourseContent();
+    }
+  }, [courseId]);
+
+  const loadCourseData = async () => {
+    try {
+      const courses = await getCourses();
+      const foundCourse = courses.find(c => c.id === courseId);
+      if (foundCourse) {
+        setCourse(foundCourse);
+      }
+    } catch (error) {
+      console.error('Error loading course data:', error);
+    }
+  };
+
+  const loadCourseContent = async () => {
+    if (!courseId) return;
+    
+    setLoading(true);
+    try {
+      console.log('Loading course content for courseId:', courseId);
+      const sectionsData = await getSectionsByCourse(courseId);
+      console.log('Sections data received:', sectionsData);
+      
+      // Load chapters for each section
+      const sectionsWithChapters = await Promise.all(
+        sectionsData.map(async (section) => {
+          console.log('Loading chapters for section:', section.id);
+          const chapters = await getChaptersBySection(section.id);
+          console.log('Chapters for section', section.id, ':', chapters);
+          return {
+            ...section,
+            chapters: chapters.sort((a, b) => a.order_index - b.order_index)
+          };
+        })
+      );
+
+      console.log('All sections with chapters:', sectionsWithChapters);
+      setSections(sectionsWithChapters.sort((a, b) => a.order_index - b.order_index));
+      
+      // Auto-select first chapter if available
+      const firstSection = sectionsWithChapters[0];
+      if (firstSection?.chapters.length > 0) {
+        const firstChapter = firstSection.chapters[0];
+        console.log('Auto-selecting first chapter:', firstChapter);
+        setSelectedChapter(firstChapter);
+        setOpenSections(new Set([firstSection.id]));
+      }
+    } catch (error) {
+      console.error('Error loading course content:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setOpenSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
+  };
+
+  const getContentTypeIcon = (contentType: string) => {
+    switch (contentType) {
+      case 'video':
+        return <Play className="h-4 w-4" />;
+      case 'article':
+        return <FileText className="h-4 w-4" />;
+      case 'document':
+        return <Download className="h-4 w-4" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
+    }
+  };
+
+  const getContentTypeBadgeColor = (contentType: string) => {
+    switch (contentType) {
+      case 'video':
+        return 'bg-red-100 text-red-700 border-red-200';
+      case 'article':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'document':
+        return 'bg-green-100 text-green-700 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
+  const renderChapterContent = (chapter: Chapter) => {
+    console.log('Rendering chapter content:', chapter);
+    const { content_type, content_data } = chapter;
+    console.log('Content type:', content_type);
+    console.log('Content data:', content_data);
+
+    switch (content_type) {
+      case 'video':
+        // Check different possible locations for video URL
+        const videoUrl = content_data?.video_url || content_data?.videoUrl || content_data?.url;
+        console.log('Video URL found:', videoUrl);
+        
+        if (videoUrl) {
+          // Check if it's a YouTube, Vimeo, or Loom URL and convert to embed format
+          let embedUrl = videoUrl;
+          
+          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+            const videoId = videoUrl.includes('youtu.be') 
+              ? videoUrl.split('/').pop()?.split('?')[0]
+              : new URL(videoUrl).searchParams.get('v');
+            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+          } else if (videoUrl.includes('vimeo.com')) {
+            const videoId = videoUrl.split('/').pop();
+            embedUrl = `https://player.vimeo.com/video/${videoId}`;
+          } else if (videoUrl.includes('loom.com')) {
+            const videoId = videoUrl.split('/').pop()?.split('?')[0];
+            embedUrl = `https://www.loom.com/embed/${videoId}`;
+          }
+
+          console.log('Embed URL:', embedUrl);
+
+          return (
+            <div className="space-y-4">
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              {content_data.description && (
+                <div className="prose prose-sm max-w-none">
+                  <p className="text-muted-foreground">{content_data.description}</p>
+                </div>
+              )}
+              {chapter.duration_minutes && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Play className="h-4 w-4" />
+                  <span>Duration: {chapter.duration_minutes} minutes</span>
+                </div>
+              )}
+            </div>
+          );
+        } else {
+          console.log('No video URL found in content_data');
+          return (
+            <div className="text-center py-8 text-muted-foreground">
+              <Play className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Video content not available</p>
+              <p className="text-xs mt-2">No video URL found</p>
+            </div>
+          );
+        }
+
+      case 'article':
+        const articleContent = content_data?.article_content || content_data?.content;
+        if (articleContent) {
+          return (
+            <div className="prose prose-sm max-w-none">
+              <div 
+                dangerouslySetInnerHTML={{ 
+                  __html: articleContent
+                }} 
+              />
+            </div>
+          );
+        } else {
+          return (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Article content not available</p>
+            </div>
+          );
+        }
+
+      case 'document':
+        const documentContent = content_data?.document_content || content_data?.content;
+        return (
+          <div className="space-y-4">
+            {documentContent ? (
+              <div className="prose prose-sm max-w-none">
+                <div 
+                  dangerouslySetInnerHTML={{ 
+                    __html: documentContent
+                  }} 
+                />
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Download className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Document content not available</p>
+              </div>
+            )}
+            {content_data.attachments && content_data.attachments.length > 0 && (
+              <div className="border-t pt-4">
+                <h4 className="font-medium text-sm mb-2">Attachments:</h4>
+                <div className="space-y-2">
+                  {content_data.attachments.map((attachment: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                      <Download className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={attachment.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        {attachment.name || `Attachment ${index + 1}`}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="text-center py-8 text-muted-foreground">
+            <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Content type not supported: {content_type}</p>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/career-level/skill-level-up-program')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back to Courses</span>
+            </Button>
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="font-semibold">{course?.title || 'Course Content'}</span>
+            </div>
+          </div>
+          <UserProfileDropdown />
+        </div>
+      </header>
+
+      <div className="flex h-[calc(100vh-4rem)]">
+        {/* Sidebar - Course Navigation */}
+        <div className="w-80 border-r bg-muted/20 flex flex-col">
+          {/* Sidebar Header */}
+          <div className="p-4 border-b bg-background">
+            <div>
+              <h3 className="font-semibold text-lg line-clamp-1">{course?.title || 'Course Content'}</h3>
+              <p className="text-sm text-muted-foreground">Navigate through sections and chapters</p>
+            </div>
+          </div>
+
+          {/* Course Content Navigation */}
+          <ScrollArea className="flex-1 p-4">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-4 bg-muted rounded animate-pulse" />
+                    <div className="ml-4 space-y-1">
+                      <div className="h-3 bg-muted/70 rounded animate-pulse" />
+                      <div className="h-3 bg-muted/70 rounded animate-pulse w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : sections.length === 0 ? (
+              <div className="text-center py-8">
+                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-sm text-muted-foreground">No content available</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {sections.map((section) => (
+                  <Collapsible
+                    key={section.id}
+                    open={openSections.has(section.id)}
+                    onOpenChange={() => toggleSection(section.id)}
+                  >
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded hover:bg-muted/50 text-left">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          {openSections.has(section.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </div>
+                        <span className="font-medium text-sm">{section.title}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {section.chapters.length}
+                      </Badge>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="ml-6 space-y-1">
+                      {section.chapters.map((chapter) => (
+                        <button
+                          key={chapter.id}
+                          onClick={() => setSelectedChapter(chapter)}
+                          className={`w-full text-left p-2 rounded text-sm hover:bg-muted/50 transition-colors ${
+                            selectedChapter?.id === chapter.id 
+                              ? 'bg-primary/10 text-primary border-l-2 border-primary' 
+                              : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {getContentTypeIcon(chapter.content_type)}
+                            <span className="flex-1">{chapter.title}</span>
+                            {chapter.duration_minutes && (
+                              <span className="text-xs text-muted-foreground">
+                                {chapter.duration_minutes}m
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {selectedChapter ? (
+            <>
+              {/* Chapter Header */}
+              <div className="p-6 border-b bg-background">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      {getContentTypeIcon(selectedChapter.content_type)}
+                      <Badge 
+                        variant="outline" 
+                        className={getContentTypeBadgeColor(selectedChapter.content_type)}
+                      >
+                        {selectedChapter.content_type.charAt(0).toUpperCase() + selectedChapter.content_type.slice(1)}
+                      </Badge>
+                    </div>
+                    <h2 className="text-xl font-semibold">{selectedChapter.title}</h2>
+                    {selectedChapter.description && (
+                      <p className="text-muted-foreground mt-1">{selectedChapter.description}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Chapter Content */}
+              <ScrollArea className="flex-1 p-6">
+                {renderChapterContent(selectedChapter)}
+              </ScrollArea>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                <h3 className="text-lg font-medium mb-2">Select a Chapter</h3>
+                <p className="text-muted-foreground">
+                  Choose a chapter from the sidebar to start learning
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CourseContentView;

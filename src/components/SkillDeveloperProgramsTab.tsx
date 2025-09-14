@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
-import { CourseContentViewer } from '@/components/CourseContentViewer';
 import type { Course } from '@/types/clp';
 
 // Course Card Component - Moved before main component
@@ -104,8 +103,6 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
-  const [contentViewerOpen, setContentViewerOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     loadCourses();
@@ -127,8 +124,8 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   };
 
   const handleEnrollCourse = (courseId: string, courseTitle: string) => {
-    setSelectedCourse({ id: courseId, title: courseTitle });
-    setContentViewerOpen(true);
+    // Navigate to the course content page instead of opening a dialog
+    window.location.href = `/course/${courseId}`;
   };
 
   const formatDuration = (hours: number) => {
@@ -272,16 +269,6 @@ const SkillDeveloperProgramsTab: React.FC = () => {
           />
           ))}
         </div>
-      )}
-
-      {/* Course Content Viewer */}
-      {selectedCourse && (
-        <CourseContentViewer
-          open={contentViewerOpen}
-          onOpenChange={setContentViewerOpen}
-          courseId={selectedCourse.id}
-          courseTitle={selectedCourse.title}
-        />
       )}
     </div>
   );
