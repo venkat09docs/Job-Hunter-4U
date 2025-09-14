@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search } from 'lucide-react';
+import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search, FileText } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { CourseContentDialog } from '@/components/CourseContentDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -75,6 +76,10 @@ const CLPDashboard = () => {
     description: '',
     order_index: 0
   });
+
+  // Course content dialog state
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [selectedCourseForContent, setSelectedCourseForContent] = useState<Course | null>(null);
 
   useEffect(() => {
     if (user && userRole && !roleLoading) {
@@ -453,6 +458,11 @@ const CLPDashboard = () => {
       industry_type: (course as any).industry_type || 'both',
       image: null
     });
+  };
+
+  const handleOpenContentDialog = (course: Course) => {
+    setSelectedCourseForContent(course);
+    setContentDialogOpen(true);
   };
 
   const filteredCourses = courses.filter(course => {
@@ -1044,23 +1054,35 @@ const CLPDashboard = () => {
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openEditCourse(course)}
-                        >
-                          <Edit2 className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleDeleteCourse(course.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {(userRole === 'admin' || userRole === 'recruiter' || userRole === 'institute_admin') && (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleOpenContentDialog(course)}
+                            >
+                              <FileText className="h-4 w-4 mr-1" />
+                              Add Content
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openEditCourse(course)}
+                            >
+                              <Edit2 className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDeleteCourse(course.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -1552,6 +1574,16 @@ const CLPDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Course Content Dialog */}
+      {selectedCourseForContent && (
+        <CourseContentDialog
+          open={contentDialogOpen}
+          onOpenChange={setContentDialogOpen}
+          courseId={selectedCourseForContent.id}
+          courseTitle={selectedCourseForContent.title}
+        />
+      )}
     </div>
   );
 };
