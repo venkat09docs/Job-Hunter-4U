@@ -648,9 +648,9 @@ const CLPDashboard = () => {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
+            {userRole === 'admin' && <TabsTrigger value="courses">Courses</TabsTrigger>}
             <TabsTrigger value="assignments">Assignments</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -758,8 +758,9 @@ const CLPDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Courses Tab */}
-          <TabsContent value="courses" className="space-y-6">
+          {/* Courses Tab - Only accessible by Super Admins */}
+          {userRole === 'admin' && (
+            <TabsContent value="courses" className="space-y-6">
             {/* Page Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -1232,6 +1233,7 @@ const CLPDashboard = () => {
               </DialogContent>
             </Dialog>
           </TabsContent>
+          )}
 
           {/* Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
