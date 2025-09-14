@@ -247,27 +247,43 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     if (open) {
       console.log('🎭 Dialog opened - adding page event listeners');
       
-      const handleVisibilityChange = () => {
-        if (document.hidden) {
-          console.log('👋 Dialog: Page becoming hidden, saving state...');
-          saveFormState();
-        } else {
-          console.log('👁️ Dialog: Page becoming visible, checking state...');
+      // Removed problematic event handlers that were causing page reloads
+      
+  // Simple cleanup to save state when component unmounts
+  useEffect(() => {
+    return () => {
+      if (courseId) {
+        console.log('💾 Component unmounting, saving state...');
+        // Save state synchronously during cleanup
+        try {
+          const formState = {
+            activeTab,
+            showSectionForm,
+            showChapterForm,
+            selectedSectionId,
+            sectionTitle,
+            sectionDescription,
+            chapterTitle,
+            chapterDescription,
+            chapterType,
+            chapterVideoUrl,
+            chapterArticleContent,
+            chapterDuration,
+            editingSection: editingSection?.id || null,
+            editingChapter: editingChapter?.id || null,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(`course-content-form-${courseId}`, JSON.stringify(formState));
+        } catch (error) {
+          console.error('Error saving state during cleanup:', error);
         }
-      };
-      
-      const handleBeforeUnload = () => {
-        console.log('⚠️ Dialog: Page about to unload - THIS IS THE PROBLEM!');
-        saveFormState();
-      };
-      
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      window.addEventListener('beforeunload', handleBeforeUnload);
+      }
+    };
+  }, []); // Empty dependency array - this only runs on unmount
       
       return () => {
         console.log('🧹 Dialog: Cleaning up event listeners');
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        window.removeEventListener('beforeunload', handleBeforeUnload);
+        // Removed problematic event listeners cleanup
       };
     }
   }, [open, courseId, isAdmin, loadFormState]);  // Removed saveFormState to prevent circular dependency
@@ -290,36 +306,12 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
 
   // Also save on window blur (when switching tabs) and page visibility change
   useEffect(() => {
-    const handleBlur = () => {
-      if (open && courseId) {
-        console.log('👋 Window losing focus, saving form state...');
-        saveFormState();
-      }
-    };
+    // Removed problematic event handlers that were causing page reloads
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        if (open && courseId) {
-          console.log('🫥 Page becoming hidden, saving form state...');
-          saveFormState();
-        }
-      } else {
-        if (open && courseId) {
-          console.log('👁️ Page becoming visible, loading form state...');
-          // Small delay to ensure state is ready
-          setTimeout(() => loadFormState(), 100);
-        }
-      }
-    };
-
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('beforeunload', handleBlur);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Removed all problematic event listeners that were causing page reloads
 
     return () => {
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('beforeunload', handleBlur);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Removed all problematic event listeners cleanup
     };
   }, [open, courseId, loadFormState]);  // Removed saveFormState to prevent circular dependency
 
