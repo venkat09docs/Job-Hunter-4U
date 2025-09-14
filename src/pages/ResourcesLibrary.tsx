@@ -1028,7 +1028,7 @@ const ResourcesLibrary = () => {
                         <Upload className="h-4 w-4" />
                         Upload Resume
                       </Button>
-                      <Button variant="outline" onClick={() => navigate('/dashboard/resume-builder')}>
+            <Button variant="outline" onClick={() => navigate('/dashboard/resume-builder')}>
                         Go to Resume Builder
                       </Button>
                     </div>

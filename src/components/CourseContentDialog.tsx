@@ -114,9 +114,16 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       };
       
       localStorage.setItem(STORAGE_KEY, JSON.stringify(formState));
-      console.log('Form state saved to localStorage:', formState);
+      console.log('📝 Form state SAVED to localStorage:', {
+        key: STORAGE_KEY,
+        sectionTitle,
+        chapterTitle,
+        chapterDescription,
+        activeTab,
+        timestamp: new Date(formState.timestamp).toLocaleTimeString()
+      });
     } catch (error) {
-      console.error('Error saving form state:', error);
+      console.error('❌ Error saving form state:', error);
     }
   }, [
     STORAGE_KEY, courseId, activeTab, showSectionForm, showChapterForm, selectedSectionId,
@@ -131,7 +138,11 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      console.log('Loading form state from localStorage:', saved);
+      console.log('🔍 Loading form state from localStorage:', {
+        key: STORAGE_KEY,
+        found: !!saved,
+        data: saved ? 'Data exists' : 'No data'
+      });
       
       if (saved) {
         const formState = JSON.parse(saved);
@@ -140,7 +151,13 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         const isRecent = formState.timestamp && (Date.now() - formState.timestamp) < 24 * 60 * 60 * 1000;
         
         if (isRecent) {
-          console.log('Restoring form state:', formState);
+          console.log('✅ Restoring form state:', {
+            sectionTitle: formState.sectionTitle,
+            chapterTitle: formState.chapterTitle,
+            chapterDescription: formState.chapterDescription,
+            activeTab: formState.activeTab,
+            savedAt: new Date(formState.timestamp).toLocaleTimeString()
+          });
           
           setActiveTab(formState.activeTab || 'sections');
           setShowSectionForm(formState.showSectionForm || false);
@@ -155,12 +172,17 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           setChapterArticleContent(formState.chapterArticleContent || '');
           setChapterDuration(formState.chapterDuration || 0);
         } else {
-          // Clear old data
+          console.log('⏰ Saved state is too old, clearing:', {
+            savedAt: formState.timestamp ? new Date(formState.timestamp).toLocaleTimeString() : 'Unknown',
+            hoursAgo: formState.timestamp ? Math.round((Date.now() - formState.timestamp) / (1000 * 60 * 60)) : 'Unknown'
+          });
           localStorage.removeItem(STORAGE_KEY);
         }
+      } else {
+        console.log('ℹ️ No saved form state found for key:', STORAGE_KEY);
       }
     } catch (error) {
-      console.error('Error loading form state:', error);
+      console.error('❌ Error loading form state:', error);
       localStorage.removeItem(STORAGE_KEY);
     }
   }, [STORAGE_KEY, courseId]);
@@ -187,7 +209,9 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   };
 
   useEffect(() => {
+    console.log('🚀 CourseContentDialog opened:', { open, courseId, isAdmin });
     if (open && courseId && isAdmin) {
+      console.log('📂 Loading form state and sections...');
       loadFormState();
       loadSections();
     }
@@ -209,22 +233,40 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     chapterDuration, editingSection, editingChapter
   ]);
 
-  // Also save on window blur (when switching tabs)
+  // Also save on window blur (when switching tabs) and page visibility change
   useEffect(() => {
     const handleBlur = () => {
       if (open && courseId) {
+        console.log('👋 Window losing focus, saving form state...');
         saveFormState();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (open && courseId) {
+          console.log('🫥 Page becoming hidden, saving form state...');
+          saveFormState();
+        }
+      } else {
+        if (open && courseId) {
+          console.log('👁️ Page becoming visible, loading form state...');
+          // Small delay to ensure state is ready
+          setTimeout(() => loadFormState(), 100);
+        }
       }
     };
 
     window.addEventListener('blur', handleBlur);
     window.addEventListener('beforeunload', handleBlur);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('beforeunload', handleBlur);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [open, courseId, saveFormState]);
+  }, [open, courseId, saveFormState, loadFormState]);
 
   // Restore editing states after sections load
   useEffect(() => {

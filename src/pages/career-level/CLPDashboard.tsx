@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -102,12 +103,12 @@ const CLPDashboard = () => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
     if (tab && ['overview', 'courses', 'assignments', 'reviews', 'leaderboard'].includes(tab)) {
       setActiveTab(tab);
     }
-  }, []);
+  }, [location.search]);
 
   useEffect(() => {
     loadLeaderboard();

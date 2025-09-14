@@ -1,9 +1,10 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Crown, Star, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -15,6 +16,7 @@ declare global {
 }
 
 const Pricing = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const { refreshProfile, refreshAnalytics } = useProfile();
@@ -109,7 +111,7 @@ const Pricing = () => {
       // Store the selected plan in sessionStorage to show after login
       sessionStorage.setItem('selectedPlan', JSON.stringify(plan));
       // Navigate to auth page using React Router
-      window.location.href = '/auth';
+      navigate('/auth');
       return;
     }
 
