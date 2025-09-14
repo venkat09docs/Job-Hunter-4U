@@ -170,6 +170,7 @@ const CourseContentManagement = () => {
         content_type: chapterType,
         order_index: chapterCount,
         duration_minutes: chapterDuration,
+        created_by: user!.id,
       };
 
       if (chapterType === 'video') {
