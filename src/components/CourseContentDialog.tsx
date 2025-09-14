@@ -243,12 +243,9 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       loadSections();
     }
     
-    // Add component lifecycle debugging
-    if (open) {
-      console.log('🎭 Dialog opened - adding page event listeners');
-      
-      // Removed problematic event handlers that were causing page reloads
-      
+    // Removed problematic event listeners that were causing page reloads
+  }, [open, courseId, isAdmin, loadFormState]);
+
   // Simple cleanup to save state when component unmounts
   useEffect(() => {
     return () => {
@@ -280,13 +277,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       }
     };
   }, []); // Empty dependency array - this only runs on unmount
-      
-      return () => {
-        console.log('🧹 Dialog: Cleaning up event listeners');
-        // Removed problematic event listeners cleanup
-      };
-    }
-  }, [open, courseId, isAdmin, loadFormState]);  // Removed saveFormState to prevent circular dependency
 
   // Save form state whenever form fields change (immediate save on typing)
   useEffect(() => {
@@ -303,17 +293,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     chapterDescription, chapterType, chapterVideoUrl, chapterArticleContent,
     chapterDuration
   ]); // Removed saveFormState, editingSection, editingChapter to prevent circular deps
-
-  // Also save on window blur (when switching tabs) and page visibility change
-  useEffect(() => {
-    // Removed problematic event handlers that were causing page reloads
-
-    // Removed all problematic event listeners that were causing page reloads
-
-    return () => {
-      // Removed all problematic event listeners cleanup
-    };
-  }, [open, courseId, loadFormState]);  // Removed saveFormState to prevent circular dependency
 
   // Restore editing states after sections load
   useEffect(() => {
