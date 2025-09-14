@@ -223,6 +223,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       hasFormData: !!(sectionTitle || chapterTitle || chapterDescription)
     });
   }, [sectionTitle, chapterTitle, chapterDescription, activeTab]);
+  
   const loadSections = async () => {
     const sectionsData = await getSectionsByCourse(courseId);
     const sectionsWithChapters = await Promise.all(
