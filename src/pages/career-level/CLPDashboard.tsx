@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search, FileText } from 'lucide-react';
-import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { CourseContentDialog } from '@/components/CourseContentDialog';
 import { supabase } from '@/integrations/supabase/client';
