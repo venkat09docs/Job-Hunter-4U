@@ -3,16 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useATSHistory } from '@/hooks/useATSHistory';
+import { useToast } from '@/hooks/use-toast';
 
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Download, FileText, Trash2, Calendar, Clock, Copy, Mail, ChevronDown, Edit, X, Star, Upload, CheckCircle, History, BookOpen, MessageSquare, Share2, Activity, User } from 'lucide-react';
 import { LearningGoalsSection } from '@/components/LearningGoalsSection';
 import { useProfile } from '@/hooks/useProfile';
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { jsPDF } from 'jspdf';
@@ -972,7 +972,7 @@ const ResourcesLibrary = () => {
           <div className="flex items-center gap-4">
             <Button 
               variant="outline" 
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => navigate('/dashboard')}
               className="flex items-center gap-2"
             >
               Go to Dashboard
@@ -1028,7 +1028,7 @@ const ResourcesLibrary = () => {
                         <Upload className="h-4 w-4" />
                         Upload Resume
                       </Button>
-                      <Button variant="outline" onClick={() => window.location.href = '/dashboard/resume-builder'}>
+                      <Button variant="outline" onClick={() => navigate('/dashboard/resume-builder')}>
                         Go to Resume Builder
                       </Button>
                     </div>
@@ -1196,7 +1196,7 @@ const ResourcesLibrary = () => {
                     <p className="text-muted-foreground mb-4">
                       Start building your cover letters and save final versions here
                     </p>
-                    <Button onClick={() => window.location.href = '/dashboard/resume-builder?tab=cover-letter'}>
+                    <Button onClick={() => navigate('/dashboard/resume-builder?tab=cover-letter')}>
                       Go to Cover Letter Builder
                     </Button>
                   </div>
@@ -1332,7 +1332,7 @@ const ResourcesLibrary = () => {
                     <p className="text-muted-foreground mb-4">
                       Create README files using the GitHub Profile README Generator and save them here
                     </p>
-                    <Button onClick={() => window.location.href = '/dashboard/github-optimization'}>
+                    <Button onClick={() => navigate('/dashboard/github-optimization')}>
                       Go to README Generator
                     </Button>
                   </div>

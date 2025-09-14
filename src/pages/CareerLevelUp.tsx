@@ -50,6 +50,7 @@ declare global {
 }
 
 const CareerLevelUp = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -84,8 +85,8 @@ const CareerLevelUp = () => {
         amount: 2000000, // ₹20,000 in paise (20000 * 100)
         plan_duration: '10 weeks'
       }));
-      // Navigate to auth page
-      window.location.href = '/auth';
+      // Navigate to auth page using React Router
+      navigate('/auth');
       return;
     }
 
@@ -1727,11 +1728,11 @@ const CareerLevelUp = () => {
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm">
-              <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+              <Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link>
               <span className="text-white/60">•</span>
-              <a href="/terms-of-service" className="hover:underline">Terms</a>
+              <Link to="/terms-of-service" className="hover:underline">Terms</Link>
               <span className="text-white/60">•</span>
-              <a href="/contact" className="hover:underline">Contact</a>
+              <Link to="/contact" className="hover:underline">Contact</Link>
             </div>
           </div>
         </div>

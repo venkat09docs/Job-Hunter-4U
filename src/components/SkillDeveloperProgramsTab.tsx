@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/types/clp';
 
 // Course Card Component - Moved before main component
@@ -99,6 +100,7 @@ const CourseCard: React.FC<{
 };
 
 const SkillDeveloperProgramsTab: React.FC = () => {
+  const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -124,8 +126,8 @@ const SkillDeveloperProgramsTab: React.FC = () => {
   };
 
   const handleEnrollCourse = (courseId: string, courseTitle: string) => {
-    // Navigate to the course content page instead of opening a dialog
-    window.location.href = `/course/${courseId}`;
+    // Navigate to the course content page using React Router
+    navigate(`/course/${courseId}`);
   };
 
   const formatDuration = (hours: number) => {

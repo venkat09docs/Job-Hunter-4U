@@ -15,7 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Github, 
   Calendar, 
@@ -64,6 +64,7 @@ import {
 } from '@/utils/dayBasedTaskValidation';
 
 const GitHubWeekly = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { canAccessFeature } = usePremiumFeatures();
@@ -159,8 +160,8 @@ const GitHubWeekly = () => {
         description: "You can now submit evidence for this assignment.",
       });
       
-      // Refresh data after status update
-      window.location.reload();
+      // Refresh data after status update using navigate to current path
+      navigate(0); // This forces a refresh without full page reload
     } catch (error) {
       toast({
         title: "Error starting assignment",

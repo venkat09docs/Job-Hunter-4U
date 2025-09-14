@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   User, 
@@ -126,6 +126,7 @@ export function AppSidebar() {
   
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
   const { profile, hasActiveSubscription } = useProfile();
@@ -315,8 +316,8 @@ export function AppSidebar() {
         setSubscriptionDialogOpen(true);
       } else {
         console.log('🔍 Navigating to Skill Level Up');
-        // User has subscription or is admin, proceed to navigate normally
-        window.location.href = item.url;
+        // User has subscription or is admin, proceed to navigate using React Router
+        navigate(item.url);
       }
     };
     
