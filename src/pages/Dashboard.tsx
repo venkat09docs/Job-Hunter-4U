@@ -68,7 +68,7 @@ const Dashboard = () => {
   const { isInstituteAdmin, isAdmin, isRecruiter } = useRole();
   
   // Progress and metrics hooks - only if user exists
-  const { getModuleProgress, assignments } = useCareerAssignments();
+  const { getModuleProgress, assignments, getTasksByModule } = useCareerAssignments();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
@@ -437,6 +437,30 @@ const Dashboard = () => {
   const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
   const weeklyTarget = githubWeeklyTotal;
 
+  // Calculate task statistics for each category
+  const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
+    const tasks = getTasksByModule(module);
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.status === 'verified').length;
+    const inProgress = tasks.filter(t => t.status === 'submitted' || t.status === 'under_review').length;
+    const pending = tasks.filter(t => t.status === 'assigned' || t.status === 'not_started').length;
+    
+    return { total, completed, inProgress, pending };
+  };
+
+  const resumeStats = calculateTaskStats('RESUME');
+  const linkedinStats = calculateTaskStats('LINKEDIN');
+  const githubStats = calculateTaskStats('GITHUB');
+  const digitalProfileStats = calculateTaskStats('DIGITAL_PROFILE');
+  
+  // GitHub Weekly stats
+  const githubWeeklyStats = {
+    total: githubWeeklyTotal,
+    completed: githubWeeklyCompleted,
+    inProgress: 0, // GitHub weekly tasks don't have in-progress state
+    pending: githubWeeklyTotal - githubWeeklyCompleted
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -749,51 +773,81 @@ const Dashboard = () => {
                       {/* Resume Status */}
                       <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
-                              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume</p>
-                              <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeProgress}%</p>
+                              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">Resume Tasks</p>
+                              <p className="text-lg font-bold text-blue-900 dark:text-blue-100">{resumeStats.total} Total</p>
                             </div>
                             <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <Progress value={resumeProgress} className="mt-3 bg-blue-200 dark:bg-blue-800" />
-                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                            {resumeProgress === 100 ? 'Complete!' : `${100 - resumeProgress}% remaining`}
-                          </p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-600 dark:text-green-400">{resumeStats.completed}</div>
+                              <div className="text-blue-600 dark:text-blue-400">Complete</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{resumeStats.inProgress}</div>
+                              <div className="text-blue-600 dark:text-blue-400">In Progress</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-600 dark:text-gray-400">{resumeStats.pending}</div>
+                              <div className="text-blue-600 dark:text-blue-400">Pending</div>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
 
                       {/* LinkedIn Profile Tasks */}
                       <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn Profile</p>
-                              <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
+                              <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinStats.total} Total</p>
                             </div>
                             <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                           </div>
-                          <Progress value={linkedinProgress} className="mt-3 bg-indigo-200 dark:bg-indigo-800" />
-                          <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
-                            {linkedinProgress === 100 ? 'Optimized!' : `${Math.ceil((100 - linkedinProgress) / 11)} tasks left`}
-                          </p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-600 dark:text-green-400">{linkedinStats.completed}</div>
+                              <div className="text-indigo-600 dark:text-indigo-400">Complete</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{linkedinStats.inProgress}</div>
+                              <div className="text-indigo-600 dark:text-indigo-400">In Progress</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-600 dark:text-gray-400">{linkedinStats.pending}</div>
+                              <div className="text-indigo-600 dark:text-indigo-400">Pending</div>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
 
                       {/* GitHub Profile Tasks */}
                       <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub Profile</p>
-                              <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
+                              <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubStats.total} Total</p>
                             </div>
                             <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
                           </div>
-                          <Progress value={githubProgress} className="mt-3 bg-green-200 dark:bg-green-800" />
-                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            {githubProgress === 100 ? 'Profile Ready!' : 'In Progress'}
-                          </p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-600 dark:text-green-400">{githubStats.completed}</div>
+                              <div className="text-green-600 dark:text-green-400">Complete</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{githubStats.inProgress}</div>
+                              <div className="text-green-600 dark:text-green-400">In Progress</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-600 dark:text-gray-400">{githubStats.pending}</div>
+                              <div className="text-green-600 dark:text-green-400">Pending</div>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
@@ -803,14 +857,14 @@ const Dashboard = () => {
                       {/* LinkedIn Growth Activities */}
                       <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="text-xs font-medium text-purple-700 dark:text-purple-300">LinkedIn Growth</p>
-                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0}</p>
+                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{networkMetrics?.totalConnections || 0} Connections</p>
                             </div>
                             <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                           </div>
-                          <div className="mt-3 text-xs text-purple-600 dark:text-purple-400">
+                          <div className="text-xs text-purple-600 dark:text-purple-400">
                             {(networkMetrics?.totalConnections || 0) < 100 ? 'Build network' : 
                              (networkMetrics?.totalConnections || 0) < 500 ? 'Growing well!' : 
                              'Strong network!'}
@@ -821,16 +875,22 @@ const Dashboard = () => {
                       {/* GitHub Weekly Tasks */}
                       <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="text-xs font-medium text-teal-700 dark:text-teal-300">GitHub Weekly</p>
-                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyCompleted}/{githubWeeklyTotal}</p>
+                              <p className="text-lg font-bold text-teal-900 dark:text-teal-100">{githubWeeklyStats.total} Total</p>
                             </div>
                             <Github className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                           </div>
-                          <Progress value={(githubWeeklyCompleted / githubWeeklyTotal) * 100} className="mt-3 bg-teal-200 dark:bg-teal-800" />
-                          <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
-                            {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete!' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-600 dark:text-green-400">{githubWeeklyStats.completed}</div>
+                              <div className="text-teal-600 dark:text-teal-400">Complete</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-600 dark:text-gray-400">{githubWeeklyStats.pending}</div>
+                              <div className="text-teal-600 dark:text-teal-400">Pending</div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -838,17 +898,27 @@ const Dashboard = () => {
                       {/* Skill Assignments */}
                       <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/skill-level-up-program')}>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between mb-3">
                             <div>
                               <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
-                              <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
+                              <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{digitalProfileStats.total} Total</p>
                             </div>
                             <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                           </div>
-                          <Progress value={skillAssignmentsProgress} className="mt-3 bg-amber-200 dark:bg-amber-800" />
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                            {skillAssignmentsProgress === 100 ? 'Complete!' : 'In Progress'}
-                          </p>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-600 dark:text-green-400">{digitalProfileStats.completed}</div>
+                              <div className="text-amber-600 dark:text-amber-400">Complete</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-yellow-600 dark:text-yellow-400">{digitalProfileStats.inProgress}</div>
+                              <div className="text-amber-600 dark:text-amber-400">In Progress</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-gray-600 dark:text-gray-400">{digitalProfileStats.pending}</div>
+                              <div className="text-amber-600 dark:text-amber-400">Pending</div>
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
