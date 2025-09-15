@@ -83,6 +83,7 @@ const SkillLevelUpProgram: React.FC = () => {
   const loadAllData = useCallback(async () => {
     if (!user) return;
     
+    console.log('🚀 Loading all data for Skill Level Up Program...');
     setIsInitialLoading(true);
     try {
       // Load all data in parallel for better performance
@@ -93,6 +94,14 @@ const SkillLevelUpProgram: React.FC = () => {
         getLeaderboard(),
         getUserAssignmentsOrganized()
       ]);
+      
+      console.log('📊 Data loaded:', {
+        assignments: assignmentsData?.length || 0,
+        attempts: attemptsData?.length || 0,
+        courses: coursesData?.length || 0,
+        leaderboard: leaderboardData?.length || 0,
+        organizedCategories: Object.keys(organizedData || {}).length
+      });
       
       setAssignments(assignmentsData);
       setAttempts(attemptsData);
@@ -386,6 +395,8 @@ const SkillLevelUpProgram: React.FC = () => {
 
   // Memoized assignment card rendering for better performance (original function)
   const renderAssignmentCard = useCallback((assignment: AssignmentWithProgress) => {
+    console.log('🔍 Rendering assignment card for:', assignment.id);
+    
     const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
     const isCompleted = assignment.userAttempts.some(a => 
       a.status === 'submitted' || a.status === 'auto_submitted'
@@ -411,7 +422,7 @@ const SkillLevelUpProgram: React.FC = () => {
             <Badge 
               className={cn('text-white', getStatusColor(assignment.status))}
             >
-              {ASSIGNMENT_STATUS_LABELS[assignment.status]}
+              {ASSIGNMENT_STATUS_LABELS[assignment.status] || assignment.status}
             </Badge>
           </div>
         </CardHeader>
@@ -440,12 +451,12 @@ const SkillLevelUpProgram: React.FC = () => {
             )}
             <div className="flex items-center text-muted-foreground">
               <FileText className="w-4 h-4 mr-2" />
-              <span>Type: {assignment.type.toUpperCase()}</span>
+              <span>Type: {assignment.type ? assignment.type.toUpperCase() : 'N/A'}</span>
             </div>
           </div>
 
           {/* Progress/Status */}
-          {assignment.userAttempts.length > 0 && (
+          {assignment.userAttempts && assignment.userAttempts.length > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Attempts: {assignment.userAttempts.length}/{assignment.max_attempts}</span>
@@ -508,152 +519,7 @@ const SkillLevelUpProgram: React.FC = () => {
               </Button>
             ) : isCompleted ? (
               <Button variant="outline" asChild className="flex-1">
-                <Link to={`/career-level/feedback/${assignment.userAttempts[0]?.id}`}>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  View Results
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" disabled className="flex-1">
-                {assignment.status === 'scheduled' ? 'Not Started' : 
-                 assignment.status === 'closed' ? 'Closed' : 
-                 'No Attempts Remaining'}
-              </Button>
-            )}
-            
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/career-level/assignment/${assignment.id}`}>
-                View Details
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }, [getStatusColor, formatDateTime, getDaysRemaining]);
-    const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
-    const isCompleted = assignment.userAttempts.some(a => 
-      a.status === 'submitted' || a.status === 'auto_submitted'
-    );
-    
-    const bestScore = assignment.userAttempts
-      .filter(a => a.score_numeric !== null)
-      .reduce((max, attempt) => 
-        Math.max(max, attempt.score_numeric || 0), 0
-      );
-
-    return (
-      <Card key={assignment.id} className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg mb-1">{assignment.title}</CardTitle>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <BookOpen className="w-4 h-4 mr-1" />
-                <span>{assignment.section?.course?.title} • {assignment.section?.title}</span>
-              </div>
-            </div>
-            <Badge 
-              className={cn('text-white', getStatusColor(assignment.status))}
-            >
-              {ASSIGNMENT_STATUS_LABELS[assignment.status]}
-            </Badge>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* Assignment Details */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center text-muted-foreground">
-              <Timer className="w-4 h-4 mr-2" />
-              <span>
-                {assignment.duration_minutes ? 
-                  `${assignment.duration_minutes} minutes` : 
-                  'No time limit'
-                }
-              </span>
-            </div>
-            <div className="flex items-center text-muted-foreground">
-              <Trophy className="w-4 h-4 mr-2" />
-              <span>{assignment.max_attempts} attempt{assignment.max_attempts !== 1 ? 's' : ''}</span>
-            </div>
-            {assignment.due_at && (
-              <div className="flex items-center text-muted-foreground">
-                <Calendar className="w-4 h-4 mr-2" />
-                <span>Due: {formatDateTime(assignment.due_at)}</span>
-              </div>
-            )}
-            <div className="flex items-center text-muted-foreground">
-              <FileText className="w-4 h-4 mr-2" />
-              <span>Type: {assignment.type.toUpperCase()}</span>
-            </div>
-          </div>
-
-          {/* Progress/Status */}
-          {assignment.userAttempts.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Attempts: {assignment.userAttempts.length}/{assignment.max_attempts}</span>
-                {bestScore > 0 && <span>Best Score: {bestScore.toFixed(1)}%</span>}
-              </div>
-              <Progress 
-                value={(assignment.userAttempts.length / assignment.max_attempts) * 100} 
-                className="h-2" 
-              />
-            </div>
-          )}
-
-          {/* Due Date Warning */}
-          {assignment.due_at && assignment.status === 'open' && (
-            <div className="text-sm">
-              {(() => {
-                const daysRemaining = getDaysRemaining(assignment.due_at);
-                if (daysRemaining <= 1) {
-                  return (
-                    <div className="flex items-center text-red-600 bg-red-50 p-2 rounded">
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      <span>Due {daysRemaining === 0 ? 'today' : 'tomorrow'}!</span>
-                    </div>
-                  );
-                } else if (daysRemaining <= 3) {
-                  return (
-                    <div className="flex items-center text-orange-600 bg-orange-50 p-2 rounded">
-                      <Clock className="w-4 h-4 mr-2" />
-                      <span>Due in {daysRemaining} days</span>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </div>
-          )}
-
-          {/* Instructions */}
-          {assignment.instructions && (
-            <div className="text-sm text-muted-foreground">
-              <p className="line-clamp-2">{assignment.instructions}</p>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            {hasActiveAttempt ? (
-              <Button asChild className="flex-1">
-                <Link to={`/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Continue Attempt
-                </Link>
-              </Button>
-            ) : assignment.canAttempt && assignment.status === 'open' ? (
-              <Button asChild className="flex-1">
-                <Link to={`/career-level/assignment/${assignment.id}/start`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Start Assignment
-                </Link>
-              </Button>
-            ) : isCompleted ? (
-              <Button variant="outline" asChild className="flex-1">
-                <Link to={`/career-level/feedback/${assignment.userAttempts[0]?.id}`}>
+                <Link to={`/career-level/feedback/${assignment.userAttempts && assignment.userAttempts[0]?.id}`}>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   View Results
                 </Link>
@@ -900,7 +766,7 @@ const SkillLevelUpProgram: React.FC = () => {
                               <h4 className="text-lg font-medium text-foreground">{courseData.courseInfo.title}</h4>
                               <p className="text-sm text-muted-foreground">
                                 {Object.keys(courseData.sections).length} section{Object.keys(courseData.sections).length !== 1 ? 's' : ''} • 
-                                {Object.values(courseData.sections).reduce((total: number, section: any) => total + section.assignments.length, 0)} assignments
+                                {Object.values(courseData.sections as Record<string, any>).reduce((total: number, section: any) => total + (section?.assignments?.length || 0), 0)} assignments
                               </p>
                             </div>
                           </div>
