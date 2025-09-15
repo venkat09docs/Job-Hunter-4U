@@ -514,6 +514,21 @@ const CLPDashboard = () => {
     });
   };
 
+  const openCreateCourse = () => {
+    setCourseForm({
+      title: '',
+      description: '',
+      code: '',
+      category: '',
+      order_index: 0,
+      industry_type: 'both',
+      image: null,
+      is_free: false,
+      subscription_plan_id: ''
+    });
+    setIsCreateCourseOpen(true);
+  };
+
   const handleNavigateToContentManagement = (course: Course) => {
     console.log('🚀 Navigating to content management for course:', course.title);
     navigate(`/dashboard/career-level/course/${course.id}/content`);
@@ -844,19 +859,19 @@ const CLPDashboard = () => {
 
               <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
+                  <Button className="flex items-center gap-2" onClick={openCreateCourse}>
                     <Plus className="h-4 w-4" />
                     Create Course
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="pointer-events-auto">
+                <DialogContent className="pointer-events-auto max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Create New Course</DialogTitle>
                     <DialogDescription>
                       Add a new course to the Career Level Up Program
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                     <div>
                       <Label htmlFor="course-title">Course Title</Label>
                       <Input
@@ -1183,7 +1198,7 @@ const CLPDashboard = () => {
                   {searchTerm || selectedCategoryFilter !== 'all' ? 'Try adjusting your search or filter criteria' : 'Create your first course to get started'}
                 </p>
                 {!(searchTerm || selectedCategoryFilter !== 'all') && (
-                  <Button onClick={() => setIsCreateCourseOpen(true)}>
+                  <Button onClick={openCreateCourse}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Course
                   </Button>
@@ -1193,14 +1208,14 @@ const CLPDashboard = () => {
 
             {/* Edit Course Dialog */}
             <Dialog open={!!editingCourse} onOpenChange={(open) => !open && setEditingCourse(null)}>
-              <DialogContent className="pointer-events-auto">
+              <DialogContent className="pointer-events-auto max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Course</DialogTitle>
                   <DialogDescription>
                     Update the course information
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                   <div>
                     <Label htmlFor="edit-course-title">Course Title</Label>
                     <Input
@@ -1378,14 +1393,14 @@ const CLPDashboard = () => {
 
             {/* Create Module Dialog */}
             <Dialog open={isCreateModuleOpen} onOpenChange={setIsCreateModuleOpen}>
-              <DialogContent className="pointer-events-auto">
+              <DialogContent className="pointer-events-auto max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Module</DialogTitle>
                   <DialogDescription>
                     Add a new module to the selected course
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                   <div>
                     <Label htmlFor="module-title">Module Title</Label>
                     <Input
