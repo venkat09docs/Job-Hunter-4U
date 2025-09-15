@@ -27,7 +27,7 @@ export const useCareerLevelProgram = () => {
   const [loading, setLoading] = useState(false);
 
   // Course Management
-  const createCourse = useCallback(async (data: CreateCourseData): Promise<Course | null> => {
+  const createCourse = useCallback(async (data: CreateCourseData) => {
     if (!user) return null;
     
     setLoading(true);
@@ -61,7 +61,7 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
-  const getCourses = useCallback(async (): Promise<Course[]> => {
+  const getCourses = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -183,18 +183,20 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
-  const getAssignmentsBySection = useCallback(async (sectionId: string): Promise<Assignment[]> => {
+  const getAssignmentsBySection = useCallback(async (sectionId: string) => {
     setLoading(true);
     try {
-      const response = await supabase
+      // Bypass type inference by using any
+      const client: any = supabase;
+      const result = await client
         .from('clp_assignments')
         .select('*')
         .eq('section_id', sectionId)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      if (response.error) throw response.error;
-      return (response.data as unknown as Assignment[]) || [];
+      if (result.error) throw result.error;
+      return result.data || [];
     } catch (error: any) {
       toast({
         title: 'Error',
