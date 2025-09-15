@@ -90,33 +90,33 @@ const SkillLevelUpProgram: React.FC = () => {
     setIsInitialLoading(true);
     try {
       // Load all data in parallel for better performance
-      const [assignmentsData, attemptsData, coursesData, leaderboardData, organizedData] = await Promise.all([
+      const [assignmentsData, attemptsData, coursesData, leaderboardData] = await Promise.all([
         getAssignmentsWithProgress(),
         getAttemptsByUser(),
         getCourses(),
-        getLeaderboard(),
-        getUserAssignmentsOrganized()
+        getLeaderboard()
       ]);
       
       console.log('📊 Data loaded:', {
         assignments: assignmentsData?.length || 0,
         attempts: attemptsData?.length || 0,
         courses: coursesData?.length || 0,
-        leaderboard: leaderboardData?.length || 0,
-        organizedCategories: Object.keys(organizedData || {}).length
+        leaderboard: leaderboardData?.length || 0
       });
       
       setAssignments(assignmentsData);
       setAttempts(attemptsData);
       setCourses(coursesData);
       setLeaderboardData(leaderboardData);
-      setOrganizedAssignments(organizedData);
+      
+      // We don't need organized assignments anymore as we're using subtabs
+      setOrganizedAssignments({});
     } catch (error) {
       console.error('Failed to load initial data:', error);
     } finally {
       setIsInitialLoading(false);
     }
-  }, [user, getAssignmentsWithProgress, getAttemptsByUser, getCourses, getLeaderboard, getUserAssignmentsOrganized]);
+  }, [user, getAssignmentsWithProgress, getAttemptsByUser, getCourses, getLeaderboard]);
 
   // Load initial data only once
   useEffect(() => {
@@ -769,83 +769,80 @@ const SkillLevelUpProgram: React.FC = () => {
               </Card>
             </div>
 
-            {/* Assignment Display - Organized by Category -> Course -> Section */}
-            <div className="space-y-8">
-              {Object.keys(organizedAssignments).length > 0 ? (
-                Object.entries(organizedAssignments).map(([category, courses]: [string, any]) => (
-                  <div key={category} className="space-y-6">
-                    {/* Category Header */}
-                    <div className="flex items-center gap-3 pb-2 border-b">
-                      <div className="bg-purple-100 p-2 rounded-lg">
-                        <BookOpen className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-foreground">{category}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {Object.keys(courses).length} course{Object.keys(courses).length !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    </div>
+            {/* Assignment Status Tabs */}
+            <Tabs defaultValue="available" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="available" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>Available ({filteredAssignments.upcoming.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="in-progress" className="flex items-center gap-2">
+                  <PlayCircle className="w-4 h-4" />
+                  <span>In Progress ({filteredAssignments.active.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Completed ({filteredAssignments.completed.length})</span>
+                </TabsTrigger>
+              </TabsList>
 
-                    {/* Courses in Category */}
-                    <div className="space-y-6">
-                      {Object.entries(courses).map(([courseId, courseData]: [string, any]) => (
-                        <div key={courseId} className="space-y-4">
-                          {/* Course Header */}
-                          <div className="flex items-center gap-3 pb-2">
-                            <div className="bg-blue-100 p-2 rounded-lg">
-                              <Trophy className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <h4 className="text-lg font-medium text-foreground">{courseData.courseInfo.title}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {Object.keys(courseData.sections).length} section{Object.keys(courseData.sections).length !== 1 ? 's' : ''} • 
-                                {Object.values(courseData.sections as Record<string, any>).reduce((total: number, section: any) => total + (section?.assignments?.length || 0), 0)} assignments
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Sections in Course */}
-                          <div className="ml-8 space-y-4">
-                            {Object.entries(courseData.sections).map(([sectionId, sectionData]: [string, any]) => (
-                              <div key={sectionId} className="space-y-3">
-                                {/* Section Header */}
-                                <div className="flex items-center gap-2 pb-1">
-                                  <div className="bg-green-100 p-1.5 rounded">
-                                    <FileText className="h-3 w-3 text-green-600" />
-                                  </div>
-                                  <div>
-                                    <h5 className="font-medium text-foreground">{sectionData.sectionInfo.title}</h5>
-                                    <p className="text-xs text-muted-foreground">
-                                      {sectionData.assignments.length} assignment{sectionData.assignments.length !== 1 ? 's' : ''}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Assignments in Section */}
-                                <div className="ml-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                  {sectionData.assignments.map((assignment: any) => renderOrganizedAssignmentCard(assignment))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* Available Assignments */}
+              <TabsContent value="available" className="space-y-4">
+                {filteredAssignments.upcoming.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredAssignments.upcoming.map((assignment) => renderAssignmentCard(assignment))}
                   </div>
-                ))
-              ) : (
-                <Card className="p-8">
-                  <div className="text-center">
-                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Assignments Assigned</h3>
-                    <p className="text-sm text-muted-foreground">
-                      You don't have any assignments assigned to you yet. Complete course sections to get assignments automatically assigned.
-                    </p>
+                ) : (
+                  <Card className="p-12 text-center">
+                    <div className="flex flex-col items-center space-y-4">
+                      <Clock className="h-12 w-12 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold">No Available Assignments</h3>
+                      <p className="text-muted-foreground max-w-md">
+                        Complete course sections to unlock new assignments. Keep learning to get more challenges!
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* In Progress Assignments */}
+              <TabsContent value="in-progress" className="space-y-4">
+                {filteredAssignments.active.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredAssignments.active.map((assignment) => renderAssignmentCard(assignment))}
                   </div>
-                </Card>
-              )}
-            </div>
+                ) : (
+                  <Card className="p-12 text-center">
+                    <div className="flex flex-col items-center space-y-4">
+                      <PlayCircle className="h-12 w-12 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold">No Assignments in Progress</h3>
+                      <p className="text-muted-foreground max-w-md">
+                        Start working on your available assignments to see them here. Take your time and do your best!
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
+
+              {/* Completed Assignments */}
+              <TabsContent value="completed" className="space-y-4">
+                {filteredAssignments.completed.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredAssignments.completed.map((assignment) => renderAssignmentCard(assignment))}
+                  </div>
+                ) : (
+                  <Card className="p-12 text-center">
+                    <div className="flex flex-col items-center space-y-4">
+                      <CheckCircle2 className="h-12 w-12 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold">No Completed Assignments</h3>
+                      <p className="text-muted-foreground max-w-md">
+                        Complete assignments to see your achievements here. Your completed work will be displayed with scores and feedback.
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
 
             {/* Empty State for no assignments at all */}
             {assignments.length === 0 && (
