@@ -15,6 +15,10 @@ export interface Course {
   category: string;
   image?: string;
   is_active: boolean;
+  is_free: boolean;
+  subscription_plan_id?: string;
+  order_index?: number;
+  industry_type?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;

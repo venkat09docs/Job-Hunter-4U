@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus } from 'lucide-react';
+import { Clock, BookOpen, Users, Star, ArrowRight, Filter, Plus, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
+import { useProfile } from '@/hooks/useProfile';
 import { useNavigate } from 'react-router-dom';
 import type { Course } from '@/types/clp';
+import PricingDialog from '@/components/PricingDialog';
 
 // Course Card Component - Moved before main component
 const CourseCard: React.FC<{ 
   course: Course; 
   isEnrolled: boolean;
+  hasActiveSubscription: boolean;
   onEnrollCourse?: (courseId: string, courseTitle: string) => void;
   onViewCourse?: (courseId: string) => void;
-}> = ({ course, isEnrolled, onEnrollCourse, onViewCourse }) => {
+  onShowUpgrade?: () => void;
+}> = ({ course, isEnrolled, hasActiveSubscription, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
+  const isLocked = !course.is_free && !hasActiveSubscription;
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
@@ -43,9 +49,20 @@ const CourseCard: React.FC<{
           </div>
           <div className="absolute bottom-4 right-4">
             <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-              <BookOpen className="h-5 w-5 text-white" />
+              {isLocked ? (
+                <Lock className="h-5 w-5 text-white" />
+              ) : (
+                <BookOpen className="h-5 w-5 text-white" />
+              )}
             </div>
           </div>
+          {isLocked && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full p-3">
+                <Lock className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
@@ -85,22 +102,38 @@ const CourseCard: React.FC<{
               <Badge variant="outline" className="text-xs">
                 Certificate
               </Badge>
+              {course.is_free && (
+                <Badge variant="outline" className="text-xs text-success">
+                  Free
+                </Badge>
+              )}
             </div>
             
             <Button 
               size="sm" 
-              variant={isEnrolled ? "outline" : "default"}
+              variant={isLocked ? "outline" : (isEnrolled ? "outline" : "default")}
               className="group/btn"
               onClick={() => {
-                if (isEnrolled) {
+                if (isLocked) {
+                  onShowUpgrade?.();
+                } else if (isEnrolled) {
                   onViewCourse?.(course.id);
                 } else {
                   onEnrollCourse?.(course.id, course.title);
                 }
               }}
             >
-              <span>{isEnrolled ? "View Course" : "Enroll Now"}</span>
-              <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+              {isLocked ? (
+                <>
+                  <Lock className="h-4 w-4 mr-1" />
+                  <span>Upgrade to Access</span>
+                </>
+              ) : (
+                <>
+                  <span>{isEnrolled ? "View Course" : "Enroll Now"}</span>
+                  <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -117,9 +150,11 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
   const { goals, loading: goalsLoading } = useLearningGoals();
+  const { hasActiveSubscription } = useProfile();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   useEffect(() => {
     loadCourses();
@@ -283,8 +318,10 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
                   key={course.id} 
                   course={course}
                   isEnrolled={isUserEnrolled(course.id)}
+                  hasActiveSubscription={hasActiveSubscription()}
                   onEnrollCourse={handleEnrollCourse}
                   onViewCourse={handleViewCourse}
+                  onShowUpgrade={() => setShowUpgradeDialog(true)}
                 />
                 ))}
               </div>
@@ -299,12 +336,26 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
             key={course.id} 
             course={course}
             isEnrolled={isUserEnrolled(course.id)}
+            hasActiveSubscription={hasActiveSubscription()}
             onEnrollCourse={handleEnrollCourse}
             onViewCourse={handleViewCourse}
+            onShowUpgrade={() => setShowUpgradeDialog(true)}
           />
           ))}
         </div>
       )}
+
+      {/* Subscription Upgrade Dialog */}
+      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Upgrade to Access Premium Courses
+            </DialogTitle>
+          </DialogHeader>
+          <PricingDialog />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
