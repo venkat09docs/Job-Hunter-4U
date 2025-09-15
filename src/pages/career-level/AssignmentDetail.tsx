@@ -32,7 +32,8 @@ const AssignmentDetail: React.FC = () => {
   const { user } = useAuth();
   const { 
     loading, 
-    // section prop instead of module 
+    getCourses,
+    getAssignments,
     getQuestionsByAssignment,
     getAttemptsByUser,
     startAttempt
@@ -53,8 +54,8 @@ const AssignmentDetail: React.FC = () => {
     if (!assignmentId) return;
     
     try {
-      // This is a simplified approach - in practice, you'd want a direct assignment fetch
-      const allAssignments = await getAssignmentsByModule('');
+      // Get a single assignment by ID - simplified approach
+      const allAssignments = await getAssignments();
       const foundAssignment = allAssignments.find(a => a.id === assignmentId);
       
       if (foundAssignment) {

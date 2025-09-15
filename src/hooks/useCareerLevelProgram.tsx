@@ -186,15 +186,15 @@ export const useCareerLevelProgram = () => {
   const getAssignmentsBySection = useCallback(async (sectionId: string): Promise<Assignment[]> => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('clp_assignments')
         .select('*')
         .eq('section_id', sectionId)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return (data || []) as any;
+      if (response.error) throw response.error;
+      return (response.data as unknown as Assignment[]) || [];
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -212,11 +212,17 @@ export const useCareerLevelProgram = () => {
     try {
       const { data, error } = await supabase
         .from('clp_assignments')
-        .select('*')
+        .select(`
+          *,
+          section:clp_sections(
+            *,
+            course:clp_courses(*)
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as any;
+      return (data as unknown as Assignment[]) || [];
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -239,12 +245,12 @@ export const useCareerLevelProgram = () => {
         .from('clp_assignments')
         .select(`
           *,
-          module:clp_modules(
+          section:clp_sections(
             *,
             course:clp_courses(*)
           )
         `)
-        .eq('is_published', true);
+        .eq('is_published', true) as any;
 
       if (assignmentsError) throw assignmentsError;
 
@@ -258,7 +264,7 @@ export const useCareerLevelProgram = () => {
 
       if (attemptsError) throw attemptsError;
 
-      // Combine data
+      // Combine data - use aggressive type assertions to bypass type mismatches
       const assignmentsWithProgress: AssignmentWithProgress[] = (assignments as any)?.map((assignment: any) => {
         const userAttempts = attempts?.filter(a => a.assignment_id === assignment.id) || [];
         const canAttempt = userAttempts?.length < assignment.max_attempts;
@@ -405,7 +411,13 @@ export const useCareerLevelProgram = () => {
         })
         .select(`
           *,
-          assignment:clp_assignments(*)
+          assignment:clp_assignments(
+            *,
+            section:clp_sections(
+              *,
+              course:clp_courses(*)
+            )
+          )
         `)
         .single();
 
@@ -416,7 +428,7 @@ export const useCareerLevelProgram = () => {
         description: 'Assignment attempt started'
       });
 
-      return attempt;
+      return attempt as unknown as Attempt;
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -467,12 +479,21 @@ export const useCareerLevelProgram = () => {
     try {
       const { data, error } = await supabase
         .from('clp_attempts')
-        .select('*')
+        .select(`
+          *,
+          assignment:clp_assignments(
+            *,
+            section:clp_sections(
+              *,
+              course:clp_courses(*)
+            )
+          )
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as any;
+      return (data as unknown as Attempt[]) || [];
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -667,13 +688,16 @@ export const useCareerLevelProgram = () => {
         .eq('id', assignmentId)
         .select(`
           *,
-          module:clp_modules(*,course:clp_courses(*))
+          section:clp_sections(
+            *,
+            course:clp_courses(*)
+          )
         `)
         .single();
 
       if (error) throw error;
 
-      return assignment;
+      return assignment as unknown as Assignment;
     } catch (error: any) {
       console.error('Update assignment error:', error);
       throw error;

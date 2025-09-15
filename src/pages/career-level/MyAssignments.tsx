@@ -266,9 +266,9 @@ const MyAssignments: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h4 className="font-medium">{attempt.assignment?.title}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {attempt.assignment?.module?.course?.title} • {attempt.assignment?.module?.title}
-                </p>
+                 <p className="text-sm text-muted-foreground">
+                   {attempt.assignment?.section?.course?.title} • {attempt.assignment?.section?.title}
+                 </p>
                 <div className="flex items-center text-xs text-muted-foreground mt-1">
                   <Clock className="w-3 h-3 mr-1" />
                   <span>Started: {formatDateTime(attempt.started_at)}</span>

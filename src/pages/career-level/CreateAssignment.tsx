@@ -136,8 +136,8 @@ const CreateAssignment = () => {
       const assignments = await getAssignments();
       const assignment = assignments.find(a => a.id === assignmentId);
       
-      if (assignment && assignment.module) {
-        const courseId = assignment.module.course_id;
+      if (assignment && assignment.section) {
+        const courseId = assignment.section.course_id;
         const courseData = courses.find(c => c.id === courseId);
         
         if (courseData) {
@@ -147,7 +147,7 @@ const CreateAssignment = () => {
         }
         
         form.reset({
-          section_id: assignment.module_id,
+          section_id: assignment.section_id,
           title: assignment.title,
           instructions: assignment.instructions || '',
           visible_from: assignment.visible_from ? new Date(assignment.visible_from).toISOString().slice(0, 16) : '',
@@ -237,7 +237,7 @@ const CreateAssignment = () => {
         attempt_policy: data.attempt_policy,
         attachments_required: data.attachments_required,
         is_published: data.is_published,
-        type: data.type || 'quiz',
+        type: (data as any).type as 'mcq' | 'tf' | 'descriptive' | 'task',
       };
 
       const hasObjectiveQuestions = questions.some(q => ['mcq', 'tf'].includes(q.kind));

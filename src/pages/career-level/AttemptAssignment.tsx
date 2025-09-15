@@ -62,7 +62,7 @@ const AttemptAssignment = () => {
       // Simulate assignment data
       const assignmentData: Assignment = {
         id: assignmentId,
-        module_id: 'module-1',
+        section_id: 'section-1',
         title: 'React Fundamentals Quiz',
         type: 'mcq',
         instructions: 'Answer all questions to the best of your ability.',
