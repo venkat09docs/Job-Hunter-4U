@@ -1582,7 +1582,7 @@ const CLPDashboard = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Modules</SelectItem>
-                        {modules.map((module) => (
+                        {modules && modules.map((module) => (
                           <SelectItem key={module.id} value={module.id}>
                             {module.title}
                           </SelectItem>
@@ -1611,7 +1611,7 @@ const CLPDashboard = () => {
                   {selectedCourse !== 'all' && (
                     <Badge variant="secondary">
                       {courses.find(c => c.id === selectedCourse)?.title}
-                      {selectedModule !== 'all' && modules.length > 0 && (
+                      {selectedModule !== 'all' && modules && modules.length > 0 && (
                         <span className="ml-2">
                           • {modules.find(m => m.id === selectedModule)?.title}
                         </span>
