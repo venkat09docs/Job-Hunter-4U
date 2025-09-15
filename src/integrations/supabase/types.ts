@@ -5800,7 +5800,12 @@ export type Database = {
       app_role: "admin" | "user" | "institute_admin" | "recruiter"
       assignment_type: "mcq" | "tf" | "descriptive" | "task"
       attempt_policy: "best" | "last"
-      attempt_status: "started" | "submitted" | "auto_submitted" | "invalidated"
+      attempt_status:
+        | "started"
+        | "submitted"
+        | "auto_submitted"
+        | "invalidated"
+        | "available"
       evidence_kind: "URL" | "EMAIL" | "SCREENSHOT" | "DATA_EXPORT"
       evidence_type:
         | "URL_REQUIRED"
@@ -5955,7 +5960,13 @@ export const Constants = {
       app_role: ["admin", "user", "institute_admin", "recruiter"],
       assignment_type: ["mcq", "tf", "descriptive", "task"],
       attempt_policy: ["best", "last"],
-      attempt_status: ["started", "submitted", "auto_submitted", "invalidated"],
+      attempt_status: [
+        "started",
+        "submitted",
+        "auto_submitted",
+        "invalidated",
+        "available",
+      ],
       evidence_kind: ["URL", "EMAIL", "SCREENSHOT", "DATA_EXPORT"],
       evidence_type: [
         "URL_REQUIRED",
