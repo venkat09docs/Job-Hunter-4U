@@ -110,10 +110,14 @@ const CreateAssignment = () => {
 
   useEffect(() => {
     loadCourses();
-    if (isEditing && assignmentId) {
+  }, []);
+
+  useEffect(() => {
+    // Only load assignment data after courses are loaded
+    if (isEditing && assignmentId && courses.length > 0) {
       loadAssignmentForEditing(assignmentId);
     }
-  }, []);
+  }, [isEditing, assignmentId, courses.length]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -141,7 +145,7 @@ const CreateAssignment = () => {
         const courseData = courses.find(c => c.id === courseId);
         
         if (courseData) {
-          setSelectedCategory(courseData.category);
+          setSelectedCategory(courseData.category || '');
           setSelectedCourse(courseId);
           await loadSections(courseId);
         }
