@@ -2350,7 +2350,7 @@ export default function AICareerLevelUp() {
               </p>
               <div className="flex items-center gap-3 text-gray-400">
                 <Globe className="h-5 w-5 text-purple-400" />
-                <span className="text-lg">careerlevelup.pro</span>
+                <span className="text-lg">aicareerlevelup.com</span>
               </div>
             </div>
             
@@ -2359,7 +2359,7 @@ export default function AICareerLevelUp() {
               <div className="space-y-4 text-gray-400">
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-blue-400" />
-                  <span>info@careerlevelup.pro</span>
+                  <span>info@aicareerlevelup.com</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-green-400" />
