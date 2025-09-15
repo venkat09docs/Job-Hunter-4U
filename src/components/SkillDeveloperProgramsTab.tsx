@@ -94,8 +94,8 @@ const CourseCard: React.FC<{
             </div>
           </div>
           
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex gap-2">
+          <div className="flex items-start justify-between pt-2 gap-3">
+            <div className="flex flex-wrap gap-2 flex-1">
               <Badge variant="secondary" className="text-xs">
                 Beginner
               </Badge>
@@ -112,7 +112,7 @@ const CourseCard: React.FC<{
             <Button 
               size="sm" 
               variant={isLocked ? "outline" : (isEnrolled ? "outline" : "default")}
-              className="group/btn"
+              className="group/btn flex-shrink-0 min-w-fit"
               onClick={() => {
                 if (isLocked) {
                   onShowUpgrade?.();
@@ -126,11 +126,11 @@ const CourseCard: React.FC<{
               {isLocked ? (
                 <>
                   <Lock className="h-4 w-4 mr-1" />
-                  <span>Upgrade to Access</span>
+                  <span className="whitespace-nowrap">Upgrade</span>
                 </>
               ) : (
                 <>
-                  <span>{isEnrolled ? "View Course" : "Enroll Now"}</span>
+                  <span className="whitespace-nowrap">{isEnrolled ? "View Course" : "Enroll Now"}</span>
                   <ArrowRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
                 </>
               )}
