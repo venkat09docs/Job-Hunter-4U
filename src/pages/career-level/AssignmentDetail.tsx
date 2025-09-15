@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
@@ -22,6 +23,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
+import { useToast } from '@/hooks/use-toast';
 import type { Assignment, Question, Attempt } from '@/types/clp';
 import { ASSIGNMENT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
@@ -30,6 +32,7 @@ const AssignmentDetail: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { 
     loading, 
     getCourses,
@@ -80,12 +83,40 @@ const AssignmentDetail: React.FC = () => {
     
     setIsStarting(true);
     try {
-      const attempt = await startAttempt(assignment.id);
-      if (attempt) {
-        navigate(`/dashboard/career-level/attempt/${attempt.id}`);
+      // Check if there's an available attempt that can be started
+      const availableAttempt = userAttempts.find(a => a.status === 'available');
+      
+      if (availableAttempt) {
+        // Update the existing available attempt to started
+        const { data: updatedAttempt, error } = await supabase
+          .from('clp_attempts')
+          .update({
+            status: 'started',
+            started_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', availableAttempt.id)
+          .eq('status', 'available')
+          .select()
+          .single();
+        
+        if (error) throw error;
+        
+        navigate(`/dashboard/career-level/attempt/${availableAttempt.id}`);
+      } else {
+        // Create new attempt
+        const attempt = await startAttempt(assignment.id);
+        if (attempt) {
+          navigate(`/dashboard/career-level/attempt/${attempt.id}`);
+        }
       }
     } catch (error) {
       console.error('Error starting attempt:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start assignment. Please try again.',
+        variant: 'destructive'
+      });
     } finally {
       setIsStarting(false);
     }
@@ -128,7 +159,8 @@ const AssignmentDetail: React.FC = () => {
   const canStartAttempt = () => {
     if (!assignment) return false;
     const status = getAssignmentStatus();
-    return status === 'open' && userAttempts.length < assignment.max_attempts;
+    const actualAttempts = userAttempts.filter(a => a.status !== 'available').length;
+    return status === 'open' && actualAttempts < assignment.max_attempts;
   };
 
   const hasActiveAttempt = () => {
@@ -137,7 +169,7 @@ const AssignmentDetail: React.FC = () => {
 
   const getBestScore = () => {
     return userAttempts
-      .filter(a => a.score_numeric !== null)
+      .filter(a => a.score_numeric !== null && a.status !== 'available')
       .reduce((max, attempt) => Math.max(max, attempt.score_numeric || 0), 0);
   };
 
@@ -297,7 +329,7 @@ const AssignmentDetail: React.FC = () => {
           </Card>
 
           {/* Attempts History */}
-          {userAttempts.length > 0 && (
+          {userAttempts.filter(a => a.status !== 'available').length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -307,7 +339,9 @@ const AssignmentDetail: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {userAttempts.map((attempt, index) => (
+                  {userAttempts
+                    .filter(a => a.status !== 'available')
+                    .map((attempt, index) => (
                     <div key={attempt.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <div className="font-medium">Attempt #{index + 1}</div>
@@ -340,7 +374,7 @@ const AssignmentDetail: React.FC = () => {
                         
                         {attempt.status !== 'started' && (
                           <Button variant="outline" size="sm" asChild>
-                            <Link to={`/career-level/feedback/${attempt.id}`}>
+                            <Link to={`/dashboard/career-level/attempt/${attempt.id}/results`}>
                               View Results
                             </Link>
                           </Button>
@@ -386,7 +420,7 @@ const AssignmentDetail: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Attempts Used</span>
                   <span className="text-sm font-medium">
-                    {userAttempts.length}/{assignment.max_attempts}
+                    {userAttempts.filter(a => a.status !== 'available').length}/{assignment.max_attempts}
                   </span>
                 </div>
                 
@@ -464,7 +498,7 @@ const AssignmentDetail: React.FC = () => {
                 </Alert>
               )}
               
-              {status === 'open' && !canStartAttempt() && userAttempts.length >= assignment.max_attempts && (
+              {status === 'open' && !canStartAttempt() && userAttempts.filter(a => a.status !== 'available').length >= assignment.max_attempts && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -476,7 +510,7 @@ const AssignmentDetail: React.FC = () => {
               {/* Action Buttons */}
               {activeAttempt ? (
                 <Button className="w-full" asChild>
-                  <Link to={`/career-level/attempt/${activeAttempt.id}`}>
+                  <Link to={`/dashboard/career-level/attempt/${activeAttempt.id}`}>
                     <PlayCircle className="w-4 h-4 mr-2" />
                     Continue Attempt
                   </Link>
@@ -490,11 +524,17 @@ const AssignmentDetail: React.FC = () => {
                   <PlayCircle className="w-4 h-4 mr-2" />
                   {isStarting ? 'Starting...' : 'Start Assignment'}
                 </Button>
-              ) : null}
+              ) : (
+                <Button variant="outline" disabled className="w-full">
+                  {status === 'scheduled' ? 'Not Yet Available' : 
+                   status === 'closed' ? 'Assignment Closed' : 
+                   'No Attempts Remaining'}
+                </Button>
+              )}
               
-              {userAttempts.length > 0 && userAttempts.some(a => a.status !== 'started') && (
+              {userAttempts.filter(a => a.status !== 'available' && a.status !== 'started').length > 0 && (
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to={`/career-level/feedback/${userAttempts.find(a => a.status !== 'started')?.id}`}>
+                  <Link to={`/dashboard/career-level/attempt/${userAttempts.find(a => a.status !== 'available' && a.status !== 'started')?.id}/results`}>
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                     View Results
                   </Link>

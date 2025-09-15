@@ -537,11 +537,22 @@ const AppContent = () => {
               </ProtectedRoute>
             } 
           />
-           <Route 
+          <Route 
             path="/dashboard/career-level/attempt/:attemptId" 
             element={
               <ProtectedRoute>
                 <AttemptAssignment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/attempt/:attemptId/results" 
+            element={
+              <ProtectedRoute>
+                <div className="p-8 text-center">
+                  <h2 className="text-2xl font-bold mb-4">Assignment Results</h2>
+                  <p>Results page coming soon...</p>
+                </div>
               </ProtectedRoute>
             } 
           />
