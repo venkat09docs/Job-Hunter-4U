@@ -11,6 +11,7 @@ import { useGitHubWeekly } from '@/hooks/useGitHubWeekly';
 import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
+import { useLearningGoals } from '@/hooks/useLearningGoals';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,7 @@ import { ResizableLayout } from '@/components/ResizableLayout';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
-import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive, FileText, Lock, BarChart3 } from 'lucide-react';
+import { User, Briefcase, Target, TrendingUp, Calendar, CreditCard, Eye, Search, Bot, Github, Clock, CheckCircle, Users, DollarSign, Trophy, Archive, FileText, Lock, BarChart3, BookOpen } from 'lucide-react';
 import { SubscriptionStatus, SubscriptionUpgrade, useSubscription } from '@/components/SubscriptionUpgrade';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -76,6 +77,9 @@ const Dashboard = () => {
   
   // Social proof tracking for payments
   usePaymentSocialProof();
+  
+  // Learning Goals hook
+  const { goals, loading: goalsLoading, getGoalStatus } = useLearningGoals();
   
   // Optimized hooks for better performance
   const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
@@ -300,7 +304,7 @@ const Dashboard = () => {
   }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -912,6 +916,134 @@ const Dashboard = () => {
                       onClick={handleStartJobSearch}
                     >
                       Start Job Search
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Learning Goals Section - Full Width */}
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
+                    <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    Learning Goals
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/dashboard/skill-level-up')}
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                  <Card className="bg-white/50 dark:bg-gray-800/50 border-purple-200 dark:border-purple-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-purple-700 dark:text-purple-300">Total Goals</p>
+                          <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{goals?.length || 0}</p>
+                        </div>
+                        <Target className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-white/50 dark:bg-gray-800/50 border-green-200 dark:border-green-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-green-700 dark:text-green-300">Completed</p>
+                          <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                            {goals?.filter(g => g.status === 'completed').length || 0}
+                          </p>
+                        </div>
+                        <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-white/50 dark:bg-gray-800/50 border-orange-200 dark:border-orange-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-orange-700 dark:text-orange-300">In Progress</p>
+                          <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                            {goals?.filter(g => g.status === 'in_progress').length || 0}
+                          </p>
+                        </div>
+                        <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Recent Goals */}
+                {goals && goals.length > 0 ? (
+                  <div className="space-y-3">
+                    {goals.slice(0, 3).map((goal) => {
+                      const statusInfo = getGoalStatus(goal);
+                      return (
+                        <div
+                          key={goal.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+                          onClick={() => navigate('/dashboard/skill-level-up')}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate text-purple-900 dark:text-purple-100">{goal.skill_name}</p>
+                            <p className="text-sm text-purple-700 dark:text-purple-300 truncate">
+                              {goal.description || 'No description provided'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Progress value={goal.progress} className="flex-1 max-w-24" />
+                              <span className="text-xs text-purple-600 dark:text-purple-400 min-w-fit">
+                                {goal.progress}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 ml-4">
+                            <Badge 
+                              variant={
+                                statusInfo.type === 'completed' ? 'default' :
+                                statusInfo.type === 'critical' || statusInfo.type === 'overdue' ? 'destructive' :
+                                statusInfo.type === 'warning' ? 'secondary' : 'outline'
+                              } 
+                              className={
+                                statusInfo.type === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                statusInfo.type === 'critical' || statusInfo.type === 'overdue' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                                statusInfo.type === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              }
+                            >
+                              {statusInfo.text}
+                            </Badge>
+                            <Badge variant="outline" className="capitalize">
+                              {goal.priority}
+                            </Badge>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto text-purple-400 mb-3" />
+                    <p className="text-purple-700 dark:text-purple-300 mb-2">No learning goals yet</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400 mb-4">
+                      Set learning goals to track your skill development progress
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-900/20"
+                      onClick={() => navigate('/dashboard/skill-level-up')}
+                    >
+                      Create First Goal
                     </Button>
                   </div>
                 )}
