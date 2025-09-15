@@ -58,8 +58,6 @@ const CLPAssignmentManagementTab = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
 
   useEffect(() => {
     if (user) {
@@ -203,10 +201,8 @@ const CLPAssignmentManagementTab = () => {
     const matchesCategory = selectedCategory === 'all' || (assignmentCourse && assignmentCourse.category === selectedCategory);
     const matchesCourse = selectedCourse === 'all' || (assignmentSection && assignmentSection.course_id === selectedCourse);
     const matchesSection = selectedSection === 'all' || assignment.section_id === selectedSection;
-    const matchesStatus = selectedStatus === 'all' || getAssignmentStatus(assignment) === selectedStatus;
-    const matchesType = selectedType === 'all' || assignment.type === selectedType;
 
-    return matchesSearch && matchesCategory && matchesCourse && matchesSection && matchesStatus && matchesType;
+    return matchesSearch && matchesCategory && matchesCourse && matchesSection;
   });
 
   return (
@@ -236,7 +232,7 @@ const CLPAssignmentManagementTab = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <label className="text-sm font-medium mb-2 block">Search</label>
               <div className="relative">
@@ -297,37 +293,6 @@ const CLPAssignmentManagementTab = () => {
                       {section.title}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Type</label>
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="quiz">Quiz</SelectItem>
-                  <SelectItem value="assignment">Assignment</SelectItem>
-                  <SelectItem value="exam">Exam</SelectItem>
                 </SelectContent>
               </Select>
             </div>

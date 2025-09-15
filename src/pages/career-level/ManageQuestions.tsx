@@ -35,7 +35,8 @@ const ManageQuestions: React.FC = () => {
     getQuestionsByAssignment,
     createQuestion,
     updateQuestion,
-    deleteQuestion
+    deleteQuestion,
+    updateAssignment
   } = useCareerLevelProgram();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
@@ -255,6 +256,59 @@ const ManageQuestions: React.FC = () => {
             <p className="text-muted-foreground">{assignment.title}</p>
           </div>
         </div>
+
+        {/* Assignment Settings */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Assignment Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Number of Attempts</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={assignment.max_attempts || 1}
+                    onChange={async (e) => {
+                      const newMaxAttempts = parseInt(e.target.value) || 1;
+                      try {
+                        await updateAssignment(assignment.id, { max_attempts: newMaxAttempts });
+                        setAssignment({ ...assignment, max_attempts: newMaxAttempts });
+                        toast({
+                          title: 'Success',
+                          description: 'Assignment settings updated'
+                        });
+                      } catch (error) {
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to update assignment settings',
+                          variant: 'destructive'
+                        });
+                      }
+                    }}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    attempt{(assignment.max_attempts || 1) !== 1 ? 's' : ''} allowed
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Total Questions</label>
+                <p className="text-lg font-semibold">{questions.length}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Total Marks</label>
+                <p className="text-lg font-semibold">
+                  {questions.reduce((sum, q) => sum + q.marks, 0)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Questions List */}
