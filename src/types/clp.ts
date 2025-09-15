@@ -2,7 +2,7 @@
 
 export type AssignmentType = 'mcq' | 'tf' | 'descriptive' | 'task';
 export type AttemptPolicy = 'best' | 'last';
-export type AttemptStatus = 'started' | 'submitted' | 'auto_submitted' | 'invalidated';
+export type AttemptStatus = 'available' | 'started' | 'submitted' | 'auto_submitted' | 'invalidated';
 export type ReviewStatus = 'pending' | 'in_review' | 'published';
 export type QuestionKind = 'mcq' | 'tf' | 'descriptive' | 'task';
 export type VisibilityAudience = 'all' | 'cohort' | 'users';
@@ -256,6 +256,7 @@ export const ASSIGNMENT_STATUS_LABELS = {
 } as const;
 
 export const ATTEMPT_STATUS_LABELS = {
+  available: 'Available',
   started: 'In Progress',
   submitted: 'Submitted',
   auto_submitted: 'Auto-Submitted',

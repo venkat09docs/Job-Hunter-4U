@@ -189,7 +189,9 @@ const SkillLevelUpProgram: React.FC = () => {
     const safeAssignments = assignments || [];
     return {
       upcoming: safeAssignments.filter(a => 
-        a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
+        a.status === 'scheduled' || 
+        (a.status === 'open' && a.canAttempt) ||
+        a.userAttempts.some(attempt => attempt.status === 'available')
       ),
       active: safeAssignments.filter(a => 
         a.userAttempts.some(attempt => attempt.status === 'started')
