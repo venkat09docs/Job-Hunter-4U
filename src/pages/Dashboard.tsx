@@ -12,6 +12,7 @@ import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
+import { useRecentEnrolledCourses } from '@/hooks/useRecentEnrolledCourses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ import LeaderBoard from '@/components/LeaderBoard';
 import { InstituteLeaderBoard } from '@/components/InstituteLeaderBoard';
 import { VerifyActivitiesButton } from '@/components/VerifyActivitiesButton';
 import { BadgeLeadersSlider } from '@/components/BadgeLeadersSlider';
+import { RecentCoursesCard } from '@/components/RecentCoursesCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useCallback } from 'react';
 import { formatDistanceToNow, startOfWeek, endOfWeek, addDays, format } from 'date-fns';
@@ -80,6 +82,9 @@ const Dashboard = () => {
   
   // Learning Goals hook
   const { goals, loading: goalsLoading, getGoalStatus } = useLearningGoals();
+  
+  // Recent Enrolled Courses hook
+  const { courses: recentCourses, loading: recentCoursesLoading } = useRecentEnrolledCourses();
   
   // Optimized hooks for better performance
   const { totalPoints, currentWeekPoints, currentMonthPoints, loading: pointsLoading } = useOptimizedUserPoints();
@@ -304,7 +309,7 @@ const Dashboard = () => {
   }
   
   // Check loading states IMMEDIATELY after all hooks are called - include new loading states
-  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading) {
+  if (authLoading || profileLoading || networkLoading || githubLoading || weeklyLoading || pointsLoading || statsLoading || goalsLoading || recentCoursesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -724,6 +729,55 @@ const Dashboard = () => {
                     <SubscriptionUpgrade featureName="Leaderboard" eligiblePlans={allSubscriptionPlans}>
                       <Button>Upgrade Plan</Button>
                     </SubscriptionUpgrade>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Courses Section */}
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                    <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    Recent Courses
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
+                    className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                  >
+                    View All
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {recentCourses && recentCourses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {recentCourses.map((course) => (
+                      <RecentCoursesCard
+                        key={course.id}
+                        course={course}
+                        hasActiveSubscription={hasActiveSubscription()}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto text-blue-400 mb-3" />
+                    <p className="text-blue-700 dark:text-blue-300 mb-2">No enrolled courses yet</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                      Start learning by enrolling in your first course
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                      onClick={() => navigate('/dashboard/skill-level?tab=skill-programs')}
+                    >
+                      Browse Courses
+                    </Button>
                   </div>
                 )}
               </CardContent>
