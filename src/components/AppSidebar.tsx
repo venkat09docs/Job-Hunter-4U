@@ -56,7 +56,7 @@ import PricingDialog from "./PricingDialog";
 
 const getMainItems = (isAdmin: boolean, isInstituteAdmin: boolean, isRecruiter: boolean) => [
   { title: "Dashboard", url: "/dashboard", icon: Home, featureKey: null },
-  { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null, requiresSubscription: true },
+  { title: "Skill Level Up", url: "/dashboard/skill-level", icon: Award, featureKey: null },
   { title: "Profile Level Up", url: "/dashboard/level-up", icon: Trophy, featureKey: null },
   { title: "AI-Powered Career Tools", url: "/dashboard/digital-career-hub", icon: Zap, featureKey: "digital-career-hub" },
   { title: "Resource Library", url: "/dashboard/library", icon: Archive, featureKey: "page_resources_library" },
@@ -242,7 +242,7 @@ export function AppSidebar() {
     const isAICareerTools = item.title === "AI-Powered Career Tools";
     
     // Special handling for Skill Level Up to check subscription
-    const isSkillLevelUp = item.title === "Skill Level Up" && item.requiresSubscription;
+    const isSkillLevelUp = false; // Remove subscription check for Skill Level Up
     
     // Special handling for GitHub Weekly - show subscription dialog instead of navigating
     const isGitHubWeekly = item.title === "GitHub Weekly" && isPremium;
@@ -295,30 +295,8 @@ export function AppSidebar() {
     const handleSkillLevelUpClick = (e: React.MouseEvent) => {
       e.preventDefault();
       
-      // Debug logging
-      console.log('🔍 Skill Level Up Debug:', {
-        profile_subscription_plan: profile?.subscription_plan,
-        hasActiveSubscription: hasActiveSubscription(),
-        isAdmin,
-        profile_subscription_start_date: profile?.subscription_start_date,
-        profile_subscription_end_date: profile?.subscription_end_date
-      });
-      
-      // Check if user has active subscription (any paid plan)
-      const hasValidSubscription = profile?.subscription_plan && 
-        ["One Month Plan", "3 Months Plan", "6 Months Plan", "1 Year Plan"].includes(profile.subscription_plan) &&
-        hasActiveSubscription();
-      
-      console.log('🔍 Has Valid Subscription:', hasValidSubscription);
-      
-      if (!hasValidSubscription && !isAdmin) {
-        console.log('🔍 Opening subscription dialog');
-        setSubscriptionDialogOpen(true);
-      } else {
-        console.log('🔍 Navigating to Skill Level Up');
-        // User has subscription or is admin, proceed to navigate using React Router
-        navigate(item.url);
-      }
+      // Always navigate to Skill Level Up page - subscription is handled at course level
+      navigate(item.url);
     };
     
     const menuItem = isAICareerTools ? (
