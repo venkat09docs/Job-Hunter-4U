@@ -1446,7 +1446,37 @@ const CLPDashboard = () => {
 
           {/* Assignments Tab */}
           <TabsContent value="assignments" className="space-y-6">
-            <CLPAssignmentManagementTab />
+            <Tabs defaultValue="create" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create">Create Assignments</TabsTrigger>
+                <TabsTrigger value="manage">Manage Existing Assignments</TabsTrigger>
+              </TabsList>
+
+              {/* Create Assignments Subtab */}
+              <TabsContent value="create" className="space-y-6">
+                <CLPAssignmentManagementTab />
+              </TabsContent>
+
+              {/* Manage Existing Assignments Subtab */}
+              <TabsContent value="manage" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Manage Existing Assignments</CardTitle>
+                    <p className="text-muted-foreground">
+                      Functionality for managing existing assignments will be implemented here.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8">
+                      <ClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        Coming soon - Manage existing assignments functionality
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Reviews Tab */}
