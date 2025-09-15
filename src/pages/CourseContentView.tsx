@@ -48,7 +48,7 @@ const CourseContentView: React.FC = () => {
   const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
-  const { markChapterComplete, isChapterComplete, loading: chapterLoading } = useChapterCompletion();
+  const { markChapterComplete, isChapterComplete, loading: chapterLoading, getCourseProgress } = useChapterCompletion();
 
   useEffect(() => {
     if (courseId) {
@@ -193,6 +193,20 @@ const CourseContentView: React.FC = () => {
       const success = await markChapterComplete(selectedChapter.id);
       if (success) {
         setCompletedChapters(prev => new Set([...prev, selectedChapter.id]));
+        
+        // Check if entire course is now complete and show congratulations
+        if (courseId) {
+          try {
+            const progressData = await getCourseProgress(courseId);
+            if (progressData && progressData.progress_percentage >= 100) {
+              toast.success('🎉 Congratulations! You have completed the entire course and earned 100 points!', {
+                duration: 5000,
+              });
+            }
+          } catch (error) {
+            console.error('Error checking course progress:', error);
+          }
+        }
         
         // Auto-navigate to next chapter if available
         const nextChapter = getNextChapter();

@@ -54,33 +54,6 @@ export const useChapterCompletion = () => {
     }
   };
 
-  const unmarkChapterComplete = async (chapterId: string): Promise<boolean> => {
-    if (!user) {
-      toast.error('Authentication required');
-      return false;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('user_chapter_completions')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('chapter_id', chapterId);
-
-      if (error) throw error;
-
-      toast.success('Chapter unmarked as complete');
-      return true;
-    } catch (error) {
-      console.error('Error unmarking chapter:', error);
-      toast.error('Failed to unmark chapter');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const isChapterComplete = async (chapterId: string): Promise<boolean> => {
     if (!user) return false;
 
@@ -150,7 +123,6 @@ export const useChapterCompletion = () => {
   return {
     loading,
     markChapterComplete,
-    unmarkChapterComplete,
     isChapterComplete,
     getCourseProgress,
     awardLearningGoalPoints
