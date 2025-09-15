@@ -312,7 +312,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
                   {categoryCourses.length} course{categoryCourses.length !== 1 ? 's' : ''}
                 </Badge>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {categoryCourses.map((course) => (
                 <CourseCard 
                   key={course.id} 
@@ -330,7 +330,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
         </div>
       ) : (
         // Display filtered courses when specific category is selected
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
           <CourseCard 
             key={course.id} 
