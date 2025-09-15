@@ -849,14 +849,14 @@ const CLPDashboard = () => {
                     Create Course
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="pointer-events-auto cursor-default">
+                <DialogContent className="pointer-events-auto">
                   <DialogHeader>
                     <DialogTitle>Create New Course</DialogTitle>
                     <DialogDescription>
                       Add a new course to the Career Level Up Program
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4 cursor-default">
+                  <div className="space-y-4">
                     <div>
                       <Label htmlFor="course-title">Course Title</Label>
                       <Input
@@ -899,7 +899,7 @@ const CLPDashboard = () => {
                               <Plus className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-md pointer-events-auto cursor-default">
+                          <DialogContent className="sm:max-w-md pointer-events-auto">
                             <DialogHeader>
                               <DialogTitle>Create New Category</DialogTitle>
                               <DialogDescription>
@@ -1193,14 +1193,14 @@ const CLPDashboard = () => {
 
             {/* Edit Course Dialog */}
             <Dialog open={!!editingCourse} onOpenChange={(open) => !open && setEditingCourse(null)}>
-              <DialogContent className="cursor-default pointer-events-auto">
+              <DialogContent className="pointer-events-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Course</DialogTitle>
                   <DialogDescription>
                     Update the course information
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 cursor-default">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="edit-course-title">Course Title</Label>
                     <Input
@@ -1243,7 +1243,7 @@ const CLPDashboard = () => {
                             <Plus className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md pointer-events-auto cursor-default">
+                        <DialogContent className="sm:max-w-md pointer-events-auto">
                           <DialogHeader>
                             <DialogTitle>Create New Category</DialogTitle>
                             <DialogDescription>
@@ -1378,14 +1378,14 @@ const CLPDashboard = () => {
 
             {/* Create Module Dialog */}
             <Dialog open={isCreateModuleOpen} onOpenChange={setIsCreateModuleOpen}>
-              <DialogContent className="cursor-default pointer-events-auto">
+              <DialogContent className="pointer-events-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Module</DialogTitle>
                   <DialogDescription>
                     Add a new module to the selected course
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 cursor-default">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="module-title">Module Title</Label>
                     <Input
