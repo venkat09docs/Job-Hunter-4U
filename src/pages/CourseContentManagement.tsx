@@ -247,6 +247,112 @@ const CourseContentManagement = () => {
     }
   };
 
+  // Update section
+  const handleUpdateSection = async () => {
+    if (!editingSection || !sectionTitle.trim()) {
+      toast.error('Section title is required');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('course_sections')
+        .update({
+          title: sectionTitle,
+          description: sectionDescription,
+        })
+        .eq('id', editingSection.id);
+
+      if (error) throw error;
+
+      setSectionTitle('');
+      setSectionDescription('');
+      setEditingSection(null);
+      loadSections();
+      toast.success('Section updated successfully');
+    } catch (error) {
+      console.error('Error updating section:', error);
+      toast.error('Failed to update section');
+    }
+  };
+
+  // Update chapter
+  const handleUpdateChapter = async () => {
+    if (!editingChapter || !chapterTitle.trim()) {
+      toast.error('Chapter title is required');
+      return;
+    }
+
+    try {
+      const chapterData: any = {
+        title: chapterTitle,
+        description: chapterDescription,
+        content_type: chapterType,
+        duration_minutes: chapterDuration,
+      };
+
+      if (chapterType === 'video') {
+        chapterData.video_url = chapterVideoUrl;
+      } else if (chapterType === 'article') {
+        chapterData.article_content = chapterArticleContent;
+      }
+
+      const { error } = await supabase
+        .from('course_chapters')
+        .update(chapterData)
+        .eq('id', editingChapter.id);
+
+      if (error) throw error;
+
+      // Reset form
+      setChapterTitle('');
+      setChapterDescription('');
+      setChapterVideoUrl('');
+      setChapterArticleContent('');
+      setChapterDuration(0);
+      setEditingChapter(null);
+      
+      loadSections();
+      toast.success('Chapter updated successfully');
+    } catch (error) {
+      console.error('Error updating chapter:', error);
+      toast.error('Failed to update chapter');
+    }
+  };
+
+  // Start editing section
+  const startEditingSection = (section: any) => {
+    setEditingSection(section);
+    setSectionTitle(section.title);
+    setSectionDescription(section.description || '');
+  };
+
+  // Start editing chapter
+  const startEditingChapter = (chapter: any) => {
+    setEditingChapter(chapter);
+    setChapterTitle(chapter.title);
+    setChapterDescription(chapter.description || '');
+    setChapterType(chapter.content_type);
+    setChapterVideoUrl(chapter.video_url || '');
+    setChapterArticleContent(chapter.article_content || '');
+    setChapterDuration(chapter.duration_minutes || 0);
+    setSelectedSectionId(chapter.section_id);
+  };
+
+  // Cancel editing
+  const cancelEditing = () => {
+    setEditingSection(null);
+    setEditingChapter(null);
+    setSectionTitle('');
+    setSectionDescription('');
+    setChapterTitle('');
+    setChapterDescription('');
+    setChapterVideoUrl('');
+    setChapterArticleContent('');
+    setChapterDuration(0);
+    setSelectedSectionId('');
+  };
+
   if (!course) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -290,7 +396,9 @@ const CourseContentManagement = () => {
           <TabsContent value="sections" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Create New Section</CardTitle>
+                <CardTitle>
+                  {editingSection ? 'Edit Section' : 'Create New Section'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -312,10 +420,24 @@ const CourseContentManagement = () => {
                     rows={3}
                   />
                 </div>
-                <Button onClick={handleCreateSection} disabled={loading}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Section
-                </Button>
+                <div className="flex gap-2">
+                  {editingSection ? (
+                    <>
+                      <Button onClick={handleUpdateSection} disabled={loading}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Update Section
+                      </Button>
+                      <Button variant="outline" onClick={cancelEditing}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleCreateSection} disabled={loading}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Section
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -342,7 +464,7 @@ const CourseContentManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setEditingSection(section)}
+                          onClick={() => startEditingSection(section)}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -365,24 +487,28 @@ const CourseContentManagement = () => {
           <TabsContent value="chapters" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Create New Chapter</CardTitle>
+                <CardTitle>
+                  {editingChapter ? 'Edit Chapter' : 'Create New Chapter'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="section-select">Select Section</Label>
-                  <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a section" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sections.map((section) => (
-                        <SelectItem key={section.id} value={section.id}>
-                          {section.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {!editingChapter && (
+                  <div>
+                    <Label htmlFor="section-select">Select Section</Label>
+                    <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a section" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sections.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="chapter-title">Chapter Title</Label>
@@ -456,10 +582,24 @@ const CourseContentManagement = () => {
                   />
                 </div>
 
-                <Button onClick={handleCreateChapter} disabled={loading}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Chapter
-                </Button>
+                <div className="flex gap-2">
+                  {editingChapter ? (
+                    <>
+                      <Button onClick={handleUpdateChapter} disabled={loading}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Update Chapter
+                      </Button>
+                      <Button variant="outline" onClick={cancelEditing}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleCreateChapter} disabled={loading}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Chapter
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -500,7 +640,7 @@ const CourseContentManagement = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setEditingChapter(chapter)}
+                                onClick={() => startEditingChapter(chapter)}
                               >
                                 <Edit2 className="h-4 w-4" />
                               </Button>
