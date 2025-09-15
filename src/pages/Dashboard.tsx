@@ -610,7 +610,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0">
               <h1 className="text-base sm:text-lg lg:text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent truncate">
-                CAREER LEVEL UP
+                AI CAREER LEVEL UP
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">

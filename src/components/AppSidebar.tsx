@@ -530,7 +530,7 @@ export function AppSidebar() {
             <div>
               {!isCollapsed && (
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                  CAREER LEVEL UP
+                  AI CAREER LEVEL UP
                 </h3>
               )}
               <div className="space-y-1">
