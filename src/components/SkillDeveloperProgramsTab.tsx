@@ -152,7 +152,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
 
   const handleViewCourse = (courseId: string) => {
     // Navigate directly to course content view
-    navigate(`/course-content/${courseId}`);
+    navigate(`/course/${courseId}`);
   };
 
   const isUserEnrolled = (courseId: string) => {
