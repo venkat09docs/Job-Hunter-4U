@@ -247,7 +247,7 @@ export const useCareerLevelProgram = () => {
         .from('clp_assignments')
         .select(`
           *,
-          section:clp_sections(
+          section:course_sections(
             *,
             course:clp_courses(*)
           )

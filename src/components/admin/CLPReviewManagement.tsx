@@ -92,7 +92,7 @@ const CLPReviewManagement = () => {
           assignment:clp_assignments(
             title,
             type,
-            module:clp_modules(
+            section:course_sections(
               title,
               course:clp_courses(title)
             )

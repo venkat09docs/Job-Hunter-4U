@@ -893,11 +893,11 @@ export type Database = {
           instructions: string | null
           is_published: boolean | null
           max_attempts: number | null
-          module_id: string
           negative_marking: boolean | null
           points_scale: Json | null
           randomize_questions: boolean | null
           rubric: Json | null
+          section_id: string
           shuffle_options: boolean | null
           start_at: string | null
           title: string
@@ -917,11 +917,11 @@ export type Database = {
           instructions?: string | null
           is_published?: boolean | null
           max_attempts?: number | null
-          module_id: string
           negative_marking?: boolean | null
           points_scale?: Json | null
           randomize_questions?: boolean | null
           rubric?: Json | null
+          section_id: string
           shuffle_options?: boolean | null
           start_at?: string | null
           title: string
@@ -941,11 +941,11 @@ export type Database = {
           instructions?: string | null
           is_published?: boolean | null
           max_attempts?: number | null
-          module_id?: string
           negative_marking?: boolean | null
           points_scale?: Json | null
           randomize_questions?: boolean | null
           rubric?: Json | null
+          section_id?: string
           shuffle_options?: boolean | null
           start_at?: string | null
           title?: string
@@ -955,10 +955,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "clp_assignments_module_id_fkey"
-            columns: ["module_id"]
+            foreignKeyName: "clp_assignments_section_id_fkey"
+            columns: ["section_id"]
             isOneToOne: false
-            referencedRelation: "clp_modules"
+            referencedRelation: "course_sections"
             referencedColumns: ["id"]
           },
         ]
