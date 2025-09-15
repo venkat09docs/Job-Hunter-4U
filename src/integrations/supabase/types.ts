@@ -1454,7 +1454,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "course_sections_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "clp_courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_job_hunting_sessions: {
         Row: {

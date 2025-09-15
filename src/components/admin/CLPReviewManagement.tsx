@@ -27,7 +27,7 @@ interface AttemptWithDetails {
   assignment: {
     title: string;
     type: string;
-    module: {
+    section: {
       title: string;
       course: {
         title: string;
@@ -338,7 +338,7 @@ const CLPReviewManagement = () => {
                           <strong>Student:</strong> {attempt.user?.full_name || attempt.user?.username} ({attempt.user?.email})
                         </p>
                         <p>
-                          <strong>Course:</strong> {attempt.assignment?.module?.course?.title} - {attempt.assignment?.module?.title}
+                          <strong>Course:</strong> {attempt.assignment?.section?.course?.title} - {attempt.assignment?.section?.title}
                         </p>
                         <p>
                           <strong>Submitted:</strong> {attempt.submitted_at ? new Date(attempt.submitted_at).toLocaleString() : 'Not submitted'}
