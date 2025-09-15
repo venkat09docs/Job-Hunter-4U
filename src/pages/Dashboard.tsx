@@ -12,7 +12,6 @@ import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
-import { useMockTaskStats } from '@/hooks/useMockTaskStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,7 +69,6 @@ const Dashboard = () => {
   
   // Progress and metrics hooks - only if user exists
   const { getModuleProgress, assignments, getTasksByModule } = useCareerAssignments();
-  const { getTaskStats } = useMockTaskStats();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
@@ -439,12 +437,20 @@ const Dashboard = () => {
   const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
   const weeklyTarget = githubWeeklyTotal;
 
+  // Mock task data to use as fallback while database issue is resolved
+  const mockTaskStats = {
+    RESUME: { total: 9, completed: 6, inProgress: 2, pending: 1 },
+    LINKEDIN: { total: 11, completed: 4, inProgress: 3, pending: 4 },
+    GITHUB: { total: 8, completed: 3, inProgress: 1, pending: 4 },
+    DIGITAL_PROFILE: { total: 12, completed: 5, inProgress: 4, pending: 3 }
+  };
+
   // Calculate task statistics for each category (only if getTasksByModule is available)
   const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
     if (!getTasksByModule || !assignments || assignments.length === 0) {
       // Use mock data as fallback while database issue is resolved
       console.log(`📊 Using mock data for ${module} tasks`);
-      return getTaskStats(module);
+      return mockTaskStats[module] || { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
     
     try {
@@ -470,7 +476,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error(`Error calculating stats for ${module}:`, error);
       // Fallback to mock data on error
-      return getTaskStats(module);
+      return mockTaskStats[module] || { total: 0, completed: 0, inProgress: 0, pending: 0 };
     }
   };
 
