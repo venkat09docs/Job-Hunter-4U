@@ -55,9 +55,21 @@ export interface Assignment {
   created_by?: string;
   created_at: string;
   updated_at: string;
-  section?: any; // Reference to course section
+  section?: CourseSection; // Reference to course section
   questions?: Question[];
   attempts?: Attempt[];
+}
+
+export interface CourseSection {
+  id: string;
+  course_id: string;
+  title: string;
+  description?: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  course?: Course;
 }
 
 export interface Question {

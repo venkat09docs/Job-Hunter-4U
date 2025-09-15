@@ -32,7 +32,7 @@ const AssignmentDetail: React.FC = () => {
   const { user } = useAuth();
   const { 
     loading, 
-    getAssignmentsByModule, 
+    // section prop instead of module 
     getQuestionsByAssignment,
     getAttemptsByUser,
     startAttempt
@@ -205,7 +205,7 @@ const AssignmentDetail: React.FC = () => {
               <h1 className="text-3xl font-bold mb-2">{assignment.title}</h1>
               <div className="flex items-center text-muted-foreground">
                 <FileText className="w-4 h-4 mr-2" />
-                <span>{assignment.module?.course?.title} • {assignment.module?.title}</span>
+                <span>{assignment.section?.course?.title} • {assignment.section?.title}</span>
               </div>
             </div>
             

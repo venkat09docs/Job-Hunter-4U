@@ -237,7 +237,7 @@ const CreateAssignment = () => {
         attempt_policy: data.attempt_policy,
         attachments_required: data.attachments_required,
         is_published: data.is_published,
-        type: data.type || 'quiz'
+        type: data.type || 'quiz',
       };
 
       const hasObjectiveQuestions = questions.some(q => ['mcq', 'tf'].includes(q.kind));

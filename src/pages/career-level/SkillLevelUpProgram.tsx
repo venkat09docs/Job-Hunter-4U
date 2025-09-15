@@ -286,7 +286,7 @@ const SkillLevelUpProgram: React.FC = () => {
               <CardTitle className="text-lg mb-1">{assignment.title}</CardTitle>
               <div className="flex items-center text-sm text-muted-foreground">
                 <BookOpen className="w-4 h-4 mr-1" />
-                <span>{assignment.module?.course?.title} • {assignment.module?.title}</span>
+                <span>{assignment.section?.course?.title} • {assignment.section?.title}</span>
               </div>
             </div>
             <Badge 
