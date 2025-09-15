@@ -40,15 +40,12 @@ import { cn } from '@/lib/utils';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import SkillDeveloperProgramsTab from '@/components/SkillDeveloperProgramsTab';
 import { LearningGoalsSection } from '@/components/LearningGoalsSection';
-import PricingDialog from '@/components/PricingDialog';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const SkillLevelUpProgram: React.FC = () => {
   const { user } = useAuth();
   const { profile, hasActiveSubscription } = useProfile();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
   
   const { 
     loading, 
@@ -411,10 +408,7 @@ const SkillLevelUpProgram: React.FC = () => {
         </CardContent>
       </Card>
     );
-  }, [getStatusColor, formatDateTime, getDaysRemaining]); // Added dependencies for useCallback
-
-  // Check if user needs to upgrade (no subscription)
-  const needsUpgrade = !hasActiveSubscription();
+  }, [getStatusColor, formatDateTime, getDaysRemaining]);
 
   if (loading || isInitialLoading) {
     return (
@@ -457,258 +451,153 @@ const SkillLevelUpProgram: React.FC = () => {
     );
   }
 
-  // Show upgrade page for unsubscribed users
-  if (needsUpgrade) {
-    return (
-      <>
-        <div className="min-h-screen bg-background">
-          {/* Top Navigation Header */}
-          <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-16 items-center justify-between px-6">
-              {/* Left side - Navigation */}
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2"
-                >
-                  <Home className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </Button>
-                <div className="hidden sm:block h-4 w-px bg-border" />
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-purple-500" />
-                  <span className="font-semibold">Skill Level Up Program</span>
-                </div>
-              </div>
-              
-              {/* Right side - Action Buttons and User Profile */}
-              <div className="flex items-center gap-3">
-                {/* YouTube Channel Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open('https://www.youtube.com/@career-levelup', '_blank')}
-                  className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="hidden sm:inline">Go to YouTube Channel</span>
-                </Button>
-                
-                {/* Career Level Up Community Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open('https://members.risenshinetechnologies.com/communities/groups/career-level-up/home', '_blank')}
-                  className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Career Level Up Community</span>
-                </Button>
-                
-                <UserProfileDropdown />
-              </div>
-            </div>
-          </header>
-
-          <div className="container mx-auto px-4 py-16 max-w-4xl">
-            <div className="text-center">
-              <div className="mb-8">
-                <Lock className="h-24 w-24 mx-auto mb-6 text-muted-foreground" />
-                <h1 className="text-4xl font-bold text-foreground mb-4">
-                  Unlock Skill Level Up Program
-                </h1>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  {profile?.subscription_plan === 'One Month Plan' 
-                    ? `Upgrade from your ${profile.subscription_plan} to access advanced skill development programs, assignments, and compete on leaderboards.`
-                    : 'Access advanced skill development programs, track assignments, and compete on leaderboards with a subscription plan.'
-                  }
-                </p>
-              </div>
-
-              <Card className="max-w-md mx-auto mb-8">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 justify-center">
-                    <Trophy className="h-6 w-6 text-purple-500" />
-                    Premium Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-left space-y-3">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Interactive skill development programs</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Timed assignments and assessments</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Competitive leaderboards</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Progress tracking and analytics</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">Certificates and badges</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Button 
-                onClick={() => setPricingDialogOpen(true)}
-                size="lg"
-                className="px-8 py-6 text-lg"
-              >
-                <Trophy className="h-5 w-5 mr-2" />
-                Upgrade Plan
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
-            <PricingDialog />
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-         <div className="container flex h-16 items-center justify-between px-6">
-           {/* Left side - Navigation */}
-           <div className="flex items-center gap-4">
-             <Button
-               variant="ghost"
-               size="sm"
-               onClick={() => navigate('/dashboard')}
-               className="flex items-center gap-2"
-             >
-               <Home className="h-4 w-4" />
-               <span className="hidden sm:inline">Dashboard</span>
-             </Button>
-             <div className="hidden sm:block h-4 w-px bg-border" />
-             <div className="flex items-center gap-2">
-               <Trophy className="h-5 w-5 text-purple-500" />
-               <span className="font-semibold">Skill Level Up Program</span>
-             </div>
-           </div>
-           
-           {/* Right side - Action Buttons and User Profile */}
-           <div className="flex items-center gap-3">
-             {/* YouTube Channel Button */}
-             <Button
-               variant="outline"
-               size="sm"
-               onClick={() => window.open('https://www.youtube.com/@career-levelup', '_blank')}
-               className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
-             >
-               <ExternalLink className="h-4 w-4" />
-               <span className="hidden sm:inline">Go to YouTube Channel</span>
-             </Button>
-             
-             {/* Career Level Up Community Button */}
-             <Button
-               variant="outline"
-               size="sm"
-               onClick={() => window.open('https://members.risenshinetechnologies.com/communities/groups/career-level-up/home', '_blank')}
-               className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
-             >
-               <Users className="h-4 w-4" />
-               <span className="hidden sm:inline">Career Level Up Community</span>
-             </Button>
-             
-             <UserProfileDropdown />
-           </div>
-         </div>
+        <div className="container flex h-16 items-center justify-between px-6">
+          {/* Left side - Navigation */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-500" />
+              <span className="font-semibold">Skill Level Up Program</span>
+            </div>
+          </div>
+          
+          {/* Right side - Action Buttons and User Profile */}
+          <div className="flex items-center gap-3">
+            {/* YouTube Channel Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('https://www.youtube.com/@career-levelup', '_blank')}
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-500 hover:text-red-600 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline">Go to YouTube Channel</span>
+            </Button>
+            
+            {/* Career Level Up Community Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('https://members.risenshinetechnologies.com/communities/groups/career-level-up/home', '_blank')}
+              className="flex items-center gap-2 hover:bg-emerald-50 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+            >
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Join Community</span>
+            </Button>
+            
+            <UserProfileDropdown />
+          </div>
+        </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Skill Level Up Program
-          </h1>
-          <p className="text-muted-foreground">
-            Track your assignments and compete with peers in your learning journey
-          </p>
-        </div>
-
-        {/* Main Tabs */}
+      {/* Main Content */}
+      <div className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="skill-programs">Skill Development Programs</TabsTrigger>
-            <TabsTrigger value="assignments">My Assignments</TabsTrigger>
-            <TabsTrigger value="completed-learning">Track Learning Goals</TabsTrigger>
-            <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+            <TabsTrigger value="skill-programs" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Skill Developer Programs</span>
+              <span className="sm:hidden">Programs</span>
+            </TabsTrigger>
+            <TabsTrigger value="my-assignments" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">My Assignments</span>
+              <span className="sm:hidden">Assignments</span>
+            </TabsTrigger>
+            <TabsTrigger value="completed-learning" className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Completed Learning</span>
+              <span className="sm:hidden">Learning</span>
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              <span className="hidden sm:inline">Leaderboard</span>
+              <span className="sm:hidden">Ranks</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Skill Developer Programs Tab */}
           <TabsContent value="skill-programs" className="space-y-6">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-3">
+                Skill Developer Programs
+              </h1>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Master in-demand skills with our comprehensive courses. Build your expertise and advance your career.
+              </p>
+            </div>
+            
             <SkillDeveloperProgramsTab onEnrollCourse={handleCourseEnrollment} />
           </TabsContent>
 
           {/* My Assignments Tab */}
-          <TabsContent value="assignments" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Available</p>
-                    <p className="text-2xl font-bold">{filteredAssignments.upcoming.length}</p>
+          <TabsContent value="my-assignments" className="space-y-6">
+            {/* Current User's Stats */}
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">My Assignment Progress</h2>
+                  <p className="text-muted-foreground">Track your assignments and performance</p>
+                </div>
+                <div className="flex gap-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {filteredAssignments.completed.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Completed</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {filteredAssignments.active.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">In Progress</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {filteredAssignments.upcoming.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Available</div>
                   </div>
                 </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <Clock className="w-8 h-8 text-orange-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                    <p className="text-2xl font-bold">{filteredAssignments.active.length}</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-8 h-8 text-green-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                    <p className="text-2xl font-bold">{filteredAssignments.completed.length}</p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4">
-                <div className="flex items-center">
-                  <Trophy className="w-8 h-8 text-purple-500 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Points</p>
-                     <p className="text-2xl font-bold">
-                       {(assignments || []).reduce((total, assignment) => {
-                         const bestAttempt = assignment.userAttempts
-                           .filter(a => a.score_points !== null)
-                           .reduce((max, attempt) => 
-                             Math.max(max, attempt.score_points || 0), 0
-                           );
-                         return total + bestAttempt;
-                       }, 0)}
-                    </p>
-                  </div>
-                </div>
+              </div>
+            </div>
+
+            {/* My Total Score Card */}
+            <div className="mb-6">
+              <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-emerald-100 p-3 rounded-full">
+                      <Trophy className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Total Score</h3>
+                      <p className="text-3xl font-bold text-emerald-600">
+                        {assignments.reduce((total, assignment) => {
+                          const bestAttempt = assignment.userAttempts
+                            .filter(a => a.score_numeric !== null)
+                            .reduce((max, attempt) => 
+                              Math.max(max, attempt.score_numeric || 0), 0
+                            );
+                          return total + bestAttempt;
+                        }, 0)}
+                     </p>
+                   </div>
+                 </div>
+               </CardContent>
               </Card>
             </div>
 
@@ -803,151 +692,147 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Completed Learning Tab */}
           <TabsContent value="completed-learning" className="space-y-6">
-            <LearningGoalsSection 
-              shouldOpenForm={shouldOpenLearningGoalForm}
-              courseInfo={pendingCourseEnrollment}
-              onGoalCreated={handleLearningGoalCreated}
-              onFormClosed={handleLearningGoalFormClosed}
-            />
+            <LearningGoalsSection />
           </TabsContent>
 
           {/* Leaderboard Tab */}
           <TabsContent value="leaderboard" className="space-y-6">
-            {/* Filters */}
-            <div className="flex gap-4">
-              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All Courses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Courses</SelectItem>
-                  {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id}>
-                      {course.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Current User Stats */}
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-6">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">Leaderboard Rankings</h2>
+                  <p className="text-muted-foreground">See how you rank among your peers</p>
+                </div>
+                {leaderboardStats.currentUserRank && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">
+                        #{leaderboardStats.currentUserRank}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Your Rank</div>
+                    </div>
+                    {leaderboardStats.currentUserEntry && (
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {(leaderboardStats.currentUserEntry as any).total_score?.toFixed(1) || '0'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Your Score</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
-              {selectedCourse !== 'all' && (
-                <Select value={selectedModule} onValueChange={setSelectedModule}>
+            {/* Filters */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium">Course:</label>
+                <Select value={selectedCourse} onValueChange={setSelectedCourse}>
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="All Modules" />
+                    <SelectValue placeholder="All Courses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Modules</SelectItem>
-                    {modules.map((module) => (
-                      <SelectItem key={module.id} value={module.id}>
-                        {module.title}
+                    <SelectItem value="all">All Courses</SelectItem>
+                    {courses.map((course) => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.title}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {selectedCourse !== 'all' && modules.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium">Module:</label>
+                  <Select value={selectedModule} onValueChange={setSelectedModule}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="All Modules" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Modules</SelectItem>
+                      {modules.map((module) => (
+                        <SelectItem key={module.id} value={module.id}>
+                          {module.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
             </div>
 
-            {/* Current User Rank */}
-            {leaderboardStats.currentUserRank && (
-              <Card className="border-2 border-primary/20 bg-primary/5">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-full">
-                        <Users className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold">Your Rank</h3>
-                        <p className="text-sm text-muted-foreground">
-                          You're currently ranked #{leaderboardStats.currentUserRank} out of {leaderboardData.length} participants
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">
-                        {leaderboardStats.currentUserEntry?.points_total || 0}
-                      </p>
-                      <p className="text-sm text-muted-foreground">points</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Leaderboard */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                Leaderboard
-              </h2>
-              
-              <div className="space-y-2">
-                {leaderboardData.length > 0 ? (
-                  leaderboardData.map((entry, index) => {
-                    const position = index + 1;
-                    const isCurrentUser = entry.user_id === user?.id;
-                    
-                    return (
-                      <Card 
-                        key={entry.id}
-                        className={cn(
-                          "transition-colors duration-200",
-                          getPositionStyles(position),
-                          isCurrentUser && "ring-2 ring-primary"
-                        )}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center justify-center w-8 h-8">
-                                {getRankIcon(position)}
-                              </div>
-                              
-                              <Avatar className="w-10 h-10">
-                                <AvatarFallback className="text-sm">
-                                  {entry.user?.full_name?.charAt(0) || 
-                                   entry.user?.username?.charAt(0) ||
-                                   entry.user_id.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              
-                              <div>
-                                <p className="font-medium">
-                                  {entry.user?.full_name || entry.user?.username || `User ${entry.user_id.slice(-4)}`}
-                                  {isCurrentUser && (
-                                    <Badge variant="outline" className="ml-2 text-xs">
-                                      You
-                                    </Badge>
-                                  )}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Position #{position}
-                                </p>
-                              </div>
+              {leaderboardData.length > 0 ? (
+                leaderboardData.map((entry, index) => {
+                  const position = index + 1;
+                  const isCurrentUser = entry.user_id === user?.id;
+                  
+                  return (
+                    <Card 
+                      key={entry.user_id} 
+                      className={cn(
+                        'transition-all duration-200 hover:shadow-md',
+                        getPositionStyles(position),
+                        isCurrentUser && 'ring-2 ring-primary ring-offset-2'
+                      )}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-center w-10 h-10">
+                              {getRankIcon(position)}
                             </div>
                             
-                            <div className="text-right">
-                              <p className="text-lg font-bold">
-                                {entry.points_total}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                points
-                              </p>
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={(entry as any).profiles?.avatar_url} />
+                              <AvatarFallback className="text-sm">
+                                {((entry as any).profiles?.display_name || (entry as any).profiles?.email || 'U').slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div>
+                              <div className="font-medium text-foreground">
+                                {(entry as any).profiles?.display_name || (entry as any).profiles?.email || 'Anonymous User'}
+                                {isCurrentUser && (
+                                  <Badge variant="outline" className="ml-2 text-xs">
+                                    You
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {(entry as any).assignment_count || 0} assignment{((entry as any).assignment_count || 0) !== 1 ? 's' : ''} completed
+                              </div>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })
-                ) : (
-                  <div className="text-center py-8">
+                          
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-foreground">
+                              {((entry as any).total_score || 0).toFixed(1)}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Avg: {((entry as any).avg_score || 0).toFixed(1)}%
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              ) : (
+                <Card className="p-12">
+                  <div className="text-center">
                     <Trophy className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No Rankings Yet</h3>
                     <p className="text-muted-foreground">
-                      Complete assignments to appear on the leaderboard.
+                      Complete some assignments to see the leaderboard.
                     </p>
                   </div>
-                )}
-              </div>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>
