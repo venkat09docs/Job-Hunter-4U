@@ -153,8 +153,19 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const { hasActiveSubscription } = useProfile();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  // Subscription plan options
+  const subscriptionPlans = [
+    { value: 'all', label: 'All Plans' },
+    { value: 'free', label: 'Free Courses' },
+    { value: 'one_month', label: 'One Month Plan' },
+    { value: 'three_months', label: 'Three Months Plan' },
+    { value: 'six_months', label: 'Six Months Plan' },
+    { value: 'one_year', label: 'One Year Plan' }
+  ];
 
   useEffect(() => {
     loadCourses();
@@ -201,10 +212,37 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     return `${hours}${hours === 1 ? ' hour' : ' hours'}`;
   };
 
-  // Filter courses by selected category and sort by order_index
-  const filteredCourses = (selectedCategory === 'all' 
-    ? courses 
-    : courses.filter(course => (course.category || 'General') === selectedCategory))
+  // Helper function to determine course subscription plan
+  const getCourseSubscriptionPlan = (course: Course) => {
+    if (course.is_free) return 'free';
+    
+    // Map subscription plan names to our filter values
+    // This might need adjustment based on actual course data structure
+    const planMapping: Record<string, string> = {
+      'One Month Plan': 'one_month',
+      '3 Months Plan': 'three_months', 
+      '6 Months Plan': 'six_months',
+      '1 Year Plan': 'one_year'
+    };
+    
+    // If course has subscription_plan_id or similar field, map it accordingly
+    // For now, we'll assume non-free courses require at least one month plan
+    return 'one_month';
+  };
+
+  // Filter courses by selected category and subscription plan, then sort by order_index
+  const filteredCourses = courses
+    .filter(course => {
+      // Category filter
+      const categoryMatch = selectedCategory === 'all' || 
+        (course.category || 'General') === selectedCategory;
+      
+      // Subscription plan filter
+      const planMatch = selectedSubscriptionPlan === 'all' || 
+        getCourseSubscriptionPlan(course) === selectedSubscriptionPlan;
+      
+      return categoryMatch && planMatch;
+    })
     .sort((a, b) => {
       const orderA = (a as any).order_index || 999;
       const orderB = (b as any).order_index || 999;
@@ -212,14 +250,21 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     });
 
   // Group courses by category for display and sort each category by order_index
-  const coursesByCategory = courses.reduce((acc, course) => {
-    const category = course.category || 'General';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(course);
-    return acc;
-  }, {} as Record<string, Course[]>);
+  const coursesByCategory = courses
+    .filter(course => {
+      // Apply subscription plan filter to grouped courses too
+      const planMatch = selectedSubscriptionPlan === 'all' || 
+        getCourseSubscriptionPlan(course) === selectedSubscriptionPlan;
+      return planMatch;
+    })
+    .reduce((acc, course) => {
+      const category = course.category || 'General';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(course);
+      return acc;
+    }, {} as Record<string, Course[]>);
 
   // Sort courses within each category by order_index
   Object.keys(coursesByCategory).forEach(category => {
@@ -265,22 +310,40 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
 
   return (
     <div className="space-y-6">
-      {/* Category Filter */}
-      {categories.length > 0 && (
-        <div className="flex items-center gap-4">
+      {/* Filters */}
+      {(categories.length > 0 || subscriptionPlans.length > 0) && (
+        <div className="flex flex-wrap items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm font-medium">Filter by Category:</span>
+            <span className="text-sm font-medium">Filters:</span>
           </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          {/* Subscription Plan Filter */}
+          <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="All Categories" />
+              <SelectValue placeholder="All Plans" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
+              {subscriptionPlans.map((plan) => (
+                <SelectItem key={plan.value} value={plan.value}>
+                  {plan.label}
                 </SelectItem>
               ))}
             </SelectContent>
