@@ -23,6 +23,7 @@ const resourceTypes = [
 
 interface LearningGoalFormProps {
   goal?: LearningGoal;
+  courseInfo?: { id: string; title: string };
   onSubmit: (data: CreateLearningGoalData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -34,7 +35,7 @@ interface Resource {
   type: string;
 }
 
-export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: LearningGoalFormProps) {
+export function LearningGoalForm({ goal, courseInfo, onSubmit, onCancel, isLoading }: LearningGoalFormProps) {
   const { getCourses } = useCareerLevelProgram();
   const [courses, setCourses] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -44,12 +45,11 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
     end_date: goal?.end_date ? new Date(goal.end_date).toISOString().split('T')[0] : '',
     priority: goal?.priority || 'medium',
     notes: goal?.notes || '',
-    course_id: goal?.course_id || 'none'
+    course_id: goal?.course_id || courseInfo?.id || 'none'
   });
   const [resources, setResources] = useState<Resource[]>(goal?.resources || []);
 
-  // Load courses for selection - TEMPORARILY DISABLED
-  /*
+  // Load courses for selection
   useEffect(() => {
     const loadCourses = async () => {
       try {
@@ -61,7 +61,6 @@ export function LearningGoalForm({ goal, onSubmit, onCancel, isLoading }: Learni
     };
     loadCourses();
   }, [getCourses]);
-  */
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

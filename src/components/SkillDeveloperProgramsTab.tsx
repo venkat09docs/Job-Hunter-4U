@@ -116,7 +116,7 @@ interface SkillDeveloperProgramsTabProps {
 const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ onEnrollCourse }) => {
   const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
-  const { goals } = useLearningGoals();
+  const { goals, loading: goalsLoading } = useLearningGoals();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
@@ -195,7 +195,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     });
   });
 
-  if (loading) {
+  if (loading || goalsLoading) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

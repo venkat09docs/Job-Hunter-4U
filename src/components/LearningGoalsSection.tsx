@@ -203,12 +203,14 @@ export function LearningGoalsSection({
     // Pre-populate form with course info if available
     const goalData = editingGoal || (courseInfo ? {
       skill_name: courseInfo.title,
-      description: `Learning goal for ${courseInfo.title} course`
+      description: `Learning goal for ${courseInfo.title} course`,
+      course_id: courseInfo.id
     } : null);
 
     return (
       <LearningGoalForm
         goal={goalData}
+        courseInfo={courseInfo}
         onSubmit={editingGoal ? handleEdit : handleCreate}
         onCancel={handleFormCancel}
         isLoading={loading}
