@@ -438,6 +438,13 @@ const CLPAssignmentManagementTab = () => {
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}/questions`)}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
                   {!assignment.is_published && (
                     <Button 
                       variant="default" 

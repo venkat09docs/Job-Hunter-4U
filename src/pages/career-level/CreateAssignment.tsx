@@ -146,33 +146,31 @@ const CreateAssignment = () => {
         const courseData = courses.find(c => c.id === courseId);
         
         if (courseData) {
-          // Set category and course selections
+          // Set category and course selections first
           setSelectedCategory(courseData.category || '');
           setSelectedCourse(courseId);
           
           // Load sections and wait for them to be loaded
           await loadSections(courseId);
           
-          // Small delay to ensure state updates are complete
-          setTimeout(() => {
-            form.reset({
-              section_id: assignment.section_id,
-              title: assignment.title,
-              instructions: assignment.instructions || '',
-              visible_from: assignment.visible_from ? new Date(assignment.visible_from).toISOString().slice(0, 16) : '',
-              start_at: assignment.start_at ? new Date(assignment.start_at).toISOString().slice(0, 16) : '',
-              end_at: assignment.end_at ? new Date(assignment.end_at).toISOString().slice(0, 16) : '',
-              due_at: assignment.due_at ? new Date(assignment.due_at).toISOString().slice(0, 16) : '',
-              duration_minutes: assignment.duration_minutes || undefined,
-              randomize_questions: assignment.randomize_questions || false,
-              shuffle_options: assignment.shuffle_options || false,
-              negative_marking: assignment.negative_marking || false,
-              max_attempts: assignment.max_attempts || 1,
-              attempt_policy: assignment.attempt_policy || 'best',
-              attachments_required: assignment.attachments_required || false,
-              is_published: assignment.is_published || false,
-            });
-          }, 100);
+          // Reset form with all data including course selection
+          form.reset({
+            section_id: assignment.section_id,
+            title: assignment.title,
+            instructions: assignment.instructions || '',
+            visible_from: assignment.visible_from ? new Date(assignment.visible_from).toISOString().slice(0, 16) : '',
+            start_at: assignment.start_at ? new Date(assignment.start_at).toISOString().slice(0, 16) : '',
+            end_at: assignment.end_at ? new Date(assignment.end_at).toISOString().slice(0, 16) : '',
+            due_at: assignment.due_at ? new Date(assignment.due_at).toISOString().slice(0, 16) : '',
+            duration_minutes: assignment.duration_minutes || undefined,
+            randomize_questions: assignment.randomize_questions || false,
+            shuffle_options: assignment.shuffle_options || false,
+            negative_marking: assignment.negative_marking || false,
+            max_attempts: assignment.max_attempts || 1,
+            attempt_policy: assignment.attempt_policy || 'best',
+            attachments_required: assignment.attachments_required || false,
+            is_published: assignment.is_published || false,
+          });
         }
         
         try {
@@ -496,16 +494,6 @@ const CreateAssignment = () => {
                 <Save className="h-4 w-4 mr-2" />
                 {isEditing ? 'Update Assignment' : 'Create Assignment'}
               </Button>
-              {isEditing && (
-                <Button 
-                  type="button" 
-                  variant="secondary" 
-                  onClick={() => navigate(`/dashboard/career-level/assignments/${assignmentId}/questions`)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Manage Questions
-                </Button>
-              )}
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel
               </Button>
