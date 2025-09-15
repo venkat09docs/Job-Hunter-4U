@@ -26,6 +26,7 @@ export const useChapterCompletion = () => {
       return false;
     }
 
+    console.log('🔄 Starting chapter completion process for chapter:', chapterId, 'user:', user.id);
     setLoading(true);
     try {
       const { error } = await supabase
@@ -42,8 +43,10 @@ export const useChapterCompletion = () => {
         );
 
       if (error) throw error;
+      console.log('✅ Chapter completion recorded successfully');
 
       // Trigger automatic assignment check for section completion
+      console.log('🚀 Triggering auto-assign-section-assignments function...');
       try {
         const { data, error: assignmentError } = await supabase.functions.invoke(
           'auto-assign-section-assignments',
@@ -55,21 +58,26 @@ export const useChapterCompletion = () => {
           }
         );
 
+        console.log('📦 Edge function response:', { data, error: assignmentError });
+
         if (assignmentError) {
-          console.error('Error checking for automatic assignments:', assignmentError);
+          console.error('❌ Error checking for automatic assignments:', assignmentError);
+          toast.error('Chapter completed, but failed to check for assignments');
         } else if (data?.assignments_assigned > 0) {
+          console.log('🎯 Assignments assigned:', data.assignments_assigned);
           toast.success(`Chapter completed! ${data.assignments_assigned} new assignment(s) have been assigned to you.`);
         } else {
+          console.log('ℹ️ No new assignments to assign');
           toast.success('Chapter marked as complete!');
         }
       } catch (assignmentError) {
-        console.error('Failed to trigger assignment check:', assignmentError);
-        toast.success('Chapter marked as complete!');
+        console.error('💥 Failed to trigger assignment check:', assignmentError);
+        toast.error('Chapter completed, but assignment check failed');
       }
 
       return true;
     } catch (error) {
-      console.error('Error marking chapter complete:', error);
+      console.error('❌ Error marking chapter complete:', error);
       toast.error('Failed to mark chapter as complete');
       return false;
     } finally {
