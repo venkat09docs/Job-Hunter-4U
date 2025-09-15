@@ -53,12 +53,14 @@ const SkillLevelUpProgram: React.FC = () => {
     getAttemptsByUser,
     getLeaderboard,
     getCourses,
-    getModulesByCourse
+    getModulesByCourse,
+    getUserAssignmentsOrganized
   } = useCareerLevelProgram();
   
   // State for My Assignments tab
   const [assignments, setAssignments] = useState<AssignmentWithProgress[]>([]);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
+  const [organizedAssignments, setOrganizedAssignments] = useState<any>({});
   
   // State for Leaderboard tab
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
@@ -84,23 +86,25 @@ const SkillLevelUpProgram: React.FC = () => {
     setIsInitialLoading(true);
     try {
       // Load all data in parallel for better performance
-      const [assignmentsData, attemptsData, coursesData, leaderboardData] = await Promise.all([
+      const [assignmentsData, attemptsData, coursesData, leaderboardData, organizedData] = await Promise.all([
         getAssignmentsWithProgress(),
         getAttemptsByUser(),
         getCourses(),
-        getLeaderboard()
+        getLeaderboard(),
+        getUserAssignmentsOrganized()
       ]);
       
       setAssignments(assignmentsData);
       setAttempts(attemptsData);
       setCourses(coursesData);
       setLeaderboardData(leaderboardData);
+      setOrganizedAssignments(organizedData);
     } catch (error) {
       console.error('Failed to load initial data:', error);
     } finally {
       setIsInitialLoading(false);
     }
-  }, [user, getAssignmentsWithProgress, getAttemptsByUser, getCourses, getLeaderboard]);
+  }, [user, getAssignmentsWithProgress, getAttemptsByUser, getCourses, getLeaderboard, getUserAssignmentsOrganized]);
 
   // Load initial data only once
   useEffect(() => {
@@ -262,8 +266,271 @@ const SkillLevelUpProgram: React.FC = () => {
     }
   }, []);
 
-  // Memoized assignment card rendering for better performance
+  // Helper function to get assignment status color and info for organized assignments
+  const getOrganizedAssignmentStatus = useCallback((assignment: any) => {
+    const attempt = assignment.userAttempt;
+    if (!attempt) return { status: 'available', color: 'bg-blue-500', label: 'Available' };
+    
+    switch (attempt.status) {
+      case 'submitted':
+      case 'auto_submitted':
+        return { status: 'completed', color: 'bg-green-500', label: 'Completed' };
+      case 'started':
+        return { status: 'pending', color: 'bg-orange-500', label: 'In Progress' };
+      case 'available':
+      default:
+        return { status: 'available', color: 'bg-blue-500', label: 'Available' };
+    }
+  }, []);
+
+  // Helper function to render organized assignment card
+  const renderOrganizedAssignmentCard = useCallback((assignment: any) => {
+    const statusInfo = getOrganizedAssignmentStatus(assignment);
+    const attempt = assignment.userAttempt;
+    
+    return (
+      <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-1">{assignment.title}</CardTitle>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <FileText className="w-4 h-4 mr-1" />
+                <span>Type: {assignment.type.toUpperCase()}</span>
+              </div>
+            </div>
+            <Badge className={cn('text-white', statusInfo.color)}>
+              {statusInfo.label}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Assignment Details */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center text-muted-foreground">
+              <Timer className="w-4 h-4 mr-2" />
+              <span>
+                {assignment.duration_minutes ? 
+                  `${assignment.duration_minutes} minutes` : 
+                  'No time limit'
+                }
+              </span>
+            </div>
+            <div className="flex items-center text-muted-foreground">
+              <Trophy className="w-4 h-4 mr-2" />
+              <span>{assignment.max_attempts} attempt{assignment.max_attempts !== 1 ? 's' : ''}</span>
+            </div>
+            {assignment.due_at && (
+              <div className="flex items-center text-muted-foreground">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span>Due: {formatDateTime(assignment.due_at)}</span>
+              </div>
+            )}
+            {attempt?.score_numeric && (
+              <div className="flex items-center text-muted-foreground">
+                <Award className="w-4 h-4 mr-2" />
+                <span>Score: {attempt.score_numeric.toFixed(1)}%</span>
+              </div>
+            )}
+          </div>
+
+          {/* Instructions */}
+          {assignment.instructions && (
+            <div className="text-sm text-muted-foreground">
+              <p className="line-clamp-2">{assignment.instructions}</p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            {attempt?.status === 'started' ? (
+              <Button asChild className="flex-1">
+                <Link to={`/career-level/attempt/${attempt.id}`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Continue Attempt
+                </Link>
+              </Button>
+            ) : statusInfo.status === 'available' && assignment.status === 'open' ? (
+              <Button asChild className="flex-1">
+                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Start Assignment
+                </Link>
+              </Button>
+            ) : statusInfo.status === 'completed' ? (
+              <Button variant="outline" asChild className="flex-1">
+                <Link to={`/career-level/feedback/${attempt?.id}`}>
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  View Results
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" disabled className="flex-1">
+                {assignment.status === 'scheduled' ? 'Not Started' : 
+                 assignment.status === 'closed' ? 'Closed' : 
+                 'No Attempts Remaining'}
+              </Button>
+            )}
+            
+            <Button variant="ghost" size="sm" asChild>
+              <Link to={`/career-level/assignment/${assignment.id}`}>
+                View Details
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }, [getOrganizedAssignmentStatus, formatDateTime]);
+
+  // Memoized assignment card rendering for better performance (original function)
   const renderAssignmentCard = useCallback((assignment: AssignmentWithProgress) => {
+    const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
+    const isCompleted = assignment.userAttempts.some(a => 
+      a.status === 'submitted' || a.status === 'auto_submitted'
+    );
+    
+    const bestScore = assignment.userAttempts
+      .filter(a => a.score_numeric !== null)
+      .reduce((max, attempt) => 
+        Math.max(max, attempt.score_numeric || 0), 0
+      );
+
+    return (
+      <Card key={assignment.id} className="hover:shadow-md transition-shadow">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-1">{assignment.title}</CardTitle>
+              <div className="flex items-center text-sm text-muted-foreground">
+                <BookOpen className="w-4 h-4 mr-1" />
+                <span>{assignment.section?.course?.title} • {assignment.section?.title}</span>
+              </div>
+            </div>
+            <Badge 
+              className={cn('text-white', getStatusColor(assignment.status))}
+            >
+              {ASSIGNMENT_STATUS_LABELS[assignment.status]}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {/* Assignment Details */}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center text-muted-foreground">
+              <Timer className="w-4 h-4 mr-2" />
+              <span>
+                {assignment.duration_minutes ? 
+                  `${assignment.duration_minutes} minutes` : 
+                  'No time limit'
+                }
+              </span>
+            </div>
+            <div className="flex items-center text-muted-foreground">
+              <Trophy className="w-4 h-4 mr-2" />
+              <span>{assignment.max_attempts} attempt{assignment.max_attempts !== 1 ? 's' : ''}</span>
+            </div>
+            {assignment.due_at && (
+              <div className="flex items-center text-muted-foreground">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span>Due: {formatDateTime(assignment.due_at)}</span>
+              </div>
+            )}
+            <div className="flex items-center text-muted-foreground">
+              <FileText className="w-4 h-4 mr-2" />
+              <span>Type: {assignment.type.toUpperCase()}</span>
+            </div>
+          </div>
+
+          {/* Progress/Status */}
+          {assignment.userAttempts.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Attempts: {assignment.userAttempts.length}/{assignment.max_attempts}</span>
+                {bestScore > 0 && <span>Best Score: {bestScore.toFixed(1)}%</span>}
+              </div>
+              <Progress 
+                value={(assignment.userAttempts.length / assignment.max_attempts) * 100} 
+                className="h-2" 
+              />
+            </div>
+          )}
+
+          {/* Due Date Warning */}
+          {assignment.due_at && assignment.status === 'open' && (
+            <div className="text-sm">
+              {(() => {
+                const daysRemaining = getDaysRemaining(assignment.due_at);
+                if (daysRemaining <= 1) {
+                  return (
+                    <div className="flex items-center text-red-600 bg-red-50 p-2 rounded">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      <span>Due {daysRemaining === 0 ? 'today' : 'tomorrow'}!</span>
+                    </div>
+                  );
+                } else if (daysRemaining <= 3) {
+                  return (
+                    <div className="flex items-center text-orange-600 bg-orange-50 p-2 rounded">
+                      <Clock className="w-4 h-4 mr-2" />
+                      <span>Due in {daysRemaining} days</span>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+          )}
+
+          {/* Instructions */}
+          {assignment.instructions && (
+            <div className="text-sm text-muted-foreground">
+              <p className="line-clamp-2">{assignment.instructions}</p>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            {hasActiveAttempt ? (
+              <Button asChild className="flex-1">
+                <Link to={`/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Continue Attempt
+                </Link>
+              </Button>
+            ) : assignment.canAttempt && assignment.status === 'open' ? (
+              <Button asChild className="flex-1">
+                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Start Assignment
+                </Link>
+              </Button>
+            ) : isCompleted ? (
+              <Button variant="outline" asChild className="flex-1">
+                <Link to={`/career-level/feedback/${assignment.userAttempts[0]?.id}`}>
+                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                  View Results
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" disabled className="flex-1">
+                {assignment.status === 'scheduled' ? 'Not Started' : 
+                 assignment.status === 'closed' ? 'Closed' : 
+                 'No Attempts Remaining'}
+              </Button>
+            )}
+            
+            <Button variant="ghost" size="sm" asChild>
+              <Link to={`/career-level/assignment/${assignment.id}`}>
+                View Details
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }, [getStatusColor, formatDateTime, getDaysRemaining]);
     const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
     const isCompleted = assignment.userAttempts.some(a => 
       a.status === 'submitted' || a.status === 'auto_submitted'
@@ -602,80 +869,83 @@ const SkillLevelUpProgram: React.FC = () => {
               </Card>
             </div>
 
-            {/* Assignment Subtabs */}
-            <Tabs defaultValue="available" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="available" className="flex items-center gap-2">
-                  <PlayCircle className="w-4 h-4" />
-                  Available ({filteredAssignments.upcoming.length})
-                </TabsTrigger>
-                <TabsTrigger value="pending" className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Pending ({filteredAssignments.active.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed" className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Completed ({filteredAssignments.completed.length})
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Available Assignments Tab */}
-              <TabsContent value="available" className="space-y-4">
-                {filteredAssignments.upcoming.length > 0 ? (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAssignments.upcoming.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8">
-                    <div className="text-center">
-                      <PlayCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Available Assignments</h3>
-                      <p className="text-sm text-muted-foreground">
-                        All assignments are either in progress or completed.
-                      </p>
+            {/* Assignment Display - Organized by Category -> Course -> Section */}
+            <div className="space-y-8">
+              {Object.keys(organizedAssignments).length > 0 ? (
+                Object.entries(organizedAssignments).map(([category, courses]: [string, any]) => (
+                  <div key={category} className="space-y-6">
+                    {/* Category Header */}
+                    <div className="flex items-center gap-3 pb-2 border-b">
+                      <div className="bg-purple-100 p-2 rounded-lg">
+                        <BookOpen className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-foreground">{category}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {Object.keys(courses).length} course{Object.keys(courses).length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
                     </div>
-                  </Card>
-                )}
-              </TabsContent>
 
-              {/* Pending Assignments Tab */}
-              <TabsContent value="pending" className="space-y-4">
-                {filteredAssignments.active.length > 0 ? (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAssignments.active.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8">
-                    <div className="text-center">
-                      <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Pending Assignments</h3>
-                      <p className="text-sm text-muted-foreground">
-                        You don't have any assignments in progress at the moment.
-                      </p>
-                    </div>
-                  </Card>
-                )}
-              </TabsContent>
+                    {/* Courses in Category */}
+                    <div className="space-y-6">
+                      {Object.entries(courses).map(([courseId, courseData]: [string, any]) => (
+                        <div key={courseId} className="space-y-4">
+                          {/* Course Header */}
+                          <div className="flex items-center gap-3 pb-2">
+                            <div className="bg-blue-100 p-2 rounded-lg">
+                              <Trophy className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-medium text-foreground">{courseData.courseInfo.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {Object.keys(courseData.sections).length} section{Object.keys(courseData.sections).length !== 1 ? 's' : ''} • 
+                                {Object.values(courseData.sections).reduce((total: number, section: any) => total + section.assignments.length, 0)} assignments
+                              </p>
+                            </div>
+                          </div>
 
-              {/* Completed Assignments Tab */}
-              <TabsContent value="completed" className="space-y-4">
-                {filteredAssignments.completed.length > 0 ? (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAssignments.completed.map(renderAssignmentCard)}
-                  </div>
-                ) : (
-                  <Card className="p-8">
-                    <div className="text-center">
-                      <CheckCircle2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Completed Assignments</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Complete some assignments to see them here.
-                      </p>
+                          {/* Sections in Course */}
+                          <div className="ml-8 space-y-4">
+                            {Object.entries(courseData.sections).map(([sectionId, sectionData]: [string, any]) => (
+                              <div key={sectionId} className="space-y-3">
+                                {/* Section Header */}
+                                <div className="flex items-center gap-2 pb-1">
+                                  <div className="bg-green-100 p-1.5 rounded">
+                                    <FileText className="h-3 w-3 text-green-600" />
+                                  </div>
+                                  <div>
+                                    <h5 className="font-medium text-foreground">{sectionData.sectionInfo.title}</h5>
+                                    <p className="text-xs text-muted-foreground">
+                                      {sectionData.assignments.length} assignment{sectionData.assignments.length !== 1 ? 's' : ''}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Assignments in Section */}
+                                <div className="ml-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                  {sectionData.assignments.map((assignment: any) => renderOrganizedAssignmentCard(assignment))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </Card>
-                )}
-              </TabsContent>
-            </Tabs>
+                  </div>
+                ))
+              ) : (
+                <Card className="p-8">
+                  <div className="text-center">
+                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">No Assignments Assigned</h3>
+                    <p className="text-sm text-muted-foreground">
+                      You don't have any assignments assigned to you yet. Complete course sections to get assignments automatically assigned.
+                    </p>
+                  </div>
+                </Card>
+              )}
+            </div>
 
             {/* Empty State for no assignments at all */}
             {assignments.length === 0 && (

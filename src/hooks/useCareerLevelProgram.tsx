@@ -314,6 +314,104 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
+  // Get user's assigned assignments organized by category -> course -> section
+  const getUserAssignmentsOrganized = useCallback(async () => {
+    if (!user) return {};
+    
+    setLoading(true);
+    try {
+      console.log('🔍 Fetching user assigned assignments organized by category -> course -> section');
+
+      // Get user's assigned assignments with full hierarchy
+      const { data: userAttempts, error: attemptsError } = await supabase
+        .from('clp_attempts')
+        .select(`
+          *,
+          assignment:clp_assignments!inner(
+            *,
+            section:course_sections!inner(
+              *,
+              course:clp_courses!inner(*)
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (attemptsError) throw attemptsError;
+
+      console.log('📦 Raw user attempts data:', userAttempts);
+
+      // Organize by category -> course -> section
+      const organized: any = {};
+
+      userAttempts?.forEach((attempt: any) => {
+        const assignment = attempt.assignment;
+        const section = assignment.section;
+        const course = section.course;
+        const category = course.category || 'General';
+
+        // Initialize structure if not exists
+        if (!organized[category]) {
+          organized[category] = {};
+        }
+        if (!organized[category][course.id]) {
+          organized[category][course.id] = {
+            courseInfo: course,
+            sections: {}
+          };
+        }
+        if (!organized[category][course.id].sections[section.id]) {
+          organized[category][course.id].sections[section.id] = {
+            sectionInfo: section,
+            assignments: []
+          };
+        }
+
+        // Determine assignment status
+        const now = new Date();
+        let status = 'draft';
+        
+        if (assignment.is_published) {
+          const visible_from = assignment.visible_from ? new Date(assignment.visible_from) : null;
+          const start_at = assignment.start_at ? new Date(assignment.start_at) : null;
+          const end_at = assignment.end_at ? new Date(assignment.end_at) : null;
+
+          if (end_at && now > end_at) {
+            status = 'closed';
+          } else if (start_at && now < start_at) {
+            status = 'scheduled';
+          } else if (visible_from && now < visible_from) {
+            status = 'scheduled';
+          } else {
+            status = 'open';
+          }
+        }
+
+        // Add assignment with attempt info
+        organized[category][course.id].sections[section.id].assignments.push({
+          ...assignment,
+          userAttempt: attempt,
+          status,
+          canAttempt: assignment.max_attempts > 1 || attempt.status === 'available'
+        });
+      });
+
+      console.log('🗂️ Organized assignments:', organized);
+      return organized;
+    } catch (error: any) {
+      console.error('❌ Error fetching organized assignments:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch assigned assignments',
+        variant: 'destructive'
+      });
+      return {};
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
   const deleteAssignment = useCallback(async (assignmentId: string): Promise<boolean> => {
     if (!user) return false;
     
@@ -791,6 +889,7 @@ export const useCareerLevelProgram = () => {
     getAssignmentsBySection,
     getAssignments,
     getAssignmentsWithProgress,
+    getUserAssignmentsOrganized,
     deleteAssignment,
     // Question methods
     createQuestion,
