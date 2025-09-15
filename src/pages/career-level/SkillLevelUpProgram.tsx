@@ -371,7 +371,7 @@ const SkillLevelUpProgram: React.FC = () => {
                 <Button
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate(`/career-level/assignment/${assignment.id}/start`)}
+                  onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}`)}
                 >
                   <Play className="h-4 w-4 mr-2" />
                   Start Assignment
@@ -548,14 +548,14 @@ const SkillLevelUpProgram: React.FC = () => {
               </Button>
             ) : assignment.canAttempt && assignment.status === 'open' ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Start Assignment
                 </Link>
               </Button>
             ) : assignment.userAttempts.some(attempt => attempt.status === 'available') ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Start Assignment
                 </Link>
