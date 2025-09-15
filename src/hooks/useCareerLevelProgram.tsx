@@ -322,31 +322,63 @@ export const useCareerLevelProgram = () => {
     try {
       console.log('🔍 Fetching user assigned assignments organized by category -> course -> section');
 
-      // Get user's assigned assignments with full hierarchy
-      const { data: userAttempts, error: attemptsError } = await supabase
-        .from('clp_attempts')
+      // First, get all published assignments with their course/section structure
+      const { data: assignmentsData, error: assignmentsError } = await supabase
+        .from('clp_assignments')
         .select(`
-          *,
-          assignment:clp_assignments!inner(
-            *,
-            section:course_sections!inner(
-              *,
-              course:clp_courses!inner(*)
+          id,
+          title,
+          type,
+          instructions,
+          duration_minutes,
+          max_attempts,
+          due_at,
+          start_at,
+          end_at,
+          visible_from,
+          is_published,
+          section:course_sections!inner (
+            id,
+            title,
+            description,
+            course:clp_courses!inner (
+              id,
+              title,
+              description,
+              category,
+              image
             )
           )
         `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('is_published', true)
+        .order('section.course.title', { ascending: true });
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Get user attempts for these assignments
+      const { data: userAttempts, error: attemptsError } = await supabase
+        .from('clp_attempts')
+        .select('*')
+        .eq('user_id', user.id);
 
       if (attemptsError) throw attemptsError;
 
-      console.log('📦 Raw user attempts data:', userAttempts);
+      console.log('📦 Raw assignments data:', assignmentsData?.length || 0);
+      console.log('📦 Raw user attempts data:', userAttempts?.length || 0);
+
+      // Create a map of attempts by assignment ID
+      const attemptsMap = new Map();
+      userAttempts?.forEach(attempt => {
+        if (!attemptsMap.has(attempt.assignment_id)) {
+          attemptsMap.set(attempt.assignment_id, []);
+        }
+        attemptsMap.get(attempt.assignment_id).push(attempt);
+      });
 
       // Organize by category -> course -> section
       const organized: any = {};
 
-      userAttempts?.forEach((attempt: any) => {
-        const assignment = attempt.assignment;
+      assignmentsData?.forEach((assignment: any) => {
         const section = assignment.section;
         const course = section.course;
         const category = course.category || 'General';
@@ -388,12 +420,21 @@ export const useCareerLevelProgram = () => {
           }
         }
 
+        // Get user attempts for this assignment
+        const userAttemptsForAssignment = attemptsMap.get(assignment.id) || [];
+        const latestAttempt = userAttemptsForAssignment.length > 0 
+          ? userAttemptsForAssignment.reduce((latest, current) => 
+              new Date(current.started_at) > new Date(latest.started_at) ? current : latest
+            )
+          : null;
+
         // Add assignment with attempt info
         organized[category][course.id].sections[section.id].assignments.push({
           ...assignment,
-          userAttempt: attempt,
+          userAttempts: userAttemptsForAssignment,
+          latestAttempt,
           status,
-          canAttempt: assignment.max_attempts > 1 || attempt.status === 'available'
+          canAttempt: !latestAttempt || assignment.max_attempts > userAttemptsForAssignment.length
         });
       });
 

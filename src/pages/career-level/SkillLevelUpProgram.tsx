@@ -15,7 +15,10 @@ import {
   Award,
   Users,
   Lock,
-  ExternalLink
+  ExternalLink,
+  Play,
+  RotateCcw,
+  Eye
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -295,7 +298,7 @@ const SkillLevelUpProgram: React.FC = () => {
   // Helper function to render organized assignment card
   const renderOrganizedAssignmentCard = useCallback((assignment: any) => {
     const statusInfo = getOrganizedAssignmentStatus(assignment);
-    const attempt = assignment.userAttempt;
+    const attempt = assignment.latestAttempt || assignment.userAttempts?.[0];
     
     return (
       <Card key={assignment.id} className="hover:shadow-md transition-shadow">
@@ -303,95 +306,126 @@ const SkillLevelUpProgram: React.FC = () => {
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <CardTitle className="text-lg mb-1">{assignment.title}</CardTitle>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <FileText className="w-4 h-4 mr-1" />
-                <span>Type: {assignment.type.toUpperCase()}</span>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="outline" className="text-xs">
+                  {assignment.type === 'quiz' ? 'Quiz' : 'Assignment'}
+                </Badge>
+                <Badge 
+                  variant="secondary"
+                  className={`text-xs ${statusInfo.color} text-white`}
+                >
+                  {statusInfo.label}
+                </Badge>
               </div>
+              {assignment.instructions && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {assignment.instructions}
+                </p>
+              )}
             </div>
-            <Badge className={cn('text-white', statusInfo.color)}>
-              {statusInfo.label}
-            </Badge>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
-          {/* Assignment Details */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center text-muted-foreground">
-              <Timer className="w-4 h-4 mr-2" />
-              <span>
-                {assignment.duration_minutes ? 
-                  `${assignment.duration_minutes} minutes` : 
-                  'No time limit'
-                }
-              </span>
+        <CardContent className="pt-0">
+          <div className="space-y-3">
+            {/* Assignment Details */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              {assignment.duration_minutes && (
+                <div>
+                  <span className="text-muted-foreground">Duration:</span>
+                  <div className="font-medium">{assignment.duration_minutes} min</div>
+                </div>
+              )}
+              {assignment.due_at && (
+                <div>
+                  <span className="text-muted-foreground">Due:</span>
+                  <div className="font-medium">
+                    {formatDateTime(assignment.due_at)}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex items-center text-muted-foreground">
-              <Trophy className="w-4 h-4 mr-2" />
-              <span>{assignment.max_attempts} attempt{assignment.max_attempts !== 1 ? 's' : ''}</span>
-            </div>
-            {assignment.due_at && (
-              <div className="flex items-center text-muted-foreground">
-                <Calendar className="w-4 h-4 mr-2" />
-                <span>Due: {formatDateTime(assignment.due_at)}</span>
+
+            {/* Attempt Information */}
+            {attempt && (
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Latest Attempt:</span>
+                  <span className="font-medium">
+                    {attempt.score_numeric ? `${attempt.score_numeric}%` : 'In Progress'}
+                  </span>
+                </div>
+                {attempt.submitted_at && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Submitted: {formatDateTime(attempt.submitted_at)}
+                  </div>
+                )}
               </div>
             )}
-            {attempt?.score_numeric && (
-              <div className="flex items-center text-muted-foreground">
-                <Award className="w-4 h-4 mr-2" />
-                <span>Score: {attempt.score_numeric.toFixed(1)}%</span>
-              </div>
-            )}
-          </div>
 
-          {/* Instructions */}
-          {assignment.instructions && (
-            <div className="text-sm text-muted-foreground">
-              <p className="line-clamp-2">{assignment.instructions}</p>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            {attempt?.status === 'started' ? (
-              <Button asChild className="flex-1">
-                <Link to={`/career-level/attempt/${attempt.id}`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Continue Attempt
-                </Link>
-              </Button>
-            ) : statusInfo.status === 'available' && assignment.status === 'open' ? (
-              <Button asChild className="flex-1">
-                <Link to={`/career-level/assignment/${assignment.id}/start`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
+            {/* Action Buttons */}
+            <div className="pt-2">
+              {statusInfo.status === 'available' && !attempt && (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate(`/career-level/assignment/${assignment.id}/attempt`)}
+                >
+                  <Play className="h-4 w-4 mr-2" />
                   Start Assignment
-                </Link>
-              </Button>
-            ) : statusInfo.status === 'completed' ? (
-              <Button variant="outline" asChild className="flex-1">
-                <Link to={`/career-level/feedback/${attempt?.id}`}>
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  View Results
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" disabled className="flex-1">
-                {assignment.status === 'scheduled' ? 'Not Started' : 
-                 assignment.status === 'closed' ? 'Closed' : 
-                 'No Attempts Remaining'}
-              </Button>
-            )}
-            
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/career-level/assignment/${assignment.id}`}>
-                View Details
-              </Link>
-            </Button>
+                </Button>
+              )}
+              {attempt && attempt.status === 'started' && (
+                <Button
+                  size="sm"
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => navigate(`/career-level/assignment/${assignment.id}/attempt?attempt=${attempt.id}`)}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  Continue
+                </Button>
+              )}
+              {attempt && attempt.status === 'submitted' && (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => navigate(`/career-level/assignment/${assignment.id}/results?attempt=${attempt.id}`)}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    View Results
+                  </Button>
+                  {assignment.canAttempt && (
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate(`/career-level/assignment/${assignment.id}/attempt`)}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Retry
+                    </Button>
+                  )}
+                </div>
+              )}
+              {statusInfo.status === 'pending' && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate(`/career-level/assignment/${assignment.id}`)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
     );
-  }, [getOrganizedAssignmentStatus, formatDateTime]);
+  }, [formatDateTime, getOrganizedAssignmentStatus, navigate]);
 
   // Memoized assignment card rendering for better performance (original function)
   const renderAssignmentCard = useCallback((assignment: AssignmentWithProgress) => {
