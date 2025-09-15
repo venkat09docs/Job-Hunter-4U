@@ -1010,13 +1010,13 @@ const CLPDashboard = () => {
                            <SelectTrigger className="cursor-pointer">
                              <SelectValue placeholder="Select subscription plan" />
                            </SelectTrigger>
-                           <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                             {plansWithPrices.map((plan) => (
-                               <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
-                                 {plan.name} - ₹{plan.price} ({plan.duration})
-                               </SelectItem>
-                             ))}
-                           </SelectContent>
+                            <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                              {(plansWithPrices || []).map((plan) => (
+                                <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
+                                  {plan.name} - ₹{plan.price} ({plan.duration})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                          </Select>
                        </div>
                      )}
