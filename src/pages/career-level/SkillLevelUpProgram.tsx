@@ -367,11 +367,11 @@ const SkillLevelUpProgram: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="pt-2">
-              {statusInfo.status === 'available' && !attempt && (
+              {statusInfo.status === 'available' && (!attempt || attempt.status === 'available') && (
                 <Button
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate(`/career-level/assignment/${assignment.id}/attempt`)}
+                  onClick={() => navigate(`/career-level/assignment/${assignment.id}/start`)}
                 >
                   <Play className="h-4 w-4 mr-2" />
                   Start Assignment
@@ -403,7 +403,7 @@ const SkillLevelUpProgram: React.FC = () => {
                     <Button
                       size="sm"
                       className="flex-1"
-                      onClick={() => navigate(`/career-level/assignment/${assignment.id}/attempt`)}
+                      onClick={() => navigate(`/career-level/assignment/${assignment.id}/start`)}
                     >
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Retry
@@ -416,7 +416,7 @@ const SkillLevelUpProgram: React.FC = () => {
                   size="sm"
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigate(`/career-level/assignment/${assignment.id}`)}
+                  onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}`)}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View Details
@@ -492,14 +492,14 @@ const SkillLevelUpProgram: React.FC = () => {
           </div>
 
           {/* Progress/Status */}
-          {assignment.userAttempts && assignment.userAttempts.length > 0 && (
+          {assignment.userAttempts && assignment.userAttempts.filter(a => a.status !== 'available').length > 0 && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Attempts: {assignment.userAttempts.length}/{assignment.max_attempts}</span>
+                <span>Attempts: {assignment.userAttempts.filter(a => a.status !== 'available').length}/{assignment.max_attempts}</span>
                 {bestScore > 0 && <span>Best Score: {bestScore.toFixed(1)}%</span>}
               </div>
               <Progress 
-                value={(assignment.userAttempts.length / assignment.max_attempts) * 100} 
+                value={(assignment.userAttempts.filter(a => a.status !== 'available').length / assignment.max_attempts) * 100} 
                 className="h-2" 
               />
             </div>
@@ -553,6 +553,13 @@ const SkillLevelUpProgram: React.FC = () => {
                   Start Assignment
                 </Link>
               </Button>
+            ) : assignment.userAttempts.some(attempt => attempt.status === 'available') ? (
+              <Button asChild className="flex-1">
+                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Start Assignment
+                </Link>
+              </Button>
             ) : isCompleted ? (
               <Button variant="outline" asChild className="flex-1">
                 <Link to={`/career-level/feedback/${assignment.userAttempts && assignment.userAttempts[0]?.id}`}>
@@ -564,12 +571,13 @@ const SkillLevelUpProgram: React.FC = () => {
               <Button variant="outline" disabled className="flex-1">
                 {assignment.status === 'scheduled' ? 'Not Started' : 
                  assignment.status === 'closed' ? 'Closed' : 
-                 'No Attempts Remaining'}
+                 assignment.userAttempts.filter(a => a.status !== 'available').length >= assignment.max_attempts ? 'No Attempts Remaining' :
+                 'Available'}
               </Button>
             )}
             
             <Button variant="ghost" size="sm" asChild>
-              <Link to={`/career-level/assignment/${assignment.id}`}>
+              <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                 View Details
               </Link>
             </Button>
