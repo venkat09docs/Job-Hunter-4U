@@ -495,15 +495,15 @@ const Dashboard = () => {
   };
 
   const handleResumeClick = () => {
-    navigate('/dashboard/career-assignments');
+    navigate('/dashboard/career-assignments?category=resume');
   };
 
-  const handleLinkedInClick = () => {
-    navigate('/dashboard/career-assignments');
+  const handleLinkedInProfileClick = () => {
+    navigate('/dashboard/career-assignments?category=linkedin');
   };
 
-  const handleGitHubClick = () => {
-    navigate('/dashboard/career-assignments');
+  const handleGitHubProfileClick = () => {
+    navigate('/dashboard/career-assignments?category=github');
   };
 
   const handleJobApplicationsClick = () => {
@@ -764,7 +764,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* LinkedIn Profile Tasks */}
-                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInClick}>
+                      <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -781,7 +781,7 @@ const Dashboard = () => {
                       </Card>
 
                       {/* GitHub Profile Tasks */}
-                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubClick}>
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
@@ -968,7 +968,7 @@ const Dashboard = () => {
                   {/* First Row: Resume, LinkedIn Profile, GitHub Profile */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Resume Tasks */}
-                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/build-my-profile')}>
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleResumeClick}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -979,14 +979,20 @@ const Dashboard = () => {
                         </div>
                         <Progress value={resumeProgress} className="mb-2 bg-blue-200 dark:bg-blue-800" />
                         <div className="text-xs text-blue-600 dark:text-blue-400">
-                          {assignments?.filter(a => a.career_task_templates?.module === 'RESUME' && a.status === 'verified').length || 0}/
-                          {assignments?.filter(a => a.career_task_templates?.module === 'RESUME').length || 0} completed
+                          {assignments?.filter(a => {
+                            const title = a.career_task_templates?.title?.toLowerCase() || '';
+                            return title.includes('resume') && a.status === 'verified';
+                          }).length || 0}/
+                          {assignments?.filter(a => {
+                            const title = a.career_task_templates?.title?.toLowerCase() || '';
+                            return title.includes('resume');
+                          }).length || 0} completed
                         </div>
                       </CardContent>
                     </Card>
 
                     {/* LinkedIn Profile Tasks */}
-                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/linkedin-optimization')}>
+                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInProfileClick}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -999,20 +1005,18 @@ const Dashboard = () => {
                         <div className="text-xs text-indigo-600 dark:text-indigo-400">
                           {assignments?.filter(a => {
                             const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            const category = a.career_task_templates?.category?.toLowerCase() || '';
-                            return (title.includes('linkedin') || category.includes('linkedin')) && a.status === 'verified';
+                            return title.includes('linkedin') && a.status === 'verified';
                           }).length || 0}/
                           {assignments?.filter(a => {
                             const title = a.career_task_templates?.title?.toLowerCase() || '';
-                            const category = a.career_task_templates?.category?.toLowerCase() || '';
-                            return title.includes('linkedin') || category.includes('linkedin');
+                            return title.includes('linkedin');
                           }).length || 0} completed
                         </div>
                       </CardContent>
                     </Card>
 
                     {/* GitHub Profile Tasks */}
-                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/github-optimization')}>
+                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubProfileClick}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div>
@@ -1023,8 +1027,14 @@ const Dashboard = () => {
                         </div>
                         <Progress value={githubProgress} className="mb-2 bg-green-200 dark:bg-green-800" />
                         <div className="text-xs text-green-600 dark:text-green-400">
-                          {githubTasks?.filter(t => t.completed).length || 0}/
-                          {githubTasks?.length || 0} completed
+                          {assignments?.filter(a => {
+                            const title = a.career_task_templates?.title?.toLowerCase() || '';
+                            return title.includes('github') && a.status === 'verified';
+                          }).length || 0}/
+                          {assignments?.filter(a => {
+                            const title = a.career_task_templates?.title?.toLowerCase() || '';
+                            return title.includes('github');
+                          }).length || 0} completed
                         </div>
                       </CardContent>
                     </Card>
