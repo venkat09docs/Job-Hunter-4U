@@ -219,40 +219,21 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     // If no subscription_plan_id is set, assume it's a one-month plan
     if (!course.subscription_plan_id) return 'one_month';
     
-    // For debugging - let's log the subscription_plan_id
-    console.log('Course subscription plan ID:', course.subscription_plan_id, 'for course:', course.title);
-    
-    // Map subscription plan IDs/names to our filter values
-    // This needs to match the actual subscription plan names from the database
+    // Map actual subscription plan UUIDs from database to our filter values
     const planMapping: Record<string, string> = {
-      // Handle plan names (if subscription_plan_id contains the name)
-      'One Month Plan': 'one_month',
-      '3 Months Plan': 'three_months', 
-      '6 Months Plan': 'six_months',
-      '1 Year Plan': 'one_year',
-      
-      // Handle common variations
-      'one_month': 'one_month',
-      'three_months': 'three_months',
-      'six_months': 'six_months',
-      'one_year': 'one_year',
-      
-      // Handle potential UUID mappings (you might need to adjust these based on actual data)
-      // We'll add a fallback for unknown IDs
+      // Exact UUID mappings from database
+      '4f72fb43-6e55-407e-969e-c83acfa5b05f': 'one_month',    // One Month Plan (30 days)
+      'f077e30e-bdb9-4b09-9fa2-9c33a355189d': 'three_months', // 3 Months Plan (90 days)
+      '726be3fc-fdd5-4a59-883a-6b60cd2f68c5': 'six_months',   // 6 Months Plan (180 days)
+      'c0aff632-80b0-4832-827a-ece42aa37ead': 'one_year',     // 1 Year Plan (365 days)
     };
     
-    // Try to map the subscription_plan_id
+    // Map the subscription_plan_id to filter value
     const mappedPlan = planMapping[course.subscription_plan_id];
     
     if (mappedPlan) {
       return mappedPlan;
     }
-    
-    // If we can't map it, let's check if it contains keywords
-    const planId = course.subscription_plan_id.toLowerCase();
-    if (planId.includes('three') || planId.includes('3')) return 'three_months';
-    if (planId.includes('six') || planId.includes('6')) return 'six_months';
-    if (planId.includes('year') || planId.includes('12')) return 'one_year';
     
     // Default fallback to one_month for unmapped plans
     console.warn('Unknown subscription plan ID:', course.subscription_plan_id, 'defaulting to one_month');
