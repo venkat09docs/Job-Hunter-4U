@@ -849,14 +849,14 @@ const CLPDashboard = () => {
                     Create Course
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="pointer-events-auto">
+                <DialogContent className="pointer-events-auto cursor-default">
                   <DialogHeader>
                     <DialogTitle>Create New Course</DialogTitle>
                     <DialogDescription>
                       Add a new course to the Career Level Up Program
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 cursor-default">
                     <div>
                       <Label htmlFor="course-title">Course Title</Label>
                       <Input
@@ -864,7 +864,6 @@ const CLPDashboard = () => {
                         placeholder="Enter course title"
                         value={courseForm.title}
                         onChange={(e) => setCourseForm(prev => ({ ...prev, title: e.target.value }))}
-                        className="cursor-text"
                       />
                     </div>
                     <div>
@@ -874,7 +873,6 @@ const CLPDashboard = () => {
                         placeholder="Enter course code (e.g., CS101)"
                         value={courseForm.code}
                         onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
-                        className="cursor-text"
                       />
                     </div>
                     <div>
@@ -884,12 +882,12 @@ const CLPDashboard = () => {
                           value={courseForm.category} 
                           onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
                         >
-                          <SelectTrigger className="flex-1 cursor-pointer">
+                          <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Select or create category" />
                           </SelectTrigger>
                           <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
                             {categories.map((category) => (
-                              <SelectItem key={category} value={category} className="cursor-pointer">
+                              <SelectItem key={category} value={category}>
                                 {category}
                               </SelectItem>
                             ))}
@@ -897,11 +895,11 @@ const CLPDashboard = () => {
                         </Select>
                         <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="icon" className="cursor-pointer">
+                            <Button variant="outline" size="icon">
                               <Plus className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-md pointer-events-auto">
+                          <DialogContent className="sm:max-w-md pointer-events-auto cursor-default">
                             <DialogHeader>
                               <DialogTitle>Create New Category</DialogTitle>
                               <DialogDescription>
@@ -916,7 +914,6 @@ const CLPDashboard = () => {
                                   placeholder="Enter category name"
                                   value={newCategory}
                                   onChange={(e) => setNewCategory(e.target.value)}
-                                  className="cursor-text"
                                 />
                               </div>
                             </div>
@@ -924,10 +921,10 @@ const CLPDashboard = () => {
                               <Button variant="outline" onClick={() => {
                                 setIsCreateCategoryOpen(false);
                                 setNewCategory('');
-                              }} className="cursor-pointer">
+                              }}>
                                 Cancel
                               </Button>
-                              <Button onClick={handleCreateCategory} disabled={!newCategory.trim()} className="cursor-pointer">
+                              <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
                                 Create Category
                               </Button>
                             </DialogFooter>
@@ -944,7 +941,6 @@ const CLPDashboard = () => {
                          placeholder="Enter display order (0 for first)"
                          value={courseForm.order_index}
                          onChange={(e) => setCourseForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                         className="cursor-text"
                        />
                      </div>
                      <div>
@@ -953,13 +949,13 @@ const CLPDashboard = () => {
                          value={courseForm.industry_type} 
                          onValueChange={(value: 'IT' | 'non-IT' | 'both') => setCourseForm(prev => ({ ...prev, industry_type: value }))}
                        >
-                         <SelectTrigger className="cursor-pointer">
+                         <SelectTrigger>
                            <SelectValue placeholder="Select industry type" />
                          </SelectTrigger>
                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                           <SelectItem value="IT" className="cursor-pointer">IT</SelectItem>
-                           <SelectItem value="non-IT" className="cursor-pointer">Non-IT</SelectItem>
-                           <SelectItem value="both" className="cursor-pointer">Both</SelectItem>
+                           <SelectItem value="IT">IT</SelectItem>
+                           <SelectItem value="non-IT">Non-IT</SelectItem>
+                           <SelectItem value="both">Both</SelectItem>
                          </SelectContent>
                        </Select>
                      </div>
@@ -973,69 +969,65 @@ const CLPDashboard = () => {
                           const file = e.target.files?.[0] || null;
                           setCourseForm(prev => ({ ...prev, image: file }));
                         }}
-                        className="cursor-pointer"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
                         Upload an image to display at the top of the course
                       </p>
                     </div>
-                     <div>
-                       <Label htmlFor="course-description">Description</Label>
-                       <Textarea
-                         id="course-description"
-                         placeholder="Enter course description"
-                         value={courseForm.description}
-                         onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
-                         className="cursor-text"
-                       />
-                     </div>
-                     
-                     <div className="flex items-center space-x-2">
-                       <Switch
-                         id="is-free"
-                         checked={courseForm.is_free}
-                         onCheckedChange={(checked) => setCourseForm(prev => ({ 
-                           ...prev, 
-                           is_free: checked,
-                           subscription_plan_id: checked ? '' : prev.subscription_plan_id
-                         }))}
-                         className="cursor-pointer"
-                       />
-                       <Label htmlFor="is-free" className="cursor-pointer">Is it Free?</Label>
-                     </div>
-                     
-                     {!courseForm.is_free && (
-                       <div>
-                         <Label htmlFor="subscription-plan">Subscription Plan *</Label>
-                         <Select 
-                           value={courseForm.subscription_plan_id} 
-                           onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
-                         >
-                           <SelectTrigger className="cursor-pointer">
-                             <SelectValue placeholder="Select subscription plan" />
-                           </SelectTrigger>
-                            <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                              {(plansWithPrices || []).map((plan) => (
-                                <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
-                                  {plan.name} - ₹{plan.price} ({plan.duration})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                         </Select>
-                       </div>
-                     )}
+                    <div>
+                      <Label htmlFor="course-description">Description</Label>
+                      <Textarea
+                        id="course-description"
+                        placeholder="Enter course description"
+                        value={courseForm.description}
+                        onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is-free"
+                        checked={courseForm.is_free}
+                        onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                          ...prev, 
+                          is_free: checked,
+                          subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                        }))}
+                      />
+                      <Label htmlFor="is-free">Is it Free?</Label>
+                    </div>
+                    
+                    {!courseForm.is_free && (
+                      <div>
+                        <Label htmlFor="subscription-plan">Subscription Plan *</Label>
+                        <Select 
+                          value={courseForm.subscription_plan_id} 
+                          onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select subscription plan" />
+                          </SelectTrigger>
+                          <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                            {(plansWithPrices || []).map((plan) => (
+                              <SelectItem key={plan.id} value={plan.id}>
+                                {plan.name} - ₹{plan.price} ({plan.duration})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)} className="cursor-pointer">
+                    <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)}>
                       Cancel
                     </Button>
-                     <Button 
-                       onClick={handleCreateCourse} 
-                       disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)} 
-                       className="cursor-pointer"
-                     >
-                       Create Course
-                     </Button>
+                    <Button 
+                      onClick={handleCreateCourse} 
+                      disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)}
+                    >
+                      Create Course
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -1201,14 +1193,14 @@ const CLPDashboard = () => {
 
             {/* Edit Course Dialog */}
             <Dialog open={!!editingCourse} onOpenChange={(open) => !open && setEditingCourse(null)}>
-              <DialogContent>
+              <DialogContent className="cursor-default pointer-events-auto">
                 <DialogHeader>
                   <DialogTitle>Edit Course</DialogTitle>
                   <DialogDescription>
                     Update the course information
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 cursor-default">
                   <div>
                     <Label htmlFor="edit-course-title">Course Title</Label>
                     <Input
@@ -1216,7 +1208,6 @@ const CLPDashboard = () => {
                       placeholder="Enter course title"
                       value={courseForm.title}
                       onChange={(e) => setCourseForm(prev => ({ ...prev, title: e.target.value }))}
-                      className="cursor-text"
                     />
                   </div>
                   <div>
@@ -1226,7 +1217,6 @@ const CLPDashboard = () => {
                       placeholder="Enter course code (e.g., CS101)"
                       value={courseForm.code}
                       onChange={(e) => setCourseForm(prev => ({ ...prev, code: e.target.value }))}
-                      className="cursor-text"
                     />
                   </div>
                   <div>
@@ -1236,12 +1226,12 @@ const CLPDashboard = () => {
                         value={courseForm.category} 
                         onValueChange={(value) => setCourseForm(prev => ({ ...prev, category: value }))}
                       >
-                        <SelectTrigger className="flex-1 cursor-pointer">
+                        <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select or create category" />
                         </SelectTrigger>
                         <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
                           {categories.map((category) => (
-                            <SelectItem key={category} value={category} className="cursor-pointer">
+                            <SelectItem key={category} value={category}>
                               {category}
                             </SelectItem>
                           ))}
@@ -1249,11 +1239,11 @@ const CLPDashboard = () => {
                       </Select>
                       <Dialog open={isCreateCategoryOpen} onOpenChange={setIsCreateCategoryOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="icon" className="cursor-pointer">
+                          <Button variant="outline" size="icon">
                             <Plus className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md pointer-events-auto">
+                        <DialogContent className="sm:max-w-md pointer-events-auto cursor-default">
                           <DialogHeader>
                             <DialogTitle>Create New Category</DialogTitle>
                             <DialogDescription>
@@ -1268,7 +1258,6 @@ const CLPDashboard = () => {
                                 placeholder="Enter category name"
                                 value={newCategory}
                                 onChange={(e) => setNewCategory(e.target.value)}
-                                className="cursor-text"
                               />
                             </div>
                           </div>
@@ -1276,10 +1265,10 @@ const CLPDashboard = () => {
                             <Button variant="outline" onClick={() => {
                               setIsCreateCategoryOpen(false);
                               setNewCategory('');
-                            }} className="cursor-pointer">
+                            }}>
                               Cancel
                             </Button>
-                            <Button onClick={handleCreateCategory} disabled={!newCategory.trim()} className="cursor-pointer">
+                            <Button onClick={handleCreateCategory} disabled={!newCategory.trim()}>
                               Create Category
                             </Button>
                           </DialogFooter>
@@ -1296,7 +1285,6 @@ const CLPDashboard = () => {
                       placeholder="Enter display order (0 for first)"
                       value={courseForm.order_index}
                       onChange={(e) => setCourseForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                      className="cursor-text"
                     />
                   </div>
                   <div>
@@ -1305,13 +1293,13 @@ const CLPDashboard = () => {
                       value={courseForm.industry_type} 
                       onValueChange={(value: 'IT' | 'non-IT' | 'both') => setCourseForm(prev => ({ ...prev, industry_type: value }))}
                     >
-                      <SelectTrigger className="cursor-pointer">
+                      <SelectTrigger>
                         <SelectValue placeholder="Select industry type" />
                       </SelectTrigger>
                       <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                        <SelectItem value="IT" className="cursor-pointer">IT</SelectItem>
-                        <SelectItem value="non-IT" className="cursor-pointer">Non-IT</SelectItem>
-                        <SelectItem value="both" className="cursor-pointer">Both</SelectItem>
+                        <SelectItem value="IT">IT</SelectItem>
+                        <SelectItem value="non-IT">Non-IT</SelectItem>
+                        <SelectItem value="both">Both</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1325,123 +1313,116 @@ const CLPDashboard = () => {
                         const file = e.target.files?.[0] || null;
                         setCourseForm(prev => ({ ...prev, image: file }));
                       }}
-                      className="cursor-pointer"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Upload an image to display at the top of the course
                     </p>
                   </div>
-                   <div>
-                     <Label htmlFor="edit-course-description">Description</Label>
-                     <Textarea
-                       id="edit-course-description"
-                       placeholder="Enter course description"
-                       value={courseForm.description}
-                       onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
-                       className="cursor-text"
-                     />
-                   </div>
-                   
-                   <div className="flex items-center space-x-2">
-                     <Switch
-                       id="edit-is-free"
-                       checked={courseForm.is_free}
-                       onCheckedChange={(checked) => setCourseForm(prev => ({ 
-                         ...prev, 
-                         is_free: checked,
-                         subscription_plan_id: checked ? '' : prev.subscription_plan_id
-                       }))}
-                       className="cursor-pointer"
-                     />
-                     <Label htmlFor="edit-is-free" className="cursor-pointer">Is it Free?</Label>
-                   </div>
-                   
-                   {!courseForm.is_free && (
-                     <div>
-                       <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
-                       <Select 
-                         value={courseForm.subscription_plan_id} 
-                         onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
-                       >
-                         <SelectTrigger className="cursor-pointer">
-                           <SelectValue placeholder="Select subscription plan" />
-                         </SelectTrigger>
-                         <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
-                           {(plansWithPrices || []).map((plan) => (
-                             <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
-                               {plan.name} - ₹{plan.price} ({plan.duration})
-                             </SelectItem>
-                           ))}
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   )}
+                  <div>
+                    <Label htmlFor="edit-course-description">Description</Label>
+                    <Textarea
+                      id="edit-course-description"
+                      placeholder="Enter course description"
+                      value={courseForm.description}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="edit-is-free"
+                      checked={courseForm.is_free}
+                      onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                        ...prev, 
+                        is_free: checked,
+                        subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                      }))}
+                    />
+                    <Label htmlFor="edit-is-free">Is it Free?</Label>
+                  </div>
+                  
+                  {!courseForm.is_free && (
+                    <div>
+                      <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
+                      <Select 
+                        value={courseForm.subscription_plan_id} 
+                        onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subscription plan" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                          {(plansWithPrices || []).map((plan) => (
+                            <SelectItem key={plan.id} value={plan.id}>
+                              {plan.name} - ₹{plan.price} ({plan.duration})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setEditingCourse(null)} className="cursor-pointer">
+                  <Button variant="outline" onClick={() => setEditingCourse(null)}>
                     Cancel
                   </Button>
-                   <Button 
-                     onClick={handleUpdateCourse} 
-                     disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)} 
-                     className="cursor-pointer"
-                   >
-                     Update Course
-                   </Button>
+                  <Button 
+                    onClick={handleUpdateCourse} 
+                    disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)}
+                  >
+                    Update Course
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
 
             {/* Create Module Dialog */}
             <Dialog open={isCreateModuleOpen} onOpenChange={setIsCreateModuleOpen}>
-              <DialogContent>
+              <DialogContent className="cursor-default pointer-events-auto">
                 <DialogHeader>
                   <DialogTitle>Create New Module</DialogTitle>
                   <DialogDescription>
                     Add a new module to the selected course
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4">
+                <div className="space-y-4 cursor-default">
                   <div>
                     <Label htmlFor="module-title">Module Title</Label>
-                     <Input
-                       id="module-title"
-                       placeholder="Enter module title"
-                       value={moduleForm.title}
-                       onChange={(e) => setModuleForm(prev => ({ ...prev, title: e.target.value }))}
-                       className="cursor-text"
-                     />
+                    <Input
+                      id="module-title"
+                      placeholder="Enter module title"
+                      value={moduleForm.title}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, title: e.target.value }))}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="module-description">Description</Label>
-                     <Textarea
-                       id="module-description"
-                       placeholder="Enter module description"
-                       value={moduleForm.description}
-                       onChange={(e) => setModuleForm(prev => ({ ...prev, description: e.target.value }))}
-                       className="cursor-text"
-                     />
+                    <Textarea
+                      id="module-description"
+                      placeholder="Enter module description"
+                      value={moduleForm.description}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, description: e.target.value }))}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="module-order">Order Index</Label>
-                     <Input
-                       id="module-order"
-                       type="number"
-                       min="0"
-                       placeholder="Enter display order"
-                       value={moduleForm.order_index}
-                       onChange={(e) => setModuleForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                       className="cursor-text"
-                     />
+                    <Input
+                      id="module-order"
+                      type="number"
+                      min="0"
+                      placeholder="Enter display order"
+                      value={moduleForm.order_index}
+                      onChange={(e) => setModuleForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+                    />
                   </div>
                 </div>
                 <DialogFooter>
-                   <Button variant="outline" onClick={() => setIsCreateModuleOpen(false)} className="cursor-pointer">
-                     Cancel
-                   </Button>
-                   <Button onClick={handleCreateModule} disabled={!moduleForm.title} className="cursor-pointer">
-                     Create Module
-                   </Button>
+                  <Button variant="outline" onClick={() => setIsCreateModuleOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateModule} disabled={!moduleForm.title}>
+                    Create Module
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
