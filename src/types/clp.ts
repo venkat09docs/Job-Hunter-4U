@@ -34,7 +34,7 @@ export interface Module {
 
 export interface Assignment {
   id: string;
-  module_id: string;
+  section_id: string;
   title: string;
   type: AssignmentType;
   instructions?: string;
@@ -55,7 +55,7 @@ export interface Assignment {
   created_by?: string;
   created_at: string;
   updated_at: string;
-  module?: Module;
+  section?: any; // Reference to course section
   questions?: Question[];
   attempts?: Attempt[];
 }
@@ -124,7 +124,7 @@ export interface LeaderboardEntry {
   id: string;
   user_id: string;
   course_id?: string;
-  module_id?: string;
+  section_id?: string;
   points_total: number;
   last_updated_at: string;
   created_at: string;
@@ -186,7 +186,7 @@ export interface CreateModuleData {
 }
 
 export interface CreateAssignmentData {
-  module_id: string;
+  section_id: string;
   title: string;
   type: AssignmentType;
   instructions?: string;

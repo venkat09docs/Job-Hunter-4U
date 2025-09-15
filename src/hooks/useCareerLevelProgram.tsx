@@ -158,7 +158,7 @@ export const useCareerLevelProgram = () => {
         })
         .select(`
           *,
-          module:clp_modules(
+          section:course_sections(
             *,
             course:clp_courses(*)
           )
@@ -185,19 +185,19 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
-  const getAssignmentsByModule = useCallback(async (moduleId: string): Promise<Assignment[]> => {
+  const getAssignmentsBySection = useCallback(async (sectionId: string): Promise<Assignment[]> => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('clp_assignments')
         .select(`
           *,
-          module:clp_modules(
+          section:course_sections(
             *,
             course:clp_courses(*)
           )
         `)
-        .eq('module_id', moduleId)
+        .eq('section_id', sectionId)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
@@ -222,7 +222,7 @@ export const useCareerLevelProgram = () => {
         .from('clp_assignments')
         .select(`
           *,
-          module:clp_modules(
+          section:course_sections(
             *,
             course:clp_courses(*)
           )
@@ -785,7 +785,7 @@ export const useCareerLevelProgram = () => {
     createAssignment,
     updateAssignment,
     publishAssignment,
-    getAssignmentsByModule,
+    getAssignmentsBySection,
     getAssignments,
     getAssignmentsWithProgress,
     deleteAssignment,

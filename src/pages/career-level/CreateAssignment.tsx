@@ -222,7 +222,7 @@ const CreateAssignment = () => {
   const onSubmit = async (data: AssignmentFormData) => {
     try {
       const cleanedData = {
-        module_id: data.section_id, // Map section_id to module_id for API compatibility
+        section_id: data.section_id, // Use section_id directly
         title: data.title,
         instructions: data.instructions,
         visible_from: data.visible_from || null,
@@ -237,6 +237,7 @@ const CreateAssignment = () => {
         attempt_policy: data.attempt_policy,
         attachments_required: data.attachments_required,
         is_published: data.is_published,
+        type: data.type || 'quiz'
       };
 
       const hasObjectiveQuestions = questions.some(q => ['mcq', 'tf'].includes(q.kind));

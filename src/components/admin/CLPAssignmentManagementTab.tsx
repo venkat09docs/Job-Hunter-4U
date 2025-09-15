@@ -20,10 +20,22 @@ import {
   Send
 } from 'lucide-react';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
-import type { Assignment, Course, Module } from '@/types/clp';
+import type { Assignment, Course } from '@/types/clp';
+import { useCourseContent } from '@/hooks/useCourseContent';
 import { ASSIGNMENT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+
+interface CourseSection {
+  id: string;
+  course_id: string;
+  title: string;
+  description?: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 const CLPAssignmentManagementTab = () => {
   const { user } = useAuth();
@@ -33,17 +45,19 @@ const CLPAssignmentManagementTab = () => {
     loading, 
     getAssignments, 
     getCourses, 
-    getModulesByCourse,
     deleteAssignment,
     publishAssignment
   } = useCareerLevelProgram();
+  const { getSectionsByCourse } = useCourseContent();
   
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [modules, setModules] = useState<Module[]>([]);
+  const [sections, setSections] = useState<CourseSection[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
-  const [selectedModule, setSelectedModule] = useState<string>('all');
+  const [selectedSection, setSelectedSection] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
 
@@ -54,12 +68,20 @@ const CLPAssignmentManagementTab = () => {
   }, [user]);
 
   useEffect(() => {
-    if (selectedCourse !== 'all') {
-      loadModules(selectedCourse);
-    } else {
-      setModules([]);
+    if (selectedCategory !== 'all') {
+      // Filter courses by category when category changes
+      setSelectedCourse('all');
+      setSelectedSection('all');
     }
-    setSelectedModule('all');
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedCourse !== 'all') {
+      loadSections(selectedCourse);
+    } else {
+      setSections([]);
+    }
+    setSelectedSection('all');
   }, [selectedCourse]);
 
   const fetchData = async () => {
@@ -71,6 +93,10 @@ const CLPAssignmentManagementTab = () => {
       
       setAssignments(assignmentsData);
       setCourses(coursesData);
+      
+      // Extract unique categories from courses
+      const uniqueCategories = [...new Set(coursesData.map(course => course.category).filter(Boolean))];
+      setCategories(uniqueCategories);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -81,12 +107,12 @@ const CLPAssignmentManagementTab = () => {
     }
   };
 
-  const loadModules = async (courseId: string) => {
+  const loadSections = async (courseId: string) => {
     try {
-      const modulesData = await getModulesByCourse(courseId);
-      setModules(modulesData);
+      const sectionsData = await getSectionsByCourse(courseId);
+      setSections(sectionsData);
     } catch (error) {
-      console.error('Failed to load modules:', error);
+      console.error('Failed to load sections:', error);
     }
   };
 
@@ -160,17 +186,27 @@ const CLPAssignmentManagementTab = () => {
     }
   };
 
+  // Get filtered courses based on selected category
+  const filteredCourses = selectedCategory === 'all' 
+    ? courses 
+    : courses.filter(course => course.category === selectedCategory);
+
   // Filter assignments based on search and filters
   const filteredAssignments = assignments.filter(assignment => {
     const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       assignment.instructions?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCourse = selectedCourse === 'all' || assignment.module?.course_id === selectedCourse;
-    const matchesModule = selectedModule === 'all' || assignment.module_id === selectedModule;
+    // Find the course that contains the section for this assignment
+    const assignmentSection = sections.find(section => section.id === assignment.section_id);
+    const assignmentCourse = assignmentSection ? courses.find(course => course.id === assignmentSection.course_id) : null;
+    
+    const matchesCategory = selectedCategory === 'all' || (assignmentCourse && assignmentCourse.category === selectedCategory);
+    const matchesCourse = selectedCourse === 'all' || (assignmentSection && assignmentSection.course_id === selectedCourse);
+    const matchesSection = selectedSection === 'all' || assignment.section_id === selectedSection;
     const matchesStatus = selectedStatus === 'all' || getAssignmentStatus(assignment) === selectedStatus;
     const matchesType = selectedType === 'all' || assignment.type === selectedType;
 
-    return matchesSearch && matchesCourse && matchesModule && matchesStatus && matchesType;
+    return matchesSearch && matchesCategory && matchesCourse && matchesSection && matchesStatus && matchesType;
   });
 
   return (
@@ -200,7 +236,7 @@ const CLPAssignmentManagementTab = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
             <div className="lg:col-span-2">
               <label className="text-sm font-medium mb-2 block">Search</label>
               <div className="relative">
@@ -215,14 +251,31 @@ const CLPAssignmentManagementTab = () => {
             </div>
             
             <div>
+              <label className="text-sm font-medium mb-2 block">Category</label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
               <label className="text-sm font-medium mb-2 block">Course</label>
-              <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+              <Select value={selectedCourse} onValueChange={setSelectedCourse} disabled={selectedCategory !== 'all' && filteredCourses.length === 0}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
-                  {courses.map((course) => (
+                  {filteredCourses.map((course) => (
                     <SelectItem key={course.id} value={course.id}>
                       {course.title}
                     </SelectItem>
@@ -232,16 +285,16 @@ const CLPAssignmentManagementTab = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Module</label>
-              <Select value={selectedModule} onValueChange={setSelectedModule} disabled={selectedCourse === 'all'}>
+              <label className="text-sm font-medium mb-2 block">Section</label>
+              <Select value={selectedSection} onValueChange={setSelectedSection} disabled={selectedCourse === 'all'}>
                 <SelectTrigger>
-                  <SelectValue placeholder="All Modules" />
+                  <SelectValue placeholder="All Sections" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Modules</SelectItem>
-                  {modules.map((module) => (
-                    <SelectItem key={module.id} value={module.id}>
-                      {module.title}
+                  <SelectItem value="all">All Sections</SelectItem>
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id}>
+                      {section.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -321,7 +374,13 @@ const CLPAssignmentManagementTab = () => {
                     <CardTitle className="text-lg mb-1 line-clamp-2">{assignment.title}</CardTitle>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <BookOpen className="w-4 h-4 mr-1" />
-                      <span>{assignment.module?.course?.title} • {assignment.module?.title}</span>
+                      <span>
+                        {(() => {
+                          const section = sections.find(s => s.id === assignment.section_id);
+                          const course = section ? courses.find(c => c.id === section.course_id) : null;
+                          return course && section ? `${course.title} • ${section.title}` : 'Unknown Course • Unknown Section';
+                        })()}
+                      </span>
                     </div>
                   </div>
                   <Badge className={cn('text-white ml-2', getStatusColor(getAssignmentStatus(assignment)))}>
