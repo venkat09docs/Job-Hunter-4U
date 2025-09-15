@@ -1101,7 +1101,9 @@ export type Database = {
           image: string | null
           industry_type: string | null
           is_active: boolean
+          is_free: boolean
           order_index: number | null
+          subscription_plan_id: string | null
           title: string
           updated_at: string
         }
@@ -1115,7 +1117,9 @@ export type Database = {
           image?: string | null
           industry_type?: string | null
           is_active?: boolean
+          is_free?: boolean
           order_index?: number | null
+          subscription_plan_id?: string | null
           title: string
           updated_at?: string
         }
@@ -1129,11 +1133,21 @@ export type Database = {
           image?: string | null
           industry_type?: string | null
           is_active?: boolean
+          is_free?: boolean
           order_index?: number | null
+          subscription_plan_id?: string | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clp_courses_subscription_plan_id_fkey"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clp_leaderboard: {
         Row: {

@@ -328,6 +328,8 @@ const CLPDashboard = () => {
           order_index: courseForm.order_index,
           industry_type: courseForm.industry_type,
           image: imageUrl,
+          is_free: courseForm.is_free,
+          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null,
           created_by: user?.id
         }])
         .select()
@@ -394,7 +396,9 @@ const CLPDashboard = () => {
           category: courseForm.category,
           order_index: courseForm.order_index,
           industry_type: courseForm.industry_type,
-          image: imageUrl
+          image: imageUrl,
+          is_free: courseForm.is_free,
+          subscription_plan_id: courseForm.is_free ? null : courseForm.subscription_plan_id || null
         })
         .eq('id', editingCourse.id)
         .select()
@@ -505,8 +509,8 @@ const CLPDashboard = () => {
       order_index: (course as any).order_index || 0,
       industry_type: (course as any).industry_type || 'both',
       image: null,
-      is_free: false, // Default to false for existing courses
-      subscription_plan_id: '' // Default to empty for existing courses
+      is_free: (course as any).is_free || false, // Load from course data
+      subscription_plan_id: (course as any).subscription_plan_id || '' // Load from course data
     });
   };
 
@@ -1327,24 +1331,63 @@ const CLPDashboard = () => {
                       Upload an image to display at the top of the course
                     </p>
                   </div>
-                  <div>
-                    <Label htmlFor="edit-course-description">Description</Label>
-                    <Textarea
-                      id="edit-course-description"
-                      placeholder="Enter course description"
-                      value={courseForm.description}
-                      onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
-                      className="cursor-text"
-                    />
-                  </div>
+                   <div>
+                     <Label htmlFor="edit-course-description">Description</Label>
+                     <Textarea
+                       id="edit-course-description"
+                       placeholder="Enter course description"
+                       value={courseForm.description}
+                       onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                       className="cursor-text"
+                     />
+                   </div>
+                   
+                   <div className="flex items-center space-x-2">
+                     <Switch
+                       id="edit-is-free"
+                       checked={courseForm.is_free}
+                       onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                         ...prev, 
+                         is_free: checked,
+                         subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                       }))}
+                       className="cursor-pointer"
+                     />
+                     <Label htmlFor="edit-is-free" className="cursor-pointer">Is it Free?</Label>
+                   </div>
+                   
+                   {!courseForm.is_free && (
+                     <div>
+                       <Label htmlFor="edit-subscription-plan">Subscription Plan *</Label>
+                       <Select 
+                         value={courseForm.subscription_plan_id} 
+                         onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
+                       >
+                         <SelectTrigger className="cursor-pointer">
+                           <SelectValue placeholder="Select subscription plan" />
+                         </SelectTrigger>
+                         <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                           {(plansWithPrices || []).map((plan) => (
+                             <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
+                               {plan.name} - ₹{plan.price} ({plan.duration})
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   )}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setEditingCourse(null)} className="cursor-pointer">
                     Cancel
                   </Button>
-                  <Button onClick={handleUpdateCourse} disabled={!courseForm.title || !courseForm.code} className="cursor-pointer">
-                    Update Course
-                  </Button>
+                   <Button 
+                     onClick={handleUpdateCourse} 
+                     disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)} 
+                     className="cursor-pointer"
+                   >
+                     Update Course
+                   </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -1361,41 +1404,44 @@ const CLPDashboard = () => {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="module-title">Module Title</Label>
-                    <Input
-                      id="module-title"
-                      placeholder="Enter module title"
-                      value={moduleForm.title}
-                      onChange={(e) => setModuleForm(prev => ({ ...prev, title: e.target.value }))}
-                    />
+                     <Input
+                       id="module-title"
+                       placeholder="Enter module title"
+                       value={moduleForm.title}
+                       onChange={(e) => setModuleForm(prev => ({ ...prev, title: e.target.value }))}
+                       className="cursor-text"
+                     />
                   </div>
                   <div>
                     <Label htmlFor="module-description">Description</Label>
-                    <Textarea
-                      id="module-description"
-                      placeholder="Enter module description"
-                      value={moduleForm.description}
-                      onChange={(e) => setModuleForm(prev => ({ ...prev, description: e.target.value }))}
-                    />
+                     <Textarea
+                       id="module-description"
+                       placeholder="Enter module description"
+                       value={moduleForm.description}
+                       onChange={(e) => setModuleForm(prev => ({ ...prev, description: e.target.value }))}
+                       className="cursor-text"
+                     />
                   </div>
                   <div>
                     <Label htmlFor="module-order">Order Index</Label>
-                    <Input
-                      id="module-order"
-                      type="number"
-                      min="0"
-                      placeholder="Enter display order"
-                      value={moduleForm.order_index}
-                      onChange={(e) => setModuleForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                    />
+                     <Input
+                       id="module-order"
+                       type="number"
+                       min="0"
+                       placeholder="Enter display order"
+                       value={moduleForm.order_index}
+                       onChange={(e) => setModuleForm(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+                       className="cursor-text"
+                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsCreateModuleOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateModule} disabled={!moduleForm.title}>
-                    Create Module
-                  </Button>
+                   <Button variant="outline" onClick={() => setIsCreateModuleOpen(false)} className="cursor-pointer">
+                     Cancel
+                   </Button>
+                   <Button onClick={handleCreateModule} disabled={!moduleForm.title} className="cursor-pointer">
+                     Create Module
+                   </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
