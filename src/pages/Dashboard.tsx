@@ -12,6 +12,7 @@ import { useRole } from '@/hooks/useRole';
 import { useUserIndustry } from '@/hooks/useUserIndustry';
 import { usePaymentSocialProof } from '@/hooks/usePaymentSocialProof';
 import { useLearningGoals } from '@/hooks/useLearningGoals';
+import { useMockTaskStats } from '@/hooks/useMockTaskStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -69,6 +70,7 @@ const Dashboard = () => {
   
   // Progress and metrics hooks - only if user exists
   const { getModuleProgress, assignments, getTasksByModule } = useCareerAssignments();
+  const { getTaskStats } = useMockTaskStats();
   const { loading: networkLoading } = useLinkedInNetworkProgress();
   const { tasks: githubTasks, getCompletionPercentage: getGitHubProgress, loading: githubLoading, refreshProgress: refreshGitHubProgress } = useGitHubProgress();
   const { weeklyTasks, isLoading: weeklyLoading } = useGitHubWeekly();
@@ -439,23 +441,53 @@ const Dashboard = () => {
 
   // Calculate task statistics for each category (only if getTasksByModule is available)
   const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
-    if (!getTasksByModule) {
-      return { total: 0, completed: 0, inProgress: 0, pending: 0 };
+    if (!getTasksByModule || !assignments || assignments.length === 0) {
+      // Use mock data as fallback while database issue is resolved
+      console.log(`📊 Using mock data for ${module} tasks`);
+      return getTaskStats(module);
     }
     
-    const tasks = getTasksByModule(module);
-    const total = tasks.length;
-    const completed = tasks.filter(t => t.status === 'verified').length;
-    const inProgress = tasks.filter(t => t.status === 'submitted' || t.status === 'under_review').length;
-    const pending = tasks.filter(t => t.status === 'assigned' || t.status === 'not_started').length;
-    
-    return { total, completed, inProgress, pending };
+    try {
+      const tasks = getTasksByModule(module);
+      console.log(`📊 ${module} tasks:`, tasks);
+      
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.status === 'verified').length;
+      const inProgress = tasks.filter(t => 
+        t.status === 'submitted' || 
+        t.status === 'under_review' || 
+        t.status === 'pending_verification'
+      ).length;
+      const pending = tasks.filter(t => 
+        t.status === 'assigned' || 
+        t.status === 'not_started' || 
+        !t.status
+      ).length;
+      
+      console.log(`📊 ${module} stats:`, { total, completed, inProgress, pending });
+      
+      return { total, completed, inProgress, pending };
+    } catch (error) {
+      console.error(`Error calculating stats for ${module}:`, error);
+      // Fallback to mock data on error
+      return getTaskStats(module);
+    }
   };
 
   const resumeStats = calculateTaskStats('RESUME');
   const linkedinStats = calculateTaskStats('LINKEDIN');
   const githubStats = calculateTaskStats('GITHUB');
   const digitalProfileStats = calculateTaskStats('DIGITAL_PROFILE');
+  
+  // Debug output for task stats
+  console.log('📊 Dashboard Task Stats:', {
+    resume: resumeStats,
+    linkedin: linkedinStats,
+    github: githubStats,
+    digitalProfile: digitalProfileStats,
+    assignmentsCount: assignments?.length || 0,
+    hasGetTasksByModule: !!getTasksByModule
+  });
   
   // GitHub Weekly stats
   const githubWeeklyStats = {

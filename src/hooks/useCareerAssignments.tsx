@@ -172,30 +172,40 @@ export const useCareerAssignments = () => {
       // Manually join assignments with templates
       const assignmentsWithTemplates = (assignmentsData || []).map(assignment => {
         const template = templatesData?.find(t => t.id === assignment.template_id);
+        console.log(`🔍 Assignment ${assignment.id} template lookup:`, {
+          templateId: assignment.template_id,
+          foundTemplate: !!template,
+          templateModule: template?.module
+        });
+        
         return {
           ...assignment,
           assigned_at: assignment.created_at,
           career_task_templates: template || {
             id: '',
             code: '',
-            module: 'RESUME' as const,
-            title: 'Unknown Template',
-            description: '',
-            category: '',
-            sub_category_id: null,
-            evidence_types: [],
+            title: 'Unknown Task',
+            module: 'RESUME' as any,
+            category: 'unknown',
             points_reward: 0,
-            cadence: '',
-            difficulty: '',
-            estimated_duration: 0,
+            description: '',
             instructions: {},
             verification_criteria: {},
-            bonus_rules: {}
+            evidence_types: [],
+            difficulty: 'beginner',
+            estimated_duration: 0,
+            is_active: false,
+            display_order: 0,
+            created_at: '',
+            updated_at: ''
           }
         };
       });
 
-      setAssignments(assignmentsWithTemplates);
+      console.log('🔍 Assignments with templates:', assignmentsWithTemplates?.length || 0);
+      console.log('🔍 Sample assignment:', assignmentsWithTemplates?.[0]);
+      
+      setAssignments(assignmentsWithTemplates as TaskAssignment[]);
 
       // Fetch evidence for user's assignments
       console.log('🔍 Fetching evidence...');
