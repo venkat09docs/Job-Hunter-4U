@@ -143,7 +143,7 @@ const Dashboard = () => {
 
   // Check if user can access Status Tracker (only unsubscribed users)
   const canAccessStatusTracker = () => {
-    if (isAdmin || isRecruiter) return true;
+    if (isAdmin || isRecruiter) return false; // Don't show for admins or recruiters
     return !hasActiveSubscription(); // Only unsubscribed users
   };
 
@@ -933,7 +933,7 @@ const Dashboard = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate('/dashboard/skill-level-up')}
+                    onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
                   >
                     View All
                   </Button>
@@ -992,7 +992,7 @@ const Dashboard = () => {
                         <div
                           key={goal.id}
                           className="flex items-center justify-between p-4 border rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
-                          onClick={() => navigate('/dashboard/skill-level-up')}
+                          onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
                         >
                           <div className="min-w-0 flex-1">
                             <p className="font-medium truncate text-purple-900 dark:text-purple-100">{goal.skill_name}</p>
@@ -1041,7 +1041,7 @@ const Dashboard = () => {
                       variant="outline"
                       size="sm"
                       className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-600 dark:text-purple-300 dark:hover:bg-purple-900/20"
-                      onClick={() => navigate('/dashboard/skill-level-up')}
+                      onClick={() => navigate('/dashboard/skill-level?tab=completed-learning')}
                     >
                       Create First Goal
                     </Button>
