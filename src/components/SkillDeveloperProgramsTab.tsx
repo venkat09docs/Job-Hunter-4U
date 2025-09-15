@@ -216,17 +216,46 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const getCourseSubscriptionPlan = (course: Course) => {
     if (course.is_free) return 'free';
     
-    // Map subscription plan names to our filter values
-    // This might need adjustment based on actual course data structure
+    // If no subscription_plan_id is set, assume it's a one-month plan
+    if (!course.subscription_plan_id) return 'one_month';
+    
+    // For debugging - let's log the subscription_plan_id
+    console.log('Course subscription plan ID:', course.subscription_plan_id, 'for course:', course.title);
+    
+    // Map subscription plan IDs/names to our filter values
+    // This needs to match the actual subscription plan names from the database
     const planMapping: Record<string, string> = {
+      // Handle plan names (if subscription_plan_id contains the name)
       'One Month Plan': 'one_month',
       '3 Months Plan': 'three_months', 
       '6 Months Plan': 'six_months',
-      '1 Year Plan': 'one_year'
+      '1 Year Plan': 'one_year',
+      
+      // Handle common variations
+      'one_month': 'one_month',
+      'three_months': 'three_months',
+      'six_months': 'six_months',
+      'one_year': 'one_year',
+      
+      // Handle potential UUID mappings (you might need to adjust these based on actual data)
+      // We'll add a fallback for unknown IDs
     };
     
-    // If course has subscription_plan_id or similar field, map it accordingly
-    // For now, we'll assume non-free courses require at least one month plan
+    // Try to map the subscription_plan_id
+    const mappedPlan = planMapping[course.subscription_plan_id];
+    
+    if (mappedPlan) {
+      return mappedPlan;
+    }
+    
+    // If we can't map it, let's check if it contains keywords
+    const planId = course.subscription_plan_id.toLowerCase();
+    if (planId.includes('three') || planId.includes('3')) return 'three_months';
+    if (planId.includes('six') || planId.includes('6')) return 'six_months';
+    if (planId.includes('year') || planId.includes('12')) return 'one_year';
+    
+    // Default fallback to one_month for unmapped plans
+    console.warn('Unknown subscription plan ID:', course.subscription_plan_id, 'defaulting to one_month');
     return 'one_month';
   };
 
