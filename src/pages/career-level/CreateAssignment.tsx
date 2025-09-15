@@ -344,7 +344,7 @@ const CreateAssignment = () => {
         });
       }
 
-      navigate('/dashboard/career-level/assignments');
+      navigate('/dashboard/career-level/dashboard');
     } catch (error) {
       console.error('Submit error:', error);
       toast({

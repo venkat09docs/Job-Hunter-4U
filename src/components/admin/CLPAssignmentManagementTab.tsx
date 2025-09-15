@@ -443,6 +443,7 @@ const CLPAssignmentManagementTab = () => {
                     size="sm"
                     onClick={() => {
                       console.log('Navigating to questions for assignment:', assignment.id);
+                      console.log('Target URL:', `/dashboard/career-level/assignments/${assignment.id}/questions`);
                       navigate(`/dashboard/career-level/assignments/${assignment.id}/questions`);
                     }}
                   >

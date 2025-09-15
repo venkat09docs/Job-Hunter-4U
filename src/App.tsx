@@ -506,14 +506,6 @@ const AppContent = () => {
             } 
           />
           <Route 
-            path="/dashboard/career-level/assignments/:assignmentId" 
-            element={
-              <ProtectedRoute>
-                <AssignmentDetail />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/dashboard/career-level/assignments/new" 
             element={
               <ProtectedRoute>
@@ -534,6 +526,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <ManageQuestions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/assignments/:assignmentId" 
+            element={
+              <ProtectedRoute>
+                <AssignmentDetail />
               </ProtectedRoute>
             } 
           />

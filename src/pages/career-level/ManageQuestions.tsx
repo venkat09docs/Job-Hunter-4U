@@ -27,6 +27,8 @@ const ManageQuestions: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  console.log('ManageQuestions component loaded with assignmentId:', assignmentId);
   const {
     loading,
     getAssignments,
@@ -51,8 +53,17 @@ const ManageQuestions: React.FC = () => {
   });
 
   useEffect(() => {
+    console.log('ManageQuestions useEffect triggered with assignmentId:', assignmentId);
     if (assignmentId) {
       loadAssignmentAndQuestions();
+    } else {
+      console.error('No assignmentId found in URL params');
+      toast({
+        title: 'Error',
+        description: 'Assignment ID not found in URL',
+        variant: 'destructive'
+      });
+      navigate('/dashboard/career-level/dashboard');
     }
   }, [assignmentId]);
 
