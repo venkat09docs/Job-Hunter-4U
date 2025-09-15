@@ -191,7 +191,15 @@ const ManageQuestions: React.FC = () => {
   };
 
   const handleEditQuestion = (question: Question) => {
-    setFormData(question);
+    // Create a clean copy of the question data
+    const cleanFormData = {
+      ...question,
+      // Ensure correct_answers is properly formatted for editing
+      correct_answers: question.kind === 'mcq' || question.kind === 'tf' 
+        ? (question.correct_answers.length > 0 ? [question.correct_answers[0]] : [])
+        : question.correct_answers
+    };
+    setFormData(cleanFormData);
     setEditingQuestion(question);
     setShowAddForm(true);
   };
@@ -203,6 +211,7 @@ const ManageQuestions: React.FC = () => {
   };
 
   const handleCorrectAnswerChange = (value: string) => {
+    console.log('Setting correct answer to:', value);
     if (formData.kind === 'mcq') {
       setFormData({ ...formData, correct_answers: [value] });
     } else if (formData.kind === 'tf') {
@@ -247,12 +256,15 @@ const ManageQuestions: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Questions List */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-1 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Questions ({questions.length})</h2>
-              <Button onClick={() => setShowAddForm(true)}>
+              <Button onClick={() => {
+                resetForm();
+                setShowAddForm(true);
+              }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Question
               </Button>
@@ -266,7 +278,10 @@ const ManageQuestions: React.FC = () => {
                     <p className="text-muted-foreground mb-4">
                       Start by adding your first question to this assignment.
                     </p>
-                    <Button onClick={() => setShowAddForm(true)}>
+                    <Button onClick={() => {
+                      resetForm();
+                      setShowAddForm(true);
+                    }}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add First Question
                     </Button>
@@ -347,7 +362,15 @@ const ManageQuestions: React.FC = () => {
                     <label className="text-sm font-medium mb-2 block">Question Type</label>
                     <Select 
                       value={formData.kind} 
-                      onValueChange={(value: any) => setFormData({ ...formData, kind: value })}
+                      onValueChange={(value: any) => {
+                        // Reset correct_answers when changing question type
+                        setFormData({ 
+                          ...formData, 
+                          kind: value,
+                          correct_answers: [],
+                          options: value === 'tf' ? ['True', 'False'] : ['', '', '', '']
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
