@@ -128,12 +128,12 @@ const CreateAssignment = () => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    // Only reset course selection if not in editing mode or if manually changing category
-    if (selectedCategory && !loadingAssignment) {
+    // Only reset course selection if not in editing mode AND not currently loading assignment data
+    if (selectedCategory && !loadingAssignment && !isEditing) {
       setSelectedCourse('');
       setSections([]);
     }
-  }, [selectedCategory, loadingAssignment]);
+  }, [selectedCategory, loadingAssignment, isEditing]);
 
   const loadAssignmentForEditing = async (assignmentId: string) => {
     setLoadingAssignment(true);
@@ -146,14 +146,20 @@ const CreateAssignment = () => {
         const courseData = courses.find(c => c.id === courseId);
         
         if (courseData) {
-          // Set category and course selections first
+          console.log('Setting assignment data:', { 
+            category: courseData.category, 
+            courseId: courseId,
+            sectionId: assignment.section_id 
+          });
+          
+          // Set states in the correct order
           setSelectedCategory(courseData.category || '');
           setSelectedCourse(courseId);
           
           // Load sections and wait for them to be loaded
           await loadSections(courseId);
           
-          // Reset form with all data including course selection
+          // Reset form with all data
           form.reset({
             section_id: assignment.section_id,
             title: assignment.title,

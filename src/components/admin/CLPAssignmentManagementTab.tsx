@@ -441,7 +441,10 @@ const CLPAssignmentManagementTab = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}/questions`)}
+                    onClick={() => {
+                      console.log('Navigating to questions for assignment:', assignment.id);
+                      navigate(`/dashboard/career-level/assignments/${assignment.id}/questions`);
+                    }}
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
