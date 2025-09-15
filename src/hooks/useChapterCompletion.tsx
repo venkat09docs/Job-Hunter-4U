@@ -43,7 +43,30 @@ export const useChapterCompletion = () => {
 
       if (error) throw error;
 
-      toast.success('Chapter marked as complete!');
+      // Trigger automatic assignment check for section completion
+      try {
+        const { data, error: assignmentError } = await supabase.functions.invoke(
+          'auto-assign-section-assignments',
+          {
+            body: {
+              user_id: user.id,
+              chapter_id: chapterId
+            }
+          }
+        );
+
+        if (assignmentError) {
+          console.error('Error checking for automatic assignments:', assignmentError);
+        } else if (data?.assignments_assigned > 0) {
+          toast.success(`Chapter completed! ${data.assignments_assigned} new assignment(s) have been assigned to you.`);
+        } else {
+          toast.success('Chapter marked as complete!');
+        }
+      } catch (assignmentError) {
+        console.error('Failed to trigger assignment check:', assignmentError);
+        toast.success('Chapter marked as complete!');
+      }
+
       return true;
     } catch (error) {
       console.error('Error marking chapter complete:', error);

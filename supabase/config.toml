@@ -1,5 +1,8 @@
 project_id = "moirryvajzyriagqihbe"
 
+[functions.auto-assign-section-assignments]
+verify_jwt = false
+
 [functions.verify-institute-assignments]
 verify_jwt = true
 
