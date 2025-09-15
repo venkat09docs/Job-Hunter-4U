@@ -366,6 +366,30 @@ const Dashboard = () => {
   const repoPending = Math.max(0, repoMetrics.total - repoCompleted);
   const repoPercent = Math.round((repoCompleted / repoMetrics.total) * 100);
 
+  // Calculate skill assignments progress
+  const skillAssignmentsProgress = (() => {
+    if (!assignments || assignments.length === 0) return 0;
+    // Filter skill-related assignments (excluding resume, linkedin, github modules)
+    const skillTasks = assignments.filter(a => {
+      const templateCategory = a.career_task_templates?.category?.toLowerCase() || '';
+      const templateTitle = a.career_task_templates?.title?.toLowerCase() || '';
+      // Exclude known profile modules and include general skill assignments
+      return !templateTitle.includes('resume') && 
+             !templateTitle.includes('linkedin') && 
+             !templateTitle.includes('github') &&
+             !templateCategory.includes('resume') &&
+             !templateCategory.includes('linkedin') &&
+             !templateCategory.includes('github') &&
+             (templateCategory.includes('skill') || 
+              templateCategory.includes('development') ||
+              templateCategory.includes('learning') ||
+              a.career_task_templates?.sub_category_id === null); // General assignments
+    });
+    return skillTasks.length > 0 
+      ? Math.round((skillTasks.filter(t => t.status === 'verified').length / skillTasks.length) * 100)
+      : 0;
+  })();
+
   // Calculate progress percentages using career assignments data to sync with Profile Assignments page
   const resumeProgress = getModuleProgress('RESUME');
   const linkedinProgress = (() => {
@@ -739,12 +763,12 @@ const Dashboard = () => {
                         </CardContent>
                       </Card>
 
-                      {/* LinkedIn Status */}
+                      {/* LinkedIn Profile Tasks */}
                       <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/20 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn</p>
+                              <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300">LinkedIn Profile</p>
                               <p className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{linkedinProgress}%</p>
                             </div>
                             <Users className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
@@ -756,12 +780,12 @@ const Dashboard = () => {
                         </CardContent>
                       </Card>
 
-                      {/* GitHub Status */}
+                      {/* GitHub Profile Tasks */}
                       <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub</p>
+                              <p className="text-xs font-medium text-green-700 dark:text-green-300">GitHub Profile</p>
                               <p className="text-lg font-bold text-green-900 dark:text-green-100">{githubProgress}%</p>
                             </div>
                             <Github className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -774,27 +798,9 @@ const Dashboard = () => {
                       </Card>
                     </div>
 
-                    {/* Second Row: Applications, LinkedIn Growth, GitHub Weekly */}
+                    {/* Second Row: LinkedIn Growth, GitHub Weekly, Skill Assignments */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                      {/* Job Application Status */}
-                      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleJobApplicationsClick}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs font-medium text-orange-700 dark:text-orange-300">Applications</p>
-                              <p className="text-lg font-bold text-orange-900 dark:text-orange-100">{totalJobApplications}</p>
-                            </div>
-                            <Briefcase className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                          </div>
-                          <div className="mt-3 text-xs text-orange-600 dark:text-orange-400">
-                            {totalJobApplications === 0 ? 'Start applying!' : 
-                             totalJobApplications < 10 ? 'Keep applying!' : 
-                             'Great progress!'}
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* LinkedIn Growth Status */}
+                      {/* LinkedIn Growth Activities */}
                       <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleLinkedInGrowthClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
@@ -812,7 +818,7 @@ const Dashboard = () => {
                         </CardContent>
                       </Card>
 
-                      {/* GitHub Weekly Status */}
+                      {/* GitHub Weekly Tasks */}
                       <Card className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/20 dark:to-teal-900/20 border-teal-200 dark:border-teal-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={handleGitHubWeeklyClick}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
@@ -826,6 +832,23 @@ const Dashboard = () => {
                           <div className="mt-1 text-xs text-teal-600 dark:text-teal-400">
                             {githubWeeklyCompleted >= githubWeeklyTotal ? 'Weekly tasks complete!' : `${githubWeeklyTotal - githubWeeklyCompleted} tasks remaining`}
                           </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Skill Assignments */}
+                      <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 border-amber-200 dark:border-amber-800 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/skill-level-up-program')}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Skill Assignments</p>
+                              <p className="text-lg font-bold text-amber-900 dark:text-amber-100">{skillAssignmentsProgress}%</p>
+                            </div>
+                            <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <Progress value={skillAssignmentsProgress} className="mt-3 bg-amber-200 dark:bg-amber-800" />
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                            {skillAssignmentsProgress === 100 ? 'Complete!' : 'In Progress'}
+                          </p>
                         </CardContent>
                       </Card>
                     </div>
