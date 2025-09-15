@@ -505,6 +505,16 @@ const SkillLevelUpProgram: React.FC = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
+        {/* Page Header - moved above tabs */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-3">
+            Skill Developer Programs
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Master in-demand skills with our comprehensive courses. Build your expertise and advance your career.
+          </p>
+        </div>
+        
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="skill-programs" className="flex items-center gap-2">
@@ -531,15 +541,6 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Skill Developer Programs Tab */}
           <TabsContent value="skill-programs" className="space-y-6">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-3">
-                Skill Developer Programs
-              </h1>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Master in-demand skills with our comprehensive courses. Build your expertise and advance your career.
-              </p>
-            </div>
-            
             <SkillDeveloperProgramsTab onEnrollCourse={handleCourseEnrollment} />
           </TabsContent>
 
