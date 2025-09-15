@@ -77,11 +77,9 @@ export const useUserPointsHistory = () => {
           .from('career_task_assignments')
           .select(`
             id,
-            career_task_templates(
+            career_task_templates!career_task_assignments_template_id_fkey(
               title,
-              sub_categories(
-                name
-              )
+              category
             )
           `)
           .in('id', careerTaskIds);
@@ -107,10 +105,8 @@ export const useUserPointsHistory = () => {
           
           if (taskDetail && taskDetail.career_task_templates) {
             const template = taskDetail.career_task_templates;
-            const subcategory = template.sub_categories;
             
             console.log('Template data:', template);
-            console.log('Subcategory data:', subcategory);
             
             return {
               id: item.id,
@@ -123,7 +119,7 @@ export const useUserPointsHistory = () => {
               activity_settings: {
                 activity_name: template.title || `Task ${item.activity_id}`,
                 description: `Completed ${template.title || 'career task'}`,
-                category: subcategory?.name || 'Career Task'
+                category: template.category || 'Career Task'
               }
             };
           }
