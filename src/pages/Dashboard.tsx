@@ -437,8 +437,12 @@ const Dashboard = () => {
   const flowRemaining = Math.max(0, githubWeeklyTotal - githubWeeklyCompleted);
   const weeklyTarget = githubWeeklyTotal;
 
-  // Calculate task statistics for each category
+  // Calculate task statistics for each category (only if getTasksByModule is available)
   const calculateTaskStats = (module: 'RESUME' | 'LINKEDIN' | 'DIGITAL_PROFILE' | 'GITHUB') => {
+    if (!getTasksByModule) {
+      return { total: 0, completed: 0, inProgress: 0, pending: 0 };
+    }
+    
     const tasks = getTasksByModule(module);
     const total = tasks.length;
     const completed = tasks.filter(t => t.status === 'verified').length;
