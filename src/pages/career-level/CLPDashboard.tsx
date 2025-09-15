@@ -3,15 +3,17 @@ import { useLocation } from 'react-router-dom';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
+import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { BookOpen, Users, ClipboardCheck, Trophy, Plus, Eye, Home, Award, Medal, Edit2, Trash2, Search, FileText } from 'lucide-react';
-import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -70,6 +72,7 @@ const CLPDashboard = () => {
   }, []);
   
   const { loading, getCourses, getLeaderboard, getModulesByCourse } = useCareerLevelProgram();
+  const { plansWithPrices, loading: plansLoading } = useSubscriptionPlans();
   const [activeTab, setActiveTab] = useState('overview');
   
   const [dashboardStats, setDashboardStats] = useState({
@@ -108,7 +111,9 @@ const CLPDashboard = () => {
     category: '',
     order_index: 0,
     industry_type: 'both' as 'IT' | 'non-IT' | 'both',
-    image: null as File | null
+    image: null as File | null,
+    is_free: false,
+    subscription_plan_id: ''
   });
   const [categories, setCategories] = useState<string[]>([]);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -338,7 +343,9 @@ const CLPDashboard = () => {
         category: '', 
         order_index: 0, 
         industry_type: 'both', 
-        image: null 
+        image: null,
+        is_free: false,
+        subscription_plan_id: ''
       });
       setIsCreateCourseOpen(false);
       toast.success('Course created successfully');
@@ -403,7 +410,9 @@ const CLPDashboard = () => {
         category: '', 
         order_index: 0, 
         industry_type: 'both', 
-        image: null 
+        image: null,
+        is_free: false,
+        subscription_plan_id: ''
       });
       setEditingCourse(null);
       toast.success('Course updated successfully');
@@ -495,7 +504,9 @@ const CLPDashboard = () => {
       category: course.category || '',
       order_index: (course as any).order_index || 0,
       industry_type: (course as any).industry_type || 'both',
-      image: null
+      image: null,
+      is_free: false, // Default to false for existing courses
+      subscription_plan_id: '' // Default to empty for existing courses
     });
   };
 
@@ -964,24 +975,63 @@ const CLPDashboard = () => {
                         Upload an image to display at the top of the course
                       </p>
                     </div>
-                    <div>
-                      <Label htmlFor="course-description">Description</Label>
-                      <Textarea
-                        id="course-description"
-                        placeholder="Enter course description"
-                        value={courseForm.description}
-                        onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
-                        className="cursor-text"
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="course-description">Description</Label>
+                       <Textarea
+                         id="course-description"
+                         placeholder="Enter course description"
+                         value={courseForm.description}
+                         onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                         className="cursor-text"
+                       />
+                     </div>
+                     
+                     <div className="flex items-center space-x-2">
+                       <Switch
+                         id="is-free"
+                         checked={courseForm.is_free}
+                         onCheckedChange={(checked) => setCourseForm(prev => ({ 
+                           ...prev, 
+                           is_free: checked,
+                           subscription_plan_id: checked ? '' : prev.subscription_plan_id
+                         }))}
+                         className="cursor-pointer"
+                       />
+                       <Label htmlFor="is-free" className="cursor-pointer">Is it Free?</Label>
+                     </div>
+                     
+                     {!courseForm.is_free && (
+                       <div>
+                         <Label htmlFor="subscription-plan">Subscription Plan *</Label>
+                         <Select 
+                           value={courseForm.subscription_plan_id} 
+                           onValueChange={(value) => setCourseForm(prev => ({ ...prev, subscription_plan_id: value }))}
+                         >
+                           <SelectTrigger className="cursor-pointer">
+                             <SelectValue placeholder="Select subscription plan" />
+                           </SelectTrigger>
+                           <SelectContent className="z-50 bg-background border shadow-lg pointer-events-auto">
+                             {plansWithPrices.map((plan) => (
+                               <SelectItem key={plan.id} value={plan.id} className="cursor-pointer">
+                                 {plan.name} - ₹{plan.price} ({plan.duration})
+                               </SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
+                     )}
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)} className="cursor-pointer">
                       Cancel
                     </Button>
-                    <Button onClick={handleCreateCourse} disabled={!courseForm.title || !courseForm.code} className="cursor-pointer">
-                      Create Course
-                    </Button>
+                     <Button 
+                       onClick={handleCreateCourse} 
+                       disabled={!courseForm.title || !courseForm.code || (!courseForm.is_free && !courseForm.subscription_plan_id)} 
+                       className="cursor-pointer"
+                     >
+                       Create Course
+                     </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

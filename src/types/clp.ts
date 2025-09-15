@@ -173,6 +173,8 @@ export interface CreateCourseData {
   category?: string;
   image?: string;
   is_active?: boolean;
+  is_free?: boolean;
+  subscription_plan_id?: string;
 }
 
 export interface CreateModuleData {
