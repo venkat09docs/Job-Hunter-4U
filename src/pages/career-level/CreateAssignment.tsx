@@ -128,11 +128,12 @@ const CreateAssignment = () => {
   }, [selectedCourse]);
 
   useEffect(() => {
-    if (selectedCategory) {
+    // Only reset course selection if not in editing mode or if manually changing category
+    if (selectedCategory && !loadingAssignment) {
       setSelectedCourse('');
       setSections([]);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, loadingAssignment]);
 
   const loadAssignmentForEditing = async (assignmentId: string) => {
     setLoadingAssignment(true);
@@ -495,6 +496,16 @@ const CreateAssignment = () => {
                 <Save className="h-4 w-4 mr-2" />
                 {isEditing ? 'Update Assignment' : 'Create Assignment'}
               </Button>
+              {isEditing && (
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={() => navigate(`/dashboard/career-level/assignments/${assignmentId}/questions`)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Manage Questions
+                </Button>
+              )}
               <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                 Cancel
               </Button>

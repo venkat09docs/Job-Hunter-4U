@@ -76,6 +76,7 @@ import CLPDashboard from "./pages/career-level/CLPDashboard";
 import SkillLevelUpProgram from "./pages/career-level/SkillLevelUpProgram";
 import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
+import ManageQuestions from "./pages/career-level/ManageQuestions";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
 import CourseContentView from "./pages/CourseContentView";
 import CourseContentManagement from "./pages/CourseContentManagement";
@@ -525,6 +526,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <CreateAssignment />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/career-level/assignments/:assignmentId/questions" 
+            element={
+              <ProtectedRoute>
+                <ManageQuestions />
               </ProtectedRoute>
             } 
           />
