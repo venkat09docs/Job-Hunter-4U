@@ -9,6 +9,7 @@ import { useCourseContent } from '@/hooks/useCourseContent';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
+import { CircularProgress } from '@/components/CircularProgress';
 import { toast } from 'sonner';
 
 interface Section {
@@ -46,6 +47,7 @@ const CourseContentView: React.FC = () => {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [completedChapters, setCompletedChapters] = useState<Set<string>>(new Set());
+  const [courseProgressPercentage, setCourseProgressPercentage] = useState(0);
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
   const { markChapterComplete, isChapterComplete, loading: chapterLoading, getCourseProgress } = useChapterCompletion();
@@ -60,8 +62,16 @@ const CourseContentView: React.FC = () => {
   useEffect(() => {
     if (sections.length > 0) {
       loadCompletedChapters();
+      loadCourseProgress();
     }
   }, [sections]);
+
+  // Load course progress when chapters are completed
+  useEffect(() => {
+    if (courseId) {
+      loadCourseProgress();
+    }
+  }, [completedChapters, courseId]);
 
   const loadCourseData = async () => {
     try {
@@ -135,6 +145,19 @@ const CourseContentView: React.FC = () => {
       setCompletedChapters(new Set(completed));
     } catch (error) {
       console.error('Error loading completed chapters:', error);
+    }
+  };
+
+  const loadCourseProgress = async () => {
+    if (!courseId) return;
+    
+    try {
+      const progressData = await getCourseProgress(courseId);
+      if (progressData) {
+        setCourseProgressPercentage(progressData.progress_percentage);
+      }
+    } catch (error) {
+      console.error('Error loading course progress:', error);
     }
   };
 
@@ -473,7 +496,14 @@ const CourseContentView: React.FC = () => {
               <span className="font-semibold">{course?.title || 'Course Content'}</span>
             </div>
           </div>
-          <UserProfileDropdown />
+          <div className="flex items-center gap-4">
+            <CircularProgress 
+              value={courseProgressPercentage} 
+              size={48}
+              className="text-primary"
+            />
+            <UserProfileDropdown />
+          </div>
         </div>
       </header>
 
