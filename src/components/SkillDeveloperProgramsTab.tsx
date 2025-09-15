@@ -318,6 +318,126 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     );
   }
 
+  // Check if no courses match the current filters
+  if (courses.length > 0 && filteredCourses.length === 0 && selectedCategory !== 'all') {
+    return (
+      <div className="space-y-6">
+        {/* Show filters even when no results */}
+        {(categories.length > 0 || subscriptionPlans.length > 0) && (
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Filters:</span>
+            </div>
+            
+            {/* Category Filter */}
+            {categories.length > 0 && (
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            
+            {/* Subscription Plan Filter */}
+            <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="All Plans" />
+              </SelectTrigger>
+              <SelectContent>
+                {subscriptionPlans.map((plan) => (
+                  <SelectItem key={plan.value} value={plan.value}>
+                    {plan.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="text-center py-16">
+          <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <BookOpen className="h-12 w-12 text-primary" />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-3">
+            No Courses Found
+          </h3>
+          <p className="text-muted-foreground text-lg">
+            No courses match your current filter criteria. Try adjusting your filters or check back later for new courses.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if no courses match filters when viewing grouped by category (all categories)
+  if (courses.length > 0 && selectedCategory === 'all' && Object.keys(coursesByCategory).length === 0) {
+    return (
+      <div className="space-y-6">
+        {/* Show filters even when no results */}
+        {(categories.length > 0 || subscriptionPlans.length > 0) && (
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Filters:</span>
+            </div>
+            
+            {/* Category Filter */}
+            {categories.length > 0 && (
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            
+            {/* Subscription Plan Filter */}
+            <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="All Plans" />
+              </SelectTrigger>
+              <SelectContent>
+                {subscriptionPlans.map((plan) => (
+                  <SelectItem key={plan.value} value={plan.value}>
+                    {plan.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="text-center py-16">
+          <div className="bg-gradient-to-br from-primary/10 to-purple/10 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <BookOpen className="h-12 w-12 text-primary" />
+          </div>
+          <h3 className="text-2xl font-bold text-foreground mb-3">
+            No Courses Found
+          </h3>
+          <p className="text-muted-foreground text-lg">
+            No courses match your current filter criteria. Try adjusting your filters or check back later for new courses.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Filters */}
