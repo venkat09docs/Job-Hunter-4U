@@ -17,7 +17,7 @@ const CourseCard: React.FC<{
   course: Course; 
   isEnrolled: boolean;
   hasActiveSubscription: boolean;
-  onEnrollCourse?: (courseId: string, courseTitle: string) => void;
+  onEnrollCourse?: (course: Course) => void;
   onViewCourse?: (courseId: string) => void;
   onShowUpgrade?: () => void;
 }> = ({ course, isEnrolled, hasActiveSubscription, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
@@ -119,7 +119,7 @@ const CourseCard: React.FC<{
                 } else if (isEnrolled) {
                   onViewCourse?.(course.id);
                 } else {
-                  onEnrollCourse?.(course.id, course.title);
+                  onEnrollCourse?.(course);
                 }
               }}
             >
@@ -143,7 +143,7 @@ const CourseCard: React.FC<{
 };
 
 interface SkillDeveloperProgramsTabProps {
-  onEnrollCourse?: (courseId: string, courseTitle: string) => void;
+  onEnrollCourse?: (course: Course) => void;
 }
 
 const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ onEnrollCourse }) => {
@@ -186,13 +186,13 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
     }
   };
 
-  const handleEnrollCourse = (courseId: string, courseTitle: string) => {
-    // Call the parent's onEnrollCourse handler to redirect to learning goals tab
+  const handleEnrollCourse = (course: Course) => {
+    // Pass the full course object to parent handler
     if (onEnrollCourse) {
-      onEnrollCourse(courseId, courseTitle);
+      onEnrollCourse(course);
     } else {
       // Fallback to direct navigation if no handler provided
-      navigate(`/course/${courseId}`);
+      navigate(`/course/${course.id}`);
     }
   };
 

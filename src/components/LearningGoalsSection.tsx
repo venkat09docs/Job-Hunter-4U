@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 
 interface LearningGoalsSectionProps {
   shouldOpenForm?: boolean;
-  courseInfo?: { id: string; title: string };
+  courseInfo?: { id: string; title: string; description?: string };
   onGoalCreated?: (courseId: string) => void;
   onFormClosed?: () => void;
 }

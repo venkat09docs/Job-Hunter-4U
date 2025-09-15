@@ -23,7 +23,7 @@ const resourceTypes = [
 
 interface LearningGoalFormProps {
   goal?: LearningGoal;
-  courseInfo?: { id: string; title: string };
+  courseInfo?: { id: string; title: string; description?: string };
   onSubmit: (data: CreateLearningGoalData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -39,8 +39,8 @@ export function LearningGoalForm({ goal, courseInfo, onSubmit, onCancel, isLoadi
   const { getCourses } = useCareerLevelProgram();
   const [courses, setCourses] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    skill_name: goal?.skill_name || '',
-    description: goal?.description || '',
+    skill_name: goal?.skill_name || courseInfo?.title || '',
+    description: goal?.description || courseInfo?.description || '',
     start_date: goal?.start_date ? new Date(goal.start_date).toISOString().split('T')[0] : '',
     end_date: goal?.end_date ? new Date(goal.end_date).toISOString().split('T')[0] : '',
     priority: goal?.priority || 'medium',

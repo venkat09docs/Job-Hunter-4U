@@ -68,7 +68,7 @@ const SkillLevelUpProgram: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string>('all');
   
   // State for course enrollment flow
-  const [pendingCourseEnrollment, setPendingCourseEnrollment] = useState<{ id: string; title: string } | null>(null);
+  const [pendingCourseEnrollment, setPendingCourseEnrollment] = useState<Course | null>(null);
   const [shouldOpenLearningGoalForm, setShouldOpenLearningGoalForm] = useState(false);
   
   // Internal loading state to avoid multiple loading indicators
@@ -141,8 +141,8 @@ const SkillLevelUpProgram: React.FC = () => {
   };
 
   // Handle course enrollment - redirect to learning goals tab
-  const handleCourseEnrollment = (courseId: string, courseTitle: string) => {
-    setPendingCourseEnrollment({ id: courseId, title: courseTitle });
+  const handleCourseEnrollment = (course: Course) => {
+    setPendingCourseEnrollment(course);
     setShouldOpenLearningGoalForm(true);
     setSearchParams({ tab: 'completed-learning' });
   };
@@ -693,7 +693,16 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Completed Learning Tab */}
           <TabsContent value="completed-learning" className="space-y-6">
-            <LearningGoalsSection />
+            <LearningGoalsSection 
+              shouldOpenForm={shouldOpenLearningGoalForm}
+              courseInfo={pendingCourseEnrollment ? {
+                id: pendingCourseEnrollment.id,
+                title: pendingCourseEnrollment.title,
+                description: pendingCourseEnrollment.description
+              } : undefined}
+              onGoalCreated={handleLearningGoalCreated}
+              onFormClosed={handleLearningGoalFormClosed}
+            />
           </TabsContent>
 
           {/* Leaderboard Tab */}
