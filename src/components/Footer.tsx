@@ -26,22 +26,25 @@ const Footer = () => {
           {/* Company info */}
           <div className="md:col-span-1 space-y-6">
             <div className="flex items-center space-x-4">
-              <img 
-                src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
-                alt="Career Level Up Logo" 
-                className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0"
-              />
+               <img 
+                 src="/lovable-uploads/2bae437e-b17b-431f-a403-e8a375913444.png" 
+                 alt="AI Career Level Up Logo" 
+                 className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 flex-shrink-0"
+               />
               <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Career Level Up
+                AI Career Level Up
               </h3>
             </div>
             <p className="text-muted-foreground text-base">
               Smart Job Hunting, Just 4U — Powered by Rise n Shine Technologies
             </p>
+            <p className="text-sm text-muted-foreground">
+              Visit us at: <a href="https://aicareerlevelup.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">https://aicareerlevelup.com</a>
+            </p>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span>info@careerlevelup.pro</span>
+                <span>info@aicareerlevelup.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="w-4 h-4" />
@@ -93,9 +96,9 @@ const Footer = () => {
 
         {/* Bottom footer */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © 2025 Career Level Up. A product by Rise n Shine Technologies. All Rights Reserved.
-          </p>
+           <p className="text-sm text-muted-foreground">
+             © 2025 AI Career Level Up. A product by Rise n Shine Technologies. All Rights Reserved.
+           </p>
           
           {/* Social links */}
           <div className="flex items-center gap-4">
