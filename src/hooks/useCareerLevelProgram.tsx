@@ -131,7 +131,8 @@ export const useCareerLevelProgram = () => {
         description: 'Assignment submitted successfully to your institute admin'
       });
 
-      return true;
+      // Refresh assignments data to update UI
+      return { success: true, refreshNeeded: true };
     } catch (error: any) {
       console.error('❌ Submit assignment error:', error);
       toast({
@@ -371,27 +372,37 @@ export const useCareerLevelProgram = () => {
         // Capture visibility rules count before creating final object
         const visibilityRulesCount = assignment.visibility?.length || 0;
 
-        // Determine if user can attempt this assignment
+        // Determine assignment status based on attempts
         const hasStartedAttempt = userAttempts.some(attempt => attempt.status === 'started');
-        const hasSubmittedAttempts = userAttempts.filter(attempt => 
+        const submittedAttempts = userAttempts.filter(attempt => 
           attempt.status === 'submitted' || attempt.status === 'auto_submitted'
-        ).length;
-        const canAttempt = (hasSubmittedAttempts + (hasStartedAttempt ? 1 : 0)) < assignment.max_attempts;
+        );
+        const hasSubmittedAttempts = submittedAttempts.length > 0;
         
-        // Check if assignment is currently open
+        // Check if assignment is currently open by time constraints
         const now = new Date();
         const startAt = assignment.start_at ? new Date(assignment.start_at) : null;
         const endAt = assignment.end_at ? new Date(assignment.end_at) : null;
         const dueAt = assignment.due_at ? new Date(assignment.due_at) : null;
         
         let status = 'open';
-        if (startAt && now < startAt) {
+        
+        // If user has submitted the assignment, mark as completed
+        if (hasSubmittedAttempts) {
+          status = 'completed';
+        } else if (startAt && now < startAt) {
           status = 'scheduled';
         } else if (endAt && now > endAt) {
           status = 'closed';
         } else if (dueAt && now > dueAt) {
           status = 'closed';
         }
+        
+        // User can only attempt if:
+        // 1. Assignment is open (not completed, closed, or scheduled)
+        // 2. No submitted attempts exist (one submission per assignment)
+        // 3. No attempt is currently in progress
+        const canAttempt = status === 'open' && !hasSubmittedAttempts && !hasStartedAttempt;
 
         // Remove visibility from assignment object for the return type
         const { visibility, ...assignmentWithoutVisibility } = assignment;
@@ -399,8 +410,8 @@ export const useCareerLevelProgram = () => {
         return {
           ...assignmentWithoutVisibility,
           userAttempts,
-          canAttempt: canAttempt && status === 'open',
-          attemptsRemaining: Math.max(0, assignment.max_attempts - userAttempts.length),
+          canAttempt,
+          attemptsRemaining: hasSubmittedAttempts ? 0 : (hasStartedAttempt ? 0 : 1), // 0 if submitted/started, 1 if can attempt
           status,
           visibilityRulesCount // Store for logging but don't include in final type
         } as AssignmentWithProgress & { visibilityRulesCount: number };
