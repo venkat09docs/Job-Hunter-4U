@@ -5170,7 +5170,7 @@ export type Database = {
         Returns: boolean
       }
       auto_grade_attempt: {
-        Args: { attempt_id: string }
+        Args: { p_attempt_id: string }
         Returns: undefined
       }
       award_learning_goal_completion_points: {
