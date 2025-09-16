@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useInstituteName } from '@/hooks/useInstituteName';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,6 +62,7 @@ const SkillAssignments = () => {
   const { instituteName } = useInstituteName();
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedAssignment, setSelectedAssignment] = useState<SubmittedAssignment | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -190,31 +191,41 @@ const SkillAssignments = () => {
       // Update individual answer marks
       for (const answer of selectedAssignment.answers || []) {
         const score = reviewScores[answer.question_id] || 0;
-        await supabase
+        const { error: answerError } = await supabase
           .from('clp_answers')
           .update({ 
             marks_awarded: score,
             feedback: reviewComments 
           })
           .eq('id', answer.id);
+        
+        if (answerError) {
+          console.error('Error updating answer:', answerError);
+          throw answerError;
+        }
       }
 
       // Calculate total score
       const totalScore = Object.values(reviewScores).reduce((sum, score) => sum + score, 0);
 
       // Update attempt with review status and total score
-      await supabase
+      const { error: attemptError } = await supabase
         .from('clp_attempts')
         .update({ 
           review_status: 'published',
           score_points: totalScore,
-          score_numeric: totalScore // You might want to calculate percentage based on total possible marks
+          score_numeric: totalScore
         })
         .eq('id', selectedAssignment.id);
+      
+      if (attemptError) {
+        console.error('Error updating attempt:', attemptError);
+        throw attemptError;
+      }
 
       toast({
         title: 'Success',
-        description: `Assignment ${approved ? 'approved' : 'reviewed'} successfully`,
+        description: `Assignment reviewed successfully. Total score: ${totalScore} points`,
       });
 
       setShowReviewDialog(false);
@@ -222,13 +233,14 @@ const SkillAssignments = () => {
       setReviewComments('');
       setReviewScores({});
       
-      // Refresh the data (you might want to add a refetch function)
-      window.location.reload();
+      // Force refetch of the query data
+      queryClient.invalidateQueries({ queryKey: ['institute-submitted-assignments'] });
+      
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
         title: 'Error',
-        description: 'Failed to submit review',
+        description: 'Failed to submit review. Please try again.',
         variant: 'destructive',
       });
     }
