@@ -179,8 +179,8 @@ const AttemptAssignment = () => {
         variant: 'default'
       });
       
-      // Navigate to results page
-      navigate(`/dashboard/career-level/attempt/${currentAttempt.id}/results`);
+      // Navigate to Skills Level Up Program - Assignments tab
+      navigate('/dashboard/skill-level?tab=my-assignments');
     } catch (error) {
       console.error('Error submitting attempt:', error);
       toast({
