@@ -257,29 +257,75 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
-  // Leaderboard - Simple version with optional parameters
+  // Leaderboard - Enhanced version with proper joins and calculations
   const getLeaderboard = useCallback(async (courseId?: string, moduleId?: string) => {
     setLoading(true);
     try {
+      // Build a comprehensive query that calculates actual points and assignments
       let query = supabase
-        .from('clp_leaderboard')
-        .select('*')
-        .order('points_total', { ascending: false })
-        .limit(100);
+        .from('clp_attempts')
+        .select(`
+          user_id,
+          score_points,
+          assignment:clp_assignments(
+            id,
+            section:course_sections(
+              course:clp_courses(
+                id,
+                title,
+                category
+              )
+            )
+          ),
+          user:profiles(
+            user_id,
+            full_name,
+            username,
+            profile_image_url,
+            email
+          )
+        `)
+        .eq('review_status', 'published') // Only count completed/approved assignments
+        .not('score_points', 'is', null); // Only assignments with scores
 
-      if (courseId) {
-        query = query.eq('course_id', courseId);
-      }
-      
-      if (moduleId) {
-        query = query.eq('module_id', moduleId);
-      }
-
-      const { data, error } = await query;
-
+      const { data: attemptData, error } = await query;
       if (error) throw error;
-      return data || [];
+
+      // Group by user and calculate totals
+      const userStats = new Map();
+      
+      attemptData?.forEach(attempt => {
+        const userId = attempt.user_id;
+        const points = attempt.score_points || 0;
+        const courseData = attempt.assignment?.section?.course;
+        
+        // Filter by course/module if specified
+        if (courseId && courseData?.id !== courseId) return;
+        // Note: Module filtering would need to be added if modules are tracked
+        
+        if (!userStats.has(userId)) {
+          userStats.set(userId, {
+            user_id: userId,
+            user: attempt.user,
+            points_total: 0,
+            assignments_completed: 0,
+            id: `leaderboard_${userId}` // Generate a consistent ID
+          });
+        }
+        
+        const stats = userStats.get(userId);
+        stats.points_total += points;
+        stats.assignments_completed += 1;
+      });
+
+      // Convert to array and sort by points
+      const leaderboardData = Array.from(userStats.values())
+        .sort((a, b) => b.points_total - a.points_total)
+        .slice(0, 100); // Limit to top 100
+
+      return leaderboardData;
     } catch (error: any) {
+      console.error('Leaderboard error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to fetch leaderboard',
