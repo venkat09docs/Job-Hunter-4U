@@ -5773,6 +5773,10 @@ export type Database = {
         }
         Returns: string
       }
+      trigger_auto_submit: {
+        Args: { attempt_id: string }
+        Returns: undefined
+      }
       update_leaderboard_for_attempt: {
         Args: { attempt_id: string }
         Returns: undefined

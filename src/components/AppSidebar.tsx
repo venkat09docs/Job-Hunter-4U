@@ -96,6 +96,7 @@ const instituteAdminItems = [
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
   { title: "Students Report", url: "/admin/students-report", icon: BarChart3 },
+  { title: "Skill Assignments", url: "/admin/skill-assignments", icon: BookOpen },
   // CLP Dashboard removed for institute admins
 ];
 

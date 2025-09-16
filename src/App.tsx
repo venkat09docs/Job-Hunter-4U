@@ -44,6 +44,7 @@ import InstituteMembershipPlans from "./pages/InstituteMembershipPlans";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import DocumentationDetail from "./pages/DocumentationDetail";
 import StudentsReport from "./pages/StudentsReport";
+import SkillAssignments from "./pages/SkillAssignments";
 import InstituteManagement from "./pages/InstituteManagement";
 import BatchManagement from "./pages/BatchManagement";
 import StudentsManagement from "./pages/StudentsManagement";
@@ -387,6 +388,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <StudentsReport />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/skill-assignments"
+            element={
+              <ProtectedRoute>
+                <SkillAssignments />
               </ProtectedRoute>
             } 
           />
