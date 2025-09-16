@@ -179,13 +179,34 @@ const SkillAssignments = () => {
 
   const handleReviewAssignment = (assignment: SubmittedAssignment) => {
     setSelectedAssignment(assignment);
+    
+    // Load existing review data if available
+    if (assignment.answers && assignment.answers.length > 0) {
+      const existingScores: Record<string, number> = {};
+      let existingComments = '';
+      
+      assignment.answers.forEach(answer => {
+        if (answer.marks_awarded !== null) {
+          existingScores[answer.question_id] = answer.marks_awarded;
+        }
+        if (answer.feedback) {
+          existingComments = answer.feedback; // Use the feedback from the first answer
+        }
+      });
+      
+      setReviewScores(existingScores);
+      setReviewComments(existingComments);
+    } else {
+      // Initialize with default scores for fresh review
+      const initialScores: Record<string, number> = {};
+      assignment.answers?.forEach(answer => {
+        initialScores[answer.question_id] = 0;
+      });
+      setReviewScores(initialScores);
+      setReviewComments('');
+    }
+    
     setShowReviewDialog(true);
-    // Initialize review scores
-    const initialScores: Record<string, number> = {};
-    assignment.answers?.forEach(answer => {
-      initialScores[answer.question_id] = answer.marks_awarded || 0;
-    });
-    setReviewScores(initialScores);
   };
 
   const handleReviewSubmit = async (approved: boolean) => {
@@ -249,15 +270,12 @@ const SkillAssignments = () => {
             activity_date: new Date().toISOString().split('T')[0], // Today's date
             activity_type: 'skill_assignment_completion',
             activity_id: `assignment_${selectedAssignment.assignment_id}`,
-            points_earned: totalScore,
-            activity_description: `Completed skill assignment: ${selectedAssignment.assignment?.title}`,
-            verified_at: new Date().toISOString(),
-            verified_by: user?.id
+            points_earned: totalScore
           });
 
         if (pointsError) {
           console.error('Error awarding points:', pointsError);
-          // Don't throw error here - assignment is still approved, just points failed
+          // Don't throw error - assignment is still approved, just points failed
           toast({
             title: 'Warning',
             description: 'Assignment approved but failed to award points. Please contact administrator.',
@@ -280,13 +298,11 @@ const SkillAssignments = () => {
       setReviewComments('');
       setReviewScores({});
       
-      // Force refetch of the query data with the correct query key
-      queryClient.invalidateQueries({ 
+      // Invalidate queries to refresh the assignment list
+      await queryClient.invalidateQueries({ 
         queryKey: ['institute-submitted-assignments', selectedStatus] 
       });
-      
-      // Also invalidate other possible query keys to ensure data refresh
-      queryClient.invalidateQueries({ 
+      await queryClient.invalidateQueries({ 
         queryKey: ['institute-submitted-assignments'] 
       });
       
