@@ -455,7 +455,10 @@ const SkillAssignments = () => {
                             <strong>Question {index + 1}:</strong> {answer.question?.prompt}
                           </div>
                           <div className="mb-2">
-                            <strong>Answer:</strong> <span className="font-mono text-sm">{JSON.stringify(answer.response, null, 2)}</span>
+                            <strong>Answer:</strong> 
+                            <div className="mt-1 p-2 bg-muted rounded text-sm">
+                              {answer.response?.value || 'No answer provided'}
+                            </div>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <span>
@@ -516,8 +519,8 @@ const SkillAssignments = () => {
                           </div>
                           <div className="mb-3">
                             <strong>Student's Answer:</strong> 
-                            <div className="mt-1 p-2 bg-muted rounded text-sm font-mono">
-                              {JSON.stringify(answer.response, null, 2)}
+                            <div className="mt-1 p-2 bg-muted rounded text-sm">
+                              {answer.response?.value || 'No answer provided'}
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
