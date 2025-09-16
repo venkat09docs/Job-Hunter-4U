@@ -101,16 +101,49 @@ export const useCareerLevelProgram = () => {
 
   const submitAttempt = useCallback(async (attemptId: string) => {
     setLoading(true);
+    console.log('🔄 Starting attempt submission for ID:', attemptId);
+    
     try {
-      const { error } = await supabase
+      // First check if the attempt exists and belongs to current user
+      const { data: existingAttempt, error: fetchError } = await supabase
+        .from('clp_attempts')
+        .select('id, user_id, status, assignment_id')
+        .eq('id', attemptId)
+        .single();
+
+      if (fetchError) {
+        console.error('❌ Error fetching attempt:', fetchError);
+        throw fetchError;
+      }
+
+      if (!existingAttempt) {
+        throw new Error('Attempt not found');
+      }
+
+      if (existingAttempt.user_id !== user?.id) {
+        throw new Error('Not authorized to submit this attempt');
+      }
+
+      console.log('✅ Attempt found:', existingAttempt);
+
+      // Update the attempt status
+      const { data: updatedAttempt, error: updateError } = await supabase
         .from('clp_attempts')
         .update({
           status: 'submitted',
           submitted_at: new Date().toISOString()
         })
-        .eq('id', attemptId);
+        .eq('id', attemptId)
+        .eq('user_id', user?.id) // Extra security check
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('❌ Error updating attempt:', updateError);
+        throw updateError;
+      }
+
+      console.log('✅ Attempt updated successfully:', updatedAttempt);
 
       toast({
         title: 'Success',
@@ -119,6 +152,7 @@ export const useCareerLevelProgram = () => {
 
       return true;
     } catch (error: any) {
+      console.error('❌ Submit attempt error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to submit attempt',
@@ -128,7 +162,7 @@ export const useCareerLevelProgram = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [user, toast]);
 
   const getAttemptsByUser = useCallback(async () => {
     if (!user) return [];

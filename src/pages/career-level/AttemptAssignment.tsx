@@ -168,7 +168,16 @@ const AttemptAssignment = () => {
 
     setIsSubmitting(true);
     try {
-      await submitAttempt(currentAttempt.id);
+      console.log('🔄 Submitting attempt:', currentAttempt.id);
+      
+      // Submit the attempt and check if it was successful
+      const success = await submitAttempt(currentAttempt.id);
+      
+      if (!success) {
+        throw new Error('Failed to submit attempt');
+      }
+      
+      console.log('✅ Attempt submitted successfully');
       
       // Notify institute admin about the submission
       await notifyInstituteAdmin();
@@ -182,7 +191,7 @@ const AttemptAssignment = () => {
       // Navigate to Skills Level Up Program - Assignments tab
       navigate('/dashboard/skill-level?tab=my-assignments');
     } catch (error) {
-      console.error('Error submitting attempt:', error);
+      console.error('❌ Error submitting attempt:', error);
       toast({
         title: 'Error',
         description: 'Failed to submit assignment. Please try again.',
