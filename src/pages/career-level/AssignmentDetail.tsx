@@ -101,7 +101,15 @@ const AssignmentDetail: React.FC = () => {
             `)
             .eq('attempt_id', completedAttempt.id);
           
-          setReviewedAnswers(answersData || []);
+          // Remove duplicate answers by question_id
+          const uniqueAnswers = (answersData || []).filter((answer, index, self) => 
+            index === self.findIndex(a => a.question_id === answer.question_id)
+          );
+          
+          console.log('🔍 Answers before dedup:', answersData?.length || 0);
+          console.log('🔍 Answers after dedup:', uniqueAnswers.length);
+          
+          setReviewedAnswers(uniqueAnswers);
         }
         
         setDataLoaded(true);
@@ -395,7 +403,7 @@ const AssignmentDetail: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600">
-                        {status === 'completed' ? `${bestScore.toFixed(1)}%` : 'Pending Review'}
+                        {status === 'completed' ? Math.round(bestScore) : 'Pending Review'}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {status === 'completed' ? 'Best Score' : 'Status'}
@@ -443,7 +451,7 @@ const AssignmentDetail: React.FC = () => {
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-green-600">
-                          {completedAttempt.score_numeric || 0}%
+                          {Math.round(completedAttempt.score_numeric || 0)}
                         </div>
                         <div className="text-sm text-muted-foreground">Final Score</div>
                       </div>
@@ -559,7 +567,7 @@ const AssignmentDetail: React.FC = () => {
                     <div className="text-sm text-muted-foreground mb-2">Best Score</div>
                     <div className="flex items-center gap-2">
                       <Progress value={bestScore} className="flex-1" />
-                      <span className="text-sm font-medium">{bestScore.toFixed(1)}%</span>
+                      <span className="text-sm font-medium">{Math.round(bestScore)}</span>
                     </div>
                   </div>
                 </>
@@ -616,20 +624,15 @@ const AssignmentDetail: React.FC = () => {
                   </Alert>
                 </div>
               ) : status === 'completed' ? (
-                <Button 
-                  className="w-full" 
-                  onClick={() => {
-                    const latestAttempt = userAttempts
-                      .filter(a => a.review_status === 'published')
-                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-                    if (latestAttempt) {
-                      navigate(`/dashboard/career-level/attempt-results/${latestAttempt.id}`);
-                    }
-                  }}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  View Results
-                </Button>
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg border border-green-200">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-medium">Assignment Completed Successfully</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Your assignment has been reviewed and results are available above.
+                  </p>
+                </div>
               ) : (
                 <Button variant="outline" disabled className="w-full">
                   {status === 'scheduled' ? 'Not Yet Available' : 
