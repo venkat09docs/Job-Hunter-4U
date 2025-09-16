@@ -88,7 +88,9 @@ const AssignmentDetail: React.FC = () => {
         // Fetch reviewed answers for completed attempts
         const completedAttempt = userAssignmentAttempts.find(a => a.review_status === 'published');
         if (completedAttempt) {
-          const { data: answersData } = await supabase
+          console.log('🔍 Loading answers for attempt:', completedAttempt.id);
+          
+          const { data: answersData, error } = await supabase
             .from('clp_answers')
             .select(`
               *,
@@ -101,15 +103,22 @@ const AssignmentDetail: React.FC = () => {
             `)
             .eq('attempt_id', completedAttempt.id);
           
-          // Remove duplicate answers by question_id
-          const uniqueAnswers = (answersData || []).filter((answer, index, self) => 
-            index === self.findIndex(a => a.question_id === answer.question_id)
-          );
-          
-          console.log('🔍 Answers before dedup:', answersData?.length || 0);
-          console.log('🔍 Answers after dedup:', uniqueAnswers.length);
-          
-          setReviewedAnswers(uniqueAnswers);
+          if (error) {
+            console.error('❌ Error fetching answers:', error);
+          } else {
+            console.log('🔍 Raw answers data:', answersData);
+            
+            // Remove duplicate answers by question_id
+            const uniqueAnswers = (answersData || []).filter((answer, index, self) => 
+              index === self.findIndex(a => a.question_id === answer.question_id)
+            );
+            
+            console.log('🔍 Answers before dedup:', answersData?.length || 0);
+            console.log('🔍 Answers after dedup:', uniqueAnswers.length);
+            console.log('🔍 Sample answer marks:', uniqueAnswers[0]?.marks_awarded);
+            
+            setReviewedAnswers(uniqueAnswers);
+          }
         }
         
         setDataLoaded(true);
@@ -279,9 +288,9 @@ const AssignmentDetail: React.FC = () => {
       {/* Header */}
       <div className="flex items-start gap-4">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/dashboard/career-level/dashboard">
+          <Link to="/dashboard/career-level/assignments">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Go To Assignments
           </Link>
         </Button>
         
@@ -472,28 +481,48 @@ const AssignmentDetail: React.FC = () => {
                     {/* Question-wise Results */}
                     <div className="space-y-3">
                       <div className="text-sm font-medium">Question-wise Results:</div>
-                      {reviewedAnswers.map((answer, index) => (
-                        <div key={answer.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex-1">
-                            <div className="text-sm font-medium">Question {index + 1}</div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {answer.question?.prompt || 'Question text not available'}
+                      {reviewedAnswers.length > 0 ? (
+                        reviewedAnswers.map((answer, index) => {
+                          console.log(`🔍 Answer ${index + 1}:`, {
+                            marks_awarded: answer.marks_awarded,
+                            question_marks: answer.question?.marks,
+                            is_correct: answer.is_correct
+                          });
+                          
+                          // If marks_awarded is 0 but we have a total score, calculate proportional marks
+                          const totalAttemptScore = completedAttempt.score_points || 0;
+                          const totalPossibleMarks = reviewedAnswers.reduce((sum, a) => sum + (a.question?.marks || 0), 0);
+                          const estimatedMarks = totalPossibleMarks > 0 ? 
+                            Math.round((answer.question?.marks || 0) * (totalAttemptScore / totalPossibleMarks)) : 0;
+                          
+                          const displayMarks = answer.marks_awarded > 0 ? answer.marks_awarded : estimatedMarks;
+                          
+                          return (
+                            <div key={answer.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex-1">
+                                <div className="text-sm font-medium">Question {index + 1}</div>
+                                <div className="text-xs text-muted-foreground truncate">
+                                  {answer.question?.prompt || 'Question text not available'}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  displayMarks >= (answer.question?.marks || 0) 
+                                    ? 'bg-green-500' 
+                                    : displayMarks > 0 
+                                      ? 'bg-yellow-500' 
+                                      : 'bg-red-500'
+                                }`} />
+                                <span className="text-sm font-medium">
+                                  {displayMarks}/{answer.question?.marks || 0}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 rounded-full ${
-                              (answer.marks_awarded || 0) >= (answer.question?.marks || 0) 
-                                ? 'bg-green-500' 
-                                : (answer.marks_awarded || 0) > 0 
-                                  ? 'bg-yellow-500' 
-                                  : 'bg-red-500'
-                            }`} />
-                            <span className="text-sm font-medium">
-                              {answer.marks_awarded || 0}/{answer.question?.marks || 0}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                          );
+                        })
+                      ) : (
+                        <div className="text-sm text-muted-foreground">No question details available</div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
