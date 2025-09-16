@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AttemptTimer } from '@/components/clp/AttemptTimer';
 import { QuestionRenderer } from '@/components/clp/QuestionRenderer';
 import type { Assignment, Question, Attempt, Answer } from '@/types/clp';
+import { supabase } from '@/integrations/supabase/client';
 
 const AttemptAssignment = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -168,6 +169,10 @@ const AttemptAssignment = () => {
     setIsSubmitting(true);
     try {
       await submitAttempt(currentAttempt.id);
+      
+      // Notify institute admin about the submission
+      await notifyInstituteAdmin();
+      
       toast({
         title: 'Success',
         description: 'Assignment submitted successfully!',
@@ -186,6 +191,50 @@ const AttemptAssignment = () => {
     } finally {
       setIsSubmitting(false);
       setShowSubmitConfirm(false);
+    }
+  };
+
+  const notifyInstituteAdmin = async () => {
+    try {
+      const { data: userInstitute } = await supabase
+        .from('user_assignments')
+        .select(`
+          institute_id,
+          institutes:institute_id (
+            name
+          )
+        `)
+        .eq('user_id', currentAttempt?.user_id)
+        .eq('is_active', true)
+        .single();
+
+      if (userInstitute?.institute_id) {
+        // Get institute admins
+        const { data: instituteAdmins } = await supabase
+          .from('institute_admin_assignments')
+          .select('user_id')
+          .eq('institute_id', userInstitute.institute_id)
+          .eq('is_active', true);
+
+        // Send notifications to all institute admins
+        if (instituteAdmins && instituteAdmins.length > 0) {
+          const notifications = instituteAdmins.map(admin => ({
+            user_id: admin.user_id,
+            title: 'New Skills Assignment Submission',
+            message: `A student has submitted a skills assignment: ${assignment?.title}`,
+            type: 'skills_assignment_submission',
+            related_id: currentAttempt?.id,
+            is_read: false
+          }));
+
+          await supabase
+            .from('notifications')
+            .insert(notifications);
+        }
+      }
+    } catch (error) {
+      console.error('Error notifying institute admin:', error);
+      // Don't fail the submission if notification fails
     }
   };
 

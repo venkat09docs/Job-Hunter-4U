@@ -84,7 +84,30 @@ const CLPReviewManagement = () => {
   const fetchSubmissions = async () => {
     setLoading(true);
     try {
-      // First get attempts with assignment details
+      // Get current user's managed institutes
+      const { data: managedInstitutes } = await supabase
+        .from('institute_admin_assignments')
+        .select('institute_id')
+        .eq('user_id', user?.id)
+        .eq('is_active', true);
+
+      const instituteIds = managedInstitutes?.map(inst => inst.institute_id) || [];
+
+      // Get students from managed institutes
+      const { data: instituteStudents } = await supabase
+        .from('user_assignments')
+        .select('user_id')
+        .in('institute_id', instituteIds)
+        .eq('is_active', true);
+
+      const studentIds = instituteStudents?.map(student => student.user_id) || [];
+
+      if (studentIds.length === 0) {
+        setAttempts([]);
+        return;
+      }
+
+      // Get attempts from institute students only
       const { data: attemptsData, error: attemptsError } = await supabase
         .from('clp_attempts')
         .select(`
@@ -108,6 +131,7 @@ const CLPReviewManagement = () => {
           reviews:clp_reviews(*)
         `)
         .eq('status', 'submitted')
+        .in('user_id', studentIds)
         .order('submitted_at', { ascending: false });
 
       if (attemptsError) throw attemptsError;
