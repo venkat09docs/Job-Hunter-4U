@@ -433,20 +433,13 @@ const SkillLevelUpProgram: React.FC = () => {
     );
   }, [formatDateTime, getOrganizedAssignmentStatus, navigate]);
 
-  // Memoized assignment card rendering for better performance (original function)
+  // Memoized assignment card rendering for better performance (simplified without attempts)
   const renderAssignmentCard = useCallback((assignment: AssignmentWithProgress) => {
     console.log('🔍 Rendering assignment card for:', assignment.id);
     
-    const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
-    const isCompleted = assignment.userAttempts.some(a => 
+    const isCompleted = assignment.userAttempts && assignment.userAttempts.some(a => 
       a.status === 'submitted' || a.status === 'auto_submitted'
     );
-    
-    const bestScore = assignment.userAttempts
-      .filter(a => a.score_numeric !== null)
-      .reduce((max, attempt) => 
-        Math.max(max, attempt.score_numeric || 0), 0
-      );
 
     return (
       <Card key={assignment.id} className="hover:shadow-md transition-shadow">
@@ -479,10 +472,6 @@ const SkillLevelUpProgram: React.FC = () => {
                 }
               </span>
             </div>
-            <div className="flex items-center text-muted-foreground">
-              <Trophy className="w-4 h-4 mr-2" />
-              <span>{assignment.max_attempts} attempt{assignment.max_attempts !== 1 ? 's' : ''}</span>
-            </div>
             {assignment.due_at && (
               <div className="flex items-center text-muted-foreground">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -494,20 +483,6 @@ const SkillLevelUpProgram: React.FC = () => {
               <span>Type: {assignment.type ? assignment.type.toUpperCase() : 'N/A'}</span>
             </div>
           </div>
-
-          {/* Progress/Status */}
-          {assignment.userAttempts && assignment.userAttempts.filter(a => a.status !== 'available').length > 0 && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Attempts: {assignment.userAttempts.filter(a => a.status !== 'available').length}/{assignment.max_attempts}</span>
-                {bestScore > 0 && <span>Best Score: {bestScore.toFixed(1)}%</span>}
-              </div>
-              <Progress 
-                value={(assignment.userAttempts.filter(a => a.status !== 'available').length / assignment.max_attempts) * 100} 
-                className="h-2" 
-              />
-            </div>
-          )}
 
           {/* Due Date Warning */}
           {assignment.due_at && assignment.status === 'open' && (
@@ -543,40 +518,25 @@ const SkillLevelUpProgram: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
-            {hasActiveAttempt ? (
-              <Button asChild className="flex-1">
-                <Link to={`/dashboard/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Continue Attempt
-                </Link>
-              </Button>
-            ) : assignment.canAttempt && assignment.status === 'open' ? (
-              <Button asChild className="flex-1">
-                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Start Assignment
-                </Link>
-              </Button>
-            ) : assignment.userAttempts.some(attempt => attempt.status === 'available') ? (
-              <Button asChild className="flex-1">
-                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Start Assignment
-                </Link>
-              </Button>
-            ) : isCompleted ? (
+            {isCompleted ? (
               <Button variant="outline" asChild className="flex-1">
-                <Link to={`/career-level/feedback/${assignment.userAttempts && assignment.userAttempts[0]?.id}`}>
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   View Results
                 </Link>
               </Button>
+            ) : assignment.status === 'open' ? (
+              <Button asChild className="flex-1">
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Take Assignment
+                </Link>
+              </Button>
             ) : (
               <Button variant="outline" disabled className="flex-1">
-                {assignment.status === 'scheduled' ? 'Not Started' : 
+                {assignment.status === 'scheduled' ? 'Scheduled' : 
                  assignment.status === 'closed' ? 'Closed' : 
-                 assignment.userAttempts.filter(a => a.status !== 'available').length >= assignment.max_attempts ? 'No Attempts Remaining' :
-                 'Available'}
+                 'Not Available'}
               </Button>
             )}
             
