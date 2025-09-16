@@ -173,7 +173,9 @@ const SkillAssignments = () => {
   };
 
   const handleViewDetails = (assignment: SubmittedAssignment) => {
-    setSelectedAssignment(assignment);
+    // Always get the most current assignment data from the refreshed query
+    const currentAssignment = submittedAssignments.find(a => a.id === assignment.id) || assignment;
+    setSelectedAssignment(currentAssignment);
     setShowDetailsDialog(true);
   };
 
