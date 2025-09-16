@@ -390,14 +390,12 @@ const SkillAssignments = () => {
 
       {/* View Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Assignment Details</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="h-[600px]">
-            {selectedAssignment && (
-              <div className="space-y-6 pr-6">
-                {/* Assignment Info */}
+          <ScrollArea className="h-[calc(85vh-120px)] pr-4">{selectedAssignment && (
+              <div className="space-y-6">{/* Assignment Info */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Assignment Information</CardTitle>
@@ -449,27 +447,39 @@ const SkillAssignments = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {selectedAssignment.answers?.map((answer, index) => (
-                        <div key={answer.id} className="border rounded-lg p-4">
-                          <div className="mb-2">
-                            <strong>Question {index + 1}:</strong> {answer.question?.prompt}
-                          </div>
-                          <div className="mb-2">
-                            <strong>Answer:</strong> 
-                            <div className="mt-1 p-2 bg-muted rounded text-sm">
-                              {answer.response?.value || 'No answer provided'}
+                      {(() => {
+                        // Group answers by question_id to show unique questions only
+                        const uniqueQuestions = new Map();
+                        selectedAssignment.answers?.forEach(answer => {
+                          if (!uniqueQuestions.has(answer.question_id) || 
+                              new Date(answer.id) > new Date(uniqueQuestions.get(answer.question_id).id)) {
+                            uniqueQuestions.set(answer.question_id, answer);
+                          }
+                        });
+                        const uniqueAnswers = Array.from(uniqueQuestions.values());
+                        
+                        return uniqueAnswers.map((answer, index) => (
+                          <div key={answer.question_id} className="border rounded-lg p-4">
+                            <div className="mb-2">
+                              <strong>Question {index + 1}:</strong> {answer.question?.prompt}
+                            </div>
+                            <div className="mb-2">
+                              <strong>Answer:</strong> 
+                              <div className="mt-1 p-2 bg-muted rounded text-sm">
+                                {answer.response?.value || 'No answer provided'}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm">
+                              <span>
+                                <strong>Max Marks:</strong> {answer.question?.marks}
+                              </span>
+                              <span>
+                                <strong>Awarded:</strong> {answer.marks_awarded || 0}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <span>
-                              <strong>Max Marks:</strong> {answer.question?.marks}
-                            </span>
-                            <span>
-                              <strong>Awarded:</strong> {answer.marks_awarded || 0}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
@@ -481,14 +491,12 @@ const SkillAssignments = () => {
 
       {/* Review Assignment Dialog */}
       <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Review Assignment</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="h-[600px]">
-            {selectedAssignment && (
-              <div className="space-y-6 pr-6">
-                {/* Assignment Info */}
+          <ScrollArea className="h-[calc(85vh-120px)] pr-4">{selectedAssignment && (
+              <div className="space-y-6">{/* Assignment Info */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Assignment Details</CardTitle>
@@ -512,38 +520,50 @@ const SkillAssignments = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {selectedAssignment.answers?.map((answer, index) => (
-                        <div key={answer.id} className="border rounded-lg p-4">
-                          <div className="mb-3">
-                            <strong>Question {index + 1}:</strong> {answer.question?.prompt}
-                          </div>
-                          <div className="mb-3">
-                            <strong>Student's Answer:</strong> 
-                            <div className="mt-1 p-2 bg-muted rounded text-sm">
-                              {answer.response?.value || 'No answer provided'}
+                      {(() => {
+                        // Group answers by question_id to show unique questions only
+                        const uniqueQuestions = new Map();
+                        selectedAssignment.answers?.forEach(answer => {
+                          if (!uniqueQuestions.has(answer.question_id) || 
+                              new Date(answer.id) > new Date(uniqueQuestions.get(answer.question_id).id)) {
+                            uniqueQuestions.set(answer.question_id, answer);
+                          }
+                        });
+                        const uniqueAnswers = Array.from(uniqueQuestions.values());
+                        
+                        return uniqueAnswers.map((answer, index) => (
+                          <div key={answer.question_id} className="border rounded-lg p-4">
+                            <div className="mb-3">
+                              <strong>Question {index + 1}:</strong> {answer.question?.prompt}
+                            </div>
+                            <div className="mb-3">
+                              <strong>Student's Answer:</strong> 
+                              <div className="mt-1 p-2 bg-muted rounded text-sm">
+                                {answer.response?.value || 'No answer provided'}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium">Marks (Max: {answer.question?.marks}):</label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max={answer.question?.marks}
+                                  value={reviewScores[answer.question_id] || 0}
+                                  onChange={(e) => {
+                                    const value = parseInt(e.target.value) || 0;
+                                    setReviewScores(prev => ({
+                                      ...prev,
+                                      [answer.question_id]: Math.min(value, answer.question?.marks || 0)
+                                    }));
+                                  }}
+                                  className="w-20"
+                                />
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <label className="text-sm font-medium">Marks (Max: {answer.question?.marks}):</label>
-                              <Input
-                                type="number"
-                                min="0"
-                                max={answer.question?.marks}
-                                value={reviewScores[answer.question_id] || 0}
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value) || 0;
-                                  setReviewScores(prev => ({
-                                    ...prev,
-                                    [answer.question_id]: Math.min(value, answer.question?.marks || 0)
-                                  }));
-                                }}
-                                className="w-20"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   </CardContent>
                 </Card>
