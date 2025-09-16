@@ -265,12 +265,14 @@ const SkillAssignments = () => {
         
         const { error: pointsError } = await supabase
           .from('user_activity_points')
-          .insert({
+          .upsert({
             user_id: selectedAssignment.user_id,
             activity_date: new Date().toISOString().split('T')[0], // Today's date
             activity_type: 'skill_assignment_completion',
             activity_id: `assignment_${selectedAssignment.assignment_id}`,
             points_earned: totalScore
+          }, {
+            onConflict: 'user_id,activity_type,activity_id,activity_date'
           });
 
         if (pointsError) {
