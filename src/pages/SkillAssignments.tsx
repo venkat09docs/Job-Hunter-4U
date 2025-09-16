@@ -188,9 +188,13 @@ const SkillAssignments = () => {
     if (!selectedAssignment) return;
     
     try {
-      // Update individual answer marks
+      console.log('Starting review submission for assignment:', selectedAssignment.id);
+      
+      // Update individual answer marks and feedback
       for (const answer of selectedAssignment.answers || []) {
         const score = reviewScores[answer.question_id] || 0;
+        console.log(`Updating answer ${answer.id} with score ${score}`);
+        
         const { error: answerError } = await supabase
           .from('clp_answers')
           .update({ 
@@ -207,21 +211,27 @@ const SkillAssignments = () => {
 
       // Calculate total score
       const totalScore = Object.values(reviewScores).reduce((sum, score) => sum + score, 0);
+      console.log('Total score calculated:', totalScore);
 
       // Update attempt with review status and total score
-      const { error: attemptError } = await supabase
+      console.log('Updating attempt:', selectedAssignment.id, 'with review_status: published and score:', totalScore);
+      
+      const { data: updateData, error: attemptError } = await supabase
         .from('clp_attempts')
         .update({ 
           review_status: 'published',
           score_points: totalScore,
           score_numeric: totalScore
         })
-        .eq('id', selectedAssignment.id);
+        .eq('id', selectedAssignment.id)
+        .select(); // Return the updated record to verify the update
       
       if (attemptError) {
         console.error('Error updating attempt:', attemptError);
         throw attemptError;
       }
+      
+      console.log('Update result:', updateData);
 
       toast({
         title: 'Success',
@@ -233,14 +243,21 @@ const SkillAssignments = () => {
       setReviewComments('');
       setReviewScores({});
       
-      // Force refetch of the query data
-      queryClient.invalidateQueries({ queryKey: ['institute-submitted-assignments'] });
+      // Force refetch of the query data with the correct query key
+      queryClient.invalidateQueries({ 
+        queryKey: ['institute-submitted-assignments', selectedStatus] 
+      });
+      
+      // Also invalidate other possible query keys to ensure data refresh
+      queryClient.invalidateQueries({ 
+        queryKey: ['institute-submitted-assignments'] 
+      });
       
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
         title: 'Error',
-        description: 'Failed to submit review. Please try again.',
+        description: `Failed to submit review: ${error.message || 'Unknown error'}`,
         variant: 'destructive',
       });
     }

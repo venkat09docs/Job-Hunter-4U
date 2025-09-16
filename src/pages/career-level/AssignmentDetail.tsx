@@ -50,6 +50,21 @@ const AssignmentDetail: React.FC = () => {
     }
   }, [assignmentId, user]);
 
+  // Add interval to check for review updates when student is on the page
+  useEffect(() => {
+    if (!assignmentId || !user || !assignment) return;
+    
+    // Check for review updates every 30 seconds if there's a submitted attempt without published review
+    const hasSubmittedAttempt = userAttempts.some(a => a.status === 'submitted' && a.review_status === 'pending');
+    if (!hasSubmittedAttempt) return;
+    
+    const interval = setInterval(() => {
+      loadAssignmentData();
+    }, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [assignmentId, user, assignment, userAttempts]);
+
   const loadAssignmentData = async () => {
     if (!assignmentId) return;
     
