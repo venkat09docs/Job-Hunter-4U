@@ -283,60 +283,101 @@ const AssignmentDetail: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Questions Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Questions Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">{questions.length}</div>
-                    <div className="text-sm text-muted-foreground">Questions</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">{totalMarks}</div>
-                    <div className="text-sm text-muted-foreground">Total Marks</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-purple-600">
-                      {questions.filter(q => q.kind === 'mcq').length}
+          {/* Questions Overview - Only show for open assignments */}
+          {status === 'open' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Questions Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{questions.length}</div>
+                      <div className="text-sm text-muted-foreground">Questions</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">MCQ</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">
-                      {questions.filter(q => q.kind === 'descriptive').length}
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{totalMarks}</div>
+                      <div className="text-sm text-muted-foreground">Total Marks</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">Descriptive</div>
-                  </div>
-                </div>
-
-                {/* Question Types Breakdown */}
-                <div className="space-y-2">
-                  {['mcq', 'tf', 'descriptive', 'task'].map(type => {
-                    const count = questions.filter(q => q.kind === type).length;
-                    if (count === 0) return null;
-                    
-                    return (
-                      <div key={type} className="flex items-center justify-between text-sm">
-                        <span className="capitalize">
-                          {type === 'mcq' ? 'Multiple Choice' : 
-                           type === 'tf' ? 'True/False' : 
-                           type === 'descriptive' ? 'Descriptive' : 'Task/Project'}
-                        </span>
-                        <Badge variant="outline">{count} question{count !== 1 ? 's' : ''}</Badge>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {questions.filter(q => q.kind === 'mcq').length}
                       </div>
-                    );
-                  })}
+                      <div className="text-sm text-muted-foreground">MCQ</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600">
+                        {questions.filter(q => q.kind === 'descriptive').length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Descriptive</div>
+                    </div>
+                  </div>
+
+                  {/* Question Types Breakdown */}
+                  <div className="space-y-2">
+                    {['mcq', 'tf', 'descriptive', 'task'].map(type => {
+                      const count = questions.filter(q => q.kind === type).length;
+                      if (count === 0) return null;
+                      
+                      return (
+                        <div key={type} className="flex items-center justify-between text-sm">
+                          <span className="capitalize">
+                            {type === 'mcq' ? 'Multiple Choice' : 
+                             type === 'tf' ? 'True/False' : 
+                             type === 'descriptive' ? 'Descriptive' : 'Task/Project'}
+                          </span>
+                          <Badge variant="outline">{count} question{count !== 1 ? 's' : ''}</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Assignment Summary for submitted/completed assignments */}
+          {(status === 'submitted' || status === 'completed') && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Assignment Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{userAttempts.length}</div>
+                      <div className="text-sm text-muted-foreground">Attempts Made</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {status === 'completed' ? `${bestScore.toFixed(1)}%` : 'Pending Review'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {status === 'completed' ? 'Best Score' : 'Status'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {status === 'submitted' && (
+                    <Alert>
+                      <Clock className="h-4 w-4" />
+                      <AlertDescription>
+                        Your assignment has been submitted and is awaiting review by the institute admin.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
