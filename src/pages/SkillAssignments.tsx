@@ -289,6 +289,38 @@ const SkillAssignments = () => {
         }
       }
 
+      // Send notification to student about assignment review outcome
+      try {
+        const notificationTitle = approved && totalScore > 0 
+          ? '✅ Assignment Approved!' 
+          : '❌ Assignment Needs Attention';
+          
+        const notificationMessage = approved && totalScore > 0
+          ? `Congratulations! Your assignment "${selectedAssignment.assignment?.title}" has been approved. You earned ${totalScore} points! ${reviewComments ? `\n\nFeedback: ${reviewComments}` : ''}`
+          : `Your assignment "${selectedAssignment.assignment?.title}" has been reviewed and needs attention. ${reviewComments ? `\n\nFeedback: ${reviewComments}` : 'Please check the feedback and consider resubmitting if needed.'}`;
+
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert({
+            user_id: selectedAssignment.user_id,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: 'assignment_review',
+            related_id: selectedAssignment.id,
+            is_read: false
+          });
+
+        if (notificationError) {
+          console.error('Error sending notification:', notificationError);
+          // Don't throw error - assignment review is still complete
+        } else {
+          console.log('Review notification sent to student successfully');
+        }
+      } catch (notificationError) {
+        console.error('Error sending notification:', notificationError);
+        // Don't throw error - assignment review is still complete
+      }
+
       toast({
         title: 'Success',
         description: approved 
