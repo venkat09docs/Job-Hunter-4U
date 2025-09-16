@@ -30,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import type { 
   AssignmentWithProgress, 
   Attempt, 
@@ -186,22 +186,29 @@ const SkillLevelUpProgram: React.FC = () => {
 
   // Memoized calculations for better performance
   const filteredAssignments = useMemo(() => {
-    const safeAssignments = assignments || [];
+    if (!assignments) {
+      return { upcoming: [], active: [], completed: [] };
+    }
     
-    const upcoming = safeAssignments.filter(a => 
-      !a.userAttempts?.length && (a.status === 'scheduled' || (a.status === 'open' && a.canAttempt))
-    );
+    const upcoming: AssignmentWithProgress[] = [];
+    const active: AssignmentWithProgress[] = [];
+    const completed: AssignmentWithProgress[] = [];
     
-    const active = safeAssignments.filter(a => 
-      (a.userAttempts?.length || 0) > 0 && (
-        a.userAttempts?.some(attempt => attempt.status === 'started') || a.canAttempt
-      )
-    );
+    for (const assignment of assignments) {
+      const hasAttempts = assignment.userAttempts && assignment.userAttempts.length > 0;
+      const hasStartedAttempt = hasAttempts && assignment.userAttempts.some(attempt => attempt.status === 'started');
+      
+      if (!hasAttempts) {
+        if (assignment.status === 'scheduled' || (assignment.status === 'open' && assignment.canAttempt)) {
+          upcoming.push(assignment);
+        }
+      } else if (hasStartedAttempt || assignment.canAttempt) {
+        active.push(assignment);
+      } else {
+        completed.push(assignment);
+      }
+    }
     
-    const completed = safeAssignments.filter(a => 
-      (a.userAttempts?.length || 0) > 0 && !a.canAttempt
-    );
-
     return { upcoming, active, completed };
   }, [assignments]);
 
