@@ -40,6 +40,7 @@ const AssignmentDetail: React.FC = () => {
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [userAttempts, setUserAttempts] = useState<Attempt[]>([]);
+  const [reviewedAnswers, setReviewedAnswers] = useState<any[]>([]);
   const [isStarting, setIsStarting] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -66,7 +67,28 @@ const AssignmentDetail: React.FC = () => {
         ]);
         
         setQuestions(questionsData);
-        setUserAttempts(attemptsData.filter(a => a.assignment_id === assignmentId));
+        const userAssignmentAttempts = attemptsData.filter(a => a.assignment_id === assignmentId);
+        setUserAttempts(userAssignmentAttempts);
+
+        // Fetch reviewed answers for completed attempts
+        const completedAttempt = userAssignmentAttempts.find(a => a.review_status === 'published');
+        if (completedAttempt) {
+          const { data: answersData } = await supabase
+            .from('clp_answers')
+            .select(`
+              *,
+              question:clp_questions(
+                prompt,
+                kind,
+                marks,
+                correct_answers
+              )
+            `)
+            .eq('attempt_id', completedAttempt.id);
+          
+          setReviewedAnswers(answersData || []);
+        }
+        
         setDataLoaded(true);
       }
     } catch (error) {
@@ -378,6 +400,83 @@ const AssignmentDetail: React.FC = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Review Results for completed assignments */}
+          {status === 'completed' && (() => {
+            const completedAttempt = userAttempts.find(a => a.review_status === 'published');
+            if (!completedAttempt || reviewedAnswers.length === 0) return null;
+
+            const feedbackComment = reviewedAnswers.find(a => a.feedback)?.feedback;
+
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5" />
+                    Review Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Overall Score */}
+                    <div className="grid grid-cols-2 gap-4 text-center p-4 bg-muted rounded-lg">
+                      <div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {completedAttempt.score_points || 0}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Total Points Earned</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          {completedAttempt.score_numeric || 0}%
+                        </div>
+                        <div className="text-sm text-muted-foreground">Final Score</div>
+                      </div>
+                    </div>
+
+                    {/* Review Comments */}
+                    {feedbackComment && (
+                      <div className="p-4 border rounded-lg">
+                        <div className="text-sm font-medium text-muted-foreground mb-2">
+                          Institute Admin Remarks:
+                        </div>
+                        <div className="text-sm bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                          {feedbackComment}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Question-wise Results */}
+                    <div className="space-y-3">
+                      <div className="text-sm font-medium">Question-wise Results:</div>
+                      {reviewedAnswers.map((answer, index) => (
+                        <div key={answer.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex-1">
+                            <div className="text-sm font-medium">Question {index + 1}</div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {answer.question?.prompt || 'Question text not available'}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${
+                              (answer.marks_awarded || 0) >= (answer.question?.marks || 0) 
+                                ? 'bg-green-500' 
+                                : (answer.marks_awarded || 0) > 0 
+                                  ? 'bg-yellow-500' 
+                                  : 'bg-red-500'
+                            }`} />
+                            <span className="text-sm font-medium">
+                              {answer.marks_awarded || 0}/{answer.question?.marks || 0}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
 
         {/* Sidebar */}
