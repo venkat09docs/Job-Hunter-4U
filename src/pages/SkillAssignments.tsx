@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare, CheckCircle, XCircle, Building } from 'lucide-react';
+import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare, CheckCircle, XCircle, LayoutDashboard } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface SubmittedAssignment {
@@ -427,7 +427,7 @@ const SkillAssignments = () => {
           onClick={() => navigate('/admin')}
           className="flex items-center gap-2"
         >
-          <Building className="w-4 h-4" />
+          <LayoutDashboard className="w-4 h-4" />
           Go to Dashboard
         </Button>
       </div>
