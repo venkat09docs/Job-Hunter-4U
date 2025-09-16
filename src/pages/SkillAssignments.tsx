@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useInstituteName } from '@/hooks/useInstituteName';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare, CheckCircle, XCircle, Building } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface SubmittedAssignment {
@@ -63,6 +64,7 @@ const SkillAssignments = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedAssignment, setSelectedAssignment] = useState<SubmittedAssignment | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -410,14 +412,24 @@ const SkillAssignments = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-4 mb-8">
-        <BookOpen className="w-8 h-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Skill Assignments</h1>
-          <p className="text-muted-foreground">
-            Review submitted assignments from {instituteName} students
-          </p>
+      <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <BookOpen className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Skill Assignments</h1>
+            <p className="text-muted-foreground">
+              Review submitted assignments from {instituteName} students
+            </p>
+          </div>
         </div>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2"
+        >
+          <Building className="w-4 h-4" />
+          Go to Dashboard
+        </Button>
       </div>
 
       <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="space-y-6">
