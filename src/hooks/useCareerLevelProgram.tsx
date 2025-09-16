@@ -281,7 +281,15 @@ export const useCareerLevelProgram = () => {
     
     setLoading(true);
     try {
-      // First get all published assignments
+      // First get user's institute and batch information
+      const { data: userAssignment } = await supabase
+        .from('user_assignments')
+        .select('institute_id, batch_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      // Get assignments visible to this user
       const { data: assignments, error: assignmentsError } = await supabase
         .from('clp_assignments')
         .select(`
@@ -289,7 +297,8 @@ export const useCareerLevelProgram = () => {
           section:course_sections(
             *,
             course:clp_courses(*)
-          )
+          ),
+          visibility:clp_assignments_visibility(*)
         `)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
@@ -299,11 +308,39 @@ export const useCareerLevelProgram = () => {
         throw assignmentsError;
       }
 
+      // Filter assignments based on visibility rules
+      const visibleAssignments = (assignments || []).filter(assignment => {
+        // If no visibility rules exist, assignment is visible to everyone
+        if (!assignment.visibility || assignment.visibility.length === 0) {
+          return true;
+        }
+
+        // Check each visibility rule
+        return assignment.visibility.some(visibility => {
+          if (visibility.audience === 'all') {
+            return true;
+          }
+          
+          if (visibility.audience === 'cohort' && userAssignment?.batch_id) {
+            return visibility.cohort_id === userAssignment.batch_id;
+          }
+          
+          if (visibility.audience === 'users') {
+            const userIds = Array.isArray(visibility.user_ids) ? visibility.user_ids : [];
+            return userIds.includes(user.id);
+          }
+          
+          return false;
+        });
+      });
+
       // Get user's attempts for these assignments
+      const assignmentIds = visibleAssignments.map(a => a.id);
       const { data: attempts, error: attemptsError } = await supabase
         .from('clp_attempts')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .in('assignment_id', assignmentIds);
 
       if (attemptsError) {
         console.error('Error fetching attempts:', attemptsError);
@@ -311,10 +348,13 @@ export const useCareerLevelProgram = () => {
       }
 
       // Combine assignments with user attempts
-      const assignmentsWithProgress = (assignments || []).map(assignment => {
+      const assignmentsWithProgress = visibleAssignments.map(assignment => {
         const userAttempts = (attempts || []).filter(attempt => 
           attempt.assignment_id === assignment.id
         );
+
+        // Capture visibility rules count before creating final object
+        const visibilityRulesCount = assignment.visibility?.length || 0;
 
         // Determine if user can attempt this assignment
         const hasStartedAttempt = userAttempts.some(attempt => attempt.status === 'started');
@@ -338,27 +378,36 @@ export const useCareerLevelProgram = () => {
           status = 'closed';
         }
 
+        // Remove visibility from assignment object for the return type
+        const { visibility, ...assignmentWithoutVisibility } = assignment;
+
         return {
-          ...assignment,
+          ...assignmentWithoutVisibility,
           userAttempts,
           canAttempt: canAttempt && status === 'open',
           attemptsRemaining: Math.max(0, assignment.max_attempts - userAttempts.length),
-          status
-        } as AssignmentWithProgress;
+          status,
+          visibilityRulesCount // Store for logging but don't include in final type
+        } as AssignmentWithProgress & { visibilityRulesCount: number };
       });
 
-      console.log('📚 Fetched assignments with progress:', {
+      console.log('📚 Fetched user-assigned assignments:', {
         total: assignmentsWithProgress.length,
+        userInstitute: userAssignment?.institute_id,
+        userBatch: userAssignment?.batch_id,
         assignments: assignmentsWithProgress.map(a => ({
           id: a.id,
           title: a.title,
           userAttempts: a.userAttempts.length,
           canAttempt: a.canAttempt,
           status: a.status,
-          attemptsRemaining: a.attemptsRemaining
+          attemptsRemaining: a.attemptsRemaining,
+          visibilityRules: a.visibilityRulesCount
         }))
       });
-      return assignmentsWithProgress;
+      
+      // Remove the extra property for return
+      return assignmentsWithProgress.map(({ visibilityRulesCount, ...assignment }) => assignment);
     } catch (error: any) {
       toast({
         title: 'Error',
