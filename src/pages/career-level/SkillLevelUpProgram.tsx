@@ -184,32 +184,28 @@ const SkillLevelUpProgram: React.FC = () => {
     }
   }, [getModulesByCourse]);
 
-  // Memoized calculations for better performance
+  // Memoized calculations for better performance - simplified without attempts
   const filteredAssignments = useMemo(() => {
     if (!assignments) {
-      return { upcoming: [], active: [], completed: [] };
+      return { available: [], completed: [] };
     }
     
-    const upcoming: AssignmentWithProgress[] = [];
-    const active: AssignmentWithProgress[] = [];
+    const available: AssignmentWithProgress[] = [];
     const completed: AssignmentWithProgress[] = [];
     
     for (const assignment of assignments) {
-      const hasAttempts = assignment.userAttempts && assignment.userAttempts.length > 0;
-      const hasStartedAttempt = hasAttempts && assignment.userAttempts.some(attempt => attempt.status === 'started');
+      const isCompleted = assignment.userAttempts && assignment.userAttempts.some(attempt => 
+        attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+      );
       
-      if (!hasAttempts) {
-        if (assignment.status === 'scheduled' || (assignment.status === 'open' && assignment.canAttempt)) {
-          upcoming.push(assignment);
-        }
-      } else if (hasStartedAttempt || assignment.canAttempt) {
-        active.push(assignment);
-      } else {
+      if (isCompleted) {
         completed.push(assignment);
+      } else if (assignment.status === 'open') {
+        available.push(assignment);
       }
     }
     
-    return { upcoming, active, completed };
+    return { available, completed };
   }, [assignments]);
 
   // Memoized leaderboard calculations
@@ -740,22 +736,16 @@ const SkillLevelUpProgram: React.FC = () => {
                 </div>
                 <div className="flex gap-6">
                   <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {filteredAssignments.available.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Available</div>
+                  </div>
+                  <div className="text-center">
                     <div className="text-2xl font-bold text-green-600">
                       {filteredAssignments.completed.length}
                     </div>
                     <div className="text-sm text-muted-foreground">Completed</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {filteredAssignments.active.length}
-                    </div>
-                    <div className="text-sm text-muted-foreground">In Progress</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {filteredAssignments.upcoming.length}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Available</div>
                   </div>
                 </div>
               </div>
@@ -789,14 +779,10 @@ const SkillLevelUpProgram: React.FC = () => {
 
             {/* Assignment Status Tabs */}
             <Tabs defaultValue="available" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="available" className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>Available ({filteredAssignments.upcoming.length})</span>
-                </TabsTrigger>
-                <TabsTrigger value="in-progress" className="flex items-center gap-2">
-                  <PlayCircle className="w-4 h-4" />
-                  <span>In Progress ({filteredAssignments.active.length})</span>
+                  <span>Available ({filteredAssignments.available.length})</span>
                 </TabsTrigger>
                 <TabsTrigger value="completed" className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
@@ -806,9 +792,9 @@ const SkillLevelUpProgram: React.FC = () => {
 
               {/* Available Assignments */}
               <TabsContent value="available" className="space-y-4">
-                {filteredAssignments.upcoming.length > 0 ? (
+                {filteredAssignments.available.length > 0 ? (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAssignments.upcoming.map((assignment) => renderAssignmentCard(assignment))}
+                    {filteredAssignments.available.map((assignment) => renderAssignmentCard(assignment))}
                   </div>
                 ) : (
                   <Card className="p-12 text-center">
@@ -817,25 +803,6 @@ const SkillLevelUpProgram: React.FC = () => {
                       <h3 className="text-lg font-semibold">No Available Assignments</h3>
                       <p className="text-muted-foreground max-w-md">
                         Complete course sections to unlock new assignments. Keep learning to get more challenges!
-                      </p>
-                    </div>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* In Progress Assignments */}
-              <TabsContent value="in-progress" className="space-y-4">
-                {filteredAssignments.active.length > 0 ? (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredAssignments.active.map((assignment) => renderAssignmentCard(assignment))}
-                  </div>
-                ) : (
-                  <Card className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-4">
-                      <PlayCircle className="h-12 w-12 text-muted-foreground" />
-                      <h3 className="text-lg font-semibold">No Assignments in Progress</h3>
-                      <p className="text-muted-foreground max-w-md">
-                        Start working on your available assignments to see them here. Take your time and do your best!
                       </p>
                     </div>
                   </Card>
