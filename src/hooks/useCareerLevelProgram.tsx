@@ -257,59 +257,64 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
-  // Leaderboard - Enhanced version with proper joins and calculations
+  // Leaderboard - Simplified version that works reliably
   const getLeaderboard = useCallback(async (courseId?: string, moduleId?: string) => {
     setLoading(true);
     try {
-      // Build a comprehensive query that calculates actual points and assignments
-      let query = supabase
+      // Get all published attempts with scores
+      const { data: attemptData, error: attemptError } = await supabase
         .from('clp_attempts')
         .select(`
           user_id,
           score_points,
-          assignment:clp_assignments(
-            id,
-            section:course_sections(
-              course:clp_courses(
-                id,
-                title,
-                category
-              )
-            )
-          ),
-          user:profiles(
-            user_id,
-            full_name,
-            username,
-            profile_image_url,
-            email
-          )
+          assignment_id
         `)
-        .eq('review_status', 'published') // Only count completed/approved assignments
-        .not('score_points', 'is', null); // Only assignments with scores
+        .eq('review_status', 'published')
+        .not('score_points', 'is', null);
 
-      const { data: attemptData, error } = await query;
-      if (error) throw error;
+      if (attemptError) throw attemptError;
+
+      if (!attemptData?.length) {
+        return [];
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(attemptData.map(a => a.user_id))];
+
+      // Get user profiles
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, username, profile_image_url, email')
+        .in('user_id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Create a map of users for quick lookup
+      const userMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
       // Group by user and calculate totals
       const userStats = new Map();
       
-      attemptData?.forEach(attempt => {
+      attemptData.forEach(attempt => {
         const userId = attempt.user_id;
         const points = attempt.score_points || 0;
-        const courseData = attempt.assignment?.section?.course;
+        const userProfile = userMap.get(userId);
         
-        // Filter by course/module if specified
-        if (courseId && courseData?.id !== courseId) return;
-        // Note: Module filtering would need to be added if modules are tracked
+        if (!userProfile) return; // Skip if no profile found
         
         if (!userStats.has(userId)) {
           userStats.set(userId, {
+            id: `leaderboard_${userId}`,
             user_id: userId,
-            user: attempt.user,
+            user: {
+              user_id: userProfile.user_id,
+              full_name: userProfile.full_name,
+              username: userProfile.username,
+              profile_image_url: userProfile.profile_image_url,
+              email: userProfile.email
+            },
             points_total: 0,
-            assignments_completed: 0,
-            id: `leaderboard_${userId}` // Generate a consistent ID
+            assignments_completed: 0
           });
         }
         
@@ -321,7 +326,7 @@ export const useCareerLevelProgram = () => {
       // Convert to array and sort by points
       const leaderboardData = Array.from(userStats.values())
         .sort((a, b) => b.points_total - a.points_total)
-        .slice(0, 100); // Limit to top 100
+        .slice(0, 100);
 
       return leaderboardData;
     } catch (error: any) {
