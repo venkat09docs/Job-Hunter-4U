@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText, BookOpenIcon } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -540,7 +540,6 @@ const CourseContentManagement = () => {
                     <SelectContent>
                       {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
                       <SelectItem value="article">Article</SelectItem>
-                      <SelectItem value="document">Document</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -570,7 +569,7 @@ const CourseContentManagement = () => {
                   </div>
                 )}
 
-                {(userRole === 'admin' || (userRole === 'recruiter' && chapterType !== 'video')) && (
+                {(userRole === 'admin' || (userRole === 'recruiter' && chapterType === 'article')) && (
                   <div>
                     <Label htmlFor="duration">Duration (minutes)</Label>
                     <Input
@@ -624,7 +623,6 @@ const CourseContentManagement = () => {
                             <div className="flex items-center gap-3">
                               {chapter.content_type === 'video' && <VideoIcon className="h-4 w-4" />}
                               {chapter.content_type === 'article' && <FileText className="h-4 w-4" />}
-                              {chapter.content_type === 'document' && <BookOpenIcon className="h-4 w-4" />}
                               <div>
                                 <h5 className="font-medium">{chapter.title}</h5>
                                 {chapter.description && (

@@ -13,7 +13,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { VideoEmbedComponent } from './VideoEmbedComponent';
 import { useCourseContent } from '@/hooks/useCourseContent';
 import { useRole } from '@/hooks/useRole';
-import { Plus, Edit3, Trash2, FileText, Video, File, Save, X } from 'lucide-react';
+import { Plus, Edit3, Trash2, FileText, Video, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CourseContentDialogProps {
@@ -458,8 +458,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return <Video className="h-4 w-4" />;
       case 'article':
         return <FileText className="h-4 w-4" />;
-      case 'document':
-        return <File className="h-4 w-4" />;
       default:
         return <FileText className="h-4 w-4" />;
     }
@@ -471,8 +469,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return 'bg-red-100 text-red-800 border-red-200';
       case 'article':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'document':
-        return 'bg-green-100 text-green-800 border-green-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -763,7 +759,6 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         <SelectContent>
                           <SelectItem value="article">Article</SelectItem>
                           {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
-                          <SelectItem value="document">Document</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -835,26 +830,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     </div>
                   )}
 
-                  {chapterType === 'document' && (
-                    <div>
-                      <Label>Document Content</Label>
-                      <div className="mt-2">
-                        <RichTextEditor
-                          value={chapterArticleContent}
-                          onChange={(content) => {
-                            setChapterArticleContent(content);
-                            // Save immediately on change
-                            setTimeout(() => saveFormState(), 100);
-                          }}
-                          placeholder="Enter document content or instructions..."
-                          height="300px"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Duration field for all content types (visible to recruiters for article/document, admins for all) */}
-                  {(userRole === 'admin' || (userRole === 'recruiter' && chapterType !== 'video')) && (
+                  {/* Duration field for all content types (visible to recruiters for article, admins for all) */}
+                  {(userRole === 'admin' || (userRole === 'recruiter' && chapterType === 'article')) && (
                     <div>
                       <Label htmlFor="chapter-duration">Duration (minutes)</Label>
                       <Input
