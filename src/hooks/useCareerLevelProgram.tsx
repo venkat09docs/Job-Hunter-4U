@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import type { AssignmentWithProgress } from '@/types/clp';
 
 export const useCareerLevelProgram = () => {
   const { user } = useAuth();
@@ -274,6 +275,88 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
+  // Get assignments with progress information for the current user
+  const getAssignmentsWithProgress = useCallback(async () => {
+    if (!user) return [];
+    
+    setLoading(true);
+    try {
+      // First get all published assignments
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('clp_assignments')
+        .select(`
+          *,
+          section:course_sections(
+            *,
+            course:clp_courses(*)
+          )
+        `)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (assignmentsError) {
+        console.error('Error fetching assignments:', assignmentsError);
+        throw assignmentsError;
+      }
+
+      // Get user's attempts for these assignments
+      const { data: attempts, error: attemptsError } = await supabase
+        .from('clp_attempts')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (attemptsError) {
+        console.error('Error fetching attempts:', attemptsError);
+        throw attemptsError;
+      }
+
+      // Combine assignments with user attempts
+      const assignmentsWithProgress = (assignments || []).map(assignment => {
+        const userAttempts = (attempts || []).filter(attempt => 
+          attempt.assignment_id === assignment.id
+        );
+
+        // Determine if user can attempt this assignment
+        const canAttempt = assignment.max_attempts > userAttempts.length;
+        
+        // Check if assignment is currently open
+        const now = new Date();
+        const startAt = assignment.start_at ? new Date(assignment.start_at) : null;
+        const endAt = assignment.end_at ? new Date(assignment.end_at) : null;
+        const dueAt = assignment.due_at ? new Date(assignment.due_at) : null;
+        
+        let status = 'open';
+        if (startAt && now < startAt) {
+          status = 'scheduled';
+        } else if (endAt && now > endAt) {
+          status = 'closed';
+        } else if (dueAt && now > dueAt) {
+          status = 'closed';
+        }
+
+        return {
+          ...assignment,
+          userAttempts,
+          canAttempt: canAttempt && status === 'open',
+          attemptsRemaining: Math.max(0, assignment.max_attempts - userAttempts.length),
+          status
+        } as AssignmentWithProgress;
+      });
+
+      console.log('Fetched assignments with progress:', assignmentsWithProgress);
+      return assignmentsWithProgress;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch assignments',
+        variant: 'destructive'
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
   // Add missing functions with correct signatures to fix build errors
   const deleteAssignment = useCallback(async (id: string) => false, []);
   const publishAssignment = useCallback(async (id: string) => false, []);
@@ -283,7 +366,6 @@ export const useCareerLevelProgram = () => {
   const createQuestion = useCallback(async (data: any) => null, []);
   const updateQuestion = useCallback(async (id: string, data: any) => null, []);
   const deleteQuestion = useCallback(async (id: string) => false, []);
-  const getAssignmentsWithProgress = useCallback(async () => [], []);
   const getUserAssignmentsOrganized = useCallback(async () => ({}), []);
 
   return {
