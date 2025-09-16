@@ -302,7 +302,7 @@ export const useCareerLevelProgram = () => {
         
         if (!userProfile) {
           // If no profile found, create a fallback entry
-          console.warn(`No profile found for user ${userId}`);
+          console.warn(`⚠️ No profile found for user ${userId}`);
           return;
         }
         
@@ -333,7 +333,8 @@ export const useCareerLevelProgram = () => {
         .sort((a, b) => b.points_total - a.points_total)
         .slice(0, 100);
 
-      console.log('Leaderboard data:', leaderboardData); // Debug log
+      console.log('🎯 Final leaderboard data structure:', leaderboardData);
+      console.log('🎯 Sample entry structure:', leaderboardData[0]); 
       return leaderboardData;
     } catch (error: any) {
       console.error('Leaderboard error:', error);

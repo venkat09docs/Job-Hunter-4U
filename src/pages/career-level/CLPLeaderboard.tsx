@@ -27,6 +27,14 @@ const CLPLeaderboard = () => {
     loadLeaderboard();
   }, []);
 
+  // Force refresh after component mounts and user is available
+  useEffect(() => {
+    if (user?.id) {
+      console.log('🔄 User loaded, refreshing leaderboard for user:', user.id);
+      loadLeaderboard();
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     if (selectedCourse !== 'all') {
       loadModules(selectedCourse);
@@ -65,9 +73,11 @@ const CLPLeaderboard = () => {
       const moduleId = selectedModule !== 'all' ? selectedModule : undefined;
       
       const data = await getLeaderboard(courseId, moduleId);
+      console.log('CLPLeaderboard: Received data:', data);
       setLeaderboardData(data);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
+      setLeaderboardData([]); // Clear data on error
     }
   };
 
@@ -101,6 +111,11 @@ const CLPLeaderboard = () => {
   const currentUserRank = currentUserEntry 
     ? leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1 
     : null;
+
+  // Debug logging for current user
+  console.log('Current user ID:', user?.id);
+  console.log('Current user entry:', currentUserEntry);
+  console.log('Current user rank:', currentUserRank);
 
   const stats = [
     {
@@ -252,7 +267,7 @@ const CLPLeaderboard = () => {
               </span>
               <div className="flex items-center gap-4">
                 {/* Current User Rank & Score */}
-                {currentUserEntry && (
+                {currentUserEntry ? (
                   <div className="flex items-center gap-6 text-sm">
                     <div className="text-center">
                       <div className="text-lg font-bold text-primary">#{currentUserRank}</div>
@@ -260,6 +275,17 @@ const CLPLeaderboard = () => {
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-primary">{currentUserEntry.points_total}</div>
+                      <div className="text-xs text-muted-foreground">Your Score</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-muted-foreground">-</div>
+                      <div className="text-xs text-muted-foreground">Your Rank</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-muted-foreground">0</div>
                       <div className="text-xs text-muted-foreground">Your Score</div>
                     </div>
                   </div>
@@ -326,7 +352,7 @@ const CLPLeaderboard = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="font-medium">
-                                {entry.user?.full_name || entry.user?.username || 'Anonymous'}
+                                {entry.user?.full_name || entry.user?.username || 'Anonymous User'}
                               </p>
                               {isCurrentUser && (
                                 <Badge variant="outline" className="text-xs">
