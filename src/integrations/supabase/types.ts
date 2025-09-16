@@ -5219,6 +5219,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      auto_grade_attempt: {
+        Args: { attempt_id_param: string }
+        Returns: undefined
+      }
       award_learning_goal_completion_points: {
         Args: { p_learning_goal_id: string }
         Returns: Json
@@ -5824,7 +5828,7 @@ export type Database = {
         Returns: string
       }
       update_leaderboard_for_attempt: {
-        Args: { attempt_id: string }
+        Args: { attempt_id_param: string }
         Returns: undefined
       }
       upsert_resume_data: {
