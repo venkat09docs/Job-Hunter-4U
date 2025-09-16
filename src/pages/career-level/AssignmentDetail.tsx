@@ -479,14 +479,16 @@ const AssignmentDetail: React.FC = () => {
                     )}
 
                     {/* Question-wise Results */}
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium">Question-wise Results:</div>
+                    <div className="space-y-4">
+                      <div className="text-sm font-medium">Detailed Question Review:</div>
                       {reviewedAnswers.length > 0 ? (
                         reviewedAnswers.map((answer, index) => {
                           console.log(`🔍 Answer ${index + 1}:`, {
                             marks_awarded: answer.marks_awarded,
                             question_marks: answer.question?.marks,
-                            is_correct: answer.is_correct
+                            is_correct: answer.is_correct,
+                            correct_answers: answer.question?.correct_answers,
+                            student_response: answer.response
                           });
                           
                           // If marks_awarded is 0 but we have a total score, calculate proportional marks
@@ -497,27 +499,128 @@ const AssignmentDetail: React.FC = () => {
                           
                           const displayMarks = answer.marks_awarded > 0 ? answer.marks_awarded : estimatedMarks;
                           
+                          // Get correct answer text
+                          const getCorrectAnswerText = () => {
+                            if (!answer.question?.correct_answers) return 'Not specified';
+                            
+                            if (answer.question.kind === 'mcq' && answer.question.options) {
+                              const correctIndices = answer.question.correct_answers;
+                              return correctIndices.map((idx: any) => {
+                                const index = parseInt(idx);
+                                return answer.question.options[index] || `Option ${String.fromCharCode(65 + index)}`;
+                              }).join(', ');
+                            }
+                            
+                            return Array.isArray(answer.question.correct_answers) 
+                              ? answer.question.correct_answers.join(', ')
+                              : answer.question.correct_answers;
+                          };
+                          
+                          // Get student answer text
+                          const getStudentAnswerText = () => {
+                            if (!answer.response) return 'No answer provided';
+                            
+                            if (answer.question?.kind === 'mcq') {
+                              if (answer.response.selectedOption !== undefined) {
+                                const selectedIndex = answer.response.selectedOption;
+                                if (answer.question.options && answer.question.options[selectedIndex]) {
+                                  return answer.question.options[selectedIndex];
+                                }
+                                return `Option ${String.fromCharCode(65 + selectedIndex)}`;
+                              }
+                              return answer.response.value || 'No selection made';
+                            }
+                            
+                            if (answer.question?.kind === 'descriptive') {
+                              return answer.response.text || 'No answer provided';
+                            }
+                            
+                            return answer.response.value || JSON.stringify(answer.response);
+                          };
+                          
                           return (
-                            <div key={answer.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div className="flex-1">
-                                <div className="text-sm font-medium">Question {index + 1}</div>
-                                <div className="text-xs text-muted-foreground truncate">
-                                  {answer.question?.prompt || 'Question text not available'}
+                            <Card key={answer.id} className="border-l-4 border-l-blue-200">
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
+                                  {/* Question Header */}
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="font-semibold text-lg">Question {index + 1}</h4>
+                                      <Badge variant={displayMarks >= (answer.question?.marks || 0) ? 'default' : 'secondary'}>
+                                        {displayMarks}/{answer.question?.marks || 0} marks
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-3 h-3 rounded-full ${
+                                        displayMarks >= (answer.question?.marks || 0) 
+                                          ? 'bg-green-500' 
+                                          : displayMarks > 0 
+                                            ? 'bg-yellow-500' 
+                                            : 'bg-red-500'
+                                      }`} />
+                                      <span className="text-sm font-medium capitalize">
+                                        {answer.question?.kind || 'Question'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Question Text */}
+                                  <div className="bg-gray-50 p-3 rounded-lg">
+                                    <div className="text-sm font-medium text-gray-700 mb-1">Question:</div>
+                                    <div className="text-sm text-gray-900">
+                                      {answer.question?.prompt || 'Question text not available'}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Answers Section */}
+                                  <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Correct Answer */}
+                                    <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                                      <div className="text-sm font-medium text-green-800 mb-1">Correct Answer:</div>
+                                      <div className="text-sm text-green-700">
+                                        {getCorrectAnswerText()}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Student Answer */}
+                                    <div className={`p-3 rounded-lg ${
+                                      displayMarks >= (answer.question?.marks || 0)
+                                        ? 'bg-green-50 border border-green-200'
+                                        : displayMarks > 0 
+                                          ? 'bg-yellow-50 border border-yellow-200'
+                                          : 'bg-red-50 border border-red-200'
+                                    }`}>
+                                      <div className={`text-sm font-medium mb-1 ${
+                                        displayMarks >= (answer.question?.marks || 0)
+                                          ? 'text-green-800'
+                                          : displayMarks > 0 
+                                            ? 'text-yellow-800'
+                                            : 'text-red-800'
+                                      }`}>
+                                        Your Answer:
+                                      </div>
+                                      <div className={`text-sm ${
+                                        displayMarks >= (answer.question?.marks || 0)
+                                          ? 'text-green-700'
+                                          : displayMarks > 0 
+                                            ? 'text-yellow-700'
+                                            : 'text-red-700'
+                                      }`}>
+                                        {getStudentAnswerText()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Feedback */}
+                                  {answer.feedback && (
+                                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                                      <div className="text-sm font-medium text-blue-800 mb-1">Instructor Feedback:</div>
+                                      <div className="text-sm text-blue-700">{answer.feedback}</div>
+                                    </div>
+                                  )}
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className={`w-3 h-3 rounded-full ${
-                                  displayMarks >= (answer.question?.marks || 0) 
-                                    ? 'bg-green-500' 
-                                    : displayMarks > 0 
-                                      ? 'bg-yellow-500' 
-                                      : 'bg-red-500'
-                                }`} />
-                                <span className="text-sm font-medium">
-                                  {displayMarks}/{answer.question?.marks || 0}
-                                </span>
-                              </div>
-                            </div>
+                              </CardContent>
+                            </Card>
                           );
                         })
                       ) : (
