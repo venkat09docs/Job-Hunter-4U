@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare } from 'lucide-react';
+import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface SubmittedAssignment {
@@ -188,7 +188,7 @@ const SkillAssignments = () => {
     if (!selectedAssignment) return;
     
     try {
-      console.log('Starting review submission for assignment:', selectedAssignment.id);
+      console.log(`Starting review submission for assignment: ${selectedAssignment.id}, approved: ${approved}`);
       
       // Update individual answer marks and feedback
       for (const answer of selectedAssignment.answers || []) {
@@ -235,7 +235,9 @@ const SkillAssignments = () => {
 
       toast({
         title: 'Success',
-        description: `Assignment reviewed successfully. Total score: ${totalScore} points`,
+        description: approved 
+          ? `Assignment approved successfully. Total score: ${totalScore} points`
+          : `Assignment rejected. Total score: ${totalScore} points`,
       });
 
       setShowReviewDialog(false);
@@ -257,7 +259,7 @@ const SkillAssignments = () => {
       console.error('Error submitting review:', error);
       toast({
         title: 'Error',
-        description: `Failed to submit review: ${error.message || 'Unknown error'}`,
+        description: `Failed to ${approved ? 'approve' : 'reject'} assignment: ${error.message || 'Unknown error'}`,
         variant: 'destructive',
       });
     }
@@ -636,16 +638,18 @@ const SkillAssignments = () => {
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button 
                     variant="outline" 
-                    onClick={() => setShowReviewDialog(false)}
+                    onClick={() => handleReviewSubmit(false)}
+                    className="border-red-300 text-red-600 hover:bg-red-50"
                   >
-                    Cancel
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Reject
                   </Button>
                   <Button 
                     onClick={() => handleReviewSubmit(true)}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Submit Review
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve
                   </Button>
                 </div>
               </div>
