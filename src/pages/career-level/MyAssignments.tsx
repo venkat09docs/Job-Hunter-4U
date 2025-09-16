@@ -96,14 +96,20 @@ const MyAssignments: React.FC = () => {
 
   // Filter assignments by status
   const upcomingAssignments = assignments.filter(a => 
-    a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
+    (a.status === 'scheduled') || 
+    (a.status === 'open' && a.canAttempt && a.userAttempts.length === 0)
   );
   
   const activeAssignments = assignments.filter(a => 
-    a.userAttempts.some(attempt => attempt.status === 'started')
+    a.userAttempts.length > 0 && (
+      a.userAttempts.some(attempt => attempt.status === 'started') ||
+      (a.canAttempt && a.userAttempts.some(attempt => attempt.status === 'submitted' || attempt.status === 'auto_submitted'))
+    )
   );
   
   const completedAssignments = assignments.filter(a => 
+    a.userAttempts.length > 0 && 
+    !a.canAttempt &&
     a.userAttempts.some(attempt => 
       attempt.status === 'submitted' || attempt.status === 'auto_submitted'
     )
