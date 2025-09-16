@@ -41,6 +41,7 @@ const AssignmentDetail: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [userAttempts, setUserAttempts] = useState<Attempt[]>([]);
   const [isStarting, setIsStarting] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
     if (assignmentId && user) {
@@ -52,6 +53,7 @@ const AssignmentDetail: React.FC = () => {
     if (!assignmentId) return;
     
     try {
+      setDataLoaded(false);
       const allAssignments = await getAssignments();
       const foundAssignment = allAssignments.find(a => a.id === assignmentId);
       
@@ -65,9 +67,11 @@ const AssignmentDetail: React.FC = () => {
         
         setQuestions(questionsData);
         setUserAttempts(attemptsData.filter(a => a.assignment_id === assignmentId));
+        setDataLoaded(true);
       }
     } catch (error) {
       console.error('Error loading assignment:', error);
+      setDataLoaded(true);
     }
   };
 
@@ -182,7 +186,7 @@ const AssignmentDetail: React.FC = () => {
     return questions.reduce((sum, q) => sum + (q.marks || 0), 0);
   };
 
-  if (loading || !assignment) {
+  if (loading || !assignment || !dataLoaded) {
     return (
       <div className="space-y-6 p-6">
         <div className="flex items-center gap-4">
