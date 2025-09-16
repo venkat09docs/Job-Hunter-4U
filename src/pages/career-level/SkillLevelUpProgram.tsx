@@ -809,7 +809,7 @@ const SkillLevelUpProgram: React.FC = () => {
                   <h2 className="text-2xl font-bold text-foreground mb-2">Leaderboard Rankings</h2>
                   <p className="text-muted-foreground">See how you rank among your peers</p>
                 </div>
-                {leaderboardStats.currentUserRank && (
+                {leaderboardStats.currentUserRank ? (
                   <div className="flex items-center gap-3">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-orange-600">
@@ -820,11 +820,22 @@ const SkillLevelUpProgram: React.FC = () => {
                     {leaderboardStats.currentUserEntry && (
                       <div className="text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {(leaderboardStats.currentUserEntry as any).total_score?.toFixed(1) || '0'}
+                          {leaderboardStats.currentUserEntry.points_total || 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Your Score</div>
                       </div>
                     )}
+                  </div>
+                ) : leaderboardData.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-muted-foreground">-</div>
+                      <div className="text-sm text-muted-foreground">Your Rank</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-muted-foreground">0</div>
+                      <div className="text-sm text-muted-foreground">Your Score</div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -893,15 +904,15 @@ const SkillLevelUpProgram: React.FC = () => {
                             </div>
                             
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={(entry as any).profiles?.avatar_url} />
+                              <AvatarImage src={entry.user?.profile_image_url} />
                               <AvatarFallback className="text-sm">
-                                {((entry as any).profiles?.display_name || (entry as any).profiles?.email || 'U').slice(0, 2).toUpperCase()}
+                                {(entry.user?.full_name || entry.user?.username || 'U').slice(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             
                             <div>
                               <div className="font-medium text-foreground">
-                                {(entry as any).profiles?.display_name || (entry as any).profiles?.email || 'Anonymous User'}
+                                {entry.user?.full_name || entry.user?.username || 'Anonymous User'}
                                 {isCurrentUser && (
                                   <Badge variant="outline" className="ml-2 text-xs">
                                     You
@@ -909,17 +920,19 @@ const SkillLevelUpProgram: React.FC = () => {
                                 )}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {(entry as any).assignment_count || 0} assignment{((entry as any).assignment_count || 0) !== 1 ? 's' : ''} completed
+                                {entry.assignments_completed || 0} assignment{(entry.assignments_completed || 0) !== 1 ? 's' : ''} completed
                               </div>
                             </div>
                           </div>
                           
                           <div className="text-right">
                             <div className="text-lg font-bold text-foreground">
-                              {((entry as any).total_score || 0).toFixed(1)}
+                              {entry.points_total || 0}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              Avg: {((entry as any).avg_score || 0).toFixed(1)}%
+                              Avg: {entry.assignments_completed > 0 ? 
+                                Math.round(((entry.points_total || 0) / (entry.assignments_completed || 1)) * 10) / 10 
+                                : 0}%
                             </div>
                           </div>
                         </div>
