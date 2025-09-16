@@ -49,11 +49,12 @@ interface SubmittedAssignment {
     is_correct: boolean | null;
     marks_awarded: number | null;
     feedback: string | null;
-    question: {
-      prompt: string;
-      kind: string;
-      marks: number;
-    };
+  question: {
+    prompt: string;
+    kind: string;
+    marks: number;
+    correct_answers?: any[];
+  };
   }>;
 }
 
@@ -98,7 +99,8 @@ const SkillAssignments = () => {
             question:clp_questions(
               prompt,
               kind,
-              marks
+              marks,
+              correct_answers
             )
           )
         `)
@@ -232,13 +234,6 @@ const SkillAssignments = () => {
     }
   };
 
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const filteredAssignments = selectedStatus === 'all' 
     ? submittedAssignments 
     : submittedAssignments.filter(assignment => 
@@ -246,6 +241,25 @@ const SkillAssignments = () => {
         selectedStatus === 'reviewed' ? assignment.review_status === 'published' :
         assignment.review_status === selectedStatus
       );
+
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatCorrectAnswer = (correctAnswers: any[], questionKind: string) => {
+    if (!correctAnswers || correctAnswers.length === 0) return 'No correct answer defined';
+    
+    if (questionKind === 'tf') {
+      return correctAnswers[0] ? 'True' : 'False';
+    } else if (questionKind === 'mcq') {
+      return correctAnswers.join(', ');
+    } else {
+      return correctAnswers.join(', ');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -540,6 +554,12 @@ const SkillAssignments = () => {
                               <strong>Student's Answer:</strong> 
                               <div className="mt-1 p-2 bg-muted rounded text-sm">
                                 {answer.response?.value || 'No answer provided'}
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <strong>Correct Answer:</strong> 
+                              <div className="mt-1 p-2 bg-green-50 border border-green-200 rounded text-sm">
+                                {formatCorrectAnswer(answer.question?.correct_answers, answer.question?.kind)}
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
