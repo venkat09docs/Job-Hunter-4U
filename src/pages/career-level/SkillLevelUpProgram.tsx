@@ -415,17 +415,6 @@ const SkillLevelUpProgram: React.FC = () => {
                   )}
                 </div>
               )}
-              {statusInfo.status === 'pending' && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => navigate(`/dashboard/career-level/assignments/${assignment.id}`)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Details
-                </Button>
-              )}
             </div>
           </div>
         </CardContent>
@@ -539,12 +528,6 @@ const SkillLevelUpProgram: React.FC = () => {
                  'Not Available'}
               </Button>
             )}
-            
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
-                View Details
-              </Link>
-            </Button>
           </div>
         </CardContent>
       </Card>

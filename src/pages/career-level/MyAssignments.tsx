@@ -262,12 +262,6 @@ const MyAssignments: React.FC = () => {
                  'No Attempts Remaining'}
               </Button>
             )}
-            
-            <Button variant="ghost" size="sm" asChild>
-              <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
-                View Details
-              </Link>
-            </Button>
           </div>
         </CardContent>
       </Card>
