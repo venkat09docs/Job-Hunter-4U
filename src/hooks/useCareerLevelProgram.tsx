@@ -300,7 +300,11 @@ export const useCareerLevelProgram = () => {
         const points = attempt.score_points || 0;
         const userProfile = userMap.get(userId);
         
-        if (!userProfile) return; // Skip if no profile found
+        if (!userProfile) {
+          // If no profile found, create a fallback entry
+          console.warn(`No profile found for user ${userId}`);
+          return;
+        }
         
         if (!userStats.has(userId)) {
           userStats.set(userId, {
@@ -308,8 +312,8 @@ export const useCareerLevelProgram = () => {
             user_id: userId,
             user: {
               user_id: userProfile.user_id,
-              full_name: userProfile.full_name,
-              username: userProfile.username,
+              full_name: userProfile.full_name || 'Unknown User',
+              username: userProfile.username || `user${userId.slice(0,8)}`,
               profile_image_url: userProfile.profile_image_url,
               email: userProfile.email
             },
@@ -325,9 +329,11 @@ export const useCareerLevelProgram = () => {
 
       // Convert to array and sort by points
       const leaderboardData = Array.from(userStats.values())
+        .filter(entry => entry.assignments_completed > 0) // Only show users with completed assignments
         .sort((a, b) => b.points_total - a.points_total)
         .slice(0, 100);
 
+      console.log('Leaderboard data:', leaderboardData); // Debug log
       return leaderboardData;
     } catch (error: any) {
       console.error('Leaderboard error:', error);

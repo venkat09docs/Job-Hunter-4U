@@ -142,13 +142,16 @@ export interface LeaderboardEntry {
   course_id?: string;
   section_id?: string;
   points_total: number;
+  assignments_completed?: number;
   last_updated_at: string;
   created_at: string;
   user?: {
-    id: string;
+    id?: string;
+    user_id?: string;
     full_name?: string;
     username?: string;
     profile_image_url?: string;
+    email?: string;
   };
 }
 

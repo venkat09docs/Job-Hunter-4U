@@ -250,16 +250,31 @@ const CLPLeaderboard = () => {
                 <Trophy className="h-5 w-5" />
                 Rankings
               </span>
-              {selectedCourse !== 'all' && (
-                <Badge variant="secondary">
-                  {courses.find(c => c.id === selectedCourse)?.title}
-                  {selectedModule !== 'all' && modules.length > 0 && (
-                    <span className="ml-2">
-                      • {modules.find(m => m.id === selectedModule)?.title}
-                    </span>
-                  )}
-                </Badge>
-              )}
+              <div className="flex items-center gap-4">
+                {/* Current User Rank & Score */}
+                {currentUserEntry && (
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-primary">#{currentUserRank}</div>
+                      <div className="text-xs text-muted-foreground">Your Rank</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-primary">{currentUserEntry.points_total}</div>
+                      <div className="text-xs text-muted-foreground">Your Score</div>
+                    </div>
+                  </div>
+                )}
+                {selectedCourse !== 'all' && (
+                  <Badge variant="secondary">
+                    {courses.find(c => c.id === selectedCourse)?.title}
+                    {selectedModule !== 'all' && modules.length > 0 && (
+                      <span className="ml-2">
+                        • {modules.find(m => m.id === selectedModule)?.title}
+                      </span>
+                    )}
+                  </Badge>
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -332,7 +347,9 @@ const CLPLeaderboard = () => {
                         <p className="text-xl font-bold text-primary">
                           {entry.points_total}
                         </p>
-                        <p className="text-sm text-muted-foreground">points</p>
+                        <p className="text-sm text-muted-foreground">
+                          {entry.assignments_completed} assignments • {entry.points_total} points
+                        </p>
                       </div>
                     </div>
                   );
