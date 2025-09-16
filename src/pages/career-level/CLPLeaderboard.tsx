@@ -73,8 +73,16 @@ const CLPLeaderboard = () => {
       const moduleId = selectedModule !== 'all' ? selectedModule : undefined;
       
       const data = await getLeaderboard(courseId, moduleId);
-      console.log('CLPLeaderboard: Received data:', data);
-      setLeaderboardData(data);
+      console.log('🎯 CLPLeaderboard: Received data:', data);
+      console.log('🎯 Data length:', data.length);
+      console.log('🎯 First entry:', data[0]);
+      console.log('🎯 Current user ID:', user?.id);
+      
+      // Ensure data has proper structure
+      const validData = data.filter(entry => entry && entry.user_id && entry.user);
+      console.log('🎯 Valid data length:', validData.length);
+      
+      setLeaderboardData(validData);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
       setLeaderboardData([]); // Clear data on error

@@ -67,7 +67,15 @@ const AttemptResults: React.FC = () => {
             getAnswersByAttempt(attemptId)
           ]);
           
-          setQuestions(questionsData);
+          // Remove duplicate questions by ID
+          const uniqueQuestions = questionsData.filter((question, index, self) => 
+            index === self.findIndex(q => q.id === question.id)
+          );
+          
+          console.log('🔍 Questions before dedup:', questionsData.length);
+          console.log('🔍 Questions after dedup:', uniqueQuestions.length);
+          
+          setQuestions(uniqueQuestions);
           setAnswers(answersData);
         }
       }
@@ -307,7 +315,7 @@ const AttemptResults: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {percentage.toFixed(1)}%
+                    {earnedMarks}
                   </div>
                   <div className="text-lg text-muted-foreground">
                     {earnedMarks}/{totalMarks} marks
@@ -417,12 +425,33 @@ const AttemptResults: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Actions */}
+          {/* Actions / Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Actions</CardTitle>
+              <CardTitle>Status</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {attempt.review_status === 'published' ? (
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 p-3 bg-green-50 text-green-700 rounded-lg border border-green-200">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-medium">Assignment Completed Successfully</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Your assignment has been reviewed and results are now available.
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2 p-3 bg-orange-50 text-orange-700 rounded-lg border border-orange-200">
+                    <Clock className="w-5 h-5" />
+                    <span className="font-medium">Assignment Under Review</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Your assignment is being reviewed. Results will be available soon.
+                  </p>
+                </div>
+              )}
               <Button variant="outline" asChild className="w-full">
                 <Link to="/dashboard/career-level/assignments">
                   <Home className="w-4 h-4 mr-2" />
