@@ -222,21 +222,28 @@ const MyAssignments: React.FC = () => {
           <div className="flex gap-2 pt-2">
             {hasActiveAttempt ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/attempt-assignment/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
+                <Link to={`/dashboard/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Continue Attempt
                 </Link>
               </Button>
-            ) : assignment.canAttempt && assignment.status === 'open' ? (
+            ) : assignment.canAttempt && assignment.status === 'open' && assignment.userAttempts.length === 0 ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/assignment/${assignment.id}/start`}>
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Start Assignment
                 </Link>
               </Button>
+            ) : assignment.canAttempt && assignment.userAttempts.length > 0 ? (
+              <Button asChild className="flex-1">
+                <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  New Attempt
+                </Link>
+              </Button>
             ) : isCompleted ? (
               <Button variant="outline" asChild className="flex-1">
-                <Link to={`/career-level/feedback/${assignment.userAttempts[0]?.id}`}>
+                <Link to={`/dashboard/career-level/attempt/${assignment.userAttempts[0]?.id}/results`}>
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   View Results
                 </Link>
@@ -250,7 +257,7 @@ const MyAssignments: React.FC = () => {
             )}
             
             <Button variant="ghost" size="sm" asChild>
-              <Link to={`/career-level/assignment/${assignment.id}`}>
+              <Link to={`/dashboard/career-level/assignments/${assignment.id}`}>
                 View Details
               </Link>
             </Button>
