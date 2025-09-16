@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
 import type { Assignment, Question, Attempt } from '@/types/clp';
-import { ASSIGNMENT_STATUS_LABELS } from '@/types/clp';
+import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';
 
 const AssignmentDetail: React.FC = () => {
@@ -132,6 +132,20 @@ const AssignmentDetail: React.FC = () => {
   const getAssignmentStatus = () => {
     if (!assignment) return 'draft';
     
+    // Check if user has submitted attempts
+    const submittedAttempts = userAttempts.filter(a => 
+      a.status === 'submitted' || 
+      a.review_status === 'pending' || 
+      a.review_status === 'in_review'
+    );
+    
+    const completedAttempts = userAttempts.filter(a => 
+      a.review_status === 'published'
+    );
+    
+    if (completedAttempts.length > 0) return 'completed';
+    if (submittedAttempts.length > 0) return 'submitted';
+    
     const now = new Date();
     const startAt = assignment.start_at ? new Date(assignment.start_at) : null;
     const endAt = assignment.end_at ? new Date(assignment.end_at) : null;
@@ -145,6 +159,8 @@ const AssignmentDetail: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'open': return 'bg-green-500';
+      case 'submitted': return 'bg-orange-500';
+      case 'completed': return 'bg-blue-500';
       case 'scheduled': return 'bg-blue-500';
       case 'closed': return 'bg-gray-500';
       case 'draft': return 'bg-yellow-500';
@@ -233,7 +249,9 @@ const AssignmentDetail: React.FC = () => {
             <Badge 
               className={cn('text-white', getStatusColor(status))}
             >
-              {ASSIGNMENT_STATUS_LABELS[status]}
+              {status === 'submitted' ? 'Submitted' : 
+               status === 'completed' ? 'Completed' : 
+               ASSIGNMENT_STATUS_LABELS[status] || status}
             </Badge>
           </div>
         </div>
@@ -424,6 +442,34 @@ const AssignmentDetail: React.FC = () => {
                 >
                   <PlayCircle className="w-4 h-4 mr-2" />
                   {isStarting ? 'Taking...' : 'Take Assignment'}
+                </Button>
+              ) : status === 'submitted' ? (
+                <div className="space-y-2">
+                  <Button variant="outline" disabled className="w-full">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Assignment Submitted
+                  </Button>
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Waiting for admin approval. Results will be available once reviewed.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              ) : status === 'completed' ? (
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    const latestAttempt = userAttempts
+                      .filter(a => a.review_status === 'published')
+                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+                    if (latestAttempt) {
+                      navigate(`/dashboard/career-level/attempt-results/${latestAttempt.id}`);
+                    }
+                  }}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  View Results
                 </Button>
               ) : (
                 <Button variant="outline" disabled className="w-full">
