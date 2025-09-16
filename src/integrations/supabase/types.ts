@@ -423,6 +423,56 @@ export type Database = {
           },
         ]
       }
+      assignment_submissions: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          score: number | null
+          status: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          score?: number | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          score?: number | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "clp_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ats_score_history: {
         Row: {
           analysis_result: Json
@@ -5169,10 +5219,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      auto_grade_attempt: {
-        Args: { p_attempt_id: string }
-        Returns: undefined
-      }
       award_learning_goal_completion_points: {
         Args: { p_learning_goal_id: string }
         Returns: Json
@@ -5743,6 +5789,10 @@ export type Database = {
         Args: { notif_type: string; target_user_id: string }
         Returns: boolean
       }
+      submit_assignment_direct: {
+        Args: { assignment_id: string; user_id: string }
+        Returns: boolean
+      }
       sync_missing_user_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5772,10 +5822,6 @@ export type Database = {
           user_id: string
         }
         Returns: string
-      }
-      trigger_auto_submit: {
-        Args: { attempt_id: string }
-        Returns: undefined
       }
       update_leaderboard_for_attempt: {
         Args: { attempt_id: string }

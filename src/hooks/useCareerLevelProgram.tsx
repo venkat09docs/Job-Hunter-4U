@@ -99,63 +99,44 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
-  const submitAttempt = useCallback(async (attemptId: string) => {
+  const submitAssignment = useCallback(async (assignmentId: string) => {
     setLoading(true);
-    console.log('🔄 Starting attempt submission for ID:', attemptId);
+    console.log('🔄 Starting direct assignment submission for ID:', assignmentId);
     
     try {
-      // First check if the attempt exists and belongs to current user
-      const { data: existingAttempt, error: fetchError } = await supabase
-        .from('clp_attempts')
-        .select('id, user_id, status, assignment_id')
-        .eq('id', attemptId)
-        .single();
-
-      if (fetchError) {
-        console.error('❌ Error fetching attempt:', fetchError);
-        throw fetchError;
+      if (!user?.id) {
+        throw new Error('User not authenticated');
       }
 
-      if (!existingAttempt) {
-        throw new Error('Attempt not found');
+      // Call the direct submission function
+      const { data: result, error: submitError } = await supabase
+        .rpc('submit_assignment_direct', {
+          assignment_id: assignmentId,
+          user_id: user.id
+        });
+
+      if (submitError) {
+        console.error('❌ Error submitting assignment:', submitError);
+        throw submitError;
       }
 
-      if (existingAttempt.user_id !== user?.id) {
-        throw new Error('Not authorized to submit this attempt');
+      if (!result) {
+        throw new Error('Assignment submission failed');
       }
 
-      console.log('✅ Attempt found:', existingAttempt);
-
-      // Update the attempt status
-      const { data: updatedAttempt, error: updateError } = await supabase
-        .from('clp_attempts')
-        .update({
-          status: 'submitted',
-          submitted_at: new Date().toISOString()
-        })
-        .eq('id', attemptId)
-        .eq('user_id', user?.id) // Extra security check
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('❌ Error updating attempt:', updateError);
-        throw updateError;
-      }
-
-      console.log('✅ Attempt updated successfully:', updatedAttempt);
+      console.log('✅ Assignment submitted successfully');
 
       toast({
         title: 'Success',
-        description: 'Assignment submitted successfully'
+        description: 'Assignment submitted successfully to your institute admin'
       });
 
       return true;
     } catch (error: any) {
-      console.error('❌ Submit attempt error:', error);
+      console.error('❌ Submit assignment error:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to submit attempt',
+        title: 'Error', 
+        description: error.message || 'Failed to submit assignment',
         variant: 'destructive'
       });
       return false;
@@ -470,7 +451,7 @@ export const useCareerLevelProgram = () => {
     getCourses,
     getAssignments,
     startAttempt,
-    submitAttempt,
+    submitAssignment,
     getAttemptsByUser,
     getQuestionsByAssignment,
     submitAnswer,

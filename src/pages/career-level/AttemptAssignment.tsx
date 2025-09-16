@@ -21,7 +21,7 @@ const AttemptAssignment = () => {
   
   const {
     getAssignments,
-    submitAttempt,
+    submitAssignment,
     submitAnswer,
     getQuestionsByAssignment,
     getAnswersByAttempt,
@@ -168,16 +168,16 @@ const AttemptAssignment = () => {
 
     setIsSubmitting(true);
     try {
-      console.log('🔄 Submitting attempt:', currentAttempt.id);
+      console.log('🔄 Submitting assignment:', currentAttempt.assignment_id);
       
-      // Submit the attempt and check if it was successful
-      const success = await submitAttempt(currentAttempt.id);
+      // Submit the assignment directly (not attempt-based)
+      const success = await submitAssignment(currentAttempt.assignment_id);
       
       if (!success) {
-        throw new Error('Failed to submit attempt');
+        throw new Error('Failed to submit assignment');
       }
       
-      console.log('✅ Attempt submitted successfully');
+      console.log('✅ Assignment submitted successfully');
       
       // Notify institute admin about the submission
       await notifyInstituteAdmin();
