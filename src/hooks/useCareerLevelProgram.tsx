@@ -22,9 +22,11 @@ import type {
 } from '@/types/clp';
 
 export const useCareerLevelProgram = () => {
+  console.log('🔍 useCareerLevelProgram hook initializing...');
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  console.log('🔍 useCareerLevelProgram hook initialized successfully');
 
   // Course Management
   const createCourse = useCallback(async (data: CreateCourseData) => {
@@ -152,7 +154,7 @@ export const useCareerLevelProgram = () => {
     try {
       const { data: assignment, error } = await supabase
         .from('clp_assignments')
-        .insert(data as any)
+        .insert(data)
         .select('*')
         .single();
 
@@ -163,14 +165,7 @@ export const useCareerLevelProgram = () => {
         description: 'Assignment created successfully'
       });
 
-      return assignment as any;
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Assignment created successfully'
-      });
+      return assignment as Assignment;
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -186,17 +181,15 @@ export const useCareerLevelProgram = () => {
   const getAssignmentsBySection = useCallback(async (sectionId: string) => {
     setLoading(true);
     try {
-      // Bypass type inference by using any
-      const client: any = supabase;
-      const result = await client
+      const { data, error } = await supabase
         .from('clp_assignments')
         .select('*')
         .eq('section_id', sectionId)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      if (result.error) throw result.error;
-      return result.data || [];
+      if (error) throw error;
+      return data || [];
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -949,7 +942,7 @@ export const useCareerLevelProgram = () => {
     publishReview,
     // Leaderboard
     getLeaderboard
-  };
+  } as const;
 };
 
-export default useCareerLevelProgram;
+export { useCareerLevelProgram };

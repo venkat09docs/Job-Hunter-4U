@@ -21,7 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
-import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import type { AssignmentWithProgress, Attempt } from '@/types/clp';
 import { ASSIGNMENT_STATUS_LABELS, ATTEMPT_STATUS_LABELS } from '@/types/clp';
 import { cn } from '@/lib/utils';

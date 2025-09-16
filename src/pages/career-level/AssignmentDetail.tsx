@@ -18,7 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import useCareerLevelProgram from '@/hooks/useCareerLevelProgram';
+import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
 import type { Assignment, Question, Attempt } from '@/types/clp';
 import { ASSIGNMENT_STATUS_LABELS } from '@/types/clp';
