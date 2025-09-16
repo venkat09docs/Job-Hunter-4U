@@ -2,11 +2,17 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useInstituteName } from '@/hooks/useInstituteName';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { CalendarDays, User, BookOpen, Award, Clock, CheckCircle2, AlertCircle, Eye, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface SubmittedAssignment {
@@ -18,6 +24,7 @@ interface SubmittedAssignment {
   score_points: number;
   status: string;
   review_status: string;
+  time_used_seconds: number;
   assignment: {
     title: string;
     type: string;
@@ -35,11 +42,31 @@ interface SubmittedAssignment {
     username: string;
     email: string;
   };
+  answers?: Array<{
+    id: string;
+    question_id: string;
+    response: any;
+    is_correct: boolean | null;
+    marks_awarded: number | null;
+    feedback: string | null;
+    question: {
+      prompt: string;
+      kind: string;
+      marks: number;
+    };
+  }>;
 }
 
 const SkillAssignments = () => {
   const { instituteName } = useInstituteName();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedAssignment, setSelectedAssignment] = useState<SubmittedAssignment | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [reviewScores, setReviewScores] = useState<Record<string, number>>({});
+  const [reviewComments, setReviewComments] = useState('');
 
   const { data: submittedAssignments = [], isLoading } = useQuery({
     queryKey: ['institute-submitted-assignments', selectedStatus],
@@ -59,6 +86,19 @@ const SkillAssignments = () => {
                 title,
                 category
               )
+            )
+          ),
+          answers:clp_answers(
+            id,
+            question_id,
+            response,
+            is_correct,
+            marks_awarded,
+            feedback,
+            question:clp_questions(
+              prompt,
+              kind,
+              marks
             )
           )
         `)
@@ -125,10 +165,86 @@ const SkillAssignments = () => {
     return <span className="text-muted-foreground">Not graded</span>;
   };
 
+  const handleViewDetails = (assignment: SubmittedAssignment) => {
+    setSelectedAssignment(assignment);
+    setShowDetailsDialog(true);
+  };
+
+  const handleReviewAssignment = (assignment: SubmittedAssignment) => {
+    setSelectedAssignment(assignment);
+    setShowReviewDialog(true);
+    // Initialize review scores
+    const initialScores: Record<string, number> = {};
+    assignment.answers?.forEach(answer => {
+      initialScores[answer.question_id] = answer.marks_awarded || 0;
+    });
+    setReviewScores(initialScores);
+  };
+
+  const handleReviewSubmit = async (approved: boolean) => {
+    if (!selectedAssignment) return;
+    
+    try {
+      // Update individual answer marks
+      for (const answer of selectedAssignment.answers || []) {
+        const score = reviewScores[answer.question_id] || 0;
+        await supabase
+          .from('clp_answers')
+          .update({ 
+            marks_awarded: score,
+            feedback: reviewComments 
+          })
+          .eq('id', answer.id);
+      }
+
+      // Calculate total score
+      const totalScore = Object.values(reviewScores).reduce((sum, score) => sum + score, 0);
+
+      // Update attempt with review status and total score
+      await supabase
+        .from('clp_attempts')
+        .update({ 
+          review_status: 'published',
+          score_points: totalScore,
+          score_numeric: totalScore // You might want to calculate percentage based on total possible marks
+        })
+        .eq('id', selectedAssignment.id);
+
+      toast({
+        title: 'Success',
+        description: `Assignment ${approved ? 'approved' : 'reviewed'} successfully`,
+      });
+
+      setShowReviewDialog(false);
+      setSelectedAssignment(null);
+      setReviewComments('');
+      setReviewScores({});
+      
+      // Refresh the data (you might want to add a refetch function)
+      window.location.reload();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to submit review',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const filteredAssignments = selectedStatus === 'all' 
     ? submittedAssignments 
     : submittedAssignments.filter(assignment => 
-        selectedStatus === 'pending' ? assignment.review_status === 'pending' : assignment.review_status === selectedStatus
+        selectedStatus === 'pending' ? assignment.review_status === 'pending' : 
+        selectedStatus === 'reviewed' ? assignment.review_status === 'published' :
+        assignment.review_status === selectedStatus
       );
 
   if (isLoading) {
@@ -171,16 +287,13 @@ const SkillAssignments = () => {
       </div>
 
       <Tabs value={selectedStatus} onValueChange={setSelectedStatus} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="all">All Submissions ({submittedAssignments.length})</TabsTrigger>
           <TabsTrigger value="pending">
             Pending Review ({submittedAssignments.filter(a => a.review_status === 'pending').length})
           </TabsTrigger>
           <TabsTrigger value="reviewed">
-            Reviewed ({submittedAssignments.filter(a => a.review_status === 'reviewed').length})
-          </TabsTrigger>
-          <TabsTrigger value="graded">
-            Graded ({submittedAssignments.filter(a => a.score_numeric !== null).length})
+            Published ({submittedAssignments.filter(a => a.review_status === 'published').length})
           </TabsTrigger>
         </TabsList>
 
@@ -248,12 +361,22 @@ const SkillAssignments = () => {
                     </div>
 
                     <div className="flex items-center gap-2 pt-4 border-t">
-                      <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center gap-2"
+                        onClick={() => handleViewDetails(assignment)}
+                      >
                         <Eye className="w-4 h-4" />
                         View Details
                       </Button>
-                      <Button variant="outline" size="sm" className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex items-center gap-2"
+                        onClick={() => handleReviewAssignment(assignment)}
+                      >
+                        <MessageSquare className="w-4 h-4" />
                         Review Assignment
                       </Button>
                     </div>
@@ -264,6 +387,200 @@ const SkillAssignments = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* View Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Assignment Details</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[600px]">
+            {selectedAssignment && (
+              <div className="space-y-6 pr-6">
+                {/* Assignment Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Assignment Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <strong>Title:</strong> {selectedAssignment.assignment?.title}
+                      </div>
+                      <div>
+                        <strong>Type:</strong> {selectedAssignment.assignment?.type}
+                      </div>
+                      <div>
+                        <strong>Course:</strong> {selectedAssignment.assignment?.section?.course?.title}
+                      </div>
+                      <div>
+                        <strong>Section:</strong> {selectedAssignment.assignment?.section?.title}
+                      </div>
+                      <div>
+                        <strong>Student:</strong> {selectedAssignment.user_profile?.full_name}
+                      </div>
+                      <div>
+                        <strong>Email:</strong> {selectedAssignment.user_profile?.email}
+                      </div>
+                      <div>
+                        <strong>Submitted:</strong> {format(new Date(selectedAssignment.submitted_at), 'PPp')}
+                      </div>
+                      <div>
+                        <strong>Time Used:</strong> {formatDuration(selectedAssignment.time_used_seconds)}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Instructions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Instructions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm">{selectedAssignment.assignment?.instructions}</p>
+                  </CardContent>
+                </Card>
+
+                {/* Answers */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Student Answers</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {selectedAssignment.answers?.map((answer, index) => (
+                        <div key={answer.id} className="border rounded-lg p-4">
+                          <div className="mb-2">
+                            <strong>Question {index + 1}:</strong> {answer.question?.prompt}
+                          </div>
+                          <div className="mb-2">
+                            <strong>Answer:</strong> <span className="font-mono text-sm">{JSON.stringify(answer.response, null, 2)}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span>
+                              <strong>Max Marks:</strong> {answer.question?.marks}
+                            </span>
+                            <span>
+                              <strong>Awarded:</strong> {answer.marks_awarded || 0}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Assignment Dialog */}
+      <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Review Assignment</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[600px]">
+            {selectedAssignment && (
+              <div className="space-y-6 pr-6">
+                {/* Assignment Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Assignment Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <strong>Title:</strong> {selectedAssignment.assignment?.title}
+                      </div>
+                      <div>
+                        <strong>Student:</strong> {selectedAssignment.user_profile?.full_name}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Questions for Review */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Review Questions & Assign Marks</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {selectedAssignment.answers?.map((answer, index) => (
+                        <div key={answer.id} className="border rounded-lg p-4">
+                          <div className="mb-3">
+                            <strong>Question {index + 1}:</strong> {answer.question?.prompt}
+                          </div>
+                          <div className="mb-3">
+                            <strong>Student's Answer:</strong> 
+                            <div className="mt-1 p-2 bg-muted rounded text-sm font-mono">
+                              {JSON.stringify(answer.response, null, 2)}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <label className="text-sm font-medium">Marks (Max: {answer.question?.marks}):</label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max={answer.question?.marks}
+                                value={reviewScores[answer.question_id] || 0}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value) || 0;
+                                  setReviewScores(prev => ({
+                                    ...prev,
+                                    [answer.question_id]: Math.min(value, answer.question?.marks || 0)
+                                  }));
+                                }}
+                                className="w-20"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Review Comments */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Review Comments</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      placeholder="Provide feedback for the student..."
+                      value={reviewComments}
+                      onChange={(e) => setReviewComments(e.target.value)}
+                      rows={4}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowReviewDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => handleReviewSubmit(true)}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Submit Review
+                  </Button>
+                </div>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
