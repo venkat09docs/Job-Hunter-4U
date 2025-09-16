@@ -328,64 +328,6 @@ const AssignmentDetail: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Attempts History */}
-          {userAttempts.filter(a => a.status !== 'available').length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Your Attempts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {userAttempts
-                    .filter(a => a.status !== 'available')
-                    .map((attempt, index) => (
-                    <div key={attempt.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <div className="font-medium">Attempt #{index + 1}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Started: {formatDateTime(attempt.started_at)}
-                          {attempt.submitted_at && (
-                            <> • Submitted: {formatDateTime(attempt.submitted_at)}</>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        {attempt.score_numeric !== null && (
-                          <div className="text-right">
-                            <div className="font-medium">{attempt.score_numeric.toFixed(1)}%</div>
-                            <div className="text-xs text-muted-foreground">
-                              {attempt.score_points} points
-                            </div>
-                          </div>
-                        )}
-                        
-                        <Badge variant={
-                          attempt.status === 'submitted' ? 'default' :
-                          attempt.status === 'started' ? 'secondary' : 'destructive'
-                        }>
-                          {attempt.status === 'started' ? 'In Progress' :
-                           attempt.status === 'submitted' ? 'Completed' : 
-                           attempt.status.replace('_', ' ')}
-                        </Badge>
-                        
-                        {attempt.status !== 'started' && (
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to={`/dashboard/career-level/attempt/${attempt.id}/results`}>
-                              View Results
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -412,17 +354,6 @@ const AssignmentDetail: React.FC = () => {
                   </span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Max Attempts</span>
-                  <span className="text-sm font-medium">{assignment.max_attempts}</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Attempts Used</span>
-                  <span className="text-sm font-medium">
-                    {userAttempts.filter(a => a.status !== 'available').length}/{assignment.max_attempts}
-                  </span>
-                </div>
                 
                 {assignment.negative_marking && (
                   <div className="flex items-center justify-between">
@@ -498,48 +429,25 @@ const AssignmentDetail: React.FC = () => {
                 </Alert>
               )}
               
-              {status === 'open' && !canStartAttempt() && userAttempts.filter(a => a.status !== 'available').length >= assignment.max_attempts && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    You have used all {assignment.max_attempts} attempts for this assignment.
-                  </AlertDescription>
-                </Alert>
-              )}
 
               {/* Action Buttons */}
-              {activeAttempt ? (
-                <Button className="w-full" asChild>
-                  <Link to={`/dashboard/career-level/attempt/${activeAttempt.id}`}>
-                    <PlayCircle className="w-4 h-4 mr-2" />
-                    Continue Attempt
-                  </Link>
-                </Button>
-              ) : canStartAttempt() ? (
+              {status === 'open' ? (
                 <Button 
                   className="w-full" 
                   onClick={handleStartAttempt}
                   disabled={isStarting}
                 >
                   <PlayCircle className="w-4 h-4 mr-2" />
-                  {isStarting ? 'Starting...' : 'Start Assignment'}
+                  {isStarting ? 'Taking...' : 'Take Assignment'}
                 </Button>
               ) : (
                 <Button variant="outline" disabled className="w-full">
                   {status === 'scheduled' ? 'Not Yet Available' : 
                    status === 'closed' ? 'Assignment Closed' : 
-                   'No Attempts Remaining'}
+                   'Not Available'}
                 </Button>
               )}
               
-              {userAttempts.filter(a => a.status !== 'available' && a.status !== 'started').length > 0 && (
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to={`/dashboard/career-level/attempt/${userAttempts.find(a => a.status !== 'available' && a.status !== 'started')?.id}/results`}>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    View Results
-                  </Link>
-                </Button>
-              )}
             </CardContent>
           </Card>
         </div>
