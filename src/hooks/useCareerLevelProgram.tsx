@@ -303,7 +303,7 @@ export const useCareerLevelProgram = () => {
         .select('institute_id, batch_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       // Get assignments visible to this user
       const { data: assignments, error: assignmentsError } = await supabase
