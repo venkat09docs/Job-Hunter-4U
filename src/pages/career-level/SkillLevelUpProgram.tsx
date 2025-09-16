@@ -189,17 +189,20 @@ const SkillLevelUpProgram: React.FC = () => {
     const safeAssignments = assignments || [];
     return {
       upcoming: safeAssignments.filter(a => 
-        a.status === 'scheduled' || 
-        (a.status === 'open' && a.canAttempt) ||
-        a.userAttempts.some(attempt => attempt.status === 'available')
+        a.userAttempts.length === 0 && (
+          a.status === 'scheduled' || 
+          (a.status === 'open' && a.canAttempt)
+        )
       ),
       active: safeAssignments.filter(a => 
-        a.userAttempts.some(attempt => attempt.status === 'started')
+        a.userAttempts.length > 0 && (
+          a.userAttempts.some(attempt => attempt.status === 'started') ||
+          a.canAttempt
+        )
       ),
       completed: safeAssignments.filter(a => 
-        a.userAttempts.some(attempt => 
-          attempt.status === 'submitted' || attempt.status === 'auto_submitted'
-        )
+        a.userAttempts.length > 0 && 
+        !a.canAttempt
       )
     };
   }, [assignments]);
@@ -541,7 +544,7 @@ const SkillLevelUpProgram: React.FC = () => {
           <div className="flex gap-2 pt-2">
             {hasActiveAttempt ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
+                <Link to={`/dashboard/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Continue Attempt
                 </Link>
