@@ -4,13 +4,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Clock, 
-  Calendar, 
-  Trophy, 
   FileText, 
   PlayCircle,
-  CheckCircle2,
   AlertCircle,
-  Users,
   Target,
   Info
 } from 'lucide-react';
@@ -35,7 +31,6 @@ const AssignmentDetail: React.FC = () => {
   const { toast } = useToast();
   const { 
     loading, 
-    getCourses,
     getAssignments,
     getQuestionsByAssignment,
     getAttemptsByUser,
@@ -57,14 +52,12 @@ const AssignmentDetail: React.FC = () => {
     if (!assignmentId) return;
     
     try {
-      // Get a single assignment by ID - simplified approach
       const allAssignments = await getAssignments();
       const foundAssignment = allAssignments.find(a => a.id === assignmentId);
       
       if (foundAssignment) {
         setAssignment(foundAssignment);
         
-        // Load questions and user attempts
         const [questionsData, attemptsData] = await Promise.all([
           getQuestionsByAssignment(assignmentId),
           getAttemptsByUser()
@@ -83,17 +76,14 @@ const AssignmentDetail: React.FC = () => {
     
     setIsStarting(true);
     try {
-      // Check if there's already an existing attempt (started or available)
       const existingAttempt = userAttempts.find(a => a.status === 'started' || a.status === 'available');
       
       if (existingAttempt) {
-        // If there's a started attempt, continue it
         if (existingAttempt.status === 'started') {
           navigate(`/dashboard/career-level/attempt/${existingAttempt.id}`);
           return;
         }
         
-        // If there's an available attempt, start it
         if (existingAttempt.status === 'available') {
           const { error } = await supabase
             .from('clp_attempts')
@@ -112,7 +102,6 @@ const AssignmentDetail: React.FC = () => {
         }
       }
       
-      // Only create new attempt if no existing attempt found
       const attempt = await startAttempt(assignment.id);
       if (attempt) {
         navigate(`/dashboard/career-level/attempt/${attempt.id}`);
@@ -163,25 +152,18 @@ const AssignmentDetail: React.FC = () => {
     }
   };
 
-  const canStartAttempt = () => {
-    if (!assignment) return false;
-    const status = getAssignmentStatus();
-    const actualAttempts = userAttempts.filter(a => a.status !== 'available').length;
-    return status === 'open' && actualAttempts < assignment.max_attempts;
-  };
-
-  const hasActiveAttempt = () => {
-    return userAttempts.some(a => a.status === 'started');
-  };
-
   const getBestScore = () => {
-    return userAttempts
-      .filter(a => a.score_numeric !== null && a.status !== 'available')
-      .reduce((max, attempt) => Math.max(max, attempt.score_numeric || 0), 0);
+    const validAttempts = userAttempts.filter(attempt => 
+      attempt.score_numeric !== null && attempt.status !== 'available'
+    );
+    
+    if (validAttempts.length === 0) return 0;
+    
+    return Math.max(...validAttempts.map(attempt => Number(attempt.score_numeric) || 0));
   };
 
   const getTotalMarks = () => {
-    return questions.reduce((sum, q) => sum + q.marks, 0);
+    return questions.reduce((sum, q) => sum + (q.marks || 0), 0);
   };
 
   if (loading || !assignment) {
@@ -226,7 +208,6 @@ const AssignmentDetail: React.FC = () => {
   const status = getAssignmentStatus();
   const bestScore = getBestScore();
   const totalMarks = getTotalMarks();
-  const activeAttempt = userAttempts.find(a => a.status === 'started');
 
   return (
     <div className="space-y-6 p-6">
@@ -334,7 +315,6 @@ const AssignmentDetail: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-
         </div>
 
         {/* Sidebar */}
@@ -360,7 +340,6 @@ const AssignmentDetail: React.FC = () => {
                     }
                   </span>
                 </div>
-                
                 
                 {assignment.negative_marking && (
                   <div className="flex items-center justify-between">
@@ -435,7 +414,6 @@ const AssignmentDetail: React.FC = () => {
                   </AlertDescription>
                 </Alert>
               )}
-              
 
               {/* Action Buttons */}
               {status === 'open' ? (
@@ -454,7 +432,6 @@ const AssignmentDetail: React.FC = () => {
                    'Not Available'}
                 </Button>
               )}
-              
             </CardContent>
           </Card>
         </div>
