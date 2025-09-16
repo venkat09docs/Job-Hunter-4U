@@ -240,15 +240,25 @@ export const useCareerLevelProgram = () => {
     }
   }, [toast]);
 
-  // Leaderboard - Simple version
-  const getLeaderboard = useCallback(async () => {
+  // Leaderboard - Simple version with optional parameters
+  const getLeaderboard = useCallback(async (courseId?: string, moduleId?: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('clp_leaderboard')
         .select('*')
         .order('points_total', { ascending: false })
         .limit(100);
+
+      if (courseId) {
+        query = query.eq('course_id', courseId);
+      }
+      
+      if (moduleId) {
+        query = query.eq('module_id', moduleId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data || [];

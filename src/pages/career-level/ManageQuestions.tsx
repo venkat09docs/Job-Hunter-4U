@@ -83,10 +83,10 @@ const ManageQuestions: React.FC = () => {
           id: q.id,
           kind: q.kind,
           prompt: q.prompt,
-          options: Array.isArray(q.options) ? q.options : [],
-          correct_answers: Array.isArray(q.correct_answers) ? q.correct_answers : [],
-          expected_answer: q.metadata?.expected_answer || '',
-          instructions: q.metadata?.instructions || '',
+          options: Array.isArray(q.options) ? q.options.map(String) : [],
+          correct_answers: Array.isArray(q.correct_answers) ? q.correct_answers.map(String) : [],
+          expected_answer: (q.metadata as any)?.expected_answer || '',
+          instructions: (q.metadata as any)?.instructions || '',
           marks: Number(q.marks) || 1,
         }));
         setQuestions(formattedQuestions);
