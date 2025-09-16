@@ -160,12 +160,11 @@ const SkillAssignments = () => {
   };
 
   const getScoreDisplay = (scoreNumeric: number | null, scorePoints: number) => {
-    if (scoreNumeric !== null) {
+    if (scorePoints > 0) {
       return (
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4 text-primary" />
-          <span className="font-medium">{scoreNumeric.toFixed(1)}%</span>
-          <span className="text-muted-foreground">({scorePoints} points)</span>
+          <span className="font-medium">{scorePoints} points</span>
         </div>
       );
     }
@@ -309,6 +308,9 @@ const SkillAssignments = () => {
       await queryClient.invalidateQueries({ 
         queryKey: ['institute-submitted-assignments'] 
       });
+      
+      // Also close the details dialog if it's open to force refresh when reopened
+      setShowDetailsDialog(false);
       
     } catch (error) {
       console.error('Error submitting review:', error);
