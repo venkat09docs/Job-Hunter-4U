@@ -538,14 +538,14 @@ const CourseContentManagement = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="video">Video</SelectItem>
+                      {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
                       <SelectItem value="article">Article</SelectItem>
                       <SelectItem value="document">Document</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {chapterType === 'video' && (
+                {chapterType === 'video' && userRole === 'admin' && (
                   <div>
                     <Label htmlFor="video-url">Video URL</Label>
                     <Input
@@ -570,17 +570,19 @@ const CourseContentManagement = () => {
                   </div>
                 )}
 
-                <div>
-                  <Label htmlFor="duration">Duration (minutes)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    value={chapterDuration}
-                    onChange={(e) => setChapterDuration(parseInt(e.target.value) || 0)}
-                    placeholder="Enter duration in minutes"
-                    min="0"
-                  />
-                </div>
+                {userRole === 'admin' && (
+                  <div>
+                    <Label htmlFor="duration">Duration (minutes)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={chapterDuration}
+                      onChange={(e) => setChapterDuration(parseInt(e.target.value) || 0)}
+                      placeholder="Enter duration in minutes"
+                      min="0"
+                    />
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   {editingChapter ? (

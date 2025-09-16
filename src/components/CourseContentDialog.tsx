@@ -60,7 +60,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     timestamp: new Date().toISOString()
   });
   
-  const { isAdmin } = useRole();
+  const { isAdmin, role: userRole } = useRole();
   const { toast } = useToast();
   const {
     loading,
@@ -762,7 +762,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="article">Article</SelectItem>
-                          <SelectItem value="video">Video</SelectItem>
+                          {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
                           <SelectItem value="document">Document</SelectItem>
                         </SelectContent>
                       </Select>
@@ -800,7 +800,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                   <Separator />
 
                   {/* Content Type Specific Fields */}
-                  {chapterType === 'video' && (
+                  {chapterType === 'video' && userRole === 'admin' && (
                     <VideoEmbedComponent
                       videoUrl={chapterVideoUrl}
                       onChange={(url) => {
