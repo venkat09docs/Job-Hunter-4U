@@ -111,8 +111,8 @@ export const useCareerLevelProgram = () => {
       // Call the direct submission function
       const { data: result, error: submitError } = await supabase
         .rpc('submit_assignment_direct', {
-          assignment_id: assignmentId,
-          user_id: user.id
+          p_assignment_id: assignmentId,
+          p_user_id: user.id
         });
 
       if (submitError) {
