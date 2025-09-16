@@ -12,7 +12,7 @@ import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useToast } from '@/hooks/use-toast';
 import type { Assignment, Question as DBQuestion, CreateQuestionData } from '@/types/clp';
 
-interface Question {
+interface LocalQuestion {
   id?: string;
   kind: 'mcq' | 'tf' | 'descriptive' | 'task';
   prompt: string;
@@ -40,10 +40,10 @@ const ManageQuestions: React.FC = () => {
   } = useCareerLevelProgram();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [questions, setQuestions] = useState<LocalQuestion[]>([]);
+  const [editingQuestion, setEditingQuestion] = useState<LocalQuestion | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState<Question>({
+  const [formData, setFormData] = useState<LocalQuestion>({
     kind: 'mcq',
     prompt: '',
     options: ['', '', '', ''],
@@ -79,7 +79,7 @@ const ManageQuestions: React.FC = () => {
         setAssignment(foundAssignment);
         
         const questionsData = await getQuestionsByAssignment(assignmentId);
-        const formattedQuestions: Question[] = questionsData.map(q => ({
+        const formattedQuestions: LocalQuestion[] = questionsData.map(q => ({
           id: q.id,
           kind: q.kind,
           prompt: q.prompt,
@@ -191,7 +191,7 @@ const ManageQuestions: React.FC = () => {
     }
   };
 
-  const handleEditQuestion = (question: Question) => {
+  const handleEditQuestion = (question: LocalQuestion) => {
     // Create a clean copy of the question data
     const cleanFormData = {
       ...question,
