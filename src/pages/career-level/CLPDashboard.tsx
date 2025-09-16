@@ -733,9 +733,9 @@ const CLPDashboard = () => {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${(userRole === 'admin' || userRole === 'recruiter') ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            {userRole === 'admin' && <TabsTrigger value="courses">Courses</TabsTrigger>}
+            {(userRole === 'admin' || userRole === 'recruiter') && <TabsTrigger value="courses">Courses</TabsTrigger>}
             <TabsTrigger value="assignments">Assignments</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
@@ -843,8 +843,8 @@ const CLPDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Courses Tab - Only accessible by Super Admins */}
-          {userRole === 'admin' && (
+          {/* Courses Tab - Accessible by Super Admins and Recruiters */}
+          {(userRole === 'admin' || userRole === 'recruiter') && (
             <TabsContent value="courses" className="space-y-6">
             {/* Page Header */}
             <div className="flex items-center justify-between mb-8">
