@@ -218,10 +218,19 @@ const AttemptAssignment = () => {
 
         // Send notifications to all institute admins
         if (instituteAdmins && instituteAdmins.length > 0) {
+          const { data: currentUser } = await supabase.auth.getUser();
+          const { data: studentProfile } = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('user_id', currentUser?.user?.id)
+            .single();
+          
+          const studentName = studentProfile?.full_name || studentProfile?.username || 'A student';
+          
           const notifications = instituteAdmins.map(admin => ({
             user_id: admin.user_id,
             title: 'New Skills Assignment Submission',
-            message: `A student has submitted a skills assignment: ${assignment?.title}`,
+            message: `${studentName} has submitted a skills assignment: ${assignment?.title}`,
             type: 'skills_assignment_submission',
             related_id: currentAttempt?.id,
             is_read: false
@@ -230,6 +239,8 @@ const AttemptAssignment = () => {
           await supabase
             .from('notifications')
             .insert(notifications);
+          
+          console.log('✅ Notifications sent to institute admins:', notifications.length);
         }
       }
     } catch (error) {

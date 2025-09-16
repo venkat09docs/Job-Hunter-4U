@@ -111,7 +111,18 @@ const CLPReviewManagement = () => {
       const { data: attemptsData, error: attemptsError } = await supabase
         .from('clp_attempts')
         .select(`
-          *,
+          id,
+          user_id,
+          assignment_id,
+          started_at,
+          submitted_at,
+          time_used_seconds,
+          status,
+          score_numeric,
+          score_points,
+          review_status,
+          created_at,
+          updated_at,
           assignment:clp_assignments(
             title,
             type,
@@ -121,14 +132,25 @@ const CLPReviewManagement = () => {
             )
           ),
           answers:clp_answers(
-            *,
+            id,
+            question_id,
+            response,
+            is_correct,
+            marks_awarded,
+            feedback,
             question:clp_questions(
               prompt,
               kind,
               marks
             )
           ),
-          reviews:clp_reviews(*)
+          reviews:clp_reviews(
+            id,
+            reviewer_id,
+            rubric_scores,
+            reviewer_comments,
+            published_at
+          )
         `)
         .eq('status', 'submitted')
         .in('user_id', studentIds)
