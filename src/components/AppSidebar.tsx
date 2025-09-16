@@ -91,7 +91,7 @@ const recruiterItems = [
 ];
 
 const instituteAdminItems = [
-  { title: "Institute Dashboard", url: "/admin/institute-dashboard", icon: Building },
+  { title: "Institute Dashboard", url: "/admin", icon: Building },
   { title: "Verify Assignments", url: "/admin/verify-assignments", icon: Shield },
   { title: "Batch Management", url: "/admin/batch-management", icon: GraduationCap },
   { title: "Students Management", url: "/admin/students-management", icon: Users },
