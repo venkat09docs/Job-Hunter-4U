@@ -83,32 +83,39 @@ const AssignmentDetail: React.FC = () => {
     
     setIsStarting(true);
     try {
-      // Check if there's an available attempt that can be started
-      const availableAttempt = userAttempts.find(a => a.status === 'available');
+      // Check if there's already an existing attempt (started or available)
+      const existingAttempt = userAttempts.find(a => a.status === 'started' || a.status === 'available');
       
-      if (availableAttempt) {
-        // Update the existing available attempt to started
-        const { data: updatedAttempt, error } = await supabase
-          .from('clp_attempts')
-          .update({
-            status: 'started',
-            started_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', availableAttempt.id)
-          .eq('status', 'available')
-          .select()
-          .single();
-        
-        if (error) throw error;
-        
-        navigate(`/dashboard/career-level/attempt/${availableAttempt.id}`);
-      } else {
-        // Create new attempt
-        const attempt = await startAttempt(assignment.id);
-        if (attempt) {
-          navigate(`/dashboard/career-level/attempt/${attempt.id}`);
+      if (existingAttempt) {
+        // If there's a started attempt, continue it
+        if (existingAttempt.status === 'started') {
+          navigate(`/dashboard/career-level/attempt/${existingAttempt.id}`);
+          return;
         }
+        
+        // If there's an available attempt, start it
+        if (existingAttempt.status === 'available') {
+          const { error } = await supabase
+            .from('clp_attempts')
+            .update({
+              status: 'started',
+              started_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingAttempt.id)
+            .eq('status', 'available');
+          
+          if (error) throw error;
+          
+          navigate(`/dashboard/career-level/attempt/${existingAttempt.id}`);
+          return;
+        }
+      }
+      
+      // Only create new attempt if no existing attempt found
+      const attempt = await startAttempt(assignment.id);
+      if (attempt) {
+        navigate(`/dashboard/career-level/attempt/${attempt.id}`);
       }
     } catch (error) {
       console.error('Error starting attempt:', error);
