@@ -145,12 +145,16 @@ const SkillAssignments = () => {
     }
   });
 
-  const getStatusBadge = (status: string, reviewStatus: string) => {
+  const getStatusBadge = (status: string, reviewStatus: string, scorePoints: number) => {
     if (status === 'submitted' && reviewStatus === 'pending') {
       return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><AlertCircle className="w-3 h-3 mr-1" />Pending Review</Badge>;
     }
-    if (reviewStatus === 'reviewed') {
-      return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1" />Reviewed</Badge>;
+    if (reviewStatus === 'published') {
+      if (scorePoints > 0) {
+        return <Badge variant="default" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+      } else {
+        return <Badge variant="destructive" className="bg-red-100 text-red-800"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      }
     }
     return <Badge variant="outline">{status}</Badge>;
   };
@@ -213,15 +217,16 @@ const SkillAssignments = () => {
       const totalScore = Object.values(reviewScores).reduce((sum, score) => sum + score, 0);
       console.log('Total score calculated:', totalScore);
 
-      // Update attempt with review status and total score
-      console.log('Updating attempt:', selectedAssignment.id, 'with review_status: published and score:', totalScore);
+      // Update attempt based on approval status
+      console.log('Updating attempt:', selectedAssignment.id, 'approved:', approved, 'score:', totalScore);
       
       const { data: updateData, error: attemptError } = await supabase
         .from('clp_attempts')
         .update({ 
-          review_status: 'published',
+          review_status: 'published', // Always set to published after review
           score_points: totalScore,
           score_numeric: totalScore
+          // Note: We'll use review_status='published' + score to determine if approved/completed
         })
         .eq('id', selectedAssignment.id)
         .select(); // Return the updated record to verify the update
@@ -233,11 +238,41 @@ const SkillAssignments = () => {
       
       console.log('Update result:', updateData);
 
+      // Award points to student only if approved and has score > 0
+      if (approved && totalScore > 0) {
+        console.log('Awarding points to student:', selectedAssignment.user_id, 'points:', totalScore);
+        
+        const { error: pointsError } = await supabase
+          .from('user_activity_points')
+          .insert({
+            user_id: selectedAssignment.user_id,
+            activity_date: new Date().toISOString().split('T')[0], // Today's date
+            activity_type: 'skill_assignment_completion',
+            activity_id: `assignment_${selectedAssignment.assignment_id}`,
+            points_earned: totalScore,
+            activity_description: `Completed skill assignment: ${selectedAssignment.assignment?.title}`,
+            verified_at: new Date().toISOString(),
+            verified_by: user?.id
+          });
+
+        if (pointsError) {
+          console.error('Error awarding points:', pointsError);
+          // Don't throw error here - assignment is still approved, just points failed
+          toast({
+            title: 'Warning',
+            description: 'Assignment approved but failed to award points. Please contact administrator.',
+            variant: 'destructive',
+          });
+        } else {
+          console.log('Points awarded successfully');
+        }
+      }
+
       toast({
         title: 'Success',
         description: approved 
-          ? `Assignment approved successfully. Total score: ${totalScore} points`
-          : `Assignment rejected. Total score: ${totalScore} points`,
+          ? `Assignment approved and marked as completed! Student earned ${totalScore} points.`
+          : `Assignment rejected with feedback provided.`,
       });
 
       setShowReviewDialog(false);
@@ -377,7 +412,7 @@ const SkillAssignments = () => {
                       </CardDescription>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      {getStatusBadge(assignment.status, assignment.review_status)}
+                      {getStatusBadge(assignment.status, assignment.review_status, assignment.score_points || 0)}
                       <Badge variant="outline" className="text-xs">
                         {assignment.assignment?.type?.toUpperCase()}
                       </Badge>
