@@ -211,6 +211,7 @@ export const useProfile = () => {
     updateSubscription,
     getRemainingDays,
     hasActiveSubscription,
+    subscriptionPlan: profile?.subscription_plan,
     refreshProfile: fetchProfile,
     refreshAnalytics: fetchAnalytics
   };

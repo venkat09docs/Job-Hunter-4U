@@ -16,12 +16,12 @@ import PricingDialog from '@/components/PricingDialog';
 const CourseCard: React.FC<{ 
   course: Course; 
   isEnrolled: boolean;
-  hasActiveSubscription: boolean;
+  canAccess: boolean;
   onEnrollCourse?: (course: Course) => void;
   onViewCourse?: (courseId: string) => void;
   onShowUpgrade?: () => void;
-}> = ({ course, isEnrolled, hasActiveSubscription, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
-  const isLocked = !course.is_free && !hasActiveSubscription;
+}> = ({ course, isEnrolled, canAccess, onEnrollCourse, onViewCourse, onShowUpgrade }) => {
+  const isLocked = !canAccess;
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
       <div className="relative">
@@ -150,12 +150,56 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
   const navigate = useNavigate();
   const { getCourses, loading } = useCareerLevelProgram();
   const { goals, loading: goalsLoading } = useLearningGoals();
-  const { hasActiveSubscription } = useProfile();
+  const { hasActiveSubscription, subscriptionPlan } = useProfile();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState<string>('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  // Subscription plan hierarchy mapping
+  const subscriptionHierarchy = {
+    'free': 0,
+    'one_month': 1,
+    'three_months': 2, 
+    'six_months': 3,
+    'one_year': 4
+  };
+
+  // Get user's subscription tier level
+  const getUserSubscriptionTier = () => {
+    if (!hasActiveSubscription()) return 0; // No active subscription = free tier
+    
+    // Map subscription plan names to tiers
+    const planNameMapping: Record<string, number> = {
+      'One Week Plan': 1,
+      'One Month Plan': 1,
+      '1 Month Plan': 1,
+      'Monthly Plan': 1,
+      'Three Months Plan': 2,
+      '3 Months Plan': 2,  
+      'Six Months Plan': 3,
+      '6 Months Plan': 3,
+      'One Year Plan': 4,
+      '1 Year Plan': 4,
+      'Annual Plan': 4
+    };
+    
+    return planNameMapping[subscriptionPlan || ''] || 1; // Default to one month if unknown
+  };
+
+  // Check if user can access a specific course
+  const canAccessCourse = (course: Course) => {
+    // Free courses are always accessible
+    if (course.is_free) return true;
+    
+    const userTier = getUserSubscriptionTier();
+    const coursePlan = getCourseSubscriptionPlan(course);
+    const courseTier = subscriptionHierarchy[coursePlan as keyof typeof subscriptionHierarchy] || 1;
+    
+    // User can access course if their tier is equal or higher than course requirement
+    return userTier >= courseTier;
+  };
 
   // Subscription plan options
   const subscriptionPlans = [
@@ -511,7 +555,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
                   key={course.id} 
                   course={course}
                   isEnrolled={isUserEnrolled(course.id)}
-                  hasActiveSubscription={hasActiveSubscription()}
+                  canAccess={canAccessCourse(course)}
                   onEnrollCourse={handleEnrollCourse}
                   onViewCourse={handleViewCourse}
                   onShowUpgrade={() => setShowUpgradeDialog(true)}
@@ -529,7 +573,7 @@ const SkillDeveloperProgramsTab: React.FC<SkillDeveloperProgramsTabProps> = ({ o
             key={course.id} 
             course={course}
             isEnrolled={isUserEnrolled(course.id)}
-            hasActiveSubscription={hasActiveSubscription()}
+            canAccess={canAccessCourse(course)}
             onEnrollCourse={handleEnrollCourse}
             onViewCourse={handleViewCourse}
             onShowUpgrade={() => setShowUpgradeDialog(true)}
