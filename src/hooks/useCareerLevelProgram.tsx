@@ -317,7 +317,11 @@ export const useCareerLevelProgram = () => {
         );
 
         // Determine if user can attempt this assignment
-        const canAttempt = assignment.max_attempts > userAttempts.length;
+        const hasStartedAttempt = userAttempts.some(attempt => attempt.status === 'started');
+        const hasSubmittedAttempts = userAttempts.filter(attempt => 
+          attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+        ).length;
+        const canAttempt = (hasSubmittedAttempts + (hasStartedAttempt ? 1 : 0)) < assignment.max_attempts;
         
         // Check if assignment is currently open
         const now = new Date();
@@ -343,7 +347,17 @@ export const useCareerLevelProgram = () => {
         } as AssignmentWithProgress;
       });
 
-      console.log('Fetched assignments with progress:', assignmentsWithProgress);
+      console.log('📚 Fetched assignments with progress:', {
+        total: assignmentsWithProgress.length,
+        assignments: assignmentsWithProgress.map(a => ({
+          id: a.id,
+          title: a.title,
+          userAttempts: a.userAttempts.length,
+          canAttempt: a.canAttempt,
+          status: a.status,
+          attemptsRemaining: a.attemptsRemaining
+        }))
+      });
       return assignmentsWithProgress;
     } catch (error: any) {
       toast({

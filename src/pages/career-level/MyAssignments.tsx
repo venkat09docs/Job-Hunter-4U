@@ -96,21 +96,20 @@ const MyAssignments: React.FC = () => {
 
   // Filter assignments by status - ensure assignments only appear in one tab
   const upcomingAssignments = assignments.filter(a => 
-    a.userAttempts.length === 0 && (
-      a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
-    )
+    a.userAttempts.length === 0 && 
+    a.status === 'open' && 
+    a.canAttempt
   );
   
   const activeAssignments = assignments.filter(a => 
-    a.userAttempts.length > 0 && (
-      a.userAttempts.some(attempt => attempt.status === 'started') ||
-      a.canAttempt
-    )
+    (a.userAttempts.some(attempt => attempt.status === 'started')) ||
+    (a.userAttempts.length > 0 && a.canAttempt && a.status === 'open')
   );
   
   const completedAssignments = assignments.filter(a => 
-    a.userAttempts.length > 0 && 
-    !a.canAttempt
+    a.userAttempts.some(attempt => 
+      attempt.status === 'submitted' || attempt.status === 'auto_submitted'
+    ) && !a.userAttempts.some(attempt => attempt.status === 'started')
   );
 
   const renderAssignmentCard = (assignment: AssignmentWithProgress) => {
