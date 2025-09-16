@@ -79,6 +79,7 @@ import AssignmentDetail from "./pages/career-level/AssignmentDetail";
 import CreateAssignment from "./pages/career-level/CreateAssignment";
 import ManageQuestions from "./pages/career-level/ManageQuestions";
 import AttemptAssignment from "./pages/career-level/AttemptAssignment";
+import AttemptResults from "./pages/career-level/AttemptResults";
 import CourseContentView from "./pages/CourseContentView";
 import CourseContentManagement from "./pages/CourseContentManagement";
 
@@ -554,17 +555,14 @@ const AppContent = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/dashboard/career-level/attempt/:attemptId/results" 
-            element={
-              <ProtectedRoute>
-                <div className="p-8 text-center">
-                  <h2 className="text-2xl font-bold mb-4">Assignment Results</h2>
-                  <p>Results page coming soon...</p>
-                </div>
-              </ProtectedRoute>
-            } 
-          />
+            <Route 
+              path="/dashboard/career-level/attempt/:attemptId/results" 
+              element={
+                <ProtectedRoute>
+                  <AttemptResults />
+                </ProtectedRoute>
+              } 
+            />
           <Route 
             path="/course/:courseId" 
             element={

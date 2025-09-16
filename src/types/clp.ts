@@ -251,6 +251,8 @@ export const ASSIGNMENT_STATUS_LABELS = {
   scheduled: 'Scheduled',
   open: 'Open',
   closed: 'Closed',
+  submitted: 'Submitted',
+  completed: 'Completed',
   grading: 'Grading',
   published: 'Published'
 } as const;

@@ -63,6 +63,8 @@ const MyAssignments: React.FC = () => {
       case 'scheduled': return 'bg-blue-500';
       case 'closed': return 'bg-gray-500';
       case 'draft': return 'bg-yellow-500';
+      case 'submitted': return 'bg-orange-500';
+      case 'completed': return 'bg-blue-600';
       default: return 'bg-gray-500';
     }
   };
@@ -106,20 +108,21 @@ const MyAssignments: React.FC = () => {
     (a.userAttempts.length > 0 && a.canAttempt && a.status === 'open')
   );
   
+  const submittedAssignments = assignments.filter(a => 
+    a.status === 'submitted'
+  );
+  
   const completedAssignments = assignments.filter(a => 
-    a.userAttempts.some(attempt => 
-      attempt.status === 'submitted' || attempt.status === 'auto_submitted'
-    ) && !a.userAttempts.some(attempt => attempt.status === 'started')
+    a.status === 'completed'
   );
 
   const renderAssignmentCard = (assignment: AssignmentWithProgress) => {
     const hasActiveAttempt = assignment.userAttempts.some(a => a.status === 'started');
-    const isCompleted = assignment.userAttempts.some(a => 
-      a.status === 'submitted' || a.status === 'auto_submitted'
-    );
+    const isSubmitted = assignment.status === 'submitted';
+    const isCompleted = assignment.status === 'completed';
     
     const bestScore = assignment.userAttempts
-      .filter(a => a.score_numeric !== null)
+      .filter(a => a.score_numeric !== null && a.review_status === 'published')
       .reduce((max, attempt) => 
         Math.max(max, attempt.score_numeric || 0), 0
       );
@@ -239,6 +242,11 @@ const MyAssignments: React.FC = () => {
                   <PlayCircle className="w-4 h-4 mr-2" />
                   New Attempt
                 </Link>
+              </Button>
+            ) : isSubmitted ? (
+              <Button variant="outline" disabled className="flex-1">
+                <Clock className="w-4 h-4 mr-2" />
+                Submitted Assignment
               </Button>
             ) : isCompleted ? (
               <Button variant="outline" asChild className="flex-1">
@@ -384,7 +392,7 @@ const MyAssignments: React.FC = () => {
         </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="p-4">
           <div className="flex items-center">
             <PlayCircle className="w-8 h-8 text-blue-500 mr-3" />
@@ -401,6 +409,26 @@ const MyAssignments: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">In Progress</p>
               <p className="text-2xl font-bold">{activeAssignments.length}</p>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="flex items-center">
+            <Clock className="w-8 h-8 text-orange-500 mr-3" />
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Submitted</p>
+              <p className="text-2xl font-bold">{submittedAssignments.length}</p>
+            </div>
+          </div>
+        </Card>
+        
+        <Card className="p-4">
+          <div className="flex items-center">
+            <Clock className="w-8 h-8 text-orange-500 mr-3" />
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Submitted</p>
+              <p className="text-2xl font-bold">{submittedAssignments.length}</p>
             </div>
           </div>
         </Card>
@@ -436,6 +464,9 @@ const MyAssignments: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="active">
             In Progress ({activeAssignments.length})
+          </TabsTrigger>
+          <TabsTrigger value="submitted">
+            Submitted ({submittedAssignments.length})
           </TabsTrigger>
           <TabsTrigger value="completed">
             Completed ({completedAssignments.length})

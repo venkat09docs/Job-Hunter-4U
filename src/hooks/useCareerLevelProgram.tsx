@@ -379,6 +379,11 @@ export const useCareerLevelProgram = () => {
         );
         const hasSubmittedAttempts = submittedAttempts.length > 0;
         
+        // Check if any submitted attempts have been reviewed (published)
+        const hasReviewedAttempts = submittedAttempts.some(attempt => 
+          attempt.review_status === 'published'
+        );
+        
         // Check if assignment is currently open by time constraints
         const now = new Date();
         const startAt = assignment.start_at ? new Date(assignment.start_at) : null;
@@ -387,9 +392,11 @@ export const useCareerLevelProgram = () => {
         
         let status = 'open';
         
-        // If user has submitted the assignment, mark as completed
-        if (hasSubmittedAttempts) {
-          status = 'completed';
+        // Determine status based on review status and submission status
+        if (hasReviewedAttempts) {
+          status = 'completed'; // Only mark as completed after admin review
+        } else if (hasSubmittedAttempts) {
+          status = 'submitted'; // Show as submitted until admin reviews
         } else if (startAt && now < startAt) {
           status = 'scheduled';
         } else if (endAt && now > endAt) {
