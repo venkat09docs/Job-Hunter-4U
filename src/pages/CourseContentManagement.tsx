@@ -570,7 +570,7 @@ const CourseContentManagement = () => {
                   </div>
                 )}
 
-                {userRole === 'admin' && (
+                {(userRole === 'admin' || (userRole === 'recruiter' && chapterType !== 'video')) && (
                   <div>
                     <Label htmlFor="duration">Duration (minutes)</Label>
                     <Input
@@ -578,7 +578,7 @@ const CourseContentManagement = () => {
                       type="number"
                       value={chapterDuration}
                       onChange={(e) => setChapterDuration(parseInt(e.target.value) || 0)}
-                      placeholder="Enter duration in minutes"
+                      placeholder={chapterType === 'video' ? "Enter video duration in minutes" : "Enter reading/completion time in minutes"}
                       min="0"
                     />
                   </div>

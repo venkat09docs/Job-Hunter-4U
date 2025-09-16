@@ -853,6 +853,24 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     </div>
                   )}
 
+                  {/* Duration field for all content types (visible to recruiters for article/document, admins for all) */}
+                  {(userRole === 'admin' || (userRole === 'recruiter' && chapterType !== 'video')) && (
+                    <div>
+                      <Label htmlFor="chapter-duration">Duration (minutes)</Label>
+                      <Input
+                        id="chapter-duration"
+                        type="number"
+                        value={chapterDuration}
+                        onChange={(e) => {
+                          setChapterDuration(parseInt(e.target.value) || 0);
+                          setTimeout(() => saveFormState(), 100);
+                        }}
+                        placeholder={chapterType === 'video' ? "Video duration in minutes" : "Reading/completion time in minutes"}
+                        min="0"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <Button onClick={handleSaveChapter} disabled={loading} className="flex items-center gap-2">
                       <Save className="h-4 w-4" />
