@@ -94,25 +94,23 @@ const MyAssignments: React.FC = () => {
     return diffDays;
   };
 
-  // Filter assignments by status
+  // Filter assignments by status - ensure assignments only appear in one tab
   const upcomingAssignments = assignments.filter(a => 
-    (a.status === 'scheduled') || 
-    (a.status === 'open' && a.canAttempt && a.userAttempts.length === 0)
+    a.userAttempts.length === 0 && (
+      a.status === 'scheduled' || (a.status === 'open' && a.canAttempt)
+    )
   );
   
   const activeAssignments = assignments.filter(a => 
     a.userAttempts.length > 0 && (
       a.userAttempts.some(attempt => attempt.status === 'started') ||
-      (a.canAttempt && a.userAttempts.some(attempt => attempt.status === 'submitted' || attempt.status === 'auto_submitted'))
+      a.canAttempt
     )
   );
   
   const completedAssignments = assignments.filter(a => 
     a.userAttempts.length > 0 && 
-    !a.canAttempt &&
-    a.userAttempts.some(attempt => 
-      attempt.status === 'submitted' || attempt.status === 'auto_submitted'
-    )
+    !a.canAttempt
   );
 
   const renderAssignmentCard = (assignment: AssignmentWithProgress) => {
@@ -224,7 +222,7 @@ const MyAssignments: React.FC = () => {
           <div className="flex gap-2 pt-2">
             {hasActiveAttempt ? (
               <Button asChild className="flex-1">
-                <Link to={`/career-level/attempt/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
+                <Link to={`/career-level/attempt-assignment/${assignment.userAttempts.find(a => a.status === 'started')?.id}`}>
                   <PlayCircle className="w-4 h-4 mr-2" />
                   Continue Attempt
                 </Link>
