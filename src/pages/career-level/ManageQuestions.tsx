@@ -246,7 +246,7 @@ const ManageQuestions: React.FC = () => {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" asChild>
-            <Link to="/dashboard/career-level/assignments">
+            <Link to="/dashboard/career-level/dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Assignments
             </Link>
