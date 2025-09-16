@@ -473,9 +473,10 @@ const SkillAssignments = () => {
                         size="sm" 
                         className="flex items-center gap-2"
                         onClick={() => handleReviewAssignment(assignment)}
+                        disabled={assignment.review_status === 'published'}
                       >
                         <MessageSquare className="w-4 h-4" />
-                        Review Assignment
+                        {assignment.review_status === 'published' ? 'Already Reviewed' : 'Review Assignment'}
                       </Button>
                     </div>
                   </div>
