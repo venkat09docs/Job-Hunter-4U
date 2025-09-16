@@ -5790,7 +5790,7 @@ export type Database = {
         Returns: boolean
       }
       submit_assignment_direct: {
-        Args: { assignment_id: string; user_id: string }
+        Args: { p_assignment_id: string; p_user_id: string }
         Returns: boolean
       }
       sync_missing_user_profiles: {
