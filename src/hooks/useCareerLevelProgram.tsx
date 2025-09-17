@@ -511,16 +511,229 @@ export const useCareerLevelProgram = () => {
     }
   }, [user, toast]);
 
-  // Add missing functions with correct signatures to fix build errors
-  const deleteAssignment = useCallback(async (id: string) => false, []);
-  const publishAssignment = useCallback(async (id: string) => false, []);
-  const getModulesByCourse = useCallback(async (courseId: string) => [], []);
-  const createAssignment = useCallback(async (data: any) => null, []);
-  const updateAssignment = useCallback(async (id: string, data: any) => null, []);
-  const createQuestion = useCallback(async (data: any) => null, []);
-  const updateQuestion = useCallback(async (id: string, data: any) => null, []);
-  const deleteQuestion = useCallback(async (id: string) => false, []);
-  const getUserAssignmentsOrganized = useCallback(async () => ({}), []);
+  // Assignment Management Functions
+  const createAssignment = useCallback(async (data: any) => {
+    setLoading(true);
+    try {
+      const { data: assignment, error } = await supabase
+        .from('clp_assignments')
+        .insert({
+          ...data,
+          created_by: user?.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment created successfully'
+      });
+
+      return assignment;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create assignment',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  const updateAssignment = useCallback(async (id: string, data: any) => {
+    setLoading(true);
+    try {
+      const { data: assignment, error } = await supabase
+        .from('clp_assignments')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment updated successfully'
+      });
+
+      return assignment;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update assignment',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const deleteAssignment = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clp_assignments')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment deleted successfully'
+      });
+
+      return true;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete assignment',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const publishAssignment = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const { data: assignment, error } = await supabase
+        .from('clp_assignments')
+        .update({ is_published: true })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Assignment published successfully'
+      });
+
+      return assignment;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to publish assignment',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // Question Management Functions
+  const createQuestion = useCallback(async (data: any) => {
+    setLoading(true);
+    try {
+      const { data: question, error } = await supabase
+        .from('clp_questions')
+        .insert(data)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return question;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create question',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const updateQuestion = useCallback(async (id: string, data: any) => {
+    setLoading(true);
+    try {
+      const { data: question, error } = await supabase
+        .from('clp_questions')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return question;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update question',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const deleteQuestion = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('clp_questions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      return true;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete question',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  // Additional helper functions
+  const getModulesByCourse = useCallback(async (courseId: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clp_modules')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to fetch modules',
+        variant: 'destructive'
+      });
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const getUserAssignmentsOrganized = useCallback(async () => {
+    // This function can be implemented based on specific requirements
+    return {};
+  }, []);
 
   return {
     loading,
