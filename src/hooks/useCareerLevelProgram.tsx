@@ -513,8 +513,20 @@ export const useCareerLevelProgram = () => {
 
   // Assignment Management Functions
   const createAssignment = useCallback(async (data: any) => {
+    console.log('🎯 Creating assignment - User ID:', user?.id);
+    console.log('🎯 Assignment data:', data);
+    
     setLoading(true);
     try {
+      // Check user role first
+      const { data: userRole, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+      
+      console.log('🎯 User role check:', userRole, roleError);
+      
       const { data: assignment, error } = await supabase
         .from('clp_assignments')
         .insert({
@@ -524,7 +536,12 @@ export const useCareerLevelProgram = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      console.log('🎯 Assignment creation result:', assignment, error);
+      
+      if (error) {
+        console.error('🔥 Assignment creation error:', error);
+        throw error;
+      }
 
       toast({
         title: 'Success',
