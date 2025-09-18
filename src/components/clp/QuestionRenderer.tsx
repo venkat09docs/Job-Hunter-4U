@@ -48,11 +48,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
     setResponse(newResponse);
-    
-    // Use setTimeout to prevent immediate re-rendering issues
-    setTimeout(() => {
-      onAnswerChange(question.id, newResponse);
-    }, 0);
+    onAnswerChange(question.id, newResponse);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -292,11 +288,23 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     return (
       <div className="space-y-6">
+        {/* Task Instructions */}
+        {question.prompt && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-blue-900 mb-2 block">
+              Task Instructions
+            </Label>
+            <div className="text-sm text-blue-800 whitespace-pre-wrap">
+              {question.prompt}
+            </div>
+          </div>
+        )}
+
         {/* Task Reference Images */}
         {taskAttachments.length > 0 && (
           <div>
-            <Label className="text-sm font-medium mb-2 block">
-              Task Reference Images
+            <Label className="text-sm font-medium mb-3 block">
+              Reference Images/Materials
             </Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {taskAttachments.map((attachment: string, index: number) => (
@@ -447,9 +455,17 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               <Badge variant="outline" className="text-xs">
                 {questionNumber} of {totalQuestions}
               </Badge>
-              <span className="text-base font-medium">
-                {question.prompt}
-              </span>
+              {/* Only show prompt in header for non-task questions */}
+              {question.kind !== 'task' && (
+                <span className="text-base font-medium">
+                  {question.prompt}
+                </span>
+              )}
+              {question.kind === 'task' && (
+                <span className="text-base font-medium">
+                  Complete Project Task
+                </span>
+              )}
             </CardTitle>
           </div>
           <div className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,7 +128,10 @@ const AttemptAssignment = () => {
 
   // Auto-save function removed to prevent interference with user interactions
 
-  const handleAnswerChange = async (questionId: string, response: Record<string, any>) => {
+  // Debounce timer for answer submission
+  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleAnswerChange = useCallback((questionId: string, response: Record<string, any>) => {
     if (!currentAttempt) return;
 
     // Update local state immediately for better UX
@@ -155,19 +158,25 @@ const AttemptAssignment = () => {
       }
     });
 
-    // Submit answer in background without blocking UI
-    try {
-      await submitAnswer({
-        attempt_id: currentAttempt.id,
-        question_id: questionId,
-        response
-      });
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-      // Don't show error toast for every answer submission to avoid disrupting user experience
-      // Only log the error silently
+    // Clear existing timeout
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
     }
-  };
+
+    // Debounce answer submission to prevent constant API calls while typing
+    submitTimeoutRef.current = setTimeout(async () => {
+      try {
+        await submitAnswer({
+          attempt_id: currentAttempt.id,
+          question_id: questionId,
+          response
+        });
+      } catch (error) {
+        console.error('Error submitting answer:', error);
+        // Don't show error toast for every answer submission to avoid disrupting user experience
+      }
+    }, 1000); // Wait 1 second after user stops typing
+  }, [currentAttempt, submitAnswer]);
 
   const handleSubmitAttempt = async () => {
     if (!currentAttempt) return;
