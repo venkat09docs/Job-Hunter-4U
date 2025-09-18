@@ -25,6 +25,7 @@ import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, Arrow
 import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryDialog';
 import { GenerateKeySkillsDialog } from '@/components/GenerateKeySkillsDialog';
 import { GenerateAchievementsDialog } from '@/components/GenerateAchievementsDialog';
+import { WriteEffectiveResumeDialog } from '@/components/WriteEffectiveResumeDialog';
 
 interface Experience {
   company: string;
@@ -79,6 +80,8 @@ const ResumeBuilder = () => {
   const [showKeySkillsDialog, setShowKeySkillsDialog] = useState(false);
   const [showAchievementsDialog, setShowAchievementsDialog] = useState(false);
   const [currentExperienceIndex, setCurrentExperienceIndex] = useState<number>(0);
+  const [showWriteEffectiveResumeDialog, setShowWriteEffectiveResumeDialog] = useState(false);
+  const [generatedResumeText, setGeneratedResumeText] = useState("");
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -2734,12 +2737,23 @@ ${resumeData.personalDetails.fullName}`;
                   {/* Action Buttons */}
                   <div className="flex gap-4">
                     <Button 
-                      onClick={() => window.open('/dashboard/digital-career-hub?toolId=b1d7a888-49b8-412b-861b-b6d850eda7a4', '_blank')}
-                      className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                      onClick={() => setShowWriteEffectiveResumeDialog(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      <FileEdit className="h-4 w-4" />
                       Write an Effective Resume
                     </Button>
+                    
+                    {generatedResumeText && (
+                      <div className="mt-4 space-y-2">
+                        <Label>Generated Resume:</Label>
+                        <Textarea
+                          value={generatedResumeText}
+                          readOnly
+                          className="min-h-[400px] font-mono text-sm"
+                          placeholder="Your generated resume will appear here..."
+                        />
+                      </div>
+                    )}
                     <Button 
                       onClick={saveFinalVersion}
                       disabled={loading}
@@ -3158,6 +3172,13 @@ ${resumeData.personalDetails.fullName}`;
         isOpen={showAchievementsDialog}
         onClose={() => setShowAchievementsDialog(false)}
         onAchievementsGenerated={(achievements) => handleAchievementsGenerated(achievements, currentExperienceIndex)}
+      />
+
+      {/* Write Effective Resume Dialog */}
+      <WriteEffectiveResumeDialog
+        open={showWriteEffectiveResumeDialog}
+        onOpenChange={setShowWriteEffectiveResumeDialog}
+        onResumeGenerated={setGeneratedResumeText}
       />
     </div>
   );
