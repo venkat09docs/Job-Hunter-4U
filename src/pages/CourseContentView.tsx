@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home, CheckCircle2, ArrowRight, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,7 +24,7 @@ interface Chapter {
   id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document';
+  content_type: 'video' | 'article' | 'document' | 'checklist';
   content_data: any;
   order_index: number;
   duration_minutes?: number;
@@ -265,6 +265,8 @@ const CourseContentView: React.FC = () => {
         return <FileText className="h-4 w-4" />;
       case 'document':
         return <Download className="h-4 w-4" />;
+      case 'checklist':
+        return <CheckSquare className="h-4 w-4" />;
       default:
         return <BookOpen className="h-4 w-4" />;
     }
@@ -278,6 +280,8 @@ const CourseContentView: React.FC = () => {
         return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'document':
         return 'bg-green-100 text-green-700 border-green-200';
+      case 'checklist':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -452,6 +456,15 @@ const CourseContentView: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        );
+
+      case 'checklist':
+        return (
+          <div className="text-center py-8 text-muted-foreground">
+            <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Checklist functionality not available in this view</p>
+            <p className="text-xs mt-2">Please use the course content viewer for interactive checklists</p>
           </div>
         );
 
