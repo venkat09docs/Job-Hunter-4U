@@ -5391,6 +5391,18 @@ export type Database = {
           username: string
         }[]
       }
+      get_checklist_progress: {
+        Args: { chapter_id_param: string; user_id_param: string }
+        Returns: {
+          chapter_id: string
+          checklist_item_id: string
+          completed_at: string
+          created_at: string
+          id: string
+          is_completed: boolean
+          updated_at: string
+        }[]
+      }
       get_commission_rate_for_plan: {
         Args: { plan_name_param: string }
         Returns: number
