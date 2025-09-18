@@ -22,6 +22,7 @@ import { useToolChats } from '@/hooks/useToolChats';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink } from 'docx';
 import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
+import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryDialog';
 
 interface Experience {
   company: string;
@@ -74,6 +75,7 @@ const ResumeBuilder = () => {
   const [coverLetterContent, setCoverLetterContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
+  const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -177,6 +179,10 @@ const ResumeBuilder = () => {
   const updateProfessionalSummary = useCallback((value: string) => {
     setResumeData(prev => ({ ...prev, professionalSummary: value }));
   }, []);
+
+  const handleSummaryGenerated = useCallback((summary: string) => {
+    updateProfessionalSummary(summary);
+  }, [updateProfessionalSummary]);
 
   const [checklist, setChecklist] = useState({
     personalInfo: false,
@@ -3024,18 +3030,18 @@ ${resumeData.personalDetails.fullName}`;
                                          )}
                                      </div>
                                      
-                                     {/* Generate Resume Summary Button */}
-                                     <div className="mt-4 pt-3 border-t">
-                                       <Button 
-                                         variant="default" 
-                                         size="sm" 
-                                         className="w-full gap-2"
-                                         onClick={() => window.open('/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd', '_blank')}
-                                       >
-                                         <Sparkles className="h-4 w-4" />
-                                         Generate Resume Summary
-                                       </Button>
-                                     </div>
+                                      {/* Generate Resume Summary Button */}
+                                      <div className="mt-4 pt-3 border-t">
+                                        <Button 
+                                          variant="default" 
+                                          size="sm" 
+                                          className="w-full gap-2"
+                                          onClick={() => setShowResumeSummaryDialog(true)}
+                                        >
+                                          <Sparkles className="h-4 w-4" />
+                                          Generate Resume Summary
+                                        </Button>
+                                      </div>
                                   </div>
                                  )}
 
@@ -3449,6 +3455,13 @@ ${resumeData.personalDetails.fullName}`;
           </Tabs>
         </div>
       </main>
+
+      {/* Generate Resume Summary Dialog */}
+      <GenerateResumeSummaryDialog
+        open={showResumeSummaryDialog}
+        onOpenChange={setShowResumeSummaryDialog}
+        onSummaryGenerated={handleSummaryGenerated}
+      />
     </div>
   );
 };
