@@ -363,7 +363,7 @@ export const useCareerLevelProgram = () => {
         .eq('is_active', true)
         .maybeSingle();
 
-      // Get assignments visible to this user
+      // Get assignments with section and course information
       const { data: assignments, error: assignmentsError } = await supabase
         .from('clp_assignments')
         .select(`
@@ -382,30 +382,84 @@ export const useCareerLevelProgram = () => {
         throw assignmentsError;
       }
 
-      // Filter assignments based on visibility rules
+      // Get all sections that have assignments to fetch their chapters
+      const sectionIds = [...new Set((assignments || [])
+        .map(a => a.section_id)
+        .filter(Boolean)
+      )];
+
+      // Get all chapters for these sections
+      const { data: chapters, error: chaptersError } = await supabase
+        .from('course_chapters')
+        .select('id, section_id')
+        .in('section_id', sectionIds)
+        .eq('is_active', true);
+
+      if (chaptersError) {
+        console.error('Error fetching chapters:', chaptersError);
+        throw chaptersError;
+      }
+
+      // Get user's completed chapters
+      const { data: completedChapters, error: completionsError } = await supabase
+        .from('user_chapter_completions')
+        .select('chapter_id')
+        .eq('user_id', user.id);
+
+      if (completionsError) {
+        console.error('Error fetching chapter completions:', completionsError);
+        throw completionsError;
+      }
+
+      const completedChapterIds = new Set((completedChapters || []).map(c => c.chapter_id));
+
+      // Filter assignments based on visibility rules and section completion
       const visibleAssignments = (assignments || []).filter(assignment => {
-        // If no visibility rules exist, assignment is visible to everyone
-        if (!assignment.visibility || assignment.visibility.length === 0) {
-          return true;
+        // Check visibility rules first
+        if (assignment.visibility && assignment.visibility.length > 0) {
+          const hasVisibility = assignment.visibility.some(visibility => {
+            if (visibility.audience === 'all') {
+              return true;
+            }
+            
+            if (visibility.audience === 'cohort' && userAssignment?.batch_id) {
+              return visibility.cohort_id === userAssignment.batch_id;
+            }
+            
+            if (visibility.audience === 'users') {
+              const userIds = Array.isArray(visibility.user_ids) ? visibility.user_ids : [];
+              return userIds.includes(user.id);
+            }
+            
+            return false;
+          });
+          
+          if (!hasVisibility) return false;
         }
 
-        // Check each visibility rule
-        return assignment.visibility.some(visibility => {
-          if (visibility.audience === 'all') {
-            return true;
-          }
+        // Check section completion requirement
+        if (assignment.section_id) {
+          // Get all chapters for this assignment's section
+          const sectionChapters = (chapters || []).filter(c => c.section_id === assignment.section_id);
           
-          if (visibility.audience === 'cohort' && userAssignment?.batch_id) {
-            return visibility.cohort_id === userAssignment.batch_id;
+          // If the section has chapters, user must complete ALL of them
+          if (sectionChapters.length > 0) {
+            const allChaptersCompleted = sectionChapters.every(chapter => 
+              completedChapterIds.has(chapter.id)
+            );
+            
+            if (!allChaptersCompleted) {
+              console.log(`🚫 Assignment "${assignment.title}" hidden - section chapters not completed`, {
+                sectionId: assignment.section_id,
+                totalChapters: sectionChapters.length,
+                completedChapters: sectionChapters.filter(c => completedChapterIds.has(c.id)).length
+              });
+              return false;
+            }
           }
-          
-          if (visibility.audience === 'users') {
-            const userIds = Array.isArray(visibility.user_ids) ? visibility.user_ids : [];
-            return userIds.includes(user.id);
-          }
-          
-          return false;
-        });
+        }
+
+        return true;
       });
 
       // Get user's attempts for these assignments
