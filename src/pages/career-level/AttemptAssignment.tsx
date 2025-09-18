@@ -62,11 +62,14 @@ const AttemptAssignment = () => {
   }, [attemptId]);
 
   useEffect(() => {
-    // Auto-save answers periodically
+    // Disabled auto-save to prevent interference with user interactions
+    // Auto-save was causing component re-renders during answer selection
+    /*
     if (currentAttempt && answers.length > 0) {
       const interval = setInterval(saveCurrentAnswers, 30000); // Save every 30 seconds
       return () => clearInterval(interval);
     }
+    */
   }, [currentAttempt, answers]);
 
   const loadAttemptData = async () => {
@@ -123,59 +126,46 @@ const AttemptAssignment = () => {
     }
   };
 
-  const saveCurrentAnswers = useCallback(async () => {
-    if (!currentAttempt) return;
-
-    try {
-      // Auto-save all current answers
-      console.log('Auto-saving answers...');
-    } catch (error) {
-      console.error('Error auto-saving answers:', error);
-    }
-  }, [currentAttempt, answers]);
+  // Auto-save function removed to prevent interference with user interactions
 
   const handleAnswerChange = async (questionId: string, response: Record<string, any>) => {
     if (!currentAttempt) return;
 
+    // Update local state immediately for better UX
+    setAnswers(prev => {
+      const existing = prev.find(a => a.question_id === questionId);
+      if (existing) {
+        return prev.map(a => 
+          a.question_id === questionId 
+            ? { ...a, response } 
+            : a
+        );
+      } else {
+        return [...prev, {
+          id: `temp-${questionId}`,
+          attempt_id: currentAttempt.id,
+          question_id: questionId,
+          response,
+          is_correct: null,
+          marks_awarded: 0,
+          feedback: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }];
+      }
+    });
+
+    // Submit answer in background without blocking UI
     try {
-      // Submit the answer immediately when changed
       await submitAnswer({
         attempt_id: currentAttempt.id,
         question_id: questionId,
         response
       });
-
-      // Update local state
-      setAnswers(prev => {
-        const existing = prev.find(a => a.question_id === questionId);
-        if (existing) {
-          return prev.map(a => 
-            a.question_id === questionId 
-              ? { ...a, response } 
-              : a
-          );
-        } else {
-          return [...prev, {
-            id: `temp-${questionId}`,
-            attempt_id: currentAttempt.id,
-            question_id: questionId,
-            response,
-            is_correct: null,
-            marks_awarded: 0,
-            feedback: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }];
-        }
-      });
-
     } catch (error) {
       console.error('Error submitting answer:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save answer. Please try again.',
-        variant: 'destructive'
-      });
+      // Don't show error toast for every answer submission to avoid disrupting user experience
+      // Only log the error silently
     }
   };
 

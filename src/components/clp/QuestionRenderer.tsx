@@ -31,20 +31,28 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   showCorrectAnswer = false,
   className
 }) => {
-  const [response, setResponse] = useState<Record<string, any>>(
-    existingAnswer?.response || {}
-  );
+  const [response, setResponse] = useState<Record<string, any>>({});
   const [files, setFiles] = useState<File[]>([]);
 
+  // Reset response when question changes or when existingAnswer changes
   useEffect(() => {
     if (existingAnswer?.response) {
       setResponse(existingAnswer.response);
+    } else {
+      // Clear response when no existing answer or question changes
+      setResponse({});
     }
-  }, [existingAnswer]);
+    // Reset files when question changes
+    setFiles([]);
+  }, [question.id, existingAnswer]);
 
   const handleResponseChange = (newResponse: Record<string, any>) => {
     setResponse(newResponse);
-    onAnswerChange(question.id, newResponse);
+    
+    // Use setTimeout to prevent immediate re-rendering issues
+    setTimeout(() => {
+      onAnswerChange(question.id, newResponse);
+    }, 0);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
