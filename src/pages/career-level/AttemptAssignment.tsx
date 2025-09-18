@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useBlocker } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -39,22 +39,6 @@ const AttemptAssignment = () => {
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [timeExpired, setTimeExpired] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Block navigation when assignment is in progress
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      currentLocation.pathname !== nextLocation.pathname && 
-      !timeExpired && 
-      !isSubmitting &&
-      currentAttempt?.status === 'started'
-  );
-
-  useEffect(() => {
-    if (blocker.state === 'blocked') {
-      setPendingNavigation(() => () => blocker.proceed());
-      setShowNavigationWarning(true);
-    }
-  }, [blocker]);
 
   // Handle page refresh/close
   useEffect(() => {
@@ -233,7 +217,12 @@ const AttemptAssignment = () => {
       setIsSubmitting(false);
       setShowSubmitConfirm(false);
       setShowNavigationWarning(false);
+      const pendingNav = pendingNavigation;
       setPendingNavigation(null);
+      // Execute pending navigation if exists
+      if (pendingNav) {
+        pendingNav();
+      }
     }
   };
 
@@ -322,9 +311,6 @@ const AttemptAssignment = () => {
     } else {
       setShowNavigationWarning(false);
       setPendingNavigation(null);
-      if (blocker.state === 'blocked') {
-        blocker.reset();
-      }
     }
   };
 
