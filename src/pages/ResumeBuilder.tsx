@@ -2982,47 +2982,60 @@ ${resumeData.personalDetails.fullName}`;
                                       Your Resume Summary Notes
                                     </h4>
                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                       {getResumeSummaryNotes().length > 0 ? (
-                                         getResumeSummaryNotes().map((note, index) => (
-                                           <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
-                                             <div className="flex justify-between items-start mb-1">
-                                               <h5 className="font-medium text-sm pr-8">{note.title}</h5>
-                                               <button
-                                                 onClick={() => copyToClipboard(note.content)}
-                                                 className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
-                                                 title="Copy content"
-                                               >
-                                                 <Copy className="h-3 w-3" />
-                                               </button>
-                                             </div>
-                                             <p className="text-xs text-muted-foreground mb-2">
-                                               {new Date(note.createdAt).toLocaleDateString()}
+                                        {getResumeSummaryNotes().length > 0 ? (
+                                          getResumeSummaryNotes().map((note, index) => (
+                                            <div key={index} className="p-3 bg-muted/50 rounded-lg border relative group">
+                                              <div className="flex justify-between items-start mb-1">
+                                                <h5 className="font-medium text-sm pr-8">{note.title}</h5>
+                                                <button
+                                                  onClick={() => copyToClipboard(note.content)}
+                                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded"
+                                                  title="Copy content"
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </button>
+                                              </div>
+                                              <p className="text-xs text-muted-foreground mb-2">
+                                                {new Date(note.createdAt).toLocaleDateString()}
+                                              </p>
+                                              <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
+                                                <p className="whitespace-pre-wrap break-words">
+                                                  {note.content}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ))
+                                         ) : (
+                                           <div className="text-sm text-muted-foreground space-y-3">
+                                             <p>
+                                               No notes found in "3. Generate Resume Summary" tool. 
+                                               Create notes there to see them here.
                                              </p>
-                                             <div className="text-sm text-foreground/80 max-h-32 overflow-y-auto">
-                                               <p className="whitespace-pre-wrap break-words">
-                                                 {note.content}
-                                               </p>
-                                             </div>
+                                             <Button 
+                                               variant="outline" 
+                                               size="sm" 
+                                               className="gap-2"
+                                               onClick={() => window.open('/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd', '_blank')}
+                                             >
+                                               <ExternalLink className="h-3 w-3" />
+                                               Go to Resume Summary Tool
+                                             </Button>
                                            </div>
-                                         ))
-                                        ) : (
-                                          <div className="text-sm text-muted-foreground space-y-3">
-                                            <p>
-                                              No notes found in "3. Generate Resume Summary" tool. 
-                                              Create notes there to see them here.
-                                            </p>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm" 
-                                              className="gap-2"
-                                              onClick={() => window.open('/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd', '_blank')}
-                                            >
-                                              <ExternalLink className="h-3 w-3" />
-                                              Go to Resume Summary Tool
-                                            </Button>
-                                          </div>
-                                        )}
-                                    </div>
+                                         )}
+                                     </div>
+                                     
+                                     {/* Generate Resume Summary Button */}
+                                     <div className="mt-4 pt-3 border-t">
+                                       <Button 
+                                         variant="default" 
+                                         size="sm" 
+                                         className="w-full gap-2"
+                                         onClick={() => window.open('/dashboard/digital-career-hub?toolId=24b5bb05-e871-4c7a-a7cb-8a7e6c87b3cd', '_blank')}
+                                       >
+                                         <Sparkles className="h-4 w-4" />
+                                         Generate Resume Summary
+                                       </Button>
+                                     </div>
                                   </div>
                                  )}
 
