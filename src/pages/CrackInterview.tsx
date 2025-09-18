@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquare, Send, Bot, User, Loader2, Sparkles } from "lucide-react";
+import { MessageSquare, Send, Bot, User, Loader2, Sparkles, Mic, MicOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizableLayout } from "@/components/ResizableLayout";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface ChatMessage {
   id: string;
@@ -32,6 +33,12 @@ const CrackInterview = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
+    onTranscriptionComplete: (text: string) => {
+      setInputMessage(text);
+    }
+  });
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -115,6 +122,14 @@ const CrackInterview = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
   };
 
@@ -210,16 +225,36 @@ const CrackInterview = () => {
                     onKeyPress={handleKeyPress}
                     placeholder="Ask me anything about interview preparation..."
                     className="flex-1 border-primary/20 focus:border-primary/40"
-                    disabled={isLoading}
+                    disabled={isLoading || isRecording || isProcessing}
                   />
+                  <Button
+                    onClick={handleVoiceToggle}
+                    disabled={isLoading || isProcessing}
+                    variant={isRecording ? "destructive" : "outline"}
+                    className={`${isRecording ? 'animate-pulse' : ''}`}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isRecording ? (
+                      <MicOff className="h-4 w-4" />
+                    ) : (
+                      <Mic className="h-4 w-4" />
+                    )}
+                  </Button>
                   <Button 
                     onClick={sendMessage} 
-                    disabled={!inputMessage.trim() || isLoading}
+                    disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
+                {(isRecording || isProcessing) && (
+                  <div className="mt-2 text-sm text-muted-foreground text-center">
+                    {isRecording && "🎤 Recording... Click stop when finished"}
+                    {isProcessing && "🤖 Converting speech to text..."}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
