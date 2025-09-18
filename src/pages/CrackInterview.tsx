@@ -145,9 +145,6 @@ const CrackInterview = () => {
       <div className="flex flex-col h-full bg-gradient-to-br from-background via-background to-primary/5">
         <div className="flex-shrink-0 border-b bg-card/50 backdrop-blur-sm">
           <div className="flex items-center gap-4 p-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
             <div className="flex-1">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Crack Interview

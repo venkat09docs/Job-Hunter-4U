@@ -51,10 +51,7 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
       mediaRecorderRef.current = mediaRecorder;
       setIsRecording(true);
 
-      toast({
-        title: "Recording started",
-        description: "Speak now... Click stop when finished.",
-      });
+      // Recording started - no toast notification needed
 
     } catch (error) {
       console.error('Error starting recording:', error);
@@ -109,10 +106,7 @@ export const useVoiceRecorder = ({ onTranscriptionComplete }: UseVoiceRecorderPr
         console.log('✅ Transcription received:', data.text);
         onTranscriptionComplete(data.text);
         
-        toast({
-          title: "Voice converted to text",
-          description: "Your speech has been transcribed successfully.",
-        });
+        // Voice converted successfully - no toast notification needed
       } else {
         throw new Error('No transcription received');
       }
