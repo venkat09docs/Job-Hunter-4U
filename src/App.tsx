@@ -48,6 +48,7 @@ import SkillAssignments from "./pages/SkillAssignments";
 import InstituteManagement from "./pages/InstituteManagement";
 import BatchManagement from "./pages/BatchManagement";
 import StudentsManagement from "./pages/StudentsManagement";
+import AssignmentManagement from "./pages/AssignmentManagement";
 import LeaderBoardPoints from "./pages/LeaderBoardPoints";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PremiumProtectedRoute from "./components/PremiumProtectedRoute";
@@ -421,6 +422,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute>
                 <StudentsManagement />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/manage-assignments" 
+            element={
+              <ProtectedRoute>
+                <AssignmentManagement />
               </ProtectedRoute>
             } 
           />
