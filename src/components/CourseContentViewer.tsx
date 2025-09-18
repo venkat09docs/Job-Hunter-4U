@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, CheckSquare, Check } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useCourseContent } from '@/hooks/useCourseContent';
+import { useChecklistProgress } from '@/hooks/useChecklistProgress';
 
 interface CourseContentViewerProps {
   open: boolean;
@@ -26,7 +27,7 @@ interface Chapter {
   id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document';
+  content_type: 'video' | 'article' | 'document' | 'checklist';
   content_data: any;
   order_index: number;
   duration_minutes?: number;
@@ -43,6 +44,12 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
+  const { 
+    getChecklistProgress, 
+    updateChecklistItemProgress, 
+    mergeChecklistWithProgress,
+    getChecklistCompletionPercentage 
+  } = useChecklistProgress();
 
   useEffect(() => {
     if (open && courseId) {
@@ -101,6 +108,8 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
         return <FileText className="h-4 w-4" />;
       case 'document':
         return <Download className="h-4 w-4" />;
+      case 'checklist':
+        return <CheckSquare className="h-4 w-4" />;
       default:
         return <BookOpen className="h-4 w-4" />;
     }
@@ -114,6 +123,8 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
         return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'document':
         return 'bg-green-100 text-green-700 border-green-200';
+      case 'checklist':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -179,6 +190,9 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
           </div>
         );
 
+      case 'checklist':
+        return <ChecklistViewer chapter={chapter} />;
+
       case 'document':
         return (
           <div className="space-y-4">
@@ -225,6 +239,122 @@ export const CourseContentViewer: React.FC<CourseContentViewerProps> = ({
       <div className="text-center py-8 text-muted-foreground">
         <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
         <p>Content not available</p>
+      </div>
+    );
+  };
+
+  const ChecklistViewer = ({ chapter }: { chapter: Chapter }) => {
+    const [checklistItems, setChecklistItems] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      if (chapter.content_data?.checklist_items) {
+        loadChecklistProgress();
+      }
+    }, [chapter.id]);
+
+    const loadChecklistProgress = async () => {
+      setLoading(true);
+      try {
+        const progress = await getChecklistProgress(chapter.id);
+        const items = mergeChecklistWithProgress(
+          chapter.content_data.checklist_items || [],
+          progress
+        );
+        setChecklistItems(items);
+      } catch (error) {
+        console.error('Error loading checklist progress:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleToggleItem = async (itemId: string, completed: boolean) => {
+      const success = await updateChecklistItemProgress(chapter.id, itemId, completed);
+      if (success) {
+        setChecklistItems(items =>
+          items.map(item =>
+            item.id === itemId ? { ...item, completed } : item
+          )
+        );
+      }
+    };
+
+    if (!chapter.content_data?.checklist_items?.length) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>No checklist items available</p>
+        </div>
+      );
+    }
+
+    const completionPercentage = getChecklistCompletionPercentage(checklistItems);
+
+    return (
+      <div className="space-y-4">
+        {/* Progress header */}
+        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+          <div>
+            <h4 className="font-medium">Progress</h4>
+            <p className="text-sm text-muted-foreground">
+              {checklistItems.filter(item => item.completed).length} of {checklistItems.length} completed
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-bold text-primary">{completionPercentage}%</div>
+            <div className="w-16 h-2 bg-background rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Checklist items */}
+        <div className="space-y-2">
+          {loading ? (
+            [...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 bg-muted animate-pulse rounded">
+                <div className="w-5 h-5 bg-muted-foreground/20 rounded" />
+                <div className="h-4 bg-muted-foreground/20 rounded flex-1" />
+              </div>
+            ))
+          ) : (
+            checklistItems.map((item) => (
+              <div 
+                key={item.id}
+                className={`flex items-center gap-3 p-3 border rounded-lg transition-all duration-200 hover:bg-muted/50 cursor-pointer ${
+                  item.completed ? 'bg-green-50 border-green-200' : 'bg-background'
+                }`}
+                onClick={() => handleToggleItem(item.id, !item.completed)}
+              >
+                <div className={`flex items-center justify-center w-5 h-5 rounded border-2 transition-all ${
+                  item.completed 
+                    ? 'bg-green-500 border-green-500 text-white' 
+                    : 'border-muted-foreground/30 hover:border-primary'
+                }`}>
+                  {item.completed && <Check className="w-3 h-3" />}
+                </div>
+                <span className={`flex-1 transition-all ${
+                  item.completed ? 'line-through text-muted-foreground' : ''
+                }`}>
+                  {item.text}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
+        {completionPercentage === 100 && (
+          <div className="text-center py-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              <Check className="w-4 h-4" />
+              Checklist completed! Great job!
+            </div>
+          </div>
+        )}
       </div>
     );
   };

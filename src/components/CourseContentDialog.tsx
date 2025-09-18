@@ -13,7 +13,7 @@ import { RichTextEditor } from './RichTextEditor';
 import { VideoEmbedComponent } from './VideoEmbedComponent';
 import { useCourseContent } from '@/hooks/useCourseContent';
 import { useRole } from '@/hooks/useRole';
-import { Plus, Edit3, Trash2, FileText, Video, Save, X } from 'lucide-react';
+import { Plus, Edit3, Trash2, FileText, Video, Save, X, CheckSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CourseContentDialogProps {
@@ -38,7 +38,7 @@ interface Chapter {
   section_id: string;
   title: string;
   description?: string;
-  content_type: 'video' | 'article' | 'document';
+  content_type: 'video' | 'article' | 'document' | 'checklist';
   content_data: any;
   video_url?: string;
   article_content?: string;
@@ -89,10 +89,12 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   // Chapter form state
   const [chapterTitle, setChapterTitle] = useState('');
   const [chapterDescription, setChapterDescription] = useState('');
-  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document'>('article');
+  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist'>('article');
   const [chapterVideoUrl, setChapterVideoUrl] = useState('');
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
+  const [checklistItems, setChecklistItems] = useState<string[]>([]);
+  const [currentChecklistItem, setCurrentChecklistItem] = useState('');
 
   // Storage keys for persistence
   const STORAGE_KEY = `course-content-form-${courseId}`;
@@ -115,6 +117,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         chapterVideoUrl,
         chapterArticleContent,
         chapterDuration,
+        checklistItems,
+        currentChecklistItem,
         editingSection: editingSection?.id || null,
         editingChapter: editingChapter?.id || null,
         timestamp: Date.now()
@@ -135,7 +139,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   }, [
     STORAGE_KEY, courseId, activeTab, showSectionForm, showChapterForm, selectedSectionId,
     sectionTitle, sectionDescription, chapterTitle, chapterDescription,
-    chapterType, chapterVideoUrl, chapterArticleContent, chapterDuration,
+    chapterType, chapterVideoUrl, chapterArticleContent, chapterDuration, checklistItems, currentChecklistItem,
     editingSection?.id, editingChapter?.id  // Use IDs only to prevent object reference changes
   ]);
 
@@ -178,6 +182,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           setChapterVideoUrl(formState.chapterVideoUrl || '');
           setChapterArticleContent(formState.chapterArticleContent || '');
           setChapterDuration(formState.chapterDuration || 0);
+          setChecklistItems(formState.checklistItems || []);
+          setCurrentChecklistItem(formState.currentChecklistItem || '');
         } else {
           console.log('⏰ Saved state is too old, clearing:', {
             savedAt: formState.timestamp ? new Date(formState.timestamp).toLocaleTimeString() : 'Unknown',
@@ -266,6 +272,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
             chapterVideoUrl,
             chapterArticleContent,
             chapterDuration,
+            checklistItems,
+            currentChecklistItem,
             editingSection: editingSection?.id || null,
             editingChapter: editingChapter?.id || null,
             timestamp: Date.now()
@@ -291,7 +299,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     open, courseId, activeTab, showSectionForm, showChapterForm,
     selectedSectionId, sectionTitle, sectionDescription, chapterTitle,
     chapterDescription, chapterType, chapterVideoUrl, chapterArticleContent,
-    chapterDuration
+    chapterDuration, checklistItems, currentChecklistItem
   ]); // Removed saveFormState, editingSection, editingChapter to prevent circular deps
 
   // Restore editing states after sections load
@@ -373,7 +381,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       title: chapterTitle,
       description: chapterDescription,
       content_type: chapterType,
-      content_data: {},
+      content_data: chapterType === 'checklist' ? { checklist_items: checklistItems } : {},
       video_url: chapterType === 'video' ? chapterVideoUrl : undefined,
       article_content: chapterType === 'article' ? chapterArticleContent : undefined,
       duration_minutes: chapterDuration > 0 ? chapterDuration : undefined,
@@ -411,6 +419,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setChapterVideoUrl('');
     setChapterArticleContent('');
     setChapterDuration(0);
+    setChecklistItems([]);
+    setCurrentChecklistItem('');
     setEditingChapter(null);
     setShowChapterForm(false);
     setSelectedSectionId('');
@@ -433,6 +443,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     setChapterVideoUrl(chapter.video_url || '');
     setChapterArticleContent(chapter.article_content || '');
     setChapterDuration(chapter.duration_minutes || 0);
+    setChecklistItems(chapter.content_data?.checklist_items || []);
+    setCurrentChecklistItem('');
     setSelectedSectionId(chapter.section_id);
     setShowChapterForm(true);
     setActiveTab('chapters');
@@ -458,6 +470,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return <Video className="h-4 w-4" />;
       case 'article':
         return <FileText className="h-4 w-4" />;
+      case 'checklist':
+        return <CheckSquare className="h-4 w-4" />;
       default:
         return <FileText className="h-4 w-4" />;
     }
@@ -469,6 +483,8 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
         return 'bg-red-100 text-red-800 border-red-200';
       case 'article':
         return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'checklist':
+        return 'bg-green-100 text-green-800 border-green-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -748,7 +764,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     
                     <div>
                       <Label htmlFor="chapter-type">Content Type</Label>
-                      <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document') => {
+                      <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => {
                         setChapterType(value);
                         // Save immediately on change
                         setTimeout(() => saveFormState(), 100);
@@ -758,6 +774,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="article">Article</SelectItem>
+                          <SelectItem value="checklist">Checklist</SelectItem>
                           {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
                         </SelectContent>
                       </Select>
@@ -827,6 +844,78 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                           height="400px"
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {chapterType === 'checklist' && (
+                    <div className="space-y-4">
+                      <Label>Checklist Items</Label>
+                      
+                      {/* Add new checklist item */}
+                      <div className="flex gap-2">
+                        <Input
+                          value={currentChecklistItem}
+                          onChange={(e) => setCurrentChecklistItem(e.target.value)}
+                          placeholder="Enter checklist item and press Enter"
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && currentChecklistItem.trim()) {
+                              setChecklistItems([...checklistItems, currentChecklistItem.trim()]);
+                              setCurrentChecklistItem('');
+                              setTimeout(() => saveFormState(), 100);
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (currentChecklistItem.trim()) {
+                              setChecklistItems([...checklistItems, currentChecklistItem.trim()]);
+                              setCurrentChecklistItem('');
+                              setTimeout(() => saveFormState(), 100);
+                            }
+                          }}
+                          variant="outline"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Display current checklist items */}
+                      {checklistItems.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">Current items ({checklistItems.length}):</p>
+                          <div className="space-y-1">
+                            {checklistItems.map((item, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                                <div className="flex items-center gap-2">
+                                  <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                                  <span className="text-sm">{item}</span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newItems = checklistItems.filter((_, i) => i !== index);
+                                    setChecklistItems(newItems);
+                                    setTimeout(() => saveFormState(), 100);
+                                  }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {checklistItems.length === 0 && (
+                        <div className="text-center py-6 text-muted-foreground border border-dashed rounded">
+                          <CheckSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No checklist items added yet</p>
+                          <p className="text-xs">Add items above to create your checklist</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
