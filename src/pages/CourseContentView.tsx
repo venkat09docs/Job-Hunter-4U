@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home, CheckCircle2, ArrowRight, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -467,7 +467,9 @@ const CourseContentView: React.FC = () => {
         );
 
       case 'checklist':
-        return <ChecklistViewer chapterId={chapter.id} checklistItems={content_data?.checklist_items || []} />;
+        // Memoize checklistItems to prevent infinite re-renders
+        const memoizedChecklistItems = useMemo(() => content_data?.checklist_items || [], [JSON.stringify(content_data?.checklist_items)]);
+        return <ChecklistViewer chapterId={chapter.id} checklistItems={memoizedChecklistItems} />;
 
       default:
         return (
