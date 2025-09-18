@@ -3058,17 +3058,12 @@ ${resumeData.personalDetails.fullName}`;
 
                                      {/* Capstone Project Ideas */}
                                      <div>
-                                       <h4 className="font-medium mb-3 flex items-center gap-2">
-                                         <StickyNote className="h-4 w-4" />
-                                         About your capstone project ideas
-                                       </h4>
                                        <Button 
-                                         variant="outline" 
+                                         variant="default" 
                                          size="sm" 
-                                         className="gap-2"
+                                         className="gap-2 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                                          onClick={() => window.open('/dashboard/digital-career-hub?toolId=c0df061d-c6de-400f-a33e-2ea98f425d75', '_blank')}
                                        >
-                                         <ExternalLink className="h-3 w-3" />
                                          Get Capstone Project Ideas
                                        </Button>
                                      </div>
