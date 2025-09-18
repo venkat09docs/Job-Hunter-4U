@@ -36,6 +36,7 @@ const CrackInterview = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showStarterQuestions, setShowStarterQuestions] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const { isRecording, isProcessing, startRecording, stopRecording } = useVoiceRecorder({
@@ -87,6 +88,9 @@ You can click on any of the starter questions below or ask me anything about int
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+
+    // Auto-collapse starter questions after first interaction
+    setShowStarterQuestions(false);
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -172,6 +176,7 @@ You can click on any of the starter questions below or ask me anything about int
   const startOver = () => {
     setMessages([getInitialMessage()]);
     setInputMessage('');
+    setShowStarterQuestions(true);
   };
 
   const formatTime = (date: Date) => {
@@ -279,24 +284,39 @@ You can click on any of the starter questions below or ask me anything about int
               </ScrollArea>
 
               <div className="flex-shrink-0 border-t bg-background/50">
-                {/* Starter Questions */}
-                <div className="p-4 border-b bg-muted/30">
-                  <p className="text-sm font-medium mb-3 text-muted-foreground">Quick Start Questions:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {starterQuestions.slice(0, 5).map((question, index) => (
-                      <Button
-                        key={index}
-                        onClick={() => handleQuestionClick(question)}
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 px-3 hover:bg-primary hover:text-primary-foreground transition-colors"
-                        disabled={isLoading || isRecording || isProcessing}
-                      >
-                        {question.length > 30 ? `${question.substring(0, 30)}...` : question}
-                      </Button>
-                    ))}
+                {/* Collapsible Starter Questions */}
+                {showStarterQuestions && (
+                  <div className="p-4 border-b bg-muted/30">
+                    <div className="flex flex-wrap gap-2">
+                      {starterQuestions.slice(0, 5).map((question, index) => (
+                        <Button
+                          key={index}
+                          onClick={() => handleQuestionClick(question)}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-8 px-3 hover:bg-primary hover:text-primary-foreground transition-colors"
+                          disabled={isLoading || isRecording || isProcessing}
+                        >
+                          {question.length > 30 ? `${question.substring(0, 30)}...` : question}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+                
+                {/* Toggle Button for Starter Questions */}
+                {!showStarterQuestions && (
+                  <div className="p-2 border-b bg-muted/20">
+                    <Button
+                      onClick={() => setShowStarterQuestions(true)}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Show starter questions
+                    </Button>
+                  </div>
+                )}
                 
                 {/* Input Area */}
                 <div className="p-4">
