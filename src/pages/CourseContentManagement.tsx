@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, Save, VideoIcon, FileText, CheckSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,10 +33,14 @@ const CourseContentManagement = () => {
   const [sectionDescription, setSectionDescription] = useState('');
   const [chapterTitle, setChapterTitle] = useState('');
   const [chapterDescription, setChapterDescription] = useState('');
-  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document'>('video');
+  const [chapterType, setChapterType] = useState<'video' | 'article' | 'document' | 'checklist'>('video');
   const [chapterVideoUrl, setChapterVideoUrl] = useState('');
   const [chapterArticleContent, setChapterArticleContent] = useState('');
   const [chapterDuration, setChapterDuration] = useState<number>(0);
+  
+  // Checklist states
+  const [checklistItems, setChecklistItems] = useState<string[]>([]);
+  const [currentChecklistItem, setCurrentChecklistItem] = useState('');
   
   // Editing states
   const [editingSection, setEditingSection] = useState<any>(null);
@@ -177,6 +181,8 @@ const CourseContentManagement = () => {
         chapterData.video_url = chapterVideoUrl;
       } else if (chapterType === 'article') {
         chapterData.article_content = chapterArticleContent;
+      } else if (chapterType === 'checklist') {
+        chapterData.content_data = { checklist_items: checklistItems };
       }
 
       const { data, error } = await supabase
@@ -295,6 +301,8 @@ const CourseContentManagement = () => {
         chapterData.video_url = chapterVideoUrl;
       } else if (chapterType === 'article') {
         chapterData.article_content = chapterArticleContent;
+      } else if (chapterType === 'checklist') {
+        chapterData.content_data = { checklist_items: checklistItems };
       }
 
       const { error } = await supabase
@@ -533,13 +541,14 @@ const CourseContentManagement = () => {
 
                 <div>
                   <Label htmlFor="chapter-type">Content Type</Label>
-                  <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document') => setChapterType(value)}>
+                  <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => setChapterType(value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
-                      <SelectItem value="article">Article</SelectItem>
+                      {userRole === 'admin' && <SelectItem value="video">🎥 Video</SelectItem>}
+                      <SelectItem value="article">📝 Article</SelectItem>
+                      {userRole === 'admin' && <SelectItem value="checklist">✅ Checklist</SelectItem>}
                     </SelectContent>
                   </Select>
                 </div>
@@ -566,6 +575,62 @@ const CourseContentManagement = () => {
                       placeholder="Enter article content"
                       rows={6}
                     />
+                  </div>
+                )}
+
+                {chapterType === 'checklist' && userRole === 'admin' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Checklist Items</Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={currentChecklistItem}
+                            onChange={(e) => setCurrentChecklistItem(e.target.value)}
+                            placeholder="Enter checklist item"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (currentChecklistItem.trim()) {
+                                  setChecklistItems([...checklistItems, currentChecklistItem.trim()]);
+                                  setCurrentChecklistItem('');
+                                }
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              if (currentChecklistItem.trim()) {
+                                setChecklistItems([...checklistItems, currentChecklistItem.trim()]);
+                                setCurrentChecklistItem('');
+                              }
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                        {checklistItems.length > 0 && (
+                          <div className="space-y-2">
+                            {checklistItems.map((item, index) => (
+                              <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
+                                <span>{item}</span>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    setChecklistItems(checklistItems.filter((_, i) => i !== index));
+                                  }}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -623,6 +688,7 @@ const CourseContentManagement = () => {
                             <div className="flex items-center gap-3">
                               {chapter.content_type === 'video' && <VideoIcon className="h-4 w-4" />}
                               {chapter.content_type === 'article' && <FileText className="h-4 w-4" />}
+                              {chapter.content_type === 'checklist' && <CheckSquare className="h-4 w-4" />}
                               <div>
                                 <h5 className="font-medium">{chapter.title}</h5>
                                 {chapter.description && (

@@ -249,7 +249,14 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
       canManageContent, 
       userRole, 
       isAdmin,
-      roleCheck: { isAdmin, userRole }
+      roleCheck: { isAdmin, userRole },
+      currentChapterType: chapterType
+    });
+    console.log('🔍 Component render state:', {
+      isAdmin,
+      userRole,
+      canManageContent,
+      showChecklistOption: isAdmin
     });
     if (open && courseId && canManageContent) {
       console.log('📂 Loading form state and sections...');
@@ -258,7 +265,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
     }
     
     // Removed problematic event listeners that were causing page reloads
-  }, [open, courseId, canManageContent, loadFormState]);
+  }, [open, courseId, canManageContent, loadFormState, isAdmin, userRole, chapterType]);
 
   // Simple cleanup to save state when component unmounts
   useEffect(() => {
