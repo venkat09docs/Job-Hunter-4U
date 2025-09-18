@@ -61,11 +61,7 @@ const CrackInterview = () => {
     type: 'assistant' as const,
     content: `Hello! I'm your AI Interview Coach. I'm here to help you prepare for interviews, practice common questions, and build confidence. 
 
-Here are some popular interview questions you can practice:
-
-${starterQuestions.map((q, index) => `${index + 1}. ${q}`).join('\n')}
-
-What type of interview are you preparing for, or would you like to practice with any of these questions?`,
+You can click on any of the starter questions below or ask me anything about interview preparation. I'm here to help you succeed!`,
     timestamp: new Date()
   });
 
@@ -84,6 +80,10 @@ What type of interview are you preparing for, or would you like to practice with
       }
     }
   }, [messages]);
+
+  const handleQuestionClick = (question: string) => {
+    setInputMessage(question);
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -278,44 +278,66 @@ What type of interview are you preparing for, or would you like to practice with
                 </div>
               </ScrollArea>
 
-              <div className="flex-shrink-0 p-4 border-t bg-background/50">
-                <div className="flex gap-2">
-                  <Input
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me anything about interview preparation..."
-                    className="flex-1 border-primary/20 focus:border-primary/40 text-base min-h-[44px]"
-                    disabled={isLoading || isRecording || isProcessing}
-                  />
-                  <Button
-                    onClick={handleVoiceToggle}
-                    disabled={isLoading || isProcessing}
-                    variant={isRecording ? "destructive" : "outline"}
-                    className={`min-h-[44px] min-w-[44px] ${isRecording ? 'animate-pulse' : ''}`}
-                  >
-                    {isProcessing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isRecording ? (
-                      <MicOff className="h-4 w-4" />
-                    ) : (
-                      <Mic className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={sendMessage} 
-                    disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 min-h-[44px] min-w-[44px]"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-                {(isRecording || isProcessing) && (
-                  <div className="mt-2 text-sm text-muted-foreground text-center">
-                    {isRecording && "🎤 Recording... Click stop when finished"}
-                    {isProcessing && "🤖 Converting speech to text..."}
+              <div className="flex-shrink-0 border-t bg-background/50">
+                {/* Starter Questions */}
+                <div className="p-4 border-b bg-muted/30">
+                  <p className="text-sm font-medium mb-3 text-muted-foreground">Quick Start Questions:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {starterQuestions.slice(0, 5).map((question, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => handleQuestionClick(question)}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8 px-3 hover:bg-primary hover:text-primary-foreground transition-colors"
+                        disabled={isLoading || isRecording || isProcessing}
+                      >
+                        {question.length > 30 ? `${question.substring(0, 30)}...` : question}
+                      </Button>
+                    ))}
                   </div>
-                )}
+                </div>
+                
+                {/* Input Area */}
+                <div className="p-4">
+                  <div className="flex gap-2">
+                    <Input
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask me anything about interview preparation..."
+                      className="flex-1 border-primary/20 focus:border-primary/40 text-base min-h-[44px]"
+                      disabled={isLoading || isRecording || isProcessing}
+                    />
+                    <Button
+                      onClick={handleVoiceToggle}
+                      disabled={isLoading || isProcessing}
+                      variant={isRecording ? "destructive" : "outline"}
+                      className={`min-h-[44px] min-w-[44px] ${isRecording ? 'animate-pulse' : ''}`}
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isRecording ? (
+                        <MicOff className="h-4 w-4" />
+                      ) : (
+                        <Mic className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button 
+                      onClick={sendMessage} 
+                      disabled={!inputMessage.trim() || isLoading || isRecording || isProcessing}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 min-h-[44px] min-w-[44px]"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {(isRecording || isProcessing) && (
+                    <div className="mt-2 text-sm text-muted-foreground text-center">
+                      {isRecording && "🎤 Recording... Click stop when finished"}
+                      {isProcessing && "🤖 Converting speech to text..."}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
