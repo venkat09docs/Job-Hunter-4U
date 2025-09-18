@@ -500,77 +500,73 @@ const CourseContentView: React.FC = () => {
           return;
         }
 
-        try {
-          setLoading(true);
-          console.log('Calling getChecklistProgress...');
-          
-          // Try calling the function directly to see if it works
-          console.log('About to call getChecklistProgress with:', chapterId);
-          
-          let progress = [];
-          try {
-            progress = await getChecklistProgress(chapterId);
-            console.log('Progress data received:', progress);
-          } catch (progressError) {
-            console.error('Error getting progress, using empty array:', progressError);
-            // Fallback: create empty progress array
-            progress = [];
-          }
-          
-          console.log('Calling mergeChecklistWithProgress...');
-          const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
-          console.log('Merged checklist:', mergedChecklist);
-          
-          // Fallback: If mergedChecklist is empty, create it manually
-          if (mergedChecklist.length === 0 && checklistItems.length > 0) {
-            console.log('Creating fallback checklist items');
-            const fallbackChecklist = checklistItems.map((item, index) => ({
-              id: `item_${index}`,
-              text: item,
-              completed: false
-            }));
-            console.log('Fallback checklist:', fallbackChecklist);
-            setChecklistWithProgress(fallbackChecklist);
-          } else {
-            setChecklistWithProgress(mergedChecklist);
-          }
-          
-          console.log('Successfully set checklist with progress');
-        } catch (error) {
-          console.error('Error in loadChecklistProgress:', error);
-          
-          // Ultimate fallback: create basic checklist items
-          if (checklistItems.length > 0) {
-            console.log('Creating ultimate fallback checklist');
-            const basicChecklist = checklistItems.map((item, index) => ({
-              id: `item_${index}`,
-              text: item,
-              completed: false
-            }));
-            setChecklistWithProgress(basicChecklist);
-          }
-        } finally {
-          console.log('Setting loading to false');
-          setLoading(false);
-        }
+        console.log('Creating checklist items directly (bypassing database for now)');
+        
+        // Create checklist items directly without database call for now
+        const directChecklist = checklistItems.map((item, index) => ({
+          id: `item_${index}`,
+          text: item,
+          completed: false
+        }));
+        
+        console.log('Direct checklist created:', directChecklist);
+        setChecklistWithProgress(directChecklist);
+        setLoading(false);
+        
+        // TODO: Re-enable database integration later
+        // try {
+        //   setLoading(true);
+        //   let progress = [];
+        //   try {
+        //     progress = await getChecklistProgress(chapterId);
+        //     console.log('Progress data received:', progress);
+        //   } catch (progressError) {
+        //     console.error('Error getting progress, using empty array:', progressError);
+        //     progress = [];
+        //   }
+        //   
+        //   const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
+        //   setChecklistWithProgress(mergedChecklist);
+        // } catch (error) {
+        //   console.error('Error in loadChecklistProgress:', error);
+        // } finally {
+        //   setLoading(false);
+        // }
       };
 
       loadChecklistProgress();
-    }, [chapterId, JSON.stringify(checklistItems)]); // Use JSON.stringify to prevent unnecessary re-runs
+    }, [chapterId, JSON.stringify(checklistItems)]);
 
     const handleToggleItem = async (itemId: string, isCompleted: boolean) => {
-      try {
-        const success = await updateChecklistItemProgress(chapterId, itemId, isCompleted);
-        if (success) {
-          setChecklistWithProgress(prev => 
-            prev.map(item => 
-              item.id === itemId ? { ...item, completed: isCompleted } : item
-            )
-          );
-        }
-      } catch (error) {
-        console.error('Error updating checklist item:', error);
-      }
+      console.log('Toggling item:', itemId, 'to:', isCompleted);
+      
+      // Update local state immediately for better UX
+      setChecklistWithProgress(prev => 
+        prev.map(item => 
+          item.id === itemId ? { ...item, completed: isCompleted } : item
+        )
+      );
+      
+      // TODO: Re-enable database update later
+      // try {
+      //   const success = await updateChecklistItemProgress(chapterId, itemId, isCompleted);
+      //   if (!success) {
+      //     // Revert on failure
+      //     setChecklistWithProgress(prev => 
+      //       prev.map(item => 
+      //         item.id === itemId ? { ...item, completed: !isCompleted } : item
+      //       )
+      //     );
+      //   }
+      // } catch (error) {
+      //   console.error('Error updating checklist item:', error);
+      //   // Revert on error
+      //   setChecklistWithProgress(prev => 
+      //     prev.map(item => 
+      //       item.id === itemId ? { ...item, completed: !isCompleted } : item
+      //     )
+      //   );
+      // }
     };
 
     console.log('ChecklistViewer render - loading:', loading, 'items:', checklistWithProgress);
