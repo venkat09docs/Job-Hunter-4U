@@ -25,10 +25,11 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userId, context } = await req.json();
+    const { message, conversationHistory, userId, context } = await req.json();
     
     console.log('🎯 Interview Coach Request:', { 
       message: message?.substring(0, 100) + '...', 
+      conversationLength: conversationHistory?.length || 0,
       userId, 
       context,
       timestamp: new Date().toISOString()
@@ -79,7 +80,9 @@ Rules:
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          ...(conversationHistory && conversationHistory.length > 0 
+            ? conversationHistory 
+            : [{ role: 'user', content: message }])
         ],
         max_tokens: 1500,
         temperature: 0.7,

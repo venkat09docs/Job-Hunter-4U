@@ -52,16 +52,24 @@ const CrackInterview = () => {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputMessage("");
     setIsLoading(true);
 
     try {
       console.log('🤖 Sending message to interview coach:', inputMessage);
       
+      // Convert messages to OpenAI format for conversation history
+      const conversationHistory = updatedMessages.map(msg => ({
+        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+        content: msg.content
+      }));
+
       const { data, error } = await supabase.functions.invoke('interview-coach-chat', {
         body: {
           message: inputMessage.trim(),
+          conversationHistory,
           userId: user?.id,
           context: 'interview_preparation'
         }
