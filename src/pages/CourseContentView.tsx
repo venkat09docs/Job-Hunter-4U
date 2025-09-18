@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useCourseContent } from '@/hooks/useCourseContent';
 import { useCareerLevelProgram } from '@/hooks/useCareerLevelProgram';
 import { useChapterCompletion } from '@/hooks/useChapterCompletion';
+import { useChecklistProgress } from '@/hooks/useChecklistProgress';
 import { UserProfileDropdown } from '@/components/UserProfileDropdown';
 import { CircularProgress } from '@/components/CircularProgress';
 import { toast } from 'sonner';
@@ -51,6 +52,12 @@ const CourseContentView: React.FC = () => {
   const { getSectionsByCourse, getChaptersBySection } = useCourseContent();
   const { getCourses } = useCareerLevelProgram();
   const { markChapterComplete, isChapterComplete, loading: chapterLoading, getCourseProgress } = useChapterCompletion();
+  const { 
+    getChecklistProgress, 
+    updateChecklistItemProgress, 
+    mergeChecklistWithProgress,
+    getChecklistCompletionPercentage 
+  } = useChecklistProgress();
 
   useEffect(() => {
     if (courseId) {
@@ -460,13 +467,7 @@ const CourseContentView: React.FC = () => {
         );
 
       case 'checklist':
-        return (
-          <div className="text-center py-8 text-muted-foreground">
-            <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Checklist functionality not available in this view</p>
-            <p className="text-xs mt-2">Please use the course content viewer for interactive checklists</p>
-          </div>
-        );
+        return <ChecklistViewer chapterId={chapter.id} checklistItems={content_data?.checklist_items || []} />;
 
       default:
         return (
@@ -476,6 +477,109 @@ const CourseContentView: React.FC = () => {
           </div>
         );
     }
+  };
+
+  // ChecklistViewer component for rendering checklist items
+  const ChecklistViewer = ({ chapterId, checklistItems }: { chapterId: string; checklistItems: string[] }) => {
+    const [checklistWithProgress, setChecklistWithProgress] = useState<Array<{
+      id: string;
+      text: string;
+      completed: boolean;
+    }>>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const loadChecklistProgress = async () => {
+        try {
+          setLoading(true);
+          const progress = await getChecklistProgress(chapterId);
+          const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
+          setChecklistWithProgress(mergedChecklist);
+        } catch (error) {
+          console.error('Error loading checklist progress:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (checklistItems.length > 0) {
+        loadChecklistProgress();
+      }
+    }, [chapterId, checklistItems]);
+
+    const handleToggleItem = async (itemId: string, isCompleted: boolean) => {
+      try {
+        const success = await updateChecklistItemProgress(chapterId, itemId, isCompleted);
+        if (success) {
+          setChecklistWithProgress(prev => 
+            prev.map(item => 
+              item.id === itemId ? { ...item, completed: isCompleted } : item
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Error updating checklist item:', error);
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          <div className="h-4 bg-muted animate-pulse rounded"></div>
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="h-5 w-5 bg-muted animate-pulse rounded"></div>
+                <div className="h-4 bg-muted animate-pulse rounded flex-1"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const completionPercentage = getChecklistCompletionPercentage(checklistWithProgress);
+
+    return (
+      <div className="space-y-6">
+        {/* Progress indicator */}
+        <div className="bg-muted/50 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Progress</span>
+            <span className="text-sm text-muted-foreground">{completionPercentage}% Complete</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${completionPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Checklist items */}
+        <div className="space-y-3">
+          {checklistWithProgress.map((item) => (
+            <label 
+              key={item.id}
+              className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={item.completed}
+                onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                className="mt-0.5 h-5 w-5 rounded border-2 border-primary text-primary focus:ring-primary focus:ring-offset-0"
+              />
+              <span className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
+                {item.text}
+              </span>
+              {item.completed && (
+                <CheckSquare className="h-5 w-5 text-green-600 flex-shrink-0" />
+              )}
+            </label>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
