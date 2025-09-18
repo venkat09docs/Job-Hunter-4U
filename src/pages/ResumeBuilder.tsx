@@ -24,6 +24,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink }
 import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryDialog';
 import { GenerateKeySkillsDialog } from '@/components/GenerateKeySkillsDialog';
+import { GenerateAchievementsDialog } from '@/components/GenerateAchievementsDialog';
 
 interface Experience {
   company: string;
@@ -78,6 +79,8 @@ const ResumeBuilder = () => {
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
   const [showKeySkillsDialog, setShowKeySkillsDialog] = useState(false);
+  const [showAchievementsDialog, setShowAchievementsDialog] = useState(false);
+  const [currentExperienceIndex, setCurrentExperienceIndex] = useState<number>(0);
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -189,6 +192,23 @@ const ResumeBuilder = () => {
   const handleSkillsGenerated = useCallback((skills: string[]) => {
     // Replace existing skills with generated skills
     setResumeData(prev => ({ ...prev, skills: skills }));
+  }, []);
+
+  const handleAchievementsGenerated = useCallback((achievements: string, experienceIndex: number) => {
+    // Update the specific experience's description with generated achievements
+    setResumeData(prev => ({
+      ...prev,
+      experience: prev.experience.map((exp, index) => 
+        index === experienceIndex 
+          ? { ...exp, description: achievements }
+          : exp
+      )
+    }));
+  }, []);
+
+  const openAchievementsDialog = useCallback((experienceIndex: number) => {
+    setCurrentExperienceIndex(experienceIndex);
+    setShowAchievementsDialog(true);
   }, []);
 
   const [checklist, setChecklist] = useState({
@@ -2573,15 +2593,25 @@ ${resumeData.personalDetails.fullName}`;
                         <div key={index} className="border rounded-lg p-4 space-y-4">
                           <div className="flex justify-between items-start">
                             <h4 className="font-medium">Experience {index + 1}</h4>
-                            {resumeData.experience.length > 1 && (
+                            <div className="flex gap-2">
                               <Button 
-                                variant="ghost" 
+                                variant="outline" 
                                 size="sm"
-                                onClick={() => removeArrayItem('experience', index)}
+                                onClick={() => openAchievementsDialog(index)}
                               >
-                                <Minus className="h-4 w-4" />
+                                <Sparkles className="h-4 w-4 mr-1" />
+                                Generate Achievements
                               </Button>
-                            )}
+                              {resumeData.experience.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => removeArrayItem('experience', index)}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           <div className="grid md:grid-cols-2 gap-4">
                             <div>
@@ -3484,6 +3514,13 @@ ${resumeData.personalDetails.fullName}`;
         open={showKeySkillsDialog}
         onOpenChange={setShowKeySkillsDialog}
         onSkillsGenerated={handleSkillsGenerated}
+      />
+
+      {/* Generate Achievements Dialog */}
+      <GenerateAchievementsDialog
+        isOpen={showAchievementsDialog}
+        onClose={() => setShowAchievementsDialog(false)}
+        onAchievementsGenerated={(achievements) => handleAchievementsGenerated(achievements, currentExperienceIndex)}
       />
     </div>
   );
