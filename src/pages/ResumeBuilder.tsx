@@ -23,6 +23,7 @@ import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink } from 'docx';
 import { FileText, Download, CheckCircle, Plus, Minus, Sparkles, FileEdit, ArrowLeft, Save, Eye, StickyNote, ChevronDown, Copy, ExternalLink } from 'lucide-react';
 import { GenerateResumeSummaryDialog } from '@/components/GenerateResumeSummaryDialog';
+import { GenerateKeySkillsDialog } from '@/components/GenerateKeySkillsDialog';
 
 interface Experience {
   company: string;
@@ -76,6 +77,7 @@ const ResumeBuilder = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [savedCoverLetters, setSavedCoverLetters] = useState<any[]>([]);
   const [showResumeSummaryDialog, setShowResumeSummaryDialog] = useState(false);
+  const [showKeySkillsDialog, setShowKeySkillsDialog] = useState(false);
   
   // Job Application Tracker notes
   const JOB_TRACKER_TOOL_ID = '343aeaa1-fe2d-40fb-b660-a2064774bee3';
@@ -183,6 +185,11 @@ const ResumeBuilder = () => {
   const handleSummaryGenerated = useCallback((summary: string) => {
     updateProfessionalSummary(summary);
   }, [updateProfessionalSummary]);
+
+  const handleSkillsGenerated = useCallback((skills: string[]) => {
+    // Replace existing skills with generated skills
+    setResumeData(prev => ({ ...prev, skills: skills }));
+  }, []);
 
   const [checklist, setChecklist] = useState({
     personalInfo: false,
@@ -3092,10 +3099,19 @@ ${resumeData.personalDetails.fullName}`;
                                               Go to Top Skills Tool
                                             </Button>
                                           </div>
-                                        )}
-                                    </div>
-                                  </div>
-                                 )}
+                                         )}
+                                     </div>
+                                     <Button 
+                                       variant="outline" 
+                                       size="sm" 
+                                       className="gap-2 mt-3"
+                                       onClick={() => setShowKeySkillsDialog(true)}
+                                     >
+                                       <Sparkles className="h-3 w-3" />
+                                       Generate Key Skills
+                                     </Button>
+                                   </div>
+                                  )}
 
                                 {/* Experience Notes - Show for experience section */}
                                 {activeSuggestionSection === 'experience' && (
@@ -3461,6 +3477,13 @@ ${resumeData.personalDetails.fullName}`;
         open={showResumeSummaryDialog}
         onOpenChange={setShowResumeSummaryDialog}
         onSummaryGenerated={handleSummaryGenerated}
+      />
+
+      {/* Generate Key Skills Dialog */}
+      <GenerateKeySkillsDialog
+        open={showKeySkillsDialog}
+        onOpenChange={setShowKeySkillsDialog}
+        onSkillsGenerated={handleSkillsGenerated}
       />
     </div>
   );
