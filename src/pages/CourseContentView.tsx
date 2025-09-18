@@ -488,17 +488,28 @@ const CourseContentView: React.FC = () => {
     }>>([]);
     const [loading, setLoading] = useState(true);
 
+    console.log('ChecklistViewer props:', { chapterId, checklistItems });
+
     useEffect(() => {
       const loadChecklistProgress = async () => {
+        console.log('Loading checklist progress for:', chapterId, 'with items:', checklistItems);
+        
         if (!checklistItems || checklistItems.length === 0) {
+          console.log('No checklist items found, setting loading to false');
           setLoading(false);
           return;
         }
 
         try {
           setLoading(true);
+          console.log('Calling getChecklistProgress...');
           const progress = await getChecklistProgress(chapterId);
+          console.log('Progress data received:', progress);
+          
+          console.log('Calling mergeChecklistWithProgress...');
           const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
+          console.log('Merged checklist:', mergedChecklist);
+          
           setChecklistWithProgress(mergedChecklist);
         } catch (error) {
           console.error('Error loading checklist progress:', error);
@@ -525,7 +536,10 @@ const CourseContentView: React.FC = () => {
       }
     };
 
+    console.log('ChecklistViewer render - loading:', loading, 'items:', checklistWithProgress);
+
     if (loading) {
+      console.log('Showing loading state');
       return (
         <div className="space-y-4">
           <div className="h-4 bg-muted animate-pulse rounded"></div>
@@ -542,6 +556,7 @@ const CourseContentView: React.FC = () => {
     }
 
     if (!checklistItems || checklistItems.length === 0) {
+      console.log('Showing empty state - no items');
       return (
         <div className="text-center py-8 text-muted-foreground">
           <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -551,10 +566,18 @@ const CourseContentView: React.FC = () => {
       );
     }
 
+    console.log('Rendering checklist items:', checklistWithProgress.length);
     const completionPercentage = getChecklistCompletionPercentage(checklistWithProgress);
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-4">
+        {/* Debug info */}
+        <div className="bg-yellow-100 p-2 rounded text-xs">
+          <p>Debug: ChapterId: {chapterId}</p>
+          <p>Raw items: {JSON.stringify(checklistItems)}</p>
+          <p>Progress items: {checklistWithProgress.length}</p>
+        </div>
+
         {/* Progress indicator */}
         <div className="bg-muted/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
@@ -571,25 +594,29 @@ const CourseContentView: React.FC = () => {
 
         {/* Checklist items */}
         <div className="space-y-3">
-          {checklistWithProgress.map((item) => (
-            <label 
-              key={item.id}
-              className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
-            >
-              <input
-                type="checkbox"
-                checked={item.completed}
-                onChange={(e) => handleToggleItem(item.id, e.target.checked)}
-                className="mt-0.5 h-5 w-5 rounded border-2 border-primary text-primary focus:ring-primary focus:ring-offset-0"
-              />
-              <span className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
-                {item.text}
-              </span>
-              {item.completed && (
-                <CheckSquare className="h-5 w-5 text-green-600 flex-shrink-0" />
-              )}
-            </label>
-          ))}
+          {checklistWithProgress.length === 0 ? (
+            <p className="text-muted-foreground">No checklist items loaded</p>
+          ) : (
+            checklistWithProgress.map((item, index) => (
+              <label 
+                key={`${item.id}-${index}`}
+                className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  checked={item.completed}
+                  onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded border-2 border-primary text-primary focus:ring-primary focus:ring-offset-0"
+                />
+                <span className={`flex-1 ${item.completed ? 'line-through text-muted-foreground' : ''}`}>
+                  {item.text}
+                </span>
+                {item.completed && (
+                  <CheckSquare className="h-5 w-5 text-green-600 flex-shrink-0" />
+                )}
+              </label>
+            ))
+          )}
         </div>
       </div>
     );
