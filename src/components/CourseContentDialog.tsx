@@ -61,6 +61,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   });
   
   const { isAdmin, role: userRole } = useRole();
+  const canManageContent = isAdmin || userRole === 'recruiter' || userRole === 'institute_admin';
   const { toast } = useToast();
   const {
     loading,
@@ -242,15 +243,15 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
   };
 
   useEffect(() => {
-    console.log('🚀 CourseContentDialog opened:', { open, courseId, isAdmin });
-    if (open && courseId && isAdmin) {
+    console.log('🚀 CourseContentDialog opened:', { open, courseId, canManageContent, userRole });
+    if (open && courseId && canManageContent) {
       console.log('📂 Loading form state and sections...');
       loadFormState();
       loadSections();
     }
     
     // Removed problematic event listeners that were causing page reloads
-  }, [open, courseId, isAdmin, loadFormState]);
+  }, [open, courseId, canManageContent, loadFormState]);
 
   // Simple cleanup to save state when component unmounts
   useEffect(() => {
@@ -500,9 +501,10 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {!isAdmin ? (
+        {!canManageContent ? (
           <div className="text-center py-8">
-            <p>Only super administrators can manage course content.</p>
+            <p>Only administrators, recruiters, and institute admins can manage course content.</p>
+            <p className="text-sm text-muted-foreground mt-2">Your current role: {userRole}</p>
             <Button onClick={() => onOpenChange(false)} className="mt-4">
               Close
             </Button>
@@ -765,6 +767,7 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                     <div>
                       <Label htmlFor="chapter-type">Content Type</Label>
                       <Select value={chapterType} onValueChange={(value: 'video' | 'article' | 'document' | 'checklist') => {
+                        console.log('🎯 Content type selected:', value);
                         setChapterType(value);
                         // Save immediately on change
                         setTimeout(() => saveFormState(), 100);
@@ -773,11 +776,14 @@ export const CourseContentDialog: React.FC<CourseContentDialogProps> = ({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="article">Article</SelectItem>
-                          <SelectItem value="checklist">Checklist</SelectItem>
-                          {userRole === 'admin' && <SelectItem value="video">Video</SelectItem>}
+                          <SelectItem value="article">📝 Article</SelectItem>
+                          <SelectItem value="checklist">✅ Checklist</SelectItem>
+                          {userRole === 'admin' && <SelectItem value="video">🎥 Video</SelectItem>}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        User role: {userRole} | Available options: Article, Checklist{userRole === 'admin' && ', Video'}
+                      </p>
                     </div>
                   </div>
 
