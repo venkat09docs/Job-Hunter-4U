@@ -2744,14 +2744,34 @@ ${resumeData.personalDetails.fullName}`;
                     </Button>
                     
                     {generatedResumeText && (
-                      <div className="mt-4 space-y-2">
-                        <Label>Generated Resume:</Label>
-                        <Textarea
-                          value={generatedResumeText}
-                          readOnly
-                          className="min-h-[400px] font-mono text-sm"
-                          placeholder="Your generated resume will appear here..."
-                        />
+                      <div className="mt-6 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-lg font-semibold">Generated Resume:</Label>
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(generatedResumeText)}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <Copy className="h-4 w-4" />
+                            Copy
+                          </Button>
+                        </div>
+                        <div className="border rounded-lg bg-white shadow-sm">
+                          <Textarea
+                            value={generatedResumeText}
+                            readOnly
+                            className="min-h-[500px] max-h-[600px] p-6 text-sm leading-relaxed resize-none border-0 focus:ring-0 focus:border-0 whitespace-pre-wrap"
+                            placeholder="Your generated resume will appear here..."
+                            style={{
+                              fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+                              lineHeight: '1.6'
+                            }}
+                          />
+                        </div>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>💡 Tip: You can copy this resume and paste it into your preferred document editor</span>
+                        </div>
                       </div>
                     )}
                     <Button 
