@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Play, FileText, Download, ChevronRight, ChevronDown, Home, CheckCircle2, ArrowRight, CheckSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -467,9 +467,7 @@ const CourseContentView: React.FC = () => {
         );
 
       case 'checklist':
-        // Memoize checklistItems to prevent infinite re-renders
-        const memoizedChecklistItems = useMemo(() => content_data?.checklist_items || [], [JSON.stringify(content_data?.checklist_items)]);
-        return <ChecklistViewer chapterId={chapter.id} checklistItems={memoizedChecklistItems} />;
+        return <ChecklistViewer chapterId={chapter.id} checklistItems={content_data?.checklist_items || []} />;
 
       default:
         return (
@@ -492,6 +490,11 @@ const CourseContentView: React.FC = () => {
 
     useEffect(() => {
       const loadChecklistProgress = async () => {
+        if (!checklistItems || checklistItems.length === 0) {
+          setLoading(false);
+          return;
+        }
+
         try {
           setLoading(true);
           const progress = await getChecklistProgress(chapterId);
@@ -504,10 +507,8 @@ const CourseContentView: React.FC = () => {
         }
       };
 
-      if (checklistItems.length > 0) {
-        loadChecklistProgress();
-      }
-    }, [chapterId, checklistItems]);
+      loadChecklistProgress();
+    }, [chapterId, JSON.stringify(checklistItems)]); // Use JSON.stringify to prevent unnecessary re-runs
 
     const handleToggleItem = async (itemId: string, isCompleted: boolean) => {
       try {
@@ -536,6 +537,16 @@ const CourseContentView: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      );
+    }
+
+    if (!checklistItems || checklistItems.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <CheckSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>No checklist items available</p>
+          <p className="text-xs mt-2">This checklist appears to be empty</p>
         </div>
       );
     }
