@@ -503,17 +503,54 @@ const CourseContentView: React.FC = () => {
         try {
           setLoading(true);
           console.log('Calling getChecklistProgress...');
-          const progress = await getChecklistProgress(chapterId);
-          console.log('Progress data received:', progress);
+          
+          // Try calling the function directly to see if it works
+          console.log('About to call getChecklistProgress with:', chapterId);
+          
+          let progress = [];
+          try {
+            progress = await getChecklistProgress(chapterId);
+            console.log('Progress data received:', progress);
+          } catch (progressError) {
+            console.error('Error getting progress, using empty array:', progressError);
+            // Fallback: create empty progress array
+            progress = [];
+          }
           
           console.log('Calling mergeChecklistWithProgress...');
           const mergedChecklist = mergeChecklistWithProgress(checklistItems, progress);
           console.log('Merged checklist:', mergedChecklist);
           
-          setChecklistWithProgress(mergedChecklist);
+          // Fallback: If mergedChecklist is empty, create it manually
+          if (mergedChecklist.length === 0 && checklistItems.length > 0) {
+            console.log('Creating fallback checklist items');
+            const fallbackChecklist = checklistItems.map((item, index) => ({
+              id: `item_${index}`,
+              text: item,
+              completed: false
+            }));
+            console.log('Fallback checklist:', fallbackChecklist);
+            setChecklistWithProgress(fallbackChecklist);
+          } else {
+            setChecklistWithProgress(mergedChecklist);
+          }
+          
+          console.log('Successfully set checklist with progress');
         } catch (error) {
-          console.error('Error loading checklist progress:', error);
+          console.error('Error in loadChecklistProgress:', error);
+          
+          // Ultimate fallback: create basic checklist items
+          if (checklistItems.length > 0) {
+            console.log('Creating ultimate fallback checklist');
+            const basicChecklist = checklistItems.map((item, index) => ({
+              id: `item_${index}`,
+              text: item,
+              completed: false
+            }));
+            setChecklistWithProgress(basicChecklist);
+          }
         } finally {
+          console.log('Setting loading to false');
           setLoading(false);
         }
       };
@@ -571,13 +608,6 @@ const CourseContentView: React.FC = () => {
 
     return (
       <div className="space-y-6 p-4">
-        {/* Debug info */}
-        <div className="bg-yellow-100 p-2 rounded text-xs">
-          <p>Debug: ChapterId: {chapterId}</p>
-          <p>Raw items: {JSON.stringify(checklistItems)}</p>
-          <p>Progress items: {checklistWithProgress.length}</p>
-        </div>
-
         {/* Progress indicator */}
         <div className="bg-muted/50 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
